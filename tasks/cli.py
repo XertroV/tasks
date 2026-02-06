@@ -1409,7 +1409,16 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
 
 def _register_all_commands():
     """Register commands from all modules."""
-    from .commands import workflow, display, search, reports, session, timeline, data
+    from .commands import (
+        workflow,
+        display,
+        search,
+        reports,
+        session,
+        timeline,
+        data,
+        skills,
+    )
 
     workflow.register_commands(cli)
     display.register_commands(cli)
@@ -1418,6 +1427,7 @@ def _register_all_commands():
     session.register_commands(cli)
     timeline.register_commands(cli)
     data.register_commands(cli)
+    skills.register_commands(cli)
 
 
 _register_all_commands()

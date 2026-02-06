@@ -110,6 +110,33 @@ Workflow and analysis:
 - `session ...` - session tracking (`start`, `heartbeat`, `list`, `end`, `clean`).
 - `report ...` - reports (`progress`, `velocity`, `estimate-accuracy`).
 - `data ...` - exports (`export`, `summary`).
+- `skills install ...` - install/export built-in `plan-task` and `plan-ingest` skills/commands for Codex, Claude, and OpenCode.
+
+## SKILL INSTALLER
+Install built-in planning assets:
+
+```bash
+# local install for common clients (codex + claude + opencode), skills only
+tasks skills install plan-ingest
+
+# install both skills and commands where supported
+tasks skills install all --artifact both
+
+# global install for codex skills
+tasks skills install plan-task --scope global --client codex --artifact skills
+
+# export to a directory (portable bundle)
+tasks skills install all --artifact both --dir ./build/ai-assets
+
+# preview without writing files
+tasks skills install plan-task --client common --artifact commands --dry-run
+```
+
+Canonical defaults used by `tasks skills install`:
+
+- Codex skills: local `.agents/skills`, global `~/.agents/skills` (or `$CODEX_HOME/skills` if set).
+- Claude skills/commands: local `.claude/{skills|commands}`, global `~/.claude/{skills|commands}`.
+- OpenCode skills/commands: local `.opencode/{skills|commands}`, global `~/.config/opencode/{skills|commands}`.
 
 ## COMMON FLOWS
 Claim and complete:
