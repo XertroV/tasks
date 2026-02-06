@@ -28,7 +28,7 @@ from ..helpers import (
 
 console = Console()
 
-DEFAULT_SIBLING_ADDITIONAL_COUNT = 4
+DEFAULT_SIBLING_ADDITIONAL_COUNT = 5
 
 
 def load_config():
@@ -287,6 +287,182 @@ def _display_sibling_grab_results(primary_task, sibling_tasks, no_content: bool)
         _display_task_details(primary_task, show_file_contents=True)
 
 
+def _print_in_progress_tasks(tree) -> None:
+    """Show currently in-progress tasks that may be blocking progress."""
+    in_progress = []
+    for phase in tree.phases:
+        for milestone in phase.milestones:
+            for epic in milestone.epics:
+                for task in epic.tasks:
+                    if task.status == Status.IN_PROGRESS:
+                        in_progress.append(task)
+
+    if not in_progress:
+        return
+
+    console.print(f"[dim]{len(in_progress)} task(s) are in progress:[/]")
+    for task in in_progress[:5]:
+        console.print(f"  [yellow]{task.id}[/] - {task.claimed_by or 'unknown'}")
+    if len(in_progress) > 5:
+        console.print(f"  ... and {len(in_progress) - 5} more")
+
+
+def _select_next_available_task_id(
+    tree,
+    calc,
+    loader,
+    config,
+    agent: str,
+    scope: str | None = None,
+    *,
+    no_available_message: str,
+    show_in_progress: bool,
+):
+    """Return next available task ID, optionally reclaiming stale work."""
+    critical_path, next_available = calc.calculate()
+
+    if not next_available:
+        console.print(f"[yellow]{no_available_message}[/]\n")
+        next_available = _find_and_reclaim_stale_task(tree, config, agent, loader)
+        if not next_available:
+            if show_in_progress:
+                _print_in_progress_tasks(tree)
+            return critical_path, None
+
+    if scope:
+        all_available = calc.find_all_available()
+        scoped = [task_id for task_id in all_available if task_id.startswith(scope)]
+        if not scoped:
+            console.print(f"[yellow]No available tasks in scope '{scope}'[/]")
+            return critical_path, None
+        prioritized_scoped = calc.prioritize_task_ids(scoped, critical_path)
+        next_available = prioritized_scoped[0] if prioritized_scoped else None
+        if not next_available:
+            console.print(f"[yellow]No available tasks in scope '{scope}'[/]")
+            return critical_path, None
+
+    return critical_path, next_available
+
+
+def _claim_task_batch(
+    tree,
+    loader,
+    calc,
+    primary_task,
+    agent: str,
+    *,
+    multi: bool,
+    single: bool,
+    siblings: bool,
+    count: int,
+):
+    """Claim secondary tasks and set context based on requested batch mode."""
+    additional_tasks = []
+    sibling_task_objs = []
+
+    # Determine mode precedence: --single > --multi > siblings/default.
+    if single:
+        set_current_task(primary_task.id, agent)
+        return additional_tasks, sibling_task_objs
+
+    if multi:
+        additional_task_ids = calc.find_independent_tasks(primary_task, count)
+        if additional_task_ids:
+            for task_id in additional_task_ids:
+                task = tree.find_task(task_id)
+                if not task:
+                    continue
+                claim_task(task, agent)
+                loader.save_task(task)
+                additional_tasks.append(task)
+                _append_delegation_instructions(task, agent, primary_task)
+
+            claimed_additional_ids = [task.id for task in additional_tasks]
+            if claimed_additional_ids:
+                set_multi_task_context(agent, primary_task.id, claimed_additional_ids)
+            else:
+                set_current_task(primary_task.id, agent)
+        else:
+            console.print(
+                "[yellow]Warning: No independent tasks available for multi-grab[/]\n"
+            )
+            set_current_task(primary_task.id, agent)
+        return additional_tasks, sibling_task_objs
+
+    if siblings:
+        sibling_task_ids = calc.find_sibling_tasks(
+            primary_task, count=DEFAULT_SIBLING_ADDITIONAL_COUNT
+        )
+        if sibling_task_ids:
+            for task_id in sibling_task_ids:
+                task = tree.find_task(task_id)
+                if not task:
+                    continue
+                claim_task(task, agent)
+                loader.save_task(task)
+                sibling_task_objs.append(task)
+
+            claimed_sibling_ids = [task.id for task in sibling_task_objs]
+            if claimed_sibling_ids:
+                set_sibling_task_context(agent, primary_task.id, claimed_sibling_ids)
+                _append_sibling_delegation_instructions(
+                    primary_task, sibling_task_objs, agent
+                )
+            else:
+                set_current_task(primary_task.id, agent)
+        else:
+            set_current_task(primary_task.id, agent)
+        return additional_tasks, sibling_task_objs
+
+    # --no-siblings explicit single-task mode.
+    set_current_task(primary_task.id, agent)
+    return additional_tasks, sibling_task_objs
+
+
+def _claim_and_display_batch(
+    tree,
+    loader,
+    calc,
+    next_task_id: str,
+    agent: str,
+    *,
+    no_content: bool,
+    multi: bool,
+    single: bool,
+    siblings: bool,
+    count: int,
+    force_claim: bool = False,
+):
+    """Claim the next task and apply the same batching/display behavior as grab."""
+    primary_task = tree.find_task(next_task_id)
+    if not primary_task:
+        console.print(f"[red]Task not found: {next_task_id}[/]\n")
+        return None
+
+    claim_task(primary_task, agent, force=force_claim)
+    loader.save_task(primary_task)
+
+    additional_tasks, sibling_task_objs = _claim_task_batch(
+        tree,
+        loader,
+        calc,
+        primary_task,
+        agent,
+        multi=multi,
+        single=single,
+        siblings=siblings,
+        count=count,
+    )
+
+    if sibling_task_objs:
+        _display_sibling_grab_results(primary_task, sibling_task_objs, no_content)
+    else:
+        _display_grab_results(primary_task, additional_tasks, no_content)
+
+    start_session(agent, primary_task.id)
+    return primary_task
+
+
 @click.command()
 @click.option("--agent", help="Agent session ID (uses config default if not set)")
 @click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
@@ -295,14 +471,14 @@ def _display_sibling_grab_results(primary_task, sibling_tasks, no_content: bool)
 @click.option("--single", is_flag=True, help="Claim only 1 task (disable batching)")
 @click.option("--siblings/--no-siblings", default=True, help="Enable/disable sibling batching (default: enabled)")
 @click.option(
-    "--count", default=2, type=int, help="Number of additional tasks (with --multi)"
+    "--count", default=DEFAULT_SIBLING_ADDITIONAL_COUNT, type=int, help="Number of additional tasks (with --multi)"
 )
 def grab(agent, scope, no_content, multi, single, siblings, count):
-    """Auto-claim the next available task on critical path.
+    f"""Auto-claim the next available task on critical path.
 
     Combines 'next' + 'claim' into a single command.
 
-    By default, claims the primary task plus up to 4 sibling tasks from the
+    By default, claims the primary task plus up to {DEFAULT_SIBLING_ADDITIONAL_COUNT} sibling tasks from the
     same epic for sequential implementation. Use --single to claim only 1 task,
     or --multi for independent tasks from different epics.
     """
@@ -315,128 +491,31 @@ def grab(agent, scope, no_content, multi, single, siblings, count):
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-        critical_path, next_available = calc.calculate()
-
+        _, next_available = _select_next_available_task_id(
+            tree,
+            calc,
+            loader,
+            config,
+            agent,
+            scope=scope,
+            no_available_message="No available tasks found.",
+            show_in_progress=True,
+        )
         if not next_available:
-            console.print("[yellow]No available tasks found.[/]\n")
-
-            # Try to reclaim a stale task
-            next_available = _find_and_reclaim_stale_task(tree, config, agent, loader)
-
-            if not next_available:
-                # Check for in-progress tasks that may be blocking
-                in_progress = []
-                for phase in tree.phases:
-                    for milestone in phase.milestones:
-                        for epic in milestone.epics:
-                            for t in epic.tasks:
-                                if t.status == Status.IN_PROGRESS:
-                                    in_progress.append(t)
-
-                if in_progress:
-                    console.print(f"[dim]{len(in_progress)} task(s) are in progress:[/]")
-                    for t in in_progress[:5]:
-                        console.print(f"  [yellow]{t.id}[/] - {t.claimed_by or 'unknown'}")
-                    if len(in_progress) > 5:
-                        console.print(f"  ... and {len(in_progress) - 5} more")
-                return
-
-        # Filter by scope if provided
-        if scope:
-            # Find next available within scope
-            all_available = calc.find_all_available()
-            scoped = [t for t in all_available if t.startswith(scope)]
-            if scoped:
-                prioritized_scoped = calc.prioritize_task_ids(scoped, critical_path)
-                next_available = prioritized_scoped[0] if prioritized_scoped else None
-            else:
-                console.print(f"[yellow]No available tasks in scope '{scope}'[/]")
-                return
-
-        # Get the primary task
-        primary_task = tree.find_task(next_available)
-        if not primary_task:
-            console.print(f"[red]Task not found: {next_available}[/]\n")
             return
 
-        # Claim primary task
-        claim_task(primary_task, agent)
-        loader.save_task(primary_task)
-
-        additional_tasks = []
-        sibling_task_objs = []
-
-        # Determine mode: --single > --multi > default (siblings)
-        if single:
-            # Single-task mode: just claim the primary
-            set_current_task(primary_task.id, agent)
-        elif multi:
-            # Multi-task mode: find independent tasks from different epics
-            additional_task_ids = calc.find_independent_tasks(primary_task, count)
-
-            if additional_task_ids:
-                # Claim additional tasks
-                for task_id in additional_task_ids:
-                    task = tree.find_task(task_id)
-                    if task:
-                        claim_task(task, agent)
-                        loader.save_task(task)
-                        additional_tasks.append(task)
-
-                        # Append delegation instructions to task file
-                        _append_delegation_instructions(task, agent, primary_task)
-
-                # Set multi-task context based on claimed tasks
-                claimed_additional_ids = [task.id for task in additional_tasks]
-                if claimed_additional_ids:
-                    set_multi_task_context(
-                        agent, primary_task.id, claimed_additional_ids
-                    )
-                else:
-                    set_current_task(primary_task.id, agent)
-            else:
-                console.print(
-                    "[yellow]Warning: No independent tasks available for multi-grab[/]\n"
-                )
-                set_current_task(primary_task.id, agent)
-        elif siblings:
-            # Sibling mode (DEFAULT): find tasks from same epic
-            sibling_task_ids = calc.find_sibling_tasks(
-                primary_task, count=DEFAULT_SIBLING_ADDITIONAL_COUNT
-            )
-
-            if sibling_task_ids:
-                for task_id in sibling_task_ids:
-                    task = tree.find_task(task_id)
-                    if task:
-                        claim_task(task, agent)
-                        loader.save_task(task)
-                        sibling_task_objs.append(task)
-
-                claimed_sibling_ids = [task.id for task in sibling_task_objs]
-                if claimed_sibling_ids:
-                    set_sibling_task_context(
-                        agent, primary_task.id, claimed_sibling_ids
-                    )
-                    _append_sibling_delegation_instructions(
-                        primary_task, sibling_task_objs, agent
-                    )
-                else:
-                    set_current_task(primary_task.id, agent)
-            else:
-                # No siblings available, fall back to single
-                set_current_task(primary_task.id, agent)
-        else:
-            # --no-siblings explicitly: single task mode
-            set_current_task(primary_task.id, agent)
-
-        # Display results
-        if sibling_task_objs:
-            _display_sibling_grab_results(primary_task, sibling_task_objs, no_content)
-        else:
-            _display_grab_results(primary_task, additional_tasks, no_content)
-
-        start_session(agent, primary_task.id)
+        _claim_and_display_batch(
+            tree,
+            loader,
+            calc,
+            next_available,
+            agent,
+            no_content=no_content,
+            multi=multi,
+            single=single,
+            siblings=siblings,
+            count=count,
+        )
 
     except StatusError as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -592,60 +671,38 @@ def cycle(task_id, agent, no_content):
             )
             return
 
-        # Now grab next task
+        # Now grab next task (same batching behavior as `grab`)
         console.print("─" * 50)
 
         # Recalculate after completing task
         tree = loader.load()  # Reload to get fresh state
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-        critical_path, next_available = calc.calculate()
-
+        _, next_available = _select_next_available_task_id(
+            tree,
+            calc,
+            loader,
+            config,
+            agent,
+            no_available_message="No more available tasks.",
+            show_in_progress=False,
+        )
         if not next_available:
-            console.print("\n[yellow]No more available tasks.[/]")
-
-            # Try to reclaim a stale task
-            next_available = _find_and_reclaim_stale_task(tree, config, agent, loader)
-
-            if not next_available:
-                clear_context()
-                return
-
-        next_task = tree.find_task(next_available)
-        if not next_task:
-            console.print(f"[red]Error:[/] Next task not found: {next_available}")
+            clear_context()
             return
 
-        # Claim the next task
-        claim_task(next_task, agent, force=False)
-        loader.save_task(next_task)
-
-        # Update context
-        set_current_task(next_task.id, agent)
-        start_session(agent, next_task.id)
-
-        on_critical = next_task.id in critical_path
-        crit_marker = " [yellow]★ Critical Path[/]" if on_critical else ""
-
-        console.print(
-            f"\n[green]✓ Grabbed:[/] {next_task.id} - {next_task.title}{crit_marker}\n"
+        _claim_and_display_batch(
+            tree,
+            loader,
+            calc,
+            next_available,
+            agent,
+            no_content=no_content,
+            multi=False,
+            single=False,
+            siblings=True,
+            count=DEFAULT_SIBLING_ADDITIONAL_COUNT,
+            force_claim=False,
         )
-        console.print(f"  Estimate:   {next_task.estimate_hours} hours")
-        console.print(f"  Complexity: {next_task.complexity.value}")
-        console.print(f"  Priority:   {next_task.priority.value}\n")
-
-        console.print(f"[bold]File:[/] .tasks/{next_task.file}\n")
-
-        if not no_content:
-            task_file = Path(".tasks") / next_task.file
-            if task_file.exists():
-                with open(task_file) as f:
-                    content = f.read()
-
-                console.print("─" * 50)
-                console.print(f"[bold]Task File Contents[/]:")
-                console.print("─" * 50)
-                console.print(content)
-                console.print("─" * 50 + "\n")
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))

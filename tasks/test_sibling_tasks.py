@@ -790,6 +790,25 @@ class TestCycleWithSiblings:
         assert result.exit_code == 0
         assert "Completed" in result.output
 
+    def test_cycle_auto_grab_uses_sibling_batching(self, runner, tmp_sibling_tasks_dir, monkeypatch):
+        """When cycle grabs fresh work, it should use the same default sibling mode as grab."""
+        monkeypatch.chdir(tmp_sibling_tasks_dir)
+
+        # Complete one current task, then cycle should auto-grab next work.
+        self._mark_task_in_progress(tmp_sibling_tasks_dir, "P1.M1.E1.T001")
+        set_current_task("P1.M1.E1.T001", "test-agent")
+
+        result = runner.invoke(cli, ["cycle", "--agent=test-agent"])
+
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert "Grabbed PRIMARY" in result.output
+
+        ctx = load_context()
+        assert ctx.get("mode") == "siblings"
+        assert ctx.get("primary_task") == "P1.M1.E1.T002"
+        assert len(ctx.get("sibling_tasks", [])) >= 1
+
 
 # ============================================================================
 # Integration Tests: end-to-end sibling batching
