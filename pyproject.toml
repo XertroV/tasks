@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pag-tasks-cli"
+version = "0.1.0"
+description = "CLI for hierarchical project task orchestration stored in .tasks/"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "click>=8.1",
+  "PyYAML>=6.0",
+  "rich>=13.0",
+  "networkx>=3.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+]
+
+[project.scripts]
+tasks = "tasks.cli:cli"
+pag-tasks = "tasks.cli:cli"
+
+[tool.setuptools.packages.find]
+include = ["tasks*"]
