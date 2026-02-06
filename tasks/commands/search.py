@@ -10,6 +10,7 @@ from ..models import Status, TaskPath
 from ..loader import TaskLoader
 from ..critical_path import CriticalPathCalculator
 from ..helpers import get_all_tasks, find_tasks_blocked_by
+from ..time_utils import utc_now, to_utc
 
 console = Console()
 
@@ -269,11 +270,8 @@ def blockers(deep, suggest):
                 if not root.claimed_by and root.status == Status.PENDING:
                     console.print(f"  [cyan]💡 Unclaimed! Run: ./tasks.py grab {root_id}[/]")
                 elif root.status == Status.IN_PROGRESS and root.claimed_at:
-                    from datetime import datetime
-                    claimed = root.claimed_at
-                    if claimed.tzinfo:
-                        claimed = claimed.replace(tzinfo=None)
-                    age_hours = (datetime.utcnow() - claimed).total_seconds() / 3600
+                    claimed = to_utc(root.claimed_at)
+                    age_hours = (utc_now() - claimed).total_seconds() / 3600
                     if age_hours > 2:
                         console.print(f"  [yellow]💡 In progress for {age_hours:.1f}h. Consider check-in.[/]")
 

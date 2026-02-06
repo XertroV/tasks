@@ -10,6 +10,7 @@ from ..models import Status
 from ..loader import TaskLoader
 from ..critical_path import CriticalPathCalculator
 from ..status import check_stale_claims
+from ..time_utils import utc_now, to_utc
 from ..helpers import (
     load_context,
     get_active_sessions,
@@ -62,10 +63,8 @@ def dash(agent):
                 duration_str = ""
                 if started:
                     try:
-                        started_dt = datetime.fromisoformat(started)
-                        if started_dt.tzinfo:
-                            started_dt = started_dt.replace(tzinfo=None)
-                        mins = (datetime.utcnow() - started_dt).total_seconds() / 60
+                        started_dt = to_utc(datetime.fromisoformat(started))
+                        mins = (utc_now() - started_dt).total_seconds() / 60
                         duration_str = f" | Session: {format_duration(mins)}"
                     except Exception:
                         pass

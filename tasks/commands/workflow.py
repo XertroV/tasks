@@ -3,12 +3,12 @@
 import click
 import json
 from pathlib import Path
-from datetime import datetime
 from rich.console import Console
 
 from ..models import Status
 from ..loader import TaskLoader
 from ..critical_path import CriticalPathCalculator
+from ..time_utils import utc_now, to_utc
 from ..status import claim_task, complete_task, update_status, StatusError
 from ..helpers import (
     load_context,
@@ -49,7 +49,7 @@ def _find_and_reclaim_stale_task(tree, config, agent, loader):
         str: Task ID of reclaimed stale task, or None if no stale tasks found
     """
     error_threshold = config["stale_claim"]["error_after_minutes"]
-    now = datetime.utcnow()
+    now = utc_now()
     stale_tasks = []
 
     # Find all stale tasks
@@ -58,7 +58,7 @@ def _find_and_reclaim_stale_task(tree, config, agent, loader):
             for epic in milestone.epics:
                 for t in epic.tasks:
                     if t.status == Status.IN_PROGRESS and t.claimed_at:
-                        age_minutes = (now - t.claimed_at).total_seconds() / 60
+                        age_minutes = (now - to_utc(t.claimed_at)).total_seconds() / 60
                         if age_minutes >= error_threshold:
                             stale_tasks.append({
                                 "task": t,
@@ -130,7 +130,7 @@ def _append_delegation_instructions(task, agent: str, primary_task) -> None:
 ## Delegation Instructions
 
 **Delegated to subagent by**: {agent} (primary agent)
-**Delegation date**: {datetime.now().strftime("%Y-%m-%d %H:%M UTC")}
+**Delegation date**: {utc_now().strftime("%Y-%m-%d %H:%M UTC")}
 **Primary task**: {primary_task.id} - {primary_task.title}
 
 **Instructions**:
@@ -171,7 +171,7 @@ def _append_sibling_delegation_instructions(primary_task, sibling_tasks, agent: 
 
 **Batch mode**: siblings (same epic: {primary_task.epic_id})
 **Agent**: {agent}
-**Date**: {datetime.now().strftime("%Y-%m-%d %H:%M UTC")}
+**Date**: {utc_now().strftime("%Y-%m-%d %H:%M UTC")}
 **Sibling tasks**: {", ".join(sibling_ids)}
 
 **Instructions**:
@@ -485,10 +485,8 @@ def cycle(task_id, agent, no_content):
             # Calculate duration
             duration = None
             if task.started_at:
-                started = task.started_at
-                if started.tzinfo is not None:
-                    started = started.replace(tzinfo=None)
-                duration = (datetime.utcnow() - started).total_seconds() / 60
+                started = to_utc(task.started_at)
+                duration = (utc_now() - started).total_seconds() / 60
                 task.duration_minutes = duration
 
             # Complete the task
@@ -1020,7 +1018,7 @@ def handoff(task_id, to_agent, notes, force):
 
 **From:** {current_agent}
 **To:** {to_agent}
-**Date:** {datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")}
+**Date:** {utc_now().strftime("%Y-%m-%d %H:%M UTC")}
 
 {notes}
 """
@@ -1031,12 +1029,12 @@ def handoff(task_id, to_agent, notes, force):
         # Transfer ownership
         old_owner = task.claimed_by
         task.claimed_by = to_agent
-        task.claimed_at = datetime.utcnow()
+        task.claimed_at = utc_now()
 
         # Keep status as in_progress
         if task.status == Status.PENDING:
             task.status = Status.IN_PROGRESS
-            task.started_at = datetime.utcnow()
+            task.started_at = utc_now()
 
         loader.save_task(task)
 

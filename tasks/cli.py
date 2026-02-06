@@ -4,13 +4,13 @@ import click
 import json
 import yaml
 from pathlib import Path
-from datetime import datetime
 from builtins import next as builtin_next
 from rich.console import Console
 
 from .models import Status, TaskPath
 from .loader import TaskLoader
 from .critical_path import CriticalPathCalculator
+from .time_utils import utc_now, to_utc
 from .status import (
     claim_task,
     complete_task,
@@ -718,7 +718,7 @@ def _show_task(tree, task_id):
     if task.claimed_by:
         console.print(f"[bold]Claimed by:[/] {task.claimed_by}")
         if task.claimed_at:
-            age = (datetime.utcnow() - task.claimed_at).total_seconds() / 3600
+            age = (utc_now() - to_utc(task.claimed_at)).total_seconds() / 3600
             console.print(
                 f"[bold]Claimed at:[/] {task.claimed_at.isoformat()} ({age:.1f}h ago)"
             )
@@ -792,12 +792,8 @@ def _show_blocking_tasks(tree):
         for t in in_progress[:5]:
             age_str = ""
             if t.claimed_at:
-                now = datetime.utcnow()
-                claimed = (
-                    t.claimed_at.replace(tzinfo=None)
-                    if t.claimed_at.tzinfo
-                    else t.claimed_at
-                )
+                now = utc_now()
+                claimed = to_utc(t.claimed_at)
                 age_minutes = (now - claimed).total_seconds() / 60
                 age_str = (
                     f" ({int(age_minutes)}m ago)"
@@ -900,12 +896,8 @@ def done(task_id, verify):
         # Calculate duration
         duration = None
         if task.started_at:
-            started = (
-                task.started_at.replace(tzinfo=None)
-                if task.started_at.tzinfo
-                else task.started_at
-            )
-            duration = (datetime.utcnow() - started).total_seconds() / 60
+            started = to_utc(task.started_at)
+            duration = (utc_now() - started).total_seconds() / 60
             task.duration_minutes = duration
 
         complete_task(task)
@@ -1089,13 +1081,13 @@ def unclaim_stale(threshold, dry_run):
             threshold = config["stale_claim"]["error_after_minutes"]
 
         all_tasks = get_all_tasks(tree)
-        now = datetime.utcnow()
+        now = utc_now()
 
         # Find stale claims
         stale_tasks = []
         for task in all_tasks:
             if task.status == Status.IN_PROGRESS and task.claimed_at:
-                age_minutes = (now - task.claimed_at).total_seconds() / 60
+                age_minutes = (now - to_utc(task.claimed_at)).total_seconds() / 60
                 if age_minutes >= threshold:
                     stale_tasks.append(
                         {

@@ -2,7 +2,7 @@
 
 import click
 import json
-from datetime import datetime, timedelta
+from datetime import timedelta
 from collections import defaultdict
 from rich.console import Console
 from rich.table import Table
@@ -10,6 +10,7 @@ from rich.table import Table
 from ..models import Status
 from ..loader import TaskLoader
 from ..helpers import get_all_tasks, make_progress_bar, format_duration
+from ..time_utils import utc_now, to_utc
 
 console = Console()
 
@@ -313,7 +314,7 @@ def velocity(days, output_format):
             console.print("\n[yellow]No completed tasks with timestamps found.[/]\n")
             return
 
-        now = datetime.utcnow()
+        now = utc_now()
 
         # --- Throughput by day ---
         day_buckets = _make_day_buckets(now, days)
@@ -323,9 +324,7 @@ def velocity(days, output_format):
         last_completion = None
 
         for task in completed:
-            completed_at = task.completed_at
-            if completed_at.tzinfo:
-                completed_at = completed_at.replace(tzinfo=None)
+            completed_at = to_utc(task.completed_at)
 
             # Track time span
             if first_completion is None or completed_at < first_completion:
@@ -354,9 +353,7 @@ def velocity(days, output_format):
 
         for task in completed:
             if task.duration_minutes is not None:
-                completed_at = task.completed_at
-                if completed_at.tzinfo:
-                    completed_at = completed_at.replace(tzinfo=None)
+                completed_at = to_utc(task.completed_at)
 
                 task_end = completed_at
                 task_start = completed_at - timedelta(minutes=task.duration_minutes)
@@ -395,9 +392,7 @@ def velocity(days, output_format):
 
         for task in completed:
             if task.duration_minutes is not None:
-                completed_at = task.completed_at
-                if completed_at.tzinfo:
-                    completed_at = completed_at.replace(tzinfo=None)
+                completed_at = to_utc(task.completed_at)
 
                 task_end = completed_at
                 task_start = completed_at - timedelta(minutes=task.duration_minutes)

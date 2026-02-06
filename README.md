@@ -28,14 +28,25 @@ source .venv/bin/activate
 python -m pip install -e ".[dev]"
 ```
 
-Global command from anywhere:
+User-global command from anywhere (recommended, Arch-friendly/offline):
 
 ```bash
+# one-time (Arch)
+sudo pacman -S --needed \
+  python-click python-pyyaml python-rich python-networkx python-setuptools
+
 # from repo root
-pipx install --editable .
+./scripts/install-anywhere.sh
 ```
 
-After installation, use `tasks ...` in any working directory (the command still expects a `.tasks/` tree in the current project directory).
+Optional pipx flow (if internet access is available):
+
+```bash
+sudo pacman -S --needed pipx
+pipx install --force --editable .
+```
+
+After installation, use `tasks ...` in any working directory (the command still expects a `.tasks/` tree in the current project directory). Re-run `./scripts/install-anywhere.sh` after local code changes.
 
 `tasks.py` remains available as a repo-local wrapper and auto-reexecs into `.venv/bin/python` when present.
 

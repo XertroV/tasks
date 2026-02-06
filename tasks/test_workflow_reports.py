@@ -1,6 +1,6 @@
 """Focused tests for workflow and report command branches."""
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -83,7 +83,7 @@ def runner():
 
 @pytest.fixture
 def tmp_workflow_reports_dir(tmp_path, monkeypatch):
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     tasks_dir = tmp_path / ".tasks"
     tasks_dir.mkdir()
 
@@ -331,7 +331,7 @@ def test_grab_reclaims_stale_when_no_available(runner, tmp_workflow_reports_dir)
     _save_task_fields("P1.M1.E1.T003", status=Status.BLOCKED)
     _save_task_fields("P1.M1.E2.T003", status=Status.BLOCKED)
 
-    stale_ts = datetime.utcnow() - timedelta(hours=6)
+    stale_ts = datetime.now(timezone.utc) - timedelta(hours=6)
     _save_task_fields(
         "P1.M1.E1.T002",
         status=Status.IN_PROGRESS,

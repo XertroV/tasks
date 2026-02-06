@@ -1,8 +1,8 @@
 """Status transition validation and management."""
 
-from datetime import datetime
 from typing import Optional, Tuple
 from .models import Status, Task
+from .time_utils import utc_now, to_utc
 
 
 # Valid status transitions
@@ -63,7 +63,7 @@ def claim_task(task: Task, agent_id: str, force: bool = False) -> None:
     # Check if already claimed
     if task.claimed_by and not force:
         age_minutes = (
-            (datetime.utcnow() - task.claimed_at).total_seconds() / 60
+            (utc_now() - to_utc(task.claimed_at)).total_seconds() / 60
             if task.claimed_at
             else 0
         )
@@ -94,7 +94,7 @@ def claim_task(task: Task, agent_id: str, force: bool = False) -> None:
         )
 
     # Claim task
-    now = datetime.utcnow()
+    now = utc_now()
     task.status = Status.IN_PROGRESS
     task.claimed_by = agent_id
     task.claimed_at = now
@@ -120,7 +120,7 @@ def complete_task(task: Task) -> None:
         )
 
     task.status = Status.DONE
-    task.completed_at = datetime.utcnow()
+    task.completed_at = utc_now()
 
 
 def update_status(task: Task, new_status: Status, reason: Optional[str] = None) -> None:
@@ -170,7 +170,7 @@ def update_status(task: Task, new_status: Status, reason: Optional[str] = None) 
 
     # Set completion time if transitioning to done
     if new_status == Status.DONE and not task.completed_at:
-        task.completed_at = datetime.utcnow()
+        task.completed_at = utc_now()
 
 
 def check_stale_claims(
@@ -183,15 +183,11 @@ def check_stale_claims(
         List of stale claim warnings/errors
     """
     stale = []
-    now = datetime.utcnow()
+    now = utc_now()
 
     for task in tasks:
         if task.status == Status.IN_PROGRESS and task.claimed_at:
-            claimed = (
-                task.claimed_at.replace(tzinfo=None)
-                if task.claimed_at.tzinfo
-                else task.claimed_at
-            )
+            claimed = to_utc(task.claimed_at)
             age_minutes = (now - claimed).total_seconds() / 60
 
             if age_minutes >= error_minutes:

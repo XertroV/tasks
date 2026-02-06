@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional, List, Dict, Any
 
 from .models import Task, Status
+from .time_utils import utc_now, utc_now_iso, to_utc
 
 # File paths
 CONTEXT_FILE = Path(".tasks/.context.yaml")
@@ -48,7 +49,7 @@ def set_current_task(task_id: str, agent: Optional[str] = None) -> None:
     """Set current working task in context."""
     ctx = load_context()
     ctx["current_task"] = task_id
-    ctx["started_at"] = datetime.utcnow().isoformat()
+    ctx["started_at"] = utc_now_iso()
     ctx["mode"] = "single"
     # Clear additional_tasks when setting single task
     if "additional_tasks" in ctx:
@@ -66,7 +67,7 @@ def set_multi_task_context(agent: str, primary_task_id: str, additional_tasks: L
         "agent": agent,
         "primary_task": primary_task_id,
         "additional_tasks": additional_tasks,
-        "started_at": datetime.utcnow().isoformat(),
+        "started_at": utc_now_iso(),
         "mode": "multi",
     }
     save_context(context)
@@ -78,7 +79,7 @@ def set_sibling_task_context(agent: str, primary_task_id: str, sibling_tasks: Li
         "agent": agent,
         "primary_task": primary_task_id,
         "sibling_tasks": sibling_tasks,
-        "started_at": datetime.utcnow().isoformat(),
+        "started_at": utc_now_iso(),
         "mode": "siblings",
     }
     save_context(context)
@@ -135,7 +136,7 @@ def save_sessions(sessions: Dict[str, Any]) -> None:
 def start_session(agent_id: str, task_id: Optional[str] = None) -> Dict[str, Any]:
     """Start or update a session for an agent."""
     sessions = load_sessions()
-    now = datetime.utcnow().isoformat()
+    now = utc_now_iso()
 
     if agent_id not in sessions:
         sessions[agent_id] = {
@@ -157,7 +158,7 @@ def update_session_heartbeat(agent_id: str, progress: Optional[str] = None) -> b
     """Update session heartbeat."""
     sessions = load_sessions()
     if agent_id in sessions:
-        sessions[agent_id]["last_heartbeat"] = datetime.utcnow().isoformat()
+        sessions[agent_id]["last_heartbeat"] = utc_now_iso()
         if progress:
             sessions[agent_id]["progress"] = progress
         save_sessions(sessions)
@@ -179,10 +180,10 @@ def get_stale_sessions(timeout_minutes: int = 15) -> List[Dict[str, Any]]:
     """Find sessions with no recent heartbeat."""
     sessions = load_sessions()
     stale = []
-    now = datetime.utcnow()
+    now = utc_now()
 
     for agent_id, session in sessions.items():
-        last_heartbeat = datetime.fromisoformat(session["last_heartbeat"])
+        last_heartbeat = to_utc(datetime.fromisoformat(session["last_heartbeat"]))
         age_minutes = (now - last_heartbeat).total_seconds() / 60
         if age_minutes > timeout_minutes:
             stale.append({
@@ -198,12 +199,12 @@ def get_stale_sessions(timeout_minutes: int = 15) -> List[Dict[str, Any]]:
 def get_active_sessions() -> List[Dict[str, Any]]:
     """Get all active sessions."""
     sessions = load_sessions()
-    now = datetime.utcnow()
+    now = utc_now()
     active = []
 
     for agent_id, session in sessions.items():
-        started = datetime.fromisoformat(session["started_at"])
-        last_heartbeat = datetime.fromisoformat(session["last_heartbeat"])
+        started = to_utc(datetime.fromisoformat(session["started_at"]))
+        last_heartbeat = to_utc(datetime.fromisoformat(session["last_heartbeat"]))
         active.append({
             "agent_id": agent_id,
             "current_task": session.get("current_task"),

@@ -4,12 +4,12 @@ import click
 import json
 import yaml
 from pathlib import Path
-from datetime import datetime
 from rich.console import Console
 
 from ..models import Status
 from ..loader import TaskLoader
 from ..helpers import get_all_tasks
+from ..time_utils import utc_now, utc_now_iso
 
 console = Console()
 
@@ -44,7 +44,7 @@ def export_data(output_format, output, scope, include_content, pretty):
 
         # Build export data
         export = {
-            "exported_at": datetime.utcnow().isoformat(),
+            "exported_at": utc_now_iso(),
             "project": tree.project,
             "description": tree.description,
             "timeline_weeks": tree.timeline_weeks,
@@ -184,7 +184,7 @@ def summary(output_format):
 
         summary_data = {
             "project": tree.project,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": utc_now_iso(),
             "overall": {
                 "total_tasks": total,
                 "done": done,
@@ -213,7 +213,7 @@ def summary(output_format):
             click.echo(json.dumps(summary_data, indent=2))
         else:
             console.print(f"\n[bold cyan]{tree.project}[/]")
-            console.print(f"[dim]{datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}[/]\n")
+            console.print(f"[dim]{utc_now().strftime('%Y-%m-%d %H:%M UTC')}[/]\n")
 
             console.print(f"[bold]Overall:[/] {done}/{total} tasks ({pct:.1f}%)")
             console.print(f"  In Progress: {stats['in_progress']} | Blocked: {stats['blocked']}\n")

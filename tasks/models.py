@@ -5,6 +5,8 @@ from datetime import datetime
 from enum import Enum
 from typing import Optional, List, Union
 
+from .time_utils import utc_now, to_utc
+
 
 @dataclass(frozen=True)
 class TaskPath:
@@ -238,7 +240,7 @@ class Task:
         """Check if claim is stale (>2h old)."""
         if not self.claimed_at:
             return False
-        age_minutes = (datetime.utcnow() - self.claimed_at).total_seconds() / 60
+        age_minutes = (utc_now() - to_utc(self.claimed_at)).total_seconds() / 60
         return age_minutes > 120  # 2 hours
 
 

@@ -367,7 +367,7 @@ class TestCycleCommand:
         context = {
             "current_task": task_ids[0],
             "agent": "test-agent",
-            "started_at": datetime.utcnow().isoformat()
+            "started_at": datetime.now(timezone.utc).isoformat()
         }
         with open(context_file, "w") as f:
             yaml.dump(context, f)
@@ -416,7 +416,7 @@ class TestCycleCommand:
         context = {
             "current_task": task_ids[1],
             "agent": "test-agent",
-            "started_at": datetime.utcnow().isoformat()
+            "started_at": datetime.now(timezone.utc).isoformat()
         }
         with open(context_file, "w") as f:
             yaml.dump(context, f)
@@ -456,7 +456,7 @@ class TestCycleCommand:
         context = {
             "current_task": task_ids[0],
             "agent": "test-agent",
-            "started_at": datetime.utcnow().isoformat()
+            "started_at": datetime.now(timezone.utc).isoformat()
         }
         with open(context_file, "w") as f:
             yaml.dump(context, f)

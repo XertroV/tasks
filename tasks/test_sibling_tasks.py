@@ -691,7 +691,7 @@ class TestCycleWithSiblings:
             "agent": agent,
             "primary_task": primary_id,
             "sibling_tasks": sibling_ids,
-            "started_at": datetime.utcnow().isoformat(),
+            "started_at": datetime.now(timezone.utc).isoformat(),
             "mode": "siblings",
         }
         with open(context_file, "w") as f:
