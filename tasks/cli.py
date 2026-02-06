@@ -35,6 +35,74 @@ from .helpers import (
 
 console = Console()
 
+AGENTS_SNIPPETS = {
+    "short": """# AGENTS.md (Short)
+
+## Task Workflow
+- Use `tasks grab --single` to claim work, then `tasks done` or `tasks cycle`.
+- Prefer critical-path work, then `critical > high > medium > low` priority.
+- If blocked, run `tasks blocked --reason "<why>" --no-grab` and handoff quickly.
+- Keep each change scoped to one task; update status as soon as state changes.
+- Before done: run targeted tests for changed code.
+""",
+    "medium": """# AGENTS.md (Medium)
+
+## Defaults
+- Claim with `tasks grab` (or `tasks grab --single` for focused work).
+- CLI selection order is: critical-path first, then task priority.
+- Use `tasks work <id>` when switching context; use `tasks show` to review details.
+
+## Execution Loop
+1. `tasks grab` and read the task file.
+2. Implement in small commits and keep diff narrow.
+3. Run focused tests early, then broader tests before completion.
+4. Finish with `tasks done` (or `tasks cycle` to continue immediately).
+
+## Coordination
+- Use `tasks handoff --to <agent> --notes "<context>"` for ownership transfer.
+- Use `tasks blockers --suggest` and `tasks why <task-id>` when sequencing is unclear.
+- Run `tasks dash` and `tasks report progress` for health checks.
+""",
+    "long": """# AGENTS.md (Long)
+
+## Operating Model
+- Default command: `tasks`. Use local `.tasks/` state as source of truth.
+- Selection strategy: critical-path first, then `critical > high > medium > low`.
+- Treat task files as contracts: requirements + acceptance criteria drive scope.
+
+## Standard Loop
+1. Claim:
+   - `tasks grab` for normal flow.
+   - `tasks grab --single` for strict focus.
+2. Inspect:
+   - `tasks show` for current task details.
+   - `tasks why <task-id>` to inspect dependency readiness.
+3. Implement:
+   - Keep commits and PRs small and task-scoped.
+   - Add or update tests with each behavior change.
+4. Validate:
+   - Run targeted tests first, full suite before completion if feasible.
+5. Resolve:
+   - `tasks done` when complete.
+   - `tasks cycle` when moving directly to next claim.
+
+## Multi-Agent Defaults
+- Use handoff when parallelism helps:
+  - `tasks handoff --to <agent> --notes "<state + next steps>"`
+- If blocked:
+  - `tasks blocked --reason "<root cause>" --no-grab`
+  - Unblock owner or dependency explicitly.
+- For triage:
+  - `tasks blockers --deep --suggest`
+  - `tasks search "<pattern>" --status=pending`
+
+## Quality Gates
+- Ensure behavior is covered by tests.
+- Prefer deterministic, fast tests.
+- Do not mark done with unresolved blockers, hidden assumptions, or failing tests.
+""",
+}
+
 
 def load_config():
     """Load configuration."""
@@ -1074,6 +1142,28 @@ def unclaim_stale(threshold, dry_run):
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
+
+
+# ============================================================================
+# Agents Command
+# ============================================================================
+
+
+@cli.command()
+@click.option(
+    "--profile",
+    type=click.Choice(["short", "medium", "long", "all"]),
+    default="all",
+    show_default=True,
+    help="Select output draft length.",
+)
+def agents(profile):
+    """Print concise AGENTS.md draft text for task workflow defaults."""
+    order = ["short", "medium", "long"] if profile == "all" else [profile]
+    for i, key in enumerate(order):
+        if i:
+            console.print("\n" + "=" * 72 + "\n")
+        console.print(AGENTS_SNIPPETS[key])
 
 
 # ============================================================================

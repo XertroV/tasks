@@ -187,7 +187,12 @@ def check_stale_claims(
 
     for task in tasks:
         if task.status == Status.IN_PROGRESS and task.claimed_at:
-            age_minutes = (now - task.claimed_at).total_seconds() / 60
+            claimed = (
+                task.claimed_at.replace(tzinfo=None)
+                if task.claimed_at.tzinfo
+                else task.claimed_at
+            )
+            age_minutes = (now - claimed).total_seconds() / 60
 
             if age_minutes >= error_minutes:
                 stale.append(

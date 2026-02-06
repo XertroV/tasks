@@ -63,6 +63,8 @@ def dash(agent):
                 if started:
                     try:
                         started_dt = datetime.fromisoformat(started)
+                        if started_dt.tzinfo:
+                            started_dt = started_dt.replace(tzinfo=None)
                         mins = (datetime.utcnow() - started_dt).total_seconds() / 60
                         duration_str = f" | Session: {format_duration(mins)}"
                     except Exception:
