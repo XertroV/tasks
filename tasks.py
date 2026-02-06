@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PAG-Server Task Management CLI."""
+"""Task Management CLI."""
 
 import sys
 from pathlib import Path

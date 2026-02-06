@@ -3,7 +3,7 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pag-tasks-cli"
+name = "tasks-cli"
 version = "0.1.0"
 description = "CLI for hierarchical project task orchestration stored in .tasks/"
 readme = "README.md"
@@ -23,7 +23,6 @@ dev = [
 
 [project.scripts]
 tasks = "tasks.cli:cli"
-pag-tasks = "tasks.cli:cli"
 
 [tool.setuptools.packages.find]
 include = ["tasks*"]

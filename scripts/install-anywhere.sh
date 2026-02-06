@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
 BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
-INSTALL_ROOT="$DATA_HOME/pag-tasks-cli"
+INSTALL_ROOT="$DATA_HOME/tasks-cli"
 VENV_DIR="$INSTALL_ROOT/venv"
 
 python - <<'PY'
@@ -36,9 +36,8 @@ fi
 "$VENV_DIR/bin/python" -m pip install --no-build-isolation --no-deps --editable "$ROOT_DIR"
 
 ln -sf "$VENV_DIR/bin/tasks" "$BIN_HOME/tasks"
-ln -sf "$VENV_DIR/bin/pag-tasks" "$BIN_HOME/pag-tasks"
 
-echo "Installed pag-tasks-cli (editable) to: $VENV_DIR"
+echo "Installed tasks-cli (editable) to: $VENV_DIR"
 echo "Linked commands in: $BIN_HOME"
 echo
 echo "Verify:"
