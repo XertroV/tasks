@@ -3,6 +3,7 @@
 import json
 
 import pytest
+import yaml
 from click.testing import CliRunner
 
 from tasks.cli import cli
@@ -38,6 +39,48 @@ def test_plan_ingest_template_contains_out_of_order_assignment(
     content = (tmp_path / ".agents/skills/plan-ingest/SKILL.md").read_text()
     assert "Assign epic decomposition out of order" in content
     assert "topological + farthest-first" in content
+
+
+def test_start_tasks_template_contains_execution_loop(runner, tmp_path, monkeypatch):
+    """Generated start-tasks template should encode grab/cycle loop guidance."""
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(cli, ["skills", "install", "start-tasks", "--client=codex"])
+
+    assert result.exit_code == 0
+    content = (tmp_path / ".agents/skills/start-tasks/SKILL.md").read_text()
+    assert "tasks grab" in content
+    assert "tasks cycle" in content
+    assert "Repeat indefinitely" in content
+    assert "Avoid Repeated `--help`" in content
+
+
+def test_start_tasks_frontmatter_is_valid_yaml(runner, tmp_path, monkeypatch):
+    """Generated start-tasks SKILL.md frontmatter should parse as valid YAML."""
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(cli, ["skills", "install", "start-tasks", "--client=codex"])
+    assert result.exit_code == 0
+
+    content = (tmp_path / ".agents/skills/start-tasks/SKILL.md").read_text()
+    parts = content.split("---", 2)
+    assert len(parts) >= 3
+    frontmatter = yaml.safe_load(parts[1])
+
+    assert frontmatter["name"] == "start-tasks"
+    assert "tasks grab" in frontmatter["description"]
+
+
+def test_all_includes_start_tasks_skill(runner, tmp_path, monkeypatch):
+    """Installing 'all' should include the start-tasks skill."""
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(cli, ["skills", "install", "all", "--client=codex"])
+
+    assert result.exit_code == 0
+    assert (tmp_path / ".agents/skills/plan-task/SKILL.md").exists()
+    assert (tmp_path / ".agents/skills/plan-ingest/SKILL.md").exists()
+    assert (tmp_path / ".agents/skills/start-tasks/SKILL.md").exists()
 
 
 def test_commands_artifact_skips_codex_with_warning(runner, tmp_path, monkeypatch):
@@ -149,6 +192,21 @@ def test_conflict_requires_force(runner, tmp_path, monkeypatch):
     assert "Refusing to overwrite existing files" in second.output
 
 
+def test_partial_conflicts_still_install_missing_targets(runner, tmp_path, monkeypatch):
+    """When some targets already exist, installer should skip them and write missing files."""
+    monkeypatch.chdir(tmp_path)
+
+    first = runner.invoke(
+        cli, ["skills", "install", "plan-task", "plan-ingest", "--client=codex"]
+    )
+    assert first.exit_code == 0
+
+    second = runner.invoke(cli, ["skills", "install", "--client=codex"])
+    assert second.exit_code == 0
+    assert "Skipped" in second.output
+    assert (tmp_path / ".agents/skills/start-tasks/SKILL.md").exists()
+
+
 def test_dry_run_writes_nothing(runner, tmp_path, monkeypatch):
     """Dry-run should not write files."""
     monkeypatch.chdir(tmp_path)
@@ -217,3 +275,28 @@ def test_claude_skills_omit_codex_metadata_block(runner, tmp_path, monkeypatch):
     assert "name: plan-ingest" in skill
     assert "description:" in skill
     assert "metadata:" not in skill
+
+
+def test_start_tasks_opencode_command_uses_expected_frontmatter(
+    runner, tmp_path, monkeypatch
+):
+    """OpenCode start-tasks command should include loop instructions without argument-hint."""
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(
+        cli,
+        [
+            "skills",
+            "install",
+            "start-tasks",
+            "--client=opencode",
+            "--artifact=commands",
+        ],
+    )
+
+    assert result.exit_code == 0
+    command = (tmp_path / ".opencode/commands/start-tasks.md").read_text()
+    assert "description:" in command
+    assert "argument-hint:" not in command
+    assert "tasks grab" in command
+    assert "tasks cycle" in command

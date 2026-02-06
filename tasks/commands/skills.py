@@ -14,7 +14,7 @@ from rich.console import Console
 
 console = Console()
 
-VALID_SKILLS = ("plan-task", "plan-ingest")
+VALID_SKILLS = ("plan-task", "plan-ingest", "start-tasks")
 VALID_CLIENTS = ("codex", "claude", "opencode", "common")
 VALID_ARTIFACTS = ("skills", "commands", "both")
 CLIENT_CAPABILITIES = {
@@ -90,7 +90,7 @@ def install_skills(
     dry_run: bool,
     output_json: bool,
 ):
-    """Install built-in skills (`plan-task`, `plan-ingest`) for supported clients."""
+    """Install built-in skills (`plan-task`, `plan-ingest`, `start-tasks`) for supported clients."""
     try:
         selected_skills = _resolve_skills(skill_names)
         config = load_config()
@@ -110,12 +110,25 @@ def install_skills(
                 message = f"{message}\n" + "\n".join(f"- {w}" for w in warnings)
             raise click.ClickException(message)
 
-        conflicts = [op.path for op in operations if op.path.exists()]
-        if conflicts and not force and not dry_run:
-            preview = "\n".join(f"  - {path}" for path in sorted(conflicts, key=str))
-            raise click.ClickException(
-                "Refusing to overwrite existing files (use --force):\n" + preview
+        existing_paths = {str(op.path) for op in operations if op.path.exists()}
+        conflicting_ops = [op for op in operations if str(op.path) in existing_paths]
+        writable_ops = [op for op in operations if str(op.path) not in existing_paths]
+
+        skipped_existing: list[Path] = []
+        if conflicting_ops and not force and not dry_run:
+            if not writable_ops:
+                preview = "\n".join(
+                    f"  - {op.path}" for op in sorted(conflicting_ops, key=lambda op: str(op.path))
+                )
+                raise click.ClickException(
+                    "Refusing to overwrite existing files (use --force):\n" + preview
+                )
+
+            skipped_existing = [op.path for op in conflicting_ops]
+            warnings.append(
+                f"Skipped {len(skipped_existing)} existing file(s); use --force to overwrite."
             )
+            operations = writable_ops
 
         written = []
         if not dry_run:
@@ -133,6 +146,7 @@ def install_skills(
             "dry_run": dry_run,
             "force": force,
             "warnings": warnings,
+            "skipped_existing_count": len(skipped_existing),
             "operations": [
                 {
                     "client": op.client,
@@ -345,6 +359,12 @@ def _render_skill_files(
             "references/decomposition-rubric.md": _decomposition_rubric(),
         }
 
+    if skill_name == "start-tasks":
+        return {
+            "SKILL.md": _start_tasks_skill(client=client),
+            "references/tasks-cli-quick-reference.md": _tasks_cli_quick_reference(),
+        }
+
     raise ValueError(f"Unknown skill template: {skill_name}")
 
 
@@ -354,6 +374,8 @@ def _render_command_file(skill_name: str, *, client: str, max_subagents: int) ->
         return _plan_task_command(client=client)
     if skill_name == "plan-ingest":
         return _plan_ingest_command(client=client, max_subagents=max_subagents)
+    if skill_name == "start-tasks":
+        return _start_tasks_command(client=client)
     raise ValueError(f"Unknown command template: {skill_name}")
 
 
@@ -384,9 +406,11 @@ def _print_install_summary(result: dict) -> None:
 
 def _skill_frontmatter(name: str, description: str, short_description: str | None = None) -> str:
     """Build YAML frontmatter for skill files."""
-    lines = ["---", f"name: {name}", f"description: {description}"]
+    lines = ["---", f"name: {name}", f"description: {json.dumps(description)}"]
     if short_description:
-        lines.extend(["metadata:", f"  short-description: {short_description}"])
+        lines.extend(
+            ["metadata:", f"  short-description: {json.dumps(short_description)}"]
+        )
     lines.append("---")
     return "\n".join(lines)
 
@@ -542,6 +566,61 @@ def _plan_ingest_skill(*, client: str, max_subagents: int) -> str:
     return frontmatter + "\n\n" + body
 
 
+def _start_tasks_skill(*, client: str) -> str:
+    """Skill template: start-tasks."""
+    short_description = None
+    if client in {"codex", "opencode"}:
+        short_description = "Run ongoing tasks grab/cycle execution loop"
+
+    frontmatter = _skill_frontmatter(
+        name="start-tasks",
+        description=(
+            "Run the default `.tasks` execution loop: start with `tasks grab`, "
+            "complete work, and iterate with `tasks cycle`."
+        ),
+        short_description=short_description,
+    )
+    body = dedent(
+        """\
+        # Start Tasks
+
+        Use this skill to run execution continuously against an existing `.tasks` tree.
+
+        ## Primary Loop
+        1. Start by claiming work with `tasks grab`.
+        2. Implement the currently claimed work item(s).
+        3. When a task is complete, advance with `tasks cycle [TASK_ID]` (or just `tasks cycle` if context is set).
+        4. Repeat indefinitely until the user stops the session or no work remains.
+
+        ## Batch Semantics
+        - `tasks grab` may claim sibling batches by default.
+        - Complete each claimed task and call `tasks cycle` as each task reaches done-state.
+        - Do not reset to `tasks grab` between sibling completions unless context is lost.
+
+        ## CLI Efficiency (Avoid Repeated `--help`)
+        - Do not call `tasks --help` or `<command> --help` routinely.
+        - Use the command signatures below directly:
+          - `tasks grab [--single|--multi|--no-siblings] [--agent AGENT] [--scope SCOPE]`
+          - `tasks cycle [TASK_ID] [--agent AGENT]`
+          - `tasks show [TASK_OR_SCOPE]`
+          - `tasks blocked [TASK_ID] --reason "..." [--no-grab]`
+          - `tasks skip [TASK_ID] [--no-grab]`
+          - `tasks handoff [TASK_ID] --to AGENT [--notes "..."]`
+        - Only consult help output if an invocation actually fails due to argument mismatch.
+
+        ## Operational Guardrails
+        - Keep modifications bounded to the active claimed task context.
+        - Run targeted tests before each `tasks cycle` that marks work complete.
+        - If blocked, use `tasks blocked --reason "..."` promptly instead of stalling.
+        - Preserve dependency order; do not force-complete blocked tasks.
+
+        ## Reference
+        See `references/tasks-cli-quick-reference.md`.
+        """
+    )
+    return frontmatter + "\n\n" + body
+
+
 def _hierarchy_reference() -> str:
     """Reference for ID formats and hierarchy."""
     return dedent(
@@ -562,6 +641,34 @@ def _hierarchy_reference() -> str:
         - Prefer extending existing epics when topic and dependency flow match.
         - Create new epic when concern is distinct or epic would become too large.
         - Create new milestone only when timeline and dependency boundaries justify it.
+        """
+    )
+
+
+def _tasks_cli_quick_reference() -> str:
+    """Reference cheat sheet for the execution-loop command set."""
+    return dedent(
+        """\
+        # Tasks CLI Quick Reference
+
+        ## Default Execution Loop
+        1. `tasks grab`
+        2. implement claimed work
+        3. `tasks cycle [TASK_ID]`
+        4. repeat
+
+        ## Most-used Commands
+        - `tasks grab [--single|--multi|--no-siblings] [--agent AGENT] [--scope SCOPE]`
+        - `tasks cycle [TASK_ID] [--agent AGENT]`
+        - `tasks show [TASK_OR_SCOPE]`
+        - `tasks list --available`
+        - `tasks blocked [TASK_ID] --reason "..." [--no-grab]`
+        - `tasks skip [TASK_ID] [--no-grab]`
+        - `tasks handoff [TASK_ID] --to AGENT [--notes "..."]`
+
+        ## Guidance
+        - Prefer direct command invocation over routine `--help` calls.
+        - Use help only when a command invocation fails due to unknown options.
         """
     )
 
@@ -665,6 +772,45 @@ def _plan_ingest_command(*, client: str, max_subagents: int) -> str:
         5. Consolidate tasks, subtasks, and acceptance criteria.
         6. Ask clarifying questions where ambiguity blocks quality.
         7. Present final proposal and require confirmation before task creation.
+        """
+    )
+
+
+def _start_tasks_command(*, client: str) -> str:
+    """Command markdown: start-tasks."""
+    if client == "opencode":
+        return dedent(
+            """\
+            ---
+            description: Run the continuous tasks execution loop using `tasks grab` then `tasks cycle`.
+            ---
+
+            Start-tasks mode:
+
+            1. Begin with `tasks grab`.
+            2. Implement claimed work items.
+            3. Use `tasks cycle [TASK_ID]` when each task is done.
+            4. Continue repeating the cycle until the user stops or no work remains.
+
+            Efficiency rule: use known command signatures directly and avoid repetitive `--help` calls.
+            """
+        )
+
+    return dedent(
+        """\
+        ---
+        description: Run the continuous tasks execution loop using `tasks grab` then `tasks cycle`.
+        argument-hint: "[optional task id for cycle handoff context]"
+        ---
+
+        Start-tasks mode:
+
+        1. Begin with `tasks grab`.
+        2. Implement claimed work items.
+        3. Use `tasks cycle [TASK_ID]` when each task is done.
+        4. Continue repeating the cycle until the user stops or no work remains.
+
+        Efficiency rule: use known command signatures directly and avoid repetitive `--help` calls.
         """
     )
 

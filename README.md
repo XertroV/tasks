@@ -111,7 +111,7 @@ Workflow and analysis:
 - `report ...` - reports (`progress`, `velocity`, `estimate-accuracy`).
 - `data ...` - exports (`export`, `summary`).
 - `schema` - show type-level schema details for all `.tasks` file kinds (`--json`, `--compact`, `--only`, `--check-sync`).
-- `skills install ...` - install/export built-in `plan-task` and `plan-ingest` skills/commands for Codex, Claude, and OpenCode.
+- `skills install ...` - install/export built-in `plan-task`, `plan-ingest`, and `start-tasks` skills/commands for Codex, Claude, and OpenCode.
 
 ## SKILL INSTALLER
 Install built-in planning assets:
@@ -119,6 +119,9 @@ Install built-in planning assets:
 ```bash
 # local install for common clients (codex + claude + opencode), skills only
 tasks skills install plan-ingest
+
+# install the execution-loop skill
+tasks skills install start-tasks
 
 # install both skills and commands where supported
 tasks skills install all --artifact both
