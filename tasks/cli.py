@@ -39,11 +39,12 @@ AGENTS_SNIPPETS = {
     "short": """# AGENTS.md (Short)
 
 ## Task Workflow
-- Use `tasks grab --single` to claim work, then `tasks done` or `tasks cycle`.
+- Use `tasks grab` to claim work, then `tasks done` or `tasks cycle`.
 - Prefer critical-path work, then `critical > high > medium > low` priority.
 - If blocked, run `tasks blocked --reason "<why>" --no-grab` and handoff quickly.
 - Keep each change scoped to one task; update status as soon as state changes.
 - Before done: run targeted tests for changed code.
+- For more see `tasks --help`.
 """,
     "medium": """# AGENTS.md (Medium)
 
