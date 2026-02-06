@@ -88,7 +88,7 @@ tasks dash
 ## COMMANDS
 Core:
 
-- `list` - list tasks, available work, progress views (`--available`, `--progress`, `--json`, `--complexity`).
+- `list` - list tasks, available work, progress views (`--available`, `--progress`, `--json`, `--complexity`, `--priority`).
 - `show [PATH_IDS...]` - detailed phase/milestone/epic/task info.
 - `next` - next available task on critical path.
 - `claim TASK_ID` - claim a specific task.

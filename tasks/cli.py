@@ -167,6 +167,11 @@ def cli():
     type=click.Choice(["low", "medium", "high", "critical"]),
     help="Filter by complexity level",
 )
+@click.option(
+    "--priority",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+    help="Filter by priority level",
+)
 @click.option("--progress", "show_progress", is_flag=True, help="Show progress bars")
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 def list(
@@ -177,6 +182,7 @@ def list(
     critical,
     available,
     complexity,
+    priority,
     show_progress,
     output_json,
 ):
@@ -193,7 +199,7 @@ def list(
 
         # Handle --progress flag
         if show_progress:
-            _list_with_progress(tree, critical_path, complexity)
+            _list_with_progress(tree, critical_path, complexity, priority)
             return
 
         # Handle --milestone filter
@@ -202,41 +208,65 @@ def list(
             if not m:
                 console.print(f"[red]Error:[/] Milestone not found: {milestone}")
                 raise click.Abort()
-            _show_milestone_detail(tree, m, critical_path, complexity)
+            _show_milestone_detail(tree, m, critical_path, complexity, priority)
             return
 
         # Handle --available flag
         if available:
             all_available = calc.find_all_available()
-            _list_available(tree, all_available, critical_path, output_json, complexity)
+            _list_available(
+                tree, all_available, critical_path, output_json, complexity, priority
+            )
             return
 
         # Default list view
         if output_json:
-            _list_json(tree, critical_path, next_available, complexity)
+            _list_json(tree, critical_path, next_available, complexity, priority)
         else:
-            _list_text(tree, critical_path, complexity)
+            _list_text(tree, critical_path, complexity, priority)
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
 
 
-def _list_with_progress(tree, critical_path, complexity=None):
+def _task_matches_filters(task, complexity=None, priority=None):
+    """Return True when a task matches complexity/priority filters."""
+    if complexity and task.complexity.value != complexity:
+        return False
+    if priority and task.priority.value != priority:
+        return False
+    return True
+
+
+def _show_filter_banner(complexity=None, priority=None):
+    """Display active list filters."""
+    parts = []
+    if complexity:
+        parts.append(f"complexity: {complexity}")
+    if priority:
+        parts.append(f"priority: {priority}")
+    if parts:
+        console.print(f"[dim]Filtering by {'; '.join(parts)}[/]\n")
+
+
+def _list_with_progress(tree, critical_path, complexity=None, priority=None):
     """Show list with progress bars."""
     console.print("\n[bold cyan]Project Progress[/]\n")
-
-    if complexity:
-        console.print(f"[dim]Filtering by complexity: {complexity}[/]\n")
+    _show_filter_banner(complexity, priority)
 
     for phase in tree.phases:
-        # Filter tasks by complexity if specified
-        if complexity:
+        # Filter tasks when filters are specified
+        if complexity or priority:
             all_tasks = []
             for m in phase.milestones:
                 for e in m.epics:
                     all_tasks.extend(
-                        [t for t in e.tasks if t.complexity.value == complexity]
+                        [
+                            t
+                            for t in e.tasks
+                            if _task_matches_filters(t, complexity, priority)
+                        ]
                     )
 
             if not all_tasks:
@@ -273,12 +303,16 @@ def _list_with_progress(tree, critical_path, complexity=None):
         # Show milestones if phase is in progress
         if 0 < pct < 100:
             for m in phase.milestones:
-                # Filter milestone tasks by complexity if specified
-                if complexity:
+                # Filter milestone tasks when filters are specified
+                if complexity or priority:
                     milestone_tasks = []
                     for e in m.epics:
                         milestone_tasks.extend(
-                            [t for t in e.tasks if t.complexity.value == complexity]
+                            [
+                                t
+                                for t in e.tasks
+                                if _task_matches_filters(t, complexity, priority)
+                            ]
                         )
 
                     if not milestone_tasks:
@@ -311,21 +345,24 @@ def _list_with_progress(tree, critical_path, complexity=None):
         console.print()
 
 
-def _show_milestone_detail(tree, m, critical_path, complexity=None):
+def _show_milestone_detail(
+    tree, m, critical_path, complexity=None, priority=None
+):
     """Show milestone detail view."""
     console.print(f"\n[bold cyan]Milestone:[/] {m.id} - {m.name}\n")
     console.print(f"[bold]Status:[/] {m.status.value}")
     console.print(f"[bold]Estimate:[/] {m.estimate_hours} hours")
     console.print(f"[bold]Complexity:[/] {m.complexity.value}")
 
-    if complexity:
-        console.print(f"[dim]Filtering by complexity: {complexity}[/]")
+    _show_filter_banner(complexity, priority)
 
-    # Calculate stats with optional complexity filter
-    if complexity:
+    # Calculate stats with optional filters
+    if complexity or priority:
         all_tasks = []
         for e in m.epics:
-            all_tasks.extend([t for t in e.tasks if t.complexity.value == complexity])
+            all_tasks.extend(
+                [t for t in e.tasks if _task_matches_filters(t, complexity, priority)]
+            )
 
         done = sum(1 for t in all_tasks if t.status.value == "done")
         total = len(all_tasks)
@@ -346,9 +383,11 @@ def _show_milestone_detail(tree, m, critical_path, complexity=None):
 
     console.print(f"\n[bold]Epics:[/]")
     for e in m.epics:
-        # Filter tasks by complexity if specified
-        if complexity:
-            filtered_tasks = [t for t in e.tasks if t.complexity.value == complexity]
+        # Filter tasks when filters are specified
+        if complexity or priority:
+            filtered_tasks = [
+                t for t in e.tasks if _task_matches_filters(t, complexity, priority)
+            ]
             if not filtered_tasks:
                 continue
             e_done = sum(1 for t in filtered_tasks if t.status.value == "done")
@@ -378,29 +417,34 @@ def _show_milestone_detail(tree, m, critical_path, complexity=None):
     console.print()
 
 
-def _list_available(tree, all_available, critical_path, output_json, complexity=None):
-    """List available tasks."""
-    # Filter by complexity if specified
-    if complexity:
+def _list_available(
+    tree, all_available, critical_path, output_json, complexity=None, priority=None
+):
+    """List available tasks with optional complexity/priority filtering."""
+    if complexity or priority:
         filtered_available = []
         for task_id in all_available:
             t = tree.find_task(task_id)
-            if t and t.complexity.value == complexity:
+            if t and _task_matches_filters(t, complexity, priority):
                 filtered_available.append(task_id)
         all_available = filtered_available
 
     if not all_available:
-        if complexity:
+        if complexity or priority:
+            filters = []
+            if complexity:
+                filters.append(f"complexity={complexity}")
+            if priority:
+                filters.append(f"priority={priority}")
             console.print(
-                f"[yellow]No available tasks found with complexity: {complexity}[/]"
+                f"[yellow]No available tasks found with filters: {', '.join(filters)}[/]"
             )
         else:
             console.print("[yellow]No available tasks found.[/]")
         return
 
     console.print(f"\n[bold green]Available Tasks ({len(all_available)}):[/]\n")
-    if complexity:
-        console.print(f"[dim]Filtering by complexity: {complexity}[/]\n")
+    _show_filter_banner(complexity, priority)
 
     if output_json:
         output = []
@@ -440,7 +484,7 @@ def _list_available(tree, all_available, critical_path, output_json, complexity=
         console.print(f"\n[dim]★ = On critical path[/]\n")
 
 
-def _list_json(tree, critical_path, next_available, complexity=None):
+def _list_json(tree, critical_path, next_available, complexity=None, priority=None):
     """Output list as JSON."""
     output = {
         "critical_path": critical_path,
@@ -457,9 +501,8 @@ def _list_json(tree, critical_path, next_available, complexity=None):
         ],
     }
 
-    # Add filter metadata if complexity is specified
-    if complexity:
-        # Recalculate stats for filtered tasks
+    # Add filter metadata and filtered stats when filters are specified
+    if complexity or priority:
         filtered_stats = {
             "total_tasks": 0,
             "done": 0,
@@ -472,7 +515,7 @@ def _list_json(tree, critical_path, next_available, complexity=None):
             for m in p.milestones:
                 for e in m.epics:
                     for t in e.tasks:
-                        if t.complexity.value == complexity:
+                        if _task_matches_filters(t, complexity, priority):
                             filtered_stats["total_tasks"] += 1
                             if t.status.value == "done":
                                 filtered_stats["done"] += 1
@@ -483,30 +526,37 @@ def _list_json(tree, critical_path, next_available, complexity=None):
                             elif t.status.value == "pending":
                                 filtered_stats["pending"] += 1
 
-        output["filter"] = {"complexity": complexity}
+        output["filter"] = {}
+        if complexity:
+            output["filter"]["complexity"] = complexity
+        if priority:
+            output["filter"]["priority"] = priority
         output["filtered_stats"] = filtered_stats
 
     click.echo(json.dumps(output, indent=2))
 
 
-def _list_text(tree, critical_path, complexity=None):
+def _list_text(tree, critical_path, complexity=None, priority=None):
     """Output list as text."""
     console.print(
         f"\n[bold cyan]Critical Path:[/] {' → '.join(critical_path[:10])}"
         f"{'...' if len(critical_path) > 10 else ''}\n"
     )
 
-    if complexity:
-        console.print(f"[dim]Filtering by complexity: {complexity}[/]\n")
+    _show_filter_banner(complexity, priority)
 
     for p in tree.phases:
-        # Calculate stats with optional complexity filter
-        if complexity:
+        # Calculate stats with optional filters
+        if complexity or priority:
             all_tasks = []
             for m in p.milestones:
                 for e in m.epics:
                     all_tasks.extend(
-                        [t for t in e.tasks if t.complexity.value == complexity]
+                        [
+                            t
+                            for t in e.tasks
+                            if _task_matches_filters(t, complexity, priority)
+                        ]
                     )
 
             if not all_tasks:
@@ -530,12 +580,16 @@ def _list_text(tree, critical_path, complexity=None):
         # Show up to 3 milestones
         milestones_to_show = []
         for m in p.milestones:
-            if complexity:
-                # Check if milestone has any tasks matching complexity
+            if complexity or priority:
+                # Check if milestone has any tasks matching active filters
                 milestone_tasks = []
                 for e in m.epics:
                     milestone_tasks.extend(
-                        [t for t in e.tasks if t.complexity.value == complexity]
+                        [
+                            t
+                            for t in e.tasks
+                            if _task_matches_filters(t, complexity, priority)
+                        ]
                     )
 
                 if not milestone_tasks:

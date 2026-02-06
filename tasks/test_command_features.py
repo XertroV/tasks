@@ -313,3 +313,36 @@ def test_report_estimate_accuracy_json(runner, tmp_feature_tasks_dir):
     assert payload["tasks_analyzed"] >= 1
     assert payload["total_estimated_hours"] > 0
     assert payload["total_actual_hours"] > 0
+
+
+def test_list_json_priority_filter_stats(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["list", "--json", "--priority", "high"])
+    assert result.exit_code == 0
+
+    payload = json.loads(result.output)
+    assert payload["filter"]["priority"] == "high"
+    assert payload["filtered_stats"]["total_tasks"] == 2
+    assert payload["filtered_stats"]["in_progress"] == 1
+    assert payload["filtered_stats"]["pending"] == 1
+
+
+def test_list_json_priority_and_complexity_filters(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(
+        cli, ["list", "--json", "--priority", "high", "--complexity", "medium"]
+    )
+    assert result.exit_code == 0
+
+    payload = json.loads(result.output)
+    assert payload["filter"]["priority"] == "high"
+    assert payload["filter"]["complexity"] == "medium"
+    assert payload["filtered_stats"]["total_tasks"] == 2
+
+
+def test_list_available_priority_filter(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["list", "--available", "--priority", "high"])
+    assert result.exit_code == 0
+
+    # Only the pending high-priority task is available in this fixture.
+    assert "P1.M1.E2.T001" in result.output
+    assert "P1.M1.E2.T002" not in result.output
+    assert "P1.M1.E2.T003" not in result.output
