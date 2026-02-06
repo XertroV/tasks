@@ -28,6 +28,8 @@ from ..helpers import (
 
 console = Console()
 
+DEFAULT_SIBLING_ADDITIONAL_COUNT = 4
+
 
 def load_config():
     """Load configuration."""
@@ -300,7 +302,7 @@ def grab(agent, scope, no_content, multi, single, siblings, count):
 
     Combines 'next' + 'claim' into a single command.
 
-    By default, claims the primary task plus up to 3 sibling tasks from the
+    By default, claims the primary task plus up to 4 sibling tasks from the
     same epic for sequential implementation. Use --single to claim only 1 task,
     or --multi for independent tasks from different epics.
     """
@@ -399,7 +401,9 @@ def grab(agent, scope, no_content, multi, single, siblings, count):
                 set_current_task(primary_task.id, agent)
         elif siblings:
             # Sibling mode (DEFAULT): find tasks from same epic
-            sibling_task_ids = calc.find_sibling_tasks(primary_task, count=3)
+            sibling_task_ids = calc.find_sibling_tasks(
+                primary_task, count=DEFAULT_SIBLING_ADDITIONAL_COUNT
+            )
 
             if sibling_task_ids:
                 for task_id in sibling_task_ids:

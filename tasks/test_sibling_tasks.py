@@ -924,8 +924,8 @@ class TestSiblingBatchingIntegration:
         # Should fall back to single mode
         assert ctx.get("mode") == "single"
 
-    def test_max_4_claimed(self, runner, tmp_sibling_tasks_dir, monkeypatch):
-        """Epic with 5+ pending tasks: verify max 4 claimed (primary + 3)."""
+    def test_max_5_claimed(self, runner, tmp_sibling_tasks_dir, monkeypatch):
+        """Epic with 5+ pending tasks: verify max 5 claimed (primary + 4)."""
         monkeypatch.chdir(tmp_sibling_tasks_dir)
 
         result = runner.invoke(cli, ["grab", "--agent=test-agent"])
@@ -933,8 +933,8 @@ class TestSiblingBatchingIntegration:
 
         ctx = load_context()
         siblings = ctx.get("sibling_tasks", [])
-        # Primary + 3 siblings max
-        assert len(siblings) <= 3
+        # Primary + 4 siblings max (all remaining tasks in this fixture)
+        assert len(siblings) == 4
 
     def test_mode_switching(self, runner, tmp_multi_epic_dir, monkeypatch):
         """Test switching between sibling and multi mode."""

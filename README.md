@@ -110,6 +110,7 @@ Workflow and analysis:
 - `session ...` - session tracking (`start`, `heartbeat`, `list`, `end`, `clean`).
 - `report ...` - reports (`progress`, `velocity`, `estimate-accuracy`).
 - `data ...` - exports (`export`, `summary`).
+- `schema` - show type-level schema details for all `.tasks` file kinds (`--json`, `--compact`, `--only`, `--check-sync`).
 - `skills install ...` - install/export built-in `plan-task` and `plan-ingest` skills/commands for Codex, Claude, and OpenCode.
 
 ## SKILL INSTALLER

@@ -1418,6 +1418,7 @@ def _register_all_commands():
         timeline,
         data,
         skills,
+        schema,
     )
 
     workflow.register_commands(cli)
@@ -1428,6 +1429,7 @@ def _register_all_commands():
     timeline.register_commands(cli)
     data.register_commands(cli)
     skills.register_commands(cli)
+    schema.register_commands(cli)
 
 
 _register_all_commands()
