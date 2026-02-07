@@ -1,0 +1,90 @@
+import { afterEach, describe, expect, test } from "bun:test";
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+let oldCwd = process.cwd();
+let root = "";
+
+afterEach(() => {
+  if (root) {
+    process.chdir(oldCwd);
+    rmSync(root, { recursive: true, force: true });
+    root = "";
+  }
+});
+
+function setupFixture(): string {
+  const r = mkdtempSync(join(tmpdir(), "tasks-ts-native-"));
+  const t = join(r, ".tasks");
+  mkdirSync(join(t, "01-phase", "01-ms", "01-epic"), { recursive: true });
+  writeFileSync(
+    join(t, "index.yaml"),
+    `project: Native\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\ncritical_path: []\n`,
+  );
+  writeFileSync(join(t, "01-phase", "index.yaml"), `milestones:\n  - id: M1\n    name: M\n    path: 01-ms\n`);
+  writeFileSync(join(t, "01-phase", "01-ms", "index.yaml"), `epics:\n  - id: E1\n    name: E\n    path: 01-epic\n`);
+  writeFileSync(
+    join(t, "01-phase", "01-ms", "01-epic", "index.yaml"),
+    `tasks:\n  - id: T001\n    file: T001-a.todo\n  - id: T002\n    file: T002-b.todo\n`,
+  );
+  writeFileSync(
+    join(t, "01-phase", "01-ms", "01-epic", "T001-a.todo"),
+    `---\nid: P1.M1.E1.T001\ntitle: A\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# A\n`,
+  );
+  writeFileSync(
+    join(t, "01-phase", "01-ms", "01-epic", "T002-b.todo"),
+    `---\nid: P1.M1.E1.T002\ntitle: B\nstatus: pending\nestimate_hours: 2\ncomplexity: medium\npriority: high\ndepends_on:\n  - P1.M1.E1.T001\ntags: []\n---\n# B\n`,
+  );
+  return r;
+}
+
+function run(args: string[], cwd: string) {
+  const cliPath = join(fileURLToPath(new URL("..", import.meta.url)), "src", "cli.ts");
+  return Bun.spawnSync(["bun", "run", cliPath, ...args], {
+    cwd,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+}
+
+describe("native cli", () => {
+  test("list/next/show json and text", () => {
+    root = setupFixture();
+    const list = run(["list", "--json"], root);
+    expect(list.exitCode).toBe(0);
+    const payload = JSON.parse(list.stdout.toString());
+    expect(Array.isArray(payload.tasks)).toBeTrue();
+
+    const next = run(["next", "--json"], root);
+    expect(next.exitCode).toBe(0);
+    expect(JSON.parse(next.stdout.toString()).id).toBe("P1.M1.E1.T001");
+
+    const show = run(["show", "P1.M1.E1.T001"], root);
+    expect(show.exitCode).toBe(0);
+    expect(show.stdout.toString()).toContain("P1.M1.E1.T001");
+  });
+
+  test("claim done update sync mutate files", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-z"], root);
+    expect(p.exitCode).toBe(0);
+
+    const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    expect(readFileSync(todoPath, "utf8")).toContain("status: in_progress");
+
+    p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(readFileSync(todoPath, "utf8")).toContain("status: done");
+
+    p = run(["update", "P1.M1.E1.T002", "blocked", "--reason", "wait"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["sync"], root);
+    expect(p.exitCode).toBe(0);
+    const rootIndex = readFileSync(join(root, ".tasks", "index.yaml"), "utf8");
+    expect(rootIndex).toContain("critical_path:");
+    expect(rootIndex).toContain("next_available:");
+  });
+});
