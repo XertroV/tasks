@@ -97,6 +97,7 @@ Core:
 - `work [TASK_ID|--clear]` - set/show/clear current working context.
 - `update TASK_ID STATUS` - manual status transition (`--reason` supported/required for blocked/rejected/cancelled).
 - `sync` - recalc stats and critical path.
+- `check` - run consistency checks (missing files, broken dependencies, cycles, ID/path integrity).
 - `unclaim-stale` - release stale `in_progress` claims.
 - `add`, `add-epic`, `add-milestone`, `add-phase` - create new tasks/epics/milestones/phases.
 

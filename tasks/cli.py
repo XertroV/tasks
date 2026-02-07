@@ -379,9 +379,7 @@ def _list_with_progress(tree, critical_path, complexity=None, priority=None):
         console.print()
 
 
-def _show_milestone_detail(
-    tree, m, critical_path, complexity=None, priority=None
-):
+def _show_milestone_detail(tree, m, critical_path, complexity=None, priority=None):
     """Show milestone detail view."""
     console.print(f"\n[bold cyan]Milestone:[/] {m.id} - {m.name}\n")
     console.print(f"[bold]Status:[/] {m.status.value}")
@@ -1465,6 +1463,7 @@ def _register_all_commands():
         data,
         skills,
         schema,
+        check,
     )
 
     workflow.register_commands(cli)
@@ -1476,6 +1475,7 @@ def _register_all_commands():
     data.register_commands(cli)
     skills.register_commands(cli)
     schema.register_commands(cli)
+    check.register_commands(cli)
 
 
 _register_all_commands()
