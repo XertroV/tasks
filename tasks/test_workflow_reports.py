@@ -257,6 +257,7 @@ def test_skip_auto_grabs_next_task(runner, tmp_workflow_reports_dir):
     assert result.exit_code == 0
     assert "Skipped:" in result.output
     assert "Grabbed:" in result.output
+    assert "skip --no-grab" in result.output
 
     old_task = _load_task("P1.M1.E1.T002")
     assert old_task.status == Status.PENDING

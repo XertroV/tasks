@@ -240,6 +240,49 @@ class TestClaimCommand:
         assert "Estimate:" in result.output
         assert "Agent:" in result.output
 
+    def test_claim_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
+        """claim should warn when a task entry exists but its file is missing."""
+        task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        task_file.unlink()
+
+        result = runner.invoke(cli, ["claim", "P1.M1.E1.T001", "--agent=test-agent"])
+
+        assert result.exit_code != 0
+        assert "Task file missing for P1.M1.E1.T001" in result.output
+        assert "Cannot claim P1.M1.E1.T001 because the task file is missing." in result.output
+
+
+class TestListCommand:
+    """Tests for the list command."""
+
+    def test_list_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
+        """list should warn when indexed task files are missing."""
+        task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        task_file.unlink()
+
+        result = runner.invoke(cli, ["list"])
+
+        assert result.exit_code == 0
+        assert "task file(s) referenced in index are missing" in result.output
+        assert "P1.M1.E1.T001" in result.output
+
+
+class TestGrabCommand:
+    """Tests for the grab command."""
+
+    def test_grab_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
+        """grab should warn and stop when selected task file is missing."""
+        task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        task_file.unlink()
+
+        result = runner.invoke(
+            cli, ["grab", "--single", "--agent=test-agent", "--no-content"]
+        )
+
+        assert result.exit_code == 0
+        assert "Task file missing for P1.M1.E1.T001" in result.output
+        assert "Cannot claim P1.M1.E1.T001 because the task file is missing." in result.output
+
 
 class TestDoneCommand:
     """Tests for the done command."""

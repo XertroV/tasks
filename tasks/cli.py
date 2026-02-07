@@ -24,6 +24,9 @@ from .helpers import (
     get_all_current_tasks,
     set_multi_task_context,
     get_all_tasks,
+    task_file_path,
+    is_task_file_missing,
+    find_missing_task_files,
     find_newly_unblocked,
     make_progress_bar,
     print_completion_notices,
@@ -144,6 +147,34 @@ def get_default_agent():
     return config.get("agent", {}).get("default_agent", "cli-user")
 
 
+def _warn_missing_task_file(task) -> bool:
+    """Warn when a task references a missing .todo file."""
+    if not task or not is_task_file_missing(task):
+        return False
+
+    console.print(
+        f"[yellow]Warning:[/] Task file missing for {task.id}: .tasks/{task.file}"
+    )
+    return True
+
+
+def _warn_missing_task_files(tree, limit: int = 5) -> int:
+    """Warn when list output includes tasks with missing files."""
+    missing_tasks = find_missing_task_files(tree)
+    if not missing_tasks:
+        return 0
+
+    console.print(
+        f"[yellow]Warning:[/] {len(missing_tasks)} task file(s) referenced in index are missing."
+    )
+    for task in missing_tasks[:limit]:
+        console.print(f"  - {task.id}: .tasks/{task.file}")
+    if len(missing_tasks) > limit:
+        console.print(f"  ... and {len(missing_tasks) - limit} more")
+    console.print()
+    return len(missing_tasks)
+
+
 @click.group()
 @click.version_option(version="0.1.0")
 def cli():
@@ -197,6 +228,8 @@ def list(
         critical_path, next_available = calc.calculate()
         tree.critical_path = critical_path
         tree.next_available = next_available
+        if not output_json:
+            _warn_missing_task_files(tree)
 
         # Handle --progress flag
         if show_progress:
@@ -780,7 +813,7 @@ def _show_task(tree, task_id):
 
     console.print(f"\n[bold]File:[/] .tasks/{task.file}\n")
 
-    task_file = Path(".tasks") / task.file
+    task_file = task_file_path(task)
     if task_file.exists():
         with open(task_file) as f:
             content = f.read()
@@ -788,6 +821,8 @@ def _show_task(tree, task_id):
             req_section = content.split("## Requirements")[1].split("##")[0]
             console.print("[bold]Requirements:[/]")
             console.print(req_section.strip())
+    else:
+        _warn_missing_task_file(task)
 
 
 # ============================================================================
@@ -819,6 +854,7 @@ def next(output_json):
                 "id": task.id,
                 "title": task.title,
                 "file": task.file,
+                "file_exists": not is_task_file_missing(task),
                 "estimate_hours": task.estimate_hours,
                 "complexity": task.complexity.value,
             }
@@ -829,6 +865,7 @@ def next(output_json):
             console.print(f"  [bold]Title:[/] {task.title}")
             console.print(f"  [bold]Estimate:[/] {task.estimate_hours} hours")
             console.print(f"  [bold]File:[/] .tasks/{task.file}\n")
+            _warn_missing_task_file(task)
             console.print(
                 f"[dim]To claim:[/] './tasks.py grab' or './tasks.py claim {task.id}'\n"
             )
@@ -882,6 +919,12 @@ def claim(task_id, agent, force, no_content):
             console.print(f"[red]Error:[/] Task not found: {task_id}")
             raise click.Abort()
 
+        if _warn_missing_task_file(task):
+            console.print(
+                f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."
+            )
+            raise click.Abort()
+
         claim_task(task, agent, force)
         loader.save_task(task)
 
@@ -893,13 +936,15 @@ def claim(task_id, agent, force, no_content):
         console.print(f"[bold]File:[/] .tasks/{task.file}\n")
 
         if not no_content:
-            task_file = Path(".tasks") / task.file
+            task_file = task_file_path(task)
             if task_file.exists():
                 with open(task_file) as f:
                     content = f.read()
                 console.print("─" * 50)
                 console.print(content)
                 console.print("─" * 50 + "\n")
+            else:
+                _warn_missing_task_file(task)
 
         console.print(f"[dim]Mark done:[/] './tasks.py done {task.id}'\n")
 

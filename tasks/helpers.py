@@ -296,6 +296,21 @@ def get_all_tasks(tree) -> List[Task]:
     return tasks
 
 
+def task_file_path(task: Task, tasks_root: Path = Path(".tasks")) -> Path:
+    """Resolve a task's .todo file path."""
+    return tasks_root / task.file
+
+
+def is_task_file_missing(task: Task, tasks_root: Path = Path(".tasks")) -> bool:
+    """Return True when a task's .todo file is missing."""
+    return not task_file_path(task, tasks_root).exists()
+
+
+def find_missing_task_files(tree, tasks_root: Path = Path(".tasks")) -> List[Task]:
+    """Return tasks referenced in the index whose .todo files are missing."""
+    return [task for task in get_all_tasks(tree) if is_task_file_missing(task, tasks_root)]
+
+
 def find_tasks_blocked_by(tree, task_id: str) -> List[Task]:
     """Find all tasks that are directly blocked by a given task."""
     blocked = []

@@ -24,11 +24,24 @@ from ..helpers import (
     make_progress_bar,
     find_newly_unblocked,
     print_completion_notices,
+    task_file_path,
+    is_task_file_missing,
 )
 
 console = Console()
 
 DEFAULT_SIBLING_ADDITIONAL_COUNT = 5
+
+
+def _warn_missing_task_file(task) -> bool:
+    """Warn when a task references a missing .todo file."""
+    if not task or not is_task_file_missing(task):
+        return False
+
+    console.print(
+        f"[yellow]Warning:[/] Task file missing for {task.id}: .tasks/{task.file}"
+    )
+    return True
 
 
 def load_config():
@@ -106,7 +119,7 @@ def _display_task_details(task, show_file_contents=True):
     console.print(f"\n[bold]File:[/] .tasks/{task.file}\n")
 
     if show_file_contents:
-        task_file = Path(".tasks") / task.file
+        task_file = task_file_path(task)
         if task_file.exists():
             with open(task_file) as f:
                 content = f.read()
@@ -116,6 +129,8 @@ def _display_task_details(task, show_file_contents=True):
             console.print("─" * 50)
             console.print(content)
             console.print("─" * 50 + "\n")
+        else:
+            _warn_missing_task_file(task)
 
 
 def _append_delegation_instructions(task, agent: str, primary_task) -> None:
@@ -372,6 +387,11 @@ def _claim_task_batch(
                 task = tree.find_task(task_id)
                 if not task:
                     continue
+                if _warn_missing_task_file(task):
+                    console.print(
+                        f"[yellow]Skipping additional task:[/] {task.id} (missing file)\n"
+                    )
+                    continue
                 claim_task(task, agent)
                 loader.save_task(task)
                 additional_tasks.append(task)
@@ -397,6 +417,11 @@ def _claim_task_batch(
             for task_id in sibling_task_ids:
                 task = tree.find_task(task_id)
                 if not task:
+                    continue
+                if _warn_missing_task_file(task):
+                    console.print(
+                        f"[yellow]Skipping sibling task:[/] {task.id} (missing file)\n"
+                    )
                     continue
                 claim_task(task, agent)
                 loader.save_task(task)
@@ -437,6 +462,12 @@ def _claim_and_display_batch(
     primary_task = tree.find_task(next_task_id)
     if not primary_task:
         console.print(f"[red]Task not found: {next_task_id}[/]\n")
+        return None
+
+    if _warn_missing_task_file(primary_task):
+        console.print(
+            f"[red]Error:[/] Cannot claim {primary_task.id} because the task file is missing.\n"
+        )
         return None
 
     claim_task(primary_task, agent, force=force_claim)
@@ -504,7 +535,7 @@ def grab(agent, scope, no_content, multi, single, siblings, count):
         if not next_available:
             return
 
-        _claim_and_display_batch(
+        claimed_task = _claim_and_display_batch(
             tree,
             loader,
             calc,
@@ -516,6 +547,8 @@ def grab(agent, scope, no_content, multi, single, siblings, count):
             siblings=siblings,
             count=count,
         )
+        if not claimed_task:
+            return
 
     except StatusError as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -858,6 +891,12 @@ def blocked(task_id, reason, agent, no_grab):
         if not next_task:
             return
 
+        if _warn_missing_task_file(next_task):
+            console.print(
+                f"[yellow]Skipping auto-grab:[/] {next_task.id} has no task file."
+            )
+            return
+
         claim_task(next_task, agent, force=False)
         loader.save_task(next_task)
         set_current_task(next_task.id, agent)
@@ -945,6 +984,12 @@ def skip(task_id, agent, no_grab):
         if not next_task:
             return
 
+        if _warn_missing_task_file(next_task):
+            console.print(
+                f"[yellow]Skipping auto-grab:[/] {next_task.id} has no task file."
+            )
+            return
+
         claim_task(next_task, agent, force=False)
         loader.save_task(next_task)
         set_current_task(next_task.id, agent)
@@ -952,6 +997,9 @@ def skip(task_id, agent, no_grab):
 
         console.print(f"\n[green]✓ Grabbed:[/] {next_task.id} - {next_task.title}")
         console.print(f"  File: .tasks/{next_task.file}\n")
+        console.print(
+            "[dim]Tip:[/] Use './tasks.py skip --no-grab' to skip without auto-grabbing another task.\n"
+        )
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
