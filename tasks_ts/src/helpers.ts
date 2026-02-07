@@ -34,6 +34,7 @@ export function isTaskFileMissing(task: Task, tasksDir = ".tasks"): boolean {
 }
 
 const CONTEXT_FILE = ".tasks/.context.yaml";
+const SESSIONS_FILE = ".tasks/.sessions.yaml";
 
 export async function loadContext(): Promise<Record<string, unknown>> {
   if (!existsSync(CONTEXT_FILE)) return {};
@@ -67,6 +68,7 @@ export async function setCurrentTask(taskId: string, agent = "cli-user"): Promis
 export function loadConfig(tasksDir = ".tasks"): Record<string, unknown> {
   const defaults: Record<string, unknown> = {
     agent: { default_agent: "cli-user", auto_claim_after_done: false },
+    session: { heartbeat_timeout_minutes: 15 },
     stale_claim: { warn_after_minutes: 60, error_after_minutes: 120 },
     complexity_multipliers: { low: 1, medium: 1.25, high: 1.5, critical: 2 },
   };
@@ -77,10 +79,53 @@ export function loadConfig(tasksDir = ".tasks"): Record<string, unknown> {
     ...defaults,
     ...loaded,
     agent: { ...(defaults.agent as object), ...((loaded.agent as object) ?? {}) },
+    session: { ...(defaults.session as object), ...((loaded.session as object) ?? {}) },
     stale_claim: { ...(defaults.stale_claim as object), ...((loaded.stale_claim as object) ?? {}) },
     complexity_multipliers: {
       ...(defaults.complexity_multipliers as object),
       ...((loaded.complexity_multipliers as object) ?? {}),
     },
   };
+}
+
+export async function loadSessions(): Promise<Record<string, unknown>> {
+  if (!existsSync(SESSIONS_FILE)) return {};
+  return (parse(await readFile(SESSIONS_FILE, "utf8")) as Record<string, unknown>) ?? {};
+}
+
+export async function saveSessions(sessions: Record<string, unknown>): Promise<void> {
+  await writeFile(SESSIONS_FILE, stringify(sessions));
+}
+
+export async function startSession(agentId: string, taskId?: string): Promise<Record<string, unknown>> {
+  const sessions = await loadSessions();
+  const now = new Date().toISOString();
+  const current = (sessions[agentId] as Record<string, unknown> | undefined) ?? {};
+  sessions[agentId] = {
+    started_at: (current.started_at as string | undefined) ?? now,
+    last_heartbeat: now,
+    current_task: taskId ?? (current.current_task as string | undefined) ?? null,
+    progress: current.progress ?? null,
+  };
+  await saveSessions(sessions);
+  return sessions[agentId] as Record<string, unknown>;
+}
+
+export async function updateSessionHeartbeat(agentId: string, progress?: string): Promise<boolean> {
+  const sessions = await loadSessions();
+  const existing = sessions[agentId] as Record<string, unknown> | undefined;
+  if (!existing) return false;
+  existing.last_heartbeat = new Date().toISOString();
+  if (progress) existing.progress = progress;
+  sessions[agentId] = existing;
+  await saveSessions(sessions);
+  return true;
+}
+
+export async function endSession(agentId: string): Promise<boolean> {
+  const sessions = await loadSessions();
+  if (!(agentId in sessions)) return false;
+  delete sessions[agentId];
+  await saveSessions(sessions);
+  return true;
 }

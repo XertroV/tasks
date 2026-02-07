@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { clearContext, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, setCurrentTask } from "./helpers";
+import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
 import { Status, TaskPath } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
@@ -33,7 +33,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim done update work unclaim blocked`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -165,6 +165,27 @@ async function cmdClaim(args: string[]): Promise<void> {
   }
 }
 
+async function cmdGrab(args: string[]): Promise<void> {
+  const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { nextAvailable } = calc.calculate();
+  if (!nextAvailable) {
+    console.log("No available tasks found.");
+    return;
+  }
+  const task = findTask(tree, nextAvailable);
+  if (!task) textError(`Task not found: ${nextAvailable}`);
+  if (isTaskFileMissing(task)) textError(`Cannot claim ${task.id} because the task file is missing.`);
+
+  claimTask(task, agent, false);
+  await loader.saveTask(task);
+  await setCurrentTask(task.id, agent);
+  console.log(`Grabbed: ${task.id} - ${task.title}`);
+}
+
 async function cmdDone(args: string[]): Promise<void> {
   let taskId = args.find((a) => !a.startsWith("-"));
   if (!taskId) taskId = await getCurrentTaskId();
@@ -189,6 +210,53 @@ async function cmdDone(args: string[]): Promise<void> {
     }
     throw e;
   }
+}
+
+async function cmdCycle(args: string[]): Promise<void> {
+  let taskId = args.find((a) => !a.startsWith("-"));
+  if (!taskId) taskId = await getCurrentTaskId();
+  if (!taskId) textError("No task ID provided and no current working task set.");
+  const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const task = findTask(tree, taskId);
+  if (!task) textError(`Task not found: ${taskId}`);
+
+  try {
+    if (task.startedAt) {
+      task.durationMinutes = (utcNow().getTime() - task.startedAt.getTime()) / 60000;
+    }
+    completeTask(task);
+    await loader.saveTask(task);
+    console.log(`Completed: ${task.id}`);
+  } catch (e) {
+    if (e instanceof StatusError) {
+      jsonOut(e.toJSON());
+      process.exit(1);
+    }
+    throw e;
+  }
+
+  const refreshed = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(refreshed, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { nextAvailable } = calc.calculate();
+  if (!nextAvailable) {
+    await clearContext();
+    console.log("No more available tasks.");
+    return;
+  }
+  const nextTask = findTask(refreshed, nextAvailable);
+  if (!nextTask) {
+    await clearContext();
+    console.log("No more available tasks.");
+    return;
+  }
+  claimTask(nextTask, agent, false);
+  await loader.saveTask(nextTask);
+  await setCurrentTask(nextTask.id, agent);
+  console.log(`Grabbed: ${nextTask.id} - ${nextTask.title}`);
 }
 
 async function cmdUpdate(args: string[]): Promise<void> {
@@ -315,6 +383,98 @@ async function cmdSync(): Promise<void> {
   console.log("Synced");
 }
 
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
+async function cmdSession(args: string[]): Promise<void> {
+  const sub = args[0];
+  const rest = args.slice(1);
+  const timeout = Number(((loadConfig().session as Record<string, unknown>)?.heartbeat_timeout_minutes as number | undefined) ?? 15);
+
+  if (!sub || sub === "--help") {
+    console.log("Usage: tasks session <start|heartbeat|list|end|clean> [options]");
+    return;
+  }
+
+  if (sub === "start") {
+    const agent = parseOpt(rest, "--agent");
+    const task = parseOpt(rest, "--task");
+    if (!agent) textError("session start requires --agent");
+    const sess = await startSession(agent, task);
+    console.log(`Session started: ${agent}`);
+    console.log(`Time: ${String(sess.started_at)}`);
+    return;
+  }
+
+  if (sub === "heartbeat") {
+    const agent = parseOpt(rest, "--agent");
+    const progress = parseOpt(rest, "--progress");
+    if (!agent) textError("session heartbeat requires --agent");
+    const ok = await updateSessionHeartbeat(agent, progress);
+    if (!ok) {
+      console.log(`No active session for '${agent}'`);
+      return;
+    }
+    console.log(`Heartbeat updated for ${agent}`);
+    return;
+  }
+
+  if (sub === "end") {
+    const agent = parseOpt(rest, "--agent");
+    if (!agent) textError("session end requires --agent");
+    const ok = await endSession(agent);
+    console.log(ok ? `Session ended for ${agent}` : `No active session found for '${agent}'`);
+    return;
+  }
+
+  if (sub === "list") {
+    const onlyStale = parseFlag(rest, "--stale");
+    const sessions = await loadSessions();
+    const now = Date.now();
+    const rows = Object.entries(sessions).map(([agent, data]) => {
+      const s = data as Record<string, unknown>;
+      const started = new Date(String(s.started_at ?? new Date().toISOString())).getTime();
+      const hb = new Date(String(s.last_heartbeat ?? new Date().toISOString())).getTime();
+      const lastHbMinutes = Math.floor((now - hb) / 60000);
+      const durationMinutes = Math.floor((now - started) / 60000);
+      return { agent, task: (s.current_task as string | null) ?? "-", progress: (s.progress as string | null) ?? "-", lastHbMinutes, durationMinutes };
+    });
+    const filtered = onlyStale ? rows.filter((r) => r.lastHbMinutes > timeout) : rows;
+    if (!filtered.length) {
+      console.log(onlyStale ? "No stale sessions" : "No active sessions");
+      return;
+    }
+    for (const r of filtered) {
+      console.log(`${r.agent} task=${r.task} duration=${formatDuration(r.durationMinutes)} last_hb=${r.lastHbMinutes}m progress=${r.progress}`);
+    }
+    return;
+  }
+
+  if (sub === "clean") {
+    const sessions = await loadSessions();
+    const now = Date.now();
+    const cleaned: string[] = [];
+    for (const [agent, data] of Object.entries(sessions)) {
+      const s = data as Record<string, unknown>;
+      const hb = new Date(String(s.last_heartbeat ?? new Date().toISOString())).getTime();
+      const lastHbMinutes = Math.floor((now - hb) / 60000);
+      if (lastHbMinutes > timeout) {
+        delete sessions[agent];
+        cleaned.push(agent);
+      }
+    }
+    await saveSessions(sessions);
+    console.log(cleaned.length ? `Removed ${cleaned.length} stale session(s)` : "No stale sessions to clean");
+    return;
+  }
+
+  await delegateToPython(["session", ...args]);
+}
+
 async function delegateToPython(args: string[]): Promise<never> {
   const here = dirname(fileURLToPath(import.meta.url));
   const wrapper = join(here, "..", "..", "tasks.py");
@@ -358,8 +518,14 @@ async function main(): Promise<void> {
     case "claim":
       await cmdClaim(rest);
       return;
+    case "grab":
+      await cmdGrab(rest);
+      return;
     case "done":
       await cmdDone(rest);
+      return;
+    case "cycle":
+      await cmdCycle(rest);
       return;
     case "update":
       await cmdUpdate(rest);
@@ -372,6 +538,9 @@ async function main(): Promise<void> {
       return;
     case "blocked":
       await cmdBlocked(rest);
+      return;
+    case "session":
+      await cmdSession(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.

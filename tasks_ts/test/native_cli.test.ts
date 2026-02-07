@@ -127,4 +127,46 @@ describe("native cli", () => {
     todo = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
     expect(todo).toContain("status: pending");
   });
+
+  test("grab and cycle workflow", () => {
+    root = setupFixture();
+    let p = run(["grab", "--agent", "agent-c"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Grabbed:");
+    let todo1 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
+    expect(todo1).toContain("status: in_progress");
+
+    p = run(["cycle", "P1.M1.E1.T001", "--agent", "agent-c"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed: P1.M1.E1.T001");
+    expect(p.stdout.toString()).toContain("Grabbed: P1.M1.E1.T002");
+
+    todo1 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
+    const todo2 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), "utf8");
+    expect(todo1).toContain("status: done");
+    expect(todo2).toContain("status: in_progress");
+  });
+
+  test("session lifecycle", () => {
+    root = setupFixture();
+    let p = run(["session", "start", "--agent", "agent-s", "--task", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Session started");
+
+    p = run(["session", "heartbeat", "--agent", "agent-s", "--progress", "testing"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Heartbeat updated");
+
+    p = run(["session", "list"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("agent-s");
+
+    p = run(["session", "end", "--agent", "agent-s"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Session ended");
+
+    p = run(["session", "list"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("No active sessions");
+  });
 });

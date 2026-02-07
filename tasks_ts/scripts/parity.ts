@@ -80,6 +80,12 @@ function assertCommandSemanticState(args: string[], pyRoot: string, tsRoot: stri
     if (py !== ts) throw new Error(`claim status mismatch py=${py} ts=${ts}`);
     return;
   }
+  if (args[0] === "grab") {
+    const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    if (py !== ts) throw new Error(`grab status mismatch py=${py} ts=${ts}`);
+    return;
+  }
   if (args[0] === "done") {
     const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
     const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
@@ -96,6 +102,20 @@ function assertCommandSemanticState(args: string[], pyRoot: string, tsRoot: stri
     const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
     const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
     if (py !== ts) throw new Error(`blocked status mismatch py=${py} ts=${ts}`);
+    return;
+  }
+  if (args[0] === "session" && args[1] === "start") {
+    const p = parse(readFileSync(join(pyRoot, ".tasks", ".sessions.yaml"), "utf8")) as Record<string, unknown>;
+    const t = parse(readFileSync(join(tsRoot, ".tasks", ".sessions.yaml"), "utf8")) as Record<string, unknown>;
+    if (!("agent-p" in p) || !("agent-p" in t)) throw new Error("session start missing agent-p");
+    return;
+  }
+  if (args[0] === "session" && args[1] === "end") {
+    const pPath = join(pyRoot, ".tasks", ".sessions.yaml");
+    const tPath = join(tsRoot, ".tasks", ".sessions.yaml");
+    const p = existsSync(pPath) ? (parse(readFileSync(pPath, "utf8")) as Record<string, unknown>) : {};
+    const t = existsSync(tPath) ? (parse(readFileSync(tPath, "utf8")) as Record<string, unknown>) : {};
+    if ("agent-p" in p || "agent-p" in t) throw new Error("session end did not remove agent-p");
     return;
   }
 }
@@ -155,10 +175,14 @@ const vectors = [
   ["work"],
   ["work", "P1.M1.E1.T001"],
   ["claim", "P1.M1.E1.T001", "--agent", "agent-x"],
+  ["grab", "--agent", "agent-x"],
   ["done", "P1.M1.E1.T001"],
   ["update", "P1.M1.E1.T002", "blocked", "--reason", "waiting"],
   ["blocked", "P1.M1.E1.T001", "--reason", "waiting", "--no-grab"],
   ["unclaim", "P1.M1.E1.T001"],
+  ["session", "start", "--agent", "agent-p", "--task", "P1.M1.E1.T001"],
+  ["session", "list"],
+  ["session", "end", "--agent", "agent-p"],
   ["sync"],
 ];
 

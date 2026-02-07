@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { TaskPath, type Task, Status, Complexity, Priority } from "../src/models";
 import { StatusError } from "../src/status";
-import { findEpic, findMilestone, findPhase, getCurrentTaskId, isTaskFileMissing, loadConfig, setCurrentTask, taskFilePath } from "../src/helpers";
+import { clearContext, endSession, findEpic, findMilestone, findPhase, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, taskFilePath, updateSessionHeartbeat } from "../src/helpers";
 import { TaskLoader } from "../src/loader";
 
 let priorCwd = process.cwd();
@@ -146,5 +146,30 @@ describe("targeted coverage", () => {
     const out = join(tasksDir, "tmp", "x.yaml");
     await loader.writeYaml(out, { ok: true });
     expect(readFileSync(out, "utf8")).toContain("ok: true");
+  });
+
+  test("session helper lifecycle and context clear", async () => {
+    tempDir = mkdtempSync(join(tmpdir(), "tasks-ts-session-"));
+    priorCwd = process.cwd();
+    process.chdir(tempDir);
+    mkdirSync(".tasks", { recursive: true });
+
+    await saveSessions({});
+    expect(Object.keys(await loadSessions())).toHaveLength(0);
+
+    const sess = await startSession("agent-h", "P1.M1.E1.T001");
+    expect(sess.current_task).toBe("P1.M1.E1.T001");
+    expect((await loadSessions())["agent-h"]).toBeDefined();
+
+    expect(await updateSessionHeartbeat("agent-h", "progressing")).toBeTrue();
+    expect(await updateSessionHeartbeat("missing-agent")).toBeFalse();
+
+    expect(await endSession("agent-h")).toBeTrue();
+    expect(await endSession("agent-h")).toBeFalse();
+
+    await setCurrentTask("P1.M1.E1.T001", "agent-h");
+    expect((await loadContext()).current_task).toBe("P1.M1.E1.T001");
+    await clearContext();
+    expect(await loadContext()).toEqual({});
   });
 });
