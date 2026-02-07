@@ -673,6 +673,14 @@ def velocity(days, output_format):
         raise click.Abort()
 
 
+@click.command("velocity", hidden=True)
+@click.option("--days", default=14, help="Number of days to analyze")
+@click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
+def velocity_alias(days, output_format):
+    """Hidden top-level alias for `report velocity`."""
+    velocity.callback(days=days, output_format=output_format)
+
+
 @report.command("estimate-accuracy")
 @click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
 def estimate_accuracy(output_format):
@@ -792,3 +800,4 @@ def estimate_accuracy(output_format):
 def register_commands(cli):
     """Register report commands with the CLI."""
     cli.add_command(report)
+    cli.add_command(velocity_alias)

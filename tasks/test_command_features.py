@@ -305,6 +305,30 @@ def test_report_velocity_json(runner, tmp_feature_tasks_dir):
     assert payload["total_completed"] >= 1
 
 
+def test_velocity_hidden_alias_matches_report_velocity_json(runner, tmp_feature_tasks_dir):
+    alias_result = runner.invoke(cli, ["velocity", "--days", "3", "--format", "json"])
+    report_result = runner.invoke(
+        cli, ["report", "velocity", "--days", "3", "--format", "json"]
+    )
+
+    assert alias_result.exit_code == 0
+    assert report_result.exit_code == 0
+
+    alias_payload = json.loads(alias_result.output)
+    report_payload = json.loads(report_result.output)
+
+    assert alias_payload["days_analyzed"] == report_payload["days_analyzed"]
+    assert alias_payload["total_completed"] == report_payload["total_completed"]
+    assert alias_payload["daily_data"] == report_payload["daily_data"]
+
+
+def test_velocity_hidden_alias_not_listed_in_help(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["--help"])
+
+    assert result.exit_code == 0
+    assert "\n  velocity" not in result.output
+
+
 def test_report_estimate_accuracy_json(runner, tmp_feature_tasks_dir):
     result = runner.invoke(cli, ["report", "estimate-accuracy", "--format", "json"])
     assert result.exit_code == 0
