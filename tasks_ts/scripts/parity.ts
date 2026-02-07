@@ -59,6 +59,47 @@ function readTaskState(cwd: string): string {
   return readFileSync(p, "utf8");
 }
 
+function readFrontmatter(path: string): Record<string, unknown> {
+  const raw = readFileSync(path, "utf8");
+  const parts = raw.split("---\n");
+  if (parts.length < 3) return {};
+  return (parse(parts[1] ?? "") as Record<string, unknown>) ?? {};
+}
+
+function taskStatus(cwd: string, relPath: string): string | null {
+  const full = join(cwd, ".tasks", relPath);
+  if (!existsSync(full)) return null;
+  const fm = readFrontmatter(full);
+  return (fm.status as string | undefined) ?? null;
+}
+
+function assertCommandSemanticState(args: string[], pyRoot: string, tsRoot: string): void {
+  if (args[0] === "claim") {
+    const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    if (py !== ts) throw new Error(`claim status mismatch py=${py} ts=${ts}`);
+    return;
+  }
+  if (args[0] === "done") {
+    const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    if (py !== ts) throw new Error(`done status mismatch py=${py} ts=${ts}`);
+    return;
+  }
+  if (args[0] === "update") {
+    const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T002-two.todo");
+    const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T002-two.todo");
+    if (py !== ts) throw new Error(`update status mismatch py=${py} ts=${ts}`);
+    return;
+  }
+  if (args[0] === "blocked" && args.includes("--no-grab")) {
+    const py = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    const ts = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    if (py !== ts) throw new Error(`blocked status mismatch py=${py} ts=${ts}`);
+    return;
+  }
+}
+
 function assertSyncState(pyRoot: string, tsRoot: string): void {
   const py = parse(readFileSync(join(pyRoot, ".tasks", "index.yaml"), "utf8")) as Record<string, unknown>;
   const ts = parse(readFileSync(join(tsRoot, ".tasks", "index.yaml"), "utf8")) as Record<string, unknown>;
@@ -111,6 +152,13 @@ const vectors = [
   ["list", "--json"],
   ["next", "--json"],
   ["show"],
+  ["work"],
+  ["work", "P1.M1.E1.T001"],
+  ["claim", "P1.M1.E1.T001", "--agent", "agent-x"],
+  ["done", "P1.M1.E1.T001"],
+  ["update", "P1.M1.E1.T002", "blocked", "--reason", "waiting"],
+  ["blocked", "P1.M1.E1.T001", "--reason", "waiting", "--no-grab"],
+  ["unclaim", "P1.M1.E1.T001"],
   ["sync"],
 ];
 
@@ -140,6 +188,7 @@ for (const args of vectors) {
       throw new Error(`State mismatch after ${args.join(" ")}`);
     }
   }
+  assertCommandSemanticState(args, pyRoot, tsRoot);
 
   console.log(`OK parity: ${args.join(" ")}`);
 }

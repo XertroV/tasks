@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { unlink } from "node:fs/promises";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
@@ -34,15 +35,32 @@ export function isTaskFileMissing(task: Task, tasksDir = ".tasks"): boolean {
 
 const CONTEXT_FILE = ".tasks/.context.yaml";
 
+export async function loadContext(): Promise<Record<string, unknown>> {
+  if (!existsSync(CONTEXT_FILE)) return {};
+  return (parse(await readFile(CONTEXT_FILE, "utf8")) as Record<string, unknown>) ?? {};
+}
+
+export async function clearContext(): Promise<void> {
+  if (existsSync(CONTEXT_FILE)) {
+    await unlink(CONTEXT_FILE);
+  }
+}
+
 export async function getCurrentTaskId(agent?: string): Promise<string | undefined> {
   if (!existsSync(CONTEXT_FILE)) return undefined;
-  const ctx = parse(await readFile(CONTEXT_FILE, "utf8")) as Record<string, unknown>;
+  const ctx = await loadContext();
   if (agent && ctx.agent && ctx.agent !== agent) return undefined;
   return (ctx.current_task as string | undefined) ?? (ctx.primary_task as string | undefined);
 }
 
 export async function setCurrentTask(taskId: string, agent = "cli-user"): Promise<void> {
-  const data = { mode: "single", agent, current_task: taskId, updated_at: new Date().toISOString() };
+  const data = {
+    mode: "single",
+    agent,
+    current_task: taskId,
+    started_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  };
   await writeFile(CONTEXT_FILE, stringify(data));
 }
 

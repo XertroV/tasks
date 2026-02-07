@@ -87,4 +87,44 @@ describe("native cli", () => {
     expect(rootIndex).toContain("critical_path:");
     expect(rootIndex).toContain("next_available:");
   });
+
+  test("work set/show/clear", () => {
+    root = setupFixture();
+    let p = run(["work"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("No current working task set.");
+
+    p = run(["work", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Working task set");
+
+    p = run(["work"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Current Working Task");
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+
+    p = run(["work", "--clear"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Cleared working task context.");
+  });
+
+  test("unclaim and blocked --no-grab", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-z"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["blocked", "P1.M1.E1.T001", "--reason", "waiting", "--no-grab"], root);
+    expect(p.exitCode).toBe(0);
+    let todo = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
+    expect(todo).toContain("status: blocked");
+
+    p = run(["update", "P1.M1.E1.T001", "pending", "--reason", "retry"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-z"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["unclaim", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    todo = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
+    expect(todo).toContain("status: pending");
+  });
 });

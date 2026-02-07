@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, setCurrentTask } from "./helpers";
+import { clearContext, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, setCurrentTask } from "./helpers";
 import { TaskLoader } from "./loader";
 import { Status, TaskPath } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
@@ -33,7 +33,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim done update sync`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim done update work unclaim blocked`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -215,6 +215,84 @@ async function cmdUpdate(args: string[]): Promise<void> {
   }
 }
 
+async function cmdWork(args: string[]): Promise<void> {
+  const clear = parseFlag(args, "--clear");
+  const taskId = args.find((a) => !a.startsWith("-"));
+  if (clear) {
+    await clearContext();
+    console.log("Cleared working task context.");
+    return;
+  }
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+
+  if (taskId) {
+    const task = findTask(tree, taskId);
+    if (!task) textError(`Task not found: ${taskId}`);
+    await setCurrentTask(taskId);
+    console.log(`Working task set: ${task.id} - ${task.title}`);
+    return;
+  }
+
+  const ctx = await loadContext();
+  const current = (ctx.current_task as string | undefined) ?? (ctx.primary_task as string | undefined);
+  if (!current) {
+    console.log("No current working task set.");
+    return;
+  }
+  const task = findTask(tree, current);
+  if (!task) {
+    console.log(`Working task '${current}' not found in tree.`);
+    return;
+  }
+  console.log("Current Working Task");
+  console.log(`ID: ${task.id}`);
+  console.log(`Title: ${task.title}`);
+  console.log(`Status: ${task.status}`);
+  console.log(`Estimate: ${task.estimateHours} hours`);
+  console.log(`File: .tasks/${task.file}`);
+}
+
+async function cmdUnclaim(args: string[]): Promise<void> {
+  let taskId = args.find((a) => !a.startsWith("-"));
+  if (!taskId) taskId = await getCurrentTaskId();
+  if (!taskId) textError("No task ID provided and no current working task set.");
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const task = findTask(tree, taskId);
+  if (!task) textError(`Task not found: ${taskId}`);
+  if (task.status !== Status.IN_PROGRESS) {
+    console.log(`Task is not in progress: ${task.status}`);
+    return;
+  }
+  updateStatus(task, Status.PENDING, "unclaim");
+  await loader.saveTask(task);
+  await clearContext();
+  console.log(`Unclaimed: ${task.id} - ${task.title}`);
+}
+
+async function cmdBlocked(args: string[]): Promise<void> {
+  if (!parseFlag(args, "--no-grab")) {
+    await delegateToPython(["blocked", ...args]);
+  }
+  let taskId = args.find((a) => !a.startsWith("-"));
+  const reason = parseOpt(args, "--reason") ?? parseOpt(args, "-r");
+  if (!reason) textError("blocked requires --reason");
+  if (!taskId) taskId = await getCurrentTaskId();
+  if (!taskId) textError("No task ID provided and no current working task set.");
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const task = findTask(tree, taskId);
+  if (!task) textError(`Task not found: ${taskId}`);
+  updateStatus(task, Status.BLOCKED, reason);
+  await loader.saveTask(task);
+  await clearContext();
+  console.log(`Blocked: ${task.id} (${reason})`);
+}
+
 async function cmdSync(): Promise<void> {
   const loader = new TaskLoader();
   const tree = await loader.load();
@@ -285,6 +363,15 @@ async function main(): Promise<void> {
       return;
     case "update":
       await cmdUpdate(rest);
+      return;
+    case "work":
+      await cmdWork(rest);
+      return;
+    case "unclaim":
+      await cmdUnclaim(rest);
+      return;
+    case "blocked":
+      await cmdBlocked(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.
