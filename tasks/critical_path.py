@@ -1,7 +1,7 @@
 """Critical Chain Project Management (CCPM) critical path calculation."""
 
 import networkx as nx
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 from .models import TaskTree, Task, Epic, Milestone, Phase, Status
 
 
@@ -89,8 +89,8 @@ class CriticalPathCalculator:
 
                 # Epic-level dependencies
                 for dep_epic_id in epic.depends_on:
-                    # Find last task of dependency epic
-                    dep_epic = self.tree.find_epic(f"{milestone.id}.{dep_epic_id}")
+                    # Resolve relative (E1) or absolute (P1.M1.E1) epic dependency IDs.
+                    dep_epic = self._resolve_epic_dependency(dep_epic_id, milestone.id)
                     if dep_epic and dep_epic.tasks:
                         last_dep_task = dep_epic.tasks[-1]
                         # First task of current epic depends on last task of dep epic
@@ -99,7 +99,8 @@ class CriticalPathCalculator:
 
             # Milestone-level dependencies
             for dep_milestone_id in milestone.depends_on:
-                dep_milestone = self.tree.find_milestone(dep_milestone_id)
+                # Resolve relative (M1) or absolute (P1.M1) milestone dependency IDs.
+                dep_milestone = self._resolve_milestone_dependency(dep_milestone_id, phase)
                 if dep_milestone and dep_milestone.epics:
                     # Find last task of last epic in dep milestone
                     last_dep_epic = dep_milestone.epics[-1]
@@ -246,6 +247,40 @@ class CriticalPathCalculator:
         ranked.sort(key=lambda r: (r[0], r[1], r[2], r[3]))
         return [r[4] for r in ranked]
 
+    def _resolve_milestone_dependency(
+        self, dep_milestone_id: str, current_phase: Optional[Phase]
+    ) -> Optional[Milestone]:
+        """Resolve milestone dependency IDs in absolute or phase-relative form."""
+        dep_id = dep_milestone_id.strip()
+        if not dep_id:
+            return None
+
+        dep_milestone = self.tree.find_milestone(dep_id)
+        if dep_milestone:
+            return dep_milestone
+
+        if "." not in dep_id and current_phase:
+            return self.tree.find_milestone(f"{current_phase.id}.{dep_id}")
+
+        return None
+
+    def _resolve_epic_dependency(
+        self, dep_epic_id: str, current_milestone_id: Optional[str]
+    ) -> Optional[Epic]:
+        """Resolve epic dependency IDs in absolute or milestone-relative form."""
+        dep_id = dep_epic_id.strip()
+        if not dep_id:
+            return None
+
+        dep_epic = self.tree.find_epic(dep_id)
+        if dep_epic:
+            return dep_epic
+
+        if "." not in dep_id and current_milestone_id:
+            return self.tree.find_epic(f"{current_milestone_id}.{dep_id}")
+
+        return None
+
     def _check_dependencies(self, task: Task) -> bool:
         """Check if all task dependencies are satisfied."""
         # Check explicit task dependencies
@@ -271,7 +306,7 @@ class CriticalPathCalculator:
                         return False
 
         # Check phase-level dependencies
-        task_phase = self.tree.find_phase(task.phase_id)
+        task_phase = self.tree.find_phase(task.phase_id) if task.phase_id else None
         if task_phase and task_phase.depends_on:
             for dep_phase_id in task_phase.depends_on:
                 dep_phase = self.tree.find_phase(dep_phase_id)
@@ -281,36 +316,15 @@ class CriticalPathCalculator:
                         return False
 
         # Check milestone-level dependencies
-        task_milestone = None
-        task_phase_obj = None
-        for phase in self.tree.phases:
-            if phase.id == task.phase_id:
-                task_phase_obj = phase
-                for milestone in phase.milestones:
-                    if milestone.id == task.milestone_id:
-                        task_milestone = milestone
-                        break
+        task_milestone = (
+            self.tree.find_milestone(task.milestone_id) if task.milestone_id else None
+        )
 
         if task_milestone and task_milestone.depends_on:
             for dep_milestone_id in task_milestone.depends_on:
-                dep_milestone = None
-                # Milestone dependencies can be relative (M1, M2) or absolute (P1.M1)
-                if "." in dep_milestone_id:
-                    # Absolute reference like "P1.M1"
-                    dep_phase_id, dep_m_id = dep_milestone_id.split(".", 1)
-                    dep_phase = self.tree.find_phase(dep_phase_id)
-                    if dep_phase:
-                        for m in dep_phase.milestones:
-                            if m.id == dep_m_id:
-                                dep_milestone = m
-                                break
-                else:
-                    # Relative reference like "M1" - search in same phase
-                    if task_phase_obj:
-                        for m in task_phase_obj.milestones:
-                            if m.id == dep_milestone_id:
-                                dep_milestone = m
-                                break
+                dep_milestone = self._resolve_milestone_dependency(
+                    dep_milestone_id, task_phase
+                )
 
                 if dep_milestone:
                     # Check if all tasks in dependency milestone are complete
@@ -318,21 +332,11 @@ class CriticalPathCalculator:
                         return False
 
         # Check epic-level dependencies
-        task_epic = None
-        for phase in self.tree.phases:
-            if phase.id == task.phase_id:
-                for milestone in phase.milestones:
-                    if milestone.id == task.milestone_id:
-                        for epic in milestone.epics:
-                            if epic.id == task.epic_id:
-                                task_epic = epic
-                                break
+        task_epic = self.tree.find_epic(task.epic_id) if task.epic_id else None
 
         if task_epic and task_epic.depends_on:
             for dep_epic_id in task_epic.depends_on:
-                # Epic dependencies are relative to the same milestone
-                full_dep_epic_id = f"{task.phase_id}.{task.milestone_id}.{dep_epic_id}"
-                dep_epic = self.tree.find_epic(full_dep_epic_id)
+                dep_epic = self._resolve_epic_dependency(dep_epic_id, task.milestone_id)
                 if dep_epic:
                     # Check if all tasks in dependency epic are complete
                     if not self._is_epic_complete(dep_epic):
@@ -455,7 +459,7 @@ class CriticalPathCalculator:
                         return False
 
         # Check phase-level dependencies (these must be fully satisfied - can't be in batch)
-        task_phase = self.tree.find_phase(task.phase_id)
+        task_phase = self.tree.find_phase(task.phase_id) if task.phase_id else None
         if task_phase and task_phase.depends_on:
             for dep_phase_id in task_phase.depends_on:
                 dep_phase = self.tree.find_phase(dep_phase_id)
@@ -463,52 +467,25 @@ class CriticalPathCalculator:
                     return False
 
         # Check milestone-level dependencies
-        task_milestone = None
-        task_phase_obj = None
-        for phase in self.tree.phases:
-            if phase.id == task.phase_id:
-                task_phase_obj = phase
-                for milestone in phase.milestones:
-                    if milestone.id == task.milestone_id:
-                        task_milestone = milestone
-                        break
+        task_milestone = (
+            self.tree.find_milestone(task.milestone_id) if task.milestone_id else None
+        )
 
         if task_milestone and task_milestone.depends_on:
             for dep_milestone_id in task_milestone.depends_on:
-                dep_milestone = None
-                if "." in dep_milestone_id:
-                    dep_phase_id, dep_m_id = dep_milestone_id.split(".", 1)
-                    dep_phase = self.tree.find_phase(dep_phase_id)
-                    if dep_phase:
-                        for m in dep_phase.milestones:
-                            if m.id == dep_m_id:
-                                dep_milestone = m
-                                break
-                else:
-                    if task_phase_obj:
-                        for m in task_phase_obj.milestones:
-                            if m.id == dep_milestone_id:
-                                dep_milestone = m
-                                break
+                dep_milestone = self._resolve_milestone_dependency(
+                    dep_milestone_id, task_phase
+                )
 
                 if dep_milestone and not self._is_milestone_complete(dep_milestone):
                     return False
 
         # Check epic-level dependencies
-        task_epic = None
-        for phase in self.tree.phases:
-            if phase.id == task.phase_id:
-                for milestone in phase.milestones:
-                    if milestone.id == task.milestone_id:
-                        for epic in milestone.epics:
-                            if epic.id == task.epic_id:
-                                task_epic = epic
-                                break
+        task_epic = self.tree.find_epic(task.epic_id) if task.epic_id else None
 
         if task_epic and task_epic.depends_on:
             for dep_epic_id in task_epic.depends_on:
-                full_dep_epic_id = f"{task.phase_id}.{task.milestone_id}.{dep_epic_id}"
-                dep_epic = self.tree.find_epic(full_dep_epic_id)
+                dep_epic = self._resolve_epic_dependency(dep_epic_id, task.milestone_id)
                 if dep_epic and not self._is_epic_complete(dep_epic):
                     return False
 
