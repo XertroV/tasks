@@ -169,4 +169,19 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("No active sessions");
   });
+
+  test("check command json and strict behavior", () => {
+    root = setupFixture();
+    let p = run(["check", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const report = JSON.parse(p.stdout.toString());
+    expect(report.ok).toBeTrue();
+    expect(report.summary.errors).toBe(0);
+
+    // Create stale context warning and ensure strict exits non-zero.
+    writeFileSync(join(root, ".tasks", ".context.yaml"), "current_task: P9.M9.E9.T999\n");
+    p = run(["check", "--strict"], root);
+    expect(p.exitCode).toBe(1);
+    expect(p.stdout.toString()).toContain("warning");
+  });
 });

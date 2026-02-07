@@ -51,6 +51,15 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
     if (!tso || typeof tso !== "object") throw new Error("data summary --json expected object");
     return;
   }
+  if (cmd[0] === "check") {
+    if (typeof pyo?.ok !== "boolean" || typeof tso?.ok !== "boolean") {
+      throw new Error("check --json missing ok boolean");
+    }
+    if (pyo?.summary?.errors !== tso?.summary?.errors) {
+      throw new Error("check --json summary.errors mismatch");
+    }
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -183,6 +192,7 @@ const vectors = [
   ["session", "start", "--agent", "agent-p", "--task", "P1.M1.E1.T001"],
   ["session", "list"],
   ["session", "end", "--agent", "agent-p"],
+  ["check", "--json"],
   ["sync"],
 ];
 

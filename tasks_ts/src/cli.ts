@@ -10,6 +10,7 @@ import { TaskLoader } from "./loader";
 import { Status, TaskPath } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
+import { runChecks } from "./check";
 
 function parseFlag(args: string[], name: string): boolean {
   return args.includes(name);
@@ -33,7 +34,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -491,6 +492,34 @@ async function delegateToPython(args: string[]): Promise<never> {
   process.exit(code);
 }
 
+async function cmdCheck(args: string[]): Promise<void> {
+  const asJson = parseFlag(args, "--json");
+  const strict = parseFlag(args, "--strict");
+  const report = await runChecks();
+  if (asJson) {
+    jsonOut(report);
+  } else if (!report.errors.length && !report.warnings.length) {
+    console.log("Consistency check passed with no issues.");
+  } else {
+    console.log(`Consistency check results: ${report.summary.errors} error(s), ${report.summary.warnings} warning(s)`);
+    if (report.errors.length) {
+      console.log("Errors:");
+      for (const e of report.errors) {
+        console.log(`- ${e.code}: ${e.message}${e.location ? ` (${e.location})` : ""}`);
+      }
+    }
+    if (report.warnings.length) {
+      console.log("Warnings:");
+      for (const w of report.warnings) {
+        console.log(`- ${w.code}: ${w.message}${w.location ? ` (${w.location})` : ""}`);
+      }
+    }
+  }
+  if (report.errors.length || (strict && report.warnings.length)) {
+    process.exit(1);
+  }
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -541,6 +570,9 @@ async function main(): Promise<void> {
       return;
     case "session":
       await cmdSession(rest);
+      return;
+    case "check":
+      await cmdCheck(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.
