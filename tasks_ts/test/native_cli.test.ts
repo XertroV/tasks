@@ -247,4 +247,18 @@ describe("native cli", () => {
     expect(schema.schema_version).toBe(1);
     expect(Array.isArray(schema.files)).toBeTrue();
   });
+
+  test("search and blockers commands", () => {
+    root = setupFixture();
+    let p = run(["search", "A"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+
+    p = run(["blockers"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("waiting on dependencies");
+
+    p = run(["blockers", "--suggest"], root);
+    expect(p.exitCode).toBe(0);
+  });
 });

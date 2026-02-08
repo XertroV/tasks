@@ -93,6 +93,15 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
     if (!Array.isArray(tso?.files)) throw new Error("schema --json missing files");
     return;
   }
+  if (cmd[0] === "search") {
+    if (!tso || typeof tso !== "string") {
+      // text output command; noop semantic gate beyond exit code.
+    }
+    return;
+  }
+  if (cmd[0] === "blockers") {
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -233,6 +242,8 @@ const vectors = [
   ["report", "estimate-accuracy", "--format", "json"],
   ["timeline"],
   ["schema", "--json"],
+  ["search", "One"],
+  ["blockers", "--suggest"],
   ["sync"],
 ];
 

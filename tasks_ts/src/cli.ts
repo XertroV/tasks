@@ -34,7 +34,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -738,6 +738,93 @@ async function cmdSchema(args: string[]): Promise<void> {
   }
 }
 
+async function cmdSearch(args: string[]): Promise<void> {
+  const pattern = args.find((a) => !a.startsWith("-"));
+  if (!pattern) textError("search requires PATTERN");
+  const status = parseOpt(args, "--status");
+  const tags = (parseOpt(args, "--tags") ?? "")
+    .split(",")
+    .map((t) => t.trim().toLowerCase())
+    .filter(Boolean);
+  const complexity = parseOpt(args, "--complexity");
+  const priority = parseOpt(args, "--priority");
+  const limit = Number(parseOpt(args, "--limit") ?? "20");
+  const regex = new RegExp(pattern, "i");
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { criticalPath } = calc.calculate();
+
+  const matches = getAllTasks(tree).filter((t) => {
+    const fileContent = existsSync(join(".tasks", t.file)) ? readFileSync(join(".tasks", t.file), "utf8") : "";
+    if (!regex.test(t.title) && !regex.test(fileContent)) return false;
+    if (status && t.status !== (status as Status)) return false;
+    if (complexity && t.complexity !== complexity) return false;
+    if (priority && t.priority !== priority) return false;
+    if (tags.length) {
+      const tt = new Set(t.tags.map((x) => x.toLowerCase()));
+      if (!tags.some((x) => tt.has(x))) return false;
+    }
+    return true;
+  });
+
+  if (!matches.length) {
+    console.log(`No tasks found matching '${pattern}'`);
+    return;
+  }
+
+  console.log(`Found ${matches.length} result(s) for "${pattern}":`);
+  for (const t of matches.slice(0, limit)) {
+    const crit = criticalPath.includes(t.id) ? "*" : " ";
+    console.log(`${crit} ${t.id} ${t.title} [${t.status}]`);
+  }
+}
+
+async function cmdBlockers(args: string[]): Promise<void> {
+  const deep = parseFlag(args, "--deep");
+  const suggest = parseFlag(args, "--suggest");
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { criticalPath } = calc.calculate();
+  const all = getAllTasks(tree);
+  const blockedTasks = all.filter((t) => t.status === Status.BLOCKED);
+
+  const pendingBlocked = all.filter((t) => t.status === Status.PENDING && !t.claimedBy && !calc.isTaskAvailable(t));
+  if (!blockedTasks.length && !pendingBlocked.length) {
+    console.log("No blocked tasks!");
+    return;
+  }
+  console.log(`${blockedTasks.length} task(s) marked as BLOCKED`);
+  console.log(`${pendingBlocked.length} task(s) waiting on dependencies`);
+
+  const rootBlockers = new Set<string>();
+  for (const t of pendingBlocked) {
+    for (const dep of t.dependsOn) {
+      const depTask = findTask(tree, dep);
+      if (depTask && depTask.status !== Status.DONE) {
+        if (depTask.status === Status.IN_PROGRESS || (depTask.status === Status.PENDING && calc.isTaskAvailable(depTask))) {
+          rootBlockers.add(depTask.id);
+        }
+      }
+    }
+  }
+
+  console.log("Blocking Chains:");
+  for (const id of Array.from(rootBlockers).slice(0, deep ? 999 : 10)) {
+    const t = findTask(tree, id);
+    if (!t) continue;
+    const crit = criticalPath.includes(id) ? " CRITICAL" : "";
+    console.log(`${id} ${t.status}${crit} ${t.claimedBy ? `@${t.claimedBy}` : "UNCLAIMED"}`);
+    if (suggest) {
+      if (!t.claimedBy && t.status === Status.PENDING) console.log(`  suggest: grab ${id}`);
+    }
+  }
+}
+
 async function cmdSession(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
@@ -932,6 +1019,12 @@ async function main(): Promise<void> {
       return;
     case "schema":
       await cmdSchema(rest);
+      return;
+    case "search":
+      await cmdSearch(rest);
+      return;
+    case "blockers":
+      await cmdBlockers(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.
