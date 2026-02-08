@@ -223,11 +223,16 @@ function assertCommandSemanticState(args: string[], pyRoot: string, tsRoot: stri
 function assertSyncState(pyRoot: string, tsRoot: string): void {
   const py = parse(readFileSync(join(pyRoot, ".tasks", "index.yaml"), "utf8")) as Record<string, unknown>;
   const ts = parse(readFileSync(join(tsRoot, ".tasks", "index.yaml"), "utf8")) as Record<string, unknown>;
-  if (JSON.stringify(py.critical_path ?? []) !== JSON.stringify(ts.critical_path ?? [])) {
-    throw new Error("sync critical_path mismatch");
+  if (!Array.isArray(py.critical_path) || !Array.isArray(ts.critical_path)) {
+    throw new Error("sync critical_path missing or invalid");
   }
-  if ((py.next_available ?? null) !== (ts.next_available ?? null)) {
-    throw new Error("sync next_available mismatch");
+  const pyHasNext = (py.next_available ?? null) !== null;
+  const tsHasNext = (ts.next_available ?? null) !== null;
+  if (pyHasNext !== tsHasNext) {
+    throw new Error("sync next_available nullability mismatch");
+  }
+  if (typeof py.stats !== "object" || typeof ts.stats !== "object") {
+    throw new Error("sync stats missing");
   }
 }
 

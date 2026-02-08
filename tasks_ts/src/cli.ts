@@ -1,7 +1,6 @@
 #!/usr/bin/env bun
 import pc from "picocolors";
 import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { parse, stringify } from "yaml";
@@ -591,7 +590,7 @@ async function cmdData(args: string[]): Promise<void> {
     return;
   }
 
-  await delegateToPython(["data", ...args]);
+  textError(`Unknown data subcommand: ${sub}`);
 }
 
 async function cmdReport(args: string[]): Promise<void> {
@@ -719,7 +718,7 @@ async function cmdReport(args: string[]): Promise<void> {
     return;
   }
 
-  await delegateToPython(["report", ...args]);
+  textError(`Unknown report subcommand: ${sub}`);
 }
 
 async function cmdTimeline(args: string[]): Promise<void> {
@@ -1084,7 +1083,7 @@ async function cmdSkills(args: string[]): Promise<void> {
     return;
   }
   if (sub !== "install") {
-    await delegateToPython(["skills", ...args]);
+    textError(`Unknown skills subcommand: ${sub}`);
   }
   const skillNames = rest.filter((a) => !a.startsWith("-"));
   const scope = parseOpt(rest, "--scope") ?? "local";
@@ -1318,23 +1317,7 @@ async function cmdSession(args: string[]): Promise<void> {
     return;
   }
 
-  await delegateToPython(["session", ...args]);
-}
-
-async function delegateToPython(args: string[]): Promise<never> {
-  const here = dirname(fileURLToPath(import.meta.url));
-  const wrapper = join(here, "..", "..", "tasks.py");
-  const venvPython = join(here, "..", "..", ".venv", "bin", "python");
-  const py = existsSync(venvPython) ? venvPython : "python";
-  const proc = Bun.spawn([py, wrapper, ...args], {
-    stdout: "inherit",
-    stderr: "inherit",
-    stdin: "inherit",
-    cwd: process.cwd(),
-    env: process.env,
-  });
-  const code = await proc.exited;
-  process.exit(code);
+  textError(`Unknown session subcommand: ${sub}`);
 }
 
 async function cmdCheck(args: string[]): Promise<void> {
@@ -1419,6 +1402,9 @@ async function main(): Promise<void> {
     case "check":
       await cmdCheck(rest);
       return;
+    case "sync":
+      await cmdSync();
+      return;
     case "data":
       await cmdData(rest);
       return;
@@ -1456,8 +1442,7 @@ async function main(): Promise<void> {
       await cmdAddPhase(rest);
       return;
     default:
-      // Temporary compatibility fallback while remaining commands are ported.
-      await delegateToPython(args);
+      textError(`Unknown command: ${cmd}`);
   }
 }
 
