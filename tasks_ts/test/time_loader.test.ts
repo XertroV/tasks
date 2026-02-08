@@ -59,4 +59,41 @@ describe("loader", () => {
     const updated = await Bun.file(join(tasksDir, task.file)).text();
     expect(updated).toContain("status: in_progress");
   });
+
+  test("accepts estimated_hours alias while loading", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-alias-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Demo\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n    estimated_hours: 10\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n    estimated_hours: 8\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic\n    path: 01-epic\n    estimated_hours: 6\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-demo.todo\n    title: Hello\n    estimated_hours: 4\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-demo.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: Hello\nstatus: pending\nestimated_hours: 3\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Hello\n`,
+    );
+
+    const tree = await new TaskLoader(tasksDir).load();
+    const phase = tree.phases[0];
+    const milestone = phase?.milestones[0];
+    const epic = milestone?.epics[0];
+    const task = epic?.tasks[0];
+
+    expect(phase?.estimateHours).toBe(10);
+    expect(milestone?.estimateHours).toBe(8);
+    expect(epic?.estimateHours).toBe(6);
+    expect(task?.estimateHours).toBe(3);
+  });
 });

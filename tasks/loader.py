@@ -61,6 +61,13 @@ class TaskLoader:
                 f"Missing required field {str(e)} in root index: {root_index_path}"
             ) from e
 
+    def _get_estimate_hours(self, data: Dict[str, Any], default: float = 0.0) -> float:
+        """Read estimate from either estimate_hours or estimated_hours."""
+        value = data.get("estimate_hours")
+        if value is None:
+            value = data.get("estimated_hours", default)
+        return float(value)
+
     def _load_phase(self, phase_data: Dict[str, Any]) -> Phase:
         """Load a phase and its milestones."""
         try:
@@ -75,7 +82,7 @@ class TaskLoader:
                     path=phase_data["path"],
                     status=Status(phase_data.get("status", "pending")),
                     weeks=phase_data.get("weeks", 0),
-                    estimate_hours=phase_data.get("estimate_hours", 0.0),
+                    estimate_hours=self._get_estimate_hours(phase_data, 0.0),
                     priority=Priority(phase_data.get("priority", "medium")),
                     depends_on=phase_data.get("depends_on", []),
                     description=phase_data.get("description"),
@@ -90,7 +97,7 @@ class TaskLoader:
                 path=phase_data["path"],
                 status=Status(phase_data.get("status", "pending")),
                 weeks=phase_data.get("weeks", 0),
-                estimate_hours=phase_data.get("estimate_hours", 0.0),
+                estimate_hours=self._get_estimate_hours(phase_data, 0.0),
                 priority=Priority(phase_data.get("priority", "medium")),
                 depends_on=phase_data.get("depends_on", []),
                 description=phase_data.get("description"),
@@ -140,7 +147,7 @@ class TaskLoader:
                 name=milestone_data["name"],
                 path=milestone_data["path"],
                 status=Status(milestone_data.get("status", "pending")),
-                estimate_hours=milestone_data.get("estimate_hours", 0.0),
+                estimate_hours=self._get_estimate_hours(milestone_data, 0.0),
                 complexity=Complexity(milestone_data.get("complexity", "medium")),
                 depends_on=milestone_data.get("depends_on", []),
                 description=milestone_data.get("description"),
@@ -201,7 +208,7 @@ class TaskLoader:
             name=epic_data["name"],
             path=epic_data["path"],
             status=Status(epic_data.get("status", "pending")),
-            estimate_hours=epic_data.get("estimate_hours", 0.0),
+            estimate_hours=self._get_estimate_hours(epic_data, 0.0),
             complexity=Complexity(epic_data.get("complexity", "medium")),
             depends_on=epic_data.get("depends_on", []),
             description=epic_data.get("description"),
@@ -267,9 +274,13 @@ class TaskLoader:
 
         title = frontmatter.get("title", task_data.get("title", ""))
         status = frontmatter.get("status", task_data.get("status", "pending"))
-        estimate_hours = frontmatter.get(
-            "estimate_hours", task_data.get("estimate_hours", 0.0)
-        )
+        estimate_hours = frontmatter.get("estimate_hours")
+        if estimate_hours is None:
+            estimate_hours = frontmatter.get("estimated_hours")
+        if estimate_hours is None:
+            estimate_hours = task_data.get("estimate_hours")
+        if estimate_hours is None:
+            estimate_hours = task_data.get("estimated_hours", 0.0)
         complexity = frontmatter.get("complexity", task_data.get("complexity", "low"))
         priority = frontmatter.get("priority", task_data.get("priority", "medium"))
         depends_on = frontmatter.get("depends_on", task_data.get("depends_on", []))
@@ -479,7 +490,7 @@ class TaskLoader:
         # Prepare body
         description = task_data.get("description", "")
         body = f"""
-# {task_data['title']}
+# {task_data["title"]}
 
 {description}
 
@@ -585,7 +596,9 @@ class TaskLoader:
             yaml.dump(epic_index, f, default_flow_style=False, sort_keys=False)
 
         # Update milestone index.yaml to include the new epic
-        self._add_epic_to_milestone_index(milestone_dir, epic_short_id, dir_name, epic_data)
+        self._add_epic_to_milestone_index(
+            milestone_dir, epic_short_id, dir_name, epic_data
+        )
 
         # Create and return Epic object
         epic_path = ms_path.with_epic(epic_short_id)
@@ -669,10 +682,13 @@ class TaskLoader:
             yaml.dump(milestone_index, f, default_flow_style=False, sort_keys=False)
 
         # Update phase index.yaml
-        self._add_milestone_to_phase_index(phase_dir, milestone_short_id, dir_name, milestone_data)
+        self._add_milestone_to_phase_index(
+            phase_dir, milestone_short_id, dir_name, milestone_data
+        )
 
         # Create and return Milestone object
         from .models import Milestone
+
         return Milestone(
             id=full_milestone_id,
             name=milestone_data["name"],
@@ -749,6 +765,7 @@ class TaskLoader:
 
         # Create and return Phase object
         from .models import Phase, Priority
+
         return Phase(
             id=phase_id,
             name=phase_data["name"],
@@ -886,8 +903,13 @@ class TaskLoader:
 
         return max_num + 1
 
-    def _add_milestone_to_phase_index(self, phase_dir: Path, milestone_short_id: str,
-                                       dir_name: str, milestone_data: dict) -> None:
+    def _add_milestone_to_phase_index(
+        self,
+        phase_dir: Path,
+        milestone_short_id: str,
+        dir_name: str,
+        milestone_data: dict,
+    ) -> None:
         """Add a milestone entry to the phase's index.yaml."""
         index_path = phase_dir / "index.yaml"
 
@@ -914,7 +936,9 @@ class TaskLoader:
         with open(index_path, "w") as f:
             yaml.dump(index, f, default_flow_style=False, sort_keys=False)
 
-    def _add_phase_to_root_index(self, phase_id: str, dir_name: str, phase_data: dict) -> None:
+    def _add_phase_to_root_index(
+        self, phase_id: str, dir_name: str, phase_data: dict
+    ) -> None:
         """Add a phase entry to the root index.yaml."""
         root_index_path = self.tasks_dir / "index.yaml"
 

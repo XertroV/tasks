@@ -8,6 +8,10 @@ interface AnyRec {
   [k: string]: unknown;
 }
 
+function estimateHoursFrom(data: AnyRec): number {
+  return Number(data.estimate_hours ?? data.estimated_hours ?? 0);
+}
+
 function parseTodo(content: string): { frontmatter: AnyRec; body: string } {
   const parts = content.split("---\n");
   if (parts.length >= 3) {
@@ -47,7 +51,7 @@ export class TaskLoader {
       path: String(phaseData.path ?? ""),
       status: (phaseData.status as Status) ?? Status.PENDING,
       weeks: Number(phaseData.weeks ?? 0),
-      estimateHours: Number(phaseData.estimate_hours ?? 0),
+      estimateHours: estimateHoursFrom(phaseData),
       priority: (phaseData.priority as Priority) ?? Priority.MEDIUM,
       dependsOn: ((phaseData.depends_on as string[]) ?? []).slice(),
       milestones: [],
@@ -69,7 +73,7 @@ export class TaskLoader {
       name: String(milestoneData.name ?? ""),
       path: String(milestoneData.path ?? ""),
       status: (milestoneData.status as Status) ?? Status.PENDING,
-      estimateHours: Number(milestoneData.estimate_hours ?? 0),
+      estimateHours: estimateHoursFrom(milestoneData),
       complexity: (milestoneData.complexity as Complexity) ?? Complexity.MEDIUM,
       dependsOn: ((milestoneData.depends_on as string[]) ?? []).slice(),
       epics: [],
@@ -92,7 +96,7 @@ export class TaskLoader {
       name: String(epicData.name ?? ""),
       path: String(epicData.path ?? ""),
       status: (epicData.status as Status) ?? Status.PENDING,
-      estimateHours: Number(epicData.estimate_hours ?? 0),
+      estimateHours: estimateHoursFrom(epicData),
       complexity: (epicData.complexity as Complexity) ?? Complexity.MEDIUM,
       dependsOn: ((epicData.depends_on as string[]) ?? []).slice(),
       tasks: [],
@@ -132,7 +136,7 @@ export class TaskLoader {
       title: String(frontmatter.title ?? normalized.title ?? ""),
       file: taskFile.replace(`${this.tasksDir}/`, ""),
       status: (frontmatter.status as Status) ?? (normalized.status as Status) ?? Status.PENDING,
-      estimateHours: Number(frontmatter.estimate_hours ?? normalized.estimate_hours ?? 0),
+      estimateHours: Number(frontmatter.estimate_hours ?? frontmatter.estimated_hours ?? normalized.estimate_hours ?? normalized.estimated_hours ?? 0),
       complexity: (frontmatter.complexity as Complexity) ?? (normalized.complexity as Complexity) ?? Complexity.LOW,
       priority: (frontmatter.priority as Priority) ?? (normalized.priority as Priority) ?? Priority.MEDIUM,
       dependsOn: ((frontmatter.depends_on as string[]) ?? (normalized.depends_on as string[]) ?? []).slice(),
