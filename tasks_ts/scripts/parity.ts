@@ -74,6 +74,20 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
     if (pyo?.project !== tso?.project) throw new Error("data export project mismatch");
     return;
   }
+  if (cmd[0] === "report" && cmd[1] === "progress") {
+    if (typeof pyo?.overall?.total !== "number" || typeof tso?.overall?.total !== "number") {
+      throw new Error("report progress --format json missing overall.total");
+    }
+    return;
+  }
+  if (cmd[0] === "report" && cmd[1] === "velocity") {
+    if (!Array.isArray(tso?.daily_data)) throw new Error("report velocity missing daily_data");
+    return;
+  }
+  if (cmd[0] === "report" && cmd[1] === "estimate-accuracy") {
+    if (typeof tso?.tasks_analyzed !== "number") throw new Error("report estimate-accuracy missing tasks_analyzed");
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -209,6 +223,9 @@ const vectors = [
   ["check", "--json"],
   ["data", "summary", "--format", "json"],
   ["data", "export", "--format", "json"],
+  ["report", "progress", "--format", "json"],
+  ["report", "velocity", "--days", "7", "--format", "json"],
+  ["report", "estimate-accuracy", "--format", "json"],
   ["sync"],
 ];
 

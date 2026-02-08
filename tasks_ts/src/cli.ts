@@ -34,7 +34,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -543,6 +543,134 @@ async function cmdData(args: string[]): Promise<void> {
   await delegateToPython(["data", ...args]);
 }
 
+async function cmdReport(args: string[]): Promise<void> {
+  const sub = args[0];
+  const rest = args.slice(1);
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const tasks = getAllTasks(tree);
+
+  if (!sub || sub === "--help") {
+    console.log("Usage: tasks report <progress|velocity|estimate-accuracy> [options]");
+    return;
+  }
+
+  if (sub === "progress") {
+    const outputFormat = parseOpt(rest, "--format") ?? "text";
+    const stats = computeStats(tree);
+    const total = stats.total_tasks;
+    const done = stats.done;
+    const pct = total > 0 ? (done / total) * 100 : 0;
+    const phases = tree.phases.map((p) => {
+      const pTasks = p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
+      const pStats = {
+        total: pTasks.length,
+        done: pTasks.filter((t) => t.status === Status.DONE).length,
+        in_progress: pTasks.filter((t) => t.status === Status.IN_PROGRESS).length,
+        pending: pTasks.filter((t) => t.status === Status.PENDING).length,
+        blocked: pTasks.filter((t) => t.status === Status.BLOCKED).length,
+      };
+      return { id: p.id, name: p.name, ...pStats, percent_complete: Number((pStats.total ? (pStats.done / pStats.total) * 100 : 0).toFixed(1)) };
+    });
+    const payload = {
+      overall: {
+        total,
+        done,
+        in_progress: stats.in_progress,
+        pending: stats.pending,
+        blocked: stats.blocked,
+        percent_complete: Number(pct.toFixed(1)),
+      },
+      phases,
+    };
+    if (outputFormat === "json") {
+      jsonOut(payload);
+      return;
+    }
+    console.log("Progress Report");
+    console.log(`Overall: ${done}/${total} (${pct.toFixed(1)}%)`);
+    return;
+  }
+
+  if (sub === "velocity") {
+    const outputFormat = parseOpt(rest, "--format") ?? "text";
+    const days = Number(parseOpt(rest, "--days") ?? "14");
+    const now = Date.now();
+    const completed = tasks.filter((t) => t.status === Status.DONE && t.completedAt);
+    if (!completed.length) {
+      console.log("No completed tasks with timestamps found.");
+      return;
+    }
+    const dayData = Array.from({ length: days }, (_, d) => {
+      const start = new Date(now - d * 86400000);
+      start.setUTCHours(0, 0, 0, 0);
+      const end = new Date(start.getTime() + 86400000);
+      const matching = completed.filter((t) => {
+        const ts = t.completedAt!.getTime();
+        return ts >= start.getTime() && ts < end.getTime();
+      });
+      return {
+        day: d,
+        date: start.toISOString().slice(0, 10),
+        tasks_completed: matching.length,
+        hours_completed: Number(matching.reduce((acc, t) => acc + t.estimateHours, 0).toFixed(1)),
+      };
+    });
+    const totalCompleted = dayData.reduce((a, b) => a + b.tasks_completed, 0);
+    const totalHours = dayData.reduce((a, b) => a + b.hours_completed, 0);
+    const payload = {
+      days_analyzed: days,
+      total_completed: completed.length,
+      daily_data: dayData,
+      averages: {
+        tasks_per_day: Number((totalCompleted / days).toFixed(1)),
+        hours_per_day: Number((totalHours / days).toFixed(1)),
+      },
+    };
+    if (outputFormat === "json") {
+      jsonOut(payload);
+      return;
+    }
+    console.log("Velocity Report");
+    console.log(`Tasks/day: ${payload.averages.tasks_per_day}`);
+    return;
+  }
+
+  if (sub === "estimate-accuracy") {
+    const outputFormat = parseOpt(rest, "--format") ?? "text";
+    const withDuration = tasks.filter((t) => t.status === Status.DONE && t.durationMinutes !== undefined);
+    if (!withDuration.length) {
+      console.log("No completed tasks with duration data found.");
+      return;
+    }
+    const totalEstimated = withDuration.reduce((acc, t) => acc + t.estimateHours, 0);
+    const totalActual = withDuration.reduce((acc, t) => acc + (t.durationMinutes ?? 0) / 60, 0);
+    const payload = {
+      tasks_analyzed: withDuration.length,
+      total_estimated_hours: Number(totalEstimated.toFixed(1)),
+      total_actual_hours: Number(totalActual.toFixed(1)),
+      accuracy_percent: Number((totalActual > 0 ? (totalEstimated / totalActual) * 100 : 0).toFixed(1)),
+      average_variance_percent: Number(
+        (
+          withDuration.reduce((acc, t) => {
+            const actual = (t.durationMinutes ?? 0) / 60;
+            return acc + (t.estimateHours > 0 ? ((actual - t.estimateHours) / t.estimateHours) * 100 : 0);
+          }, 0) / withDuration.length
+        ).toFixed(1),
+      ),
+    };
+    if (outputFormat === "json") {
+      jsonOut(payload);
+      return;
+    }
+    console.log("Estimate Accuracy Report");
+    console.log(`Tasks analyzed: ${payload.tasks_analyzed}`);
+    return;
+  }
+
+  await delegateToPython(["report", ...args]);
+}
+
 async function cmdSession(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
@@ -728,6 +856,9 @@ async function main(): Promise<void> {
       return;
     case "data":
       await cmdData(rest);
+      return;
+    case "report":
+      await cmdReport(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.
