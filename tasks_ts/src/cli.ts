@@ -371,14 +371,13 @@ async function cmdUnclaim(args: string[]): Promise<void> {
 }
 
 async function cmdBlocked(args: string[]): Promise<void> {
-  if (!parseFlag(args, "--no-grab")) {
-    await delegateToPython(["blocked", ...args]);
-  }
+  const noGrab = parseFlag(args, "--no-grab");
   let taskId = args.find((a) => !a.startsWith("-"));
   const reason = parseOpt(args, "--reason") ?? parseOpt(args, "-r");
   if (!reason) textError("blocked requires --reason");
   if (!taskId) taskId = await getCurrentTaskId();
   if (!taskId) textError("No task ID provided and no current working task set.");
+  const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
 
   const loader = new TaskLoader();
   const tree = await loader.load();
@@ -388,6 +387,30 @@ async function cmdBlocked(args: string[]): Promise<void> {
   await loader.saveTask(task);
   await clearContext();
   console.log(`Blocked: ${task.id} (${reason})`);
+
+  if (noGrab) return;
+
+  const refreshed = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(refreshed, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { nextAvailable } = calc.calculate();
+  if (!nextAvailable) {
+    console.log("No available tasks found.");
+    return;
+  }
+  const nextTask = findTask(refreshed, nextAvailable);
+  if (!nextTask) {
+    console.log("No available tasks found.");
+    return;
+  }
+  if (isTaskFileMissing(nextTask)) {
+    console.log(`Skipping auto-grab: ${nextTask.id} has no task file.`);
+    return;
+  }
+  claimTask(nextTask, agent, false);
+  await loader.saveTask(nextTask);
+  await setCurrentTask(nextTask.id, agent);
+  console.log(`Grabbed: ${nextTask.id} - ${nextTask.title}`);
 }
 
 async function cmdSync(): Promise<void> {

@@ -194,6 +194,16 @@ function assertCommandSemanticState(args: string[], pyRoot: string, tsRoot: stri
     if (py !== ts) throw new Error(`blocked status mismatch py=${py} ts=${ts}`);
     return;
   }
+  if (args[0] === "blocked" && !args.includes("--no-grab")) {
+    const pyBlocked = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    const tsBlocked = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T001-one.todo");
+    const pyNext = taskStatus(pyRoot, "01-phase/01-ms/01-epic/T002-two.todo");
+    const tsNext = taskStatus(tsRoot, "01-phase/01-ms/01-epic/T002-two.todo");
+    if (pyBlocked !== tsBlocked || pyNext !== tsNext) {
+      throw new Error(`blocked(auto-grab) mismatch: py(${pyBlocked},${pyNext}) vs ts(${tsBlocked},${tsNext})`);
+    }
+    return;
+  }
   if (args[0] === "session" && args[1] === "start") {
     const p = parse(readFileSync(join(pyRoot, ".tasks", ".sessions.yaml"), "utf8")) as Record<string, unknown>;
     const t = parse(readFileSync(join(tsRoot, ".tasks", ".sessions.yaml"), "utf8")) as Record<string, unknown>;
@@ -269,6 +279,7 @@ const vectors = [
   ["done", "P1.M1.E1.T001"],
   ["update", "P1.M1.E1.T002", "blocked", "--reason", "waiting"],
   ["blocked", "P1.M1.E1.T001", "--reason", "waiting", "--no-grab"],
+  ["blocked", "P1.M1.E1.T001", "--reason", "waiting"],
   ["unclaim", "P1.M1.E1.T001"],
   ["session", "start", "--agent", "agent-p", "--task", "P1.M1.E1.T001"],
   ["session", "list"],

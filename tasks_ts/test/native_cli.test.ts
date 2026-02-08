@@ -128,6 +128,20 @@ describe("native cli", () => {
     expect(todo).toContain("status: pending");
   });
 
+  test("blocked auto-grab next task", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-b"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["blocked", "P1.M1.E1.T001", "--reason", "waiting"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Blocked: P1.M1.E1.T001");
+    expect(p.stdout.toString()).toContain("No available tasks found.");
+    const todo1 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
+    const todo2 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), "utf8");
+    expect(todo1).toContain("status: blocked");
+    expect(todo2).toContain("status: pending");
+  });
+
   test("grab and cycle workflow", () => {
     root = setupFixture();
     let p = run(["grab", "--agent", "agent-c"], root);
