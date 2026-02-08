@@ -261,4 +261,24 @@ describe("native cli", () => {
     p = run(["blockers", "--suggest"], root);
     expect(p.exitCode).toBe(0);
   });
+
+  test("skills install dry-run json and write", () => {
+    root = setupFixture();
+    let p = run(
+      ["skills", "install", "plan-task", "--client=codex", "--artifact=skills", "--dry-run", "--json"],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+    const dry = JSON.parse(p.stdout.toString());
+    expect(dry.dry_run).toBeTrue();
+    expect(Array.isArray(dry.operations)).toBeTrue();
+    expect(dry.operations[0].path).toContain(".agents/skills/plan-task/SKILL.md");
+
+    p = run(
+      ["skills", "install", "plan-task", "--client=codex", "--artifact=skills"],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+    expect(readFileSync(join(root, ".agents", "skills", "plan-task", "SKILL.md"), "utf8")).toContain("plan-task");
+  });
 });

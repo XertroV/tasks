@@ -3,6 +3,7 @@ import pc from "picocolors";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { existsSync, readFileSync } from "node:fs";
+import { mkdir } from "node:fs/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
 import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
@@ -34,7 +35,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -738,6 +739,122 @@ async function cmdSchema(args: string[]): Promise<void> {
   }
 }
 
+type InstallOp = { client: string; artifact: string; path: string; action?: string };
+
+function resolveSkills(names: string[]): string[] {
+  const valid = ["plan-task", "plan-ingest", "start-tasks"];
+  const normalized = names.map((n) => n.trim().toLowerCase()).filter(Boolean);
+  if (!normalized.length || normalized.includes("all")) return valid;
+  for (const n of normalized) {
+    if (!valid.includes(n)) throw new Error(`Invalid skill name: ${n}`);
+  }
+  return Array.from(new Set(normalized));
+}
+
+function resolveClients(clientName: string): string[] {
+  if (clientName === "common") return ["codex", "claude", "opencode"];
+  return [clientName];
+}
+
+function resolveArtifacts(artifact: string): string[] {
+  if (artifact === "both") return ["skills", "commands"];
+  return [artifact];
+}
+
+function defaultRoot(client: string, scope: string, artifact: string): string {
+  if (client === "codex") {
+    if (artifact !== "skills") throw new Error("codex does not support commands artifacts");
+    if (scope === "local") return ".agents/skills";
+    return process.env.CODEX_HOME ? `${process.env.CODEX_HOME}/skills` : `${process.env.HOME}/.agents/skills`;
+  }
+  if (client === "claude") return scope === "local" ? `.claude/${artifact}` : `${process.env.HOME}/.claude/${artifact}`;
+  if (client === "opencode") return scope === "local" ? `.opencode/${artifact}` : `${process.env.HOME}/.config/opencode/${artifact}`;
+  throw new Error(`Unknown client: ${client}`);
+}
+
+function skillTemplate(name: string): string {
+  if (name === "plan-task") return "---\nname: plan-task\ndescription: plan task\n---\n# plan-task\n";
+  if (name === "plan-ingest") return "---\nname: plan-ingest\ndescription: plan ingest\n---\n# plan-ingest\n";
+  return "---\nname: start-tasks\ndescription: tasks grab and cycle\n---\n# start-tasks\n";
+}
+
+function commandTemplate(name: string): string {
+  return `---\ndescription: ${name}\n---\n${name}\n`;
+}
+
+async function cmdSkills(args: string[]): Promise<void> {
+  const sub = args[0];
+  const rest = args.slice(1);
+  if (!sub || sub === "--help") {
+    console.log("Usage: tasks skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]");
+    return;
+  }
+  if (sub !== "install") {
+    await delegateToPython(["skills", ...args]);
+  }
+  const skillNames = rest.filter((a) => !a.startsWith("-"));
+  const scope = parseOpt(rest, "--scope") ?? "local";
+  const client = parseOpt(rest, "--client") ?? "common";
+  const artifact = parseOpt(rest, "--artifact") ?? "skills";
+  const outputDir = parseOpt(rest, "--dir");
+  const force = parseFlag(rest, "--force");
+  const dryRun = parseFlag(rest, "--dry-run");
+  const outputJson = parseFlag(rest, "--json");
+
+  const selectedSkills = resolveSkills(skillNames);
+  const warnings: string[] = [];
+  const ops: InstallOp[] = [];
+
+  for (const c of resolveClients(client)) {
+    for (const a of resolveArtifacts(artifact)) {
+      if (c === "codex" && a === "commands") {
+        warnings.push("codex does not support 'commands' artifacts; skipping.");
+        continue;
+      }
+      const root = outputDir ? join(outputDir, a, c) : defaultRoot(c, scope, a);
+      for (const skill of selectedSkills) {
+        const path = a === "skills" ? join(root, skill, "SKILL.md") : join(root, `${skill}.md`);
+        ops.push({ client: c, artifact: a, path });
+      }
+    }
+  }
+
+  const existing = ops.filter((o) => existsSync(o.path));
+  if (existing.length && !force && !dryRun) {
+    throw new Error(`Refusing to overwrite existing files (use --force):\n${existing.map((o) => o.path).join("\n")}`);
+  }
+
+  if (!dryRun) {
+    for (const op of ops) {
+      await mkdir(dirname(op.path), { recursive: true });
+      const content = op.artifact === "skills"
+        ? skillTemplate(op.path.includes("plan-task") ? "plan-task" : op.path.includes("plan-ingest") ? "plan-ingest" : "start-tasks")
+        : commandTemplate(op.path.includes("plan-task") ? "plan-task" : op.path.includes("plan-ingest") ? "plan-ingest" : "start-tasks");
+      await Bun.write(op.path, content);
+    }
+  }
+
+  const result = {
+    skills: selectedSkills,
+    scope,
+    client,
+    artifact,
+    output_dir: outputDir ?? null,
+    dry_run: dryRun,
+    force,
+    warnings,
+    operations: ops.map((o) => ({ ...o, action: dryRun ? "planned" : "written" })),
+    written_count: dryRun ? 0 : ops.length,
+  };
+  if (outputJson) {
+    jsonOut(result);
+    return;
+  }
+  if (dryRun) console.log("Dry run: no files written.");
+  else console.log(`Installed ${ops.length} file(s).`);
+  for (const w of warnings) console.log(`Warning: ${w}`);
+}
+
 async function cmdSearch(args: string[]): Promise<void> {
   const pattern = args.find((a) => !a.startsWith("-"));
   if (!pattern) textError("search requires PATTERN");
@@ -1025,6 +1142,9 @@ async function main(): Promise<void> {
       return;
     case "blockers":
       await cmdBlockers(rest);
+      return;
+    case "skills":
+      await cmdSkills(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.

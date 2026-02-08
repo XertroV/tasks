@@ -102,6 +102,10 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
   if (cmd[0] === "blockers") {
     return;
   }
+  if (cmd[0] === "skills" && cmd[1] === "install") {
+    if (!Array.isArray(tso?.operations)) throw new Error("skills install --json missing operations");
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -244,6 +248,7 @@ const vectors = [
   ["schema", "--json"],
   ["search", "One"],
   ["blockers", "--suggest"],
+  ["skills", "install", "plan-task", "--client=codex", "--artifact=skills", "--dry-run", "--json"],
   ["sync"],
 ];
 
