@@ -199,3 +199,29 @@ def test_check_warnings_do_not_fail_unless_strict(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "stale_context_task" in result.output
     assert strict_result.exit_code == 1
+
+
+def test_check_warns_when_task_estimate_is_zero(tmp_path, monkeypatch):
+    _create_minimal_tree(tmp_path)
+    task_file = (
+        tmp_path
+        / ".tasks"
+        / "01-phase"
+        / "01-milestone"
+        / "01-epic"
+        / "T001-task-1.todo"
+    )
+    with open(task_file) as f:
+        content = f.read()
+    with open(task_file, "w") as f:
+        f.write(content.replace("estimate_hours: 1.0", "estimate_hours: 0"))
+
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["check"])
+    strict_result = runner.invoke(cli, ["check", "--strict"])
+
+    assert result.exit_code == 0
+    assert "zero_estimate_hours" in result.output
+    assert strict_result.exit_code == 1

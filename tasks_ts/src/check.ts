@@ -172,6 +172,15 @@ function validateIdsAndDependencies(tree: TaskTree, findings: Finding[]): void {
           if (taskIds.has(task.id)) addFinding(findings, { level: "error", code: "duplicate_task_id", message: `Duplicate task ID: ${task.id}`, location: task.id });
           taskIds.add(task.id);
 
+          if (task.estimateHours === 0) {
+            addFinding(findings, {
+              level: "warning",
+              code: "zero_estimate_hours",
+              message: `Task estimate must be positive, got 0: ${task.id}`,
+              location: task.id,
+            });
+          }
+
           for (const dep of task.dependsOn) {
             if (dep === task.id) addFinding(findings, { level: "error", code: "self_dependency_task", message: `Task depends on itself: ${task.id}`, location: task.id });
             else if (!allTasks.some((t) => t.id === dep)) addFinding(findings, { level: "error", code: "missing_task_dependency", message: `Task dependency not found: ${dep}`, location: task.id });

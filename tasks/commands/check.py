@@ -329,6 +329,15 @@ def _validate_ids_and_dependencies(tree, findings):
                             task.id,
                         )
 
+                    if task.estimate_hours == 0:
+                        _add_finding(
+                            findings,
+                            "warning",
+                            "zero_estimate_hours",
+                            f"Task estimate must be positive, got 0: {task.id}",
+                            task.id,
+                        )
+
     for task in all_tasks:
         for dep in task.depends_on:
             if dep == task.id:

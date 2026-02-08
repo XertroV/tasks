@@ -183,6 +183,15 @@ describe("native cli", () => {
     p = run(["check", "--strict"], root);
     expect(p.exitCode).toBe(1);
     expect(p.stdout.toString()).toContain("warning");
+
+    // Zero estimates should warn and fail in strict mode.
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    writeFileSync(taskPath, readFileSync(taskPath, "utf8").replace("estimate_hours: 1", "estimate_hours: 0"));
+    p = run(["check"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("zero_estimate_hours");
+    p = run(["check", "--strict"], root);
+    expect(p.exitCode).toBe(1);
   });
 
   test("data summary/export json", () => {
@@ -199,5 +208,30 @@ describe("native cli", () => {
     expect(exported.project).toBe("Native");
     expect(Array.isArray(exported.phases)).toBeTrue();
     expect(exported.phases[0].milestones[0].epics[0].tasks.length).toBe(2);
+  });
+
+  test("report progress/velocity/estimate-accuracy json", () => {
+    root = setupFixture();
+    // create duration-bearing completed task
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-r"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["report", "progress", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const progress = JSON.parse(p.stdout.toString());
+    expect(progress.overall.total).toBe(2);
+
+    p = run(["report", "velocity", "--days", "7", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const velocity = JSON.parse(p.stdout.toString());
+    expect(velocity.days_analyzed).toBe(7);
+    expect(Array.isArray(velocity.daily_data)).toBeTrue();
+
+    p = run(["report", "estimate-accuracy", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const accuracy = JSON.parse(p.stdout.toString());
+    expect(accuracy.tasks_analyzed).toBeGreaterThanOrEqual(1);
   });
 });
