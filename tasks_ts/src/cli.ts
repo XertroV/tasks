@@ -34,7 +34,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -391,6 +391,158 @@ function formatDuration(minutes: number): string {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
+function computeStats(tree: { phases: Array<{ milestones: Array<{ epics: Array<{ tasks: Array<{ status: Status }> }> }> }> }): {
+  total_tasks: number;
+  done: number;
+  in_progress: number;
+  pending: number;
+  blocked: number;
+} {
+  const all = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)));
+  return {
+    total_tasks: all.length,
+    done: all.filter((t) => t.status === Status.DONE).length,
+    in_progress: all.filter((t) => t.status === Status.IN_PROGRESS).length,
+    pending: all.filter((t) => t.status === Status.PENDING).length,
+    blocked: all.filter((t) => t.status === Status.BLOCKED).length,
+  };
+}
+
+async function cmdData(args: string[]): Promise<void> {
+  const sub = args[0];
+  const rest = args.slice(1);
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const scope = parseOpt(rest, "--scope");
+
+  if (!sub || sub === "--help") {
+    console.log("Usage: tasks data <summary|export> [options]");
+    return;
+  }
+
+  if (sub === "summary") {
+    const outputFormat = parseOpt(rest, "--format") ?? "text";
+    const stats = computeStats(tree);
+    const total = stats.total_tasks;
+    const done = stats.done;
+    const pct = total > 0 ? (done / total) * 100 : 0;
+    const summary = {
+      project: tree.project,
+      timestamp: new Date().toISOString(),
+      overall: {
+        total_tasks: total,
+        done,
+        in_progress: stats.in_progress,
+        pending: stats.pending,
+        blocked: stats.blocked,
+        percent_complete: Number(pct.toFixed(1)),
+      },
+      phases: tree.phases.map((p) => {
+        const tasks = p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
+        const pDone = tasks.filter((t) => t.status === Status.DONE).length;
+        const pTotal = tasks.length;
+        return {
+          id: p.id,
+          name: p.name,
+          done: pDone,
+          total: pTotal,
+          percent_complete: Number((pTotal ? (pDone / pTotal) * 100 : 0).toFixed(1)),
+        };
+      }),
+    };
+    if (outputFormat === "json") {
+      jsonOut(summary);
+      return;
+    }
+    console.log(tree.project);
+    console.log(`Overall: ${done}/${total} tasks (${pct.toFixed(1)}%)`);
+    return;
+  }
+
+  if (sub === "export") {
+    const outputFormat = parseOpt(rest, "--format") ?? "json";
+    const output = parseOpt(rest, "--output") ?? parseOpt(rest, "-o");
+    const includeContent = parseFlag(rest, "--include-content");
+    const pretty = !rest.includes("--pretty=false");
+    const stats = computeStats(tree);
+    const exportData = {
+      exported_at: new Date().toISOString(),
+      project: tree.project,
+      description: tree.description ?? "",
+      timeline_weeks: tree.timelineWeeks ?? 0,
+      stats,
+      phases: tree.phases
+        .filter((p) => (scope ? p.id.startsWith(scope) || scope.startsWith(p.id) : true))
+        .map((p) => ({
+          id: p.id,
+          name: p.name,
+          path: p.path,
+          status: p.status,
+          weeks: p.weeks,
+          estimate_hours: p.estimateHours,
+          priority: p.priority,
+          depends_on: p.dependsOn,
+          milestones: p.milestones
+            .filter((m) => (scope ? m.id.startsWith(scope) || scope.startsWith(m.id) : true))
+            .map((m) => ({
+              id: m.id,
+              name: m.name,
+              path: m.path,
+              status: m.status,
+              estimate_hours: m.estimateHours,
+              complexity: m.complexity,
+              depends_on: m.dependsOn,
+              epics: m.epics
+                .filter((e) => (scope ? e.id.startsWith(scope) || scope.startsWith(e.id) : true))
+                .map((e) => ({
+                  id: e.id,
+                  name: e.name,
+                  path: e.path,
+                  status: e.status,
+                  estimate_hours: e.estimateHours,
+                  complexity: e.complexity,
+                  depends_on: e.dependsOn,
+                  tasks: e.tasks
+                    .filter((t) => (scope ? t.id.startsWith(scope) : true))
+                    .map((t) => ({
+                      id: t.id,
+                      title: t.title,
+                      file: t.file,
+                      status: t.status,
+                      estimate_hours: t.estimateHours,
+                      complexity: t.complexity,
+                      priority: t.priority,
+                      depends_on: t.dependsOn,
+                      tags: t.tags,
+                      claimed_by: t.claimedBy ?? null,
+                      claimed_at: t.claimedAt?.toISOString() ?? null,
+                      started_at: t.startedAt?.toISOString() ?? null,
+                      completed_at: t.completedAt?.toISOString() ?? null,
+                      duration_minutes: t.durationMinutes ?? null,
+                      ...(includeContent
+                        ? { content: existsSync(join(".tasks", t.file)) ? readFileSync(join(".tasks", t.file), "utf8") : null }
+                        : {}),
+                    })),
+                })),
+            })),
+        })),
+    };
+    const rendered =
+      outputFormat === "yaml"
+        ? stringify(exportData)
+        : JSON.stringify(exportData, null, pretty ? 2 : undefined);
+    if (output) {
+      await Bun.write(output, rendered);
+      console.log(`Exported to ${output}`);
+      return;
+    }
+    console.log(rendered);
+    return;
+  }
+
+  await delegateToPython(["data", ...args]);
+}
+
 async function cmdSession(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
@@ -573,6 +725,9 @@ async function main(): Promise<void> {
       return;
     case "check":
       await cmdCheck(rest);
+      return;
+    case "data":
+      await cmdData(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.

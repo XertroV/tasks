@@ -60,6 +60,20 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
     }
     return;
   }
+  if (cmd[0] === "data" && cmd[1] === "summary") {
+    if (!tso?.overall || typeof tso.overall.total_tasks !== "number") {
+      throw new Error("data summary missing overall.total_tasks");
+    }
+    if (pyo?.project !== tso?.project) {
+      throw new Error("data summary project mismatch");
+    }
+    return;
+  }
+  if (cmd[0] === "data" && cmd[1] === "export") {
+    if (!Array.isArray(tso?.phases)) throw new Error("data export missing phases array");
+    if (pyo?.project !== tso?.project) throw new Error("data export project mismatch");
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -193,6 +207,8 @@ const vectors = [
   ["session", "list"],
   ["session", "end", "--agent", "agent-p"],
   ["check", "--json"],
+  ["data", "summary", "--format", "json"],
+  ["data", "export", "--format", "json"],
   ["sync"],
 ];
 

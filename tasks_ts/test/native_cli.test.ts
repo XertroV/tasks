@@ -184,4 +184,20 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(1);
     expect(p.stdout.toString()).toContain("warning");
   });
+
+  test("data summary/export json", () => {
+    root = setupFixture();
+    let p = run(["data", "summary", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const summary = JSON.parse(p.stdout.toString());
+    expect(summary.project).toBe("Native");
+    expect(summary.overall.total_tasks).toBe(2);
+
+    p = run(["data", "export", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const exported = JSON.parse(p.stdout.toString());
+    expect(exported.project).toBe("Native");
+    expect(Array.isArray(exported.phases)).toBeTrue();
+    expect(exported.phases[0].milestones[0].epics[0].tasks.length).toBe(2);
+  });
 });
