@@ -295,4 +295,23 @@ describe("native cli", () => {
     expect(out).toContain("AGENTS.md (Medium)");
     expect(out).toContain("AGENTS.md (Long)");
   });
+
+  test("add/add-epic/add-milestone/add-phase commands", () => {
+    root = setupFixture();
+    let p = run(["add", "P1.M1.E1", "--title", "New Task"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created task:");
+
+    p = run(["add-epic", "P1.M1", "--title", "New Epic"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created epic:");
+
+    p = run(["add-milestone", "P1", "--title", "New Milestone"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created milestone:");
+
+    p = run(["add-phase", "--title", "New Phase"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created phase:");
+  });
 });

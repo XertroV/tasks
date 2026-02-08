@@ -62,7 +62,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills agents`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills agents add add-epic add-milestone add-phase`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -777,6 +777,239 @@ async function cmdAgents(args: string[]): Promise<void> {
   }
 }
 
+function slugify(text: string, maxLength = 30): string {
+  const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return base.length > maxLength ? base.slice(0, maxLength).replace(/-+$/g, "") : base;
+}
+
+function parseCsv(val: string | undefined): string[] {
+  if (!val) return [];
+  return val.split(",").map((x) => x.trim()).filter(Boolean);
+}
+
+async function readYamlObj(path: string): Promise<Record<string, unknown>> {
+  return (parse(await Bun.file(path).text()) as Record<string, unknown>) ?? {};
+}
+
+async function writeYamlObj(path: string, value: Record<string, unknown>): Promise<void> {
+  await mkdir(dirname(path), { recursive: true });
+  await Bun.write(path, stringify(value));
+}
+
+async function cmdAdd(args: string[]): Promise<void> {
+  const epicId = args.find((a) => !a.startsWith("-"));
+  if (!epicId) textError("add requires EPIC_ID");
+  const title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
+  if (!title) textError("add requires --title");
+  const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "1");
+  const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
+  const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
+  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const tags = parseCsv(parseOpt(args, "--tags"));
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const epic = findEpic(tree, epicId);
+  if (!epic) textError(`Epic not found: ${epicId}`);
+  const phase = findPhase(tree, epic.phaseId ?? "");
+  const milestone = findMilestone(tree, epic.milestoneId ?? "");
+  if (!phase || !milestone) textError(`Could not resolve parent paths for epic: ${epicId}`);
+
+  const epicDir = join(".tasks", phase.path, milestone.path, epic.path);
+  const existing = epic.tasks
+    .map((t) => Number((t.id.match(/\.T(\d+)$/)?.[1] ?? "0")))
+    .filter((n) => Number.isFinite(n));
+  const next = (existing.length ? Math.max(...existing) : 0) + 1;
+  const shortId = `T${String(next).padStart(3, "0")}`;
+  const fullId = `${epic.id}.${shortId}`;
+  const filename = `${shortId}-${slugify(title)}.todo`;
+  const relFile = join(phase.path, milestone.path, epic.path, filename);
+  const fullFile = join(".tasks", relFile);
+
+  const fm = {
+    id: fullId,
+    title,
+    status: "pending",
+    estimate_hours: estimate,
+    complexity,
+    priority,
+    depends_on: dependsOn,
+    tags,
+  };
+  const body = `\n# ${title}\n\n## Requirements\n\n- [ ] TODO: Add requirements\n\n## Acceptance Criteria\n\n- [ ] TODO: Add acceptance criteria\n`;
+  await mkdir(dirname(fullFile), { recursive: true });
+  await Bun.write(fullFile, `---\n${stringify(fm)}---\n${body}`);
+
+  const epicIndexPath = join(epicDir, "index.yaml");
+  const epicIndex = await readYamlObj(epicIndexPath);
+  const tasks = ((epicIndex.tasks as Record<string, unknown>[] | undefined) ?? []).slice();
+  tasks.push({
+    id: shortId,
+    file: filename,
+    title,
+    status: "pending",
+    estimate_hours: estimate,
+    complexity,
+    priority,
+    depends_on: dependsOn,
+  });
+  epicIndex.tasks = tasks;
+  await writeYamlObj(epicIndexPath, epicIndex);
+  console.log(`Created task: ${fullId}`);
+}
+
+async function cmdAddEpic(args: string[]): Promise<void> {
+  const milestoneId = args.find((a) => !a.startsWith("-"));
+  if (!milestoneId) textError("add-epic requires MILESTONE_ID");
+  const title = parseOpt(args, "--title") ?? parseOpt(args, "-T") ?? parseOpt(args, "--name") ?? parseOpt(args, "-n");
+  if (!title) textError("add-epic requires --title");
+  const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "4");
+  const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
+  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const milestone = findMilestone(tree, milestoneId);
+  if (!milestone) textError(`Milestone not found: ${milestoneId}`);
+  const phase = findPhase(tree, milestone.phaseId ?? "");
+  if (!phase) textError(`Phase not found for milestone: ${milestoneId}`);
+
+  const existing = milestone.epics
+    .map((e) => Number((e.id.match(/\.E(\d+)$/)?.[1] ?? "0")))
+    .filter((n) => Number.isFinite(n));
+  const next = (existing.length ? Math.max(...existing) : 0) + 1;
+  const shortId = `E${next}`;
+  const fullId = `${milestone.id}.${shortId}`;
+  const dirName = `${String(next).padStart(2, "0")}-${slugify(title)}`;
+  const epicDir = join(".tasks", phase.path, milestone.path, dirName);
+  await mkdir(epicDir, { recursive: true });
+  await writeYamlObj(join(epicDir, "index.yaml"), {
+    id: fullId,
+    name: title,
+    status: "pending",
+    estimate_hours: estimate,
+    complexity,
+    depends_on: dependsOn,
+    tasks: [],
+    stats: { total: 0, done: 0, in_progress: 0, blocked: 0, pending: 0 },
+  });
+
+  const msIndexPath = join(".tasks", phase.path, milestone.path, "index.yaml");
+  const msIndex = await readYamlObj(msIndexPath);
+  const epics = ((msIndex.epics as Record<string, unknown>[] | undefined) ?? []).slice();
+  epics.push({
+    id: shortId,
+    name: title,
+    path: dirName,
+    status: "pending",
+    estimate_hours: estimate,
+    complexity,
+    depends_on: dependsOn,
+    description: "",
+  });
+  msIndex.epics = epics;
+  await writeYamlObj(msIndexPath, msIndex);
+  console.log(`Created epic: ${fullId}`);
+}
+
+async function cmdAddMilestone(args: string[]): Promise<void> {
+  const phaseId = args.find((a) => !a.startsWith("-"));
+  if (!phaseId) textError("add-milestone requires PHASE_ID");
+  const title = parseOpt(args, "--title") ?? parseOpt(args, "-T") ?? parseOpt(args, "--name") ?? parseOpt(args, "-n");
+  if (!title) textError("add-milestone requires --title");
+  const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "8");
+  const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
+  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const phase = findPhase(tree, phaseId);
+  if (!phase) textError(`Phase not found: ${phaseId}`);
+
+  const existing = phase.milestones
+    .map((m) => Number((m.id.match(/\.M(\d+)$/)?.[1] ?? "0")))
+    .filter((n) => Number.isFinite(n));
+  const next = (existing.length ? Math.max(...existing) : 0) + 1;
+  const shortId = `M${next}`;
+  const fullId = `${phase.id}.${shortId}`;
+  const dirName = `${String(next).padStart(2, "0")}-${slugify(title)}`;
+  const msDir = join(".tasks", phase.path, dirName);
+  await mkdir(msDir, { recursive: true });
+  await writeYamlObj(join(msDir, "index.yaml"), {
+    id: fullId,
+    name: title,
+    status: "pending",
+    estimate_hours: estimate,
+    complexity,
+    depends_on: dependsOn,
+    epics: [],
+    stats: { total_tasks: 0, done: 0, in_progress: 0, blocked: 0, pending: 0 },
+  });
+
+  const phaseIndexPath = join(".tasks", phase.path, "index.yaml");
+  const phaseIndex = await readYamlObj(phaseIndexPath);
+  const milestones = ((phaseIndex.milestones as Record<string, unknown>[] | undefined) ?? []).slice();
+  milestones.push({
+    id: shortId,
+    name: title,
+    path: dirName,
+    status: "pending",
+    estimate_hours: estimate,
+    complexity,
+    depends_on: dependsOn,
+    description: "",
+  });
+  phaseIndex.milestones = milestones;
+  await writeYamlObj(phaseIndexPath, phaseIndex);
+  console.log(`Created milestone: ${fullId}`);
+}
+
+async function cmdAddPhase(args: string[]): Promise<void> {
+  const title = parseOpt(args, "--title") ?? parseOpt(args, "-T") ?? parseOpt(args, "--name") ?? parseOpt(args, "-n");
+  if (!title) textError("add-phase requires --title");
+  const weeks = Number(parseOpt(args, "--weeks") ?? "2");
+  const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "40");
+  const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
+  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+
+  const rootIndexPath = join(".tasks", "index.yaml");
+  const root = await readYamlObj(rootIndexPath);
+  const phases = ((root.phases as Record<string, unknown>[] | undefined) ?? []).slice();
+  const existing = phases
+    .map((p) => Number((String(p.id ?? "").match(/^P(\d+)$/)?.[1] ?? "0")))
+    .filter((n) => Number.isFinite(n));
+  const next = (existing.length ? Math.max(...existing) : 0) + 1;
+  const phaseId = `P${next}`;
+  const dirName = `${String(next).padStart(2, "0")}-${slugify(title)}`;
+  const phaseDir = join(".tasks", dirName);
+  await mkdir(phaseDir, { recursive: true });
+  await writeYamlObj(join(phaseDir, "index.yaml"), {
+    id: phaseId,
+    name: title,
+    status: "pending",
+    weeks,
+    estimate_hours: estimate,
+    complexity: "medium",
+    depends_on: dependsOn,
+    milestones: [],
+    stats: { total_tasks: 0, done: 0, in_progress: 0, blocked: 0, pending: 0 },
+  });
+  phases.push({
+    id: phaseId,
+    name: title,
+    path: dirName,
+    status: "pending",
+    weeks,
+    estimate_hours: estimate,
+    priority,
+    depends_on: dependsOn,
+    description: "",
+  });
+  root.phases = phases;
+  await writeYamlObj(rootIndexPath, root);
+  console.log(`Created phase: ${phaseId}`);
+}
+
 type InstallOp = { client: string; artifact: string; path: string; action?: string };
 
 function resolveSkills(names: string[]): string[] {
@@ -1186,6 +1419,18 @@ async function main(): Promise<void> {
       return;
     case "agents":
       await cmdAgents(rest);
+      return;
+    case "add":
+      await cmdAdd(rest);
+      return;
+    case "add-epic":
+      await cmdAddEpic(rest);
+      return;
+    case "add-milestone":
+      await cmdAddMilestone(rest);
+      return;
+    case "add-phase":
+      await cmdAddPhase(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.

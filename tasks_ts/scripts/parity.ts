@@ -109,6 +109,38 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
   if (cmd[0] === "agents") {
     return;
   }
+  if (cmd[0] === "add") {
+    const pyIdx = parse(readFileSync(join(pyRoot, ".tasks", "01-phase", "01-ms", "01-epic", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const tsIdx = parse(readFileSync(join(tsRoot, ".tasks", "01-phase", "01-ms", "01-epic", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const pyTasks = (pyIdx.tasks as unknown[] | undefined) ?? [];
+    const tsTasks = (tsIdx.tasks as unknown[] | undefined) ?? [];
+    if (pyTasks.length !== tsTasks.length) throw new Error("add task count mismatch");
+    return;
+  }
+  if (cmd[0] === "add-epic") {
+    const pyIdx = parse(readFileSync(join(pyRoot, ".tasks", "01-phase", "01-ms", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const tsIdx = parse(readFileSync(join(tsRoot, ".tasks", "01-phase", "01-ms", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const py = (pyIdx.epics as unknown[] | undefined) ?? [];
+    const ts = (tsIdx.epics as unknown[] | undefined) ?? [];
+    if (py.length !== ts.length) throw new Error("add-epic count mismatch");
+    return;
+  }
+  if (cmd[0] === "add-milestone") {
+    const pyIdx = parse(readFileSync(join(pyRoot, ".tasks", "01-phase", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const tsIdx = parse(readFileSync(join(tsRoot, ".tasks", "01-phase", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const py = (pyIdx.milestones as unknown[] | undefined) ?? [];
+    const ts = (tsIdx.milestones as unknown[] | undefined) ?? [];
+    if (py.length !== ts.length) throw new Error("add-milestone count mismatch");
+    return;
+  }
+  if (cmd[0] === "add-phase") {
+    const pyIdx = parse(readFileSync(join(pyRoot, ".tasks", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const tsIdx = parse(readFileSync(join(tsRoot, ".tasks", "index.yaml"), "utf8")) as Record<string, unknown>;
+    const py = (pyIdx.phases as unknown[] | undefined) ?? [];
+    const ts = (tsIdx.phases as unknown[] | undefined) ?? [];
+    if (py.length !== ts.length) throw new Error("add-phase count mismatch");
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -253,6 +285,10 @@ const vectors = [
   ["blockers", "--suggest"],
   ["skills", "install", "plan-task", "--client=codex", "--artifact=skills", "--dry-run", "--json"],
   ["agents", "--profile", "short"],
+  ["add", "P1.M1.E1", "--title", "Parity Task"],
+  ["add-epic", "P1.M1", "--title", "Parity Epic"],
+  ["add-milestone", "P1", "--title", "Parity Milestone"],
+  ["add-phase", "--title", "Parity Phase"],
   ["sync"],
 ];
 
@@ -275,6 +311,8 @@ for (const args of vectors) {
 
   if (args[0] === "sync") {
     assertSyncState(pyRoot, tsRoot);
+  } else if (["add", "add-epic", "add-milestone", "add-phase"].includes(args[0] ?? "")) {
+    // add-family commands are validated semantically above; YAML serialization may differ.
   } else {
     const pyState = readTaskState(pyRoot);
     const tsState = readTaskState(tsRoot);
