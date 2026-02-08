@@ -88,6 +88,11 @@ function assertSemanticJson(cmd: string[], py: string, ts: string): void {
     if (typeof tso?.tasks_analyzed !== "number") throw new Error("report estimate-accuracy missing tasks_analyzed");
     return;
   }
+  if (cmd[0] === "schema") {
+    if (typeof tso?.schema_version !== "number") throw new Error("schema --json missing schema_version");
+    if (!Array.isArray(tso?.files)) throw new Error("schema --json missing files");
+    return;
+  }
 }
 
 function readTaskState(cwd: string): string {
@@ -226,6 +231,8 @@ const vectors = [
   ["report", "progress", "--format", "json"],
   ["report", "velocity", "--days", "7", "--format", "json"],
   ["report", "estimate-accuracy", "--format", "json"],
+  ["timeline"],
+  ["schema", "--json"],
   ["sync"],
 ];
 

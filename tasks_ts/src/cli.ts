@@ -34,7 +34,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -671,6 +671,73 @@ async function cmdReport(args: string[]): Promise<void> {
   await delegateToPython(["report", ...args]);
 }
 
+async function cmdTimeline(args: string[]): Promise<void> {
+  const scope = parseOpt(args, "--scope");
+  const groupBy = parseOpt(args, "--group-by") ?? "milestone";
+  const showDone = parseFlag(args, "--show-done");
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { criticalPath } = calc.calculate();
+  let tasks = getAllTasks(tree);
+  if (scope) tasks = tasks.filter((t) => t.id.startsWith(scope));
+  if (!showDone) tasks = tasks.filter((t) => t.status !== Status.DONE);
+  if (!tasks.length) {
+    console.log("No tasks to display.");
+    return;
+  }
+
+  const groups = new Map<string, typeof tasks>();
+  for (const t of tasks) {
+    const key = groupBy === "phase" ? t.phaseId : groupBy === "epic" ? t.epicId : groupBy === "status" ? t.status : t.milestoneId;
+    const label = key ?? "Unknown";
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label)!.push(t);
+  }
+  console.log("Project Timeline");
+  for (const [label, group] of groups.entries()) {
+    console.log(label);
+    for (const t of group) {
+      const crit = criticalPath.includes(t.id) ? "*" : " ";
+      console.log(`  ${crit} ${t.id} ${t.status} ${t.title}`);
+    }
+  }
+}
+
+async function cmdSchema(args: string[]): Promise<void> {
+  const asJson = parseFlag(args, "--json");
+  const compact = parseFlag(args, "--compact");
+  const spec = {
+    schema_version: 1,
+    scope: "file-kinds",
+    enums: {
+      status: Object.values(Status),
+      complexity: ["low", "medium", "high", "critical"],
+      priority: ["critical", "high", "medium", "low"],
+      context_mode: ["single", "multi", "siblings"],
+    },
+    files: [
+      { name: "Root index", path_pattern: ".tasks/index.yaml", format: "yaml" },
+      { name: "Phase index", path_pattern: ".tasks/<phase-path>/index.yaml", format: "yaml" },
+      { name: "Milestone index", path_pattern: ".tasks/<phase-path>/<milestone-path>/index.yaml", format: "yaml" },
+      { name: "Epic index", path_pattern: ".tasks/<phase-path>/<milestone-path>/<epic-path>/index.yaml", format: "yaml" },
+      { name: "Task file", path_pattern: ".tasks/<phase-path>/<milestone-path>/<epic-path>/T###-*.todo", format: "markdown-with-yaml-frontmatter" },
+      { name: "Context file", path_pattern: ".tasks/.context.yaml", format: "yaml" },
+      { name: "Sessions file", path_pattern: ".tasks/.sessions.yaml", format: "yaml" },
+      { name: "Config file", path_pattern: ".tasks/config.yaml", format: "yaml" },
+    ],
+  };
+  if (asJson) {
+    console.log(JSON.stringify(spec, null, compact ? undefined : 2));
+    return;
+  }
+  console.log("Schema");
+  for (const f of spec.files) {
+    console.log(`- ${f.name}: ${f.path_pattern}`);
+  }
+}
+
 async function cmdSession(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
@@ -859,6 +926,12 @@ async function main(): Promise<void> {
       return;
     case "report":
       await cmdReport(rest);
+      return;
+    case "timeline":
+      await cmdTimeline(rest);
+      return;
+    case "schema":
+      await cmdSchema(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.

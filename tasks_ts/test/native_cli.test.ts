@@ -234,4 +234,17 @@ describe("native cli", () => {
     const accuracy = JSON.parse(p.stdout.toString());
     expect(accuracy.tasks_analyzed).toBeGreaterThanOrEqual(1);
   });
+
+  test("timeline and schema commands", () => {
+    root = setupFixture();
+    let p = run(["timeline"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Project Timeline");
+
+    p = run(["schema", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const schema = JSON.parse(p.stdout.toString());
+    expect(schema.schema_version).toBe(1);
+    expect(Array.isArray(schema.files)).toBeTrue();
+  });
 });
