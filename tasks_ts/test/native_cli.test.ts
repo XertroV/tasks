@@ -281,4 +281,18 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(0);
     expect(readFileSync(join(root, ".agents", "skills", "plan-task", "SKILL.md"), "utf8")).toContain("plan-task");
   });
+
+  test("agents profile output", () => {
+    root = setupFixture();
+    let p = run(["agents", "--profile", "short"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("AGENTS.md (Short)");
+
+    p = run(["agents", "--profile", "all"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("AGENTS.md (Short)");
+    expect(out).toContain("AGENTS.md (Medium)");
+    expect(out).toContain("AGENTS.md (Long)");
+  });
 });

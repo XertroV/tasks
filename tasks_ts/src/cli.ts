@@ -13,6 +13,33 @@ import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
 import { runChecks } from "./check";
 
+const AGENTS_SNIPPETS: Record<string, string> = {
+  short: `# AGENTS.md (Short)
+
+## Task Workflow
+- Use \`tasks grab\` to claim work, then \`tasks done\` or \`tasks cycle\`.
+- Prefer critical-path work, then \`critical > high > medium > low\` priority.
+- If blocked, run \`tasks blocked --reason "<why>" --no-grab\` and handoff quickly.
+- Keep each change scoped to one task; update status as soon as state changes.
+- Before done: run targeted tests for changed code.
+- For more see \`tasks --help\`.
+`,
+  medium: `# AGENTS.md (Medium)
+
+## Defaults
+- Claim with \`tasks grab\` (or \`tasks grab --single\` for focused work).
+- CLI selection order is: critical-path first, then task priority.
+- Use \`tasks work <id>\` when switching context; use \`tasks show\` to review details.
+`,
+  long: `# AGENTS.md (Long)
+
+## Operating Model
+- Default command: \`tasks\`. Use local \`.tasks/\` state as source of truth.
+- Selection strategy: critical-path first, then \`critical > high > medium > low\`.
+- Treat task files as contracts: requirements + acceptance criteria drive scope.
+`,
+};
+
 function parseFlag(args: string[], name: string): boolean {
   return args.includes(name);
 }
@@ -35,7 +62,7 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills agents`);
 }
 
 async function cmdList(args: string[]): Promise<void> {
@@ -739,6 +766,17 @@ async function cmdSchema(args: string[]): Promise<void> {
   }
 }
 
+async function cmdAgents(args: string[]): Promise<void> {
+  const profile = parseOpt(args, "--profile") ?? "all";
+  const order = profile === "all" ? ["short", "medium", "long"] : [profile];
+  for (let i = 0; i < order.length; i++) {
+    const key = order[i]!;
+    if (!AGENTS_SNIPPETS[key]) textError(`Invalid profile: ${profile}`);
+    if (i > 0) console.log(`\n${"=".repeat(72)}\n`);
+    console.log(AGENTS_SNIPPETS[key]);
+  }
+}
+
 type InstallOp = { client: string; artifact: string; path: string; action?: string };
 
 function resolveSkills(names: string[]): string[] {
@@ -1145,6 +1183,9 @@ async function main(): Promise<void> {
       return;
     case "skills":
       await cmdSkills(rest);
+      return;
+    case "agents":
+      await cmdAgents(rest);
       return;
     default:
       // Temporary compatibility fallback while remaining commands are ported.
