@@ -208,6 +208,43 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(1);
   });
 
+  test("check command warns on uninitialized todo files", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    
+    // Create a task file with default template content
+    const uninitializedContent = `---
+id: P1.M1.E1.T001
+title: Task 1
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Task 1
+
+## Requirements
+
+- [ ] TODO: Add requirements
+
+## Acceptance Criteria
+
+- [ ] TODO: Add acceptance criteria
+`;
+    writeFileSync(taskPath, uninitializedContent);
+    
+    let p = run(["check"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("uninitialized_todo");
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+    
+    p = run(["check", "--strict"], root);
+    expect(p.exitCode).toBe(1);
+  });
+
   test("data summary/export json", () => {
     root = setupFixture();
     let p = run(["data", "summary", "--format", "json"], root);
@@ -389,6 +426,35 @@ describe("native cli", () => {
     expect(data.phases[0].milestones).toBeDefined();
     expect(data.phases[0].milestones[0].stats).toBeDefined();
     expect(data.phases[0].milestones[0].stats.total).toBe(2);
+  });
+
+  test("list --progress shows phase and milestone IDs", () => {
+    root = setupFixture();
+    // Complete a task so the phase has progress and milestones are displayed
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "test"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["list", "--progress"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("P1: Phase");
+    expect(out).toContain("P1.M1:");
+    expect(out).toContain("Project Progress");
+  });
+
+  test("list --progress --unfinished filters completed items", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "test"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["list", "--progress", "--unfinished"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("P1: Phase");
   });
 
   test("tree command shows full 4-level hierarchy", () => {

@@ -7,7 +7,7 @@ import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
 import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
-import { Status, TaskPath } from "./models";
+import { Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
 import { runChecks } from "./check";
@@ -106,6 +106,71 @@ function getPhaseStats(phase: Phase): { done: number; total: number } {
   return calculateTaskStats(tasks);
 }
 
+function makeProgressBar(done: number, total: number, width = 20): string {
+  if (total === 0) return "░".repeat(width);
+  const pct = done / total;
+  const filled = Math.floor(width * pct);
+  const empty = width - filled;
+  return "█".repeat(filled) + "░".repeat(empty);
+}
+
+function listWithProgress(tree: TaskTree, unfinished: boolean): void {
+  console.log();
+  console.log(pc.bold(pc.cyan("Project Progress")));
+  console.log();
+
+  const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
+
+  for (const phase of phasesToShow) {
+    const stats = getPhaseStats(phase);
+    const { done, total } = stats;
+    const inProgress = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)).filter((t) => t.status === Status.IN_PROGRESS).length;
+    const blocked = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)).filter((t) => t.status === Status.BLOCKED).length;
+
+    const pct = total > 0 ? (done / total) * 100 : 0;
+    const bar = makeProgressBar(done, total);
+
+    let indicator: string;
+    if (pct === 100) {
+      indicator = pc.green("✓");
+    } else if (inProgress > 0) {
+      indicator = pc.yellow("→");
+    } else if (blocked > 0) {
+      indicator = pc.red("🔒");
+    } else {
+      indicator = "[ ]";
+    }
+
+    console.log(`${indicator} ${pc.bold(`${phase.id}: ${phase.name}`)}`);
+    console.log(`    ${bar} ${pct.toFixed(1).padStart(5)}% (${done}/${total})`);
+
+    if (pct > 0 && pct < 100) {
+      for (const m of phase.milestones) {
+        const mStats = getMilestoneStats(m);
+        const mDone = mStats.done;
+        const mTotal = mStats.total;
+        const mInProgress = m.epics.flatMap((e) => e.tasks).filter((t) => t.status === Status.IN_PROGRESS).length;
+
+        const mPct = mTotal > 0 ? (mDone / mTotal) * 100 : 0;
+        const mBar = makeProgressBar(mDone, mTotal, 15);
+
+        let mInd: string;
+        if (mPct === 100) {
+          mInd = pc.green("✓");
+        } else if (mInProgress > 0) {
+          mInd = pc.yellow("→");
+        } else {
+          mInd = "○";
+        }
+
+        console.log(`    ${mInd} ${m.id}: ${mBar} ${Math.round(mPct).toString().padStart(3)}%`);
+      }
+    }
+
+    console.log();
+  }
+}
+
 // Display helpers
 function getStatusIcon(status: Status): string {
   switch (status) {
@@ -137,6 +202,7 @@ async function cmdList(args: string[]): Promise<void> {
   const statusFilter = parseOpt(args, "--status")?.split(",") ?? [];
   const showAll = parseFlag(args, "--all");
   const unfinished = parseFlag(args, "--unfinished");
+  const showProgress = parseFlag(args, "--progress");
   const loader = new TaskLoader();
   const tree = await loader.load();
   const cfg = loadConfig();
@@ -144,6 +210,11 @@ async function cmdList(args: string[]): Promise<void> {
   const { criticalPath, nextAvailable } = calc.calculate();
   tree.criticalPath = criticalPath;
   tree.nextAvailable = nextAvailable;
+
+  if (showProgress) {
+    listWithProgress(tree, unfinished);
+    return;
+  }
 
   const tasks = getAllTasks(tree).filter((t) => (statusFilter.length ? statusFilter.includes(t.status) : true));
   if (outputJson) {

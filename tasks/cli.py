@@ -259,7 +259,15 @@ def list(
 
         # Default list view
         if output_json:
-            _list_json(tree, critical_path, next_available, complexity, priority, show_all, unfinished)
+            _list_json(
+                tree,
+                critical_path,
+                next_available,
+                complexity,
+                priority,
+                show_all,
+                unfinished,
+            )
         else:
             _list_text(tree, critical_path, complexity, priority, show_all, unfinished)
 
@@ -352,7 +360,9 @@ def _show_filter_banner(complexity=None, priority=None):
         console.print(f"[dim]Filtering by {'; '.join(parts)}[/]\n")
 
 
-def _list_with_progress(tree, critical_path, complexity=None, priority=None, unfinished=False):
+def _list_with_progress(
+    tree, critical_path, complexity=None, priority=None, unfinished=False
+):
     """Show list with progress bars."""
     console.print("\n[bold cyan]Project Progress[/]\n")
     _show_filter_banner(complexity, priority)
@@ -403,7 +413,7 @@ def _list_with_progress(tree, critical_path, complexity=None, priority=None, unf
         else:
             indicator = "[ ]"
 
-        console.print(f"{indicator} [bold]{phase.name}[/]")
+        console.print(f"{indicator} [bold]{phase.id}: {phase.name}[/]")
         console.print(f"    {bar} {pct:5.1f}% ({done}/{total})")
 
         # Show milestones if phase is in progress
@@ -588,7 +598,15 @@ def _list_available(
         console.print(f"\n[dim]★ = On critical path[/]\n")
 
 
-def _list_json(tree, critical_path, next_available, complexity=None, priority=None, show_all=False, unfinished=False):
+def _list_json(
+    tree,
+    critical_path,
+    next_available,
+    complexity=None,
+    priority=None,
+    show_all=False,
+    unfinished=False,
+):
     """Output list as JSON."""
     phases_to_show = tree.phases
     if unfinished:
@@ -611,7 +629,11 @@ def _list_json(tree, critical_path, next_available, complexity=None, priority=No
                         "status": m.status.value,
                         "stats": _get_milestone_stats(m),
                     }
-                    for m in (p.milestones if not unfinished else [m for m in p.milestones if _has_unfinished_epics(m)])
+                    for m in (
+                        p.milestones
+                        if not unfinished
+                        else [m for m in p.milestones if _has_unfinished_epics(m)]
+                    )
                 ],
             }
             for p in phases_to_show
@@ -655,7 +677,14 @@ def _list_json(tree, critical_path, next_available, complexity=None, priority=No
     click.echo(json.dumps(output, indent=2))
 
 
-def _list_text(tree, critical_path, complexity=None, priority=None, show_all=False, unfinished=False):
+def _list_text(
+    tree,
+    critical_path,
+    complexity=None,
+    priority=None,
+    show_all=False,
+    unfinished=False,
+):
     """Output list as text."""
     console.print(
         f"\n[bold cyan]Critical Path:[/] {' → '.join(critical_path[:10])}"
@@ -733,7 +762,10 @@ def _list_text(tree, critical_path, complexity=None, priority=None, show_all=Fal
 
         milestone_limit = len(milestones_to_show) if show_all else 5
         for i, (m, m_done, m_total) in enumerate(milestones_to_show[:milestone_limit]):
-            is_last = i == min(milestone_limit, len(milestones_to_show)) - 1 and len(milestones_to_show) <= milestone_limit
+            is_last = (
+                i == min(milestone_limit, len(milestones_to_show)) - 1
+                and len(milestones_to_show) <= milestone_limit
+            )
             prefix = "└──" if is_last else "├──"
             console.print(f"  {prefix} {m.name} ({m_done}/{m_total} tasks done)")
 
@@ -775,14 +807,25 @@ def _render_task(task, is_last, prefix, critical_path, show_details):
     return line
 
 
-def _render_epic(epic, is_last, prefix, critical_path, unfinished, show_details, max_depth, current_depth):
+def _render_epic(
+    epic,
+    is_last,
+    prefix,
+    critical_path,
+    unfinished,
+    show_details,
+    max_depth,
+    current_depth,
+):
     """Render an epic and its tasks in the tree."""
     stats = _get_epic_stats(epic)
     branch = "└── " if is_last else "├── "
     continuation = "    " if is_last else "│   "
     lines = []
 
-    lines.append(f"{prefix}{branch}{epic.name} ({stats['done']}/{stats['total']}) [{epic.status.value}]")
+    lines.append(
+        f"{prefix}{branch}{epic.name} ({stats['done']}/{stats['total']}) [{epic.status.value}]"
+    )
 
     if current_depth >= max_depth:
         return lines
@@ -792,19 +835,32 @@ def _render_epic(epic, is_last, prefix, critical_path, unfinished, show_details,
 
     for i, t in enumerate(tasks_to_show):
         task_is_last = i == len(tasks_to_show) - 1
-        lines.append(_render_task(t, task_is_last, new_prefix, critical_path, show_details))
+        lines.append(
+            _render_task(t, task_is_last, new_prefix, critical_path, show_details)
+        )
 
     return lines
 
 
-def _render_milestone(milestone, is_last, prefix, critical_path, unfinished, show_details, max_depth, current_depth):
+def _render_milestone(
+    milestone,
+    is_last,
+    prefix,
+    critical_path,
+    unfinished,
+    show_details,
+    max_depth,
+    current_depth,
+):
     """Render a milestone and its epics in the tree."""
     stats = _get_milestone_stats(milestone)
     branch = "└── " if is_last else "├── "
     continuation = "    " if is_last else "│   "
     lines = []
 
-    lines.append(f"{prefix}{branch}{milestone.name} ({stats['done']}/{stats['total']}) [{milestone.status.value}]")
+    lines.append(
+        f"{prefix}{branch}{milestone.name} ({stats['done']}/{stats['total']}) [{milestone.status.value}]"
+    )
 
     if current_depth >= max_depth:
         return lines
@@ -817,19 +873,41 @@ def _render_milestone(milestone, is_last, prefix, critical_path, unfinished, sho
 
     for i, e in enumerate(epics_to_show):
         epic_is_last = i == len(epics_to_show) - 1
-        lines.extend(_render_epic(e, epic_is_last, new_prefix, critical_path, unfinished, show_details, max_depth, current_depth + 1))
+        lines.extend(
+            _render_epic(
+                e,
+                epic_is_last,
+                new_prefix,
+                critical_path,
+                unfinished,
+                show_details,
+                max_depth,
+                current_depth + 1,
+            )
+        )
 
     return lines
 
 
-def _render_phase(phase, is_last, prefix, critical_path, unfinished, show_details, max_depth, current_depth):
+def _render_phase(
+    phase,
+    is_last,
+    prefix,
+    critical_path,
+    unfinished,
+    show_details,
+    max_depth,
+    current_depth,
+):
     """Render a phase and its milestones in the tree."""
     stats = _get_phase_stats(phase)
     branch = "└── " if is_last else "├── "
     continuation = "    " if is_last else "│   "
     lines = []
 
-    lines.append(f"{prefix}{branch}[bold]{phase.name}[/] ({stats['done']}/{stats['total']}) [{phase.status.value}]")
+    lines.append(
+        f"{prefix}{branch}[bold]{phase.name}[/] ({stats['done']}/{stats['total']}) [{phase.status.value}]"
+    )
 
     if current_depth >= max_depth:
         return lines
@@ -842,7 +920,18 @@ def _render_phase(phase, is_last, prefix, critical_path, unfinished, show_detail
 
     for i, m in enumerate(milestones_to_show):
         milestone_is_last = i == len(milestones_to_show) - 1
-        lines.extend(_render_milestone(m, milestone_is_last, new_prefix, critical_path, unfinished, show_details, max_depth, current_depth + 1))
+        lines.extend(
+            _render_milestone(
+                m,
+                milestone_is_last,
+                new_prefix,
+                critical_path,
+                unfinished,
+                show_details,
+                max_depth,
+                current_depth + 1,
+            )
+        )
 
     return lines
 
@@ -850,8 +939,17 @@ def _render_phase(phase, is_last, prefix, critical_path, unfinished, show_detail
 @cli.command()
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option("--unfinished", is_flag=True, help="Show only unfinished items")
-@click.option("--details", is_flag=True, help="Show task metadata (estimates, agents, dependencies)")
-@click.option("--depth", type=int, default=4, help="Limit tree expansion depth (1=phases, 2=milestones, 3=epics, 4=tasks)")
+@click.option(
+    "--details",
+    is_flag=True,
+    help="Show task metadata (estimates, agents, dependencies)",
+)
+@click.option(
+    "--depth",
+    type=int,
+    default=4,
+    help="Limit tree expansion depth (1=phases, 2=milestones, 3=epics, 4=tasks)",
+)
 def tree(output_json, unfinished, details, depth):
     """Display full hierarchical tree of phases, milestones, epics, and tasks."""
     try:
@@ -867,7 +965,9 @@ def tree(output_json, unfinished, details, depth):
         if output_json:
             phases_to_show = tree_data.phases
             if unfinished:
-                phases_to_show = [p for p in tree_data.phases if _has_unfinished_milestones(p)]
+                phases_to_show = [
+                    p for p in tree_data.phases if _has_unfinished_milestones(p)
+                ]
 
             output = {
                 "critical_path": critical_path,
@@ -901,9 +1001,14 @@ def tree(output_json, unfinished, details, depth):
                                                 "estimate_hours": t.estimate_hours,
                                                 "claimed_by": t.claimed_by,
                                                 "depends_on": t.depends_on,
-                                                "on_critical_path": t.id in critical_path,
+                                                "on_critical_path": t.id
+                                                in critical_path,
                                             }
-                                            for t in (_filter_unfinished_tasks(e.tasks) if unfinished else e.tasks)
+                                            for t in (
+                                                _filter_unfinished_tasks(e.tasks)
+                                                if unfinished
+                                                else e.tasks
+                                            )
                                         ],
                                     }
                                     for e in m.epics
@@ -923,11 +1028,15 @@ def tree(output_json, unfinished, details, depth):
         # Text output
         phases_to_show = tree_data.phases
         if unfinished:
-            phases_to_show = [p for p in tree_data.phases if _has_unfinished_milestones(p)]
+            phases_to_show = [
+                p for p in tree_data.phases if _has_unfinished_milestones(p)
+            ]
 
         for i, p in enumerate(phases_to_show):
             is_last = i == len(phases_to_show) - 1
-            lines = _render_phase(p, is_last, "", critical_path, unfinished, details, depth, 1)
+            lines = _render_phase(
+                p, is_last, "", critical_path, unfinished, details, depth, 1
+            )
             for line in lines:
                 console.print(line)
 

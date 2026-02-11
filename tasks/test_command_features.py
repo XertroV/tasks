@@ -16,7 +16,9 @@ def runner():
     return CliRunner()
 
 
-def _write_task(epic_dir: Path, task_id: str, title: str, frontmatter_overrides: dict) -> dict:
+def _write_task(
+    epic_dir: Path, task_id: str, title: str, frontmatter_overrides: dict
+) -> dict:
     """Create a task file and return its index entry."""
     task_short = task_id.split(".")[-1]
     filename = f"{task_short}-task.todo"
@@ -239,7 +241,14 @@ def test_session_command_lifecycle(runner, tmp_feature_tasks_dir):
 
     hb = runner.invoke(
         cli,
-        ["session", "heartbeat", "--agent", "agent-feature", "--progress", "running tests"],
+        [
+            "session",
+            "heartbeat",
+            "--agent",
+            "agent-feature",
+            "--progress",
+            "running tests",
+        ],
     )
     assert hb.exit_code == 0
     assert "Heartbeat updated" in hb.output
@@ -261,7 +270,9 @@ def test_search_finds_task_by_pattern_and_tag_filter(runner, tmp_feature_tasks_d
     assert "P1.M1.E2.T001" in result.output
 
 
-def test_blockers_shows_dependency_chain_and_root_blocker(runner, tmp_feature_tasks_dir):
+def test_blockers_shows_dependency_chain_and_root_blocker(
+    runner, tmp_feature_tasks_dir
+):
     result = runner.invoke(cli, ["blockers", "--suggest"])
     assert result.exit_code == 0
     assert "Blocking Chains" in result.output
@@ -296,7 +307,9 @@ def test_report_progress_json(runner, tmp_feature_tasks_dir):
 
 
 def test_report_velocity_json(runner, tmp_feature_tasks_dir):
-    result = runner.invoke(cli, ["report", "velocity", "--days", "3", "--format", "json"])
+    result = runner.invoke(
+        cli, ["report", "velocity", "--days", "3", "--format", "json"]
+    )
     assert result.exit_code == 0
 
     payload = json.loads(result.output)
@@ -305,7 +318,9 @@ def test_report_velocity_json(runner, tmp_feature_tasks_dir):
     assert payload["total_completed"] >= 1
 
 
-def test_velocity_hidden_alias_matches_report_velocity_json(runner, tmp_feature_tasks_dir):
+def test_velocity_hidden_alias_matches_report_velocity_json(
+    runner, tmp_feature_tasks_dir
+):
     alias_result = runner.invoke(cli, ["velocity", "--days", "3", "--format", "json"])
     report_result = runner.invoke(
         cli, ["report", "velocity", "--days", "3", "--format", "json"]
@@ -370,3 +385,15 @@ def test_list_available_priority_filter(runner, tmp_feature_tasks_dir):
     assert "P1.M1.E2.T001" in result.output
     assert "P1.M1.E2.T002" not in result.output
     assert "P1.M1.E2.T003" not in result.output
+
+
+def test_list_progress_shows_phase_and_milestone_ids(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["list", "--progress"])
+    assert result.exit_code == 0
+
+    # Check that phase ID is shown (e.g., "P1:")
+    assert "P1:" in result.output
+    # Check that milestone ID is shown (e.g., "P1.M1:")
+    assert "P1.M1:" in result.output
+    # Check the header
+    assert "Project Progress" in result.output
