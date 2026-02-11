@@ -61,12 +61,82 @@ function textError(message: string): never {
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills agents add add-epic add-milestone add-phase`);
+  console.log(`Usage: tasks <command> [options]\n\nCore commands: list tree show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills agents add add-epic add-milestone add-phase`);
+}
+
+// Helper functions for filtering and stats
+function isUnfinished(status: Status): boolean {
+  return status !== Status.DONE && status !== Status.CANCELLED && status !== Status.REJECTED;
+}
+
+function filterUnfinishedTasks(tasks: Task[]): Task[] {
+  return tasks.filter((t) => isUnfinished(t.status));
+}
+
+function hasUnfinishedTasks(epic: Epic): boolean {
+  return epic.tasks.some((t) => isUnfinished(t.status));
+}
+
+function hasUnfinishedEpics(milestone: Milestone): boolean {
+  return milestone.epics.some((e) => hasUnfinishedTasks(e));
+}
+
+function hasUnfinishedMilestones(phase: Phase): boolean {
+  return phase.milestones.some((m) => hasUnfinishedEpics(m));
+}
+
+function calculateTaskStats(tasks: Task[]): { done: number; total: number } {
+  return {
+    done: tasks.filter((t) => t.status === Status.DONE).length,
+    total: tasks.length,
+  };
+}
+
+function getEpicStats(epic: Epic): { done: number; total: number } {
+  return calculateTaskStats(epic.tasks);
+}
+
+function getMilestoneStats(milestone: Milestone): { done: number; total: number } {
+  const tasks = milestone.epics.flatMap((e) => e.tasks);
+  return calculateTaskStats(tasks);
+}
+
+function getPhaseStats(phase: Phase): { done: number; total: number } {
+  const tasks = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
+  return calculateTaskStats(tasks);
+}
+
+// Display helpers
+function getStatusIcon(status: Status): string {
+  switch (status) {
+    case Status.DONE:
+      return pc.green("[✓]");
+    case Status.IN_PROGRESS:
+      return pc.yellow("[→]");
+    case Status.PENDING:
+      return "[ ]";
+    case Status.BLOCKED:
+      return pc.red("[✗]");
+    case Status.CANCELLED:
+    case Status.REJECTED:
+      return pc.dim("[X]");
+    default:
+      return "[ ]";
+  }
+}
+
+function getTreeChars(isLast: boolean): { branch: string; continuation: string } {
+  return {
+    branch: isLast ? "└── " : "├── ",
+    continuation: isLast ? "    " : "│   ",
+  };
 }
 
 async function cmdList(args: string[]): Promise<void> {
   const outputJson = parseFlag(args, "--json");
   const statusFilter = parseOpt(args, "--status")?.split(",") ?? [];
+  const showAll = parseFlag(args, "--all");
+  const unfinished = parseFlag(args, "--unfinished");
   const loader = new TaskLoader();
   const tree = await loader.load();
   const cfg = loadConfig();
@@ -77,26 +147,244 @@ async function cmdList(args: string[]): Promise<void> {
 
   const tasks = getAllTasks(tree).filter((t) => (statusFilter.length ? statusFilter.includes(t.status) : true));
   if (outputJson) {
+    const filteredPhases = tree.phases
+      .map((p) => ({
+        ...p,
+        milestones: p.milestones
+          .filter((m) => (!unfinished || hasUnfinishedEpics(m)))
+          .map((m) => ({
+            ...m,
+            epics: m.epics
+              .filter((e) => (!unfinished || hasUnfinishedTasks(e)))
+              .map((e) => ({
+                ...e,
+                tasks: unfinished ? filterUnfinishedTasks(e.tasks) : e.tasks,
+              })),
+          })),
+      }))
+      .filter((p) => (!unfinished || hasUnfinishedMilestones(p)));
+
     jsonOut({
       critical_path: criticalPath,
       next_available: nextAvailable,
-      phases: tree.phases.map((p) => ({ id: p.id, name: p.name, status: p.status })),
-      tasks: tasks.map((t) => ({
-        id: t.id,
-        title: t.title,
-        status: t.status,
-        estimate_hours: t.estimateHours,
-        complexity: t.complexity,
-        priority: t.priority,
-        on_critical_path: criticalPath.includes(t.id),
+      phases: filteredPhases.map((p) => ({
+        id: p.id,
+        name: p.name,
+        status: p.status,
+        stats: getPhaseStats(p),
+        milestones: p.milestones.map((m) => ({
+          id: m.id,
+          name: m.name,
+          status: m.status,
+          stats: getMilestoneStats(m),
+        })),
       })),
+      tasks: tasks
+        .filter((t) => (!unfinished || isUnfinished(t.status)))
+        .map((t) => ({
+          id: t.id,
+          title: t.title,
+          status: t.status,
+          estimate_hours: t.estimateHours,
+          complexity: t.complexity,
+          priority: t.priority,
+          on_critical_path: criticalPath.includes(t.id),
+        })),
     });
     return;
   }
 
   console.log(pc.cyan("Critical Path:"), criticalPath.slice(0, 10).join(" -> "));
-  for (const p of tree.phases) {
-    console.log(`${pc.bold(p.name)} (${p.id})`);
+  console.log();
+
+  const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
+
+  for (const p of phasesToShow) {
+    const stats = getPhaseStats(p);
+    console.log(`${pc.bold(p.name)} (${stats.done}/${stats.total} tasks done)`);
+
+    const milestonesToShow = unfinished ? p.milestones.filter((m) => hasUnfinishedEpics(m)) : p.milestones;
+    const milestoneLimit = showAll ? milestonesToShow.length : 5;
+    const displayedMilestones = milestonesToShow.slice(0, milestoneLimit);
+    const hiddenCount = milestonesToShow.length - displayedMilestones.length;
+
+    for (let i = 0; i < displayedMilestones.length; i++) {
+      const m = displayedMilestones[i]!;
+      const mStats = getMilestoneStats(m);
+      const isLast = i === displayedMilestones.length - 1 && hiddenCount === 0;
+      const prefix = isLast ? "└── " : "├── ";
+      console.log(`  ${prefix}${m.name} (${mStats.done}/${mStats.total} tasks done)`);
+    }
+
+    if (hiddenCount > 0) {
+      console.log(`  └── ... and ${hiddenCount} more milestone${hiddenCount === 1 ? "" : "s"}`);
+    }
+  }
+}
+
+// Tree rendering functions
+function renderTask(task: Task, isLast: boolean, prefix: string, criticalPath: string[], showDetails: boolean): string {
+  const icon = getStatusIcon(task.status);
+  const { branch } = getTreeChars(isLast);
+  let line = `${prefix}${branch}${icon} ${task.id}: ${task.title}`;
+
+  if (showDetails) {
+    const details: string[] = [];
+    if (task.estimateHours > 0) details.push(`(${task.estimateHours}h)`);
+    if (task.status) details.push(`[${task.status}]`);
+    if (task.claimedBy) details.push(`@${task.claimedBy}`);
+    if (task.dependsOn.length > 0) details.push(`depends:${task.dependsOn.join(",")}`);
+    if (criticalPath.includes(task.id)) details.push("★");
+
+    if (details.length > 0) {
+      line += ` ${details.join(" ")}`;
+    }
+  }
+
+  return line;
+}
+
+function renderEpic(
+  epic: Epic,
+  isLast: boolean,
+  prefix: string,
+  criticalPath: string[],
+  unfinished: boolean,
+  showDetails: boolean,
+  maxDepth: number,
+  currentDepth: number,
+): string[] {
+  const stats = getEpicStats(epic);
+  const { branch, continuation } = getTreeChars(isLast);
+  const lines: string[] = [];
+
+  lines.push(`${prefix}${branch}${epic.name} (${stats.done}/${stats.total}) [${epic.status}]`);
+
+  if (currentDepth >= maxDepth) return lines;
+
+  const tasksToShow = unfinished ? filterUnfinishedTasks(epic.tasks) : epic.tasks;
+  const newPrefix = prefix + continuation;
+
+  for (let i = 0; i < tasksToShow.length; i++) {
+    const t = tasksToShow[i]!;
+    const taskIsLast = i === tasksToShow.length - 1;
+    lines.push(renderTask(t, taskIsLast, newPrefix, criticalPath, showDetails));
+  }
+
+  return lines;
+}
+
+function renderMilestone(
+  milestone: Milestone,
+  isLast: boolean,
+  prefix: string,
+  criticalPath: string[],
+  unfinished: boolean,
+  showDetails: boolean,
+  maxDepth: number,
+  currentDepth: number,
+): string[] {
+  const stats = getMilestoneStats(milestone);
+  const { branch, continuation } = getTreeChars(isLast);
+  const lines: string[] = [];
+
+  lines.push(`${prefix}${branch}${milestone.name} (${stats.done}/${stats.total}) [${milestone.status}]`);
+
+  if (currentDepth >= maxDepth) return lines;
+
+  const epicsToShow = unfinished ? milestone.epics.filter((e) => hasUnfinishedTasks(e)) : milestone.epics;
+  const newPrefix = prefix + continuation;
+
+  for (let i = 0; i < epicsToShow.length; i++) {
+    const e = epicsToShow[i]!;
+    const epicIsLast = i === epicsToShow.length - 1;
+    lines.push(...renderEpic(e, epicIsLast, newPrefix, criticalPath, unfinished, showDetails, maxDepth, currentDepth + 1));
+  }
+
+  return lines;
+}
+
+function renderPhase(
+  phase: Phase,
+  isLast: boolean,
+  prefix: string,
+  criticalPath: string[],
+  unfinished: boolean,
+  showDetails: boolean,
+  maxDepth: number,
+  currentDepth: number,
+): string[] {
+  const stats = getPhaseStats(phase);
+  const { branch, continuation } = getTreeChars(isLast);
+  const lines: string[] = [];
+
+  lines.push(`${prefix}${branch}${pc.bold(phase.name)} (${stats.done}/${stats.total}) [${phase.status}]`);
+
+  if (currentDepth >= maxDepth) return lines;
+
+  const milestonesToShow = unfinished ? phase.milestones.filter((m) => hasUnfinishedEpics(m)) : phase.milestones;
+  const newPrefix = prefix + continuation;
+
+  for (let i = 0; i < milestonesToShow.length; i++) {
+    const m = milestonesToShow[i]!;
+    const milestoneIsLast = i === milestonesToShow.length - 1;
+    lines.push(...renderMilestone(m, milestoneIsLast, newPrefix, criticalPath, unfinished, showDetails, maxDepth, currentDepth + 1));
+  }
+
+  return lines;
+}
+
+async function cmdTree(args: string[]): Promise<void> {
+  const outputJson = parseFlag(args, "--json");
+  const unfinished = parseFlag(args, "--unfinished");
+  const showDetails = parseFlag(args, "--details");
+  const depthStr = parseOpt(args, "--depth");
+  const maxDepth = depthStr ? Number(depthStr) : 4;
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { criticalPath, nextAvailable } = calc.calculate();
+  tree.criticalPath = criticalPath;
+  tree.nextAvailable = nextAvailable;
+
+  if (outputJson) {
+    const filteredPhases = tree.phases
+      .map((p) => ({
+        ...p,
+        milestones: p.milestones
+          .filter((m) => (!unfinished || hasUnfinishedEpics(m)))
+          .map((m) => ({
+            ...m,
+            epics: m.epics
+              .filter((e) => (!unfinished || hasUnfinishedTasks(e)))
+              .map((e) => ({
+                ...e,
+                tasks: unfinished ? filterUnfinishedTasks(e.tasks) : e.tasks,
+              })),
+          })),
+      }))
+      .filter((p) => (!unfinished || hasUnfinishedMilestones(p)));
+
+    jsonOut({
+      critical_path: criticalPath,
+      next_available: nextAvailable,
+      max_depth: maxDepth,
+      show_details: showDetails,
+      unfinished_only: unfinished,
+      phases: filteredPhases,
+    });
+    return;
+  }
+
+  const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
+
+  for (let i = 0; i < phasesToShow.length; i++) {
+    const p = phasesToShow[i]!;
+    const isLast = i === phasesToShow.length - 1;
+    const lines = renderPhase(p, isLast, "", criticalPath, unfinished, showDetails, maxDepth, 1);
+    console.log(lines.join("\n"));
   }
 }
 
@@ -1365,6 +1653,9 @@ async function main(): Promise<void> {
   switch (cmd) {
     case "list":
       await cmdList(rest);
+      return;
+    case "tree":
+      await cmdTree(rest);
       return;
     case "next":
       await cmdNext(rest);

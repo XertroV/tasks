@@ -328,4 +328,175 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created phase:");
   });
+
+  test("enhanced list command shows milestones with task counts", () => {
+    root = setupFixture();
+    let p = run(["list"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Phase (0/2 tasks done)");
+    expect(out).toContain("M (0/2 tasks done)");
+  });
+
+  test("list --all shows all milestones", () => {
+    root = setupFixture();
+    // Add more milestones to test truncation
+    const t = join(root, ".tasks");
+    for (let i = 2; i <= 7; i++) {
+      mkdirSync(join(t, "01-phase", `0${i}-ms`), { recursive: true });
+      writeFileSync(join(t, "01-phase", `0${i}-ms`, "index.yaml"), `epics: []\n`);
+    }
+    const phaseIndex = join(t, "01-phase", "index.yaml");
+    let content = `milestones:\n  - id: M1\n    name: M\n    path: 01-ms\n`;
+    for (let i = 2; i <= 7; i++) {
+      content += `  - id: M${i}\n    name: M${i}\n    path: 0${i}-ms\n`;
+    }
+    writeFileSync(phaseIndex, content);
+
+    let p = run(["list"], root);
+    expect(p.exitCode).toBe(0);
+    let out = p.stdout.toString();
+    expect(out).toContain("... and 2 more milestones");
+
+    p = run(["list", "--all"], root);
+    expect(p.exitCode).toBe(0);
+    out = p.stdout.toString();
+    expect(out).not.toContain("... and");
+    expect(out).toContain("M7");
+  });
+
+  test("list --unfinished filters completed items", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "test"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["list", "--unfinished"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    // Stats should show actual completion (1/2), not filtered view
+    expect(out).toContain("Phase (1/2 tasks done)");
+    expect(out).toContain("M (1/2 tasks done)");
+  });
+
+  test("list --json includes milestone metadata", () => {
+    root = setupFixture();
+    let p = run(["list", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const data = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(data.phases)).toBeTrue();
+    expect(data.phases[0].milestones).toBeDefined();
+    expect(data.phases[0].milestones[0].stats).toBeDefined();
+    expect(data.phases[0].milestones[0].stats.total).toBe(2);
+  });
+
+  test("tree command shows full 4-level hierarchy", () => {
+    root = setupFixture();
+    let p = run(["tree"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Phase");
+    expect(out).toContain("M (0/2)");
+    expect(out).toContain("E (0/2)");
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("P1.M1.E1.T002");
+    expect(out).toContain("├──");
+    expect(out).toContain("└──");
+  });
+
+  test("tree --unfinished filters completed work", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "test"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["tree", "--unfinished"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).not.toContain("P1.M1.E1.T001");
+    expect(out).toContain("P1.M1.E1.T002");
+  });
+
+  test("tree --details shows metadata", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-x"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["tree", "--details"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("@agent-x");
+    expect(out).toContain("(1h)");
+    expect(out).toContain("[in_progress]");
+    expect(out).toContain("depends:P1.M1.E1.T001");
+  });
+
+  test("tree --depth limits expansion correctly", () => {
+    root = setupFixture();
+    let p = run(["tree", "--depth", "1"], root);
+    expect(p.exitCode).toBe(0);
+    let out = p.stdout.toString();
+    expect(out).toContain("Phase");
+    expect(out).not.toContain("M (0/2)");
+
+    p = run(["tree", "--depth", "2"], root);
+    expect(p.exitCode).toBe(0);
+    out = p.stdout.toString();
+    expect(out).toContain("Phase");
+    expect(out).toContain("M (0/2)");
+    expect(out).not.toContain("E (0/2)");
+
+    p = run(["tree", "--depth", "3"], root);
+    expect(p.exitCode).toBe(0);
+    out = p.stdout.toString();
+    expect(out).toContain("Phase");
+    expect(out).toContain("M (0/2)");
+    expect(out).toContain("E (0/2)");
+    expect(out).not.toContain("P1.M1.E1.T001");
+  });
+
+  test("tree --json outputs complete hierarchy", () => {
+    root = setupFixture();
+    let p = run(["tree", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const data = JSON.parse(p.stdout.toString());
+    expect(data.max_depth).toBe(4);
+    expect(data.show_details).toBe(false);
+    expect(data.unfinished_only).toBe(false);
+    expect(Array.isArray(data.phases)).toBeTrue();
+    expect(data.phases[0].milestones[0].epics[0].tasks.length).toBe(2);
+  });
+
+  test("tree handles empty epics gracefully", () => {
+    root = setupFixture();
+    const t = join(root, ".tasks");
+    mkdirSync(join(t, "01-phase", "01-ms", "02-empty"), { recursive: true });
+    writeFileSync(join(t, "01-phase", "01-ms", "02-empty", "index.yaml"), `tasks: []\n`);
+    const msIndex = join(t, "01-phase", "01-ms", "index.yaml");
+    writeFileSync(
+      msIndex,
+      `epics:\n  - id: E1\n    name: E\n    path: 01-epic\n  - id: E2\n    name: Empty\n    path: 02-empty\n`,
+    );
+
+    let p = run(["tree"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Empty (0/0)");
+  });
+
+  test("list and tree show consistent task counts", () => {
+    root = setupFixture();
+    let listOut = run(["list"], root);
+    expect(listOut.exitCode).toBe(0);
+    let treeOut = run(["tree"], root);
+    expect(treeOut.exitCode).toBe(0);
+
+    const listStr = listOut.stdout.toString();
+    const treeStr = treeOut.stdout.toString();
+
+    expect(listStr).toContain("(0/2 tasks done)");
+    expect(treeStr).toContain("(0/2)");
+  });
 });

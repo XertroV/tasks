@@ -551,3 +551,179 @@ class TestCycleCommand:
         if "EPIC COMPLETE" in result.output:
             assert "EPIC COMPLETE" in result.output
         # Should not crash or error
+
+
+def test_list_enhanced_shows_milestones(runner, tmp_tasks_dir):
+    """Test enhanced list command shows milestones with task counts."""
+    # Create two tasks
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["list"])
+    assert result.exit_code == 0
+    assert "Test Phase (0/2 tasks done)" in result.output
+    assert "Test Milestone (0/2 tasks done)" in result.output
+
+
+def test_list_all_shows_all_milestones(runner, tmp_tasks_dir):
+    """Test list --all shows all milestones without truncation."""
+    # Add 7 milestones to test truncation
+    phase_dir = tmp_tasks_dir / ".tasks" / "01-test-phase"
+    milestones = []
+    for i in range(1, 8):
+        milestone_dir = phase_dir / f"0{i}-milestone-{i}"
+        milestone_dir.mkdir(exist_ok=True)
+        milestone_index = {"epics": []}
+        with open(milestone_dir / "index.yaml", "w") as f:
+            yaml.dump(milestone_index, f)
+        milestones.append({
+            "id": f"P1.M{i}",
+            "name": f"Milestone {i}",
+            "path": f"0{i}-milestone-{i}",
+            "status": "pending",
+        })
+
+    # Update phase index
+    phase_index = {"milestones": milestones}
+    with open(phase_dir / "index.yaml", "w") as f:
+        yaml.dump(phase_index, f)
+
+    # Without --all, should show only 5 and truncate
+    result = runner.invoke(cli, ["list"])
+    assert result.exit_code == 0
+    assert "... and 2 more milestone" in result.output
+
+    # With --all, should show all 7
+    result = runner.invoke(cli, ["list", "--all"])
+    assert result.exit_code == 0
+    assert "Milestone 7" in result.output
+    assert "... and 2 more milestone" not in result.output
+
+
+def test_list_unfinished_filters_completed(runner, tmp_tasks_dir):
+    """Test list --unfinished filters out completed items."""
+    task1 = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="done")
+    task2 = create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["list", "--unfinished"])
+    assert result.exit_code == 0
+    # Stats should show actual completion (1/2)
+    assert "Test Phase (1/2 tasks done)" in result.output
+    assert "Test Milestone (1/2 tasks done)" in result.output
+
+
+def test_list_json_includes_milestone_metadata(runner, tmp_tasks_dir):
+    """Test list --json includes milestone metadata."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="done")
+
+    result = runner.invoke(cli, ["list", "--json"])
+    assert result.exit_code == 0
+
+    import json
+    data = json.loads(result.output)
+    assert "phases" in data
+    assert len(data["phases"]) > 0
+    assert "milestones" in data["phases"][0]
+    assert len(data["phases"][0]["milestones"]) > 0
+    assert "stats" in data["phases"][0]["milestones"][0]
+    assert data["phases"][0]["milestones"][0]["stats"]["total"] == 2
+
+
+def test_tree_command_shows_full_hierarchy(runner, tmp_tasks_dir):
+    """Test tree command shows full 4-level hierarchy."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="in_progress")
+
+    result = runner.invoke(cli, ["tree"])
+    assert result.exit_code == 0
+    assert "Test Phase" in result.output
+    assert "Test Milestone (0/2)" in result.output
+    assert "Test Epic (0/2)" in result.output
+    assert "P1.M1.E1.T001" in result.output
+    assert "P1.M1.E1.T002" in result.output
+    # Check for tree characters
+    assert "├──" in result.output or "└──" in result.output
+
+
+def test_tree_unfinished_filters_completed(runner, tmp_tasks_dir):
+    """Test tree --unfinished filters completed work."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="done")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["tree", "--unfinished"])
+    assert result.exit_code == 0
+    assert "P1.M1.E1.T001" not in result.output
+    assert "P1.M1.E1.T002" in result.output
+
+
+def test_tree_details_shows_metadata(runner, tmp_tasks_dir):
+    """Test tree --details shows metadata."""
+    task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="in_progress", claimed_by="agent-x")
+
+    result = runner.invoke(cli, ["tree", "--details"])
+    assert result.exit_code == 0
+    assert "@agent-x" in result.output
+    assert "h)" in result.output  # estimate hours (format may be 1h or 2.0h)
+    # Status is shown via icon [→] for in_progress
+
+
+def test_tree_depth_limits_expansion(runner, tmp_tasks_dir):
+    """Test tree --depth limits expansion correctly."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+
+    # Depth 1: Only phases
+    result = runner.invoke(cli, ["tree", "--depth", "1"])
+    assert result.exit_code == 0
+    assert "Test Phase" in result.output
+    assert "Test Milestone" not in result.output
+
+    # Depth 2: Phases and milestones
+    result = runner.invoke(cli, ["tree", "--depth", "2"])
+    assert result.exit_code == 0
+    assert "Test Phase" in result.output
+    assert "Test Milestone" in result.output
+    assert "Test Epic" not in result.output
+
+    # Depth 3: Phases, milestones, and epics
+    result = runner.invoke(cli, ["tree", "--depth", "3"])
+    assert result.exit_code == 0
+    assert "Test Phase" in result.output
+    assert "Test Milestone" in result.output
+    assert "Test Epic" in result.output
+    assert "P1.M1.E1.T001" not in result.output
+
+
+def test_tree_json_outputs_complete_hierarchy(runner, tmp_tasks_dir):
+    """Test tree --json outputs complete hierarchy."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="done")
+
+    result = runner.invoke(cli, ["tree", "--json"])
+    assert result.exit_code == 0
+
+    import json
+    data = json.loads(result.output)
+    assert data["max_depth"] == 4
+    assert data["show_details"] is False
+    assert data["unfinished_only"] is False
+    assert len(data["phases"]) > 0
+    assert len(data["phases"][0]["milestones"]) > 0
+    assert len(data["phases"][0]["milestones"][0]["epics"]) > 0
+    assert len(data["phases"][0]["milestones"][0]["epics"][0]["tasks"]) == 2
+
+
+def test_list_and_tree_consistent_task_counts(runner, tmp_tasks_dir):
+    """Test list and tree show consistent task counts."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="done")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    list_result = runner.invoke(cli, ["list"])
+    tree_result = runner.invoke(cli, ["tree"])
+
+    assert list_result.exit_code == 0
+    assert tree_result.exit_code == 0
+
+    # Both should show 1/2 completion
+    assert "(1/2" in list_result.output
+    assert "(1/2)" in tree_result.output
