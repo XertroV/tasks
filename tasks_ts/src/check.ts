@@ -254,6 +254,38 @@ async function validateRuntimeFiles(tree: TaskTree, findings: Finding[]): Promis
   }
 }
 
+async function validateUninitializedTodos(tree: TaskTree, findings: Finding[]): Promise<void> {
+  const defaultMarkers = [
+    "- [ ] TODO: Add requirements",
+    "- [ ] TODO: Add acceptance criteria",
+  ];
+
+  const allTasks = getAllTasks(tree);
+  for (const task of allTasks) {
+    const taskFile = `.tasks/${task.file}`;
+    if (!existsSync(taskFile)) {
+      // Skip missing files - already reported by validateTreeFiles
+      continue;
+    }
+
+    try {
+      const content = await readFile(taskFile, "utf8");
+      const hasDefaultContent = defaultMarkers.some((marker) => content.includes(marker));
+
+      if (hasDefaultContent) {
+        addFinding(findings, {
+          level: "warning",
+          code: "uninitialized_todo",
+          message: `Task file still contains default placeholder content: ${task.id}`,
+          location: taskFile,
+        });
+      }
+    } catch (err) {
+      // If we can't read the file, skip it
+    }
+  }
+}
+
 export async function runChecks(tasksDir = ".tasks"): Promise<{ ok: boolean; errors: Finding[]; warnings: Finding[]; summary: { errors: number; warnings: number; total: number } }> {
   const findings: Finding[] = [];
   const loader = new TaskLoader(tasksDir);
@@ -262,6 +294,7 @@ export async function runChecks(tasksDir = ".tasks"): Promise<{ ok: boolean; err
   validateIdsAndDependencies(tree, findings);
   validateCycles(tree, findings);
   await validateRuntimeFiles(tree, findings);
+  await validateUninitializedTodos(tree, findings);
 
   const errors = findings.filter((f) => f.level === "error");
   const warnings = findings.filter((f) => f.level === "warning");

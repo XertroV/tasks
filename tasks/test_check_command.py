@@ -225,3 +225,50 @@ def test_check_warns_when_task_estimate_is_zero(tmp_path, monkeypatch):
     assert result.exit_code == 0
     assert "zero_estimate_hours" in result.output
     assert strict_result.exit_code == 1
+
+
+def test_check_warns_when_todo_file_uninitialized(tmp_path, monkeypatch):
+    _create_minimal_tree(tmp_path)
+    task_file = (
+        tmp_path
+        / ".tasks"
+        / "01-phase"
+        / "01-milestone"
+        / "01-epic"
+        / "T001-task-1.todo"
+    )
+
+    # Create a task file with default template content
+    frontmatter = {
+        "id": "P1.M1.E1.T001",
+        "title": "Task 1",
+        "status": "pending",
+        "estimate_hours": 1.0,
+        "complexity": "low",
+        "priority": "medium",
+        "depends_on": [],
+        "tags": ["test"],
+    }
+    content = (
+        "---\n"
+        f"{yaml.dump(frontmatter, default_flow_style=False, sort_keys=False)}"
+        "---\n\n"
+        "# Task 1\n\n"
+        "## Requirements\n\n"
+        "- [ ] TODO: Add requirements\n\n"
+        "## Acceptance Criteria\n\n"
+        "- [ ] TODO: Add acceptance criteria\n"
+    )
+    with open(task_file, "w") as f:
+        f.write(content)
+
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["check"])
+    strict_result = runner.invoke(cli, ["check", "--strict"])
+
+    assert result.exit_code == 0
+    assert "uninitialized_todo" in result.output
+    assert "P1.M1.E1.T001" in result.output
+    assert strict_result.exit_code == 1

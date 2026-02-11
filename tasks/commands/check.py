@@ -515,6 +515,37 @@ def _validate_runtime_files(tree, findings):
             )
 
 
+def _validate_uninitialized_todos(tree, findings):
+    """Check for task files that still have default/placeholder content."""
+    default_markers = [
+        "- [ ] TODO: Add requirements",
+        "- [ ] TODO: Add acceptance criteria",
+    ]
+
+    all_tasks = get_all_tasks(tree)
+    for task in all_tasks:
+        task_file = Path(f".tasks/{task.file}")
+        if not task_file.exists():
+            # Skip missing files - already reported by _validate_tree_files
+            continue
+
+        try:
+            content = task_file.read_text()
+            has_default_content = any(marker in content for marker in default_markers)
+
+            if has_default_content:
+                _add_finding(
+                    findings,
+                    "warning",
+                    "uninitialized_todo",
+                    f"Task file still contains default placeholder content: {task.id}",
+                    str(task_file),
+                )
+        except Exception as exc:
+            # If we can't read the file, skip it
+            pass
+
+
 def run_checks(tasks_dir: str = ".tasks") -> dict:
     """Run consistency checks and return normalized findings."""
     findings = []
@@ -526,6 +557,7 @@ def run_checks(tasks_dir: str = ".tasks") -> dict:
     _validate_ids_and_dependencies(tree, findings)
     _validate_cycles(tree, findings)
     _validate_runtime_files(tree, findings)
+    _validate_uninitialized_todos(tree, findings)
 
     errors = [f for f in findings if f["level"] == "error"]
     warnings = [f for f in findings if f["level"] == "warning"]
