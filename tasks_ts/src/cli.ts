@@ -17,6 +17,8 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 
 ## Task Workflow
 - Use \`tasks grab\` to claim work, then \`tasks done\` or \`tasks cycle\`.
+- If a command fails to parse args/usage, run exactly one recovery command: \`tasks cycle\`.
+- For explicit task IDs, use \`tasks claim <TASK_ID> [TASK_ID ...]\`.
 - Prefer critical-path work, then \`critical > high > medium > low\` priority.
 - If blocked, run \`tasks blocked --reason "<why>" --no-grab\` and handoff quickly.
 - Keep each change scoped to one task; update status as soon as state changes.
@@ -27,6 +29,8 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 
 ## Defaults
 - Claim with \`tasks grab\` (or \`tasks grab --single\` for focused work).
+- Use \`tasks claim <TASK_ID> [TASK_ID ...]\` when task IDs are provided.
+- If command argument parsing fails, run \`tasks cycle\` once to recover.
 - CLI selection order is: critical-path first, then task priority.
 - Use \`tasks work <id>\` when switching context; use \`tasks show\` to review details.
 `,
@@ -68,8 +72,8 @@ Commands:
   tree            Display full hierarchical tree
   show            Show detailed info for a task/phase/milestone/epic
   next            Get next available task on critical path
-  claim           Claim a task and mark as in-progress
-  grab            Auto-claim the next available task
+  claim           Claim specific task ID(s)
+  grab            Auto-claim next task (or claim IDs)
   done            Mark task as complete
   cycle           Complete current task and grab next
   dash            Show quick dashboard of project status
@@ -92,7 +96,12 @@ Commands:
   schema          Show file schema information
   blockers        Show blocking tasks
   skills          Install skill files
-  agents          Print AGENTS.md snippets`);
+  agents          Print AGENTS.md snippets
+
+Quick rules:
+  - Prefer 'tasks claim <TASK_ID> [TASK_ID ...]' for explicit IDs.
+  - Use 'tasks grab' for automatic selection.
+  - If command parsing fails, run 'tasks cycle' once.`);
 }
 
 // Helper functions for filtering and stats
@@ -654,8 +663,18 @@ async function cmdGrab(args: string[]): Promise<void> {
   const loader = new TaskLoader();
   const tree = await loader.load();
 
-  // Check for positional task IDs
-  const taskIds = args.filter((a) => !a.startsWith("-"));
+  // Check for positional task IDs (excluding option values)
+  const taskIds: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i]!;
+    if (arg === "--agent") {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--agent=")) continue;
+    if (arg.startsWith("-")) continue;
+    taskIds.push(arg);
+  }
   if (taskIds.length > 0) {
     const claimedTasks: Task[] = [];
     for (const tid of taskIds) {

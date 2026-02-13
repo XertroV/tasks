@@ -44,6 +44,8 @@ AGENTS_SNIPPETS = {
 
 ## Task Workflow
 - Use `tasks grab` to claim work, then `tasks done` or `tasks cycle`.
+- If a command fails to parse args/usage, run exactly one recovery command: `tasks cycle`.
+- For explicit task IDs, use `tasks claim <TASK_ID> [TASK_ID ...]`.
 - Prefer critical-path work, then `critical > high > medium > low` priority.
 - If blocked, run `tasks blocked --reason "<why>" --no-grab` and handoff quickly.
 - Keep each change scoped to one task; update status as soon as state changes.
@@ -54,6 +56,8 @@ AGENTS_SNIPPETS = {
 
 ## Defaults
 - Claim with `tasks grab` (or `tasks grab --single` for focused work).
+- Use `tasks claim <TASK_ID> [TASK_ID ...]` when task IDs are provided.
+- If command argument parsing fails, run `tasks cycle` once to recover.
 - CLI selection order is: critical-path first, then task priority.
 - Use `tasks work <id>` when switching context; use `tasks show` to review details.
 
@@ -77,8 +81,10 @@ AGENTS_SNIPPETS = {
 
 ## Standard Loop
 1. Claim:
-   - `tasks grab` for normal flow.
-   - `tasks grab --single` for strict focus.
+    - `tasks grab` for normal flow.
+    - `tasks grab --single` for strict focus.
+    - `tasks claim <TASK_ID> [TASK_ID ...]` for explicit IDs.
+    - If a command fails with parsing/usage errors, run `tasks cycle` once.
 2. Inspect:
    - `tasks show` for current task details.
    - `tasks why <task-id>` to inspect dependency readiness.
