@@ -1,5 +1,6 @@
 """Critical Chain Project Management (CCPM) critical path calculation."""
 
+import re
 import networkx as nx
 from typing import List, Dict, Tuple, Optional
 from .models import TaskTree, Task, Epic, Milestone, Phase, Status
@@ -13,6 +14,12 @@ class CriticalPathCalculator:
         "high": 1,
         "medium": 2,
         "low": 3,
+    }
+
+    TYPE_RANK = {
+        "bug": 0,
+        "task": 1,
+        "idea": 2,
     }
 
     def __init__(self, tree: TaskTree, complexity_multipliers: Dict[str, float]):
@@ -43,13 +50,18 @@ class CriticalPathCalculator:
         # Add all tasks as nodes
         for phase in self.tree.phases:
             self._add_phase_nodes(phase)
-        for bug in getattr(self.tree, "bugs", []):
-            self._add_bug_node(bug)
+        for aux_task in self._iter_aux_tasks():
+            self._add_bug_node(aux_task)
 
         # Add dependency edges
         for phase in self.tree.phases:
             self._add_phase_dependencies(phase)
         self._add_bug_dependencies()
+
+    def _iter_aux_tasks(self):
+        """Iterate over non-hierarchical task items (bugs, ideas)."""
+        yield from getattr(self.tree, "bugs", [])
+        yield from getattr(self.tree, "ideas", [])
 
     def _add_bug_node(self, bug: Task) -> None:
         """Add a bug as a weighted graph node."""
@@ -65,10 +77,10 @@ class CriticalPathCalculator:
 
     def _add_bug_dependencies(self) -> None:
         """Add dependency edges for bugs."""
-        for bug in getattr(self.tree, "bugs", []):
-            for dep_id in bug.depends_on:
+        for aux_task in self._iter_aux_tasks():
+            for dep_id in aux_task.depends_on:
                 if self.graph.has_node(dep_id):
-                    self.graph.add_edge(dep_id, bug.id)
+                    self.graph.add_edge(dep_id, aux_task.id)
 
     def _add_phase_nodes(self, phase: Phase) -> None:
         """Add nodes for all tasks in a phase."""
@@ -241,13 +253,14 @@ class CriticalPathCalculator:
     def prioritize_task_ids(
         self, task_ids: List[str], critical_path: List[str]
     ) -> List[str]:
-        """Sort task IDs by priority, then critical-path proximity, then input order.
+        """Sort task IDs by type, priority, then critical-path proximity.
 
         Ordering:
-        1. Task priority: critical > high > medium > low
-        2. On critical path (preferred within same priority)
-        3. Earlier position on critical path
-        4. Original input order
+        1. Task type: bugs > normal tasks > ideas
+        2. Task priority: critical > high > medium > low
+        3. On critical path (preferred within same type/priority)
+        4. Earlier position on critical path
+        5. Original input order
         """
         critical_path_pos = {task_id: idx for idx, task_id in enumerate(critical_path)}
         ranked = []
@@ -262,12 +275,14 @@ class CriticalPathCalculator:
                 if hasattr(task.priority, "value")
                 else str(task.priority)
             )
+            type_rank = self._task_type_rank(task.id)
             priority_rank = self.PRIORITY_RANK.get(priority_value, 999)
             on_critical = task_id in critical_path_pos
             cp_index = critical_path_pos.get(task_id, float("inf"))
 
             ranked.append(
                 (
+                    type_rank,
                     priority_rank,
                     0 if on_critical else 1,
                     cp_index,
@@ -276,8 +291,16 @@ class CriticalPathCalculator:
                 )
             )
 
-        ranked.sort(key=lambda r: (r[0], r[1], r[2], r[3]))
-        return [r[4] for r in ranked]
+        ranked.sort(key=lambda r: (r[0], r[1], r[2], r[3], r[4]))
+        return [r[5] for r in ranked]
+
+    def _task_type_rank(self, task_id: str) -> int:
+        """Return ordering rank for task categories: bug > task > idea."""
+        if re.match(r"^B\d+$", task_id):
+            return self.TYPE_RANK["bug"]
+        if re.match(r"^I\d+$", task_id):
+            return self.TYPE_RANK["idea"]
+        return self.TYPE_RANK["task"]
 
     def _resolve_milestone_dependency(
         self, dep_milestone_id: str, current_phase: Optional[Phase]
@@ -409,13 +432,13 @@ class CriticalPathCalculator:
                         ):
                             available_tasks.append(task.id)
 
-        for bug in getattr(self.tree, "bugs", []):
+        for aux_task in self._iter_aux_tasks():
             if (
-                bug.status == Status.PENDING
-                and not bug.claimed_by
-                and self._check_dependencies(bug)
+                aux_task.status == Status.PENDING
+                and not aux_task.claimed_by
+                and self._check_dependencies(aux_task)
             ):
-                available_tasks.append(bug.id)
+                available_tasks.append(aux_task.id)
 
         return available_tasks
 

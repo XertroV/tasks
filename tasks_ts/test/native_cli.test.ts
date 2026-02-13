@@ -563,6 +563,32 @@ tags: []
     expect(JSON.parse(p.stdout.toString()).id).toBe("I001");
   });
 
+  test("list --bugs and --ideas filter auxiliary sections", () => {
+    root = setupFixture();
+
+    let p = run(["bug", "--title", "critical bug", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["idea", "future planning idea"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["list", "--bugs"], root);
+    expect(p.exitCode).toBe(0);
+    const bugsOut = p.stdout.toString();
+    expect(bugsOut).toContain("Bugs");
+    expect(bugsOut).toContain("B001");
+    expect(bugsOut).not.toContain("Ideas");
+    expect(bugsOut).not.toContain("Phase");
+
+    p = run(["list", "--ideas"], root);
+    expect(p.exitCode).toBe(0);
+    const ideasOut = p.stdout.toString();
+    expect(ideasOut).toContain("Ideas");
+    expect(ideasOut).toContain("I001");
+    expect(ideasOut).not.toContain("Bugs");
+    expect(ideasOut).not.toContain("Phase");
+  });
+
   test("grab can claim idea tasks", () => {
     root = setupFixture();
     const t001Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");

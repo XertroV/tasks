@@ -217,7 +217,9 @@ class Task:
     claimed_at: Optional[datetime] = None
     started_at: Optional[datetime] = None
     completed_at: Optional[datetime] = None
-    duration_minutes: Optional[float] = None  # Actual time spent, saved when task is marked done
+    duration_minutes: Optional[float] = (
+        None  # Actual time spent, saved when task is marked done
+    )
     tags: List[str] = field(default_factory=list)
 
     # Hierarchical IDs - all should be fully qualified (e.g., "P1.M1.E1")
@@ -368,6 +370,7 @@ class TaskTree:
     critical_path: List[str] = field(default_factory=list)
     next_available: Optional[str] = None
     bugs: List[Task] = field(default_factory=list)
+    ideas: List[Task] = field(default_factory=list)
 
     @property
     def stats(self):
@@ -400,6 +403,9 @@ class TaskTree:
         for bug in self.bugs:
             if bug.id == task_id:
                 return bug
+        for idea in self.ideas:
+            if idea.id == task_id:
+                return idea
         return None
 
     def find_epic(self, epic_id: str) -> Optional[Epic]:

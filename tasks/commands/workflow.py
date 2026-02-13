@@ -20,6 +20,7 @@ from ..helpers import (
     set_sibling_task_context,
     get_sibling_tasks,
     get_all_current_tasks,
+    get_all_tasks,
     start_session,
     make_progress_bar,
     find_newly_unblocked,
@@ -68,14 +69,11 @@ def _find_and_reclaim_stale_task(tree, config, agent, loader):
     stale_tasks = []
 
     # Find all stale tasks
-    for phase in tree.phases:
-        for milestone in phase.milestones:
-            for epic in milestone.epics:
-                for t in epic.tasks:
-                    if t.status == Status.IN_PROGRESS and t.claimed_at:
-                        age_minutes = (now - to_utc(t.claimed_at)).total_seconds() / 60
-                        if age_minutes >= error_threshold:
-                            stale_tasks.append({"task": t, "age_minutes": age_minutes})
+    for task in get_all_tasks(tree):
+        if task.status == Status.IN_PROGRESS and task.claimed_at:
+            age_minutes = (now - to_utc(task.claimed_at)).total_seconds() / 60
+            if age_minutes >= error_threshold:
+                stale_tasks.append({"task": task, "age_minutes": age_minutes})
 
     if not stale_tasks:
         return None
@@ -313,13 +311,9 @@ def _display_sibling_grab_results(
 
 def _print_in_progress_tasks(tree) -> None:
     """Show currently in-progress tasks that may be blocking progress."""
-    in_progress = []
-    for phase in tree.phases:
-        for milestone in phase.milestones:
-            for epic in milestone.epics:
-                for task in epic.tasks:
-                    if task.status == Status.IN_PROGRESS:
-                        in_progress.append(task)
+    in_progress = [
+        task for task in get_all_tasks(tree) if task.status == Status.IN_PROGRESS
+    ]
 
     if not in_progress:
         return

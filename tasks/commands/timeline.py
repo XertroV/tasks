@@ -20,7 +20,7 @@ def load_config():
     return cli_load_config()
 
 
-@click.command()
+@click.command(short_help="ASCII project timeline (alias: tl).")
 @click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
 @click.option(
     "--weeks", type=int, help="Number of weeks to display (auto-detect if not set)"
@@ -303,4 +303,12 @@ def _show_week_markers(weeks, width):
 def register_commands(cli):
     """Register timeline commands with the CLI."""
     cli.add_command(timeline)
-    cli.add_command(timeline, name="tl")
+    tl_alias = click.Command(
+        "tl",
+        callback=timeline.callback,
+        params=timeline.params,
+        help=timeline.help,
+        short_help="Alias for timeline",
+        hidden=True,
+    )
+    cli.add_command(tl_alias)

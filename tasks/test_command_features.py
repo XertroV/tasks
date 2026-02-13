@@ -232,6 +232,60 @@ def test_data_summary_json_reports_status_counts(runner, tmp_feature_tasks_dir):
     assert payload["overall"]["blocked"] == 1
 
 
+def test_bug_accepts_positional_description_as_simple_title(
+    runner, tmp_feature_tasks_dir
+):
+    result = runner.invoke(cli, ["bug", "fix flaky integration test"])
+    assert result.exit_code == 0
+    assert "Created bug:" in result.output
+    assert "IMPORTANT" not in result.output
+
+    bugs_index_path = tmp_feature_tasks_dir / ".tasks" / "bugs" / "index.yaml"
+    bugs_index = yaml.safe_load(bugs_index_path.read_text())
+    bug_file = bugs_index["bugs"][0]["file"]
+    bug_content = (tmp_feature_tasks_dir / ".tasks" / "bugs" / bug_file).read_text()
+
+    assert "title: fix flaky integration test" in bug_content
+    assert "## Steps to Reproduce" not in bug_content
+
+
+def test_grab_prioritizes_normal_tasks_over_ideas(runner, tmp_feature_tasks_dir):
+    idea_result = runner.invoke(cli, ["idea", "collect future refactor idea"])
+    assert idea_result.exit_code == 0
+
+    grab_result = runner.invoke(
+        cli, ["grab", "--single", "--agent", "agent-priority", "--no-content"]
+    )
+    assert grab_result.exit_code == 0
+    assert "P1.M1.E2.T001" in grab_result.output
+    assert "I001" not in grab_result.output
+
+
+def test_grab_prioritizes_bugs_over_normal_tasks(runner, tmp_feature_tasks_dir):
+    bug_result = runner.invoke(
+        cli,
+        [
+            "bug",
+            "--title",
+            "tiny low bug",
+            "--estimate",
+            "0.1",
+            "--complexity",
+            "low",
+            "--priority",
+            "low",
+            "--simple",
+        ],
+    )
+    assert bug_result.exit_code == 0
+
+    grab_result = runner.invoke(
+        cli, ["grab", "--single", "--agent", "agent-priority", "--no-content"]
+    )
+    assert grab_result.exit_code == 0
+    assert "B001" in grab_result.output
+
+
 def test_session_command_lifecycle(runner, tmp_feature_tasks_dir):
     start = runner.invoke(
         cli, ["session", "start", "--agent", "agent-feature", "--task", "P1.M1.E2.T001"]
@@ -353,6 +407,15 @@ def test_velocity_hidden_alias_not_listed_in_help(runner, tmp_feature_tasks_dir)
 
     assert result.exit_code == 0
     assert "\n  velocity" not in result.output
+
+
+def test_timeline_alias_is_shown_inline_in_help(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["--help"])
+
+    assert result.exit_code == 0
+    assert "timeline" in result.output
+    assert "alias: tl" in result.output
+    assert "\n  tl " not in result.output
 
 
 def test_report_estimate_accuracy_json(runner, tmp_feature_tasks_dir):

@@ -64,6 +64,8 @@ const tree: TaskTree = {
       ],
     },
   ],
+  bugs: [],
+  ideas: [],
 };
 
 describe("helpers and critical path", () => {

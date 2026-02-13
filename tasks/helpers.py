@@ -61,7 +61,9 @@ def set_current_task(task_id: str, agent: Optional[str] = None) -> None:
     save_context(ctx)
 
 
-def set_multi_task_context(agent: str, primary_task_id: str, additional_tasks: List[str]) -> None:
+def set_multi_task_context(
+    agent: str, primary_task_id: str, additional_tasks: List[str]
+) -> None:
     """Set multi-task context for agent."""
     context = {
         "agent": agent,
@@ -73,7 +75,9 @@ def set_multi_task_context(agent: str, primary_task_id: str, additional_tasks: L
     save_context(context)
 
 
-def set_sibling_task_context(agent: str, primary_task_id: str, sibling_tasks: List[str]) -> None:
+def set_sibling_task_context(
+    agent: str, primary_task_id: str, sibling_tasks: List[str]
+) -> None:
     """Set sibling task context for agent."""
     context = {
         "agent": agent,
@@ -186,12 +190,14 @@ def get_stale_sessions(timeout_minutes: int = 15) -> List[Dict[str, Any]]:
         last_heartbeat = to_utc(datetime.fromisoformat(session["last_heartbeat"]))
         age_minutes = (now - last_heartbeat).total_seconds() / 60
         if age_minutes > timeout_minutes:
-            stale.append({
-                "agent_id": agent_id,
-                "current_task": session.get("current_task"),
-                "age_minutes": int(age_minutes),
-                "progress": session.get("progress"),
-            })
+            stale.append(
+                {
+                    "agent_id": agent_id,
+                    "current_task": session.get("current_task"),
+                    "age_minutes": int(age_minutes),
+                    "progress": session.get("progress"),
+                }
+            )
 
     return stale
 
@@ -205,14 +211,18 @@ def get_active_sessions() -> List[Dict[str, Any]]:
     for agent_id, session in sessions.items():
         started = to_utc(datetime.fromisoformat(session["started_at"]))
         last_heartbeat = to_utc(datetime.fromisoformat(session["last_heartbeat"]))
-        active.append({
-            "agent_id": agent_id,
-            "current_task": session.get("current_task"),
-            "started_at": session["started_at"],
-            "duration_minutes": int((now - started).total_seconds() / 60),
-            "last_heartbeat_minutes": int((now - last_heartbeat).total_seconds() / 60),
-            "progress": session.get("progress"),
-        })
+        active.append(
+            {
+                "agent_id": agent_id,
+                "current_task": session.get("current_task"),
+                "started_at": session["started_at"],
+                "duration_minutes": int((now - started).total_seconds() / 60),
+                "last_heartbeat_minutes": int(
+                    (now - last_heartbeat).total_seconds() / 60
+                ),
+                "progress": session.get("progress"),
+            }
+        )
 
     return active
 
@@ -289,7 +299,15 @@ def format_epic_path(tree, epic) -> str:
 def is_bug_id(task_id: str) -> bool:
     """Check if an ID matches the bug ID format (B001, B002, etc.)."""
     import re
-    return bool(re.match(r'^B\d+$', task_id))
+
+    return bool(re.match(r"^B\d+$", task_id))
+
+
+def is_idea_id(task_id: str) -> bool:
+    """Check if an ID matches the idea ID format (I001, I002, etc.)."""
+    import re
+
+    return bool(re.match(r"^I\d+$", task_id))
 
 
 def get_all_tasks(tree) -> List[Task]:
@@ -299,7 +317,8 @@ def get_all_tasks(tree) -> List[Task]:
         for milestone in phase.milestones:
             for epic in milestone.epics:
                 tasks.extend(epic.tasks)
-    tasks.extend(getattr(tree, 'bugs', []))
+    tasks.extend(getattr(tree, "bugs", []))
+    tasks.extend(getattr(tree, "ideas", []))
     return tasks
 
 
@@ -315,7 +334,9 @@ def is_task_file_missing(task: Task, tasks_root: Path = Path(".tasks")) -> bool:
 
 def find_missing_task_files(tree, tasks_root: Path = Path(".tasks")) -> List[Task]:
     """Return tasks referenced in the index whose .todo files are missing."""
-    return [task for task in get_all_tasks(tree) if is_task_file_missing(task, tasks_root)]
+    return [
+        task for task in get_all_tasks(tree) if is_task_file_missing(task, tasks_root)
+    ]
 
 
 def find_tasks_blocked_by(tree, task_id: str) -> List[Task]:
@@ -337,10 +358,14 @@ def find_tasks_blocked_by(tree, task_id: str) -> List[Task]:
                         if prev_task.id == task_id:
                             blocked.append(task)
 
-    # Also check bugs for explicit dependencies
-    for bug in getattr(tree, 'bugs', []):
+    # Also check auxiliary tasks for explicit dependencies
+    for bug in getattr(tree, "bugs", []):
         if task_id in bug.depends_on:
             blocked.append(bug)
+
+    for idea in getattr(tree, "ideas", []):
+        if task_id in idea.depends_on:
+            blocked.append(idea)
 
     return blocked
 
@@ -380,11 +405,11 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
     Returns:
         Dict with keys 'epic_completed' and 'milestone_completed' (both bool)
     """
-    result = {'epic_completed': False, 'milestone_completed': False}
+    result = {"epic_completed": False, "milestone_completed": False}
 
     epic = tree.find_epic(task.epic_id)
     if epic and epic.is_complete:
-        result['epic_completed'] = True
+        result["epic_completed"] = True
         console.print("═" * 60)
         console.print(f"  [bold yellow]🔍 EPIC COMPLETE:[/] {epic.name}")
         console.print(f"  [bold]Epic ID:[/] {epic.id}")
@@ -403,7 +428,7 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
         # Check milestone completion
         milestone = tree.find_milestone(task.milestone_id)
         if milestone and milestone.is_complete:
-            result['milestone_completed'] = True
+            result["milestone_completed"] = True
             console.print("═" * 60)
             console.print(f"  [bold green]🎯 MILESTONE COMPLETE:[/] {milestone.name}")
             console.print(f"  [bold]Milestone ID:[/] {milestone.id}")
@@ -411,7 +436,9 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
             console.print("═" * 60)
             console.print()
             console.print("[bold cyan]NEXT_STEPS:[/] Review the completed milestone")
-            console.print("  1. Spawn a comprehensive review subagent (in addition to the epic review agent)")
+            console.print(
+                "  1. Spawn a comprehensive review subagent (in addition to the epic review agent)"
+            )
             console.print("  2. Verify all epics integrate correctly together")
             console.print("  3. Run full test suite: `mix test`")
             console.print("  4. Run `mix lint` and fix any warnings")

@@ -189,4 +189,5 @@ export interface TaskTree {
   nextAvailable?: string;
   phases: Phase[];
   bugs: Task[];
+  ideas: Task[];
 }

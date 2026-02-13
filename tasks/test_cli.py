@@ -999,6 +999,28 @@ def test_grab_can_claim_idea(runner, tmp_tasks_dir):
     assert "claimed_by: test-agent" in idea_content
 
 
+def test_list_bugs_and_ideas_flags(runner, tmp_tasks_dir):
+    bug_result = runner.invoke(cli, ["bug", "--title", "critical bug", "--simple"])
+    assert bug_result.exit_code == 0
+
+    idea_result = runner.invoke(cli, ["idea", "future planning idea"])
+    assert idea_result.exit_code == 0
+
+    bugs_only = runner.invoke(cli, ["list", "--bugs"])
+    assert bugs_only.exit_code == 0
+    assert "Bugs" in bugs_only.output
+    assert "B001" in bugs_only.output
+    assert "Ideas" not in bugs_only.output
+    assert "Phase" not in bugs_only.output
+
+    ideas_only = runner.invoke(cli, ["list", "--ideas"])
+    assert ideas_only.exit_code == 0
+    assert "Ideas" in ideas_only.output
+    assert "I001" in ideas_only.output
+    assert "Bugs" not in ideas_only.output
+    assert "Phase" not in ideas_only.output
+
+
 def test_set_updates_multiple_fields(runner, tmp_tasks_dir):
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original")
 

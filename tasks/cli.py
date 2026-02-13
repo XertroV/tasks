@@ -243,6 +243,8 @@ def init(project, description, timeline_weeks):
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option("--all", "show_all", is_flag=True, help="Show all milestones (no limit)")
 @click.option("--unfinished", is_flag=True, help="Show only unfinished items")
+@click.option("--bugs", is_flag=True, help="Show only bug tasks")
+@click.option("--ideas", is_flag=True, help="Show only idea tasks")
 @click.option(
     "--show-completed-aux",
     is_flag=True,
@@ -261,6 +263,8 @@ def list(
     output_json,
     show_all,
     unfinished,
+    bugs,
+    ideas,
     show_completed_aux,
 ):
     """List tasks with filtering options."""
@@ -276,6 +280,10 @@ def list(
         if not output_json:
             _warn_missing_task_files(tree)
 
+        include_normal = not bugs and not ideas
+        include_bugs = bugs or (not bugs and not ideas)
+        include_ideas = ideas or (not bugs and not ideas)
+
         # Handle --progress flag
         if show_progress:
             _list_with_progress(
@@ -285,6 +293,9 @@ def list(
                 priority,
                 unfinished,
                 show_completed_aux,
+                include_normal,
+                include_bugs,
+                include_ideas,
             )
             return
 
@@ -301,7 +312,15 @@ def list(
         if available:
             all_available = calc.find_all_available()
             _list_available(
-                tree, all_available, critical_path, output_json, complexity, priority
+                tree,
+                all_available,
+                critical_path,
+                output_json,
+                complexity,
+                priority,
+                include_normal,
+                include_bugs,
+                include_ideas,
             )
             return
 
@@ -316,6 +335,9 @@ def list(
                 show_all,
                 unfinished,
                 show_completed_aux,
+                include_normal,
+                include_bugs,
+                include_ideas,
             )
         else:
             _list_text(
@@ -326,6 +348,9 @@ def list(
                 show_all,
                 unfinished,
                 show_completed_aux,
+                include_normal,
+                include_bugs,
+                include_ideas,
             )
 
     except Exception as e:
@@ -433,14 +458,17 @@ def _list_with_progress(
     priority=None,
     unfinished=False,
     show_completed_aux=False,
+    include_normal=True,
+    include_bugs=True,
+    include_ideas=True,
 ):
     """Show list with progress bars."""
     console.print("\n[bold cyan]Project Progress[/]\n")
     _show_filter_banner(complexity, priority)
 
-    phases_to_show = tree.phases
+    phases_to_show = tree.phases if include_normal else []
     if unfinished:
-        phases_to_show = [p for p in tree.phases if _has_unfinished_milestones(p)]
+        phases_to_show = [p for p in phases_to_show if _has_unfinished_milestones(p)]
 
     completed_phases = []
     for phase in phases_to_show:
@@ -535,11 +563,15 @@ def _list_with_progress(
         console.print()
 
     # Show bugs summary in progress view
-    bugs = [
-        b
-        for b in getattr(tree, "bugs", [])
-        if _include_aux_item(b.status, unfinished, show_completed_aux)
-    ]
+    bugs = (
+        [
+            b
+            for b in getattr(tree, "bugs", [])
+            if _include_aux_item(b.status, unfinished, show_completed_aux)
+        ]
+        if include_bugs
+        else []
+    )
     if bugs:
         bugs_done = sum(1 for b in bugs if b.status == Status.DONE)
         bugs_total = len(bugs)
@@ -550,11 +582,15 @@ def _list_with_progress(
         console.print(f"    {bug_bar} {bug_pct:5.1f}% ({bugs_done}/{bugs_total})")
         console.print()
 
-    ideas = [
-        i
-        for i in getattr(tree, "ideas", [])
-        if _include_aux_item(i.status, unfinished, show_completed_aux)
-    ]
+    ideas = (
+        [
+            i
+            for i in getattr(tree, "ideas", [])
+            if _include_aux_item(i.status, unfinished, show_completed_aux)
+        ]
+        if include_ideas
+        else []
+    )
     if ideas:
         ideas_done = sum(1 for i in ideas if i.status == Status.DONE)
         ideas_total = len(ideas)
@@ -644,7 +680,15 @@ def _show_milestone_detail(tree, m, critical_path, complexity=None, priority=Non
 
 
 def _list_available(
-    tree, all_available, critical_path, output_json, complexity=None, priority=None
+    tree,
+    all_available,
+    critical_path,
+    output_json,
+    complexity=None,
+    priority=None,
+    include_normal=True,
+    include_bugs=True,
+    include_ideas=True,
 ):
     """List available tasks with optional complexity/priority filtering."""
     if complexity or priority:
@@ -654,6 +698,20 @@ def _list_available(
             if t and _task_matches_filters(t, complexity, priority):
                 filtered_available.append(task_id)
         all_available = filtered_available
+
+    all_available = [
+        task_id
+        for task_id in all_available
+        if (
+            (task_id.startswith("B") and include_bugs)
+            or (task_id.startswith("I") and include_ideas)
+            or (
+                not task_id.startswith("B")
+                and not task_id.startswith("I")
+                and include_normal
+            )
+        )
+    ]
 
     if not all_available:
         if complexity or priority:
@@ -719,37 +777,48 @@ def _list_json(
     show_all=False,
     unfinished=False,
     show_completed_aux=False,
+    include_normal=True,
+    include_bugs=True,
+    include_ideas=True,
 ):
     """Output list as JSON."""
-    phases_to_show = tree.phases
+    phases_to_show = tree.phases if include_normal else []
     if unfinished:
-        phases_to_show = [p for p in tree.phases if _has_unfinished_milestones(p)]
+        phases_to_show = [p for p in phases_to_show if _has_unfinished_milestones(p)]
 
-    bugs_for_json = [
-        {
-            "id": b.id,
-            "title": b.title,
-            "status": b.status.value,
-            "priority": b.priority.value,
-            "estimate_hours": b.estimate_hours,
-            "on_critical_path": b.id in critical_path,
-        }
-        for b in getattr(tree, "bugs", [])
-        if _include_aux_item(b.status, unfinished, show_completed_aux)
-    ]
+    bugs_for_json = (
+        [
+            {
+                "id": b.id,
+                "title": b.title,
+                "status": b.status.value,
+                "priority": b.priority.value,
+                "estimate_hours": b.estimate_hours,
+                "on_critical_path": b.id in critical_path,
+            }
+            for b in getattr(tree, "bugs", [])
+            if _include_aux_item(b.status, unfinished, show_completed_aux)
+        ]
+        if include_bugs
+        else []
+    )
 
-    ideas_for_json = [
-        {
-            "id": i.id,
-            "title": i.title,
-            "status": i.status.value,
-            "priority": i.priority.value,
-            "estimate_hours": i.estimate_hours,
-            "on_critical_path": i.id in critical_path,
-        }
-        for i in getattr(tree, "ideas", [])
-        if _include_aux_item(i.status, unfinished, show_completed_aux)
-    ]
+    ideas_for_json = (
+        [
+            {
+                "id": i.id,
+                "title": i.title,
+                "status": i.status.value,
+                "priority": i.priority.value,
+                "estimate_hours": i.estimate_hours,
+                "on_critical_path": i.id in critical_path,
+            }
+            for i in getattr(tree, "ideas", [])
+            if _include_aux_item(i.status, unfinished, show_completed_aux)
+        ]
+        if include_ideas
+        else []
+    )
 
     output = {
         "critical_path": critical_path,
@@ -826,6 +895,9 @@ def _list_text(
     show_all=False,
     unfinished=False,
     show_completed_aux=False,
+    include_normal=True,
+    include_bugs=True,
+    include_ideas=True,
 ):
     """Output list as text."""
     console.print(
@@ -835,9 +907,9 @@ def _list_text(
 
     _show_filter_banner(complexity, priority)
 
-    phases_to_show = tree.phases
+    phases_to_show = tree.phases if include_normal else []
     if unfinished:
-        phases_to_show = [p for p in tree.phases if _has_unfinished_milestones(p)]
+        phases_to_show = [p for p in phases_to_show if _has_unfinished_milestones(p)]
 
     for p in phases_to_show:
         # Calculate stats with optional filters
@@ -919,11 +991,15 @@ def _list_text(
             console.print()
 
     # Show bugs section
-    bugs_to_show = [
-        b
-        for b in getattr(tree, "bugs", [])
-        if _include_aux_item(b.status, unfinished, show_completed_aux)
-    ]
+    bugs_to_show = (
+        [
+            b
+            for b in getattr(tree, "bugs", [])
+            if _include_aux_item(b.status, unfinished, show_completed_aux)
+        ]
+        if include_bugs
+        else []
+    )
     if bugs_to_show:
         bugs_done = sum(1 for b in bugs_to_show if b.status == Status.DONE)
         console.print(f"[bold]Bugs[/] ({bugs_done}/{len(bugs_to_show)} done)")
@@ -937,11 +1013,15 @@ def _list_text(
             )
         console.print()
 
-    ideas_to_show = [
-        i
-        for i in getattr(tree, "ideas", [])
-        if _include_aux_item(i.status, unfinished, show_completed_aux)
-    ]
+    ideas_to_show = (
+        [
+            i
+            for i in getattr(tree, "ideas", [])
+            if _include_aux_item(i.status, unfinished, show_completed_aux)
+        ]
+        if include_ideas
+        else []
+    )
     if ideas_to_show:
         ideas_done = sum(1 for i in ideas_to_show if i.status == Status.DONE)
         console.print(f"[bold]Ideas[/] ({ideas_done}/{len(ideas_to_show)} done)")

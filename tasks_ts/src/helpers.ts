@@ -9,11 +9,16 @@ export function getAllTasks(tree: TaskTree): Task[] {
   return [
     ...tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks))),
     ...(tree.bugs ?? []),
+    ...(tree.ideas ?? []),
   ];
 }
 
 export function isBugId(id: string): boolean {
   return /^B\d+$/.test(id);
+}
+
+export function isIdeaId(id: string): boolean {
+  return /^I\d+$/.test(id);
 }
 
 export function findTask(tree: TaskTree, id: string): Task | undefined {

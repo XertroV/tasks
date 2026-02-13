@@ -17,6 +17,29 @@ export class CriticalPathCalculator {
     return task.estimateHours * (this.complexityMultipliers[task.complexity] ?? 1);
   }
 
+  private typeRank(task: Task): number {
+    if (/^B\d+$/.test(task.id)) return 0;
+    if (/^I\d+$/.test(task.id)) return 2;
+    return 1;
+  }
+
+  private priorityRank(task: Task): number {
+    if (task.priority === "critical") return 0;
+    if (task.priority === "high") return 1;
+    if (task.priority === "medium") return 2;
+    return 3;
+  }
+
+  private compareAvailable(a: Task, b: Task): number {
+    const typeDiff = this.typeRank(a) - this.typeRank(b);
+    if (typeDiff !== 0) return typeDiff;
+
+    const priorityDiff = this.priorityRank(a) - this.priorityRank(b);
+    if (priorityDiff !== 0) return priorityDiff;
+
+    return this.score(b) - this.score(a);
+  }
+
   isTaskAvailable(task: Task): boolean {
     if (task.status !== Status.PENDING) return false;
     const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
@@ -30,7 +53,7 @@ export class CriticalPathCalculator {
   findAllAvailable(): string[] {
     return getAllTasks(this.tree)
       .filter((t) => this.isTaskAvailable(t))
-      .sort((a, b) => this.score(b) - this.score(a))
+      .sort((a, b) => this.compareAvailable(a, b))
       .map((t) => t.id);
   }
 
