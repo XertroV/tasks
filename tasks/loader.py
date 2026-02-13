@@ -456,25 +456,33 @@ class TaskLoader:
             if not file_path.exists():
                 continue
             frontmatter, _ = self._parse_todo_file(file_path)
-            bugs.append(Task(
-                id=str(frontmatter.get("id", "")),
-                title=str(frontmatter.get("title", "")),
-                file=str(Path("bugs") / filename),
-                status=Status(frontmatter.get("status", "pending")),
-                estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
-                complexity=Complexity(frontmatter.get("complexity", "medium")),
-                priority=Priority(frontmatter.get("priority", "medium")),
-                depends_on=frontmatter.get("depends_on", []) if isinstance(frontmatter.get("depends_on"), list) else [],
-                claimed_by=frontmatter.get("claimed_by"),
-                claimed_at=self._parse_datetime(frontmatter.get("claimed_at")),
-                started_at=self._parse_datetime(frontmatter.get("started_at")),
-                completed_at=self._parse_datetime(frontmatter.get("completed_at")),
-                duration_minutes=float(frontmatter["duration_minutes"]) if frontmatter.get("duration_minutes") is not None else None,
-                tags=frontmatter.get("tags", []) if isinstance(frontmatter.get("tags"), list) else [],
-                epic_id=None,
-                milestone_id=None,
-                phase_id=None,
-            ))
+            bugs.append(
+                Task(
+                    id=str(frontmatter.get("id", "")),
+                    title=str(frontmatter.get("title", "")),
+                    file=str(Path("bugs") / filename),
+                    status=Status(frontmatter.get("status", "pending")),
+                    estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
+                    complexity=Complexity(frontmatter.get("complexity", "medium")),
+                    priority=Priority(frontmatter.get("priority", "medium")),
+                    depends_on=frontmatter.get("depends_on", [])
+                    if isinstance(frontmatter.get("depends_on"), list)
+                    else [],
+                    claimed_by=frontmatter.get("claimed_by"),
+                    claimed_at=self._parse_datetime(frontmatter.get("claimed_at")),
+                    started_at=self._parse_datetime(frontmatter.get("started_at")),
+                    completed_at=self._parse_datetime(frontmatter.get("completed_at")),
+                    duration_minutes=float(frontmatter["duration_minutes"])
+                    if frontmatter.get("duration_minutes") is not None
+                    else None,
+                    tags=frontmatter.get("tags", [])
+                    if isinstance(frontmatter.get("tags"), list)
+                    else [],
+                    epic_id=None,
+                    milestone_id=None,
+                    phase_id=None,
+                )
+            )
         return bugs
 
     def create_bug(self, bug_data: dict) -> Task:
@@ -522,7 +530,9 @@ class TaskLoader:
             "tags": bug_data.get("tags", []),
         }
 
-        if bug_data.get("simple"):
+        if bug_data.get("body"):
+            body = bug_data["body"]
+        elif bug_data.get("simple"):
             body = f"\n{bug_data['title']}\n"
         else:
             body = f"""
@@ -626,7 +636,10 @@ TODO: Describe actual behavior
 
         # Prepare body
         description = task_data.get("description", "")
-        body = f"""
+        if task_data.get("body"):
+            body = task_data["body"]
+        else:
+            body = f"""
 # {task_data["title"]}
 
 {description}

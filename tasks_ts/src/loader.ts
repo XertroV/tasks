@@ -202,7 +202,7 @@ export class TaskLoader {
     return bugs;
   }
 
-  async createBug(data: { title: string; priority?: string; estimate?: number; complexity?: string; dependsOn?: string[]; tags?: string[]; simple?: boolean }): Promise<import("./models").Task> {
+  async createBug(data: { title: string; priority?: string; estimate?: number; complexity?: string; dependsOn?: string[]; tags?: string[]; simple?: boolean; body?: string }): Promise<import("./models").Task> {
     const bugsDir = join(this.tasksDir, "bugs");
     await mkdir(bugsDir, { recursive: true });
     const indexPath = join(bugsDir, "index.yaml");
@@ -234,9 +234,14 @@ export class TaskLoader {
       depends_on: data.dependsOn ?? [],
       tags: data.tags ?? [],
     };
-    const body = data.simple
-      ? `\n${data.title}\n`
-      : `\n# ${data.title}\n\n## Steps to Reproduce\n\n1. TODO: Add steps\n\n## Expected Behavior\n\nTODO: Describe expected behavior\n\n## Actual Behavior\n\nTODO: Describe actual behavior\n`;
+    let body: string;
+    if (data.body) {
+      body = data.body;
+    } else if (data.simple) {
+      body = `\n${data.title}\n`;
+    } else {
+      body = `\n# ${data.title}\n\n## Steps to Reproduce\n\n1. TODO: Add steps\n\n## Expected Behavior\n\nTODO: Describe expected behavior\n\n## Actual Behavior\n\nTODO: Describe actual behavior\n`;
+    }
     await writeFile(filePath, `---\n${stringify(fm)}---\n${body}`);
 
     // Update bugs index

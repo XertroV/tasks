@@ -191,9 +191,7 @@ def cli():
 @cli.command()
 @click.option("--project", "-p", required=True, help="Project name")
 @click.option("--description", "-d", default="", help="Project description")
-@click.option(
-    "--timeline-weeks", "-w", default=0, type=int, help="Timeline in weeks"
-)
+@click.option("--timeline-weeks", "-w", default=0, type=int, help="Timeline in weeks")
 def init(project, description, timeline_weeks):
     """Initialize a new .tasks project."""
     index_path = Path(".tasks/index.yaml")
@@ -401,6 +399,7 @@ def _list_with_progress(
     if unfinished:
         phases_to_show = [p for p in tree.phases if _has_unfinished_milestones(p)]
 
+    completed_phases = []
     for phase in phases_to_show:
         # Filter tasks when filters are specified
         if complexity or priority:
@@ -432,11 +431,13 @@ def _list_with_progress(
 
         pct = (done / total * 100) if total > 0 else 0
 
+        if pct == 100:
+            completed_phases.append((phase.id, phase.name, total))
+            continue
+
         bar = make_progress_bar(done, total)
 
-        if pct == 100:
-            indicator = "[green]✓[/]"
-        elif in_progress > 0:
+        if in_progress > 0:
             indicator = "[yellow]→[/]"
         elif blocked > 0:
             indicator = "[red]🔒[/]"
@@ -447,51 +448,55 @@ def _list_with_progress(
         console.print(f"    {bar} {pct:5.1f}% ({done}/{total})")
 
         # Show milestones if phase is in progress
-        if 0 < pct < 100:
-            for m in phase.milestones:
-                # Filter milestone tasks when filters are specified
-                if complexity or priority:
-                    milestone_tasks = []
-                    for e in m.epics:
-                        milestone_tasks.extend(
-                            [
-                                t
-                                for t in e.tasks
-                                if _task_matches_filters(t, complexity, priority)
-                            ]
-                        )
-
-                    if not milestone_tasks:
-                        continue
-
-                    m_done = sum(1 for t in milestone_tasks if t.status.value == "done")
-                    m_total = len(milestone_tasks)
-                    m_in_progress = sum(
-                        1 for t in milestone_tasks if t.status.value == "in_progress"
+        for m in phase.milestones:
+            # Filter milestone tasks when filters are specified
+            if complexity or priority:
+                milestone_tasks = []
+                for e in m.epics:
+                    milestone_tasks.extend(
+                        [
+                            t
+                            for t in e.tasks
+                            if _task_matches_filters(t, complexity, priority)
+                        ]
                     )
-                else:
-                    m_stats = m.stats
-                    m_done = m_stats["done"]
-                    m_total = m_stats["total_tasks"]
-                    m_in_progress = m_stats["in_progress"]
 
-                m_pct = (m_done / m_total * 100) if m_total > 0 else 0
+                if not milestone_tasks:
+                    continue
 
-                m_bar = make_progress_bar(m_done, m_total, width=15)
+                m_done = sum(1 for t in milestone_tasks if t.status.value == "done")
+                m_total = len(milestone_tasks)
+                m_in_progress = sum(
+                    1 for t in milestone_tasks if t.status.value == "in_progress"
+                )
+            else:
+                m_stats = m.stats
+                m_done = m_stats["done"]
+                m_total = m_stats["total_tasks"]
+                m_in_progress = m_stats["in_progress"]
 
-                if m_pct == 100:
-                    m_ind = "[green]✓[/]"
-                elif m_in_progress > 0:
-                    m_ind = "[yellow]→[/]"
-                else:
-                    m_ind = "○"
+            m_pct = (m_done / m_total * 100) if m_total > 0 else 0
 
-                console.print(f"    {m_ind} {m.id}: {m_bar} {m_pct:4.0f}%")
+            if m_pct == 100:
+                continue
+
+            m_bar = make_progress_bar(m_done, m_total, width=15)
+
+            if m_in_progress > 0:
+                m_ind = "[yellow]→[/]"
+            else:
+                m_ind = "○"
+
+            console.print(f"    {m_ind} {m.id}: {m_bar} {m_pct:4.0f}%")
 
         console.print()
 
     # Show bugs summary in progress view
-    bugs = [b for b in getattr(tree, 'bugs', []) if not unfinished or _is_unfinished(b.status)]
+    bugs = [
+        b
+        for b in getattr(tree, "bugs", [])
+        if not unfinished or _is_unfinished(b.status)
+    ]
     if bugs:
         bugs_done = sum(1 for b in bugs if b.status == Status.DONE)
         bugs_total = len(bugs)
@@ -500,6 +505,13 @@ def _list_with_progress(
         indicator = "[green]✓[/]" if bug_pct == 100 else "🐛"
         console.print(f"{indicator} [bold]Bugs[/]")
         console.print(f"    {bug_bar} {bug_pct:5.1f}% ({bugs_done}/{bugs_total})")
+        console.print()
+
+    if completed_phases:
+        completed_str = ", ".join(
+            f"{pid} ({total})" for pid, pname, total in completed_phases
+        )
+        console.print(f"[green]✓ Completed:[/] {completed_str}")
         console.print()
 
 
@@ -655,8 +667,14 @@ def _list_json(
         phases_to_show = [p for p in tree.phases if _has_unfinished_milestones(p)]
 
     bugs_for_json = [
-        {"id": b.id, "title": b.title, "status": b.status.value, "priority": b.priority.value, "estimate_hours": b.estimate_hours}
-        for b in getattr(tree, 'bugs', [])
+        {
+            "id": b.id,
+            "title": b.title,
+            "status": b.status.value,
+            "priority": b.priority.value,
+            "estimate_hours": b.estimate_hours,
+        }
+        for b in getattr(tree, "bugs", [])
         if not unfinished or _is_unfinished(b.status)
     ]
 
@@ -826,7 +844,11 @@ def _list_text(
             console.print()
 
     # Show bugs section
-    bugs_to_show = [b for b in getattr(tree, 'bugs', []) if not unfinished or _is_unfinished(b.status)]
+    bugs_to_show = [
+        b
+        for b in getattr(tree, "bugs", [])
+        if not unfinished or _is_unfinished(b.status)
+    ]
     if bugs_to_show:
         bugs_done = sum(1 for b in bugs_to_show if b.status == Status.DONE)
         console.print(f"[bold]Bugs[/] ({bugs_done}/{len(bugs_to_show)} done)")
@@ -1093,7 +1115,11 @@ def tree(output_json, unfinished, details, depth):
                 p for p in tree_data.phases if _has_unfinished_milestones(p)
             ]
 
-        bugs_to_show = [b for b in getattr(tree_data, 'bugs', []) if not unfinished or _is_unfinished(b.status)]
+        bugs_to_show = [
+            b
+            for b in getattr(tree_data, "bugs", [])
+            if not unfinished or _is_unfinished(b.status)
+        ]
         has_bugs = len(bugs_to_show) > 0
 
         for i, p in enumerate(phases_to_show):
@@ -1159,7 +1185,9 @@ def show(path_ids):
 
             # Check for bug ID before TaskPath.parse (which would misinterpret B001)
             if is_bug_id(path_id):
-                bug_task = builtin_next((b for b in getattr(tree, 'bugs', []) if b.id == path_id), None)
+                bug_task = builtin_next(
+                    (b for b in getattr(tree, "bugs", []) if b.id == path_id), None
+                )
                 if not bug_task:
                     console.print(f"[red]Error:[/] Bug not found: {path_id}")
                     raise click.Abort()
@@ -1759,7 +1787,10 @@ def agents(profile):
 )
 @click.option("--depends-on", "-d", default="", help="Comma-separated task IDs")
 @click.option("--tags", default="", help="Comma-separated tags")
-def add(epic_id, title, estimate, complexity, priority, depends_on, tags):
+@click.option(
+    "--body", "-b", default="", help="Custom body content (replaces default template)"
+)
+def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
     """Add a new task to an epic."""
     try:
         loader = TaskLoader()
@@ -1774,6 +1805,7 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags):
             "priority": priority,
             "depends_on": depends_list,
             "tags": tags_list,
+            "body": body if body else None,
         }
 
         task = loader.create_task(epic_id, task_data)
@@ -1782,9 +1814,10 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags):
         console.print(f"  Title:      {task.title}")
         console.print(f"  Estimate:   {task.estimate_hours}h")
         console.print(f"\n[bold]File:[/] .tasks/{task.file}")
-        console.print(
-            "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
-        )
+        if not body:
+            console.print(
+                "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
+            )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -1949,7 +1982,10 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
 @click.option("--depends-on", "-d", default="", help="Comma-separated task IDs")
 @click.option("--tags", default="", help="Comma-separated tags")
 @click.option("--simple", "-s", is_flag=True, help="Simple bug (no template body)")
-def bug(title, estimate, complexity, priority, depends_on, tags, simple):
+@click.option(
+    "--body", "-b", default="", help="Custom body content (replaces default template)"
+)
+def bug(title, estimate, complexity, priority, depends_on, tags, simple, body):
     """Create a new bug report."""
     try:
         loader = TaskLoader()
@@ -1965,6 +2001,7 @@ def bug(title, estimate, complexity, priority, depends_on, tags, simple):
             "depends_on": depends_list,
             "tags": tags_list,
             "simple": simple,
+            "body": body if body else None,
         }
 
         created = loader.create_bug(bug_data)
@@ -1974,7 +2011,7 @@ def bug(title, estimate, complexity, priority, depends_on, tags, simple):
         console.print(f"  Priority: {created.priority.value}")
         console.print(f"  Estimate: {created.estimate_hours}h")
         console.print(f"\n[bold]File:[/] .tasks/{created.file}")
-        if not simple:
+        if not simple and not body:
             console.print(
                 "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
             )

@@ -37,11 +37,15 @@ def _milestone_tasks(milestone):
 
 
 @report.command()
-@click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
 @click.option("--by-phase", is_flag=True, help="Group by phase (default)")
 @click.option("--by-milestone", is_flag=True, help="Show milestones within phases")
 @click.option("--by-epic", is_flag=True, help="Show epics within milestones")
-@click.option("--all", "show_all", is_flag=True, help="Include completed phases/milestones/epics")
+@click.option(
+    "--all", "show_all", is_flag=True, help="Include completed phases/milestones/epics"
+)
 def progress(output_format, by_phase, by_milestone, by_epic, show_all):
     """Show overall progress report.
 
@@ -143,17 +147,19 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
                                     continue
 
                                 e_remaining = _remaining_hours(e.tasks)
-                                m_data["epics"].append({
-                                    "id": e.id,
-                                    "name": e.name,
-                                    "total": e_total,
-                                    "done": e_done,
-                                    "in_progress": e_stats["in_progress"],
-                                    "pending": e_stats["pending"],
-                                    "blocked": e_stats["blocked"],
-                                    "percent_complete": round(e_pct, 1),
-                                    "remaining_hours": round(e_remaining, 1),
-                                })
+                                m_data["epics"].append(
+                                    {
+                                        "id": e.id,
+                                        "name": e.name,
+                                        "total": e_total,
+                                        "done": e_done,
+                                        "in_progress": e_stats["in_progress"],
+                                        "pending": e_stats["pending"],
+                                        "blocked": e_stats["blocked"],
+                                        "percent_complete": round(e_pct, 1),
+                                        "remaining_hours": round(e_remaining, 1),
+                                    }
+                                )
 
                         phase_data["milestones"].append(m_data)
 
@@ -168,20 +174,28 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
         # Overall progress
         bar = make_progress_bar(done, total, width=30)
         console.print(f"[bold]Overall:[/] {bar} {pct:5.1f}%")
-        console.print(f"  Done: {done} | In Progress: {in_prog} | Pending: {pending} | Blocked: {blocked}")
+        console.print(
+            f"  Done: {done} | In Progress: {in_prog} | Pending: {pending} | Blocked: {blocked}"
+        )
         remaining_str = f"  Total: {total} tasks"
         if overall_remaining > 0:
             remaining_str += f" | ~{overall_remaining:.1f}h remaining"
         console.print(remaining_str + "\n")
 
         # Check if all phases are complete
-        all_complete = all(
-            p.stats["done"] == p.stats["total_tasks"] and p.stats["total_tasks"] > 0
-            for p in tree.phases
-        ) if tree.phases else False
+        all_complete = (
+            all(
+                p.stats["done"] == p.stats["total_tasks"] and p.stats["total_tasks"] > 0
+                for p in tree.phases
+            )
+            if tree.phases
+            else False
+        )
 
         if all_complete and not show_all:
-            console.print("[green]All phases complete.[/] Use --all to show completed phases.")
+            console.print(
+                "[green]All phases complete.[/] Use --all to show completed phases."
+            )
             console.print()
             return
 
@@ -224,7 +238,7 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
 
                     m_bar = make_progress_bar(m_done, m_total, width=15)
                     m_remaining = _remaining_hours(_milestone_tasks(m))
-                    m_line = f"        {m.id}: {m_bar} {m_pct:4.0f}% - {m.name}"
+                    m_line = f"        {m.id}: {m_bar} {m_pct:4.0f}% ({m_done}/{m_total}) - {m.name}"
                     if m_remaining > 0:
                         m_line += f"  ~{m_remaining:.1f}h remaining"
                     console.print(m_line)
@@ -241,7 +255,7 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
 
                             e_bar = make_progress_bar(e_done, e_total, width=10)
                             e_remaining = _remaining_hours(e.tasks)
-                            e_line = f"            {e.id}: {e_bar} {e_pct:4.0f}% - {e.name}"
+                            e_line = f"            {e.id}: {e_bar} {e_pct:4.0f}% ({e_done}/{e_total}) - {e.name}"
                             if e_remaining > 0:
                                 e_line += f"  ~{e_remaining:.1f}h remaining"
                             console.print(e_line)
@@ -343,7 +357,9 @@ def _make_static_hour_buckets(now, hours_to_show, bucket_hours):
     """
     current_hour = now.hour
     bucket_start_hour = (current_hour // bucket_hours) * bucket_hours
-    current_bucket_start = now.replace(hour=bucket_start_hour, minute=0, second=0, microsecond=0)
+    current_bucket_start = now.replace(
+        hour=bucket_start_hour, minute=0, second=0, microsecond=0
+    )
 
     num_buckets = hours_to_show // bucket_hours
     buckets = []
@@ -354,7 +370,9 @@ def _make_static_hour_buckets(now, hours_to_show, bucket_hours):
     return buckets
 
 
-def _allocate_task_to_buckets(task_start, task_end, estimate_hours, duration_hours, buckets):
+def _allocate_task_to_buckets(
+    task_start, task_end, estimate_hours, duration_hours, buckets
+):
     """Split a task proportionally across time buckets.
 
     The task work period spans [task_start, task_end). If this interval crosses
@@ -369,7 +387,11 @@ def _allocate_task_to_buckets(task_start, task_end, estimate_hours, duration_hou
         # Zero-duration task: assign fully to the bucket containing task_end
         for i, (bs, be) in enumerate(buckets):
             if bs <= task_end < be:
-                result[i] = {"estimate_hours": estimate_hours, "duration_hours": duration_hours, "count": 1.0}
+                result[i] = {
+                    "estimate_hours": estimate_hours,
+                    "duration_hours": duration_hours,
+                    "count": 1.0,
+                }
                 return result
         return result
 
@@ -422,7 +444,9 @@ def _hr_label(b, hr_buckets):
 
 @report.command()
 @click.option("--days", default=14, help="Number of days to analyze")
-@click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
 def velocity(days, output_format):
     """Show task completion velocity.
 
@@ -480,7 +504,9 @@ def velocity(days, output_format):
 
         # --- Daily velocity with proportional splitting ---
         # Collect intervals per bucket so we can merge overlapping work periods
-        velocity_data = defaultdict(lambda: {"estimate_hours": 0.0, "duration_hours": 0.0, "count": 0.0})
+        velocity_data = defaultdict(
+            lambda: {"estimate_hours": 0.0, "duration_hours": 0.0, "count": 0.0}
+        )
         velocity_intervals = defaultdict(list)
         tasks_with_duration = 0
 
@@ -492,9 +518,11 @@ def velocity(days, output_format):
                 task_start = completed_at - timedelta(minutes=task.duration_minutes)
 
                 allocations = _allocate_task_to_buckets(
-                    task_start, task_end,
-                    task.estimate_hours, task.duration_minutes / 60,
-                    day_buckets
+                    task_start,
+                    task_end,
+                    task.estimate_hours,
+                    task.duration_minutes / 60,
+                    day_buckets,
                 )
 
                 if allocations:
@@ -504,7 +532,9 @@ def velocity(days, output_format):
                         velocity_data[idx]["count"] += alloc["count"]
                         # Collect clipped interval for merging
                         bs, be = day_buckets[idx]
-                        velocity_intervals[idx].append((max(task_start, bs), min(task_end, be)))
+                        velocity_intervals[idx].append(
+                            (max(task_start, bs), min(task_end, be))
+                        )
 
         # Merge overlapping intervals to get true wall-clock hours per bucket
         for idx, intervals in velocity_intervals.items():
@@ -519,7 +549,9 @@ def velocity(days, output_format):
         hr_buckets = _make_static_hour_buckets(now, hours_to_show, bucket_hours)
         num_hr_buckets = len(hr_buckets)
 
-        high_res_velocity = defaultdict(lambda: {"estimate_hours": 0.0, "duration_hours": 0.0, "count": 0.0})
+        high_res_velocity = defaultdict(
+            lambda: {"estimate_hours": 0.0, "duration_hours": 0.0, "count": 0.0}
+        )
         hr_intervals = defaultdict(list)
         high_res_tasks = 0
 
@@ -531,19 +563,25 @@ def velocity(days, output_format):
                 task_start = completed_at - timedelta(minutes=task.duration_minutes)
 
                 allocations = _allocate_task_to_buckets(
-                    task_start, task_end,
-                    task.estimate_hours, task.duration_minutes / 60,
-                    hr_buckets
+                    task_start,
+                    task_end,
+                    task.estimate_hours,
+                    task.duration_minutes / 60,
+                    hr_buckets,
                 )
 
                 if allocations:
                     high_res_tasks += 1
                     for idx, alloc in allocations.items():
-                        high_res_velocity[idx]["estimate_hours"] += alloc["estimate_hours"]
+                        high_res_velocity[idx]["estimate_hours"] += alloc[
+                            "estimate_hours"
+                        ]
                         high_res_velocity[idx]["count"] += alloc["count"]
                         # Collect clipped interval for merging
                         bs, be = hr_buckets[idx]
-                        hr_intervals[idx].append((max(task_start, bs), min(task_end, be)))
+                        hr_intervals[idx].append(
+                            (max(task_start, bs), min(task_end, be))
+                        )
 
         # Merge overlapping intervals to get true wall-clock hours per bucket
         for idx, intervals in hr_intervals.items():
@@ -558,7 +596,11 @@ def velocity(days, output_format):
             avg_tasks = total_count / days
             avg_hours = total_hours / days
 
-            actual_avg_hours_per_day = total_hours / actual_days_span if actual_days_span and actual_days_span > 0 else avg_hours
+            actual_avg_hours_per_day = (
+                total_hours / actual_days_span
+                if actual_days_span and actual_days_span > 0
+                else avg_hours
+            )
 
             output = {
                 "days_analyzed": days,
@@ -569,26 +611,40 @@ def velocity(days, output_format):
                     "hours_per_day": round(avg_hours, 1),
                 },
                 "actual_velocity": {
-                    "working_period_days": round(actual_days_span, 2) if actual_days_span else None,
-                    "hours_per_day": round(actual_avg_hours_per_day, 1) if actual_days_span else None,
-                    "first_completion": first_completion.strftime('%Y-%m-%d %H:%M:%S') if first_completion else None,
-                    "last_completion": last_completion.strftime('%Y-%m-%d %H:%M:%S') if last_completion else None,
+                    "working_period_days": round(actual_days_span, 2)
+                    if actual_days_span
+                    else None,
+                    "hours_per_day": round(actual_avg_hours_per_day, 1)
+                    if actual_days_span
+                    else None,
+                    "first_completion": first_completion.strftime("%Y-%m-%d %H:%M:%S")
+                    if first_completion
+                    else None,
+                    "last_completion": last_completion.strftime("%Y-%m-%d %H:%M:%S")
+                    if last_completion
+                    else None,
                 },
             }
 
             for d in range(days):
                 data = day_data[d]
-                output["daily_data"].append({
-                    "day": d,
-                    "date": day_buckets[d][0].strftime('%Y-%m-%d'),
-                    "label": _day_label(d, day_buckets),
-                    "tasks_completed": data["count"],
-                    "hours_completed": round(data["hours"], 1),
-                })
+                output["daily_data"].append(
+                    {
+                        "day": d,
+                        "date": day_buckets[d][0].strftime("%Y-%m-%d"),
+                        "label": _day_label(d, day_buckets),
+                        "tasks_completed": data["count"],
+                        "hours_completed": round(data["hours"], 1),
+                    }
+                )
 
             # Completion estimate
             if actual_avg_hours_per_day > 0:
-                remaining_tasks = [t for t in all_tasks if t.status in [Status.PENDING, Status.IN_PROGRESS]]
+                remaining_tasks = [
+                    t
+                    for t in all_tasks
+                    if t.status in [Status.PENDING, Status.IN_PROGRESS]
+                ]
                 remaining_hours = sum(t.estimate_hours for t in remaining_tasks)
                 remaining_count = len(remaining_tasks)
 
@@ -600,8 +656,12 @@ def velocity(days, output_format):
                         "remaining_tasks": remaining_count,
                         "remaining_hours": round(remaining_hours, 1),
                         "days_remaining": round(days_remaining, 1),
-                        "estimated_completion_date": completion_date.strftime('%Y-%m-%d'),
-                        "confidence": "high" if total_count >= days * 3 else ("medium" if total_count >= days else "low"),
+                        "estimated_completion_date": completion_date.strftime(
+                            "%Y-%m-%d"
+                        ),
+                        "confidence": "high"
+                        if total_count >= days * 3
+                        else ("medium" if total_count >= days else "low"),
                         "based_on": "actual_working_period",
                     }
 
@@ -612,23 +672,31 @@ def velocity(days, output_format):
                     vdata = velocity_data[d]
                     velocity_ratio = None
                     if vdata["duration_hours"] > 0:
-                        velocity_ratio = round(vdata["estimate_hours"] / vdata["duration_hours"], 2)
+                        velocity_ratio = round(
+                            vdata["estimate_hours"] / vdata["duration_hours"], 2
+                        )
 
-                    velocity_daily.append({
-                        "day": d,
-                        "date": day_buckets[d][0].strftime('%Y-%m-%d'),
-                        "label": _day_label(d, day_buckets),
-                        "velocity": velocity_ratio,
-                        "estimate_hours": round(vdata["estimate_hours"], 1),
-                        "actual_hours": round(vdata["duration_hours"], 1),
-                        "tasks_with_duration": round(vdata["count"], 1),
-                    })
+                    velocity_daily.append(
+                        {
+                            "day": d,
+                            "date": day_buckets[d][0].strftime("%Y-%m-%d"),
+                            "label": _day_label(d, day_buckets),
+                            "velocity": velocity_ratio,
+                            "estimate_hours": round(vdata["estimate_hours"], 1),
+                            "actual_hours": round(vdata["duration_hours"], 1),
+                            "tasks_with_duration": round(vdata["count"], 1),
+                        }
+                    )
 
                 output["velocity_over_time"] = {
                     "daily": velocity_daily,
                     "tasks_with_duration": tasks_with_duration,
-                    "total_estimate_hours": round(sum(velocity_data[d]["estimate_hours"] for d in range(days)), 1),
-                    "total_actual_hours": round(sum(velocity_data[d]["duration_hours"] for d in range(days)), 1),
+                    "total_estimate_hours": round(
+                        sum(velocity_data[d]["estimate_hours"] for d in range(days)), 1
+                    ),
+                    "total_actual_hours": round(
+                        sum(velocity_data[d]["duration_hours"] for d in range(days)), 1
+                    ),
                 }
 
                 # High-res static buckets
@@ -638,19 +706,23 @@ def velocity(days, output_format):
                         vdata = high_res_velocity[b]
                         velocity_ratio = None
                         if vdata["duration_hours"] > 0:
-                            velocity_ratio = round(vdata["estimate_hours"] / vdata["duration_hours"], 2)
+                            velocity_ratio = round(
+                                vdata["estimate_hours"] / vdata["duration_hours"], 2
+                            )
 
                         bs, be = hr_buckets[b]
-                        high_res_data.append({
-                            "bucket": b,
-                            "start": bs.strftime('%Y-%m-%d %H:%M'),
-                            "end": be.strftime('%Y-%m-%d %H:%M'),
-                            "label": _hr_label(b, hr_buckets),
-                            "velocity": velocity_ratio,
-                            "estimate_hours": round(vdata["estimate_hours"], 1),
-                            "actual_hours": round(vdata["duration_hours"], 1),
-                            "tasks_with_duration": round(vdata["count"], 1),
-                        })
+                        high_res_data.append(
+                            {
+                                "bucket": b,
+                                "start": bs.strftime("%Y-%m-%d %H:%M"),
+                                "end": be.strftime("%Y-%m-%d %H:%M"),
+                                "label": _hr_label(b, hr_buckets),
+                                "velocity": velocity_ratio,
+                                "estimate_hours": round(vdata["estimate_hours"], 1),
+                                "actual_hours": round(vdata["duration_hours"], 1),
+                                "tasks_with_duration": round(vdata["count"], 1),
+                            }
+                        )
 
                     output["velocity_over_time"]["high_resolution"] = {
                         "bucket_hours": bucket_hours,
@@ -679,7 +751,9 @@ def velocity(days, output_format):
             else:
                 bar = "░" * 20
 
-            console.print(f"  {label:12} {bar} {data['count']:3} tasks ({data['hours']:.1f}h)")
+            console.print(
+                f"  {label:12} {bar} {data['count']:3} tasks ({data['hours']:.1f}h)"
+            )
 
         # Averages
         total_count = sum(day_data[d]["count"] for d in range(days))
@@ -687,18 +761,30 @@ def velocity(days, output_format):
         avg_tasks = total_count / days
         avg_hours = total_hours / days
 
-        actual_avg_hours_per_day = total_hours / actual_days_span if actual_days_span and actual_days_span > 0 else avg_hours
+        actual_avg_hours_per_day = (
+            total_hours / actual_days_span
+            if actual_days_span and actual_days_span > 0
+            else avg_hours
+        )
 
         console.print(f"\n[bold]Averages:[/]")
-        console.print(f"  Tasks/day: {avg_tasks:.1f} [dim](across {days} day window)[/]")
-        console.print(f"  Hours/day: {avg_hours:.1f} [dim](across {days} day window)[/]")
+        console.print(
+            f"  Tasks/day: {avg_tasks:.1f} [dim](across {days} day window)[/]"
+        )
+        console.print(
+            f"  Hours/day: {avg_hours:.1f} [dim](across {days} day window)[/]"
+        )
 
         if actual_days_span and actual_days_span != days:
             console.print(f"\n[bold]Actual Velocity:[/]")
             console.print(f"  Working period: {actual_days_span:.1f} days")
-            console.print(f"  Hours/day: {actual_avg_hours_per_day:.1f} [dim](based on actual time span)[/]")
+            console.print(
+                f"  Hours/day: {actual_avg_hours_per_day:.1f} [dim](based on actual time span)[/]"
+            )
             if first_completion and last_completion:
-                console.print(f"  [dim]From {first_completion.strftime('%Y-%m-%d')} to {last_completion.strftime('%Y-%m-%d')}[/]")
+                console.print(
+                    f"  [dim]From {first_completion.strftime('%Y-%m-%d')} to {last_completion.strftime('%Y-%m-%d')}[/]"
+                )
 
         # Trend (compare today vs yesterday)
         if days >= 2:
@@ -715,7 +801,9 @@ def velocity(days, output_format):
 
         # Completion estimate
         if actual_avg_hours_per_day > 0:
-            remaining_tasks = [t for t in all_tasks if t.status in [Status.PENDING, Status.IN_PROGRESS]]
+            remaining_tasks = [
+                t for t in all_tasks if t.status in [Status.PENDING, Status.IN_PROGRESS]
+            ]
             remaining_hours = sum(t.estimate_hours for t in remaining_tasks)
             remaining_count = len(remaining_tasks)
 
@@ -724,48 +812,67 @@ def velocity(days, output_format):
                 completion_date = now + timedelta(days=days_remaining)
 
                 console.print(f"\n[bold]Completion Estimate:[/]")
-                console.print(f"  Remaining: {remaining_count} tasks ({remaining_hours:.1f}h)")
+                console.print(
+                    f"  Remaining: {remaining_count} tasks ({remaining_hours:.1f}h)"
+                )
 
                 if days_remaining < 7:
-                    console.print(f"  [green]Estimated: {days_remaining:.1f} days ({completion_date.strftime('%Y-%m-%d')})[/]")
+                    console.print(
+                        f"  [green]Estimated: {days_remaining:.1f} days ({completion_date.strftime('%Y-%m-%d')})[/]"
+                    )
                 elif days_remaining < 365:
                     weeks_remaining = days_remaining / 7
-                    console.print(f"  [cyan]Estimated: {weeks_remaining:.1f} weeks ({completion_date.strftime('%Y-%m-%d')})[/]")
+                    console.print(
+                        f"  [cyan]Estimated: {weeks_remaining:.1f} weeks ({completion_date.strftime('%Y-%m-%d')})[/]"
+                    )
                 else:
                     months = days_remaining / 30.44
-                    console.print(f"  [yellow]Estimated: {months:.1f} months ({completion_date.strftime('%Y-%m-%d')})[/]")
+                    console.print(
+                        f"  [yellow]Estimated: {months:.1f} months ({completion_date.strftime('%Y-%m-%d')})[/]"
+                    )
 
                 # Confidence indicator
                 if total_count >= days * 3:
-                    console.print(f"  [dim]Confidence: High (based on {total_count} completed tasks)[/]")
+                    console.print(
+                        f"  [dim]Confidence: High (based on {total_count} completed tasks)[/]"
+                    )
                 elif total_count >= days:
-                    console.print(f"  [dim]Confidence: Medium (based on {total_count} completed tasks)[/]")
+                    console.print(
+                        f"  [dim]Confidence: Medium (based on {total_count} completed tasks)[/]"
+                    )
                 else:
-                    console.print(f"  [dim]Confidence: Low (limited data: {total_count} completed tasks)[/]")
+                    console.print(
+                        f"  [dim]Confidence: Low (limited data: {total_count} completed tasks)[/]"
+                    )
 
                 if actual_days_span and actual_days_span != days:
-                    console.print(f"  [dim]Based on {actual_avg_hours_per_day:.1f}h/day actual velocity[/]")
+                    console.print(
+                        f"  [dim]Based on {actual_avg_hours_per_day:.1f}h/day actual velocity[/]"
+                    )
 
         # Velocity over time (daily efficiency)
         if tasks_with_duration > 0:
             console.print(f"\n[bold]Velocity Over Time:[/]")
-            console.print(f"[dim]Efficiency ratio: estimated hours / actual hours (daily, proportionally split)[/]\n")
+            console.print(
+                f"[dim]Efficiency ratio: estimated hours / actual hours (daily, proportionally split)[/]\n"
+            )
 
-            total_est, total_act, max_velocity = _calculate_velocity_summary(velocity_data, days)
+            total_est, total_act, max_velocity = _calculate_velocity_summary(
+                velocity_data, days
+            )
             display_max = max(5.0, max_velocity * 1.1) if max_velocity > 0 else 5.0
 
             _render_velocity_histogram(
-                velocity_data,
-                days,
-                lambda d: _day_label(d, day_buckets),
-                display_max
+                velocity_data, days, lambda d: _day_label(d, day_buckets), display_max
             )
 
             console.print(f"\n  [dim]Scale: 0.0x {'─' * 20} {display_max:.1f}x[/]")
 
             if total_act > 0:
                 avg_velocity = total_est / total_act
-                console.print(f"  [bold]Average velocity:[/] {avg_velocity:.1f}x ({total_est:.1f}h est / {total_act:.1f}h actual)")
+                console.print(
+                    f"  [bold]Average velocity:[/] {avg_velocity:.1f}x ({total_est:.1f}h est / {total_act:.1f}h actual)"
+                )
 
                 if avg_velocity >= 1.2:
                     console.print(f"  [green]Completing work faster than estimated[/]")
@@ -774,30 +881,42 @@ def velocity(days, output_format):
                 else:
                     console.print(f"  [red]Taking longer than estimated[/]")
 
-            console.print(f"\n  [dim]Based on {tasks_with_duration} completed tasks with duration tracking[/]")
+            console.print(
+                f"\n  [dim]Based on {tasks_with_duration} completed tasks with duration tracking[/]"
+            )
 
         # Static high-res velocity
         if high_res_tasks > 0:
             console.print(f"\n[bold]Recent Velocity (Last {hours_to_show} Hours):[/]")
-            console.print(f"[dim]Static {bucket_hours}-hour periods, proportionally split[/]\n")
+            console.print(
+                f"[dim]Static {bucket_hours}-hour periods, proportionally split[/]\n"
+            )
 
-            total_est_hr, total_act_hr, max_velocity_hr = _calculate_velocity_summary(high_res_velocity, num_hr_buckets)
-            display_max_hr = max(5.0, max_velocity_hr * 1.1) if max_velocity_hr > 0 else 5.0
+            total_est_hr, total_act_hr, max_velocity_hr = _calculate_velocity_summary(
+                high_res_velocity, num_hr_buckets
+            )
+            display_max_hr = (
+                max(5.0, max_velocity_hr * 1.1) if max_velocity_hr > 0 else 5.0
+            )
 
             _render_velocity_histogram(
                 high_res_velocity,
                 num_hr_buckets,
                 lambda b: _hr_label(b, hr_buckets),
-                display_max_hr
+                display_max_hr,
             )
 
             console.print(f"\n  [dim]Scale: 0.0x {'─' * 20} {display_max_hr:.1f}x[/]")
 
             if total_act_hr > 0:
                 avg_velocity_hr = total_est_hr / total_act_hr
-                console.print(f"  [bold]Recent average:[/] {avg_velocity_hr:.1f}x ({total_est_hr:.1f}h est / {total_act_hr:.1f}h actual)")
+                console.print(
+                    f"  [bold]Recent average:[/] {avg_velocity_hr:.1f}x ({total_est_hr:.1f}h est / {total_act_hr:.1f}h actual)"
+                )
 
-            console.print(f"  [dim]Based on {high_res_tasks} tasks completed in last {hours_to_show}h[/]")
+            console.print(
+                f"  [dim]Based on {high_res_tasks} tasks completed in last {hours_to_show}h[/]"
+            )
 
         console.print()
 
@@ -808,14 +927,18 @@ def velocity(days, output_format):
 
 @click.command("velocity", hidden=True)
 @click.option("--days", default=14, help="Number of days to analyze")
-@click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
 def velocity_alias(days, output_format):
     """Hidden top-level alias for `report velocity`."""
     velocity.callback(days=days, output_format=output_format)
 
 
 @report.command("estimate-accuracy")
-@click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
 def estimate_accuracy(output_format):
     """Compare estimated vs actual task durations.
 
@@ -852,12 +975,14 @@ def estimate_accuracy(output_format):
 
             if est_hours > 0:
                 variance = (actual_hours - est_hours) / est_hours * 100
-                variances.append({
-                    "task": task,
-                    "estimated": est_hours,
-                    "actual": actual_hours,
-                    "variance": variance,
-                })
+                variances.append(
+                    {
+                        "task": task,
+                        "estimated": est_hours,
+                        "actual": actual_hours,
+                        "variance": variance,
+                    }
+                )
 
         if output_format == "json":
             output = {
@@ -865,10 +990,16 @@ def estimate_accuracy(output_format):
                 "total_estimated_hours": round(total_estimated_hours, 1),
                 "total_actual_hours": round(total_actual_hours, 1),
                 "accuracy_percent": round(
-                    (total_estimated_hours / total_actual_hours * 100) if total_actual_hours > 0 else 0, 1
+                    (total_estimated_hours / total_actual_hours * 100)
+                    if total_actual_hours > 0
+                    else 0,
+                    1,
                 ),
                 "average_variance_percent": round(
-                    sum(v["variance"] for v in variances) / len(variances) if variances else 0, 1
+                    sum(v["variance"] for v in variances) / len(variances)
+                    if variances
+                    else 0,
+                    1,
                 ),
             }
             click.echo(json.dumps(output, indent=2))
@@ -888,7 +1019,9 @@ def estimate_accuracy(output_format):
             if accuracy > 90 and accuracy < 110:
                 console.print(f"  [green]Accuracy: {accuracy:.0f}% (good)[/]")
             elif accuracy >= 110:
-                console.print(f"  [yellow]Accuracy: {accuracy:.0f}% (overestimating)[/]")
+                console.print(
+                    f"  [yellow]Accuracy: {accuracy:.0f}% (overestimating)[/]"
+                )
             else:
                 console.print(f"  [red]Accuracy: {accuracy:.0f}% (underestimating)[/]")
 
@@ -897,7 +1030,9 @@ def estimate_accuracy(output_format):
             console.print(f"\n[bold]Biggest variances:[/]")
 
             # Sort by absolute variance
-            sorted_vars = sorted(variances, key=lambda v: abs(v["variance"]), reverse=True)
+            sorted_vars = sorted(
+                variances, key=lambda v: abs(v["variance"]), reverse=True
+            )
 
             for v in sorted_vars[:5]:
                 task = v["task"]
@@ -911,17 +1046,27 @@ def estimate_accuracy(output_format):
                     indicator = "[yellow]under[/]"
 
                 console.print(f"\n  {task.id}: {task.title[:40]}...")
-                console.print(f"    Est: {est:.1f}h → Actual: {act:.1f}h ({var:+.0f}% {indicator})")
+                console.print(
+                    f"    Est: {est:.1f}h → Actual: {act:.1f}h ({var:+.0f}% {indicator})"
+                )
 
         # Recommendations
-        avg_var = sum(v["variance"] for v in variances) / len(variances) if variances else 0
+        avg_var = (
+            sum(v["variance"] for v in variances) / len(variances) if variances else 0
+        )
         console.print(f"\n[bold]Recommendation:[/]")
         if avg_var > 20:
-            console.print(f"  [yellow]Estimates are {abs(avg_var):.0f}% low on average. Consider adding buffer.[/]")
+            console.print(
+                f"  [yellow]Estimates are {abs(avg_var):.0f}% low on average. Consider adding buffer.[/]"
+            )
         elif avg_var < -20:
-            console.print(f"  [yellow]Estimates are {abs(avg_var):.0f}% high on average. Can be more aggressive.[/]")
+            console.print(
+                f"  [yellow]Estimates are {abs(avg_var):.0f}% high on average. Can be more aggressive.[/]"
+            )
         else:
-            console.print(f"  [green]Estimates are reasonably accurate (avg variance: {avg_var:+.0f}%)[/]")
+            console.print(
+                f"  [green]Estimates are reasonably accurate (avg variance: {avg_var:+.0f}%)[/]"
+            )
 
         console.print()
 

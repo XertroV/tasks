@@ -227,7 +227,7 @@ async function cmdReportProgress(args: string[]): Promise<void> {
 
         const mBar = makeProgressBar(mStats.done, mStats.total, 15);
         const mRemaining = getRemainingHours(mTasks);
-        let mLine = `        ${m.id}: ${mBar} ${Math.round(mPct).toString().padStart(4)}% - ${m.name}`;
+        let mLine = `        ${m.id}: ${mBar} ${Math.round(mPct).toString().padStart(4)}% (${mStats.done}/${mStats.total}) - ${m.name}`;
         if (mRemaining > 0) {
           mLine += `  ~${mRemaining.toFixed(1)}h remaining`;
         }
@@ -242,7 +242,7 @@ async function cmdReportProgress(args: string[]): Promise<void> {
 
             const eBar = makeProgressBar(eStats.done, eStats.total, 10);
             const eRemaining = getRemainingHours(e.tasks);
-            let eLine = `            ${e.id}: ${eBar} ${Math.round(ePct).toString().padStart(4)}% - ${e.name}`;
+            let eLine = `            ${e.id}: ${eBar} ${Math.round(ePct).toString().padStart(4)}% (${eStats.done}/${eStats.total}) - ${e.name}`;
             if (eRemaining > 0) {
               eLine += `  ~${eRemaining.toFixed(1)}h remaining`;
             }

@@ -72,6 +72,7 @@ Commands:
   grab            Auto-claim the next available task
   done            Mark task as complete
   cycle           Complete current task and grab next
+  dash            Show quick dashboard of project status
   update          Update task status
   work            Set/show current working task
   unclaim         Release a claimed task
@@ -150,6 +151,7 @@ function listWithProgress(tree: TaskTree, unfinished: boolean): void {
   console.log();
 
   const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
+  const completedPhases: Array<{ id: string; name: string; total: number }> = [];
 
   for (const phase of phasesToShow) {
     const stats = getPhaseStats(phase);
@@ -158,12 +160,16 @@ function listWithProgress(tree: TaskTree, unfinished: boolean): void {
     const blocked = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)).filter((t) => t.status === Status.BLOCKED).length;
 
     const pct = total > 0 ? (done / total) * 100 : 0;
+
+    if (pct === 100) {
+      completedPhases.push({ id: phase.id, name: phase.name, total });
+      continue;
+    }
+
     const bar = makeProgressBar(done, total);
 
     let indicator: string;
-    if (pct === 100) {
-      indicator = pc.green("✓");
-    } else if (inProgress > 0) {
+    if (inProgress > 0) {
       indicator = pc.yellow("→");
     } else if (blocked > 0) {
       indicator = pc.red("🔒");
@@ -174,27 +180,21 @@ function listWithProgress(tree: TaskTree, unfinished: boolean): void {
     console.log(`${indicator} ${pc.bold(`${phase.id}: ${phase.name}`)}`);
     console.log(`    ${bar} ${pct.toFixed(1).padStart(5)}% (${done}/${total})`);
 
-    if (pct > 0 && pct < 100) {
-      for (const m of phase.milestones) {
-        const mStats = getMilestoneStats(m);
-        const mDone = mStats.done;
-        const mTotal = mStats.total;
-        const mInProgress = m.epics.flatMap((e) => e.tasks).filter((t) => t.status === Status.IN_PROGRESS).length;
+    for (const m of phase.milestones) {
+      const mStats = getMilestoneStats(m);
+      const mDone = mStats.done;
+      const mTotal = mStats.total;
+      const mInProgress = m.epics.flatMap((e) => e.tasks).filter((t) => t.status === Status.IN_PROGRESS).length;
 
-        const mPct = mTotal > 0 ? (mDone / mTotal) * 100 : 0;
-        const mBar = makeProgressBar(mDone, mTotal, 15);
+      const mPct = mTotal > 0 ? (mDone / mTotal) * 100 : 0;
 
-        let mInd: string;
-        if (mPct === 100) {
-          mInd = pc.green("✓");
-        } else if (mInProgress > 0) {
-          mInd = pc.yellow("→");
-        } else {
-          mInd = "○";
-        }
+      if (mPct === 100) continue;
 
-        console.log(`    ${mInd} ${m.id}: ${mBar} ${Math.round(mPct).toString().padStart(3)}%`);
-      }
+      const mBar = makeProgressBar(mDone, mTotal, 15);
+
+      const mInd = mInProgress > 0 ? pc.yellow("→") : "○";
+
+      console.log(`    ${mInd} ${m.id}: ${mBar} ${Math.round(mPct).toString().padStart(3)}%`);
     }
 
     console.log();
@@ -209,6 +209,12 @@ function listWithProgress(tree: TaskTree, unfinished: boolean): void {
     const bugBar = makeProgressBar(bugsDone, bugsTotal);
     console.log(`${bugPct === 100 ? pc.green("✓") : "🐛"} ${pc.bold("Bugs")}`);
     console.log(`    ${bugBar} ${bugPct.toFixed(1).padStart(5)}% (${bugsDone}/${bugsTotal})`);
+    console.log();
+  }
+
+  if (completedPhases.length > 0) {
+    const completedStr = completedPhases.map((p) => `${p.id} (${p.total})`).join(", ");
+    console.log(`${pc.green("✓ Completed:")} ${completedStr}`);
     console.log();
   }
 }
@@ -647,6 +653,37 @@ async function cmdGrab(args: string[]): Promise<void> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
   const loader = new TaskLoader();
   const tree = await loader.load();
+
+  // Check for positional task IDs
+  const taskIds = args.filter((a) => !a.startsWith("-"));
+  if (taskIds.length > 0) {
+    const claimedTasks: Task[] = [];
+    for (const tid of taskIds) {
+      const task = findTask(tree, tid);
+      if (!task) textError(`Task not found: ${tid}`);
+      if (isTaskFileMissing(task)) textError(`Cannot claim ${tid} because the task file is missing.`);
+      try {
+        claimTask(task, agent, false);
+        await loader.saveTask(task);
+        claimedTasks.push(task);
+        console.log(`${pc.green("✓ Claimed:")} ${task.id} - ${task.title}`);
+      } catch (e) {
+        if (e instanceof StatusError) {
+          jsonOut(e.toJSON());
+          process.exit(1);
+        }
+        throw e;
+      }
+    }
+    if (claimedTasks.length > 0) {
+      const primary = claimedTasks[0]!;
+      await setCurrentTask(primary.id, agent);
+      console.log(`\n${pc.bold("Working on:")} ${primary.id}`);
+    }
+    return;
+  }
+
+  // Auto-select next available
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { nextAvailable } = calc.calculate();
@@ -1045,6 +1082,7 @@ async function cmdData(args: string[]): Promise<void> {
 
 // cmdReport is extracted to report.ts
 import { cmdReport } from "./report";
+import { cmdDash } from "./display";
 
 async function cmdTimeline(args: string[]): Promise<void> {
   const scope = parseOpt(args, "--scope");
@@ -1153,6 +1191,7 @@ async function cmdAdd(args: string[]): Promise<void> {
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const tags = parseCsv(parseOpt(args, "--tags"));
+  const bodyOpt = parseOpt(args, "--body") ?? parseOpt(args, "-b");
 
   const loader = new TaskLoader();
   const tree = await loader.load();
@@ -1183,7 +1222,7 @@ async function cmdAdd(args: string[]): Promise<void> {
     depends_on: dependsOn,
     tags,
   };
-  const body = `\n# ${title}\n\n## Requirements\n\n- [ ] TODO: Add requirements\n\n## Acceptance Criteria\n\n- [ ] TODO: Add acceptance criteria\n`;
+  const body = bodyOpt ?? `\n# ${title}\n\n## Requirements\n\n- [ ] TODO: Add requirements\n\n## Acceptance Criteria\n\n- [ ] TODO: Add acceptance criteria\n`;
   await mkdir(dirname(fullFile), { recursive: true });
   await Bun.write(fullFile, `---\n${stringify(fm)}---\n${body}`);
 
@@ -1203,6 +1242,9 @@ async function cmdAdd(args: string[]): Promise<void> {
   epicIndex.tasks = tasks;
   await writeYamlObj(epicIndexPath, epicIndex);
   console.log(`Created task: ${fullId}`);
+  if (!bodyOpt) {
+    console.log("IMPORTANT: You MUST fill in the .todo file that was created.");
+  }
 }
 
 async function cmdAddEpic(args: string[]): Promise<void> {
@@ -1700,6 +1742,7 @@ async function cmdBug(args: string[]): Promise<void> {
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const tags = parseCsv(parseOpt(args, "--tags"));
   const simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
+  const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
 
   const loader = new TaskLoader();
   const bug = await loader.createBug({
@@ -1710,8 +1753,12 @@ async function cmdBug(args: string[]): Promise<void> {
     dependsOn,
     tags,
     simple,
+    body,
   });
   console.log(`Created bug: ${bug.id}`);
+  if (!simple && !body) {
+    console.log("IMPORTANT: You MUST fill in the .todo file that was created.");
+  }
 }
 
 async function main(): Promise<void> {
@@ -1755,6 +1802,9 @@ async function main(): Promise<void> {
       return;
     case "cycle":
       await cmdCycle(rest);
+      return;
+    case "dash":
+      await cmdDash(rest);
       return;
     case "update":
       await cmdUpdate(rest);

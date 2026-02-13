@@ -26,6 +26,7 @@ console = Console()
 def load_config():
     """Load configuration."""
     from ..cli import load_config as cli_load_config
+
     return cli_load_config()
 
 
@@ -69,14 +70,18 @@ def dash(agent):
                     except Exception:
                         pass
 
-                console.print(Panel(
-                    f"[bold]{task.id}[/] - {task.title}\n"
-                    f"Agent: {current_agent}{duration_str}",
-                    title="[bold cyan]Current Task[/]",
-                    border_style="cyan",
-                ))
+                console.print(
+                    Panel(
+                        f"[bold]{task.id}[/] - {task.title}\n"
+                        f"Agent: {current_agent}{duration_str}",
+                        title="[bold cyan]Current Task[/]",
+                        border_style="cyan",
+                    )
+                )
             else:
-                console.print(f"[yellow]⚠ Working task '{current_task_id}' not found[/]\n")
+                console.print(
+                    f"[yellow]⚠ Working task '{current_task_id}' not found[/]\n"
+                )
         else:
             console.print("[dim]No current working task set.[/]")
             console.print("[dim]Use './tasks.py grab' to claim a task.[/]\n")
@@ -84,31 +89,52 @@ def dash(agent):
         # Progress by phase
         console.print("\n[bold]Progress:[/]")
         stats = tree.stats
-        total_pct = (stats["done"] / stats["total_tasks"] * 100) if stats["total_tasks"] > 0 else 0
+        total_pct = (
+            (stats["done"] / stats["total_tasks"] * 100)
+            if stats["total_tasks"] > 0
+            else 0
+        )
 
+        completed_phases = []
         for phase in tree.phases:
             p_stats = phase.stats
             done = p_stats["done"]
             total = p_stats["total_tasks"]
             pct = (done / total * 100) if total > 0 else 0
 
+            if pct == 100:
+                completed_phases.append((phase.id, phase.name, total))
+                continue
+
             bar = make_progress_bar(done, total)
 
             # Color based on progress
-            if pct == 100:
-                color = "green"
-            elif pct > 50:
+            if pct > 50:
                 color = "yellow"
             else:
                 color = "white"
 
-            console.print(f"  [{color}]{phase.id}:[/] {bar} {pct:5.1f}% ({done}/{total})")
+            console.print(
+                f"  [{color}]{phase.id}:[/] {bar} {pct:5.1f}% ({done}/{total})"
+            )
 
-        console.print(f"\n  [bold]Total:[/] {make_progress_bar(stats['done'], stats['total_tasks'])} {total_pct:5.1f}% ({stats['done']}/{stats['total_tasks']})")
+        console.print(
+            f"\n  [bold]Total:[/] {make_progress_bar(stats['done'], stats['total_tasks'])} {total_pct:5.1f}% ({stats['done']}/{stats['total_tasks']})"
+        )
+
+        if completed_phases:
+            completed_str = ", ".join(
+                f"{pid} ({total} tasks)" for pid, pname, total in completed_phases
+            )
+            console.print(f"\n  [green]✓ Completed:[/] {completed_str}")
 
         # Critical path info
         console.print(f"\n[bold]Critical Path:[/]")
-        remaining_on_path = [t for t in critical_path if tree.find_task(t) and tree.find_task(t).status != Status.DONE]
+        remaining_on_path = [
+            t
+            for t in critical_path
+            if tree.find_task(t) and tree.find_task(t).status != Status.DONE
+        ]
         if remaining_on_path:
             # Calculate total hours remaining
             total_hours = 0
@@ -122,7 +148,9 @@ def dash(agent):
                 path_display += " → ..."
 
             console.print(f"  {path_display}")
-            console.print(f"  [dim]{len(remaining_on_path)} tasks, ~{total_hours:.0f}h remaining[/]")
+            console.print(
+                f"  [dim]{len(remaining_on_path)} tasks, ~{total_hours:.0f}h remaining[/]"
+            )
         else:
             console.print("  [green]✓ All critical path tasks complete![/]")
 
@@ -163,7 +191,9 @@ def dash(agent):
                 task_info = ""
                 if sess["current_task"]:
                     task_info = f" on {sess['current_task']}"
-                console.print(f"  {sess['agent_id']}{task_info} ({format_duration(sess['duration_minutes'])})")
+                console.print(
+                    f"  {sess['agent_id']}{task_info} ({format_duration(sess['duration_minutes'])})"
+                )
 
         console.print()
 
@@ -175,6 +205,7 @@ def dash(agent):
 def add_progress_to_list(tree, calc, output_json=False):
     """Add progress bars to list output. Returns formatted string."""
     lines = []
+    completed_phases = []
 
     for phase in tree.phases:
         p_stats = phase.stats
@@ -182,12 +213,14 @@ def add_progress_to_list(tree, calc, output_json=False):
         total = p_stats["total_tasks"]
         pct = (done / total * 100) if total > 0 else 0
 
+        if pct == 100:
+            completed_phases.append((phase.id, phase.name, total))
+            continue
+
         bar = make_progress_bar(done, total)
 
         # Status indicator
-        if pct == 100:
-            indicator = "[green]✓[/]"
-        elif p_stats["in_progress"] > 0:
+        if p_stats["in_progress"] > 0:
             indicator = "[yellow]→[/]"
         elif p_stats["blocked"] > 0:
             indicator = "[red]🔒[/]"
@@ -198,26 +231,33 @@ def add_progress_to_list(tree, calc, output_json=False):
         lines.append(f"    {bar} {pct:5.1f}% ({done}/{total})")
 
         # Show milestones if phase is in progress
-        if 0 < pct < 100:
-            for m in phase.milestones:
-                m_stats = m.stats
-                m_done = m_stats["done"]
-                m_total = m_stats["total_tasks"]
-                m_pct = (m_done / m_total * 100) if m_total > 0 else 0
+        for m in phase.milestones:
+            m_stats = m.stats
+            m_done = m_stats["done"]
+            m_total = m_stats["total_tasks"]
+            m_pct = (m_done / m_total * 100) if m_total > 0 else 0
 
-                m_bar = make_progress_bar(m_done, m_total, width=15)
+            if m_pct == 100:
+                continue
 
-                if m_pct == 100:
-                    m_ind = "[green]✓[/]"
-                elif m_stats["in_progress"] > 0:
-                    m_ind = "[yellow]→[/]"
-                elif m_stats["blocked"] > 0:
-                    m_ind = "[red]🔒[/]"
-                else:
-                    m_ind = "○"
+            m_bar = make_progress_bar(m_done, m_total, width=15)
 
-                lines.append(f"    {m_ind} {m.id}: {m_bar} {m_pct:4.0f}%")
+            if m_stats["in_progress"] > 0:
+                m_ind = "[yellow]→[/]"
+            elif m_stats["blocked"] > 0:
+                m_ind = "[red]🔒[/]"
+            else:
+                m_ind = "○"
 
+            lines.append(f"    {m_ind} {m.id}: {m_bar} {m_pct:4.0f}%")
+
+        lines.append("")
+
+    if completed_phases:
+        completed_str = ", ".join(
+            f"{pid} ({total})" for pid, pname, total in completed_phases
+        )
+        lines.append(f"[green]✓ Completed:[/] {completed_str}")
         lines.append("")
 
     return "\n".join(lines)

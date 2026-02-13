@@ -75,10 +75,7 @@ def _find_and_reclaim_stale_task(tree, config, agent, loader):
                     if t.status == Status.IN_PROGRESS and t.claimed_at:
                         age_minutes = (now - to_utc(t.claimed_at)).total_seconds() / 60
                         if age_minutes >= error_threshold:
-                            stale_tasks.append({
-                                "task": t,
-                                "age_minutes": age_minutes
-                            })
+                            stale_tasks.append({"task": t, "age_minutes": age_minutes})
 
     if not stale_tasks:
         return None
@@ -91,14 +88,22 @@ def _find_and_reclaim_stale_task(tree, config, agent, loader):
     stale_task = stale_item["task"]
     age = stale_item["age_minutes"]
 
-    console.print(f"\n[cyan]Found {len(stale_tasks)} stale task(s) (>{error_threshold}m old)[/]")
+    console.print(
+        f"\n[cyan]Found {len(stale_tasks)} stale task(s) (>{error_threshold}m old)[/]"
+    )
     console.print("[cyan]Reclaiming oldest stale task...[/]\n")
     console.print(f"  [yellow]Reclaiming:[/] {stale_task.id} - {stale_task.title}")
-    console.print(f"  [dim]Previously claimed by:[/] {stale_task.claimed_by or 'unknown'}")
+    console.print(
+        f"  [dim]Previously claimed by:[/] {stale_task.claimed_by or 'unknown'}"
+    )
     console.print(f"  [dim]Age:[/] {int(age)} minutes ({age / 60:.1f} hours)\n")
 
     # Reset to pending, then claim with current agent
-    update_status(stale_task, Status.PENDING, reason=f"Stale claim reclaimed by {agent} ({int(age)}m)")
+    update_status(
+        stale_task,
+        Status.PENDING,
+        reason=f"Stale claim reclaimed by {agent} ({int(age)}m)",
+    )
     loader.save_task(stale_task)
 
     return stale_task.id
@@ -170,7 +175,9 @@ should spawn a subagent to complete this task in parallel.
         f.write(instructions)
 
 
-def _append_sibling_delegation_instructions(primary_task, sibling_tasks, agent: str) -> None:
+def _append_sibling_delegation_instructions(
+    primary_task, sibling_tasks, agent: str
+) -> None:
     """Append sibling delegation instructions to the primary task's .todo file."""
     if not primary_task or not sibling_tasks:
         return
@@ -256,10 +263,14 @@ def _display_grab_results(primary_task, additional_tasks, no_content: bool) -> N
         _display_task_details(primary_task, show_file_contents=True)
 
 
-def _display_sibling_grab_results(primary_task, sibling_tasks, no_content: bool) -> None:
+def _display_sibling_grab_results(
+    primary_task, sibling_tasks, no_content: bool
+) -> None:
     """Display grab results for sibling batch mode."""
     if not primary_task:
-        console.print("[red]Error:[/] Primary task missing; cannot display grab results")
+        console.print(
+            "[red]Error:[/] Primary task missing; cannot display grab results"
+        )
         return
 
     sibling_tasks = [task for task in (sibling_tasks or []) if task]
@@ -285,9 +296,7 @@ def _display_sibling_grab_results(primary_task, sibling_tasks, no_content: bool)
         )
         console.print("Spawn ONE subagent to implement ALL tasks sequentially:\n")
 
-        task_order = " → ".join(
-            [primary_task.id] + [t.id for t in sibling_tasks]
-        )
+        task_order = " → ".join([primary_task.id] + [t.id for t in sibling_tasks])
         console.print(f"   Order: {task_order}\n")
 
         for task in [primary_task] + sibling_tasks:
@@ -495,31 +504,70 @@ def _claim_and_display_batch(
 
 
 @click.command()
+@click.argument("task_ids", nargs=-1, required=False)
 @click.option("--agent", help="Agent session ID (uses config default if not set)")
 @click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
 @click.option("--no-content", is_flag=True, help="Suppress .todo file contents")
-@click.option("--multi", is_flag=True, help="Claim up to 3 independent tasks from different epics")
-@click.option("--single", is_flag=True, help="Claim only 1 task (disable batching)")
-@click.option("--siblings/--no-siblings", default=True, help="Enable/disable sibling batching (default: enabled)")
 @click.option(
-    "--count", default=DEFAULT_SIBLING_ADDITIONAL_COUNT, type=int, help="Number of additional tasks (with --multi)"
+    "--multi", is_flag=True, help="Claim up to 3 independent tasks from different epics"
 )
-def grab(agent, scope, no_content, multi, single, siblings, count):
-    f"""Auto-claim the next available task on critical path.
+@click.option("--single", is_flag=True, help="Claim only 1 task (disable batching)")
+@click.option(
+    "--siblings/--no-siblings",
+    default=True,
+    help="Enable/disable sibling batching (default: enabled)",
+)
+@click.option(
+    "--count",
+    default=DEFAULT_SIBLING_ADDITIONAL_COUNT,
+    type=int,
+    help="Number of additional tasks (with --multi)",
+)
+def grab(task_ids, agent, scope, no_content, multi, single, siblings, count):
+    """Claim specific tasks or auto-claim the next available task.
 
-    Combines 'next' + 'claim' into a single command.
+    With TASK_IDS: claim those specific tasks.
+    Without TASK_IDS: auto-claim the next available task on critical path.
 
-    By default, claims the primary task plus up to {DEFAULT_SIBLING_ADDITIONAL_COUNT} sibling tasks from the
+    By default, claims the primary task plus up to sibling tasks from the
     same epic for sequential implementation. Use --single to claim only 1 task,
     or --multi for independent tasks from different epics.
     """
     try:
-        # Use config default if agent not specified
         if not agent:
             agent = get_default_agent()
         loader = TaskLoader()
         tree = loader.load()
         config = load_config()
+
+        if task_ids:
+            claimed_tasks = []
+            for tid in task_ids:
+                task = tree.find_task(tid)
+                if not task:
+                    console.print(f"[red]Error:[/] Task not found: {tid}")
+                    raise click.Abort()
+                if is_task_file_missing(task):
+                    console.print(
+                        f"[red]Error:[/] Cannot claim {tid} because the task file is missing."
+                    )
+                    raise click.Abort()
+                claim_task(task, agent, force=False)
+                loader.save_task(task)
+                claimed_tasks.append(task)
+                console.print(f"[green]✓ Claimed:[/] {task.id} - {task.title}")
+
+            if claimed_tasks:
+                primary = claimed_tasks[0]
+                additional = (
+                    [t.id for t in claimed_tasks[1:]] if len(claimed_tasks) > 1 else []
+                )
+                set_current_task(agent, primary.id)
+                if additional:
+                    set_multi_task_context(agent, primary.id, additional)
+                start_session(agent, primary.id)
+                console.print(f"\n[bold]Working on:[/] {primary.id}")
+            return
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
         _, next_available = _select_next_available_task_id(
