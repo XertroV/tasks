@@ -55,6 +55,9 @@ class TaskLoader:
                         f"Error loading phase {phase_id} (path: {phase_path}): {str(e)}"
                     ) from e
 
+            # Load bugs
+            tree.bugs = self._load_bugs()
+
             return tree
         except KeyError as e:
             raise RuntimeError(
@@ -435,6 +438,140 @@ class TaskLoader:
                             default_flow_style=False,
                             sort_keys=False,
                         )
+
+    def _load_bugs(self):
+        """Load bugs from .tasks/bugs/ directory."""
+        bugs_dir = self.tasks_dir / "bugs"
+        index_path = bugs_dir / "index.yaml"
+        if not index_path.exists():
+            return []
+
+        idx = self._load_yaml(index_path)
+        bugs = []
+        for entry in idx.get("bugs", []):
+            filename = entry.get("file", "")
+            if not filename:
+                continue
+            file_path = bugs_dir / filename
+            if not file_path.exists():
+                continue
+            frontmatter, _ = self._parse_todo_file(file_path)
+            bugs.append(Task(
+                id=str(frontmatter.get("id", "")),
+                title=str(frontmatter.get("title", "")),
+                file=str(Path("bugs") / filename),
+                status=Status(frontmatter.get("status", "pending")),
+                estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
+                complexity=Complexity(frontmatter.get("complexity", "medium")),
+                priority=Priority(frontmatter.get("priority", "medium")),
+                depends_on=frontmatter.get("depends_on", []) if isinstance(frontmatter.get("depends_on"), list) else [],
+                claimed_by=frontmatter.get("claimed_by"),
+                claimed_at=self._parse_datetime(frontmatter.get("claimed_at")),
+                started_at=self._parse_datetime(frontmatter.get("started_at")),
+                completed_at=self._parse_datetime(frontmatter.get("completed_at")),
+                duration_minutes=float(frontmatter["duration_minutes"]) if frontmatter.get("duration_minutes") is not None else None,
+                tags=frontmatter.get("tags", []) if isinstance(frontmatter.get("tags"), list) else [],
+                epic_id=None,
+                milestone_id=None,
+                phase_id=None,
+            ))
+        return bugs
+
+    def create_bug(self, bug_data: dict) -> Task:
+        """
+        Create a new bug report.
+
+        Args:
+            bug_data: Dict with keys: title, estimate_hours, complexity, priority,
+                       depends_on, tags
+
+        Returns:
+            The created Task object
+        """
+        bugs_dir = self.tasks_dir / "bugs"
+        bugs_dir.mkdir(parents=True, exist_ok=True)
+        index_path = bugs_dir / "index.yaml"
+
+        # Determine next bug number
+        next_num = 1
+        if index_path.exists():
+            idx = self._load_yaml(index_path)
+            existing = idx.get("bugs", [])
+            nums = []
+            for entry in existing:
+                match = re.match(r"B(\d+)", entry.get("file", ""))
+                if match:
+                    nums.append(int(match.group(1)))
+            if nums:
+                next_num = max(nums) + 1
+
+        bug_id = f"B{next_num:03d}"
+        slug = self._slugify(bug_data["title"])
+        filename = f"{bug_id}-{slug}.todo"
+        file_path = bugs_dir / filename
+
+        # Prepare frontmatter
+        frontmatter = {
+            "id": bug_id,
+            "title": bug_data["title"],
+            "status": "pending",
+            "estimate_hours": bug_data.get("estimate_hours", 1.0),
+            "complexity": bug_data.get("complexity", "medium"),
+            "priority": bug_data.get("priority", "high"),
+            "depends_on": bug_data.get("depends_on", []),
+            "tags": bug_data.get("tags", []),
+        }
+
+        if bug_data.get("simple"):
+            body = f"\n{bug_data['title']}\n"
+        else:
+            body = f"""
+# {bug_data["title"]}
+
+## Steps to Reproduce
+
+1. TODO: Add steps
+
+## Expected Behavior
+
+TODO: Describe expected behavior
+
+## Actual Behavior
+
+TODO: Describe actual behavior
+"""
+
+        with open(file_path, "w") as f:
+            f.write("---\n")
+            yaml.dump(frontmatter, f, default_flow_style=False, sort_keys=False)
+            f.write("---\n")
+            f.write(body)
+
+        # Update bugs index
+        if index_path.exists():
+            idx = self._load_yaml(index_path)
+        else:
+            idx = {"bugs": []}
+        bugs_list = idx.get("bugs", [])
+        bugs_list.append({"file": filename})
+        idx["bugs"] = bugs_list
+        with open(index_path, "w") as f:
+            yaml.dump(idx, f, default_flow_style=False, sort_keys=False)
+
+        return Task(
+            id=bug_id,
+            title=bug_data["title"],
+            file=str(Path("bugs") / filename),
+            status=Status.PENDING,
+            estimate_hours=float(bug_data.get("estimate_hours", 1.0)),
+            complexity=Complexity(bug_data.get("complexity", "medium")),
+            priority=Priority(bug_data.get("priority", "high")),
+            depends_on=bug_data.get("depends_on", []),
+            tags=bug_data.get("tags", []),
+            epic_id=None,
+            milestone_id=None,
+            phase_id=None,
+        )
 
     def create_task(self, epic_id: str, task_data: dict) -> Task:
         """

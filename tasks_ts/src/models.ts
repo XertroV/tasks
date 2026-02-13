@@ -188,4 +188,5 @@ export interface TaskTree {
   criticalPath: string[];
   nextAvailable?: string;
   phases: Phase[];
+  bugs: Task[];
 }

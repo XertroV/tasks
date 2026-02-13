@@ -15,6 +15,7 @@ from ..helpers import (
     SESSIONS_FILE,
     find_missing_task_files,
     get_all_tasks,
+    is_task_file_missing,
 )
 from ..loader import TaskLoader
 
@@ -24,6 +25,7 @@ PHASE_ID_RE = re.compile(r"^P\d+$")
 MILESTONE_ID_RE = re.compile(r"^P\d+\.M\d+$")
 EPIC_ID_RE = re.compile(r"^P\d+\.M\d+\.E\d+$")
 TASK_ID_RE = re.compile(r"^P\d+\.M\d+\.E\d+\.T\d+$")
+BUG_ID_RE = re.compile(r"^B\d+$")
 
 
 def _add_finding(
@@ -358,6 +360,50 @@ def _validate_ids_and_dependencies(tree, findings):
                 )
 
 
+def _validate_bugs(tree, findings):
+    """Validate bug IDs, files, and dependencies."""
+    all_tasks = get_all_tasks(tree)
+    all_ids = {t.id for t in all_tasks}
+    bug_ids = set()
+
+    for bug in getattr(tree, 'bugs', []):
+        if not BUG_ID_RE.match(bug.id):
+            _add_finding(
+                findings, "error", "invalid_bug_id",
+                f"Invalid bug ID format: {bug.id}", bug.id,
+            )
+        if bug.id in bug_ids:
+            _add_finding(
+                findings, "error", "duplicate_bug_id",
+                f"Duplicate bug ID: {bug.id}", bug.id,
+            )
+        bug_ids.add(bug.id)
+
+        if is_task_file_missing(bug):
+            _add_finding(
+                findings, "error", "missing_bug_file",
+                f"Bug file missing for {bug.id}", f".tasks/{bug.file}",
+            )
+
+        if bug.estimate_hours == 0:
+            _add_finding(
+                findings, "warning", "zero_estimate_hours",
+                f"Bug estimate must be positive, got 0: {bug.id}", bug.id,
+            )
+
+        for dep in bug.depends_on:
+            if dep == bug.id:
+                _add_finding(
+                    findings, "error", "self_dependency_bug",
+                    f"Bug depends on itself: {bug.id}", bug.id,
+                )
+            elif dep not in all_ids:
+                _add_finding(
+                    findings, "error", "missing_bug_dependency",
+                    f"Bug dependency not found: {dep}", bug.id,
+                )
+
+
 def _append_graph_cycle_findings(
     graph, findings, code: str, message_prefix: str, location: str
 ):
@@ -372,7 +418,7 @@ def _append_graph_cycle_findings(
 
 
 def _validate_cycles(tree, findings):
-    # Task dependency cycles
+    # Task dependency cycles (includes bugs via getAllTasks)
     task_graph = nx.DiGraph()
     all_tasks = get_all_tasks(tree)
     for task in all_tasks:
@@ -386,6 +432,11 @@ def _validate_cycles(tree, findings):
                             task_graph.add_edge(dep, task.id)
                     if not task.depends_on and idx > 0:
                         task_graph.add_edge(epic.tasks[idx - 1].id, task.id)
+    # Include bugs in cycle detection
+    for bug in getattr(tree, 'bugs', []):
+        for dep in bug.depends_on:
+            if task_graph.has_node(dep):
+                task_graph.add_edge(dep, bug.id)
     _append_graph_cycle_findings(
         task_graph,
         findings,
@@ -516,10 +567,13 @@ def _validate_runtime_files(tree, findings):
 
 
 def _validate_uninitialized_todos(tree, findings):
-    """Check for task files that still have default/placeholder content."""
+    """Check for task/bug files that still have default/placeholder content."""
     default_markers = [
         "- [ ] TODO: Add requirements",
         "- [ ] TODO: Add acceptance criteria",
+        "TODO: Add steps",
+        "TODO: Describe expected behavior",
+        "TODO: Describe actual behavior",
     ]
 
     all_tasks = get_all_tasks(tree)
@@ -555,6 +609,7 @@ def run_checks(tasks_dir: str = ".tasks") -> dict:
 
     _validate_tree_files(tree, findings)
     _validate_ids_and_dependencies(tree, findings)
+    _validate_bugs(tree, findings)
     _validate_cycles(tree, findings)
     _validate_runtime_files(tree, findings)
     _validate_uninitialized_todos(tree, findings)

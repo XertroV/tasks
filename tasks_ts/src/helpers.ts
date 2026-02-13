@@ -6,7 +6,14 @@ import { parse, stringify } from "yaml";
 import type { Epic, Milestone, Phase, Task, TaskTree } from "./models";
 
 export function getAllTasks(tree: TaskTree): Task[] {
-  return tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)));
+  return [
+    ...tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks))),
+    ...(tree.bugs ?? []),
+  ];
+}
+
+export function isBugId(id: string): boolean {
+  return /^B\d+$/.test(id);
 }
 
 export function findTask(tree: TaskTree, id: string): Task | undefined {

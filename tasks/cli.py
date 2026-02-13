@@ -24,6 +24,7 @@ from .helpers import (
     get_all_current_tasks,
     set_multi_task_context,
     get_all_tasks,
+    is_bug_id,
     task_file_path,
     is_task_file_missing,
     find_missing_task_files,
@@ -180,6 +181,35 @@ def _warn_missing_task_files(tree, limit: int = 5) -> int:
 def cli():
     """Task Management CLI."""
     pass
+
+
+# ============================================================================
+# Init Command
+# ============================================================================
+
+
+@cli.command()
+@click.option("--project", "-p", required=True, help="Project name")
+@click.option("--description", "-d", default="", help="Project description")
+@click.option(
+    "--timeline-weeks", "-w", default=0, type=int, help="Timeline in weeks"
+)
+def init(project, description, timeline_weeks):
+    """Initialize a new .tasks project."""
+    index_path = Path(".tasks/index.yaml")
+    if index_path.exists():
+        raise click.ClickException("Already initialized (.tasks/index.yaml exists)")
+
+    Path(".tasks").mkdir(parents=True, exist_ok=True)
+    data = {
+        "project": project,
+        "description": description,
+        "timeline_weeks": timeline_weeks,
+        "phases": [],
+    }
+    with open(index_path, "w") as f:
+        yaml.dump(data, f, default_flow_style=False)
+    click.echo(f'Initialized project "{project}" in .tasks/')
 
 
 # ============================================================================
@@ -460,6 +490,18 @@ def _list_with_progress(
 
         console.print()
 
+    # Show bugs summary in progress view
+    bugs = [b for b in getattr(tree, 'bugs', []) if not unfinished or _is_unfinished(b.status)]
+    if bugs:
+        bugs_done = sum(1 for b in bugs if b.status == Status.DONE)
+        bugs_total = len(bugs)
+        bug_pct = (bugs_done / bugs_total * 100) if bugs_total > 0 else 0
+        bug_bar = make_progress_bar(bugs_done, bugs_total)
+        indicator = "[green]✓[/]" if bug_pct == 100 else "🐛"
+        console.print(f"{indicator} [bold]Bugs[/]")
+        console.print(f"    {bug_bar} {bug_pct:5.1f}% ({bugs_done}/{bugs_total})")
+        console.print()
+
 
 def _show_milestone_detail(tree, m, critical_path, complexity=None, priority=None):
     """Show milestone detail view."""
@@ -612,6 +654,12 @@ def _list_json(
     if unfinished:
         phases_to_show = [p for p in tree.phases if _has_unfinished_milestones(p)]
 
+    bugs_for_json = [
+        {"id": b.id, "title": b.title, "status": b.status.value, "priority": b.priority.value, "estimate_hours": b.estimate_hours}
+        for b in getattr(tree, 'bugs', [])
+        if not unfinished or _is_unfinished(b.status)
+    ]
+
     output = {
         "critical_path": critical_path,
         "next_available": next_available,
@@ -638,6 +686,7 @@ def _list_json(
             }
             for p in phases_to_show
         ],
+        "bugs": bugs_for_json,
     }
 
     # Add filter metadata and filtered stats when filters are specified
@@ -775,6 +824,18 @@ def _list_text(
             )
         else:
             console.print()
+
+    # Show bugs section
+    bugs_to_show = [b for b in getattr(tree, 'bugs', []) if not unfinished or _is_unfinished(b.status)]
+    if bugs_to_show:
+        bugs_done = sum(1 for b in bugs_to_show if b.status == Status.DONE)
+        console.print(f"[bold]Bugs[/] ({bugs_done}/{len(bugs_to_show)} done)")
+        for i, b in enumerate(bugs_to_show):
+            is_last = i == len(bugs_to_show) - 1
+            prefix = "└──" if is_last else "├──"
+            icon = _get_status_icon(b.status)
+            console.print(f"  {prefix} {icon} {b.id}: {b.title} [{b.priority.value}]")
+        console.print()
 
 
 # ============================================================================
@@ -1032,12 +1093,24 @@ def tree(output_json, unfinished, details, depth):
                 p for p in tree_data.phases if _has_unfinished_milestones(p)
             ]
 
+        bugs_to_show = [b for b in getattr(tree_data, 'bugs', []) if not unfinished or _is_unfinished(b.status)]
+        has_bugs = len(bugs_to_show) > 0
+
         for i, p in enumerate(phases_to_show):
-            is_last = i == len(phases_to_show) - 1
+            is_last = i == len(phases_to_show) - 1 and not has_bugs
             lines = _render_phase(
                 p, is_last, "", critical_path, unfinished, details, depth, 1
             )
             for line in lines:
+                console.print(line)
+
+        # Render bugs section
+        if has_bugs:
+            bugs_done = sum(1 for b in bugs_to_show if b.status == Status.DONE)
+            console.print(f"└── [bold]Bugs[/] ({bugs_done}/{len(bugs_to_show)})")
+            for i, b in enumerate(bugs_to_show):
+                is_last_bug = i == len(bugs_to_show) - 1
+                line = _render_task(b, is_last_bug, "    ", critical_path, details)
                 console.print(line)
 
     except Exception as e:
@@ -1083,6 +1156,15 @@ def show(path_ids):
         for i, path_id in enumerate(path_ids):
             if i > 0:
                 console.print("\n" + "═" * 60 + "\n")
+
+            # Check for bug ID before TaskPath.parse (which would misinterpret B001)
+            if is_bug_id(path_id):
+                bug_task = builtin_next((b for b in getattr(tree, 'bugs', []) if b.id == path_id), None)
+                if not bug_task:
+                    console.print(f"[red]Error:[/] Bug not found: {path_id}")
+                    raise click.Abort()
+                _show_task(tree, path_id)
+                continue
 
             task_path = TaskPath.parse(path_id)
 
@@ -1838,6 +1920,64 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
         console.print(f"  Weeks:    {phase.weeks}")
         console.print(f"  Estimate: {phase.estimate_hours}h")
         console.print(f"\n[bold]Path:[/] {format_phase_path(phase)}\n")
+
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
+# ============================================================================
+# Bug Command
+# ============================================================================
+
+
+@cli.command()
+@click.option("--title", "-T", required=True, help="Bug title")
+@click.option("--estimate", "-e", default=1.0, type=float, help="Hours estimate")
+@click.option(
+    "--complexity",
+    "-c",
+    default="medium",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+)
+@click.option(
+    "--priority",
+    "-p",
+    default="high",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+)
+@click.option("--depends-on", "-d", default="", help="Comma-separated task IDs")
+@click.option("--tags", default="", help="Comma-separated tags")
+@click.option("--simple", "-s", is_flag=True, help="Simple bug (no template body)")
+def bug(title, estimate, complexity, priority, depends_on, tags, simple):
+    """Create a new bug report."""
+    try:
+        loader = TaskLoader()
+
+        depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
+        tags_list = [t.strip() for t in tags.split(",") if t.strip()]
+
+        bug_data = {
+            "title": title,
+            "estimate_hours": estimate,
+            "complexity": complexity,
+            "priority": priority,
+            "depends_on": depends_list,
+            "tags": tags_list,
+            "simple": simple,
+        }
+
+        created = loader.create_bug(bug_data)
+
+        console.print(f"\n[green]✓ Created bug:[/] {created.id}\n")
+        console.print(f"  Title:    {created.title}")
+        console.print(f"  Priority: {created.priority.value}")
+        console.print(f"  Estimate: {created.estimate_hours}h")
+        console.print(f"\n[bold]File:[/] .tasks/{created.file}")
+        if not simple:
+            console.print(
+                "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
+            )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")

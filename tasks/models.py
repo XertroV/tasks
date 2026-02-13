@@ -367,6 +367,7 @@ class TaskTree:
     phases: List[Phase] = field(default_factory=list)
     critical_path: List[str] = field(default_factory=list)
     next_available: Optional[str] = None
+    bugs: List[Task] = field(default_factory=list)
 
     @property
     def stats(self):
@@ -396,6 +397,9 @@ class TaskTree:
                     for task in epic.tasks:
                         if task.id == task_id:
                             return task
+        for bug in self.bugs:
+            if bug.id == task_id:
+                return bug
         return None
 
     def find_epic(self, epic_id: str) -> Optional[Epic]:

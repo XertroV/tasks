@@ -36,11 +36,13 @@ export class TaskLoader {
       criticalPath: (root.critical_path as string[] | undefined) ?? [],
       nextAvailable: root.next_available as string | undefined,
       phases: [],
+      bugs: [],
     };
 
     for (const p of ((root.phases as AnyRec[]) ?? [])) {
       tree.phases.push(await this.loadPhase(p));
     }
+    tree.bugs = await this.loadBugs();
     return tree;
   }
 
@@ -163,6 +165,102 @@ export class TaskLoader {
     frontmatter.completed_at = task.completedAt?.toISOString() ?? null;
     if (task.durationMinutes !== undefined) frontmatter.duration_minutes = task.durationMinutes;
     await writeFile(filePath, `---\n${stringify(frontmatter)}---\n${body}`);
+  }
+
+  private async loadBugs(): Promise<import("./models").Task[]> {
+    const bugsDir = join(this.tasksDir, "bugs");
+    const indexPath = join(bugsDir, "index.yaml");
+    if (!existsSync(indexPath)) return [];
+    const idx = this.mustYaml(indexPath);
+    const bugs: import("./models").Task[] = [];
+    for (const entry of ((idx.bugs as AnyRec[]) ?? [])) {
+      const filename = String(entry.file ?? "");
+      if (!filename) continue;
+      const filePath = join(bugsDir, filename);
+      if (!existsSync(filePath)) continue;
+      const fm = parseTodo(await readFile(filePath, "utf8")).frontmatter;
+      bugs.push({
+        id: String(fm.id ?? ""),
+        title: String(fm.title ?? ""),
+        file: join("bugs", filename),
+        status: (fm.status as Status) ?? Status.PENDING,
+        estimateHours: estimateHoursFrom(fm),
+        complexity: (fm.complexity as Complexity) ?? Complexity.MEDIUM,
+        priority: (fm.priority as Priority) ?? Priority.MEDIUM,
+        dependsOn: ((fm.depends_on as string[]) ?? []).slice(),
+        claimedBy: fm.claimed_by as string | undefined,
+        claimedAt: fm.claimed_at ? new Date(String(fm.claimed_at)) : undefined,
+        startedAt: fm.started_at ? new Date(String(fm.started_at)) : undefined,
+        completedAt: fm.completed_at ? new Date(String(fm.completed_at)) : undefined,
+        durationMinutes: fm.duration_minutes ? Number(fm.duration_minutes) : undefined,
+        tags: ((fm.tags as string[]) ?? []).slice(),
+        epicId: undefined,
+        milestoneId: undefined,
+        phaseId: undefined,
+      });
+    }
+    return bugs;
+  }
+
+  async createBug(data: { title: string; priority?: string; estimate?: number; complexity?: string; dependsOn?: string[]; tags?: string[]; simple?: boolean }): Promise<import("./models").Task> {
+    const bugsDir = join(this.tasksDir, "bugs");
+    await mkdir(bugsDir, { recursive: true });
+    const indexPath = join(bugsDir, "index.yaml");
+
+    // Determine next bug number
+    let nextNum = 1;
+    if (existsSync(indexPath)) {
+      const idx = this.mustYaml(indexPath);
+      const existing = ((idx.bugs as AnyRec[]) ?? [])
+        .map((e) => String(e.file ?? ""))
+        .map((f) => f.match(/^B(\d+)/))
+        .filter(Boolean)
+        .map((m) => Number(m![1]));
+      if (existing.length) nextNum = Math.max(...existing) + 1;
+    }
+
+    const bugId = `B${String(nextNum).padStart(3, "0")}`;
+    const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30).replace(/-+$/g, "");
+    const filename = `${bugId}-${slug}.todo`;
+    const filePath = join(bugsDir, filename);
+
+    const fm: AnyRec = {
+      id: bugId,
+      title: data.title,
+      status: "pending",
+      estimate_hours: data.estimate ?? 1,
+      complexity: data.complexity ?? "medium",
+      priority: data.priority ?? "high",
+      depends_on: data.dependsOn ?? [],
+      tags: data.tags ?? [],
+    };
+    const body = data.simple
+      ? `\n${data.title}\n`
+      : `\n# ${data.title}\n\n## Steps to Reproduce\n\n1. TODO: Add steps\n\n## Expected Behavior\n\nTODO: Describe expected behavior\n\n## Actual Behavior\n\nTODO: Describe actual behavior\n`;
+    await writeFile(filePath, `---\n${stringify(fm)}---\n${body}`);
+
+    // Update bugs index
+    const idxData: AnyRec = existsSync(indexPath) ? this.mustYaml(indexPath) : { bugs: [] };
+    const bugsList = ((idxData.bugs as AnyRec[]) ?? []).slice();
+    bugsList.push({ file: filename });
+    idxData.bugs = bugsList;
+    await mkdir(dirname(indexPath), { recursive: true });
+    await writeFile(indexPath, stringify(idxData));
+
+    return {
+      id: bugId,
+      title: data.title,
+      file: join("bugs", filename),
+      status: Status.PENDING,
+      estimateHours: data.estimate ?? 1,
+      complexity: (data.complexity as Complexity) ?? Complexity.MEDIUM,
+      priority: (data.priority as Priority) ?? Priority.HIGH,
+      dependsOn: data.dependsOn ?? [],
+      tags: data.tags ?? [],
+      epicId: undefined,
+      milestoneId: undefined,
+      phaseId: undefined,
+    };
   }
 
   async writeYaml(path: string, value: AnyRec): Promise<void> {

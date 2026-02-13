@@ -286,6 +286,12 @@ def format_epic_path(tree, epic) -> str:
     return _join_path(".tasks", _epic_rel_path(tree, epic))
 
 
+def is_bug_id(task_id: str) -> bool:
+    """Check if an ID matches the bug ID format (B001, B002, etc.)."""
+    import re
+    return bool(re.match(r'^B\d+$', task_id))
+
+
 def get_all_tasks(tree) -> List[Task]:
     """Get all tasks from tree as a flat list."""
     tasks = []
@@ -293,6 +299,7 @@ def get_all_tasks(tree) -> List[Task]:
         for milestone in phase.milestones:
             for epic in milestone.epics:
                 tasks.extend(epic.tasks)
+    tasks.extend(getattr(tree, 'bugs', []))
     return tasks
 
 
@@ -329,6 +336,11 @@ def find_tasks_blocked_by(tree, task_id: str) -> List[Task]:
                         prev_task = epic.tasks[i - 1]
                         if prev_task.id == task_id:
                             blocked.append(task)
+
+    # Also check bugs for explicit dependencies
+    for bug in getattr(tree, 'bugs', []):
+        if task_id in bug.depends_on:
+            blocked.append(bug)
 
     return blocked
 

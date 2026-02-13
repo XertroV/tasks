@@ -21,11 +21,28 @@ def report():
     pass
 
 
+def _remaining_hours(tasks):
+    """Sum estimate_hours for incomplete tasks."""
+    return sum(t.estimate_hours for t in tasks if t.status != Status.DONE)
+
+
+def _phase_tasks(phase):
+    """Get all tasks in a phase."""
+    return [t for m in phase.milestones for e in m.epics for t in e.tasks]
+
+
+def _milestone_tasks(milestone):
+    """Get all tasks in a milestone."""
+    return [t for e in milestone.epics for t in e.tasks]
+
+
 @report.command()
 @click.option("--format", "output_format", type=click.Choice(["text", "json"]), default="text")
-@click.option("--by-phase", is_flag=True, help="Show breakdown by phase")
-@click.option("--by-milestone", is_flag=True, help="Show breakdown by milestone")
-def progress(output_format, by_phase, by_milestone):
+@click.option("--by-phase", is_flag=True, help="Group by phase (default)")
+@click.option("--by-milestone", is_flag=True, help="Show milestones within phases")
+@click.option("--by-epic", is_flag=True, help="Show epics within milestones")
+@click.option("--all", "show_all", is_flag=True, help="Include completed phases/milestones/epics")
+def progress(output_format, by_phase, by_milestone, by_epic, show_all):
     """Show overall progress report.
 
     Displays completion statistics across the project.
@@ -43,6 +60,17 @@ def progress(output_format, by_phase, by_milestone):
 
         pct = (done / total * 100) if total > 0 else 0
 
+        # Compute detail level
+        if by_epic:
+            detail_level = 3
+        elif by_milestone:
+            detail_level = 2
+        else:
+            detail_level = 1
+
+        all_tasks = get_all_tasks(tree)
+        overall_remaining = _remaining_hours(all_tasks)
+
         if output_format == "json":
             output = {
                 "overall": {
@@ -52,6 +80,7 @@ def progress(output_format, by_phase, by_milestone):
                     "pending": pending,
                     "blocked": blocked,
                     "percent_complete": round(pct, 1),
+                    "remaining_hours": round(overall_remaining, 1),
                 },
                 "phases": [],
             }
@@ -59,17 +88,76 @@ def progress(output_format, by_phase, by_milestone):
             for phase in tree.phases:
                 p_stats = phase.stats
                 p_total = p_stats["total_tasks"]
-                p_pct = (p_stats["done"] / p_total * 100) if p_total > 0 else 0
-                output["phases"].append({
+                p_done = p_stats["done"]
+                p_pct = (p_done / p_total * 100) if p_total > 0 else 0
+
+                if p_done == p_total and p_total > 0 and not show_all:
+                    continue
+
+                p_remaining = _remaining_hours(_phase_tasks(phase))
+                phase_data = {
                     "id": phase.id,
                     "name": phase.name,
                     "total": p_total,
-                    "done": p_stats["done"],
+                    "done": p_done,
                     "in_progress": p_stats["in_progress"],
                     "pending": p_stats["pending"],
                     "blocked": p_stats["blocked"],
                     "percent_complete": round(p_pct, 1),
-                })
+                    "remaining_hours": round(p_remaining, 1),
+                }
+
+                if detail_level >= 2:
+                    phase_data["milestones"] = []
+                    for m in phase.milestones:
+                        m_stats = m.stats
+                        m_total = m_stats["total_tasks"]
+                        m_done = m_stats["done"]
+                        m_pct = (m_done / m_total * 100) if m_total > 0 else 0
+
+                        if m_done == m_total and m_total > 0 and not show_all:
+                            continue
+
+                        m_remaining = _remaining_hours(_milestone_tasks(m))
+                        m_data = {
+                            "id": m.id,
+                            "name": m.name,
+                            "total": m_total,
+                            "done": m_done,
+                            "in_progress": m_stats["in_progress"],
+                            "pending": m_stats["pending"],
+                            "blocked": m_stats["blocked"],
+                            "percent_complete": round(m_pct, 1),
+                            "remaining_hours": round(m_remaining, 1),
+                        }
+
+                        if detail_level >= 3:
+                            m_data["epics"] = []
+                            for e in m.epics:
+                                e_stats = e.stats
+                                e_total = e_stats["total"]
+                                e_done = e_stats["done"]
+                                e_pct = (e_done / e_total * 100) if e_total > 0 else 0
+
+                                if e_done == e_total and e_total > 0 and not show_all:
+                                    continue
+
+                                e_remaining = _remaining_hours(e.tasks)
+                                m_data["epics"].append({
+                                    "id": e.id,
+                                    "name": e.name,
+                                    "total": e_total,
+                                    "done": e_done,
+                                    "in_progress": e_stats["in_progress"],
+                                    "pending": e_stats["pending"],
+                                    "blocked": e_stats["blocked"],
+                                    "percent_complete": round(e_pct, 1),
+                                    "remaining_hours": round(e_remaining, 1),
+                                })
+
+                        phase_data["milestones"].append(m_data)
+
+                output["phases"].append(phase_data)
 
             click.echo(json.dumps(output, indent=2))
             return
@@ -81,7 +169,21 @@ def progress(output_format, by_phase, by_milestone):
         bar = make_progress_bar(done, total, width=30)
         console.print(f"[bold]Overall:[/] {bar} {pct:5.1f}%")
         console.print(f"  Done: {done} | In Progress: {in_prog} | Pending: {pending} | Blocked: {blocked}")
-        console.print(f"  Total: {total} tasks\n")
+        remaining_str = f"  Total: {total} tasks"
+        if overall_remaining > 0:
+            remaining_str += f" | ~{overall_remaining:.1f}h remaining"
+        console.print(remaining_str + "\n")
+
+        # Check if all phases are complete
+        all_complete = all(
+            p.stats["done"] == p.stats["total_tasks"] and p.stats["total_tasks"] > 0
+            for p in tree.phases
+        ) if tree.phases else False
+
+        if all_complete and not show_all:
+            console.print("[green]All phases complete.[/] Use --all to show completed phases.")
+            console.print()
+            return
 
         # By phase
         console.print("[bold]By Phase:[/]")
@@ -90,6 +192,9 @@ def progress(output_format, by_phase, by_milestone):
             p_total = p_stats["total_tasks"]
             p_done = p_stats["done"]
             p_pct = (p_done / p_total * 100) if p_total > 0 else 0
+
+            if p_done == p_total and p_total > 0 and not show_all:
+                continue
 
             bar = make_progress_bar(p_done, p_total, width=20)
 
@@ -101,17 +206,45 @@ def progress(output_format, by_phase, by_milestone):
                 status = "[ ]"
 
             console.print(f"\n  {status} [bold]{phase.id}[/] {phase.name}")
-            console.print(f"      {bar} {p_pct:5.1f}% ({p_done}/{p_total})")
+            p_remaining = _remaining_hours(_phase_tasks(phase))
+            p_bar_line = f"      {bar} {p_pct:5.1f}% ({p_done}/{p_total})"
+            if p_remaining > 0:
+                p_bar_line += f"  ~{p_remaining:.1f}h remaining"
+            console.print(p_bar_line)
 
-            if by_milestone or by_phase:
+            if detail_level >= 2:
                 for m in phase.milestones:
                     m_stats = m.stats
                     m_total = m_stats["total_tasks"]
                     m_done = m_stats["done"]
                     m_pct = (m_done / m_total * 100) if m_total > 0 else 0
 
+                    if m_done == m_total and m_total > 0 and not show_all:
+                        continue
+
                     m_bar = make_progress_bar(m_done, m_total, width=15)
-                    console.print(f"        {m.id}: {m_bar} {m_pct:4.0f}% - {m.name}")
+                    m_remaining = _remaining_hours(_milestone_tasks(m))
+                    m_line = f"        {m.id}: {m_bar} {m_pct:4.0f}% - {m.name}"
+                    if m_remaining > 0:
+                        m_line += f"  ~{m_remaining:.1f}h remaining"
+                    console.print(m_line)
+
+                    if detail_level >= 3:
+                        for e in m.epics:
+                            e_stats = e.stats
+                            e_total = e_stats["total"]
+                            e_done = e_stats["done"]
+                            e_pct = (e_done / e_total * 100) if e_total > 0 else 0
+
+                            if e_done == e_total and e_total > 0 and not show_all:
+                                continue
+
+                            e_bar = make_progress_bar(e_done, e_total, width=10)
+                            e_remaining = _remaining_hours(e.tasks)
+                            e_line = f"            {e.id}: {e_bar} {e_pct:4.0f}% - {e.name}"
+                            if e_remaining > 0:
+                                e_line += f"  ~{e_remaining:.1f}h remaining"
+                            console.print(e_line)
 
         console.print()
 

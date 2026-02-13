@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
+import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isBugId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
 import { Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
@@ -39,11 +39,11 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 `,
 };
 
-function parseFlag(args: string[], name: string): boolean {
+export function parseFlag(args: string[], name: string): boolean {
   return args.includes(name);
 }
 
-function parseOpt(args: string[], name: string): string | undefined {
+export function parseOpt(args: string[], name: string): string | undefined {
   const exact = args.find((a) => a.startsWith(`${name}=`));
   if (exact) return exact.slice(name.length + 1);
   const idx = args.indexOf(name);
@@ -51,17 +51,47 @@ function parseOpt(args: string[], name: string): string | undefined {
   return undefined;
 }
 
-function jsonOut(obj: unknown): void {
+export function jsonOut(obj: unknown): void {
   console.log(JSON.stringify(obj, null, 2));
 }
 
-function textError(message: string): never {
+export function textError(message: string): never {
   console.error(pc.red(`Error: ${message}`));
   process.exit(1);
 }
 
 function usage(): void {
-  console.log(`Usage: tasks <command> [options]\n\nCore commands: list tree show next claim grab done cycle update work unclaim blocked session check data report timeline schema search blockers skills agents add add-epic add-milestone add-phase`);
+  console.log(`Usage: tasks <command> [options]
+
+Commands:
+  list            List tasks with filtering options
+  tree            Display full hierarchical tree
+  show            Show detailed info for a task/phase/milestone/epic
+  next            Get next available task on critical path
+  claim           Claim a task and mark as in-progress
+  grab            Auto-claim the next available task
+  done            Mark task as complete
+  cycle           Complete current task and grab next
+  update          Update task status
+  work            Set/show current working task
+  unclaim         Release a claimed task
+  blocked         Mark task as blocked and optionally grab next
+  bug             Create a new bug report
+  search          Search tasks by pattern
+  check           Check task tree consistency
+  init            Initialize a new .tasks project
+  add             Add a new task to an epic
+  add-epic        Add a new epic to a milestone
+  add-milestone   Add a new milestone to a phase
+  add-phase       Add a new phase to the project
+  session         Manage agent sessions
+  data            Export/summarize task data
+  report          Generate reports (progress, velocity, estimates)
+  timeline        Display project timeline
+  schema          Show file schema information
+  blockers        Show blocking tasks
+  skills          Install skill files
+  agents          Print AGENTS.md snippets`);
 }
 
 // Helper functions for filtering and stats
@@ -169,6 +199,18 @@ function listWithProgress(tree: TaskTree, unfinished: boolean): void {
 
     console.log();
   }
+
+  // Show bugs summary in progress view
+  const bugs = (tree.bugs ?? []).filter((b) => (!unfinished || isUnfinished(b.status)));
+  if (bugs.length > 0) {
+    const bugsDone = bugs.filter((b) => b.status === Status.DONE).length;
+    const bugsTotal = bugs.length;
+    const bugPct = bugsTotal > 0 ? (bugsDone / bugsTotal) * 100 : 0;
+    const bugBar = makeProgressBar(bugsDone, bugsTotal);
+    console.log(`${bugPct === 100 ? pc.green("✓") : "🐛"} ${pc.bold("Bugs")}`);
+    console.log(`    ${bugBar} ${bugPct.toFixed(1).padStart(5)}% (${bugsDone}/${bugsTotal})`);
+    console.log();
+  }
 }
 
 // Display helpers
@@ -235,6 +277,9 @@ async function cmdList(args: string[]): Promise<void> {
       }))
       .filter((p) => (!unfinished || hasUnfinishedMilestones(p)));
 
+    const bugsForJson = (tree.bugs ?? [])
+      .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
+      .filter((b) => (!unfinished || isUnfinished(b.status)));
     jsonOut({
       critical_path: criticalPath,
       next_available: nextAvailable,
@@ -261,6 +306,13 @@ async function cmdList(args: string[]): Promise<void> {
           priority: t.priority,
           on_critical_path: criticalPath.includes(t.id),
         })),
+      bugs: bugsForJson.map((b) => ({
+        id: b.id,
+        title: b.title,
+        status: b.status,
+        priority: b.priority,
+        estimate_hours: b.estimateHours,
+      })),
     });
     return;
   }
@@ -289,6 +341,23 @@ async function cmdList(args: string[]): Promise<void> {
 
     if (hiddenCount > 0) {
       console.log(`  └── ... and ${hiddenCount} more milestone${hiddenCount === 1 ? "" : "s"}`);
+    }
+  }
+
+  // Show bugs section
+  const bugsToShow = (tree.bugs ?? [])
+    .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
+    .filter((b) => (!unfinished || isUnfinished(b.status)));
+  if (bugsToShow.length > 0) {
+    console.log();
+    const bugsDone = bugsToShow.filter((b) => b.status === Status.DONE).length;
+    console.log(`${pc.bold("Bugs")} (${bugsDone}/${bugsToShow.length} done)`);
+    for (let i = 0; i < bugsToShow.length; i++) {
+      const b = bugsToShow[i]!;
+      const isLast = i === bugsToShow.length - 1;
+      const prefix = isLast ? "└── " : "├── ";
+      const icon = getStatusIcon(b.status);
+      console.log(`  ${prefix}${icon} ${b.id}: ${b.title} [${b.priority}]`);
     }
   }
 }
@@ -450,12 +519,27 @@ async function cmdTree(args: string[]): Promise<void> {
   }
 
   const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
+  const bugsToShow = (tree.bugs ?? []).filter((b) => (!unfinished || isUnfinished(b.status)));
+  const hasBugs = bugsToShow.length > 0;
 
   for (let i = 0; i < phasesToShow.length; i++) {
     const p = phasesToShow[i]!;
-    const isLast = i === phasesToShow.length - 1;
+    const isLast = i === phasesToShow.length - 1 && !hasBugs;
     const lines = renderPhase(p, isLast, "", criticalPath, unfinished, showDetails, maxDepth, 1);
     console.log(lines.join("\n"));
+  }
+
+  // Render bugs section
+  if (hasBugs) {
+    const bugsDone = bugsToShow.filter((b) => b.status === Status.DONE).length;
+    const { branch, continuation } = getTreeChars(true);
+    console.log(`${branch}${pc.bold("Bugs")} (${bugsDone}/${bugsToShow.length})`);
+    for (let i = 0; i < bugsToShow.length; i++) {
+      const b = bugsToShow[i]!;
+      const isLastBug = i === bugsToShow.length - 1;
+      const icon = getStatusIcon(b.status);
+      console.log(renderTask(b, isLastBug, continuation, criticalPath, showDetails));
+    }
   }
 }
 
@@ -502,6 +586,13 @@ async function cmdShow(args: string[]): Promise<void> {
   }
 
   for (const id of ids) {
+    // Check for bug ID before TaskPath.parse (which would misinterpret B001)
+    if (isBugId(id)) {
+      const bug = (tree.bugs ?? []).find((b) => b.id === id);
+      if (!bug) textError(`Bug not found: ${id}`);
+      console.log(`${bug.id}: ${bug.title}\nstatus=${bug.status} estimate=${bug.estimateHours}`);
+      continue;
+    }
     const path = TaskPath.parse(id);
     if (path.isPhase) {
       const phase = findPhase(tree, id);
@@ -800,7 +891,7 @@ function formatDuration(minutes: number): string {
   return m ? `${h}h ${m}m` : `${h}h`;
 }
 
-function computeStats(tree: { phases: Array<{ milestones: Array<{ epics: Array<{ tasks: Array<{ status: Status }> }> }> }> }): {
+export function computeStats(tree: { phases: Array<{ milestones: Array<{ epics: Array<{ tasks: Array<{ status: Status }> }> }> }> }): {
   total_tasks: number;
   done: number;
   in_progress: number;
@@ -952,133 +1043,8 @@ async function cmdData(args: string[]): Promise<void> {
   textError(`Unknown data subcommand: ${sub}`);
 }
 
-async function cmdReport(args: string[]): Promise<void> {
-  const sub = args[0];
-  const rest = args.slice(1);
-  const loader = new TaskLoader();
-  const tree = await loader.load();
-  const tasks = getAllTasks(tree);
-
-  if (!sub || sub === "--help") {
-    console.log("Usage: tasks report <progress|velocity|estimate-accuracy> [options]");
-    return;
-  }
-
-  if (sub === "progress") {
-    const outputFormat = parseOpt(rest, "--format") ?? "text";
-    const stats = computeStats(tree);
-    const total = stats.total_tasks;
-    const done = stats.done;
-    const pct = total > 0 ? (done / total) * 100 : 0;
-    const phases = tree.phases.map((p) => {
-      const pTasks = p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
-      const pStats = {
-        total: pTasks.length,
-        done: pTasks.filter((t) => t.status === Status.DONE).length,
-        in_progress: pTasks.filter((t) => t.status === Status.IN_PROGRESS).length,
-        pending: pTasks.filter((t) => t.status === Status.PENDING).length,
-        blocked: pTasks.filter((t) => t.status === Status.BLOCKED).length,
-      };
-      return { id: p.id, name: p.name, ...pStats, percent_complete: Number((pStats.total ? (pStats.done / pStats.total) * 100 : 0).toFixed(1)) };
-    });
-    const payload = {
-      overall: {
-        total,
-        done,
-        in_progress: stats.in_progress,
-        pending: stats.pending,
-        blocked: stats.blocked,
-        percent_complete: Number(pct.toFixed(1)),
-      },
-      phases,
-    };
-    if (outputFormat === "json") {
-      jsonOut(payload);
-      return;
-    }
-    console.log("Progress Report");
-    console.log(`Overall: ${done}/${total} (${pct.toFixed(1)}%)`);
-    return;
-  }
-
-  if (sub === "velocity") {
-    const outputFormat = parseOpt(rest, "--format") ?? "text";
-    const days = Number(parseOpt(rest, "--days") ?? "14");
-    const now = Date.now();
-    const completed = tasks.filter((t) => t.status === Status.DONE && t.completedAt);
-    if (!completed.length) {
-      console.log("No completed tasks with timestamps found.");
-      return;
-    }
-    const dayData = Array.from({ length: days }, (_, d) => {
-      const start = new Date(now - d * 86400000);
-      start.setUTCHours(0, 0, 0, 0);
-      const end = new Date(start.getTime() + 86400000);
-      const matching = completed.filter((t) => {
-        const ts = t.completedAt!.getTime();
-        return ts >= start.getTime() && ts < end.getTime();
-      });
-      return {
-        day: d,
-        date: start.toISOString().slice(0, 10),
-        tasks_completed: matching.length,
-        hours_completed: Number(matching.reduce((acc, t) => acc + t.estimateHours, 0).toFixed(1)),
-      };
-    });
-    const totalCompleted = dayData.reduce((a, b) => a + b.tasks_completed, 0);
-    const totalHours = dayData.reduce((a, b) => a + b.hours_completed, 0);
-    const payload = {
-      days_analyzed: days,
-      total_completed: completed.length,
-      daily_data: dayData,
-      averages: {
-        tasks_per_day: Number((totalCompleted / days).toFixed(1)),
-        hours_per_day: Number((totalHours / days).toFixed(1)),
-      },
-    };
-    if (outputFormat === "json") {
-      jsonOut(payload);
-      return;
-    }
-    console.log("Velocity Report");
-    console.log(`Tasks/day: ${payload.averages.tasks_per_day}`);
-    return;
-  }
-
-  if (sub === "estimate-accuracy") {
-    const outputFormat = parseOpt(rest, "--format") ?? "text";
-    const withDuration = tasks.filter((t) => t.status === Status.DONE && t.durationMinutes !== undefined);
-    if (!withDuration.length) {
-      console.log("No completed tasks with duration data found.");
-      return;
-    }
-    const totalEstimated = withDuration.reduce((acc, t) => acc + t.estimateHours, 0);
-    const totalActual = withDuration.reduce((acc, t) => acc + (t.durationMinutes ?? 0) / 60, 0);
-    const payload = {
-      tasks_analyzed: withDuration.length,
-      total_estimated_hours: Number(totalEstimated.toFixed(1)),
-      total_actual_hours: Number(totalActual.toFixed(1)),
-      accuracy_percent: Number((totalActual > 0 ? (totalEstimated / totalActual) * 100 : 0).toFixed(1)),
-      average_variance_percent: Number(
-        (
-          withDuration.reduce((acc, t) => {
-            const actual = (t.durationMinutes ?? 0) / 60;
-            return acc + (t.estimateHours > 0 ? ((actual - t.estimateHours) / t.estimateHours) * 100 : 0);
-          }, 0) / withDuration.length
-        ).toFixed(1),
-      ),
-    };
-    if (outputFormat === "json") {
-      jsonOut(payload);
-      return;
-    }
-    console.log("Estimate Accuracy Report");
-    console.log(`Tasks analyzed: ${payload.tasks_analyzed}`);
-    return;
-  }
-
-  textError(`Unknown report subcommand: ${sub}`);
-}
+// cmdReport is extracted to report.ts
+import { cmdReport } from "./report";
 
 async function cmdTimeline(args: string[]): Promise<void> {
   const scope = parseOpt(args, "--scope");
@@ -1707,6 +1673,47 @@ async function cmdCheck(args: string[]): Promise<void> {
   }
 }
 
+async function cmdInit(args: string[]): Promise<void> {
+  const project = parseOpt(args, "--project") ?? parseOpt(args, "-p");
+  if (!project) textError("init requires --project");
+  const description = parseOpt(args, "--description") ?? parseOpt(args, "-d") ?? "";
+  const timelineWeeks = Number(parseOpt(args, "--timeline-weeks") ?? parseOpt(args, "-w") ?? "0");
+
+  const indexPath = join(".tasks", "index.yaml");
+  if (existsSync(indexPath)) textError("Already initialized (.tasks/index.yaml exists)");
+
+  await writeYamlObj(indexPath, {
+    project,
+    description,
+    timeline_weeks: timelineWeeks,
+    phases: [],
+  });
+  console.log(`Initialized project "${project}" in .tasks/`);
+}
+
+async function cmdBug(args: string[]): Promise<void> {
+  const title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
+  if (!title) textError("bug requires --title");
+  const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "high";
+  const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "1");
+  const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
+  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const tags = parseCsv(parseOpt(args, "--tags"));
+  const simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
+
+  const loader = new TaskLoader();
+  const bug = await loader.createBug({
+    title,
+    priority,
+    estimate,
+    complexity,
+    dependsOn,
+    tags,
+    simple,
+  });
+  console.log(`Created bug: ${bug.id}`);
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -1722,6 +1729,9 @@ async function main(): Promise<void> {
   }
 
   switch (cmd) {
+    case "init":
+      await cmdInit(rest);
+      return;
     case "list":
       await cmdList(rest);
       return;
@@ -1802,6 +1812,9 @@ async function main(): Promise<void> {
       return;
     case "add-phase":
       await cmdAddPhase(rest);
+      return;
+    case "bug":
+      await cmdBug(rest);
       return;
     default:
       textError(`Unknown command: ${cmd}`);

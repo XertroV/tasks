@@ -16,6 +16,7 @@ const PHASE_ID_RE = /^P\d+$/;
 const MILESTONE_ID_RE = /^P\d+\.M\d+$/;
 const EPIC_ID_RE = /^P\d+\.M\d+\.E\d+$/;
 const TASK_ID_RE = /^P\d+\.M\d+\.E\d+\.T\d+$/;
+const BUG_ID_RE = /^B\d+$/;
 
 function addFinding(findings: Finding[], finding: Finding): void {
   findings.push(finding);
@@ -191,6 +192,38 @@ function validateIdsAndDependencies(tree: TaskTree, findings: Finding[]): void {
   }
 }
 
+function validateBugs(tree: TaskTree, findings: Finding[]): void {
+  const allTasks = getAllTasks(tree);
+  const allIds = new Set(allTasks.map((t) => t.id));
+  const bugIds = new Set<string>();
+
+  for (const bug of (tree.bugs ?? [])) {
+    if (!BUG_ID_RE.test(bug.id)) {
+      addFinding(findings, { level: "error", code: "invalid_bug_id", message: `Invalid bug ID format: ${bug.id}`, location: bug.id });
+    }
+    if (bugIds.has(bug.id)) {
+      addFinding(findings, { level: "error", code: "duplicate_bug_id", message: `Duplicate bug ID: ${bug.id}`, location: bug.id });
+    }
+    bugIds.add(bug.id);
+
+    if (isTaskFileMissing(bug)) {
+      addFinding(findings, { level: "error", code: "missing_bug_file", message: `Bug file missing for ${bug.id}`, location: `.tasks/${bug.file}` });
+    }
+
+    if (bug.estimateHours === 0) {
+      addFinding(findings, { level: "warning", code: "zero_estimate_hours", message: `Bug estimate must be positive, got 0: ${bug.id}`, location: bug.id });
+    }
+
+    for (const dep of bug.dependsOn) {
+      if (dep === bug.id) {
+        addFinding(findings, { level: "error", code: "self_dependency_bug", message: `Bug depends on itself: ${bug.id}`, location: bug.id });
+      } else if (!allIds.has(dep)) {
+        addFinding(findings, { level: "error", code: "missing_bug_dependency", message: `Bug dependency not found: ${dep}`, location: bug.id });
+      }
+    }
+  }
+}
+
 function validateCycles(tree: TaskTree, findings: Finding[]): void {
   const allTasks = getAllTasks(tree);
   const taskNodes = allTasks.map((t) => t.id);
@@ -205,6 +238,12 @@ function validateCycles(tree: TaskTree, findings: Finding[]): void {
           if (task.dependsOn.length === 0 && idx > 0) taskEdges.push([epic.tasks[idx - 1]!.id, task.id]);
         });
       }
+    }
+  }
+  // Include bugs in cycle detection
+  for (const bug of (tree.bugs ?? [])) {
+    for (const dep of bug.dependsOn) {
+      if (taskNodes.includes(dep)) taskEdges.push([dep, bug.id]);
     }
   }
   const taskCycle = hasDirectedCycle(taskNodes, taskEdges);
@@ -258,6 +297,9 @@ async function validateUninitializedTodos(tree: TaskTree, findings: Finding[]): 
   const defaultMarkers = [
     "- [ ] TODO: Add requirements",
     "- [ ] TODO: Add acceptance criteria",
+    "TODO: Add steps",
+    "TODO: Describe expected behavior",
+    "TODO: Describe actual behavior",
   ];
 
   const allTasks = getAllTasks(tree);
@@ -292,6 +334,7 @@ export async function runChecks(tasksDir = ".tasks"): Promise<{ ok: boolean; err
   const tree = await loader.load();
   validateTreeFiles(tree, findings);
   validateIdsAndDependencies(tree, findings);
+  validateBugs(tree, findings);
   validateCycles(tree, findings);
   await validateRuntimeFiles(tree, findings);
   await validateUninitializedTodos(tree, findings);
