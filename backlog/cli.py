@@ -197,11 +197,30 @@ def _warn_missing_task_files(tree, limit: int = 5) -> int:
     return len(missing_tasks)
 
 
-@click.group()
+@click.group(invoke_without_command=True)
 @click.version_option(version="0.1.0")
-def cli():
+@click.pass_context
+def cli(ctx):
     """The Backlogs - CLI for project backlog management."""
-    pass
+    if ctx.invoked_subcommand is None:
+        import sys
+        import os
+        import shutil
+
+        if sys.stdout.isatty():
+            from .logo import render_stack2
+
+            term_width = shutil.get_terminal_size((80, 24)).columns
+            lines = render_stack2(width=term_width, seed=3)
+            use_color = "NO_COLOR" not in os.environ
+            for line in lines:
+                if not use_color:
+                    from .logo import _strip_ansi
+
+                    line = _strip_ansi(line)
+                print(line)
+            print()
+        click.echo(ctx.get_help())
 
 
 # ============================================================================
