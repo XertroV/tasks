@@ -628,16 +628,19 @@ class CriticalPathCalculator:
             return []
 
         available_ids = self.find_all_available()
-        candidates = []
-        for task_id in available_ids:
-            if task_id == primary_task.id or not task_id.startswith("B"):
-                continue
-            task = self.tree.find_task(task_id)
-            if task:
-                candidates.append(task)
+        bug_ids = [
+            task_id
+            for task_id in available_ids
+            if task_id != primary_task.id and task_id.startswith("B")
+        ]
+        critical_path, _ = self.calculate()
+        prioritized_bug_ids = self.prioritize_task_ids(bug_ids, critical_path)
 
         selected = []
-        for task in candidates:
+        for task_id in prioritized_bug_ids:
+            task = self.tree.find_task(task_id)
+            if not task:
+                continue
             if len(selected) >= count:
                 break
             if any(self._has_dependency_relationship(task, s) for s in selected):

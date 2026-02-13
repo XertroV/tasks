@@ -360,6 +360,31 @@ class TestGrabCommand:
         assert "B003" in result.output
         assert "parallel" in result.output.lower() or "series" in result.output.lower()
 
+    def test_grab_autoselected_bug_fanout_uses_priority_order(
+        self, runner, tmp_tasks_dir
+    ):
+        create_bug_file(tmp_tasks_dir, "B001", "Primary Bug")
+        create_bug_file(tmp_tasks_dir, "B002", "Low Bug")
+        create_bug_file(tmp_tasks_dir, "B003", "High Bug")
+
+        b2_file = tmp_tasks_dir / ".tasks" / "bugs" / "b002-test-bug.todo"
+        b2_file.write_text(
+            b2_file.read_text().replace("priority: critical", "priority: low")
+        )
+
+        b3_file = tmp_tasks_dir / ".tasks" / "bugs" / "b003-test-bug.todo"
+        b3_file.write_text(
+            b3_file.read_text().replace("priority: critical", "priority: high")
+        )
+
+        result = runner.invoke(
+            cli, ["grab", "--agent=test-agent", "--no-content", "--single"]
+        )
+
+        assert result.exit_code == 0
+        assert "ADDITIONAL #1: B003" in result.output
+        assert "ADDITIONAL #2: B002" in result.output
+
 
 class TestDoneCommand:
     """Tests for the done command."""

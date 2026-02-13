@@ -40,6 +40,31 @@ export class CriticalPathCalculator {
     return this.score(b) - this.score(a);
   }
 
+  private prioritizeTaskIds(taskIds: string[], criticalPath: string[]): string[] {
+    const cpPos = new Map(criticalPath.map((id, idx) => [id, idx]));
+    const ranked = taskIds
+      .map((id, originalIdx) => {
+        const task = getAllTasks(this.tree).find((t) => t.id === id);
+        if (!task) return undefined;
+        const typeRank = this.typeRank(task);
+        const priorityRank = this.priorityRank(task);
+        const onCritical = cpPos.has(id) ? 0 : 1;
+        const cpIndex = cpPos.get(id) ?? Number.POSITIVE_INFINITY;
+        return { id, originalIdx, typeRank, priorityRank, onCritical, cpIndex };
+      })
+      .filter((x): x is { id: string; originalIdx: number; typeRank: number; priorityRank: number; onCritical: number; cpIndex: number } => !!x);
+
+    ranked.sort((a, b) => {
+      if (a.typeRank !== b.typeRank) return a.typeRank - b.typeRank;
+      if (a.priorityRank !== b.priorityRank) return a.priorityRank - b.priorityRank;
+      if (a.onCritical !== b.onCritical) return a.onCritical - b.onCritical;
+      if (a.cpIndex !== b.cpIndex) return a.cpIndex - b.cpIndex;
+      return a.originalIdx - b.originalIdx;
+    });
+
+    return ranked.map((r) => r.id);
+  }
+
   isTaskAvailable(task: Task): boolean {
     if (task.status !== Status.PENDING) return false;
     const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
@@ -82,13 +107,14 @@ export class CriticalPathCalculator {
 
   findAdditionalBugs(primaryTask: Task, count = 2): string[] {
     if (!/^B\d+$/.test(primaryTask.id)) return [];
-    const available = this.findAllAvailable()
-      .map((id) => getAllTasks(this.tree).find((t) => t.id === id))
-      .filter((t): t is Task => !!t)
-      .filter((t) => /^B\d+$/.test(t.id) && t.id !== primaryTask.id);
+    const bugIds = this.findAllAvailable().filter((id) => /^B\d+$/.test(id) && id !== primaryTask.id);
+    const { criticalPath } = this.calculate();
+    const prioritizedBugIds = this.prioritizeTaskIds(bugIds, criticalPath);
 
     const selected: Task[] = [];
-    for (const task of available) {
+    for (const id of prioritizedBugIds) {
+      const task = getAllTasks(this.tree).find((t) => t.id === id);
+      if (!task) continue;
       if (selected.length >= count) break;
       if (this.hasDependencyRelationship(primaryTask, task)) continue;
       if (selected.some((s) => this.hasDependencyRelationship(s, task))) continue;

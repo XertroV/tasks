@@ -580,6 +580,25 @@ tags: []
     expect(out.toLowerCase()).toContain("parallel");
   });
 
+  test("grab auto-selected bug fans out in priority order", () => {
+    root = setupFixture();
+    let p = run(["bug", "--title", "primary bug", "--priority", "critical", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["bug", "--title", "low bug", "--priority", "low", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["bug", "--title", "high bug", "--priority", "high", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["grab", "--agent", "agent-fanout", "--single", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    const idxB3 = out.indexOf("B003");
+    const idxB2 = out.indexOf("B002");
+    expect(idxB3).toBeGreaterThan(-1);
+    expect(idxB2).toBeGreaterThan(-1);
+    expect(idxB3).toBeLessThan(idxB2);
+  });
+
   test("list and next include idea tasks", () => {
     root = setupFixture();
     const t001Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
