@@ -362,6 +362,11 @@ def test_tl_alias_matches_timeline_output(runner, tmp_feature_tasks_dir):
 
 
 def test_report_progress_json(runner, tmp_feature_tasks_dir):
+    bug_result = runner.invoke(cli, ["bug", "fix flaky integration test"])
+    assert bug_result.exit_code == 0
+    idea_result = runner.invoke(cli, ["idea", "capture future optimization idea"])
+    assert idea_result.exit_code == 0
+
     result = runner.invoke(cli, ["report", "progress", "--format", "json"])
     assert result.exit_code == 0
 
@@ -369,6 +374,16 @@ def test_report_progress_json(runner, tmp_feature_tasks_dir):
     assert payload["overall"]["total"] == 5
     assert payload["overall"]["done"] == 1
     assert payload["overall"]["in_progress"] == 1
+    assert payload["auxiliary"]["bugs"]["total"] == 1
+    assert payload["auxiliary"]["ideas"]["total"] == 1
+    assert payload["bugs"][0]["id"] == "B001"
+    assert payload["ideas"][0]["id"] == "I001"
+
+    text_result = runner.invoke(cli, ["report", "progress"])
+    assert text_result.exit_code == 0
+    assert "Auxiliary:" in text_result.output
+    assert "All Bugs" in text_result.output
+    assert "All Ideas" in text_result.output
 
 
 def test_report_velocity_json(runner, tmp_feature_tasks_dir):

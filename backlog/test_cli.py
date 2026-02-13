@@ -1084,6 +1084,7 @@ def test_idea_command_creates_planning_intake_todo(runner, tmp_tasks_dir):
     assert idea_path.exists()
 
     content = idea_path.read_text()
+    assert "estimate_hours: 10.0" in content
     assert "Run `/plan-task" in content
     assert "tasks add" in content
     assert "tasks bug" in content

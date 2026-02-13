@@ -53,6 +53,20 @@ function statusIcon(stats: ItemStats): string {
   return "[ ]";
 }
 
+function summarizeAuxItems(items: Task[]): ItemStats & { remaining_hours: number } {
+  const stats = computeItemStats(items);
+  return {
+    ...stats,
+    remaining_hours: Number(getRemainingHours(items).toFixed(1)),
+  };
+}
+
+function auxStatus(summary: ItemStats): string {
+  if (summary.total > 0 && summary.done === summary.total) return pc.green("✓");
+  if (summary.in_progress > 0) return pc.yellow("→");
+  return "[ ]";
+}
+
 async function cmdReportProgress(args: string[]): Promise<void> {
   const outputFormat = parseOpt(args, "--format") ?? "text";
   const byEpic = parseFlag(args, "--by-epic");
@@ -71,6 +85,8 @@ async function cmdReportProgress(args: string[]): Promise<void> {
 
   const allTasks = getAllTasks(tree);
   const overallRemaining = getRemainingHours(allTasks);
+  const bugsSummary = summarizeAuxItems(tree.bugs);
+  const ideasSummary = summarizeAuxItems(tree.ideas);
 
   if (outputFormat === "json") {
     const output: Record<string, unknown> = {
@@ -83,6 +99,22 @@ async function cmdReportProgress(args: string[]): Promise<void> {
         percent_complete: Number(pct.toFixed(1)),
         remaining_hours: Number(overallRemaining.toFixed(1)),
       },
+      auxiliary: {
+        bugs: bugsSummary,
+        ideas: ideasSummary,
+      },
+      bugs: tree.bugs.map((b) => ({
+        id: b.id,
+        title: b.title,
+        status: b.status,
+        estimate_hours: b.estimateHours,
+      })),
+      ideas: tree.ideas.map((i) => ({
+        id: i.id,
+        title: i.title,
+        status: i.status,
+        estimate_hours: i.estimateHours,
+      })),
       phases: [] as unknown[],
     };
 
@@ -180,6 +212,20 @@ async function cmdReportProgress(args: string[]): Promise<void> {
     totalLine += ` | ~${overallRemaining.toFixed(1)}h remaining`;
   }
   console.log(totalLine);
+  console.log();
+
+  console.log(pc.bold("Auxiliary:"));
+  const bugsPct = bugsSummary.total > 0 ? (bugsSummary.done / bugsSummary.total) * 100 : 0;
+  const bugsBar = makeProgressBar(bugsSummary.done, bugsSummary.total, 20);
+  let bugsLine = `  ${auxStatus(bugsSummary)} ${pc.bold("BUGS")} All Bugs\n      ${bugsBar} ${bugsPct.toFixed(1).padStart(5)}% (${bugsSummary.done}/${bugsSummary.total})`;
+  if (bugsSummary.remaining_hours > 0) bugsLine += `  ~${bugsSummary.remaining_hours.toFixed(1)}h remaining`;
+  console.log(bugsLine);
+
+  const ideasPct = ideasSummary.total > 0 ? (ideasSummary.done / ideasSummary.total) * 100 : 0;
+  const ideasBar = makeProgressBar(ideasSummary.done, ideasSummary.total, 20);
+  let ideasLine = `  ${auxStatus(ideasSummary)} ${pc.bold("IDEAS")} All Ideas\n      ${ideasBar} ${ideasPct.toFixed(1).padStart(5)}% (${ideasSummary.done}/${ideasSummary.total})`;
+  if (ideasSummary.remaining_hours > 0) ideasLine += `  ~${ideasSummary.remaining_hours.toFixed(1)}h remaining`;
+  console.log(ideasLine);
   console.log();
 
   // Check if all phases are complete

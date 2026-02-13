@@ -378,10 +378,19 @@ tags: []
     p = run(["done", "P1.M1.E1.T001"], root);
     expect(p.exitCode).toBe(0);
 
+    p = run(["bug", "fix flaky integration test"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["idea", "capture future optimization idea"], root);
+    expect(p.exitCode).toBe(0);
+
     p = run(["report", "progress", "--format", "json"], root);
     expect(p.exitCode).toBe(0);
     const progress = JSON.parse(p.stdout.toString());
     expect(progress.overall.total).toBe(2);
+    expect(progress.auxiliary.bugs.total).toBe(1);
+    expect(progress.auxiliary.ideas.total).toBe(1);
+    expect(progress.bugs[0].id).toBe("B001");
+    expect(progress.ideas[0].id).toBe("I001");
 
     p = run(["report", "velocity", "--days", "7", "--format", "json"], root);
     expect(p.exitCode).toBe(0);
@@ -399,6 +408,9 @@ tags: []
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Progress Report");
     expect(p.stdout.toString()).toContain("Report commands:");
+    expect(p.stdout.toString()).toContain("Auxiliary:");
+    expect(p.stdout.toString()).toContain("All Bugs");
+    expect(p.stdout.toString()).toContain("All Ideas");
 
     p = run(["r", "p", "--format", "json"], root);
     expect(p.exitCode).toBe(0);
@@ -574,6 +586,7 @@ tags: []
     expect(fileMatch).toBeTruthy();
 
     const ideaText = readFileSync(join(root, ".tasks", "ideas", fileMatch![1]!), "utf8");
+    expect(ideaText).toContain("estimate_hours: 10");
     expect(ideaText).toContain("Run `/plan-task");
     expect(ideaText).toContain("tasks add");
     expect(ideaText).toContain("tasks bug");

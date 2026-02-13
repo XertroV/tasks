@@ -75,6 +75,35 @@ def _milestone_tasks(milestone):
     return [t for e in milestone.epics for t in e.tasks]
 
 
+def _aux_summary(items):
+    """Build summary stats for auxiliary items like bugs/ideas."""
+    total = len(items)
+    done = sum(1 for i in items if i.status == Status.DONE)
+    in_progress = sum(1 for i in items if i.status == Status.IN_PROGRESS)
+    pending = sum(1 for i in items if i.status == Status.PENDING)
+    blocked = sum(1 for i in items if i.status == Status.BLOCKED)
+    remaining_hours = _remaining_hours(items)
+    return {
+        "total": total,
+        "done": done,
+        "in_progress": in_progress,
+        "pending": pending,
+        "blocked": blocked,
+        "remaining_hours": round(remaining_hours, 1),
+    }
+
+
+def _aux_status(summary):
+    """Return status marker matching phase rendering semantics."""
+    total = summary["total"]
+    done = summary["done"]
+    if total > 0 and done == total:
+        return "[green]✓[/]"
+    if summary["in_progress"] > 0:
+        return "[yellow]→[/]"
+    return "[ ]"
+
+
 @report.command()
 @click.option(
     "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
@@ -113,6 +142,8 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
 
         all_tasks = get_all_tasks(tree)
         overall_remaining = _remaining_hours(all_tasks)
+        bugs_summary = _aux_summary(tree.bugs)
+        ideas_summary = _aux_summary(tree.ideas)
 
         if output_format == "json":
             output = {
@@ -125,6 +156,28 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
                     "percent_complete": round(pct, 1),
                     "remaining_hours": round(overall_remaining, 1),
                 },
+                "auxiliary": {
+                    "bugs": bugs_summary,
+                    "ideas": ideas_summary,
+                },
+                "bugs": [
+                    {
+                        "id": b.id,
+                        "title": b.title,
+                        "status": b.status.value,
+                        "estimate_hours": b.estimate_hours,
+                    }
+                    for b in tree.bugs
+                ],
+                "ideas": [
+                    {
+                        "id": i.id,
+                        "title": i.title,
+                        "status": i.status.value,
+                        "estimate_hours": i.estimate_hours,
+                    }
+                    for i in tree.ideas
+                ],
                 "phases": [],
             }
 
@@ -220,6 +273,32 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
         if overall_remaining > 0:
             remaining_str += f" | ~{overall_remaining:.1f}h remaining"
         console.print(remaining_str + "\n")
+
+        console.print("[bold]Auxiliary:[/]")
+        bugs_total = bugs_summary["total"]
+        bugs_done = bugs_summary["done"]
+        bugs_pct = (bugs_done / bugs_total * 100) if bugs_total > 0 else 0
+        bugs_bar = make_progress_bar(bugs_done, bugs_total, width=20)
+        bugs_line = (
+            f"  {_aux_status(bugs_summary)} [bold]BUGS[/] All Bugs\n"
+            f"      {bugs_bar} {bugs_pct:5.1f}% ({bugs_done}/{bugs_total})"
+        )
+        if bugs_summary["remaining_hours"] > 0:
+            bugs_line += f"  ~{bugs_summary['remaining_hours']:.1f}h remaining"
+        console.print(bugs_line)
+
+        ideas_total = ideas_summary["total"]
+        ideas_done = ideas_summary["done"]
+        ideas_pct = (ideas_done / ideas_total * 100) if ideas_total > 0 else 0
+        ideas_bar = make_progress_bar(ideas_done, ideas_total, width=20)
+        ideas_line = (
+            f"  {_aux_status(ideas_summary)} [bold]IDEAS[/] All Ideas\n"
+            f"      {ideas_bar} {ideas_pct:5.1f}% ({ideas_done}/{ideas_total})"
+        )
+        if ideas_summary["remaining_hours"] > 0:
+            ideas_line += f"  ~{ideas_summary['remaining_hours']:.1f}h remaining"
+        console.print(ideas_line)
+        console.print()
 
         # Check if all phases are complete
         all_complete = (
