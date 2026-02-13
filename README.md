@@ -1,75 +1,59 @@
-# backlog(1)
+```
+ ━━━━─────━━━━━ ╌ ╌ ━━━━━═━═━═━══━━━━━━━━━━━━━═━━━═━━━━━━━═━═━━━══━━━━══━━━━━─╌────╌──╌━
 
-## NAME
-`backlog` - CLI for hierarchical project backlog orchestration stored in `.backlog/`.
-
-## SYNOPSIS
-```bash
-backlog <command> [options] [args]
-bl <command> [options] [args]
-tasks <command> [options] [args]         # temporary compatibility alias
-python -m backlog <command> [options] [args]
-./backlog.py <command> [options] [args]  # repo-local wrapper
+   ▀██▀▀ ██▄▄█ ████▀       ████▄ ▄█▀▀▄ ▄█▀▀▀ █▄▄█▀ ██    ▄█▀▀▄ ▄█▀▀▀ ▄██▀▀
+    ██   ██  █ ██▄▄▄       ██▄▄▀ ██▀▀█ ▀█▄▄▄ █▀▀█▄ ██▄▄▄ ▀█▄▄▀ ▀█▄██ ▄▄██▀
+   ───────────────────────────────────────────────────────────────────────
+     ▀██▀▀ ██▄▄█ ████▀       ████▄ ▄█▀▀▄ ▄█▀▀▀ █▄▄█▀ ██    ▄█▀▀▄ ▄█▀▀▀ ▄██▀▀
+      ██   ██  █ ██▄▄▄       ██▄▄▀ ██▀▀█ ▀█▄▄▄ █▀▀█▄ ██▄▄▄ ▀█▄▄▀ ▀█▄██ ▄▄██▀
+     ───────────────────────────────────────────────────────────────────────
+       ▀██▀▀ ██▄▄█ ████▀       ████▄ ▄█▀▀▄ ▄█▀▀▀ █▄▄█▀ ██    ▄█▀▀▄ ▄█▀▀▀ ▄██▀▀
+        ██   ██  █ ██▄▄▄       ▓█▄▄▀ ██▀▀█ ▀█▄▄▄ █▀▀█▄ ██▄▄▓ ▀█▄▓▀ ▀█▄██ ▄▄██▀
 ```
 
-## DESCRIPTION
-`backlog` manages a Phase -> Milestone -> Epic -> Task tree on disk.
+# The Backlogs
 
-- Loads project state from nested YAML indexes under `.backlog/`.
-- Reads task metadata from `.todo` frontmatter.
-- Computes a CCPM-style critical path using dependency graphs.
-- Enforces status transitions and claim ownership.
-- Tracks current work context and agent heartbeats.
+A CLI for hierarchical project backlog management. Phases, milestones, epics, tasks — stored as plain files on disk. Dependency-aware scheduling, multi-agent workflows, and a critical-path engine.
 
-## INSTALL
-Local editable install (recommended for development):
+Dual implementation: **Python** (`backlog/`) and **TypeScript/Bun** (`backlog_ts/`), kept in behavioral sync.
+
+## Install
+
+Local editable (for development):
 
 ```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[dev]"
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
 ```
 
-User-global command from anywhere (recommended, Arch-friendly/offline):
+User-global (Arch-friendly, offline):
 
 ```bash
-# one-time (Arch)
-sudo pacman -S --needed \
-  python-click python-pyyaml python-rich python-networkx python-setuptools
+# system deps (Arch)
+sudo pacman -S --needed python-click python-pyyaml python-rich python-networkx python-setuptools
 
-# from repo root
+# install
 ./scripts/install-anywhere.sh
 ```
 
-Optional pipx flow (if internet access is available):
+After install, `backlog`, `bl`, and `tasks` are all equivalent entry points. `backlog.py` works as a repo-local wrapper that auto-reexecs into `.venv/bin/python`.
+
+## Quick start
 
 ```bash
-sudo pacman -S --needed pipx
-pipx install --force --editable .
+backlog init --project my-project    # create a .backlog/ tree
+backlog grab                         # auto-claim next available task
+backlog show                         # inspect current task
+backlog done                         # mark complete, see what's unblocked
+backlog cycle                        # done + grab next in one step
+backlog dash                         # one-screen status overview
 ```
 
-After installation, use `backlog ...` (or `bl ...`) in any working directory. Re-run `./scripts/install-anywhere.sh` after local code changes.
+## How it works
 
-`backlog.py` remains available as a repo-local wrapper and auto-reexecs into `.venv/bin/python` when present.
+Everything lives in `.backlog/` as nested directories with YAML indexes and Markdown `.todo` files:
 
-## MIGRATION FROM `tasks`
-
-- `tasks` command still works as a compatibility alias for now.
-- Run `backlog migrate` in existing projects to migrate `.tasks/` to `.backlog/`.
-- Migration creates a symlink `.tasks -> .backlog` by default, so older scripts continue to work.
-
-```bash
-backlog migrate
 ```
-
-Behavior notes:
-- Interactive TTY: if `.tasks/` exists and `.backlog/` does not, CLI prompts to migrate.
-- Non-interactive (CI/scripts): CLI warns and asks you to run `backlog migrate` explicitly.
-
-## FILE LAYOUT
-Expected task tree:
-
-```text
 .backlog/
   index.yaml
   01-phase-name/
@@ -81,102 +65,96 @@ Expected task tree:
         T001-some-task.todo
 ```
 
-ID format:
+IDs are hierarchical: `P1` > `P1.M1` > `P1.M1.E1` > `P1.M1.E1.T001`. Task files use YAML frontmatter for metadata (status, estimate, complexity, priority, dependencies, tags, claims).
 
-- Phase: `P1`
-- Milestone: `P1.M1`
-- Epic: `P1.M1.E1`
-- Task: `P1.M1.E1.T001`
+The engine builds a dependency graph across all tasks, computes a CCPM-style critical path, and uses that to decide what to work on next. It tracks claim ownership, agent heartbeats, and stale-claim detection for multi-agent environments.
 
-Task files are Markdown with YAML frontmatter (`id`, `title`, `status`, `estimate_hours`, `complexity`, `priority`, `depends_on`, `tags`, claim timestamps).
+## Commands
 
-## QUICK START
-```bash
-backlog list --available
-backlog grab
-backlog show
-backlog done
-backlog cycle
-backlog sync
-backlog dash
-```
+**Core task operations:**
 
-## COMMANDS
-Core:
+| Command | What it does |
+|---|---|
+| `list` | Filter/view tasks (`--available`, `--progress`, `--json`, `--bugs`, `--ideas`) |
+| `tree` | Full hierarchical view (`--depth`, `--details`, `--unfinished`) |
+| `show [ID...]` | Detailed info (uses current context if no ID) |
+| `next` | Next task on the critical path |
+| `claim ID` | Claim a specific task |
+| `done [ID]` | Complete task, show newly unblocked work |
+| `update ID STATUS` | Manual status transition (`--reason` for blocked/rejected/cancelled) |
+| `set ID` | Modify task properties (status, priority, complexity, estimate, tags, deps) |
+| `sync` | Recalculate stats and critical path |
+| `check` | Consistency checks (missing files, broken deps, cycles, ID integrity) |
 
-- `list` - list tasks, available work, progress views (`--available`, `--progress`, `--json`, `--complexity`, `--priority`).
-- `show [PATH_IDS...]` - detailed phase/milestone/epic/task info.
-- `next` - next available task on critical path.
-- `claim TASK_ID` - claim a specific task.
-- `done [TASK_ID]` - mark complete, record duration, show newly unblocked tasks.
-- `cycle [TASK_ID]` - `done` + auto-claim next task.
-- `work [TASK_ID|--clear]` - set/show/clear current working context.
-- `update TASK_ID STATUS` - manual status transition (`--reason` supported/required for blocked/rejected/cancelled).
-- `sync` - recalc stats and critical path.
-- `check` - run consistency checks (missing files, broken dependencies, cycles, ID/path integrity).
-- `unclaim-stale` - release stale `in_progress` claims.
-- `add`, `add-epic`, `add-milestone`, `add-phase` - create new tasks/epics/milestones/phases.
-- `idea "..."` - capture a feature idea as a planning-intake `.todo` in `.backlog/ideas/` for later `/plan-task` style decomposition and ingestion.
+**Workflow shortcuts:**
 
-Workflow and analysis:
+| Command | What it does |
+|---|---|
+| `grab` | Auto-claim next work (`--single`, `--multi`, sibling batching) |
+| `cycle [ID]` | `done` + auto-claim next |
+| `work [ID\|--clear]` | Set/show/clear working context |
+| `blocked` | Mark blocked (`--reason`) |
+| `skip` | Skip current task |
+| `handoff` | Transfer to another agent (`--to`, `--notes`) |
+| `unclaim` | Release claim |
+| `why` | Explain dependency readiness |
 
-- `grab` - auto-claim next work item (supports `--single`, `--multi`, sibling batching by default).
-- `blocked`, `skip`, `unclaim`, `handoff`, `why` - unblock/reassign/explain workflow.
-- `dash` - one-screen status dashboard.
-- `search PATTERN` and `blockers` - search and dependency-blocker analysis.
-- `timeline` (`tl`) - ASCII timeline/Gantt view.
-- `session ...` - session tracking (`start`, `heartbeat`, `list`, `end`, `clean`).
-- `report ...` - reports (`progress`, `velocity`, `estimate-accuracy`).
-- `data ...` - exports (`export`, `summary`).
-- `schema` - show type-level schema details for all `.backlog` file kinds (`--json`, `--compact`, `--only`, `--check-sync`).
-- `skills install ...` - install/export built-in `plan-task`, `plan-ingest`, and `start-tasks` skills/commands for Codex, Claude, and OpenCode.
+**Reporting and analysis:**
 
-## SKILL INSTALLER
-Install built-in planning assets:
+| Command | What it does |
+|---|---|
+| `dash` | One-screen status dashboard |
+| `search PATTERN` | Full-text search across tasks |
+| `blockers` | Dependency blocker analysis (`--deep`, `--suggest`) |
+| `timeline` / `tl` | ASCII Gantt view |
+| `report progress` | Progress summary |
+| `report velocity` | Velocity over time (`--days N`) |
+| `report estimate-accuracy` | Estimate vs actual comparison |
 
-```bash
-# local install for common clients (codex + claude + opencode), skills only
-backlog skills install plan-ingest
+**Project management:**
 
-# install the execution-loop skill
-backlog skills install start-tasks
+| Command | What it does |
+|---|---|
+| `add EPIC_ID` | Add task to an epic |
+| `add-epic`, `add-milestone`, `add-phase` | Create higher-level items |
+| `bug` | Quick bug report |
+| `idea "..."` | Capture a feature idea for later decomposition |
+| `init` | Initialize a new `.backlog/` project |
+| `migrate` | Move `.tasks/` to `.backlog/` (with symlink compat) |
 
-# install both skills and commands where supported
-backlog skills install all --artifact both
+**Agent tooling:**
 
-# global install for codex skills
-backlog skills install plan-task --scope global --client codex --artifact skills
+| Command | What it does |
+|---|---|
+| `session start\|heartbeat\|end\|list\|clean` | Agent session tracking |
+| `unclaim-stale` | Release stale in-progress claims |
+| `agents` | Print AGENTS.md snippets (`--profile short\|medium\|long\|all`) |
+| `skills install` | Install planning skills for Codex, Claude, OpenCode |
+| `schema` | Show schema details for `.backlog` file formats |
+| `data export\|summary` | Data export |
 
-# export to a directory (portable bundle)
-backlog skills install all --artifact both --dir ./build/ai-assets
+## Common workflows
 
-# preview without writing files
-backlog skills install plan-task --client common --artifact commands --dry-run
-```
-
-Canonical defaults used by `backlog skills install`:
-
-- Codex skills: local `.agents/skills`, global `~/.agents/skills` (or `$CODEX_HOME/skills` if set).
-- Claude skills/commands: local `.claude/{skills|commands}`, global `~/.claude/{skills|commands}`.
-- OpenCode skills/commands: local `.opencode/{skills|commands}`, global `~/.config/opencode/{skills|commands}`.
-
-## COMMON FLOWS
-Claim and complete:
+**Claim-work-complete loop:**
 
 ```bash
-backlog grab
-backlog show
-backlog done
+backlog grab            # pick up next task
+backlog show            # read the details
+# ... do the work ...
+backlog done            # complete it
+backlog grab            # next one
 ```
 
-Pause or transfer:
+Or just `backlog cycle` to combine done + grab.
+
+**Pause or hand off:**
 
 ```bash
-backlog blocked --reason "waiting on dependency"
-backlog handoff --to agent-2 --notes "implementation done; tests pending"
+backlog blocked --reason "waiting on API key"
+backlog handoff --to agent-2 --notes "impl done, needs tests"
 ```
 
-Health checks:
+**Health check:**
 
 ```bash
 backlog dash
@@ -184,17 +162,57 @@ backlog blockers --deep --suggest
 backlog report velocity --days 14
 ```
 
-## CONTEXT FILES
-- `.backlog/.context.yaml` - current/sibling/multi-task working context.
-- `.backlog/.sessions.yaml` - active agent heartbeats.
-- `.backlog/config.yaml` - optional overrides (agent defaults, stale thresholds, timeline settings).
+## AI agent skills
 
-## TESTS
+The `skills install` command exports planning workflows for AI coding agents:
+
 ```bash
-pytest -q
+backlog skills install plan-ingest    # install for codex + claude + opencode
+backlog skills install start-tasks    # execution-loop skill
+backlog skills install all --artifact both   # everything
 ```
 
-## NOTES
-- Most commands require a valid `.backlog/` tree and will fail fast if missing.
-- `done`, `cycle`, `show`, `work`, `blocked`, `skip`, `unclaim`, and `handoff` can use current context when task ID is omitted.
-- Stale claim warnings and auto-reclaim behavior are driven by `stale_claim` config thresholds.
+Skills land in the standard locations (`.agents/skills/`, `.claude/skills/`, `.config/opencode/skills/`). Use `--scope global` for user-wide install, `--dir ./path` for portable export.
+
+## TypeScript implementation
+
+The `backlog_ts/` directory contains a full-parity TypeScript implementation running on Bun:
+
+```bash
+cd backlog_ts
+bun install
+bun run bin/backlog list --available
+bun test                              # run tests
+bun run parity                        # cross-implementation parity checks
+```
+
+## Migration from `tasks`
+
+If you have an existing `.tasks/` directory:
+
+```bash
+backlog migrate
+```
+
+This moves `.tasks/` to `.backlog/` and creates a compatibility symlink. The `tasks` command alias continues to work.
+
+## Tests
+
+```bash
+# Python
+pytest -q
+
+# TypeScript
+cd backlog_ts && bun test
+
+# Cross-implementation parity
+cd backlog_ts && bun run parity
+```
+
+## Context files
+
+| File | Purpose |
+|---|---|
+| `.backlog/.context.yaml` | Current/sibling/multi-task working context |
+| `.backlog/.sessions.yaml` | Active agent heartbeats |
+| `.backlog/config.yaml` | Optional overrides (agent defaults, stale thresholds, timeline settings) |
