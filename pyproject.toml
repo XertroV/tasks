@@ -3,9 +3,9 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "tasks-cli"
+name = "backlog-cli"
 version = "0.1.0"
-description = "CLI for hierarchical project task orchestration stored in .tasks/"
+description = "CLI for hierarchical project backlogs stored in .backlog/"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
@@ -22,7 +22,9 @@ dev = [
 ]
 
 [project.scripts]
-tasks = "tasks.cli:cli"
+backlog = "backlog.cli:cli"
+bl = "backlog.cli:cli"
+tasks = "backlog.cli:cli"
 
 [tool.setuptools.packages.find]
-include = ["tasks*"]
+include = ["backlog*"]

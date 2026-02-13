@@ -1,19 +1,21 @@
-# tasks(1)
+# backlog(1)
 
 ## NAME
-`tasks` - CLI for hierarchical project task orchestration stored in `.tasks/`.
+`backlog` - CLI for hierarchical project backlog orchestration stored in `.backlog/`.
 
 ## SYNOPSIS
 ```bash
-tasks <command> [options] [args]
-python -m tasks <command> [options] [args]
-./tasks.py <command> [options] [args]   # repo-local wrapper
+backlog <command> [options] [args]
+bl <command> [options] [args]
+tasks <command> [options] [args]         # temporary compatibility alias
+python -m backlog <command> [options] [args]
+./backlog.py <command> [options] [args]  # repo-local wrapper
 ```
 
 ## DESCRIPTION
-`tasks` manages a Phase -> Milestone -> Epic -> Task tree on disk.
+`backlog` manages a Phase -> Milestone -> Epic -> Task tree on disk.
 
-- Loads project state from nested YAML indexes under `.tasks/`.
+- Loads project state from nested YAML indexes under `.backlog/`.
 - Reads task metadata from `.todo` frontmatter.
 - Computes a CCPM-style critical path using dependency graphs.
 - Enforces status transitions and claim ownership.
@@ -46,15 +48,29 @@ sudo pacman -S --needed pipx
 pipx install --force --editable .
 ```
 
-After installation, use `tasks ...` in any working directory (the command still expects a `.tasks/` tree in the current project directory). Re-run `./scripts/install-anywhere.sh` after local code changes.
+After installation, use `backlog ...` (or `bl ...`) in any working directory. Re-run `./scripts/install-anywhere.sh` after local code changes.
 
-`tasks.py` remains available as a repo-local wrapper and auto-reexecs into `.venv/bin/python` when present.
+`backlog.py` remains available as a repo-local wrapper and auto-reexecs into `.venv/bin/python` when present.
+
+## MIGRATION FROM `tasks`
+
+- `tasks` command still works as a compatibility alias for now.
+- Run `backlog migrate` in existing projects to migrate `.tasks/` to `.backlog/`.
+- Migration creates a symlink `.tasks -> .backlog` by default, so older scripts continue to work.
+
+```bash
+backlog migrate
+```
+
+Behavior notes:
+- Interactive TTY: if `.tasks/` exists and `.backlog/` does not, CLI prompts to migrate.
+- Non-interactive (CI/scripts): CLI warns and asks you to run `backlog migrate` explicitly.
 
 ## FILE LAYOUT
 Expected task tree:
 
 ```text
-.tasks/
+.backlog/
   index.yaml
   01-phase-name/
     index.yaml
@@ -76,13 +92,13 @@ Task files are Markdown with YAML frontmatter (`id`, `title`, `status`, `estimat
 
 ## QUICK START
 ```bash
-tasks list --available
-tasks grab
-tasks show
-tasks done
-tasks cycle
-tasks sync
-tasks dash
+backlog list --available
+backlog grab
+backlog show
+backlog done
+backlog cycle
+backlog sync
+backlog dash
 ```
 
 ## COMMANDS
@@ -100,7 +116,7 @@ Core:
 - `check` - run consistency checks (missing files, broken dependencies, cycles, ID/path integrity).
 - `unclaim-stale` - release stale `in_progress` claims.
 - `add`, `add-epic`, `add-milestone`, `add-phase` - create new tasks/epics/milestones/phases.
-- `idea "..."` - capture a feature idea as a planning-intake `.todo` in `.tasks/ideas/` for later `/plan-task` style decomposition and ingestion.
+- `idea "..."` - capture a feature idea as a planning-intake `.todo` in `.backlog/ideas/` for later `/plan-task` style decomposition and ingestion.
 
 Workflow and analysis:
 
@@ -112,7 +128,7 @@ Workflow and analysis:
 - `session ...` - session tracking (`start`, `heartbeat`, `list`, `end`, `clean`).
 - `report ...` - reports (`progress`, `velocity`, `estimate-accuracy`).
 - `data ...` - exports (`export`, `summary`).
-- `schema` - show type-level schema details for all `.tasks` file kinds (`--json`, `--compact`, `--only`, `--check-sync`).
+- `schema` - show type-level schema details for all `.backlog` file kinds (`--json`, `--compact`, `--only`, `--check-sync`).
 - `skills install ...` - install/export built-in `plan-task`, `plan-ingest`, and `start-tasks` skills/commands for Codex, Claude, and OpenCode.
 
 ## SKILL INSTALLER
@@ -120,25 +136,25 @@ Install built-in planning assets:
 
 ```bash
 # local install for common clients (codex + claude + opencode), skills only
-tasks skills install plan-ingest
+backlog skills install plan-ingest
 
 # install the execution-loop skill
-tasks skills install start-tasks
+backlog skills install start-tasks
 
 # install both skills and commands where supported
-tasks skills install all --artifact both
+backlog skills install all --artifact both
 
 # global install for codex skills
-tasks skills install plan-task --scope global --client codex --artifact skills
+backlog skills install plan-task --scope global --client codex --artifact skills
 
 # export to a directory (portable bundle)
-tasks skills install all --artifact both --dir ./build/ai-assets
+backlog skills install all --artifact both --dir ./build/ai-assets
 
 # preview without writing files
-tasks skills install plan-task --client common --artifact commands --dry-run
+backlog skills install plan-task --client common --artifact commands --dry-run
 ```
 
-Canonical defaults used by `tasks skills install`:
+Canonical defaults used by `backlog skills install`:
 
 - Codex skills: local `.agents/skills`, global `~/.agents/skills` (or `$CODEX_HOME/skills` if set).
 - Claude skills/commands: local `.claude/{skills|commands}`, global `~/.claude/{skills|commands}`.
@@ -148,30 +164,30 @@ Canonical defaults used by `tasks skills install`:
 Claim and complete:
 
 ```bash
-tasks grab
-tasks show
-tasks done
+backlog grab
+backlog show
+backlog done
 ```
 
 Pause or transfer:
 
 ```bash
-tasks blocked --reason "waiting on dependency"
-tasks handoff --to agent-2 --notes "implementation done; tests pending"
+backlog blocked --reason "waiting on dependency"
+backlog handoff --to agent-2 --notes "implementation done; tests pending"
 ```
 
 Health checks:
 
 ```bash
-tasks dash
-tasks blockers --deep --suggest
-tasks report velocity --days 14
+backlog dash
+backlog blockers --deep --suggest
+backlog report velocity --days 14
 ```
 
 ## CONTEXT FILES
-- `.tasks/.context.yaml` - current/sibling/multi-task working context.
-- `.tasks/.sessions.yaml` - active agent heartbeats.
-- `.tasks/config.yaml` - optional overrides (agent defaults, stale thresholds, timeline settings).
+- `.backlog/.context.yaml` - current/sibling/multi-task working context.
+- `.backlog/.sessions.yaml` - active agent heartbeats.
+- `.backlog/config.yaml` - optional overrides (agent defaults, stale thresholds, timeline settings).
 
 ## TESTS
 ```bash
@@ -179,6 +195,6 @@ pytest -q
 ```
 
 ## NOTES
-- Most commands require a valid `.tasks/` tree and will fail fast if missing.
+- Most commands require a valid `.backlog/` tree and will fail fast if missing.
 - `done`, `cycle`, `show`, `work`, `blocked`, `skip`, `unclaim`, and `handoff` can use current context when task ID is omitted.
 - Stale claim warnings and auto-reclaim behavior are driven by `stale_claim` config thresholds.

@@ -1,0 +1,26 @@
+{
+  "name": "backlog_ts",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "backlog": "./bin/backlog",
+    "bl": "./bin/bl",
+    "tasks": "./bin/tasks"
+  },
+  "scripts": {
+    "dev": "bun run src/cli.ts",
+    "test": "bun test",
+    "test:cov": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov",
+    "coverage:check": "bun run test:cov && bun run scripts/check-coverage.ts",
+    "parity": "bun run scripts/parity.ts",
+    "check": "bun run coverage:check && bun run parity"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "picocolors": "^1.1.1",
+    "yaml": "^2.8.2"
+  }
+}
