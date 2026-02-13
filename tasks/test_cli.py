@@ -960,3 +960,90 @@ def test_idea_command_increments_idea_ids(runner, tmp_tasks_dir):
     ideas_index = yaml.safe_load(ideas_index_path.read_text())
     ids = [entry["id"] for entry in ideas_index["ideas"]]
     assert ids == ["I001", "I002"]
+
+
+def test_list_and_next_include_ideas(runner, tmp_tasks_dir):
+    """list/next should include idea intake tasks."""
+    create = runner.invoke(cli, ["idea", "capture a planning intake"])
+    assert create.exit_code == 0
+
+    list_result = runner.invoke(cli, ["list"])
+    assert list_result.exit_code == 0
+    assert "Ideas" in list_result.output
+    assert "★" in list_result.output
+    assert "I001: capture a planning intake" in list_result.output
+
+    next_result = runner.invoke(cli, ["next", "--json"])
+    assert next_result.exit_code == 0
+    payload = yaml.safe_load(next_result.output)
+    assert payload["id"] == "I001"
+
+
+def test_grab_can_claim_idea(runner, tmp_tasks_dir):
+    """grab should be able to claim idea intake tasks."""
+    create = runner.invoke(cli, ["idea", "iterate on architecture options"])
+    assert create.exit_code == 0
+
+    result = runner.invoke(
+        cli, ["grab", "--single", "--agent=test-agent", "--no-content"]
+    )
+    assert result.exit_code == 0
+    assert "I001" in result.output
+
+    ideas_index = yaml.safe_load(
+        (tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml").read_text()
+    )
+    idea_path = tmp_tasks_dir / ".tasks" / "ideas" / ideas_index["ideas"][0]["file"]
+    idea_content = idea_path.read_text()
+    assert "status: in_progress" in idea_content
+    assert "claimed_by: test-agent" in idea_content
+
+
+def test_set_updates_multiple_fields(runner, tmp_tasks_dir):
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original")
+
+    result = runner.invoke(
+        cli,
+        [
+            "set",
+            "P1.M1.E1.T001",
+            "--priority",
+            "critical",
+            "--complexity",
+            "high",
+            "--estimate",
+            "3.5",
+            "--title",
+            "Updated Task",
+            "--depends-on",
+            "B060,P1.M1.E1.T002",
+            "--tags",
+            "bugfix,urgent",
+        ],
+    )
+
+    assert result.exit_code == 0
+    task_file = (
+        tmp_tasks_dir
+        / ".tasks"
+        / "01-test-phase"
+        / "01-test-milestone"
+        / "01-test-epic"
+        / "T001-test-task.todo"
+    )
+    content = task_file.read_text()
+    assert "title: Updated Task" in content
+    assert "priority: critical" in content
+    assert "complexity: high" in content
+    assert "estimate_hours: 3.5" in content
+    assert "- B060" in content
+    assert "- P1.M1.E1.T002" in content
+    assert "- bugfix" in content
+    assert "- urgent" in content
+
+
+def test_set_requires_at_least_one_property(runner, tmp_tasks_dir):
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original")
+    result = runner.invoke(cli, ["set", "P1.M1.E1.T001"])
+    assert result.exit_code != 0
+    assert "set requires at least one property flag" in result.output

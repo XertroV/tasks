@@ -140,6 +140,44 @@ describe("native cli", () => {
     expect(rootIndex).toContain("next_available:");
   });
 
+  test("set updates task properties", () => {
+    root = setupFixture();
+    const p = run([
+      "set",
+      "P1.M1.E1.T001",
+      "--priority",
+      "critical",
+      "--complexity",
+      "high",
+      "--estimate",
+      "3.5",
+      "--title",
+      "Updated Task",
+      "--depends-on",
+      "B060,P1.M1.E1.T002",
+      "--tags",
+      "bugfix,urgent",
+    ], root);
+    expect(p.exitCode).toBe(0);
+
+    const todo = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
+    expect(todo).toContain("title: Updated Task");
+    expect(todo).toContain("priority: critical");
+    expect(todo).toContain("complexity: high");
+    expect(todo).toContain("estimate_hours: 3.5");
+    expect(todo).toContain("- B060");
+    expect(todo).toContain("- P1.M1.E1.T002");
+    expect(todo).toContain("- bugfix");
+    expect(todo).toContain("- urgent");
+  });
+
+  test("set requires at least one field", () => {
+    root = setupFixture();
+    const p = run(["set", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(1);
+    expect(p.stderr.toString()).toContain("set requires at least one property flag");
+  });
+
   test("work set/show/clear", () => {
     root = setupFixture();
     let p = run(["work"], root);
@@ -373,6 +411,15 @@ tags: []
     expect(Array.isArray(schema.files)).toBeTrue();
   });
 
+  test("help shows timeline alias on one line", () => {
+    root = setupFixture();
+    const p = run(["--help"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("timeline        Display an ASCII Gantt chart of the project timeline (alias: tl)");
+    expect(out).not.toContain("\n  tl             Display an ASCII Gantt chart of the project timeline.");
+  });
+
   test("search and blockers commands", () => {
     root = setupFixture();
     let p = run(["search", "A"], root);
@@ -455,6 +502,87 @@ tags: []
     expect(ideaText).toContain("Run `/plan-task");
     expect(ideaText).toContain("tasks add");
     expect(ideaText).toContain("tasks bug");
+  });
+
+  test("bug accepts positional description as simple title", () => {
+    root = setupFixture();
+    const p = run(["bug", "fix flaky integration test"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Created bug:");
+    expect(out).not.toContain("IMPORTANT");
+
+    const bugsIndexText = readFileSync(join(root, ".tasks", "bugs", "index.yaml"), "utf8");
+    const fileMatch = bugsIndexText.match(/file:\s*(\S+)/);
+    expect(fileMatch).toBeTruthy();
+
+    const bugText = readFileSync(join(root, ".tasks", "bugs", fileMatch![1]!), "utf8");
+    expect(bugText).toContain("title: fix flaky integration test");
+    expect(bugText).not.toContain("## Steps to Reproduce");
+  });
+
+  test("grab prioritizes normal tasks over ideas", () => {
+    root = setupFixture();
+    let p = run(["idea", "collect future refactor idea"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["grab", "--single", "--agent", "agent-priority", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).not.toContain("I001");
+  });
+
+  test("grab prioritizes bugs over normal tasks", () => {
+    root = setupFixture();
+    let p = run(["bug", "--title", "tiny low bug", "--estimate", "0.1", "--complexity", "low", "--priority", "low", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["grab", "--single", "--agent", "agent-priority", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("B001");
+  });
+
+  test("list and next include idea tasks", () => {
+    root = setupFixture();
+    const t001Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const t002Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    writeFileSync(t001Path, readFileSync(t001Path, "utf8").replace("status: pending", "status: done"));
+    writeFileSync(t002Path, readFileSync(t002Path, "utf8").replace("status: pending", "status: done"));
+
+    let p = run(["idea", "capture planning work"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["list"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Ideas");
+    expect(p.stdout.toString()).toContain("I001: capture planning work");
+
+    p = run(["next", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    expect(JSON.parse(p.stdout.toString()).id).toBe("I001");
+  });
+
+  test("grab can claim idea tasks", () => {
+    root = setupFixture();
+    const t001Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const t002Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    writeFileSync(t001Path, readFileSync(t001Path, "utf8").replace("status: pending", "status: done"));
+    writeFileSync(t002Path, readFileSync(t002Path, "utf8").replace("status: pending", "status: done"));
+
+    let p = run(["idea", "capture architecture idea"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["grab", "--single", "--agent", "agent-idea", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("I001");
+
+    const indexText = readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8");
+    const fileMatch = indexText.match(/file:\s*(\S+)/);
+    expect(fileMatch).toBeTruthy();
+    const ideaText = readFileSync(join(root, ".tasks", "ideas", fileMatch![1]!), "utf8");
+    expect(ideaText).toContain("status: in_progress");
+    expect(ideaText).toContain("claimed_by: agent-idea");
   });
 
   test("enhanced list command shows milestones with task counts", () => {

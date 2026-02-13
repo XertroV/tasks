@@ -7,7 +7,7 @@ from pathlib import Path
 from builtins import next as builtin_next
 from rich.console import Console
 
-from .models import Status, TaskPath
+from .models import Status, TaskPath, Complexity, Priority
 from .loader import TaskLoader
 from .critical_path import CriticalPathCalculator
 from .time_utils import utc_now, to_utc
@@ -25,6 +25,7 @@ from .helpers import (
     set_multi_task_context,
     get_all_tasks,
     is_bug_id,
+    is_idea_id,
     task_file_path,
     is_task_file_missing,
     find_missing_task_files,
@@ -549,6 +550,21 @@ def _list_with_progress(
         console.print(f"    {bug_bar} {bug_pct:5.1f}% ({bugs_done}/{bugs_total})")
         console.print()
 
+    ideas = [
+        i
+        for i in getattr(tree, "ideas", [])
+        if _include_aux_item(i.status, unfinished, show_completed_aux)
+    ]
+    if ideas:
+        ideas_done = sum(1 for i in ideas if i.status == Status.DONE)
+        ideas_total = len(ideas)
+        idea_pct = (ideas_done / ideas_total * 100) if ideas_total > 0 else 0
+        idea_bar = make_progress_bar(ideas_done, ideas_total)
+        indicator = "[green]✓[/]" if idea_pct == 100 else "💡"
+        console.print(f"{indicator} [bold]Ideas[/]")
+        console.print(f"    {idea_bar} {idea_pct:5.1f}% ({ideas_done}/{ideas_total})")
+        console.print()
+
     if completed_phases:
         completed_str = ", ".join(
             f"{pid} ({total})" for pid, pname, total in completed_phases
@@ -722,6 +738,19 @@ def _list_json(
         if _include_aux_item(b.status, unfinished, show_completed_aux)
     ]
 
+    ideas_for_json = [
+        {
+            "id": i.id,
+            "title": i.title,
+            "status": i.status.value,
+            "priority": i.priority.value,
+            "estimate_hours": i.estimate_hours,
+            "on_critical_path": i.id in critical_path,
+        }
+        for i in getattr(tree, "ideas", [])
+        if _include_aux_item(i.status, unfinished, show_completed_aux)
+    ]
+
     output = {
         "critical_path": critical_path,
         "next_available": next_available,
@@ -749,6 +778,7 @@ def _list_json(
             for p in phases_to_show
         ],
         "bugs": bugs_for_json,
+        "ideas": ideas_for_json,
     }
 
     # Add filter metadata and filtered stats when filters are specified
@@ -904,6 +934,24 @@ def _list_text(
             crit_marker = "[yellow]★[/] " if b.id in critical_path else ""
             console.print(
                 f"  {prefix} {icon} {crit_marker}{b.id}: {b.title} [{b.priority.value}]"
+            )
+        console.print()
+
+    ideas_to_show = [
+        i
+        for i in getattr(tree, "ideas", [])
+        if _include_aux_item(i.status, unfinished, show_completed_aux)
+    ]
+    if ideas_to_show:
+        ideas_done = sum(1 for i in ideas_to_show if i.status == Status.DONE)
+        console.print(f"[bold]Ideas[/] ({ideas_done}/{len(ideas_to_show)} done)")
+        for i, idea in enumerate(ideas_to_show):
+            is_last = i == len(ideas_to_show) - 1
+            prefix = "└──" if is_last else "├──"
+            icon = _get_status_icon(idea.status)
+            crit_marker = "[yellow]★[/] " if idea.id in critical_path else ""
+            console.print(
+                f"  {prefix} {icon} {crit_marker}{idea.id}: {idea.title} [{idea.priority.value}]"
             )
         console.print()
 
@@ -1173,23 +1221,40 @@ def tree(output_json, unfinished, show_completed_aux, details, depth):
             for b in getattr(tree_data, "bugs", [])
             if _include_aux_item(b.status, unfinished, show_completed_aux)
         ]
+        ideas_to_show = [
+            i
+            for i in getattr(tree_data, "ideas", [])
+            if _include_aux_item(i.status, unfinished, show_completed_aux)
+        ]
         has_bugs = len(bugs_to_show) > 0
+        has_ideas = len(ideas_to_show) > 0
+        has_aux = has_bugs or has_ideas
 
         for i, p in enumerate(phases_to_show):
-            is_last = i == len(phases_to_show) - 1 and not has_bugs
+            is_last = i == len(phases_to_show) - 1 and not has_aux
             lines = _render_phase(
                 p, is_last, "", critical_path, unfinished, details, depth, 1
             )
             for line in lines:
                 console.print(line)
 
-        # Render bugs section
+        # Render auxiliary sections
         if has_bugs:
             bugs_done = sum(1 for b in bugs_to_show if b.status == Status.DONE)
-            console.print(f"└── [bold]Bugs[/] ({bugs_done}/{len(bugs_to_show)})")
+            branch = "└──" if not has_ideas else "├──"
+            console.print(f"{branch} [bold]Bugs[/] ({bugs_done}/{len(bugs_to_show)})")
+            bugs_prefix = "    " if not has_ideas else "│   "
             for i, b in enumerate(bugs_to_show):
-                is_last_bug = i == len(bugs_to_show) - 1
-                line = _render_task(b, is_last_bug, "    ", critical_path, details)
+                is_last_bug = i == len(bugs_to_show) - 1 and not has_ideas
+                line = _render_task(b, is_last_bug, bugs_prefix, critical_path, details)
+                console.print(line)
+
+        if has_ideas:
+            ideas_done = sum(1 for i in ideas_to_show if i.status == Status.DONE)
+            console.print(f"└── [bold]Ideas[/] ({ideas_done}/{len(ideas_to_show)})")
+            for i, idea in enumerate(ideas_to_show):
+                is_last_idea = i == len(ideas_to_show) - 1
+                line = _render_task(idea, is_last_idea, "    ", critical_path, details)
                 console.print(line)
 
     except Exception as e:
@@ -1236,13 +1301,21 @@ def show(path_ids):
             if i > 0:
                 console.print("\n" + "═" * 60 + "\n")
 
-            # Check for bug ID before TaskPath.parse (which would misinterpret B001)
-            if is_bug_id(path_id):
-                bug_task = builtin_next(
-                    (b for b in getattr(tree, "bugs", []) if b.id == path_id), None
+            # Check for auxiliary IDs before TaskPath.parse.
+            if is_bug_id(path_id) or is_idea_id(path_id):
+                aux_task = builtin_next(
+                    (
+                        t
+                        for t in [
+                            *getattr(tree, "bugs", []),
+                            *getattr(tree, "ideas", []),
+                        ]
+                        if t.id == path_id
+                    ),
+                    None,
                 )
-                if not bug_task:
-                    console.print(f"[red]Error:[/] Bug not found: {path_id}")
+                if not aux_task:
+                    console.print(f"[red]Error:[/] Task not found: {path_id}")
                     raise click.Abort()
                 _show_task(tree, path_id)
                 continue
@@ -1652,6 +1725,98 @@ def update(task_id, new_status, reason):
         raise click.Abort()
 
 
+@cli.command()
+@click.argument("task_id")
+@click.option(
+    "--status",
+    "status_value",
+    type=click.Choice(
+        ["pending", "in_progress", "done", "blocked", "rejected", "cancelled"]
+    ),
+    help="Set status",
+)
+@click.option(
+    "--priority",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+    help="Set priority",
+)
+@click.option(
+    "--complexity",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+    help="Set complexity",
+)
+@click.option("--estimate", type=float, help="Set estimate in hours")
+@click.option("--title", help="Set title")
+@click.option("--depends-on", default=None, help="Set comma-separated dependencies")
+@click.option("--tags", default=None, help="Set comma-separated tags")
+@click.option(
+    "--reason", help="Reason for status change (required for blocked/rejected)"
+)
+def set(
+    task_id,
+    status_value,
+    priority,
+    complexity,
+    estimate,
+    title,
+    depends_on,
+    tags,
+    reason,
+):
+    """Set task properties (status, priority, complexity, estimate, title, deps, tags)."""
+    try:
+        if (
+            status_value is None
+            and priority is None
+            and complexity is None
+            and estimate is None
+            and title is None
+            and depends_on is None
+            and tags is None
+        ):
+            raise click.ClickException("set requires at least one property flag")
+
+        loader = TaskLoader()
+        tree = loader.load()
+        task = tree.find_task(task_id)
+
+        if not task:
+            console.print(f"[red]Error:[/] Task not found: {task_id}")
+            raise click.Abort()
+
+        if title is not None:
+            task.title = title
+        if estimate is not None:
+            task.estimate_hours = estimate
+        if complexity is not None:
+            task.complexity = Complexity(complexity)
+        if priority is not None:
+            task.priority = Priority(priority)
+        if depends_on is not None:
+            task.depends_on = [d.strip() for d in depends_on.split(",") if d.strip()]
+        if tags is not None:
+            task.tags = [t.strip() for t in tags.split(",") if t.strip()]
+        if status_value is not None:
+            update_status(task, Status(status_value), reason)
+
+        loader.save_task(task)
+
+        console.print(f"\n[green]✓ Updated:[/] {task.id}\n")
+        console.print(f"  Title: {task.title}")
+        console.print(f"  Status: {task.status.value}")
+        console.print(f"  Estimate: {task.estimate_hours}")
+        console.print(f"  Complexity: {task.complexity.value}")
+        console.print(f"  Priority: {task.priority.value}")
+        console.print(
+            f"  Depends on: {', '.join(task.depends_on) if task.depends_on else '-'}"
+        )
+        console.print(f"  Tags: {', '.join(task.tags) if task.tags else '-'}")
+
+    except StatusError as e:
+        console.print(json.dumps(e.to_dict(), indent=2))
+        raise click.Abort()
+
+
 # ============================================================================
 # Sync Command
 # ============================================================================
@@ -2018,7 +2183,8 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
 
 
 @cli.command()
-@click.option("--title", "-T", required=True, help="Bug title")
+@click.argument("bug_words", nargs=-1, required=False)
+@click.option("--title", "-T", required=False, help="Bug title")
 @click.option("--estimate", "-e", default=1.0, type=float, help="Hours estimate")
 @click.option(
     "--complexity",
@@ -2038,10 +2204,19 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
 @click.option(
     "--body", "-b", default="", help="Custom body content (replaces default template)"
 )
-def bug(title, estimate, complexity, priority, depends_on, tags, simple, body):
+def bug(
+    bug_words, title, estimate, complexity, priority, depends_on, tags, simple, body
+):
     """Create a new bug report."""
     try:
         loader = TaskLoader()
+
+        positional_title = " ".join(bug_words).strip()
+        if not title and positional_title:
+            title = positional_title
+            simple = True
+        if not title:
+            raise ValueError("bug requires --title or description text")
 
         depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
         tags_list = [t.strip() for t in tags.split(",") if t.strip()]

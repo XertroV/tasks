@@ -6,9 +6,9 @@ import { mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
+import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isIdeaId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
-import { Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
+import { Complexity, Priority, Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
 import { runChecks } from "./check";
@@ -79,6 +79,7 @@ Commands:
   cycle           Complete current task and grab next
   dash            Show quick dashboard of project status
   update          Update task status
+  set             Set task properties (status/priority/etc)
   work            Set/show current working task
   unclaim         Release a claimed task
   blocked         Mark task as blocked and optionally grab next
@@ -94,7 +95,7 @@ Commands:
   session         Manage agent sessions
   data            Export/summarize task data
   report          Generate reports (progress, velocity, estimates) [alias: r]
-  timeline, tl    Display project timeline
+  timeline        Display an ASCII Gantt chart of the project timeline (alias: tl)
   schema          Show file schema information
   blockers        Show blocking tasks
   skills          Install skill files
@@ -229,6 +230,17 @@ function listWithProgress(tree: TaskTree, unfinished: boolean, showCompletedAux:
     console.log();
   }
 
+  const ideas = (tree.ideas ?? []).filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
+  if (ideas.length > 0) {
+    const ideasDone = ideas.filter((i) => i.status === Status.DONE).length;
+    const ideasTotal = ideas.length;
+    const ideaPct = ideasTotal > 0 ? (ideasDone / ideasTotal) * 100 : 0;
+    const ideaBar = makeProgressBar(ideasDone, ideasTotal);
+    console.log(`${ideaPct === 100 ? pc.green("✓") : "💡"} ${pc.bold("Ideas")}`);
+    console.log(`    ${ideaBar} ${ideaPct.toFixed(1).padStart(5)}% (${ideasDone}/${ideasTotal})`);
+    console.log();
+  }
+
   if (completedPhases.length > 0) {
     const completedStr = completedPhases.map((p) => `${p.id} (${p.total})`).join(", ");
     console.log(`${pc.green("✓ Completed:")} ${completedStr}`);
@@ -304,6 +316,9 @@ async function cmdList(args: string[]): Promise<void> {
     const bugsForJson = (tree.bugs ?? [])
       .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
       .filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
+    const ideasForJson = (tree.ideas ?? [])
+      .filter((i) => (statusFilter.length ? statusFilter.includes(i.status) : true))
+      .filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
     jsonOut({
       critical_path: criticalPath,
       next_available: nextAvailable,
@@ -337,6 +352,14 @@ async function cmdList(args: string[]): Promise<void> {
         priority: b.priority,
         estimate_hours: b.estimateHours,
         on_critical_path: criticalPath.includes(b.id),
+      })),
+      ideas: ideasForJson.map((i) => ({
+        id: i.id,
+        title: i.title,
+        status: i.status,
+        priority: i.priority,
+        estimate_hours: i.estimateHours,
+        on_critical_path: criticalPath.includes(i.id),
       })),
     });
     return;
@@ -384,6 +407,23 @@ async function cmdList(args: string[]): Promise<void> {
       const icon = getStatusIcon(b.status);
       const critMarker = criticalPath.includes(b.id) ? `${pc.yellow("★")} ` : "";
       console.log(`  ${prefix}${icon} ${critMarker}${b.id}: ${b.title} [${b.priority}]`);
+    }
+  }
+
+  const ideasToShow = (tree.ideas ?? [])
+    .filter((i) => (statusFilter.length ? statusFilter.includes(i.status) : true))
+    .filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
+  if (ideasToShow.length > 0) {
+    console.log();
+    const ideasDone = ideasToShow.filter((i) => i.status === Status.DONE).length;
+    console.log(`${pc.bold("Ideas")} (${ideasDone}/${ideasToShow.length} done)`);
+    for (let i = 0; i < ideasToShow.length; i++) {
+      const idea = ideasToShow[i]!;
+      const isLast = i === ideasToShow.length - 1;
+      const prefix = isLast ? "└── " : "├── ";
+      const icon = getStatusIcon(idea.status);
+      const critMarker = criticalPath.includes(idea.id) ? `${pc.yellow("★")} ` : "";
+      console.log(`  ${prefix}${icon} ${critMarker}${idea.id}: ${idea.title} [${idea.priority}]`);
     }
   }
 }
@@ -547,25 +587,41 @@ async function cmdTree(args: string[]): Promise<void> {
 
   const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
   const bugsToShow = (tree.bugs ?? []).filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
+  const ideasToShow = (tree.ideas ?? []).filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
   const hasBugs = bugsToShow.length > 0;
+  const hasIdeas = ideasToShow.length > 0;
+  const hasAux = hasBugs || hasIdeas;
 
   for (let i = 0; i < phasesToShow.length; i++) {
     const p = phasesToShow[i]!;
-    const isLast = i === phasesToShow.length - 1 && !hasBugs;
+    const isLast = i === phasesToShow.length - 1 && !hasAux;
     const lines = renderPhase(p, isLast, "", criticalPath, unfinished, showDetails, maxDepth, 1);
     console.log(lines.join("\n"));
   }
 
-  // Render bugs section
+  // Render auxiliary sections
   if (hasBugs) {
     const bugsDone = bugsToShow.filter((b) => b.status === Status.DONE).length;
-    const { branch, continuation } = getTreeChars(true);
+    const branch = hasIdeas ? "├── " : "└── ";
+    const continuation = hasIdeas ? "│   " : "    ";
     console.log(`${branch}${pc.bold("Bugs")} (${bugsDone}/${bugsToShow.length})`);
     for (let i = 0; i < bugsToShow.length; i++) {
       const b = bugsToShow[i]!;
-      const isLastBug = i === bugsToShow.length - 1;
+      const isLastBug = i === bugsToShow.length - 1 && !hasIdeas;
       const icon = getStatusIcon(b.status);
       console.log(renderTask(b, isLastBug, continuation, criticalPath, showDetails));
+    }
+  }
+
+  if (hasIdeas) {
+    const ideasDone = ideasToShow.filter((i) => i.status === Status.DONE).length;
+    const { branch, continuation } = getTreeChars(true);
+    console.log(`${branch}${pc.bold("Ideas")} (${ideasDone}/${ideasToShow.length})`);
+    for (let i = 0; i < ideasToShow.length; i++) {
+      const idea = ideasToShow[i]!;
+      const isLastIdea = i === ideasToShow.length - 1;
+      const icon = getStatusIcon(idea.status);
+      console.log(renderTask(idea, isLastIdea, continuation, criticalPath, showDetails));
     }
   }
 }
@@ -613,11 +669,11 @@ async function cmdShow(args: string[]): Promise<void> {
   }
 
   for (const id of ids) {
-    // Check for bug ID before TaskPath.parse (which would misinterpret B001)
-    if (isBugId(id)) {
-      const bug = (tree.bugs ?? []).find((b) => b.id === id);
-      if (!bug) textError(`Bug not found: ${id}`);
-      console.log(`${bug.id}: ${bug.title}\nstatus=${bug.status} estimate=${bug.estimateHours}`);
+    // Check auxiliary IDs before TaskPath.parse.
+    if (isBugId(id) || isIdeaId(id)) {
+      const aux = [...(tree.bugs ?? []), ...(tree.ideas ?? [])].find((t) => t.id === id);
+      if (!aux) textError(`Task not found: ${id}`);
+      console.log(`${aux.id}: ${aux.title}\nstatus=${aux.status} estimate=${aux.estimateHours}`);
       continue;
     }
     const path = TaskPath.parse(id);
@@ -820,6 +876,71 @@ async function cmdUpdate(args: string[]): Promise<void> {
     updateStatus(task, newStatus as Status, reason);
     await loader.saveTask(task);
     console.log(`Updated: ${task.id} -> ${task.status}`);
+  } catch (e) {
+    if (e instanceof StatusError) {
+      jsonOut(e.toJSON());
+      process.exit(1);
+    }
+    throw e;
+  }
+}
+
+async function cmdSet(args: string[]): Promise<void> {
+  const taskId = args.find((a) => !a.startsWith("-"));
+  if (!taskId) textError("set requires TASK_ID");
+
+  const statusValue = parseOpt(args, "--status");
+  const priority = parseOpt(args, "--priority");
+  const complexity = parseOpt(args, "--complexity");
+  const estimateText = parseOpt(args, "--estimate");
+  const title = parseOpt(args, "--title");
+  const dependsOnText = parseOpt(args, "--depends-on");
+  const tagsText = parseOpt(args, "--tags");
+  const reason = parseOpt(args, "--reason");
+
+  const hasAny = [statusValue, priority, complexity, estimateText, title, dependsOnText, tagsText].some((v) => v !== undefined);
+  if (!hasAny) textError("set requires at least one property flag");
+
+  const allowedPriority = new Set(Object.values(Priority));
+  const allowedComplexity = new Set(Object.values(Complexity));
+  const allowedStatus = new Set(Object.values(Status));
+
+  if (priority && !allowedPriority.has(priority as Priority)) {
+    textError(`Invalid priority: ${priority}`);
+  }
+  if (complexity && !allowedComplexity.has(complexity as Complexity)) {
+    textError(`Invalid complexity: ${complexity}`);
+  }
+  if (statusValue && !allowedStatus.has(statusValue as Status)) {
+    textError(`Invalid status: ${statusValue}`);
+  }
+
+  let estimate: number | undefined;
+  if (estimateText !== undefined) {
+    estimate = Number(estimateText);
+    if (!Number.isFinite(estimate)) {
+      textError(`Invalid estimate: ${estimateText}`);
+    }
+  }
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const task = findTask(tree, taskId);
+  if (!task) textError(`Task not found: ${taskId}`);
+
+  if (title !== undefined) task.title = title;
+  if (estimate !== undefined) task.estimateHours = estimate;
+  if (complexity !== undefined) task.complexity = complexity as Complexity;
+  if (priority !== undefined) task.priority = priority as Priority;
+  if (dependsOnText !== undefined) task.dependsOn = parseCsv(dependsOnText);
+  if (tagsText !== undefined) task.tags = parseCsv(tagsText);
+
+  try {
+    if (statusValue !== undefined) {
+      updateStatus(task, statusValue as Status, reason);
+    }
+    await loader.saveTask(task);
+    console.log(`Updated: ${task.id}`);
   } catch (e) {
     if (e instanceof StatusError) {
       jsonOut(e.toJSON());
@@ -1813,15 +1934,47 @@ async function cmdInit(args: string[]): Promise<void> {
 }
 
 async function cmdBug(args: string[]): Promise<void> {
-  const title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
-  if (!title) textError("bug requires --title");
+  let title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
+  const optionNamesWithValue = new Set([
+    "--title",
+    "-T",
+    "--priority",
+    "-p",
+    "--estimate",
+    "-e",
+    "--complexity",
+    "-c",
+    "--depends-on",
+    "-d",
+    "--tags",
+    "--body",
+    "-b",
+  ]);
+  const bugWords: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i]!;
+    if (optionNamesWithValue.has(arg)) {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("-")) continue;
+    bugWords.push(arg);
+  }
+  const positionalTitle = bugWords.join(" ").trim();
+
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "high";
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "1");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const tags = parseCsv(parseOpt(args, "--tags"));
-  const simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
+  let simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
   const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
+
+  if (!title && positionalTitle) {
+    title = positionalTitle;
+    simple = true;
+  }
+  if (!title) textError("bug requires --title or description text");
 
   const loader = new TaskLoader();
   const bug = await loader.createBug({
@@ -1898,6 +2051,9 @@ async function main(): Promise<void> {
       return;
     case "update":
       await cmdUpdate(rest);
+      return;
+    case "set":
+      await cmdSet(rest);
       return;
     case "work":
       await cmdWork(rest);

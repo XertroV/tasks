@@ -57,6 +57,7 @@ class TaskLoader:
 
             # Load bugs
             tree.bugs = self._load_bugs()
+            tree.ideas = self._load_ideas()
 
             return tree
         except KeyError as e:
@@ -392,7 +393,13 @@ class TaskLoader:
             raise FileNotFoundError(f"Task file not found: {task_file}")
 
         # Update frontmatter fields
+        frontmatter["title"] = task.title
         frontmatter["status"] = task.status.value
+        frontmatter["estimate_hours"] = task.estimate_hours
+        frontmatter["complexity"] = task.complexity.value
+        frontmatter["priority"] = task.priority.value
+        frontmatter["depends_on"] = task.depends_on
+        frontmatter["tags"] = task.tags
         frontmatter["claimed_by"] = task.claimed_by
         frontmatter["claimed_at"] = (
             task.claimed_at.isoformat() if task.claimed_at else None
@@ -501,6 +508,52 @@ class TaskLoader:
                 )
             )
         return bugs
+
+    def _load_ideas(self):
+        """Load ideas from .tasks/ideas/ directory."""
+        ideas_dir = self.tasks_dir / "ideas"
+        index_path = ideas_dir / "index.yaml"
+        if not index_path.exists():
+            return []
+
+        idx = self._load_yaml(index_path)
+        ideas = []
+        for entry in idx.get("ideas", []):
+            filename = entry.get("file", "")
+            if not filename:
+                continue
+            file_path = ideas_dir / filename
+            if not file_path.exists():
+                continue
+            frontmatter, _ = self._parse_todo_file(file_path)
+            ideas.append(
+                Task(
+                    id=str(frontmatter.get("id", "")),
+                    title=str(frontmatter.get("title", "")),
+                    file=str(Path("ideas") / filename),
+                    status=self._coerce_status(frontmatter.get("status", "pending")),
+                    estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
+                    complexity=Complexity(frontmatter.get("complexity", "medium")),
+                    priority=Priority(frontmatter.get("priority", "medium")),
+                    depends_on=frontmatter.get("depends_on", [])
+                    if isinstance(frontmatter.get("depends_on"), list)
+                    else [],
+                    claimed_by=frontmatter.get("claimed_by"),
+                    claimed_at=self._parse_datetime(frontmatter.get("claimed_at")),
+                    started_at=self._parse_datetime(frontmatter.get("started_at")),
+                    completed_at=self._parse_datetime(frontmatter.get("completed_at")),
+                    duration_minutes=float(frontmatter["duration_minutes"])
+                    if frontmatter.get("duration_minutes") is not None
+                    else None,
+                    tags=frontmatter.get("tags", [])
+                    if isinstance(frontmatter.get("tags"), list)
+                    else [],
+                    epic_id=None,
+                    milestone_id=None,
+                    phase_id=None,
+                )
+            )
+        return ideas
 
     def create_bug(self, bug_data: dict) -> Task:
         """

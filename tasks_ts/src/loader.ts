@@ -56,12 +56,14 @@ export class TaskLoader {
       nextAvailable: root.next_available as string | undefined,
       phases: [],
       bugs: [],
+      ideas: [],
     };
 
     for (const p of ((root.phases as AnyRec[]) ?? [])) {
       tree.phases.push(await this.loadPhase(p));
     }
     tree.bugs = await this.loadBugs();
+    tree.ideas = await this.loadIdeas();
     return tree;
   }
 
@@ -177,7 +179,13 @@ export class TaskLoader {
     const filePath = join(this.tasksDir, task.file);
     const existing = await readFile(filePath, "utf8");
     const { frontmatter, body } = parseTodo(existing);
+    frontmatter.title = task.title;
     frontmatter.status = task.status;
+    frontmatter.estimate_hours = task.estimateHours;
+    frontmatter.complexity = task.complexity;
+    frontmatter.priority = task.priority;
+    frontmatter.depends_on = task.dependsOn;
+    frontmatter.tags = task.tags;
     frontmatter.claimed_by = task.claimedBy ?? null;
     frontmatter.claimed_at = task.claimedAt?.toISOString() ?? null;
     frontmatter.started_at = task.startedAt?.toISOString() ?? null;
@@ -219,6 +227,41 @@ export class TaskLoader {
       });
     }
     return bugs;
+  }
+
+  private async loadIdeas(): Promise<import("./models").Task[]> {
+    const ideasDir = join(this.tasksDir, "ideas");
+    const indexPath = join(ideasDir, "index.yaml");
+    if (!existsSync(indexPath)) return [];
+    const idx = this.mustYaml(indexPath);
+    const ideas: import("./models").Task[] = [];
+    for (const entry of ((idx.ideas as AnyRec[]) ?? [])) {
+      const filename = String(entry.file ?? "");
+      if (!filename) continue;
+      const filePath = join(ideasDir, filename);
+      if (!existsSync(filePath)) continue;
+      const fm = parseTodo(await readFile(filePath, "utf8")).frontmatter;
+      ideas.push({
+        id: String(fm.id ?? ""),
+        title: String(fm.title ?? ""),
+        file: join("ideas", filename),
+        status: coerceStatus(fm.status, Status.PENDING),
+        estimateHours: estimateHoursFrom(fm),
+        complexity: (fm.complexity as Complexity) ?? Complexity.MEDIUM,
+        priority: (fm.priority as Priority) ?? Priority.MEDIUM,
+        dependsOn: ((fm.depends_on as string[]) ?? []).slice(),
+        claimedBy: fm.claimed_by as string | undefined,
+        claimedAt: fm.claimed_at ? new Date(String(fm.claimed_at)) : undefined,
+        startedAt: fm.started_at ? new Date(String(fm.started_at)) : undefined,
+        completedAt: fm.completed_at ? new Date(String(fm.completed_at)) : undefined,
+        durationMinutes: fm.duration_minutes ? Number(fm.duration_minutes) : undefined,
+        tags: ((fm.tags as string[]) ?? []).slice(),
+        epicId: undefined,
+        milestoneId: undefined,
+        phaseId: undefined,
+      });
+    }
+    return ideas;
   }
 
   async createBug(data: { title: string; priority?: string; estimate?: number; complexity?: string; dependsOn?: string[]; tags?: string[]; simple?: boolean; body?: string }): Promise<import("./models").Task> {
