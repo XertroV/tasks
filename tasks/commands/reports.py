@@ -397,6 +397,24 @@ def _calculate_velocity_summary(velocity_data, num_periods):
     return total_est, total_act, max_velocity
 
 
+def _velocity_periods_to_show(velocity_data, num_periods):
+    """Return number of periods to render for velocity charts.
+
+    Shows all days up to the oldest day with data, plus one additional
+    trailing day for context.
+    """
+    oldest_with_data = None
+    for i in range(num_periods):
+        vdata = velocity_data[i]
+        if vdata["duration_hours"] > 0 or vdata["estimate_hours"] > 0:
+            oldest_with_data = i
+
+    if oldest_with_data is None:
+        return min(1, num_periods)
+
+    return min(num_periods, oldest_with_data + 2)
+
+
 def _make_day_buckets(now, num_days):
     """Return list of (start, end) tuples for calendar day buckets.
 
@@ -729,8 +747,9 @@ def velocity(days, output_format):
 
             # Velocity over time (daily)
             if tasks_with_duration > 0:
+                velocity_periods = _velocity_periods_to_show(velocity_data, days)
                 velocity_daily = []
-                for d in range(days):
+                for d in range(velocity_periods):
                     vdata = velocity_data[d]
                     velocity_ratio = None
                     if vdata["duration_hours"] > 0:
@@ -754,17 +773,28 @@ def velocity(days, output_format):
                     "daily": velocity_daily,
                     "tasks_with_duration": tasks_with_duration,
                     "total_estimate_hours": round(
-                        sum(velocity_data[d]["estimate_hours"] for d in range(days)), 1
+                        sum(
+                            velocity_data[d]["estimate_hours"]
+                            for d in range(velocity_periods)
+                        ),
+                        1,
                     ),
                     "total_actual_hours": round(
-                        sum(velocity_data[d]["duration_hours"] for d in range(days)), 1
+                        sum(
+                            velocity_data[d]["duration_hours"]
+                            for d in range(velocity_periods)
+                        ),
+                        1,
                     ),
                 }
 
                 # High-res static buckets
                 if high_res_tasks > 0:
+                    high_res_periods = _velocity_periods_to_show(
+                        high_res_velocity, num_hr_buckets
+                    )
                     high_res_data = []
-                    for b in range(num_hr_buckets):
+                    for b in range(high_res_periods):
                         vdata = high_res_velocity[b]
                         velocity_ratio = None
                         if vdata["duration_hours"] > 0:
@@ -914,18 +944,22 @@ def velocity(days, output_format):
 
         # Velocity over time (daily efficiency)
         if tasks_with_duration > 0:
+            velocity_periods = _velocity_periods_to_show(velocity_data, days)
             console.print(f"\n[bold]Velocity Over Time:[/]")
             console.print(
                 f"[dim]Efficiency ratio: estimated hours / actual hours (daily, proportionally split)[/]\n"
             )
 
             total_est, total_act, max_velocity = _calculate_velocity_summary(
-                velocity_data, days
+                velocity_data, velocity_periods
             )
             display_max = max(5.0, max_velocity * 1.1) if max_velocity > 0 else 5.0
 
             _render_velocity_histogram(
-                velocity_data, days, lambda d: _day_label(d, day_buckets), display_max
+                velocity_data,
+                velocity_periods,
+                lambda d: _day_label(d, day_buckets),
+                display_max,
             )
 
             console.print(f"\n  [dim]Scale: 0.0x {'─' * 20} {display_max:.1f}x[/]")
@@ -949,13 +983,16 @@ def velocity(days, output_format):
 
         # Static high-res velocity
         if high_res_tasks > 0:
+            high_res_periods = _velocity_periods_to_show(
+                high_res_velocity, num_hr_buckets
+            )
             console.print(f"\n[bold]Recent Velocity (Last {hours_to_show} Hours):[/]")
             console.print(
                 f"[dim]Static {bucket_hours}-hour periods, proportionally split[/]\n"
             )
 
             total_est_hr, total_act_hr, max_velocity_hr = _calculate_velocity_summary(
-                high_res_velocity, num_hr_buckets
+                high_res_velocity, high_res_periods
             )
             display_max_hr = (
                 max(5.0, max_velocity_hr * 1.1) if max_velocity_hr > 0 else 5.0
@@ -963,7 +1000,7 @@ def velocity(days, output_format):
 
             _render_velocity_histogram(
                 high_res_velocity,
-                num_hr_buckets,
+                high_res_periods,
                 lambda b: _hr_label(b, hr_buckets),
                 display_max_hr,
             )

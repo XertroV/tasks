@@ -401,6 +401,46 @@ def test_report_velocity_text_sections(runner, tmp_workflow_reports_dir):
     assert "Recent Velocity (Last 48 Hours):" in result.output
 
 
+def test_report_velocity_over_time_trims_old_empty_days(
+    runner, tmp_workflow_reports_dir
+):
+    result = runner.invoke(cli, ["report", "velocity", "--days", "5"])
+
+    assert result.exit_code == 0
+
+    now = datetime.now(timezone.utc)
+    first_trailing_empty = (now - timedelta(days=2)).strftime("%b %d")
+    older_empty = (now - timedelta(days=3)).strftime("%b %d")
+
+    velocity_section = result.output.split("Velocity Over Time:", 1)[1].split(
+        "Scale:", 1
+    )[0]
+
+    assert first_trailing_empty in velocity_section
+    assert older_empty not in velocity_section
+
+
+def test_report_recent_velocity_trims_old_empty_buckets(
+    runner, tmp_workflow_reports_dir
+):
+    result = runner.invoke(cli, ["report", "velocity", "--days", "5"])
+
+    assert result.exit_code == 0
+
+    recent_section = result.output.split("Recent Velocity (Last 48 Hours):", 1)[
+        1
+    ].split("Scale:", 1)[0]
+    bucket_lines = [
+        line
+        for line in recent_section.splitlines()
+        if line.strip() and "-" in line and ("actual)" in line or "no data" in line)
+    ]
+
+    assert len(bucket_lines) >= 2
+    assert "no data" in bucket_lines[-1]
+    assert "actual)" in bucket_lines[-2]
+
+
 def test_report_velocity_no_completed_data(runner, tmp_workflow_reports_dir):
     for task_id in ("P1.M1.E2.T001", "P1.M1.E2.T002"):
         _save_task_fields(

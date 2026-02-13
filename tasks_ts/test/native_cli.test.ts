@@ -279,6 +279,7 @@ tags: []
     const velocity = JSON.parse(p.stdout.toString());
     expect(velocity.days_analyzed).toBe(7);
     expect(Array.isArray(velocity.daily_data)).toBeTrue();
+    expect(velocity.daily_data.length).toBe(2);
 
     p = run(["report", "estimate-accuracy", "--format", "json"], root);
     expect(p.exitCode).toBe(0);
@@ -299,6 +300,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     const velocityAlias = JSON.parse(p.stdout.toString());
     expect(velocityAlias.days_analyzed).toBe(7);
+    expect(velocityAlias.daily_data.length).toBe(2);
   });
 
   test("timeline and schema commands", () => {

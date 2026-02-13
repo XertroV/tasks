@@ -285,10 +285,17 @@ async function cmdReportVelocity(args: string[]): Promise<void> {
   });
   const totalCompleted = dayData.reduce((a, b) => a + b.tasks_completed, 0);
   const totalHours = dayData.reduce((a, b) => a + b.hours_completed, 0);
+
+  const oldestDayWithData = dayData.reduce((oldest, d) => {
+    if (d.tasks_completed > 0 || d.hours_completed > 0) return d.day;
+    return oldest;
+  }, -1);
+  const velocityDaysToShow = oldestDayWithData >= 0 ? Math.min(days, oldestDayWithData + 2) : Math.min(1, days);
+
   const payload = {
     days_analyzed: days,
     total_completed: completed.length,
-    daily_data: dayData,
+    daily_data: dayData.slice(0, velocityDaysToShow),
     averages: {
       tasks_per_day: Number((totalCompleted / days).toFixed(1)),
       hours_per_day: Number((totalHours / days).toFixed(1)),
