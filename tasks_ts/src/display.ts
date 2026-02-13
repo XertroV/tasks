@@ -1,9 +1,9 @@
 import pc from "picocolors";
-import { parseOpt, textError } from "./cli";
-import { loadContext, getAllTasks, findTask, loadConfig } from "./helpers";
+import { loadContext, getAllTasks, findTask, loadConfig, getActiveSessions, getStaleSessions } from "./helpers";
 import { TaskLoader } from "./loader";
 import { CriticalPathCalculator } from "./critical_path";
-import { Status, type Task, type TaskTree } from "./models";
+import { Status, type Task } from "./models";
+import { checkStaleClaims } from "./status";
 
 function makeProgressBar(done: number, total: number, width = 20): string {
   if (total === 0) return "░".repeat(width);
@@ -21,6 +21,13 @@ function getPhaseStats(phase: { milestones: Array<{ epics: Array<{ tasks: Task[]
   };
 }
 
+function formatDuration(minutes: number): string {
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h ${m}m` : `${h}h`;
+}
+
 export async function cmdDash(_args: string[]): Promise<void> {
   const loader = new TaskLoader();
   const tree = await loader.load();
@@ -28,9 +35,9 @@ export async function cmdDash(_args: string[]): Promise<void> {
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();
 
-  const ctx = loadContext();
-  const currentTaskId = ctx.current_task;
-  const currentAgent = ctx.agent ?? "unknown";
+  const ctx = await loadContext();
+  const currentTaskId = (ctx.current_task as string | undefined) ?? (ctx.primary_task as string | undefined);
+  const currentAgent = (ctx.agent as string | undefined) ?? "unknown";
 
   console.log();
 
@@ -118,12 +125,35 @@ export async function cmdDash(_args: string[]): Promise<void> {
   // Status counts
   const blockedCount = allTasks.filter((t) => t.status === Status.BLOCKED).length;
   const inProgressCount = allTasks.filter((t) => t.status === Status.IN_PROGRESS).length;
+  const staleClaims = checkStaleClaims(
+    allTasks,
+    Number(((cfg.stale_claim as Record<string, unknown>)?.warn_after_minutes as number | undefined) ?? 60),
+    Number(((cfg.stale_claim as Record<string, unknown>)?.error_after_minutes as number | undefined) ?? 120),
+  );
+  const timeout = Number(((cfg.session as Record<string, unknown>)?.heartbeat_timeout_minutes as number | undefined) ?? 15);
+  const staleSessions = await getStaleSessions(timeout);
 
   console.log();
   console.log(pc.bold("Status:"));
   console.log(`  In progress: ${inProgressCount}`);
   if (blockedCount > 0) {
     console.log(`  ${pc.red(`Blocked: ${blockedCount}`)}`);
+  }
+  if (staleClaims.length > 0) {
+    console.log(`  ${pc.yellow(`Stale claims: ${staleClaims.length}`)}`);
+  }
+  if (staleSessions.length > 0) {
+    console.log(`  ${pc.yellow(`Stale sessions: ${staleSessions.length}`)}`);
+  }
+
+  const active = await getActiveSessions();
+  if (active.length > 0) {
+    console.log();
+    console.log(pc.bold("Active Sessions:"));
+    for (const sess of active.slice(0, 5)) {
+      const taskInfo = sess.current_task ? ` on ${String(sess.current_task)}` : "";
+      console.log(`  ${String(sess.agent_id)}${taskInfo} (${formatDuration(Number(sess.duration_minutes ?? 0))})`);
+    }
   }
 
   console.log();

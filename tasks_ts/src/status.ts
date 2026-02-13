@@ -111,3 +111,37 @@ export function updateStatus(task: Task, next: Status, reason?: string): void {
     task.completedAt = utcNow();
   }
 }
+
+export function checkStaleClaims(
+  tasks: Task[],
+  warnMinutes = 60,
+  errorMinutes = 120,
+): Array<Record<string, unknown>> {
+  const stale: Array<Record<string, unknown>> = [];
+  const now = utcNow();
+
+  for (const task of tasks) {
+    if (task.status === Status.IN_PROGRESS && task.claimedAt) {
+      const ageMinutes = (now.getTime() - toUtc(task.claimedAt).getTime()) / 60000;
+      if (ageMinutes >= errorMinutes) {
+        stale.push({
+          level: "error",
+          task_id: task.id,
+          claimed_by: task.claimedBy,
+          age_minutes: Math.floor(ageMinutes),
+          message: `Task ${task.id} claimed ${Math.floor(ageMinutes)}m ago (ERROR threshold: ${errorMinutes}m)`,
+        });
+      } else if (ageMinutes >= warnMinutes) {
+        stale.push({
+          level: "warning",
+          task_id: task.id,
+          claimed_by: task.claimedBy,
+          age_minutes: Math.floor(ageMinutes),
+          message: `Task ${task.id} claimed ${Math.floor(ageMinutes)}m ago (WARN threshold: ${warnMinutes}m)`,
+        });
+      }
+    }
+  }
+
+  return stale;
+}

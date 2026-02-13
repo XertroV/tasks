@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getAllTasks, getCurrentTaskId, isBugId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
+import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
 import { Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
@@ -1617,8 +1617,10 @@ async function cmdSession(args: string[]): Promise<void> {
     const task = parseOpt(rest, "--task");
     if (!agent) textError("session start requires --agent");
     const sess = await startSession(agent, task);
-    console.log(`Session started: ${agent}`);
-    console.log(`Time: ${String(sess.started_at)}`);
+    console.log(`✓ Session started`);
+    console.log(`  Agent: ${agent}`);
+    if (task) console.log(`  Task:  ${task}`);
+    console.log(`  Time:  ${String(sess.started_at)}`);
     return;
   }
 
@@ -1628,59 +1630,79 @@ async function cmdSession(args: string[]): Promise<void> {
     if (!agent) textError("session heartbeat requires --agent");
     const ok = await updateSessionHeartbeat(agent, progress);
     if (!ok) {
-      console.log(`No active session for '${agent}'`);
+      console.log(`Warning: No active session for '${agent}'`);
       return;
     }
-    console.log(`Heartbeat updated for ${agent}`);
+    console.log(`✓ Heartbeat updated for ${agent}`);
+    if (progress) console.log(`  Progress: ${progress}`);
     return;
   }
 
   if (sub === "end") {
     const agent = parseOpt(rest, "--agent");
+    const status = parseOpt(rest, "--status") ?? "completed";
     if (!agent) textError("session end requires --agent");
     const ok = await endSession(agent);
-    console.log(ok ? `Session ended for ${agent}` : `No active session found for '${agent}'`);
+    if (ok) {
+      console.log(`✓ Session ended for ${agent}`);
+      console.log(`  Status: ${status}`);
+    } else {
+      console.log(`No active session found for '${agent}'`);
+    }
     return;
   }
 
   if (sub === "list") {
     const onlyStale = parseFlag(rest, "--stale");
-    const sessions = await loadSessions();
-    const now = Date.now();
-    const rows = Object.entries(sessions).map(([agent, data]) => {
-      const s = data as Record<string, unknown>;
-      const started = new Date(String(s.started_at ?? new Date().toISOString())).getTime();
-      const hb = new Date(String(s.last_heartbeat ?? new Date().toISOString())).getTime();
-      const lastHbMinutes = Math.floor((now - hb) / 60000);
-      const durationMinutes = Math.floor((now - started) / 60000);
-      return { agent, task: (s.current_task as string | null) ?? "-", progress: (s.progress as string | null) ?? "-", lastHbMinutes, durationMinutes };
-    });
-    const filtered = onlyStale ? rows.filter((r) => r.lastHbMinutes > timeout) : rows;
-    if (!filtered.length) {
-      console.log(onlyStale ? "No stale sessions" : "No active sessions");
+    if (onlyStale) {
+      const sessions = await getStaleSessions(timeout);
+      if (!sessions.length) {
+        console.log("✓ No stale sessions");
+        return;
+      }
+      console.log(`Stale Sessions (no heartbeat > ${timeout}m):`);
+      for (const sess of sessions) {
+        console.log(`  ${String(sess.agent_id)}`);
+        if (sess.current_task) console.log(`    Task: ${String(sess.current_task)}`);
+        console.log(`    Last heartbeat: ${String(sess.age_minutes)}m ago`);
+        if (sess.progress) console.log(`    Last progress: ${String(sess.progress)}`);
+      }
       return;
     }
-    for (const r of filtered) {
-      console.log(`${r.agent} task=${r.task} duration=${formatDuration(r.durationMinutes)} last_hb=${r.lastHbMinutes}m progress=${r.progress}`);
+
+    const active = await getActiveSessions();
+    if (!active.length) {
+      console.log("No active sessions");
+      return;
+    }
+    for (const sess of active) {
+      const hbAge = Number(sess.last_heartbeat_minutes ?? 0);
+      const hbStr = hbAge > timeout ? pc.red(`${hbAge}m`) : hbAge > timeout / 2 ? pc.yellow(`${hbAge}m`) : pc.green(`${hbAge}m`);
+      console.log(
+        `${String(sess.agent_id)} task=${String(sess.current_task ?? "-")} duration=${formatDuration(Number(sess.duration_minutes ?? 0))} last_hb=${hbStr} progress=${String(sess.progress ?? "-")}`,
+      );
     }
     return;
   }
 
   if (sub === "clean") {
     const sessions = await loadSessions();
-    const now = Date.now();
+    const stale = await getStaleSessions(timeout);
     const cleaned: string[] = [];
-    for (const [agent, data] of Object.entries(sessions)) {
-      const s = data as Record<string, unknown>;
-      const hb = new Date(String(s.last_heartbeat ?? new Date().toISOString())).getTime();
-      const lastHbMinutes = Math.floor((now - hb) / 60000);
-      if (lastHbMinutes > timeout) {
+    for (const s of stale) {
+      const agent = String(s.agent_id);
+      if (agent in sessions) {
         delete sessions[agent];
         cleaned.push(agent);
       }
     }
     await saveSessions(sessions);
-    console.log(cleaned.length ? `Removed ${cleaned.length} stale session(s)` : "No stale sessions to clean");
+    if (cleaned.length) {
+      console.log(`✓ Removed ${cleaned.length} stale session(s):`);
+      for (const agent of cleaned) console.log(`  - ${agent}`);
+    } else {
+      console.log("✓ No stale sessions to clean");
+    }
     return;
   }
 

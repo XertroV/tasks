@@ -136,3 +136,47 @@ export async function endSession(agentId: string): Promise<boolean> {
   await saveSessions(sessions);
   return true;
 }
+
+export async function getStaleSessions(timeoutMinutes = 15): Promise<Array<Record<string, unknown>>> {
+  const sessions = await loadSessions();
+  const now = Date.now();
+  const stale: Array<Record<string, unknown>> = [];
+
+  for (const [agentId, data] of Object.entries(sessions)) {
+    const sess = data as Record<string, unknown>;
+    const hbIso = String(sess.last_heartbeat ?? new Date().toISOString());
+    const ageMinutes = Math.floor((now - new Date(hbIso).getTime()) / 60000);
+    if (ageMinutes > timeoutMinutes) {
+      stale.push({
+        agent_id: agentId,
+        current_task: (sess.current_task as string | null) ?? null,
+        age_minutes: ageMinutes,
+        progress: (sess.progress as string | null) ?? null,
+      });
+    }
+  }
+
+  return stale;
+}
+
+export async function getActiveSessions(): Promise<Array<Record<string, unknown>>> {
+  const sessions = await loadSessions();
+  const now = Date.now();
+  const active: Array<Record<string, unknown>> = [];
+
+  for (const [agentId, data] of Object.entries(sessions)) {
+    const sess = data as Record<string, unknown>;
+    const startedIso = String(sess.started_at ?? new Date().toISOString());
+    const hbIso = String(sess.last_heartbeat ?? new Date().toISOString());
+    active.push({
+      agent_id: agentId,
+      current_task: (sess.current_task as string | null) ?? null,
+      started_at: startedIso,
+      duration_minutes: Math.floor((now - new Date(startedIso).getTime()) / 60000),
+      last_heartbeat_minutes: Math.floor((now - new Date(hbIso).getTime()) / 60000),
+      progress: (sess.progress as string | null) ?? null,
+    });
+  }
+
+  return active;
+}
