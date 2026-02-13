@@ -183,3 +183,98 @@ def test_loader_accepts_estimated_hours_alias(tmp_path, monkeypatch):
     assert tree.phases[0].milestones[0].estimate_hours == 8
     assert tree.phases[0].milestones[0].epics[0].estimate_hours == 5
     assert task.estimate_hours == 3
+
+
+def test_loader_accepts_completed_status_alias(tmp_path, monkeypatch):
+    """Loader should map legacy completed status to done."""
+    tasks_dir = tmp_path / ".tasks"
+    epic_dir = tasks_dir / "01-phase" / "01-milestone" / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    with open(tasks_dir / "index.yaml", "w") as f:
+        yaml.dump(
+            {
+                "project": "Status Alias Test",
+                "phases": [
+                    {
+                        "id": "P1",
+                        "name": "Phase",
+                        "path": "01-phase",
+                    }
+                ],
+            },
+            f,
+            sort_keys=False,
+        )
+
+    with open(tasks_dir / "01-phase" / "index.yaml", "w") as f:
+        yaml.dump(
+            {
+                "milestones": [
+                    {
+                        "id": "M1",
+                        "name": "Milestone",
+                        "path": "01-milestone",
+                    }
+                ]
+            },
+            f,
+            sort_keys=False,
+        )
+
+    with open(tasks_dir / "01-phase" / "01-milestone" / "index.yaml", "w") as f:
+        yaml.dump(
+            {
+                "epics": [
+                    {
+                        "id": "E1",
+                        "name": "Epic",
+                        "path": "01-epic",
+                    }
+                ]
+            },
+            f,
+            sort_keys=False,
+        )
+
+    with open(epic_dir / "index.yaml", "w") as f:
+        yaml.dump(
+            {
+                "tasks": [
+                    {
+                        "id": "T001",
+                        "file": "T001-status.todo",
+                        "title": "Status Alias Task",
+                        "status": "completed",
+                        "estimate_hours": 1,
+                        "complexity": "low",
+                        "priority": "medium",
+                        "depends_on": [],
+                    }
+                ]
+            },
+            f,
+            sort_keys=False,
+        )
+
+    with open(epic_dir / "T001-status.todo", "w") as f:
+        f.write(
+            "---\n"
+            "id: P1.M1.E1.T001\n"
+            "title: Status Alias Task\n"
+            "status: completed\n"
+            "estimate_hours: 1\n"
+            "complexity: low\n"
+            "priority: medium\n"
+            "depends_on: []\n"
+            "tags: []\n"
+            "---\n\n"
+            "# Status Alias Task\n"
+        )
+
+    monkeypatch.chdir(tmp_path)
+    tree = TaskLoader().load()
+    task = tree.find_task("P1.M1.E1.T001")
+
+    assert task is not None
+    assert task.status.value == "done"

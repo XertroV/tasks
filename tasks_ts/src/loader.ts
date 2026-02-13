@@ -12,6 +12,20 @@ function estimateHoursFrom(data: AnyRec): number {
   return Number(data.estimate_hours ?? data.estimated_hours ?? 0);
 }
 
+function coerceStatus(rawStatus: unknown, fallback: Status = Status.PENDING): Status {
+  if (rawStatus === undefined || rawStatus === null) return fallback;
+  if (Object.values(Status).includes(rawStatus as Status)) return rawStatus as Status;
+  if (typeof rawStatus === "string") {
+    const normalized = rawStatus.trim().toLowerCase().replace(/[-\s]+/g, "_");
+    const aliases: Record<string, Status> = {
+      complete: Status.DONE,
+      completed: Status.DONE,
+    };
+    return aliases[normalized] ?? (normalized as Status);
+  }
+  return String(rawStatus) as Status;
+}
+
 function parseTodo(content: string): { frontmatter: AnyRec; body: string } {
   const parts = content.split("---\n");
   if (parts.length >= 3) {
@@ -51,7 +65,7 @@ export class TaskLoader {
       id: String(phaseData.id),
       name: String(phaseData.name ?? ""),
       path: String(phaseData.path ?? ""),
-      status: (phaseData.status as Status) ?? Status.PENDING,
+      status: coerceStatus(phaseData.status, Status.PENDING),
       weeks: Number(phaseData.weeks ?? 0),
       estimateHours: estimateHoursFrom(phaseData),
       priority: (phaseData.priority as Priority) ?? Priority.MEDIUM,
@@ -74,7 +88,7 @@ export class TaskLoader {
       id: msPath.fullId,
       name: String(milestoneData.name ?? ""),
       path: String(milestoneData.path ?? ""),
-      status: (milestoneData.status as Status) ?? Status.PENDING,
+      status: coerceStatus(milestoneData.status, Status.PENDING),
       estimateHours: estimateHoursFrom(milestoneData),
       complexity: (milestoneData.complexity as Complexity) ?? Complexity.MEDIUM,
       dependsOn: ((milestoneData.depends_on as string[]) ?? []).slice(),
@@ -97,7 +111,7 @@ export class TaskLoader {
       id: epicPath.fullId,
       name: String(epicData.name ?? ""),
       path: String(epicData.path ?? ""),
-      status: (epicData.status as Status) ?? Status.PENDING,
+      status: coerceStatus(epicData.status, Status.PENDING),
       estimateHours: estimateHoursFrom(epicData),
       complexity: (epicData.complexity as Complexity) ?? Complexity.MEDIUM,
       dependsOn: ((epicData.depends_on as string[]) ?? []).slice(),
@@ -137,7 +151,7 @@ export class TaskLoader {
       id,
       title: String(frontmatter.title ?? normalized.title ?? ""),
       file: taskFile.replace(`${this.tasksDir}/`, ""),
-      status: (frontmatter.status as Status) ?? (normalized.status as Status) ?? Status.PENDING,
+      status: coerceStatus(frontmatter.status ?? normalized.status, Status.PENDING),
       estimateHours: Number(frontmatter.estimate_hours ?? frontmatter.estimated_hours ?? normalized.estimate_hours ?? normalized.estimated_hours ?? 0),
       complexity: (frontmatter.complexity as Complexity) ?? (normalized.complexity as Complexity) ?? Complexity.LOW,
       priority: (frontmatter.priority as Priority) ?? (normalized.priority as Priority) ?? Priority.MEDIUM,
@@ -183,7 +197,7 @@ export class TaskLoader {
         id: String(fm.id ?? ""),
         title: String(fm.title ?? ""),
         file: join("bugs", filename),
-        status: (fm.status as Status) ?? Status.PENDING,
+        status: coerceStatus(fm.status, Status.PENDING),
         estimateHours: estimateHoursFrom(fm),
         complexity: (fm.complexity as Complexity) ?? Complexity.MEDIUM,
         priority: (fm.priority as Priority) ?? Priority.MEDIUM,

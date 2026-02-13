@@ -96,4 +96,34 @@ describe("loader", () => {
     expect(epic?.estimateHours).toBe(6);
     expect(task?.estimateHours).toBe(3);
   });
+
+  test("maps completed status alias to done", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-status-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Demo\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic\n    path: 01-epic\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-demo.todo\n    title: Hello\n    status: completed\n`,
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-demo.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: Hello\nstatus: completed\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Hello\n`,
+    );
+
+    const tree = await new TaskLoader(tasksDir).load();
+    const task = tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0];
+    expect(task?.status).toBe(Status.DONE);
+  });
 });

@@ -71,6 +71,23 @@ class TaskLoader:
             value = data.get("estimated_hours", default)
         return float(value)
 
+    def _coerce_status(self, raw_status: Any, default: str = "pending") -> Status:
+        """Normalize legacy status aliases and return Status enum."""
+        value = raw_status if raw_status is not None else default
+        if isinstance(value, Status):
+            return value
+
+        if isinstance(value, str):
+            normalized = value.strip().lower().replace("-", "_").replace(" ", "_")
+            aliases = {
+                "complete": "done",
+                "completed": "done",
+            }
+            normalized = aliases.get(normalized, normalized)
+            return Status(normalized)
+
+        return Status(str(value))
+
     def _load_phase(self, phase_data: Dict[str, Any]) -> Phase:
         """Load a phase and its milestones."""
         try:
@@ -83,7 +100,7 @@ class TaskLoader:
                     id=phase_data["id"],
                     name=phase_data["name"],
                     path=phase_data["path"],
-                    status=Status(phase_data.get("status", "pending")),
+                    status=self._coerce_status(phase_data.get("status", "pending")),
                     weeks=phase_data.get("weeks", 0),
                     estimate_hours=self._get_estimate_hours(phase_data, 0.0),
                     priority=Priority(phase_data.get("priority", "medium")),
@@ -98,7 +115,7 @@ class TaskLoader:
                 id=phase_data["id"],
                 name=phase_data["name"],
                 path=phase_data["path"],
-                status=Status(phase_data.get("status", "pending")),
+                status=self._coerce_status(phase_data.get("status", "pending")),
                 weeks=phase_data.get("weeks", 0),
                 estimate_hours=self._get_estimate_hours(phase_data, 0.0),
                 priority=Priority(phase_data.get("priority", "medium")),
@@ -149,7 +166,7 @@ class TaskLoader:
                 id=ms_path.full_id,  # Fully qualified: "P1.M1"
                 name=milestone_data["name"],
                 path=milestone_data["path"],
-                status=Status(milestone_data.get("status", "pending")),
+                status=self._coerce_status(milestone_data.get("status", "pending")),
                 estimate_hours=self._get_estimate_hours(milestone_data, 0.0),
                 complexity=Complexity(milestone_data.get("complexity", "medium")),
                 depends_on=milestone_data.get("depends_on", []),
@@ -210,7 +227,7 @@ class TaskLoader:
             id=epic_path.full_id,  # Fully qualified: "P1.M1.E1"
             name=epic_data["name"],
             path=epic_data["path"],
-            status=Status(epic_data.get("status", "pending")),
+            status=self._coerce_status(epic_data.get("status", "pending")),
             estimate_hours=self._get_estimate_hours(epic_data, 0.0),
             complexity=Complexity(epic_data.get("complexity", "medium")),
             depends_on=epic_data.get("depends_on", []),
@@ -302,7 +319,7 @@ class TaskLoader:
             id=task_id,
             title=title,
             file=str(task_file.relative_to(self.tasks_dir)),
-            status=Status(status),
+            status=self._coerce_status(status),
             estimate_hours=float(estimate_hours),
             complexity=Complexity(complexity),
             priority=Priority(priority),
@@ -461,7 +478,7 @@ class TaskLoader:
                     id=str(frontmatter.get("id", "")),
                     title=str(frontmatter.get("title", "")),
                     file=str(Path("bugs") / filename),
-                    status=Status(frontmatter.get("status", "pending")),
+                    status=self._coerce_status(frontmatter.get("status", "pending")),
                     estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
                     complexity=Complexity(frontmatter.get("complexity", "medium")),
                     priority=Priority(frontmatter.get("priority", "medium")),
