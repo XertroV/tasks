@@ -88,6 +88,36 @@ describe("native cli", () => {
     expect(list.stdout.toString()).toContain("★ B001: Critical Bug");
   });
 
+  test("list hides completed bugs by default and can include via flag", () => {
+    root = setupFixture(true);
+    const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
+    let bugText = readFileSync(bugPath, "utf8");
+    bugText = bugText.replace("status: pending", "status: done");
+    writeFileSync(bugPath, bugText);
+
+    let p = run(["list"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).not.toContain("B001: Critical Bug");
+
+    p = run(["list", "--show-completed-aux"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("B001: Critical Bug");
+  });
+
+  test("list --json hides completed bugs by default", () => {
+    root = setupFixture(true);
+    const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
+    let bugText = readFileSync(bugPath, "utf8");
+    bugText = bugText.replace("status: pending", "status: done");
+    writeFileSync(bugPath, bugText);
+
+    const p = run(["list", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const payload = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(payload.bugs)).toBeTrue();
+    expect(payload.bugs.length).toBe(0);
+  });
+
   test("claim done update sync mutate files", () => {
     root = setupFixture();
     let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-z"], root);
@@ -544,6 +574,22 @@ tags: []
     const out = p.stdout.toString();
     expect(out).not.toContain("P1.M1.E1.T001");
     expect(out).toContain("P1.M1.E1.T002");
+  });
+
+  test("tree hides completed bugs by default and can include via flag", () => {
+    root = setupFixture(true);
+    const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
+    let bugText = readFileSync(bugPath, "utf8");
+    bugText = bugText.replace("status: pending", "status: done");
+    writeFileSync(bugPath, bugText);
+
+    let p = run(["tree"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).not.toContain("B001: Critical Bug");
+
+    p = run(["tree", "--show-completed-aux"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("B001: Critical Bug");
   });
 
   test("tree --details shows metadata", () => {

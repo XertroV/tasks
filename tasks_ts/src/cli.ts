@@ -111,6 +111,12 @@ function isUnfinished(status: Status): boolean {
   return status !== Status.DONE && status !== Status.CANCELLED && status !== Status.REJECTED;
 }
 
+function includeAuxItem(status: Status, unfinished: boolean, showCompletedAux: boolean): boolean {
+  if (unfinished) return isUnfinished(status);
+  if (showCompletedAux) return true;
+  return isUnfinished(status);
+}
+
 function filterUnfinishedTasks(tasks: Task[]): Task[] {
   return tasks.filter((t) => isUnfinished(t.status));
 }
@@ -156,7 +162,7 @@ function makeProgressBar(done: number, total: number, width = 20): string {
   return "█".repeat(filled) + "░".repeat(empty);
 }
 
-function listWithProgress(tree: TaskTree, unfinished: boolean): void {
+function listWithProgress(tree: TaskTree, unfinished: boolean, showCompletedAux: boolean): void {
   console.log();
   console.log(pc.bold(pc.cyan("Project Progress")));
   console.log();
@@ -212,7 +218,7 @@ function listWithProgress(tree: TaskTree, unfinished: boolean): void {
   }
 
   // Show bugs summary in progress view
-  const bugs = (tree.bugs ?? []).filter((b) => (!unfinished || isUnfinished(b.status)));
+  const bugs = (tree.bugs ?? []).filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
   if (bugs.length > 0) {
     const bugsDone = bugs.filter((b) => b.status === Status.DONE).length;
     const bugsTotal = bugs.length;
@@ -261,6 +267,7 @@ async function cmdList(args: string[]): Promise<void> {
   const statusFilter = parseOpt(args, "--status")?.split(",") ?? [];
   const showAll = parseFlag(args, "--all");
   const unfinished = parseFlag(args, "--unfinished");
+  const showCompletedAux = parseFlag(args, "--show-completed-aux");
   const showProgress = parseFlag(args, "--progress");
   const loader = new TaskLoader();
   const tree = await loader.load();
@@ -271,7 +278,7 @@ async function cmdList(args: string[]): Promise<void> {
   tree.nextAvailable = nextAvailable;
 
   if (showProgress) {
-    listWithProgress(tree, unfinished);
+    listWithProgress(tree, unfinished, showCompletedAux);
     return;
   }
 
@@ -296,7 +303,7 @@ async function cmdList(args: string[]): Promise<void> {
 
     const bugsForJson = (tree.bugs ?? [])
       .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
-      .filter((b) => (!unfinished || isUnfinished(b.status)));
+      .filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
     jsonOut({
       critical_path: criticalPath,
       next_available: nextAvailable,
@@ -365,7 +372,7 @@ async function cmdList(args: string[]): Promise<void> {
   // Show bugs section
   const bugsToShow = (tree.bugs ?? [])
     .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
-    .filter((b) => (!unfinished || isUnfinished(b.status)));
+    .filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
   if (bugsToShow.length > 0) {
     console.log();
     const bugsDone = bugsToShow.filter((b) => b.status === Status.DONE).length;
@@ -496,6 +503,7 @@ function renderPhase(
 async function cmdTree(args: string[]): Promise<void> {
   const outputJson = parseFlag(args, "--json");
   const unfinished = parseFlag(args, "--unfinished");
+  const showCompletedAux = parseFlag(args, "--show-completed-aux");
   const showDetails = parseFlag(args, "--details");
   const depthStr = parseOpt(args, "--depth");
   const maxDepth = depthStr ? Number(depthStr) : 4;
@@ -538,7 +546,7 @@ async function cmdTree(args: string[]): Promise<void> {
   }
 
   const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
-  const bugsToShow = (tree.bugs ?? []).filter((b) => (!unfinished || isUnfinished(b.status)));
+  const bugsToShow = (tree.bugs ?? []).filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
   const hasBugs = bugsToShow.length > 0;
 
   for (let i = 0; i < phasesToShow.length; i++) {

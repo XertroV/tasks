@@ -242,6 +242,11 @@ def init(project, description, timeline_weeks):
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option("--all", "show_all", is_flag=True, help="Show all milestones (no limit)")
 @click.option("--unfinished", is_flag=True, help="Show only unfinished items")
+@click.option(
+    "--show-completed-aux",
+    is_flag=True,
+    help="Include completed/cancelled/rejected bugs and ideas",
+)
 def list(
     status,
     phase,
@@ -255,6 +260,7 @@ def list(
     output_json,
     show_all,
     unfinished,
+    show_completed_aux,
 ):
     """List tasks with filtering options."""
     try:
@@ -271,7 +277,14 @@ def list(
 
         # Handle --progress flag
         if show_progress:
-            _list_with_progress(tree, critical_path, complexity, priority, unfinished)
+            _list_with_progress(
+                tree,
+                critical_path,
+                complexity,
+                priority,
+                unfinished,
+                show_completed_aux,
+            )
             return
 
         # Handle --milestone filter
@@ -301,9 +314,18 @@ def list(
                 priority,
                 show_all,
                 unfinished,
+                show_completed_aux,
             )
         else:
-            _list_text(tree, critical_path, complexity, priority, show_all, unfinished)
+            _list_text(
+                tree,
+                critical_path,
+                complexity,
+                priority,
+                show_all,
+                unfinished,
+                show_completed_aux,
+            )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -327,6 +349,15 @@ def _is_unfinished(status):
 def _filter_unfinished_tasks(tasks):
     """Filter tasks to only unfinished ones."""
     return [t for t in tasks if _is_unfinished(t.status)]
+
+
+def _include_aux_item(status, unfinished=False, show_completed_aux=False):
+    """Check whether auxiliary list items (bugs/ideas) should be shown."""
+    if unfinished:
+        return _is_unfinished(status)
+    if show_completed_aux:
+        return True
+    return _is_unfinished(status)
 
 
 def _has_unfinished_tasks(epic):
@@ -395,7 +426,12 @@ def _show_filter_banner(complexity=None, priority=None):
 
 
 def _list_with_progress(
-    tree, critical_path, complexity=None, priority=None, unfinished=False
+    tree,
+    critical_path,
+    complexity=None,
+    priority=None,
+    unfinished=False,
+    show_completed_aux=False,
 ):
     """Show list with progress bars."""
     console.print("\n[bold cyan]Project Progress[/]\n")
@@ -501,7 +537,7 @@ def _list_with_progress(
     bugs = [
         b
         for b in getattr(tree, "bugs", [])
-        if not unfinished or _is_unfinished(b.status)
+        if _include_aux_item(b.status, unfinished, show_completed_aux)
     ]
     if bugs:
         bugs_done = sum(1 for b in bugs if b.status == Status.DONE)
@@ -666,6 +702,7 @@ def _list_json(
     priority=None,
     show_all=False,
     unfinished=False,
+    show_completed_aux=False,
 ):
     """Output list as JSON."""
     phases_to_show = tree.phases
@@ -682,7 +719,7 @@ def _list_json(
             "on_critical_path": b.id in critical_path,
         }
         for b in getattr(tree, "bugs", [])
-        if not unfinished or _is_unfinished(b.status)
+        if _include_aux_item(b.status, unfinished, show_completed_aux)
     ]
 
     output = {
@@ -758,6 +795,7 @@ def _list_text(
     priority=None,
     show_all=False,
     unfinished=False,
+    show_completed_aux=False,
 ):
     """Output list as text."""
     console.print(
@@ -854,7 +892,7 @@ def _list_text(
     bugs_to_show = [
         b
         for b in getattr(tree, "bugs", [])
-        if not unfinished or _is_unfinished(b.status)
+        if _include_aux_item(b.status, unfinished, show_completed_aux)
     ]
     if bugs_to_show:
         bugs_done = sum(1 for b in bugs_to_show if b.status == Status.DONE)
@@ -1033,6 +1071,11 @@ def _render_phase(
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option("--unfinished", is_flag=True, help="Show only unfinished items")
 @click.option(
+    "--show-completed-aux",
+    is_flag=True,
+    help="Include completed/cancelled/rejected bugs and ideas",
+)
+@click.option(
     "--details",
     is_flag=True,
     help="Show task metadata (estimates, agents, dependencies)",
@@ -1043,7 +1086,7 @@ def _render_phase(
     default=4,
     help="Limit tree expansion depth (1=phases, 2=milestones, 3=epics, 4=tasks)",
 )
-def tree(output_json, unfinished, details, depth):
+def tree(output_json, unfinished, show_completed_aux, details, depth):
     """Display full hierarchical tree of phases, milestones, epics, and tasks."""
     try:
         loader = TaskLoader()
@@ -1128,7 +1171,7 @@ def tree(output_json, unfinished, details, depth):
         bugs_to_show = [
             b
             for b in getattr(tree_data, "bugs", [])
-            if not unfinished or _is_unfinished(b.status)
+            if _include_aux_item(b.status, unfinished, show_completed_aux)
         ]
         has_bugs = len(bugs_to_show) > 0
 

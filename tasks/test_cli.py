@@ -754,6 +754,45 @@ def test_list_json_includes_milestone_metadata(runner, tmp_tasks_dir):
     assert data["phases"][0]["milestones"][0]["stats"]["total"] == 2
 
 
+def test_list_hides_completed_bugs_by_default(runner, tmp_tasks_dir):
+    """list should hide completed bugs unless explicitly requested."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Done Bug", status="done")
+    create_bug_file(tmp_tasks_dir, "B002", "Open Bug", status="pending")
+
+    result = runner.invoke(cli, ["list"])
+    assert result.exit_code == 0
+    assert "B002: Open Bug" in result.output
+    assert "B001: Done Bug" not in result.output
+
+
+def test_list_can_show_completed_bugs_with_flag(runner, tmp_tasks_dir):
+    """list --show-completed-aux should include completed bugs."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Done Bug", status="done")
+
+    result = runner.invoke(cli, ["list", "--show-completed-aux"])
+    assert result.exit_code == 0
+    assert "B001: Done Bug" in result.output
+
+
+def test_list_json_hides_completed_bugs_by_default(runner, tmp_tasks_dir):
+    """list --json should exclude completed bugs by default."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Done Bug", status="done")
+    create_bug_file(tmp_tasks_dir, "B002", "Open Bug", status="pending")
+
+    result = runner.invoke(cli, ["list", "--json"])
+    assert result.exit_code == 0
+
+    import json
+
+    data = json.loads(result.output)
+    bug_ids = {b["id"] for b in data.get("bugs", [])}
+    assert "B002" in bug_ids
+    assert "B001" not in bug_ids
+
+
 def test_tree_command_shows_full_hierarchy(runner, tmp_tasks_dir):
     """Test tree command shows full 4-level hierarchy."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
@@ -779,6 +818,28 @@ def test_tree_unfinished_filters_completed(runner, tmp_tasks_dir):
     assert result.exit_code == 0
     assert "P1.M1.E1.T001" not in result.output
     assert "P1.M1.E1.T002" in result.output
+
+
+def test_tree_hides_completed_bugs_by_default(runner, tmp_tasks_dir):
+    """tree should hide completed bugs unless explicitly requested."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Done Bug", status="done")
+    create_bug_file(tmp_tasks_dir, "B002", "Open Bug", status="pending")
+
+    result = runner.invoke(cli, ["tree"])
+    assert result.exit_code == 0
+    assert "B002: Open Bug" in result.output
+    assert "B001: Done Bug" not in result.output
+
+
+def test_tree_can_show_completed_bugs_with_flag(runner, tmp_tasks_dir):
+    """tree --show-completed-aux should include completed bugs."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Done Bug", status="done")
+
+    result = runner.invoke(cli, ["tree", "--show-completed-aux"])
+    assert result.exit_code == 0
+    assert "B001: Done Bug" in result.output
 
 
 def test_tree_details_shows_metadata(runner, tmp_tasks_dir):
