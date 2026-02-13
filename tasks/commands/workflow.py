@@ -32,6 +32,7 @@ from ..helpers import (
 console = Console()
 
 DEFAULT_SIBLING_ADDITIONAL_COUNT = 5
+BUG_FANOUT_COUNT = 2
 
 
 def _warn_missing_task_file(task) -> bool:
@@ -212,7 +213,9 @@ Mark each done individually after completion.
         f.write(instructions)
 
 
-def _display_grab_results(primary_task, additional_tasks, no_content: bool) -> None:
+def _display_grab_results(
+    primary_task, additional_tasks, no_content: bool, execution_hint: str | None = None
+) -> None:
     """Display grab results with multi-task instructions."""
     if not primary_task:
         console.print(
@@ -240,10 +243,23 @@ def _display_grab_results(primary_task, additional_tasks, no_content: bool) -> N
         # Display multi-task workflow instructions
         console.print("\n" + "━" * 70)
         console.print("[bold]MULTI-TASK MODE INSTRUCTIONS[/]\n")
-        console.print(
-            f"You have claimed {len(additional_tasks) + 1} independent tasks. Recommended workflow:\n"
-        )
-        console.print(f"spawn subagents:\n")
+        if primary_task.id.startswith("B"):
+            console.print(
+                f"You have claimed {len(additional_tasks) + 1} bugs. Recommended workflow:\n"
+            )
+            if execution_hint == "series":
+                console.print(
+                    "Run bug fixes in [bold]series[/] with one subagent, or a coordinated sequence.\n"
+                )
+            else:
+                console.print(
+                    "Run bug fixes in [bold]parallel[/] with multiple subagents where practical (ie, where dependencies / relatedness allow; we want to avoid race conditions between agents trying to edit the same file).\n"
+                )
+        else:
+            console.print(
+                f"You have claimed {len(additional_tasks) + 1} independent tasks. Recommended workflow:\n"
+            )
+            console.print(f"spawn subagents:\n")
 
         for task in [primary_task] + additional_tasks:
             console.print(f"   Spawn subagent for {task.id}:")
@@ -377,11 +393,43 @@ def _claim_task_batch(
     """Claim secondary tasks and set context based on requested batch mode."""
     additional_tasks = []
     sibling_task_objs = []
+    execution_hint = None
+
+    if primary_task.id.startswith("B"):
+        bug_ids = calc.find_additional_bugs(primary_task, count=BUG_FANOUT_COUNT)
+        for task_id in bug_ids:
+            task = tree.find_task(task_id)
+            if not task:
+                continue
+            if _warn_missing_task_file(task):
+                console.print(
+                    f"[yellow]Skipping additional bug:[/] {task.id} (missing file)\n"
+                )
+                continue
+            claim_task(task, agent)
+            loader.save_task(task)
+            additional_tasks.append(task)
+            _append_delegation_instructions(task, agent, primary_task)
+
+        claimed_additional_ids = [task.id for task in additional_tasks]
+        if claimed_additional_ids:
+            set_multi_task_context(agent, primary_task.id, claimed_additional_ids)
+        else:
+            set_current_task(primary_task.id, agent)
+
+        selected = [primary_task] + additional_tasks
+        has_dependency_conflicts = any(
+            calc._has_dependency_relationship(a, b)
+            for i, a in enumerate(selected)
+            for b in selected[i + 1 :]
+        )
+        execution_hint = "series" if has_dependency_conflicts else "parallel"
+        return additional_tasks, sibling_task_objs, execution_hint
 
     # Determine mode precedence: --single > --multi > siblings/default.
     if single:
         set_current_task(primary_task.id, agent)
-        return additional_tasks, sibling_task_objs
+        return additional_tasks, sibling_task_objs, execution_hint
 
     if multi:
         additional_task_ids = calc.find_independent_tasks(primary_task, count)
@@ -410,7 +458,7 @@ def _claim_task_batch(
                 "[yellow]Warning: No independent tasks available for multi-grab[/]\n"
             )
             set_current_task(primary_task.id, agent)
-        return additional_tasks, sibling_task_objs
+        return additional_tasks, sibling_task_objs, execution_hint
 
     if siblings:
         sibling_task_ids = calc.find_sibling_tasks(
@@ -440,11 +488,11 @@ def _claim_task_batch(
                 set_current_task(primary_task.id, agent)
         else:
             set_current_task(primary_task.id, agent)
-        return additional_tasks, sibling_task_objs
+        return additional_tasks, sibling_task_objs, execution_hint
 
     # --no-siblings explicit single-task mode.
     set_current_task(primary_task.id, agent)
-    return additional_tasks, sibling_task_objs
+    return additional_tasks, sibling_task_objs, execution_hint
 
 
 def _claim_and_display_batch(
@@ -476,7 +524,7 @@ def _claim_and_display_batch(
     claim_task(primary_task, agent, force=force_claim)
     loader.save_task(primary_task)
 
-    additional_tasks, sibling_task_objs = _claim_task_batch(
+    additional_tasks, sibling_task_objs, execution_hint = _claim_task_batch(
         tree,
         loader,
         calc,
@@ -491,7 +539,9 @@ def _claim_and_display_batch(
     if sibling_task_objs:
         _display_sibling_grab_results(primary_task, sibling_task_objs, no_content)
     else:
-        _display_grab_results(primary_task, additional_tasks, no_content)
+        _display_grab_results(
+            primary_task, additional_tasks, no_content, execution_hint
+        )
 
     start_session(agent, primary_task.id)
     return primary_task

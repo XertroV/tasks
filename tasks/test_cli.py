@@ -343,6 +343,23 @@ class TestGrabCommand:
             in result.output
         )
 
+    def test_grab_autoselected_bug_fanout_claims_additional_bugs(
+        self, runner, tmp_tasks_dir
+    ):
+        create_bug_file(tmp_tasks_dir, "B001", "Primary Bug")
+        create_bug_file(tmp_tasks_dir, "B002", "Second Bug")
+        create_bug_file(tmp_tasks_dir, "B003", "Third Bug")
+
+        result = runner.invoke(
+            cli, ["grab", "--agent=test-agent", "--no-content", "--single"]
+        )
+
+        assert result.exit_code == 0
+        assert "B001" in result.output
+        assert "B002" in result.output
+        assert "B003" in result.output
+        assert "parallel" in result.output.lower() or "series" in result.output.lower()
+
 
 class TestDoneCommand:
     """Tests for the done command."""
@@ -516,6 +533,39 @@ class TestCycleCommand:
         with open(task2_file, "r") as f:
             task2_content = f.read()
         assert "status: in_progress" in task2_content
+
+    def test_cycle_autoselected_bug_fanout_claims_additional_bugs(
+        self, runner, tmp_tasks_dir
+    ):
+        create_bug_file(
+            tmp_tasks_dir,
+            "B001",
+            "Primary Bug",
+            status="in_progress",
+        )
+        create_bug_file(tmp_tasks_dir, "B002", "Second Bug")
+        create_bug_file(tmp_tasks_dir, "B003", "Third Bug")
+
+        b1_file = tmp_tasks_dir / ".tasks" / "bugs" / "b001-test-bug.todo"
+        b1_content = b1_file.read_text()
+        b1_file.write_text(b1_content.replace("tags:", "claimed_by: test-agent\ntags:"))
+
+        context_file = tmp_tasks_dir / ".tasks" / ".context.yaml"
+        context = {
+            "current_task": "B001",
+            "agent": "test-agent",
+            "started_at": datetime.now(timezone.utc).isoformat(),
+        }
+        with open(context_file, "w") as f:
+            yaml.dump(context, f)
+
+        result = runner.invoke(cli, ["cycle", "--agent=test-agent", "--no-content"])
+
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert "B001" in result.output
+        assert "B002" in result.output
+        assert "B003" in result.output
 
     def test_cycle_stops_when_epic_complete(self, runner, tmp_tasks_dir):
         """cycle should stop and not auto-grab when completing the last task in an epic."""

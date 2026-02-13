@@ -622,6 +622,32 @@ class CriticalPathCalculator:
 
         return [task.id for task in selected_tasks]
 
+    def find_additional_bugs(self, primary_task: Task, count: int = 2) -> List[str]:
+        """Find up to `count` additional available bugs for bug fanout workflows."""
+        if not primary_task.id.startswith("B"):
+            return []
+
+        available_ids = self.find_all_available()
+        candidates = []
+        for task_id in available_ids:
+            if task_id == primary_task.id or not task_id.startswith("B"):
+                continue
+            task = self.tree.find_task(task_id)
+            if task:
+                candidates.append(task)
+
+        selected = []
+        for task in candidates:
+            if len(selected) >= count:
+                break
+            if any(self._has_dependency_relationship(task, s) for s in selected):
+                continue
+            if self._has_dependency_relationship(primary_task, task):
+                continue
+            selected.append(task)
+
+        return [task.id for task in selected]
+
     def _calculate_diversity_score(
         self, task: Task, primary_task: Task, selected_tasks: List[Task]
     ) -> int:

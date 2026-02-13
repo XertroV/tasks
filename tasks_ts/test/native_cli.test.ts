@@ -251,6 +251,25 @@ describe("native cli", () => {
     expect(todo2).toContain("status: in_progress");
   });
 
+  test("cycle auto-selected bug fans out to additional bugs", () => {
+    root = setupFixture();
+    let p = run(["bug", "--title", "bug one", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["bug", "--title", "bug two", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["bug", "--title", "bug three", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["claim", "B001", "--agent", "agent-cycle"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["cycle", "B001", "--agent", "agent-cycle", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Completed: B001");
+    expect(out).toContain("B002");
+    expect(out).toContain("B003");
+  });
+
   test("session lifecycle", () => {
     root = setupFixture();
     let p = run(["session", "start", "--agent", "agent-s", "--task", "P1.M1.E1.T001"], root);
@@ -541,6 +560,24 @@ tags: []
     p = run(["grab", "--single", "--agent", "agent-priority", "--no-content"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("B001");
+  });
+
+  test("grab auto-selected bug fans out to additional bugs", () => {
+    root = setupFixture();
+    let p = run(["bug", "--title", "bug one", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["bug", "--title", "bug two", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["bug", "--title", "bug three", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["grab", "--agent", "agent-fanout", "--single", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("B001");
+    expect(out).toContain("B002");
+    expect(out).toContain("B003");
+    expect(out.toLowerCase()).toContain("parallel");
   });
 
   test("list and next include idea tasks", () => {

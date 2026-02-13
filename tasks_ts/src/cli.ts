@@ -814,6 +814,24 @@ async function cmdGrab(args: string[]): Promise<void> {
   await loader.saveTask(task);
   await setCurrentTask(task.id, agent);
   console.log(`Grabbed: ${task.id} - ${task.title}`);
+
+  if (/^B\d+$/.test(task.id)) {
+    const additionalBugIds = calc.findAdditionalBugs(task, 2);
+    const additionalBugs: Task[] = [];
+    for (const id of additionalBugIds) {
+      const bug = findTask(tree, id);
+      if (!bug) continue;
+      if (isTaskFileMissing(bug)) continue;
+      claimTask(bug, agent, false);
+      await loader.saveTask(bug);
+      additionalBugs.push(bug);
+    }
+    if (additionalBugs.length > 0) {
+      console.log(`Also grabbed ${additionalBugs.length} additional bug(s): ${additionalBugs.map((b) => b.id).join(", ")}`);
+      console.log("Run these bug fixes in parallel with multiple subagents when independent.");
+      console.log(`Mark each done individually: ${[task, ...additionalBugs].map((b) => `tasks done ${b.id}`).join(" | ")}`);
+    }
+  }
 }
 
 async function cmdDone(args: string[]): Promise<void> {
@@ -887,6 +905,24 @@ async function cmdCycle(args: string[]): Promise<void> {
   await loader.saveTask(nextTask);
   await setCurrentTask(nextTask.id, agent);
   console.log(`Grabbed: ${nextTask.id} - ${nextTask.title}`);
+
+  if (/^B\d+$/.test(nextTask.id)) {
+    const additionalBugIds = calc.findAdditionalBugs(nextTask, 2);
+    const additionalBugs: Task[] = [];
+    for (const id of additionalBugIds) {
+      const bug = findTask(refreshed, id);
+      if (!bug) continue;
+      if (isTaskFileMissing(bug)) continue;
+      claimTask(bug, agent, false);
+      await loader.saveTask(bug);
+      additionalBugs.push(bug);
+    }
+    if (additionalBugs.length > 0) {
+      console.log(`Also grabbed ${additionalBugs.length} additional bug(s): ${additionalBugs.map((b) => b.id).join(", ")}`);
+      console.log("Run these bug fixes in parallel with multiple subagents when independent.");
+      console.log(`Mark each done individually: ${[nextTask, ...additionalBugs].map((b) => `tasks done ${b.id}`).join(" | ")}`);
+    }
+  }
 }
 
 async function cmdUpdate(args: string[]): Promise<void> {

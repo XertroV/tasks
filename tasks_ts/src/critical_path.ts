@@ -64,4 +64,36 @@ export class CriticalPathCalculator {
     const nextAvailable = available[0];
     return { criticalPath, nextAvailable };
   }
+
+  private hasDependencyRelationship(taskA: Task, taskB: Task): boolean {
+    return this.isInDependencyChain(taskA, taskB.id, new Set()) || this.isInDependencyChain(taskB, taskA.id, new Set());
+  }
+
+  private isInDependencyChain(task: Task, targetId: string, visited: Set<string>): boolean {
+    if (visited.has(task.id)) return false;
+    visited.add(task.id);
+    for (const depId of task.dependsOn) {
+      if (depId === targetId) return true;
+      const depTask = getAllTasks(this.tree).find((t) => t.id === depId);
+      if (depTask && this.isInDependencyChain(depTask, targetId, visited)) return true;
+    }
+    return false;
+  }
+
+  findAdditionalBugs(primaryTask: Task, count = 2): string[] {
+    if (!/^B\d+$/.test(primaryTask.id)) return [];
+    const available = this.findAllAvailable()
+      .map((id) => getAllTasks(this.tree).find((t) => t.id === id))
+      .filter((t): t is Task => !!t)
+      .filter((t) => /^B\d+$/.test(t.id) && t.id !== primaryTask.id);
+
+    const selected: Task[] = [];
+    for (const task of available) {
+      if (selected.length >= count) break;
+      if (this.hasDependencyRelationship(primaryTask, task)) continue;
+      if (selected.some((s) => this.hasDependencyRelationship(s, task))) continue;
+      selected.push(task);
+    }
+    return selected.map((t) => t.id);
+  }
 }
