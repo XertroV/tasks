@@ -5,6 +5,7 @@ import json
 import pytest
 import yaml
 from click.testing import CliRunner
+import click
 
 from tasks.cli import cli
 
@@ -25,6 +26,24 @@ def test_install_default_local_common_skills(runner, tmp_path, monkeypatch):
     assert (tmp_path / ".agents/skills/plan-ingest/SKILL.md").exists()
     assert (tmp_path / ".claude/skills/plan-ingest/SKILL.md").exists()
     assert (tmp_path / ".opencode/skills/plan-ingest/SKILL.md").exists()
+
+
+def test_install_prompts_for_client_when_interactive(runner, tmp_path, monkeypatch):
+    """Interactive install without --client should prompt and honor selection."""
+    monkeypatch.chdir(tmp_path)
+
+    class _TTYStdin:
+        def isatty(self):
+            return True
+
+    monkeypatch.setattr(click, "get_text_stream", lambda name: _TTYStdin())
+
+    result = runner.invoke(cli, ["skills", "install", "plan-task"], input="2\n")
+
+    assert result.exit_code == 0
+    assert "Select target coding CLI:" in result.output
+    assert (tmp_path / ".claude/skills/plan-task/SKILL.md").exists()
+    assert not (tmp_path / ".agents/skills/plan-task/SKILL.md").exists()
 
 
 def test_plan_ingest_template_contains_out_of_order_assignment(
@@ -175,9 +194,7 @@ def test_codex_home_override_is_respected(runner, tmp_path, monkeypatch):
     )
 
     assert result.exit_code == 0
-    assert (
-        tmp_path / "legacy-codex-home/skills/plan-task/SKILL.md"
-    ).exists()
+    assert (tmp_path / "legacy-codex-home/skills/plan-task/SKILL.md").exists()
 
 
 def test_conflict_requires_force(runner, tmp_path, monkeypatch):
@@ -252,7 +269,8 @@ def test_opencode_commands_use_opencode_frontmatter(runner, tmp_path, monkeypatc
     monkeypatch.chdir(tmp_path)
 
     result = runner.invoke(
-        cli, ["skills", "install", "plan-task", "--client=opencode", "--artifact=commands"]
+        cli,
+        ["skills", "install", "plan-task", "--client=opencode", "--artifact=commands"],
     )
 
     assert result.exit_code == 0
@@ -267,7 +285,8 @@ def test_claude_skills_omit_codex_metadata_block(runner, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
 
     result = runner.invoke(
-        cli, ["skills", "install", "plan-ingest", "--client=claude", "--artifact=skills"]
+        cli,
+        ["skills", "install", "plan-ingest", "--client=claude", "--artifact=skills"],
     )
 
     assert result.exit_code == 0

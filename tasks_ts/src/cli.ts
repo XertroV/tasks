@@ -3,6 +3,7 @@ import pc from "picocolors";
 import { dirname, join } from "node:path";
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
+import { createInterface } from "node:readline/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
 import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
@@ -1461,6 +1462,31 @@ function commandTemplate(name: string): string {
   return `---\ndescription: ${name}\n---\n${name}\n`;
 }
 
+async function promptClientSelection(): Promise<string> {
+  if (!process.stdin.isTTY || !process.stdout.isTTY) return "common";
+
+  console.log("Select target coding CLI:");
+  console.log("  1) codex");
+  console.log("  2) claude");
+  console.log("  3) opencode");
+  console.log("  4) common (all)");
+
+  const rl = createInterface({ input: process.stdin, output: process.stdout });
+  const answer = (await rl.question("Choose [1-4]: ")).trim().toLowerCase();
+  rl.close();
+
+  const mapped: Record<string, string> = {
+    "1": "codex",
+    "2": "claude",
+    "3": "opencode",
+    "4": "common",
+  };
+
+  const selected = mapped[answer] ?? answer;
+  if (["codex", "claude", "opencode", "common"].includes(selected)) return selected;
+  throw new Error("Invalid client selection. Choose 1-4 or codex|claude|opencode|common.");
+}
+
 async function cmdSkills(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
@@ -1473,7 +1499,8 @@ async function cmdSkills(args: string[]): Promise<void> {
   }
   const skillNames = rest.filter((a) => !a.startsWith("-"));
   const scope = parseOpt(rest, "--scope") ?? "local";
-  const client = parseOpt(rest, "--client") ?? "common";
+  const parsedClient = parseOpt(rest, "--client");
+  const client = parsedClient ?? (outputJson ? "common" : await promptClientSelection());
   const artifact = parseOpt(rest, "--artifact") ?? "skills";
   const outputDir = parseOpt(rest, "--dir");
   const force = parseFlag(rest, "--force");

@@ -48,6 +48,7 @@ def skills():
 
 
 @skills.command("install")
+@click.pass_context
 @click.argument("skill_names", nargs=-1)
 @click.option(
     "--scope",
@@ -81,6 +82,7 @@ def skills():
 @click.option("--dry-run", is_flag=True, help="Show what would be written.")
 @click.option("--json", "output_json", is_flag=True, help="Print JSON summary output.")
 def install_skills(
+    ctx: click.Context,
     skill_names: tuple[str, ...],
     scope: str,
     client_name: str,
@@ -92,6 +94,9 @@ def install_skills(
 ):
     """Install built-in skills (`plan-task`, `plan-ingest`, `start-tasks`) for supported clients."""
     try:
+        if _should_prompt_for_client(ctx):
+            client_name = _prompt_for_client()
+
         selected_skills = _resolve_skills(skill_names)
         config = load_config()
 
@@ -118,7 +123,8 @@ def install_skills(
         if conflicting_ops and not force and not dry_run:
             if not writable_ops:
                 preview = "\n".join(
-                    f"  - {op.path}" for op in sorted(conflicting_ops, key=lambda op: str(op.path))
+                    f"  - {op.path}"
+                    for op in sorted(conflicting_ops, key=lambda op: str(op.path))
                 )
                 raise click.ClickException(
                     "Refusing to overwrite existing files (use --force):\n" + preview
@@ -199,6 +205,36 @@ def _resolve_skills(skill_names: tuple[str, ...]) -> list[str]:
         )
 
     return selected
+
+
+def _should_prompt_for_client(ctx: click.Context) -> bool:
+    """Return True when interactive install should ask for target client."""
+    return (
+        ctx.get_parameter_source("client_name") == click.core.ParameterSource.DEFAULT
+        and ctx.get_parameter_source("output_json")
+        != click.core.ParameterSource.COMMANDLINE
+        and click.get_text_stream("stdin").isatty()
+    )
+
+
+def _prompt_for_client() -> str:
+    """Prompt interactively for client selection."""
+    choices = {"1": "codex", "2": "claude", "3": "opencode", "4": "common"}
+    click.echo("Select target coding CLI:")
+    click.echo("  1) codex")
+    click.echo("  2) claude")
+    click.echo("  3) opencode")
+    click.echo("  4) common (all)")
+    selected = click.prompt("Choose [1-4]", default="4", show_default=False)
+    selected = selected.strip().lower()
+
+    if selected in choices:
+        return choices[selected]
+    if selected in VALID_CLIENTS:
+        return selected
+    raise click.ClickException(
+        "Invalid client selection. Choose 1-4 or one of: codex, claude, opencode, common."
+    )
 
 
 def _resolve_clients(client_name: str) -> list[str]:
@@ -320,7 +356,9 @@ def _resolve_target_root(
     raise ValueError(f"Unknown client: {client}")
 
 
-def _configured_path(config: dict, *, client: str, scope: str, artifact: str) -> Path | None:
+def _configured_path(
+    config: dict, *, client: str, scope: str, artifact: str
+) -> Path | None:
     """Read path override from config."""
     path_cfg = config.get("skills", {}).get("paths", {})
     key = f"{client}_{scope}_{artifact}"
@@ -353,9 +391,7 @@ def _render_skill_files(
 
     if skill_name == "plan-ingest":
         return {
-            "SKILL.md": _plan_ingest_skill(
-                client=client, max_subagents=max_subagents
-            ),
+            "SKILL.md": _plan_ingest_skill(client=client, max_subagents=max_subagents),
             "references/decomposition-rubric.md": _decomposition_rubric(),
         }
 
@@ -384,9 +420,7 @@ def _print_install_summary(result: dict) -> None:
     if result["dry_run"]:
         console.print("[cyan]Dry run: no files written.[/]")
     else:
-        console.print(
-            f"[green]Installed {result['written_count']} file(s).[/]"
-        )
+        console.print(f"[green]Installed {result['written_count']} file(s).[/]")
 
     for warning in result["warnings"]:
         console.print(f"[yellow]Warning:[/] {warning}")
@@ -404,7 +438,9 @@ def _print_install_summary(result: dict) -> None:
     console.print()
 
 
-def _skill_frontmatter(name: str, description: str, short_description: str | None = None) -> str:
+def _skill_frontmatter(
+    name: str, description: str, short_description: str | None = None
+) -> str:
     """Build YAML frontmatter for skill files."""
     lines = ["---", f"name: {name}", f"description: {json.dumps(description)}"]
     if short_description:
