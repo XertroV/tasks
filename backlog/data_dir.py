@@ -30,6 +30,7 @@ KNOWN_COMMANDS = [
     "add-epic",
     "add-milestone",
     "add-phase",
+    "move",
     "idea",
     "bug",
     "blocked",

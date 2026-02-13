@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -504,6 +504,62 @@ tags: []
     p = run(["add-phase", "--title", "New Phase"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created phase:");
+  });
+
+  test("move task to different epic renumbers ID", () => {
+    root = setupFixture();
+    const tasksRoot = join(root, ".tasks");
+    mkdirSync(join(tasksRoot, "01-phase", "01-ms", "02-target-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksRoot, "01-phase", "01-ms", "index.yaml"),
+      [
+        "epics:",
+        "  - id: E1",
+        "    name: E",
+        "    path: 01-epic",
+        "  - id: E2",
+        "    name: Target",
+        "    path: 02-target-epic",
+        "",
+      ].join("\n"),
+    );
+    writeFileSync(join(tasksRoot, "01-phase", "01-ms", "02-target-epic", "index.yaml"), "id: P1.M1.E2\nname: Target\ntasks: []\n");
+
+    const p = run(["move", "P1.M1.E1.T001", "--to", "P1.M1.E2"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("New ID: P1.M1.E2.T001");
+
+    const movedPath = join(tasksRoot, "01-phase", "01-ms", "02-target-epic", "T001-a.todo");
+    expect(existsSync(movedPath)).toBeTrue();
+    expect(readFileSync(movedPath, "utf8")).toContain("id: P1.M1.E2.T001");
+  });
+
+  test("move epic to different milestone remaps descendant task IDs", () => {
+    root = setupFixture();
+    const tasksRoot = join(root, ".tasks");
+    mkdirSync(join(tasksRoot, "01-phase", "02-ms"), { recursive: true });
+    writeFileSync(
+      join(tasksRoot, "01-phase", "index.yaml"),
+      [
+        "milestones:",
+        "  - id: M1",
+        "    name: M",
+        "    path: 01-ms",
+        "  - id: M2",
+        "    name: M2",
+        "    path: 02-ms",
+        "",
+      ].join("\n"),
+    );
+    writeFileSync(join(tasksRoot, "01-phase", "02-ms", "index.yaml"), "epics: []\n");
+
+    const p = run(["move", "P1.M1.E1", "--to", "P1.M2"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("New ID: P1.M2.E1");
+
+    const movedTaskPath = join(tasksRoot, "01-phase", "02-ms", "01-e", "T001-a.todo");
+    expect(existsSync(movedTaskPath)).toBeTrue();
+    expect(readFileSync(movedTaskPath, "utf8")).toContain("id: P1.M2.E1.T001");
   });
 
   test("idea command creates planning intake under .tasks/ideas", () => {

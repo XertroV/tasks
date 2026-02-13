@@ -134,6 +134,7 @@ The engine builds a dependency graph across all tasks, computes a CCPM-style cri
 |---|---|
 | `add EPIC_ID` | Add task to an epic |
 | `add-epic`, `add-milestone`, `add-phase` | Create higher-level items |
+| `move SOURCE_ID --to DEST_ID` | Move task->epic, epic->milestone, or milestone->phase (with renumbering) |
 | `bug` | Quick bug report |
 | `idea "..."` | Capture a feature idea for later decomposition |
 | `init` | Initialize a new `.backlog/` project |

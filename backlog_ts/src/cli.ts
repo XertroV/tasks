@@ -93,6 +93,7 @@ Commands:
   add-epic        Add a new epic to a milestone
   add-milestone   Add a new milestone to a phase
   add-phase       Add a new phase to the project
+  move            Move task/epic/milestone to new parent
   session         Manage agent sessions
   data            Export/summarize task data
   report          Generate reports (progress, velocity, estimates) [alias: r]
@@ -1635,6 +1636,19 @@ async function cmdAddPhase(args: string[]): Promise<void> {
   console.log(`Created phase: ${phaseId}`);
 }
 
+async function cmdMove(args: string[]): Promise<void> {
+  const sourceId = args.find((a) => !a.startsWith("-"));
+  if (!sourceId) textError("move requires SOURCE_ID");
+  const destId = parseOpt(args, "--to");
+  if (!destId) textError("move requires --to DEST_ID");
+
+  const loader = new TaskLoader();
+  const result = await loader.moveItem(sourceId, destId);
+  console.log(`Moved: ${result.source_id}`);
+  console.log(`To: ${result.dest_id}`);
+  console.log(`New ID: ${result.new_id}`);
+}
+
 type InstallOp = { client: string; artifact: string; path: string; action?: string };
 
 function resolveSkills(names: string[]): string[] {
@@ -2212,6 +2226,9 @@ async function main(): Promise<void> {
       return;
     case "add-phase":
       await cmdAddPhase(rest);
+      return;
+    case "move":
+      await cmdMove(rest);
       return;
     case "bug":
       await cmdBug(rest);

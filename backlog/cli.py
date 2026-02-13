@@ -2122,6 +2122,22 @@ def agents(profile):
 # ============================================================================
 
 
+@cli.command("move")
+@click.argument("source_id")
+@click.option("--to", "dest_id", required=True, help="Destination parent ID")
+def move_item(source_id, dest_id):
+    """Move task->epic, epic->milestone, or milestone->phase."""
+    try:
+        loader = TaskLoader()
+        result = loader.move_item(source_id, dest_id)
+        console.print(f"\n[green]✓ Moved:[/] {result['source_id']}")
+        console.print(f"  To:      {result['dest_id']}")
+        console.print(f"  New ID:  {result['new_id']}")
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
 @cli.command()
 @click.argument("epic_id")
 @click.option("--title", "-T", required=True, help="Task title")

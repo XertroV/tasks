@@ -7,6 +7,7 @@ from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from click.testing import CliRunner
 from backlog.cli import cli
+from backlog.loader import TaskLoader
 
 
 @pytest.fixture
@@ -85,6 +86,71 @@ def tmp_tasks_dir(tmp_path, monkeypatch):
     # Change to temp directory
     monkeypatch.chdir(tmp_path)
 
+    return tmp_path
+
+
+@pytest.fixture
+def tmp_tasks_dir_short_ids(tmp_path, monkeypatch):
+    """Create a temporary .tasks directory using short IDs in index files."""
+    tasks_dir = tmp_path / ".tasks"
+    tasks_dir.mkdir()
+
+    root_index = {
+        "project": "Test Project",
+        "description": "Test project for CLI tests",
+        "timeline_weeks": 1,
+        "phases": [
+            {
+                "id": "P1",
+                "name": "Test Phase",
+                "path": "01-test-phase",
+                "status": "in_progress",
+            }
+        ],
+    }
+    with open(tasks_dir / "index.yaml", "w") as f:
+        yaml.dump(root_index, f)
+
+    phase_dir = tasks_dir / "01-test-phase"
+    phase_dir.mkdir()
+    with open(phase_dir / "index.yaml", "w") as f:
+        yaml.dump(
+            {
+                "milestones": [
+                    {
+                        "id": "M1",
+                        "name": "Test Milestone",
+                        "path": "01-test-milestone",
+                        "status": "in_progress",
+                    }
+                ]
+            },
+            f,
+        )
+
+    milestone_dir = phase_dir / "01-test-milestone"
+    milestone_dir.mkdir()
+    with open(milestone_dir / "index.yaml", "w") as f:
+        yaml.dump(
+            {
+                "epics": [
+                    {
+                        "id": "E1",
+                        "name": "Test Epic",
+                        "path": "01-test-epic",
+                        "status": "in_progress",
+                    }
+                ]
+            },
+            f,
+        )
+
+    epic_dir = milestone_dir / "01-test-epic"
+    epic_dir.mkdir()
+    with open(epic_dir / "index.yaml", "w") as f:
+        yaml.dump({"tasks": []}, f)
+
+    monkeypatch.chdir(tmp_path)
     return tmp_path
 
 
@@ -1177,3 +1243,122 @@ def test_show_idea_non_pending_hides_instructions(runner, tmp_tasks_dir):
     result = runner.invoke(cli, ["show", "I001"])
     assert result.exit_code == 0
     assert "Instructions:" not in result.output
+
+
+def test_move_task_to_different_epic_renumbers_id(runner, tmp_tasks_dir_short_ids):
+    """move should relocate a task to destination epic with renumbered ID."""
+    tasks_root = tmp_tasks_dir_short_ids / ".tasks"
+    target_epic_dir = (
+        tasks_root / "01-test-phase" / "01-test-milestone" / "02-target-epic"
+    )
+    target_epic_dir.mkdir(parents=True, exist_ok=True)
+
+    # Add a second epic under the milestone
+    milestone_index_path = (
+        tasks_root / "01-test-phase" / "01-test-milestone" / "index.yaml"
+    )
+    milestone_index = yaml.safe_load(milestone_index_path.read_text())
+    milestone_index.setdefault("epics", []).append(
+        {
+            "id": "E2",
+            "name": "Target Epic",
+            "path": "02-target-epic",
+            "status": "pending",
+        }
+    )
+    milestone_index_path.write_text(yaml.dump(milestone_index))
+
+    # Create destination epic index
+    (target_epic_dir / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "id": "P1.M1.E2",
+                "name": "Target Epic",
+                "tasks": [],
+            }
+        )
+    )
+
+    # Existing task in source epic
+    create_task_file(
+        tmp_tasks_dir_short_ids, "P1.M1.E1.T001", "Move This Task", status="pending"
+    )
+
+    tree_before = TaskLoader().load()
+    target_epic_id = None
+    for p in tree_before.phases:
+        for m in p.milestones:
+            for e in m.epics:
+                if e.path == "02-target-epic":
+                    target_epic_id = e.id
+                    break
+    assert target_epic_id is not None
+
+    result = runner.invoke(cli, ["move", "P1.M1.E1.T001", "--to", target_epic_id])
+
+    assert result.exit_code == 0
+    assert "Moved:" in result.output
+    assert "New ID:" in result.output
+    assert f"{target_epic_id}.T001" in result.output
+
+    moved_task = target_epic_dir / "T001-move-this-task.todo"
+    assert moved_task.exists()
+    assert f"id: {target_epic_id}.T001" in moved_task.read_text()
+
+
+def test_move_epic_to_different_milestone_remaps_descendant_ids(
+    runner, tmp_tasks_dir_short_ids
+):
+    """move should relocate epic and remap child task IDs to new milestone prefix."""
+    tasks_root = tmp_tasks_dir_short_ids / ".tasks"
+    phase_dir = tasks_root / "01-test-phase"
+    target_ms_dir = phase_dir / "02-target-ms"
+    target_ms_dir.mkdir(parents=True, exist_ok=True)
+
+    # Add second milestone under phase
+    phase_index_path = phase_dir / "index.yaml"
+    phase_index = yaml.safe_load(phase_index_path.read_text())
+    phase_index.setdefault("milestones", []).append(
+        {
+            "id": "M2",
+            "name": "Target Milestone",
+            "path": "02-target-ms",
+            "status": "pending",
+        }
+    )
+    phase_index_path.write_text(yaml.dump(phase_index))
+
+    # Create destination milestone index
+    (target_ms_dir / "index.yaml").write_text(yaml.dump({"epics": []}))
+
+    create_task_file(tmp_tasks_dir_short_ids, "P1.M1.E1.T001", "A", status="pending")
+
+    tree_before = TaskLoader().load()
+    target_ms_id = None
+    for p in tree_before.phases:
+        for m in p.milestones:
+            if m.path == "02-target-ms":
+                target_ms_id = m.id
+                break
+    assert target_ms_id is not None
+
+    result = runner.invoke(cli, ["move", "P1.M1.E1", "--to", target_ms_id])
+
+    assert result.exit_code == 0
+    assert "Moved:" in result.output
+    assert "New ID:" in result.output
+    assert f"{target_ms_id}.E1" in result.output
+
+    moved_task = target_ms_dir / "01-test-epic" / "T001-test-task.todo"
+    assert moved_task.exists()
+    assert f"id: {target_ms_id}.E1.T001" in moved_task.read_text()
+
+
+def test_move_rejects_invalid_source_destination_pair(runner, tmp_tasks_dir):
+    """move should reject unsupported hierarchy moves."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Invalid Move", status="pending")
+
+    # Task cannot move directly to phase
+    result = runner.invoke(cli, ["move", "P1.M1.E1.T001", "--to", "P1"])
+    assert result.exit_code != 0
+    assert "Invalid move" in result.output

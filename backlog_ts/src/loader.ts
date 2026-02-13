@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { parse, stringify } from "yaml";
 import { Complexity, Priority, Status, TaskPath, type Epic, type Milestone, type Phase, type Task, type TaskTree } from "./models";
@@ -435,5 +435,255 @@ ${data.title}
       throw new Error(`YAML file invalid: ${path}`);
     }
     return parsed as AnyRec;
+  }
+
+  private leafId(fullId: string): string {
+    return fullId.split(".").at(-1) ?? fullId;
+  }
+
+  private replaceMappedValues(value: unknown, remap: Record<string, string>): unknown {
+    if (typeof value === "string") return remap[value] ?? value;
+    if (Array.isArray(value)) return value.map((v) => this.replaceMappedValues(v, remap));
+    if (value && typeof value === "object") {
+      const out: AnyRec = {};
+      for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+        out[k] = this.replaceMappedValues(v, remap);
+      }
+      return out;
+    }
+    return value;
+  }
+
+  private async applyIdRemap(remap: Record<string, string>): Promise<void> {
+    if (Object.keys(remap).length === 0) return;
+
+    const root = this.mustYaml(join(this.tasksDir, "index.yaml"));
+    await this.writeYaml(join(this.tasksDir, "index.yaml"), this.replaceMappedValues(root, remap) as AnyRec);
+
+    const tree = await this.load();
+    for (const phase of tree.phases) {
+      const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
+      if (existsSync(phaseIndexPath)) {
+        const data = this.mustYaml(phaseIndexPath);
+        await this.writeYaml(phaseIndexPath, this.replaceMappedValues(data, remap) as AnyRec);
+      }
+      for (const milestone of phase.milestones) {
+        const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+        if (existsSync(msIndexPath)) {
+          const data = this.mustYaml(msIndexPath);
+          await this.writeYaml(msIndexPath, this.replaceMappedValues(data, remap) as AnyRec);
+        }
+        for (const epic of milestone.epics) {
+          const epicIndexPath = join(this.tasksDir, phase.path, milestone.path, epic.path, "index.yaml");
+          if (existsSync(epicIndexPath)) {
+            const data = this.mustYaml(epicIndexPath);
+            await this.writeYaml(epicIndexPath, this.replaceMappedValues(data, remap) as AnyRec);
+          }
+          for (const task of epic.tasks) {
+            const taskPath = join(this.tasksDir, task.file);
+            if (!existsSync(taskPath)) continue;
+            const parsed = parseTodo(await readFile(taskPath, "utf8"));
+            const fm = this.replaceMappedValues(parsed.frontmatter, remap) as AnyRec;
+            await writeFile(taskPath, `---\n${stringify(fm)}---\n${parsed.body}`);
+          }
+        }
+      }
+    }
+
+    for (const auxDir of ["bugs", "ideas"]) {
+      const idxPath = join(this.tasksDir, auxDir, "index.yaml");
+      if (existsSync(idxPath)) {
+        const idx = this.mustYaml(idxPath);
+        await this.writeYaml(idxPath, this.replaceMappedValues(idx, remap) as AnyRec);
+      }
+    }
+
+    const refreshed = await this.load();
+    for (const aux of [...(refreshed.bugs ?? []), ...(refreshed.ideas ?? [])]) {
+      const filePath = join(this.tasksDir, aux.file);
+      if (!existsSync(filePath)) continue;
+      const parsed = parseTodo(await readFile(filePath, "utf8"));
+      const fm = this.replaceMappedValues(parsed.frontmatter, remap) as AnyRec;
+      await writeFile(filePath, `---\n${stringify(fm)}---\n${parsed.body}`);
+    }
+
+    for (const runtime of [".context.yaml", ".sessions.yaml"]) {
+      const path = join(this.tasksDir, runtime);
+      if (!existsSync(path)) continue;
+      const data = this.mustYaml(path);
+      await this.writeYaml(path, this.replaceMappedValues(data, remap) as AnyRec);
+    }
+  }
+
+  async moveItem(sourceId: string, destId: string): Promise<{ source_id: string; dest_id: string; new_id: string; remapped_ids: Record<string, string> }> {
+    const src = TaskPath.parse(sourceId);
+    const dst = TaskPath.parse(destId);
+    const tree = await this.load();
+    const remap: Record<string, string> = {};
+
+    if (src.isTask && dst.isEpic) {
+      const srcTask = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks))).find((t) => t.id === sourceId);
+      if (!srcTask) throw new Error(`Task not found: ${sourceId}`);
+      const dstEpic = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => e.id === destId);
+      if (!dstEpic) throw new Error(`Epic not found: ${destId}`);
+      const srcEpic = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => e.id === srcTask.epicId);
+      const srcMilestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === srcTask.milestoneId);
+      const srcPhase = tree.phases.find((p) => p.id === srcTask.phaseId);
+      const dstMilestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === dstEpic.milestoneId);
+      const dstPhase = tree.phases.find((p) => p.id === dstEpic.phaseId);
+      if (!srcEpic || !srcMilestone || !srcPhase || !dstMilestone || !dstPhase) throw new Error("Could not resolve source/destination hierarchy paths");
+
+      const srcEpicDir = join(this.tasksDir, srcPhase.path, srcMilestone.path, srcEpic.path);
+      const dstEpicDir = join(this.tasksDir, dstPhase.path, dstMilestone.path, dstEpic.path);
+      const oldFilename = srcTask.file.split("/").at(-1)!;
+      const oldFile = join(srcEpicDir, oldFilename);
+      if (!existsSync(oldFile)) throw new Error(`Task file not found: ${oldFile}`);
+
+      const dstEpicIndex = this.mustYaml(join(dstEpicDir, "index.yaml"));
+      const dstTasks = ((dstEpicIndex.tasks as AnyRec[]) ?? []).slice();
+      const nums = dstTasks.map((t) => Number(String(t.id ?? "").match(/T(\d+)/)?.[1] ?? "0")).filter((n) => Number.isFinite(n));
+      const next = (nums.length ? Math.max(...nums) : 0) + 1;
+      const newShort = `T${String(next).padStart(3, "0")}`;
+      const newId = `${dstEpic.id}.${newShort}`;
+      const newFilename = `${newShort}-${slugify(srcTask.title)}.todo`;
+      await rename(oldFile, join(dstEpicDir, newFilename));
+
+      const srcEpicIndexPath = join(srcEpicDir, "index.yaml");
+      const srcEpicIndex = this.mustYaml(srcEpicIndexPath);
+      const oldLeaf = this.leafId(sourceId);
+      srcEpicIndex.tasks = (((srcEpicIndex.tasks as AnyRec[]) ?? [])).filter((entry) => {
+        const id = String(entry.id ?? "");
+        const file = String(entry.file ?? entry.path ?? "");
+        return !(id === sourceId || this.leafId(id) === oldLeaf || file === oldFilename);
+      });
+      await this.writeYaml(srcEpicIndexPath, srcEpicIndex);
+
+      dstTasks.push({
+        id: newShort,
+        file: newFilename,
+        title: srcTask.title,
+        status: srcTask.status,
+        estimate_hours: srcTask.estimateHours,
+        complexity: srcTask.complexity,
+        priority: srcTask.priority,
+        depends_on: srcTask.dependsOn,
+      });
+      dstEpicIndex.tasks = dstTasks;
+      await this.writeYaml(join(dstEpicDir, "index.yaml"), dstEpicIndex);
+
+      remap[sourceId] = newId;
+    } else if (src.isEpic && dst.isMilestone) {
+      const srcEpic = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => e.id === sourceId);
+      if (!srcEpic) throw new Error(`Epic not found: ${sourceId}`);
+      const dstMilestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === destId);
+      if (!dstMilestone) throw new Error(`Milestone not found: ${destId}`);
+      const srcMilestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === srcEpic.milestoneId);
+      const srcPhase = tree.phases.find((p) => p.id === srcEpic.phaseId);
+      const dstPhase = tree.phases.find((p) => p.id === dstMilestone.phaseId);
+      if (!srcMilestone || !srcPhase || !dstPhase) throw new Error("Could not resolve source/destination hierarchy paths");
+
+      const srcMsDir = join(this.tasksDir, srcPhase.path, srcMilestone.path);
+      const dstMsDir = join(this.tasksDir, dstPhase.path, dstMilestone.path);
+      const srcEpicDir = join(srcMsDir, srcEpic.path);
+
+      const dstMsIndex = this.mustYaml(join(dstMsDir, "index.yaml"));
+      const dstEpics = ((dstMsIndex.epics as AnyRec[]) ?? []).slice();
+      const nums = dstEpics.map((e) => Number(String(e.id ?? "").match(/E(\d+)/)?.[1] ?? "0")).filter((n) => Number.isFinite(n));
+      const next = (nums.length ? Math.max(...nums) : 0) + 1;
+      const newShort = `E${next}`;
+      const newEpicId = `${dstMilestone.id}.${newShort}`;
+      const newDirName = `${String(next).padStart(2, "0")}-${slugify(srcEpic.name)}`;
+      await rename(srcEpicDir, join(dstMsDir, newDirName));
+
+      const srcMsIndexPath = join(srcMsDir, "index.yaml");
+      const srcMsIndex = this.mustYaml(srcMsIndexPath);
+      const oldLeaf = this.leafId(sourceId);
+      srcMsIndex.epics = (((srcMsIndex.epics as AnyRec[]) ?? [])).filter((entry) => {
+        const id = String(entry.id ?? "");
+        const path = String(entry.path ?? "");
+        return !(id === sourceId || this.leafId(id) === oldLeaf || path === srcEpic.path);
+      });
+      await this.writeYaml(srcMsIndexPath, srcMsIndex);
+
+      dstEpics.push({
+        id: newShort,
+        name: srcEpic.name,
+        path: newDirName,
+        status: srcEpic.status,
+        estimate_hours: srcEpic.estimateHours,
+        complexity: srcEpic.complexity,
+        depends_on: srcEpic.dependsOn,
+        description: srcEpic.description ?? "",
+      });
+      dstMsIndex.epics = dstEpics;
+      await this.writeYaml(join(dstMsDir, "index.yaml"), dstMsIndex);
+
+      remap[sourceId] = newEpicId;
+      for (const t of srcEpic.tasks) {
+        remap[t.id] = t.id.replace(`${sourceId}.`, `${newEpicId}.`);
+      }
+    } else if (src.isMilestone && dst.isPhase) {
+      const srcMilestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === sourceId);
+      if (!srcMilestone) throw new Error(`Milestone not found: ${sourceId}`);
+      const dstPhase = tree.phases.find((p) => p.id === destId);
+      if (!dstPhase) throw new Error(`Phase not found: ${destId}`);
+      const srcPhase = tree.phases.find((p) => p.id === srcMilestone.phaseId);
+      if (!srcPhase) throw new Error("Could not resolve source phase");
+
+      const srcPhaseDir = join(this.tasksDir, srcPhase.path);
+      const dstPhaseDir = join(this.tasksDir, dstPhase.path);
+      const srcMsDir = join(srcPhaseDir, srcMilestone.path);
+
+      const dstPhaseIndex = this.mustYaml(join(dstPhaseDir, "index.yaml"));
+      const dstMilestones = ((dstPhaseIndex.milestones as AnyRec[]) ?? []).slice();
+      const nums = dstMilestones.map((m) => Number(String(m.id ?? "").match(/M(\d+)/)?.[1] ?? "0")).filter((n) => Number.isFinite(n));
+      const next = (nums.length ? Math.max(...nums) : 0) + 1;
+      const newShort = `M${next}`;
+      const newMsId = `${dstPhase.id}.${newShort}`;
+      const newDirName = `${String(next).padStart(2, "0")}-${slugify(srcMilestone.name)}`;
+      await rename(srcMsDir, join(dstPhaseDir, newDirName));
+
+      const srcPhaseIndexPath = join(srcPhaseDir, "index.yaml");
+      const srcPhaseIndex = this.mustYaml(srcPhaseIndexPath);
+      const oldLeaf = this.leafId(sourceId);
+      srcPhaseIndex.milestones = (((srcPhaseIndex.milestones as AnyRec[]) ?? [])).filter((entry) => {
+        const id = String(entry.id ?? "");
+        const path = String(entry.path ?? "");
+        return !(id === sourceId || this.leafId(id) === oldLeaf || path === srcMilestone.path);
+      });
+      await this.writeYaml(srcPhaseIndexPath, srcPhaseIndex);
+
+      dstMilestones.push({
+        id: newShort,
+        name: srcMilestone.name,
+        path: newDirName,
+        status: srcMilestone.status,
+        estimate_hours: srcMilestone.estimateHours,
+        complexity: srcMilestone.complexity,
+        depends_on: srcMilestone.dependsOn,
+        description: srcMilestone.description ?? "",
+      });
+      dstPhaseIndex.milestones = dstMilestones;
+      await this.writeYaml(join(dstPhaseDir, "index.yaml"), dstPhaseIndex);
+
+      remap[sourceId] = newMsId;
+      for (const epic of srcMilestone.epics) {
+        const newEpicId = epic.id.replace(`${sourceId}.`, `${newMsId}.`);
+        remap[epic.id] = newEpicId;
+        for (const task of epic.tasks) {
+          remap[task.id] = task.id.replace(`${epic.id}.`, `${newEpicId}.`);
+        }
+      }
+    } else {
+      throw new Error("Invalid move: supported moves are task->epic, epic->milestone, milestone->phase");
+    }
+
+    await this.applyIdRemap(remap);
+    return {
+      source_id: sourceId,
+      dest_id: destId,
+      new_id: remap[sourceId] ?? sourceId,
+      remapped_ids: remap,
+    };
   }
 }

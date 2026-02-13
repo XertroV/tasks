@@ -278,3 +278,161 @@ def test_loader_accepts_completed_status_alias(tmp_path, monkeypatch):
 
     assert task is not None
     assert task.status.value == "done"
+
+
+def test_move_task_to_another_epic_renumbers_and_updates_ids(tmp_path, monkeypatch):
+    """Moving a task to another epic renumbers and remaps ID references."""
+    tasks_dir = tmp_path / ".tasks"
+    src_epic_dir = tasks_dir / "01-phase" / "01-milestone" / "01-epic"
+    dst_epic_dir = tasks_dir / "01-phase" / "01-milestone" / "02-dst-epic"
+    src_epic_dir.mkdir(parents=True)
+    dst_epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "project": "Move Test",
+                "phases": [{"id": "P1", "name": "Phase", "path": "01-phase"}],
+            },
+            sort_keys=False,
+        )
+    )
+    (tasks_dir / "01-phase" / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "milestones": [{"id": "M1", "name": "M", "path": "01-milestone"}],
+            },
+            sort_keys=False,
+        )
+    )
+    (tasks_dir / "01-phase" / "01-milestone" / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "epics": [
+                    {"id": "E1", "name": "Source", "path": "01-epic"},
+                    {"id": "E2", "name": "Dest", "path": "02-dst-epic"},
+                ]
+            },
+            sort_keys=False,
+        )
+    )
+    (src_epic_dir / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "id": "P1.M1.E1",
+                "name": "Source",
+                "tasks": [
+                    {
+                        "id": "T001",
+                        "file": "T001-move-me.todo",
+                        "title": "Move Me",
+                        "status": "pending",
+                        "estimate_hours": 1,
+                        "complexity": "low",
+                        "priority": "medium",
+                        "depends_on": [],
+                    }
+                ],
+            },
+            sort_keys=False,
+        )
+    )
+    (dst_epic_dir / "index.yaml").write_text(
+        yaml.dump({"id": "P1.M1.E2", "name": "Dest", "tasks": []}, sort_keys=False)
+    )
+    (src_epic_dir / "T001-move-me.todo").write_text(
+        "---\n"
+        "id: P1.M1.E1.T001\n"
+        "title: Move Me\n"
+        "status: pending\n"
+        "estimate_hours: 1\n"
+        "complexity: low\n"
+        "priority: medium\n"
+        "depends_on: []\n"
+        "tags: []\n"
+        "---\n\n"
+        "# Move\n"
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader()
+    result = loader.move_item("P1.M1.E1.T001", "P1.M1.E2")
+
+    assert result["new_id"] == "P1.M1.E2.T001"
+    assert not (src_epic_dir / "T001-move-me.todo").exists()
+    assert (dst_epic_dir / "T001-move-me.todo").exists()
+
+    moved_text = (dst_epic_dir / "T001-move-me.todo").read_text()
+    assert "id: P1.M1.E2.T001" in moved_text
+
+
+def test_move_epic_to_another_milestone_remaps_descendant_task_ids(
+    tmp_path, monkeypatch
+):
+    """Moving an epic should remap epic and task IDs."""
+    tasks_dir = tmp_path / ".tasks"
+    src_epic_dir = tasks_dir / "01-phase" / "01-ms" / "01-epic"
+    dst_ms_dir = tasks_dir / "01-phase" / "02-ms"
+    src_epic_dir.mkdir(parents=True)
+    dst_ms_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "project": "Move Epic Test",
+                "phases": [{"id": "P1", "name": "Phase", "path": "01-phase"}],
+            },
+            sort_keys=False,
+        )
+    )
+    (tasks_dir / "01-phase" / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "milestones": [
+                    {"id": "M1", "name": "MS1", "path": "01-ms"},
+                    {"id": "M2", "name": "MS2", "path": "02-ms"},
+                ]
+            },
+            sort_keys=False,
+        )
+    )
+    (tasks_dir / "01-phase" / "01-ms" / "index.yaml").write_text(
+        yaml.dump(
+            {"epics": [{"id": "E1", "name": "Source Epic", "path": "01-epic"}]},
+            sort_keys=False,
+        )
+    )
+    (dst_ms_dir / "index.yaml").write_text(yaml.dump({"epics": []}, sort_keys=False))
+    (src_epic_dir / "index.yaml").write_text(
+        yaml.dump(
+            {
+                "id": "P1.M1.E1",
+                "name": "Source Epic",
+                "tasks": [{"id": "T001", "file": "T001-child.todo", "title": "Child"}],
+            },
+            sort_keys=False,
+        )
+    )
+    (src_epic_dir / "T001-child.todo").write_text(
+        "---\n"
+        "id: P1.M1.E1.T001\n"
+        "title: Child\n"
+        "status: pending\n"
+        "estimate_hours: 1\n"
+        "complexity: low\n"
+        "priority: medium\n"
+        "depends_on: []\n"
+        "tags: []\n"
+        "---\n\n"
+        "# Child\n"
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader()
+    result = loader.move_item("P1.M1.E1", "P1.M2")
+
+    assert result["new_id"] == "P1.M2.E1"
+    moved_epic_dir = dst_ms_dir / "01-source-epic"
+    assert moved_epic_dir.exists()
+    moved_task_text = (moved_epic_dir / "T001-child.todo").read_text()
+    assert "id: P1.M2.E1.T001" in moved_task_text

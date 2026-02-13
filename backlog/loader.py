@@ -2,6 +2,7 @@
 
 import os
 import re
+import shutil
 import yaml
 from pathlib import Path
 from datetime import datetime
@@ -1112,7 +1113,10 @@ TODO: Describe actual behavior
             return None
 
         # Find the milestone
-        milestone = tree.find_milestone(epic_path.milestone_id)
+        milestone_id = epic_path.milestone_id
+        if not milestone_id:
+            return None
+        milestone = tree.find_milestone(milestone_id)
         if not milestone:
             return None
 
@@ -1373,3 +1377,333 @@ TODO: Describe actual behavior
         # Write back
         with open(index_path, "w") as f:
             yaml.dump(index, f, default_flow_style=False, sort_keys=False)
+
+    def _write_yaml(self, filepath: Path, data: Dict[str, Any]) -> None:
+        """Write a YAML dictionary preserving key order."""
+        with open(filepath, "w") as f:
+            yaml.dump(data, f, default_flow_style=False, sort_keys=False)
+
+    def _leaf_id(self, full_id: str) -> str:
+        """Return the leaf token of a hierarchical ID."""
+        return full_id.split(".")[-1]
+
+    def _replace_mapped_values(self, value: Any, remap: Dict[str, str]) -> Any:
+        """Recursively replace ID values in selected YAML shapes."""
+        if isinstance(value, str):
+            return remap.get(value, value)
+        if isinstance(value, list):
+            return [self._replace_mapped_values(v, remap) for v in value]
+        if isinstance(value, dict):
+            out = {}
+            for k, v in value.items():
+                if k in {
+                    "id",
+                    "depends_on",
+                    "current_task",
+                    "primary_task",
+                    "additional_tasks",
+                    "sibling_tasks",
+                }:
+                    out[k] = self._replace_mapped_values(v, remap)
+                else:
+                    out[k] = self._replace_mapped_values(v, remap)
+            return out
+        return value
+
+    def _apply_id_remap(self, remap: Dict[str, str]) -> None:
+        """Apply ID remapping to all YAML and todo frontmatter files."""
+        if not remap:
+            return
+
+        # Update YAML files
+        for yaml_path in self.tasks_dir.rglob("index.yaml"):
+            data = self._load_yaml(yaml_path)
+            updated = self._replace_mapped_values(data, remap)
+            self._write_yaml(yaml_path, updated)
+
+        for runtime_name in [".context.yaml", ".sessions.yaml"]:
+            runtime_path = self.tasks_dir / runtime_name
+            if runtime_path.exists():
+                data = self._load_yaml(runtime_path)
+                updated = self._replace_mapped_values(data, remap)
+                self._write_yaml(runtime_path, updated)
+
+        # Update task/bug/idea file frontmatter
+        for todo_path in self.tasks_dir.rglob("*.todo"):
+            frontmatter, body = self._parse_todo_file(todo_path)
+            updated = self._replace_mapped_values(frontmatter, remap)
+            with open(todo_path, "w") as f:
+                f.write("---\n")
+                yaml.dump(updated, f, default_flow_style=False, sort_keys=False)
+                f.write("---\n")
+                f.write(body)
+
+    def _next_epic_number_for_milestone(self, milestone_dir: Path) -> int:
+        """Find the next epic number for a milestone directory."""
+        return self._get_next_epic_number(milestone_dir)
+
+    def _next_milestone_number_for_phase(self, phase_dir: Path) -> int:
+        """Find the next milestone number for a phase directory."""
+        return self._get_next_milestone_number(phase_dir)
+
+    def move_item(self, source_id: str, dest_id: str) -> Dict[str, Any]:
+        """Move task->epic, epic->milestone, or milestone->phase with renumbering."""
+        src_path = TaskPath.parse(source_id)
+        dst_path = TaskPath.parse(dest_id)
+        tree = self.load()
+
+        remap: Dict[str, str] = {}
+
+        if src_path.is_task and dst_path.is_epic:
+            src_task = tree.find_task(source_id)
+            if not src_task:
+                raise ValueError(f"Task not found: {source_id}")
+            dst_epic = tree.find_epic(dest_id)
+            if not dst_epic:
+                raise ValueError(f"Epic not found: {dest_id}")
+
+            src_epic = tree.find_epic(src_task.epic_id or "")
+            src_milestone = tree.find_milestone(src_task.milestone_id or "")
+            src_phase = tree.find_phase(src_task.phase_id or "")
+            dst_milestone = tree.find_milestone(dst_epic.milestone_id or "")
+            dst_phase = tree.find_phase(dst_epic.phase_id or "")
+            if not all([src_epic, src_milestone, src_phase, dst_milestone, dst_phase]):
+                raise ValueError("Could not resolve source/destination hierarchy paths")
+
+            src_epic_dir = (
+                self.tasks_dir / src_phase.path / src_milestone.path / src_epic.path
+            )
+            dst_epic_dir = (
+                self.tasks_dir / dst_phase.path / dst_milestone.path / dst_epic.path
+            )
+
+            old_filename = Path(src_task.file).name
+            old_file = src_epic_dir / old_filename
+            if not old_file.exists():
+                raise FileNotFoundError(f"Task file not found: {old_file}")
+
+            next_num = self._get_next_task_number(dst_epic_dir)
+            new_short = f"T{next_num:03d}"
+            new_id = f"{dst_epic.id}.{new_short}"
+            new_filename = f"{new_short}-{self._slugify(src_task.title)}.todo"
+            new_file = dst_epic_dir / new_filename
+
+            shutil.move(str(old_file), str(new_file))
+
+            # Update source epic index
+            src_index_path = src_epic_dir / "index.yaml"
+            src_index = (
+                self._load_yaml(src_index_path)
+                if src_index_path.exists()
+                else {"tasks": []}
+            )
+            src_tasks = []
+            old_leaf = self._leaf_id(source_id)
+            for entry in src_index.get("tasks", []):
+                if isinstance(entry, str):
+                    if entry == old_filename:
+                        continue
+                    src_tasks.append(entry)
+                    continue
+                entry_file = entry.get("file") or entry.get("path")
+                entry_id = str(entry.get("id", ""))
+                entry_leaf = self._leaf_id(entry_id) if entry_id else ""
+                if (
+                    entry_file == old_filename
+                    or entry_id == source_id
+                    or entry_leaf == old_leaf
+                ):
+                    continue
+                src_tasks.append(entry)
+            src_index["tasks"] = src_tasks
+            self._write_yaml(src_index_path, src_index)
+
+            # Update destination epic index
+            dst_index_path = dst_epic_dir / "index.yaml"
+            dst_index = (
+                self._load_yaml(dst_index_path)
+                if dst_index_path.exists()
+                else {"tasks": []}
+            )
+            dst_tasks = list(dst_index.get("tasks", []))
+            dst_tasks.append(
+                {
+                    "id": new_short,
+                    "file": new_filename,
+                    "title": src_task.title,
+                    "status": src_task.status.value,
+                    "estimate_hours": src_task.estimate_hours,
+                    "complexity": src_task.complexity.value,
+                    "priority": src_task.priority.value,
+                    "depends_on": src_task.depends_on,
+                }
+            )
+            dst_index["tasks"] = dst_tasks
+            self._write_yaml(dst_index_path, dst_index)
+
+            remap[source_id] = new_id
+
+        elif src_path.is_epic and dst_path.is_milestone:
+            src_epic = tree.find_epic(source_id)
+            if not src_epic:
+                raise ValueError(f"Epic not found: {source_id}")
+            dst_milestone = tree.find_milestone(dest_id)
+            if not dst_milestone:
+                raise ValueError(f"Milestone not found: {dest_id}")
+
+            src_milestone = tree.find_milestone(src_epic.milestone_id or "")
+            src_phase = tree.find_phase(src_epic.phase_id or "")
+            dst_phase = tree.find_phase(dst_milestone.phase_id or "")
+            if not all([src_milestone, src_phase, dst_phase]):
+                raise ValueError("Could not resolve source/destination hierarchy paths")
+
+            src_milestone_dir = self.tasks_dir / src_phase.path / src_milestone.path
+            dst_milestone_dir = self.tasks_dir / dst_phase.path / dst_milestone.path
+            src_epic_dir = src_milestone_dir / src_epic.path
+
+            next_num = self._next_epic_number_for_milestone(dst_milestone_dir)
+            new_short_epic = f"E{next_num}"
+            new_epic_id = f"{dst_milestone.id}.{new_short_epic}"
+            new_epic_dir_name = f"{next_num:02d}-{self._slugify(src_epic.name)}"
+            dst_epic_dir = dst_milestone_dir / new_epic_dir_name
+
+            shutil.move(str(src_epic_dir), str(dst_epic_dir))
+
+            # Update source milestone index
+            src_ms_index_path = src_milestone_dir / "index.yaml"
+            src_ms_index = self._load_yaml(src_ms_index_path)
+            src_epics = []
+            old_leaf = self._leaf_id(source_id)
+            for entry in src_ms_index.get("epics", []):
+                entry_id = str(entry.get("id", "")) if isinstance(entry, dict) else ""
+                entry_path = entry.get("path") if isinstance(entry, dict) else None
+                entry_leaf = self._leaf_id(entry_id) if entry_id else ""
+                if (
+                    entry_id == source_id
+                    or entry_leaf == old_leaf
+                    or entry_path == src_epic.path
+                ):
+                    continue
+                src_epics.append(entry)
+            src_ms_index["epics"] = src_epics
+            self._write_yaml(src_ms_index_path, src_ms_index)
+
+            # Update destination milestone index
+            dst_ms_index_path = dst_milestone_dir / "index.yaml"
+            dst_ms_index = self._load_yaml(dst_ms_index_path)
+            dst_epics = list(dst_ms_index.get("epics", []))
+            dst_epics.append(
+                {
+                    "id": new_short_epic,
+                    "name": src_epic.name,
+                    "path": new_epic_dir_name,
+                    "status": src_epic.status.value,
+                    "estimate_hours": src_epic.estimate_hours,
+                    "complexity": src_epic.complexity.value,
+                    "depends_on": src_epic.depends_on,
+                    "description": src_epic.description or "",
+                }
+            )
+            dst_ms_index["epics"] = dst_epics
+            self._write_yaml(dst_ms_index_path, dst_ms_index)
+
+            # Build remap for epic and descendant tasks
+            old_prefix = source_id + "."
+            new_prefix = new_epic_id + "."
+            remap[source_id] = new_epic_id
+            for task in src_epic.tasks:
+                if task.id.startswith(old_prefix):
+                    remap[task.id] = task.id.replace(old_prefix, new_prefix, 1)
+
+        elif src_path.is_milestone and dst_path.is_phase:
+            src_milestone = tree.find_milestone(source_id)
+            if not src_milestone:
+                raise ValueError(f"Milestone not found: {source_id}")
+            dst_phase = tree.find_phase(dest_id)
+            if not dst_phase:
+                raise ValueError(f"Phase not found: {dest_id}")
+
+            src_phase = tree.find_phase(src_milestone.phase_id or "")
+            if not src_phase:
+                raise ValueError("Could not resolve source phase")
+
+            src_phase_dir = self.tasks_dir / src_phase.path
+            dst_phase_dir = self.tasks_dir / dst_phase.path
+            src_ms_dir = src_phase_dir / src_milestone.path
+
+            next_num = self._next_milestone_number_for_phase(dst_phase_dir)
+            new_short_ms = f"M{next_num}"
+            new_ms_id = f"{dst_phase.id}.{new_short_ms}"
+            new_ms_dir_name = f"{next_num:02d}-{self._slugify(src_milestone.name)}"
+            dst_ms_dir = dst_phase_dir / new_ms_dir_name
+
+            shutil.move(str(src_ms_dir), str(dst_ms_dir))
+
+            # Update source phase index
+            src_phase_index_path = src_phase_dir / "index.yaml"
+            src_phase_index = self._load_yaml(src_phase_index_path)
+            src_milestones = []
+            old_leaf = self._leaf_id(source_id)
+            for entry in src_phase_index.get("milestones", []):
+                entry_id = str(entry.get("id", "")) if isinstance(entry, dict) else ""
+                entry_path = entry.get("path") if isinstance(entry, dict) else None
+                entry_leaf = self._leaf_id(entry_id) if entry_id else ""
+                if (
+                    entry_id == source_id
+                    or entry_leaf == old_leaf
+                    or entry_path == src_milestone.path
+                ):
+                    continue
+                src_milestones.append(entry)
+            src_phase_index["milestones"] = src_milestones
+            self._write_yaml(src_phase_index_path, src_phase_index)
+
+            # Update destination phase index
+            dst_phase_index_path = dst_phase_dir / "index.yaml"
+            dst_phase_index = self._load_yaml(dst_phase_index_path)
+            dst_milestones = list(dst_phase_index.get("milestones", []))
+            dst_milestones.append(
+                {
+                    "id": new_short_ms,
+                    "name": src_milestone.name,
+                    "path": new_ms_dir_name,
+                    "status": src_milestone.status.value,
+                    "estimate_hours": src_milestone.estimate_hours,
+                    "complexity": src_milestone.complexity.value,
+                    "depends_on": src_milestone.depends_on,
+                    "description": src_milestone.description or "",
+                }
+            )
+            dst_phase_index["milestones"] = dst_milestones
+            self._write_yaml(dst_phase_index_path, dst_phase_index)
+
+            # Build remap for milestone, epics, and descendant tasks
+            old_ms_prefix = source_id + "."
+            new_ms_prefix = new_ms_id + "."
+            remap[source_id] = new_ms_id
+            for epic in src_milestone.epics:
+                new_epic_id = epic.id.replace(old_ms_prefix, new_ms_prefix, 1)
+                remap[epic.id] = new_epic_id
+                old_epic_prefix = epic.id + "."
+                new_epic_prefix = new_epic_id + "."
+                for task in epic.tasks:
+                    if task.id.startswith(old_epic_prefix):
+                        remap[task.id] = task.id.replace(
+                            old_epic_prefix, new_epic_prefix, 1
+                        )
+
+        else:
+            raise ValueError(
+                "Invalid move: supported moves are task->epic, epic->milestone, milestone->phase"
+            )
+
+        # Apply remap across all files and metadata
+        self._apply_id_remap(remap)
+
+        new_id = remap.get(source_id, source_id)
+        return {
+            "source_id": source_id,
+            "dest_id": dest_id,
+            "new_id": new_id,
+            "remapped_ids": remap,
+        }
