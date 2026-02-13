@@ -336,26 +336,42 @@ async function cmdReportEstimateAccuracy(args: string[]): Promise<void> {
   console.log(`Tasks analyzed: ${payload.tasks_analyzed}`);
 }
 
+function printReportCommands(): void {
+  console.log("Report commands:");
+  console.log("  - progress");
+  console.log("  - velocity");
+  console.log("  - estimate-accuracy");
+}
+
 export async function cmdReport(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
 
-  if (!sub || sub === "--help") {
-    console.log("Usage: tasks report <progress|velocity|estimate-accuracy> [options]");
+  if (sub === "--help") {
+    console.log("Usage: tasks report <progress|velocity|estimate-accuracy|p|v|ea> [options]");
     return;
   }
 
-  if (sub === "progress") {
+  if (!sub) {
+    await cmdReportProgress([]);
+    printReportCommands();
+    return;
+  }
+
+  const normalizedSub =
+    sub === "p" ? "progress" : sub === "v" ? "velocity" : sub === "ea" ? "estimate-accuracy" : sub;
+
+  if (normalizedSub === "progress") {
     await cmdReportProgress(rest);
     return;
   }
 
-  if (sub === "velocity") {
+  if (normalizedSub === "velocity") {
     await cmdReportVelocity(rest);
     return;
   }
 
-  if (sub === "estimate-accuracy") {
+  if (normalizedSub === "estimate-accuracy") {
     await cmdReportEstimateAccuracy(rest);
     return;
   }

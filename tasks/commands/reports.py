@@ -15,10 +15,49 @@ from ..time_utils import utc_now, to_utc
 console = Console()
 
 
-@click.group()
+def _print_report_commands():
+    """Print available report subcommands."""
+    console.print("[bold]Report commands:[/]")
+    console.print("  - progress")
+    console.print("  - velocity")
+    console.print("  - estimate-accuracy")
+
+
+def _run_default_report():
+    """Run default report output and print available subcommands."""
+    ctx = click.get_current_context()
+    ctx.invoke(
+        progress,
+        output_format="text",
+        by_phase=False,
+        by_milestone=False,
+        by_epic=False,
+        show_all=False,
+    )
+    _print_report_commands()
+    console.print()
+
+
+@click.group(invoke_without_command=True)
 def report():
-    """Generate summary reports."""
-    pass
+    """Generate summary reports.
+
+    Aliases: p=progress, v=velocity, ea=estimate-accuracy.
+    """
+    ctx = click.get_current_context()
+    if ctx.invoked_subcommand is None:
+        _run_default_report()
+
+
+@click.group("r", invoke_without_command=True, hidden=True)
+def report_alias():
+    """Short alias for report commands.
+
+    Usage: r p | r v | r ea
+    """
+    ctx = click.get_current_context()
+    if ctx.invoked_subcommand is None:
+        _run_default_report()
 
 
 def _remaining_hours(tasks):
@@ -265,6 +304,29 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
+
+
+@report.command("p", hidden=True)
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
+@click.option("--by-phase", is_flag=True, help="Group by phase (default)")
+@click.option("--by-milestone", is_flag=True, help="Show milestones within phases")
+@click.option("--by-epic", is_flag=True, help="Show epics within milestones")
+@click.option(
+    "--all", "show_all", is_flag=True, help="Include completed phases/milestones/epics"
+)
+def progress_alias(output_format, by_phase, by_milestone, by_epic, show_all):
+    """Hidden alias for `report progress`."""
+    ctx = click.get_current_context()
+    ctx.invoke(
+        progress,
+        output_format=output_format,
+        by_phase=by_phase,
+        by_milestone=by_milestone,
+        by_epic=by_epic,
+        show_all=show_all,
+    )
 
 
 def _render_velocity_histogram(velocity_data, num_periods, label_fn, display_max):
@@ -925,6 +987,17 @@ def velocity(days, output_format):
         raise click.Abort()
 
 
+@report.command("v", hidden=True)
+@click.option("--days", default=14, help="Number of days to analyze")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
+def velocity_short_alias(days, output_format):
+    """Hidden alias for `report velocity`."""
+    ctx = click.get_current_context()
+    ctx.invoke(velocity, days=days, output_format=output_format)
+
+
 @click.command("velocity", hidden=True)
 @click.option("--days", default=14, help="Number of days to analyze")
 @click.option(
@@ -932,7 +1005,8 @@ def velocity(days, output_format):
 )
 def velocity_alias(days, output_format):
     """Hidden top-level alias for `report velocity`."""
-    velocity.callback(days=days, output_format=output_format)
+    ctx = click.get_current_context()
+    ctx.invoke(velocity, days=days, output_format=output_format)
 
 
 @report.command("estimate-accuracy")
@@ -1078,4 +1152,49 @@ def estimate_accuracy(output_format):
 def register_commands(cli):
     """Register report commands with the CLI."""
     cli.add_command(report)
+    cli.add_command(report_alias)
     cli.add_command(velocity_alias)
+
+
+@report_alias.command("p")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
+@click.option("--by-phase", is_flag=True, help="Group by phase (default)")
+@click.option("--by-milestone", is_flag=True, help="Show milestones within phases")
+@click.option("--by-epic", is_flag=True, help="Show epics within milestones")
+@click.option(
+    "--all", "show_all", is_flag=True, help="Include completed phases/milestones/epics"
+)
+def report_alias_progress(output_format, by_phase, by_milestone, by_epic, show_all):
+    """Alias for `report progress`."""
+    ctx = click.get_current_context()
+    ctx.invoke(
+        progress,
+        output_format=output_format,
+        by_phase=by_phase,
+        by_milestone=by_milestone,
+        by_epic=by_epic,
+        show_all=show_all,
+    )
+
+
+@report_alias.command("v")
+@click.option("--days", default=14, help="Number of days to analyze")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
+def report_alias_velocity(days, output_format):
+    """Alias for `report velocity`."""
+    ctx = click.get_current_context()
+    ctx.invoke(velocity, days=days, output_format=output_format)
+
+
+@report_alias.command("ea")
+@click.option(
+    "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
+)
+def report_alias_estimate_accuracy(output_format):
+    """Alias for `report estimate-accuracy`."""
+    ctx = click.get_current_context()
+    ctx.invoke(estimate_accuracy, output_format=output_format)

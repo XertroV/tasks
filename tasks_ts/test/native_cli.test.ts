@@ -284,6 +284,21 @@ tags: []
     expect(p.exitCode).toBe(0);
     const accuracy = JSON.parse(p.stdout.toString());
     expect(accuracy.tasks_analyzed).toBeGreaterThanOrEqual(1);
+
+    p = run(["report"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Progress Report");
+    expect(p.stdout.toString()).toContain("Report commands:");
+
+    p = run(["r", "p", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const progressAlias = JSON.parse(p.stdout.toString());
+    expect(progressAlias.overall.total).toBe(2);
+
+    p = run(["r", "v", "--days", "7", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const velocityAlias = JSON.parse(p.stdout.toString());
+    expect(velocityAlias.days_analyzed).toBe(7);
   });
 
   test("timeline and schema commands", () => {

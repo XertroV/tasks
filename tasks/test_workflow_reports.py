@@ -234,7 +234,9 @@ def test_work_set_show_clear(runner, tmp_workflow_reports_dir):
     assert "Cleared working task context" in clear_res.output
 
 
-def test_blocked_no_grab_uses_context_and_marks_blocked(runner, tmp_workflow_reports_dir):
+def test_blocked_no_grab_uses_context_and_marks_blocked(
+    runner, tmp_workflow_reports_dir
+):
     set_current_task("P1.M1.E1.T002", "agent-a")
     result = runner.invoke(
         cli, ["blocked", "--reason", "waiting on dependency", "--no-grab"]
@@ -279,7 +281,9 @@ def test_unclaim_from_context(runner, tmp_workflow_reports_dir):
     assert get_current_task_id() is None
 
 
-def test_handoff_appends_notes_and_transfers_ownership(runner, tmp_workflow_reports_dir):
+def test_handoff_appends_notes_and_transfers_ownership(
+    runner, tmp_workflow_reports_dir
+):
     set_current_task("P1.M1.E1.T002", "agent-a")
     result = runner.invoke(
         cli,
@@ -361,6 +365,29 @@ def test_report_progress_text_with_milestones(runner, tmp_workflow_reports_dir):
     assert "Progress Report" in result.output
     assert "By Phase:" in result.output
     assert "M1:" in result.output
+
+
+def test_report_defaults_to_progress_and_lists_commands(
+    runner, tmp_workflow_reports_dir
+):
+    result = runner.invoke(cli, ["report"])
+
+    assert result.exit_code == 0
+    assert "Progress Report" in result.output
+    assert "Report commands:" in result.output
+    assert "progress" in result.output
+    assert "velocity" in result.output
+    assert "estimate-accuracy" in result.output
+
+
+def test_report_short_aliases(runner, tmp_workflow_reports_dir):
+    progress_res = runner.invoke(cli, ["r", "p"])
+    assert progress_res.exit_code == 0
+    assert "Progress Report" in progress_res.output
+
+    velocity_res = runner.invoke(cli, ["r", "v", "--days", "2"])
+    assert velocity_res.exit_code == 0
+    assert "Velocity Report" in velocity_res.output
 
 
 def test_report_velocity_text_sections(runner, tmp_workflow_reports_dir):

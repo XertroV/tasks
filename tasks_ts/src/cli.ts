@@ -91,7 +91,7 @@ Commands:
   add-phase       Add a new phase to the project
   session         Manage agent sessions
   data            Export/summarize task data
-  report          Generate reports (progress, velocity, estimates)
+  report          Generate reports (progress, velocity, estimates) [alias: r]
   timeline        Display project timeline
   schema          Show file schema information
   blockers        Show blocking tasks
@@ -1872,6 +1872,9 @@ async function main(): Promise<void> {
       await cmdData(rest);
       return;
     case "report":
+      await cmdReport(rest);
+      return;
+    case "r":
       await cmdReport(rest);
       return;
     case "timeline":
