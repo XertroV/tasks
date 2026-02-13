@@ -218,6 +218,28 @@ function assertCommandSemanticState(args: string[], pyRoot: string, tsRoot: stri
     if ("agent-p" in p || "agent-p" in t) throw new Error("session end did not remove agent-p");
     return;
   }
+  if (args[0] === "idea") {
+    const pyIndexPath = join(pyRoot, ".tasks", "ideas", "index.yaml");
+    const tsIndexPath = join(tsRoot, ".tasks", "ideas", "index.yaml");
+    if (!existsSync(pyIndexPath) || !existsSync(tsIndexPath)) {
+      throw new Error("idea did not create .tasks/ideas/index.yaml");
+    }
+    const pyIdx = parse(readFileSync(pyIndexPath, "utf8")) as Record<string, unknown>;
+    const tsIdx = parse(readFileSync(tsIndexPath, "utf8")) as Record<string, unknown>;
+    const pyIdeas = (pyIdx.ideas as Record<string, unknown>[] | undefined) ?? [];
+    const tsIdeas = (tsIdx.ideas as Record<string, unknown>[] | undefined) ?? [];
+    if (pyIdeas.length !== tsIdeas.length) {
+      throw new Error(`idea count mismatch py=${pyIdeas.length} ts=${tsIdeas.length}`);
+    }
+    const pyFirst = pyIdeas[0] ?? {};
+    const tsFirst = tsIdeas[0] ?? {};
+    const pyFile = String(pyFirst.file ?? "");
+    const tsFile = String(tsFirst.file ?? "");
+    if (!pyFile.startsWith("I001-") || !tsFile.startsWith("I001-")) {
+      throw new Error(`idea file mismatch py=${pyFile} ts=${tsFile}`);
+    }
+    return;
+  }
 }
 
 function assertSyncState(pyRoot: string, tsRoot: string): void {
@@ -296,6 +318,7 @@ const vectors = [
   ["report", "velocity", "--days", "7", "--format", "json"],
   ["report", "estimate-accuracy", "--format", "json"],
   ["timeline"],
+  ["tl"],
   ["schema", "--json"],
   ["search", "One"],
   ["blockers", "--suggest"],
@@ -305,6 +328,7 @@ const vectors = [
   ["add-epic", "P1.M1", "--title", "Parity Epic"],
   ["add-milestone", "P1", "--title", "Parity Milestone"],
   ["add-phase", "--title", "Parity Phase"],
+  ["idea", "Parity idea"],
   ["sync"],
 ];
 
@@ -327,7 +351,7 @@ for (const args of vectors) {
 
   if (args[0] === "sync") {
     assertSyncState(pyRoot, tsRoot);
-  } else if (["add", "add-epic", "add-milestone", "add-phase"].includes(args[0] ?? "")) {
+  } else if (["add", "add-epic", "add-milestone", "add-phase", "idea"].includes(args[0] ?? "")) {
     // add-family commands are validated semantically above; YAML serialization may differ.
   } else {
     const pyState = readTaskState(pyRoot);

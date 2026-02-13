@@ -15,7 +15,7 @@ afterEach(() => {
   }
 });
 
-function setupFixture(): string {
+function setupFixture(includeBug = false): string {
   const r = mkdtempSync(join(tmpdir(), "tasks-ts-native-"));
   const t = join(r, ".tasks");
   mkdirSync(join(t, "01-phase", "01-ms", "01-epic"), { recursive: true });
@@ -37,6 +37,16 @@ function setupFixture(): string {
     join(t, "01-phase", "01-ms", "01-epic", "T002-b.todo"),
     `---\nid: P1.M1.E1.T002\ntitle: B\nstatus: pending\nestimate_hours: 2\ncomplexity: medium\npriority: high\ndepends_on:\n  - P1.M1.E1.T001\ntags: []\n---\n# B\n`,
   );
+
+  if (includeBug) {
+    mkdirSync(join(t, "bugs"), { recursive: true });
+    writeFileSync(join(t, "bugs", "index.yaml"), "bugs:\n  - id: B001\n    file: B001-critical-bug.todo\n");
+    writeFileSync(
+      join(t, "bugs", "B001-critical-bug.todo"),
+      `---\nid: B001\ntitle: Critical Bug\nstatus: pending\nestimate_hours: 5\ncomplexity: high\npriority: critical\ndepends_on: []\ntags: [bug]\n---\n# Critical Bug\n`,
+    );
+  }
+
   return r;
 }
 
@@ -64,6 +74,18 @@ describe("native cli", () => {
     const show = run(["show", "P1.M1.E1.T001"], root);
     expect(show.exitCode).toBe(0);
     expect(show.stdout.toString()).toContain("P1.M1.E1.T001");
+  });
+
+  test("next can return bugs and list marks bug critical path", () => {
+    root = setupFixture(true);
+
+    const next = run(["next", "--json"], root);
+    expect(next.exitCode).toBe(0);
+    expect(JSON.parse(next.stdout.toString()).id).toBe("B001");
+
+    const list = run(["list"], root);
+    expect(list.exitCode).toBe(0);
+    expect(list.stdout.toString()).toContain("★ B001: Critical Bug");
   });
 
   test("claim done update sync mutate files", () => {
@@ -228,11 +250,11 @@ tags: []
 
 ## Requirements
 
-- [ ] TODO: Add requirements
+- TODO: Add requirements
 
 ## Acceptance Criteria
 
-- [ ] TODO: Add acceptance criteria
+- TODO: Add acceptance criteria
 `;
     writeFileSync(taskPath, uninitializedContent);
     
@@ -309,6 +331,11 @@ tags: []
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Project Timeline");
 
+    const alias = run(["tl"], root);
+    expect(alias.exitCode).toBe(0);
+    expect(alias.stdout.toString()).toContain("Project Timeline");
+    expect(alias.stdout.toString()).toBe(p.stdout.toString());
+
     p = run(["schema", "--json"], root);
     expect(p.exitCode).toBe(0);
     const schema = JSON.parse(p.stdout.toString());
@@ -381,6 +408,23 @@ tags: []
     p = run(["add-phase", "--title", "New Phase"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created phase:");
+  });
+
+  test("idea command creates planning intake under .tasks/ideas", () => {
+    root = setupFixture();
+    const p = run(["idea", "add integration tests using gpt-oss-120 via groq"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created idea:");
+
+    const indexText = readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8");
+    expect(indexText).toContain("id: I001");
+    const fileMatch = indexText.match(/file:\s*(\S+)/);
+    expect(fileMatch).toBeTruthy();
+
+    const ideaText = readFileSync(join(root, ".tasks", "ideas", fileMatch![1]!), "utf8");
+    expect(ideaText).toContain("Run `/plan-task");
+    expect(ideaText).toContain("tasks add");
+    expect(ideaText).toContain("tasks bug");
   });
 
   test("enhanced list command shows milestones with task counts", () => {

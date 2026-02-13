@@ -600,6 +600,107 @@ TODO: Describe actual behavior
             phase_id=None,
         )
 
+    def create_idea(self, idea_data: dict) -> Task:
+        """Create a new idea intake item for later planning and ingestion."""
+        ideas_dir = self.tasks_dir / "ideas"
+        ideas_dir.mkdir(parents=True, exist_ok=True)
+        index_path = ideas_dir / "index.yaml"
+
+        # Determine next idea number
+        next_num = 1
+        if index_path.exists():
+            idx = self._load_yaml(index_path)
+            existing = idx.get("ideas", [])
+            nums = []
+            for entry in existing:
+                entry_id = str(entry.get("id", ""))
+                match = re.match(r"I(\d+)$", entry_id)
+                if not match:
+                    match = re.match(r"I(\d+)", entry.get("file", ""))
+                if match:
+                    nums.append(int(match.group(1)))
+            if nums:
+                next_num = max(nums) + 1
+
+        idea_id = f"I{next_num:03d}"
+        slug = self._slugify(idea_data["title"])
+        filename = f"{idea_id}-{slug}.todo"
+        file_path = ideas_dir / filename
+
+        frontmatter = {
+            "id": idea_id,
+            "title": idea_data["title"],
+            "status": "pending",
+            "estimate_hours": idea_data.get("estimate_hours", 1.0),
+            "complexity": idea_data.get("complexity", "medium"),
+            "priority": idea_data.get("priority", "medium"),
+            "depends_on": idea_data.get("depends_on", []),
+            "tags": idea_data.get("tags", ["idea", "planning"]),
+        }
+
+        body = f"""
+# Idea Intake: {idea_data["title"]}
+
+## Original Idea
+
+{idea_data["title"]}
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "{idea_data["title"]}"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- TODO: Add created task IDs
+- TODO: Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.
+"""
+
+        with open(file_path, "w") as f:
+            f.write("---\n")
+            yaml.dump(frontmatter, f, default_flow_style=False, sort_keys=False)
+            f.write("---\n")
+            f.write(body)
+
+        if index_path.exists():
+            idx = self._load_yaml(index_path)
+        else:
+            idx = {"ideas": []}
+
+        ideas_list = idx.get("ideas", [])
+        ideas_list.append({"id": idea_id, "file": filename})
+        idx["ideas"] = ideas_list
+
+        with open(index_path, "w") as f:
+            yaml.dump(idx, f, default_flow_style=False, sort_keys=False)
+
+        return Task(
+            id=idea_id,
+            title=idea_data["title"],
+            file=str(Path("ideas") / filename),
+            status=Status.PENDING,
+            estimate_hours=float(idea_data.get("estimate_hours", 1.0)),
+            complexity=Complexity(idea_data.get("complexity", "medium")),
+            priority=Priority(idea_data.get("priority", "medium")),
+            depends_on=idea_data.get("depends_on", []),
+            tags=idea_data.get("tags", ["idea", "planning"]),
+            epic_id=None,
+            milestone_id=None,
+            phase_id=None,
+        )
+
     def create_task(self, epic_id: str, task_data: dict) -> Task:
         """
         Create a new task in the specified epic.
@@ -663,11 +764,11 @@ TODO: Describe actual behavior
 
 ## Requirements
 
-- [ ] TODO: Add requirements
+- TODO: Add requirements
 
 ## Acceptance Criteria
 
-- [ ] TODO: Add acceptance criteria
+- TODO: Add acceptance criteria
 """
 
         # Write .todo file

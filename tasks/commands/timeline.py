@@ -16,14 +16,22 @@ console = Console()
 def load_config():
     """Load configuration."""
     from ..cli import load_config as cli_load_config
+
     return cli_load_config()
 
 
 @click.command()
 @click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
-@click.option("--weeks", type=int, help="Number of weeks to display (auto-detect if not set)")
-@click.option("--group-by", "group_by", type=click.Choice(["phase", "milestone", "epic", "status"]),
-              default="milestone", help="How to group tasks")
+@click.option(
+    "--weeks", type=int, help="Number of weeks to display (auto-detect if not set)"
+)
+@click.option(
+    "--group-by",
+    "group_by",
+    type=click.Choice(["phase", "milestone", "epic", "status"]),
+    default="milestone",
+    help="How to group tasks",
+)
 @click.option("--show-done", is_flag=True, help="Include completed tasks")
 @click.option("--width", type=int, default=40, help="Chart width in characters")
 def timeline(scope, weeks, group_by, show_done, width):
@@ -69,12 +77,14 @@ def timeline(scope, weeks, group_by, show_done, width):
         console.print(f"\n[bold cyan]Project Timeline[/] ({display_weeks} weeks)\n")
 
         # Show legend
-        console.print("[dim]Legend:[/] "
-                      "[green]█[/]=done "
-                      "[yellow]▓[/]=in_progress "
-                      "[blue]░[/]=pending "
-                      "[red]▒[/]=blocked "
-                      "[yellow]★[/]=critical")
+        console.print(
+            "[dim]Legend:[/] "
+            "[green]█[/]=done "
+            "[yellow]▓[/]=in_progress "
+            "[blue]░[/]=pending "
+            "[red]▒[/]=blocked "
+            "[yellow]★[/]=critical"
+        )
         console.print()
 
         # Group tasks
@@ -106,7 +116,11 @@ def timeline(scope, weeks, group_by, show_done, width):
                 crit = "[yellow]★[/]" if task.id in critical_path else " "
 
                 # Truncate title
-                title = task.title[:25] + "..." if len(task.title) > 28 else task.title.ljust(28)
+                title = (
+                    task.title[:25] + "..."
+                    if len(task.title) > 28
+                    else task.title.ljust(28)
+                )
 
                 console.print(f"  {status_char}{crit} {task.id:15} {title} {bar}")
 
@@ -117,8 +131,14 @@ def timeline(scope, weeks, group_by, show_done, width):
 
         # Summary
         stats = tree.stats
-        pct_done = (stats["done"] / stats["total_tasks"] * 100) if stats["total_tasks"] > 0 else 0
-        console.print(f"\n[dim]Progress: {stats['done']}/{stats['total_tasks']} tasks ({pct_done:.0f}%)[/]")
+        pct_done = (
+            (stats["done"] / stats["total_tasks"] * 100)
+            if stats["total_tasks"] > 0
+            else 0
+        )
+        console.print(
+            f"\n[dim]Progress: {stats['done']}/{stats['total_tasks']} tasks ({pct_done:.0f}%)[/]"
+        )
         console.print(f"[dim]Critical path: {len(critical_path)} tasks[/]\n")
 
     except Exception as e:
@@ -274,7 +294,7 @@ def _show_week_markers(weeks, width):
     labels = " " * 50 + "│"
     for i in range(0, weeks + 1, max(1, weeks // 8)):
         pos = int(i * chars_per_week)
-        labels = labels[:50 + 1 + pos] + f"W{i}" + labels[50 + 3 + pos:]
+        labels = labels[: 50 + 1 + pos] + f"W{i}" + labels[50 + 3 + pos :]
 
     console.print(f"{'':50} └{'─' * width}┘")
     console.print(f"{'':50}  [dim]Week 0{' ' * (width - 10)}Week {weeks}[/]")
@@ -283,3 +303,4 @@ def _show_week_markers(weeks, width):
 def register_commands(cli):
     """Register timeline commands with the CLI."""
     cli.add_command(timeline)
+    cli.add_command(timeline, name="tl")

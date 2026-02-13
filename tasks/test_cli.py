@@ -88,7 +88,9 @@ def tmp_tasks_dir(tmp_path, monkeypatch):
     return tmp_path
 
 
-def create_task_file(tasks_dir, task_id, title, status="pending", claimed_by=None, claimed_at=None):
+def create_task_file(
+    tasks_dir, task_id, title, status="pending", claimed_by=None, claimed_at=None
+):
     """Helper to create a .todo task file."""
     # Parse task_id to determine path (e.g., P1.M1.E1.T001)
     parts = task_id.split(".")
@@ -137,14 +139,14 @@ Test task description.
 
 ## Requirements
 
-- [ ] First requirement
-- [ ] Second requirement
-- [ ] Third requirement
+- First requirement
+- Second requirement
+- Third requirement
 
 ## Acceptance Criteria
 
-- [ ] Acceptance criterion 1
-- [ ] Acceptance criterion 2
+- Acceptance criterion 1
+- Acceptance criterion 2
 """
 
     with open(task_file, "w") as f:
@@ -187,6 +189,47 @@ def create_multi_task_epic(tasks_dir, num_tasks, epic_id="P1.M1.E1"):
         create_task_file(tasks_dir, task_id, f"Task {i}")
         tasks.append(task_id)
     return tasks
+
+
+def create_bug_file(tasks_dir, bug_id, title, status="pending", depends_on=None):
+    """Helper to create a .todo bug file and index entry."""
+    bugs_dir = tasks_dir / ".tasks" / "bugs"
+    bugs_dir.mkdir(parents=True, exist_ok=True)
+
+    bug_filename = f"{bug_id.lower()}-test-bug.todo"
+    bug_file = bugs_dir / bug_filename
+    bug_depends_on = depends_on or []
+
+    frontmatter = {
+        "id": bug_id,
+        "title": title,
+        "status": status,
+        "estimate_hours": 3.0,
+        "complexity": "high",
+        "priority": "critical",
+        "depends_on": bug_depends_on,
+        "tags": ["bug"],
+    }
+
+    content = f"""---
+{yaml.dump(frontmatter, default_flow_style=False)}---
+
+# {title}
+"""
+    with open(bug_file, "w") as f:
+        f.write(content)
+
+    bug_index_path = bugs_dir / "index.yaml"
+    bug_index = {"bugs": []}
+    if bug_index_path.exists():
+        with open(bug_index_path) as f:
+            bug_index = yaml.safe_load(f) or {"bugs": []}
+    bug_index.setdefault("bugs", []).append({"id": bug_id, "file": bug_filename})
+
+    with open(bug_index_path, "w") as f:
+        yaml.dump(bug_index, f)
+
+    return bug_file
 
 
 class TestClaimCommand:
@@ -249,7 +292,10 @@ class TestClaimCommand:
 
         assert result.exit_code != 0
         assert "Task file missing for P1.M1.E1.T001" in result.output
-        assert "Cannot claim P1.M1.E1.T001 because the task file is missing." in result.output
+        assert (
+            "Cannot claim P1.M1.E1.T001 because the task file is missing."
+            in result.output
+        )
 
 
 class TestListCommand:
@@ -266,6 +312,17 @@ class TestListCommand:
         assert "task file(s) referenced in index are missing" in result.output
         assert "P1.M1.E1.T001" in result.output
 
+    def test_list_marks_bug_on_critical_path(self, runner, tmp_tasks_dir):
+        """list should mark bugs that are on critical path."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Short Task")
+        create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+
+        result = runner.invoke(cli, ["list"])
+
+        assert result.exit_code == 0
+        assert "★" in result.output
+        assert "B001: Critical Bug" in result.output
+
 
 class TestGrabCommand:
     """Tests for the grab command."""
@@ -281,7 +338,10 @@ class TestGrabCommand:
 
         assert result.exit_code == 0
         assert "Task file missing for P1.M1.E1.T001" in result.output
-        assert "Cannot claim P1.M1.E1.T001 because the task file is missing." in result.output
+        assert (
+            "Cannot claim P1.M1.E1.T001 because the task file is missing."
+            in result.output
+        )
 
 
 class TestDoneCommand:
@@ -387,6 +447,18 @@ class TestNextCommand:
             assert "P1.M1.E1.T001" in result.output
             assert "some-agent" in result.output
 
+    def test_next_can_select_bug(self, runner, tmp_tasks_dir):
+        """next should return an available bug when it is highest priority work."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Regular Task")
+        create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+
+        result = runner.invoke(cli, ["next", "--json"])
+
+        assert result.exit_code == 0
+        payload = yaml.safe_load(result.output)
+        assert payload["id"] == "B001"
+
+
 class TestCycleCommand:
     """Tests for the cycle command."""
 
@@ -394,39 +466,53 @@ class TestCycleCommand:
         """cycle should auto-grab next task when completing a task that doesn't complete the epic."""
         # Create 3 tasks in the same epic
         task_ids = create_multi_task_epic(tmp_tasks_dir, 3)
-        
+
         # Mark first task as in_progress
-        task_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T001-test-task.todo"
+        task_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
         with open(task_file, "r") as f:
             content = f.read()
         content = content.replace("status: pending", "status: in_progress")
         content = content.replace("tags:", "claimed_by: test-agent\ntags:")
         with open(task_file, "w") as f:
             f.write(content)
-        
+
         # Update context to set current task
         context_dir = tmp_tasks_dir / ".tasks"
         context_file = context_dir / ".context.yaml"
         context = {
             "current_task": task_ids[0],
             "agent": "test-agent",
-            "started_at": datetime.now(timezone.utc).isoformat()
+            "started_at": datetime.now(timezone.utc).isoformat(),
         }
         with open(context_file, "w") as f:
             yaml.dump(context, f)
-        
+
         # Call cycle to complete first task
         result = runner.invoke(cli, ["cycle", "--agent=test-agent"])
-        
+
         # Assertions
         assert result.exit_code == 0
         assert "Completed" in result.output
         assert task_ids[0] in result.output
         assert "Grabbed" in result.output
         assert task_ids[1] in result.output  # Second task should be auto-claimed
-        
+
         # Verify second task is now in_progress
-        task2_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T002-test-task.todo"
+        task2_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T002-test-task.todo"
+        )
         with open(task2_file, "r") as f:
             task2_content = f.read()
         assert "status: in_progress" in task2_content
@@ -435,38 +521,52 @@ class TestCycleCommand:
         """cycle should stop and not auto-grab when completing the last task in an epic."""
         # Create 2 tasks in the same epic
         task_ids = create_multi_task_epic(tmp_tasks_dir, 2)
-        
+
         # Mark first task as done
-        task1_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T001-test-task.todo"
+        task1_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
         with open(task1_file, "r") as f:
             content = f.read()
         content = content.replace("status: pending", "status: done")
         with open(task1_file, "w") as f:
             f.write(content)
-        
+
         # Mark second task as in_progress
-        task2_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T002-test-task.todo"
+        task2_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T002-test-task.todo"
+        )
         with open(task2_file, "r") as f:
             content = f.read()
         content = content.replace("status: pending", "status: in_progress")
         content = content.replace("tags:", "claimed_by: test-agent\ntags:")
         with open(task2_file, "w") as f:
             f.write(content)
-        
+
         # Update context
         context_dir = tmp_tasks_dir / ".tasks"
         context_file = context_dir / ".context.yaml"
         context = {
             "current_task": task_ids[1],
             "agent": "test-agent",
-            "started_at": datetime.now(timezone.utc).isoformat()
+            "started_at": datetime.now(timezone.utc).isoformat(),
         }
         with open(context_file, "w") as f:
             yaml.dump(context, f)
-        
+
         # Call cycle to complete the second (last) task
         result = runner.invoke(cli, ["cycle", "--agent=test-agent"])
-        
+
         # Assertions
         assert result.exit_code == 0
         assert "Completed" in result.output
@@ -475,7 +575,7 @@ class TestCycleCommand:
         assert "Review Required" in result.output
         assert "./tasks.py grab" in result.output
         assert "Grabbed" not in result.output  # Should NOT auto-grab
-        
+
         # Verify context is cleared
         assert not context_file.exists() or not Path(context_file).read_text().strip()
 
@@ -483,30 +583,37 @@ class TestCycleCommand:
         """cycle should stop when completing the last task that completes a milestone."""
         # Create one epic with one task (completes both epic and milestone)
         task_ids = create_multi_task_epic(tmp_tasks_dir, 1)
-        
+
         # Mark the task as in_progress
-        task_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T001-test-task.todo"
+        task_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
         with open(task_file, "r") as f:
             content = f.read()
         content = content.replace("status: pending", "status: in_progress")
         content = content.replace("tags:", "claimed_by: test-agent\ntags:")
         with open(task_file, "w") as f:
             f.write(content)
-        
+
         # Update context
         context_dir = tmp_tasks_dir / ".tasks"
         context_file = context_dir / ".context.yaml"
         context = {
             "current_task": task_ids[0],
             "agent": "test-agent",
-            "started_at": datetime.now(timezone.utc).isoformat()
+            "started_at": datetime.now(timezone.utc).isoformat(),
         }
         with open(context_file, "w") as f:
             yaml.dump(context, f)
-        
+
         # Call cycle to complete it (completes both epic and milestone)
         result = runner.invoke(cli, ["cycle", "--agent=test-agent"])
-        
+
         # Assertions
         assert result.exit_code == 0
         assert "Completed" in result.output
@@ -515,7 +622,7 @@ class TestCycleCommand:
         assert "MILESTONE COMPLETE" in result.output
         assert "Review Required" in result.output
         assert "Grabbed" not in result.output  # Should NOT auto-grab
-        
+
         # Verify context is cleared
         assert not context_file.exists() or not Path(context_file).read_text().strip()
 
@@ -523,27 +630,41 @@ class TestCycleCommand:
         """done command should still work after updating print_completion_notices to return a value."""
         # Create 2 tasks in an epic
         task_ids = create_multi_task_epic(tmp_tasks_dir, 2)
-        
+
         # Mark first task as done
-        task1_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T001-test-task.todo"
+        task1_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
         with open(task1_file, "r") as f:
             content = f.read()
         content = content.replace("status: pending", "status: done")
         with open(task1_file, "w") as f:
             f.write(content)
-        
+
         # Mark second task as in_progress
-        task2_file = tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "01-test-epic" / "T002-test-task.todo"
+        task2_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T002-test-task.todo"
+        )
         with open(task2_file, "r") as f:
             content = f.read()
         content = content.replace("status: pending", "status: in_progress")
         content = content.replace("tags:", "claimed_by: test-agent\ntags:")
         with open(task2_file, "w") as f:
             f.write(content)
-        
+
         # Call done to complete the second (last) task
         result = runner.invoke(cli, ["done", task_ids[1]])
-        
+
         # Assertions
         assert result.exit_code == 0
         assert "Completed" in result.output
@@ -576,12 +697,14 @@ def test_list_all_shows_all_milestones(runner, tmp_tasks_dir):
         milestone_index = {"epics": []}
         with open(milestone_dir / "index.yaml", "w") as f:
             yaml.dump(milestone_index, f)
-        milestones.append({
-            "id": f"P1.M{i}",
-            "name": f"Milestone {i}",
-            "path": f"0{i}-milestone-{i}",
-            "status": "pending",
-        })
+        milestones.append(
+            {
+                "id": f"P1.M{i}",
+                "name": f"Milestone {i}",
+                "path": f"0{i}-milestone-{i}",
+                "status": "pending",
+            }
+        )
 
     # Update phase index
     phase_index = {"milestones": milestones}
@@ -621,6 +744,7 @@ def test_list_json_includes_milestone_metadata(runner, tmp_tasks_dir):
     assert result.exit_code == 0
 
     import json
+
     data = json.loads(result.output)
     assert "phases" in data
     assert len(data["phases"]) > 0
@@ -659,7 +783,13 @@ def test_tree_unfinished_filters_completed(runner, tmp_tasks_dir):
 
 def test_tree_details_shows_metadata(runner, tmp_tasks_dir):
     """Test tree --details shows metadata."""
-    task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="in_progress", claimed_by="agent-x")
+    task_file = create_task_file(
+        tmp_tasks_dir,
+        "P1.M1.E1.T001",
+        "Task 1",
+        status="in_progress",
+        claimed_by="agent-x",
+    )
 
     result = runner.invoke(cli, ["tree", "--details"])
     assert result.exit_code == 0
@@ -703,6 +833,7 @@ def test_tree_json_outputs_complete_hierarchy(runner, tmp_tasks_dir):
     assert result.exit_code == 0
 
     import json
+
     data = json.loads(result.output)
     assert data["max_depth"] == 4
     assert data["show_details"] is False
@@ -727,3 +858,44 @@ def test_list_and_tree_consistent_task_counts(runner, tmp_tasks_dir):
     # Both should show 1/2 completion
     assert "(1/2" in list_result.output
     assert "(1/2)" in tree_result.output
+
+
+def test_idea_command_creates_planning_intake_todo(runner, tmp_tasks_dir):
+    """idea should create an intake .todo and ideas index entry."""
+    result = runner.invoke(
+        cli, ["idea", "add integration tests using gpt-oss-120 via groq"]
+    )
+
+    assert result.exit_code == 0
+    assert "Created idea:" in result.output
+
+    ideas_index_path = tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml"
+    assert ideas_index_path.exists()
+
+    ideas_index = yaml.safe_load(ideas_index_path.read_text())
+    assert "ideas" in ideas_index
+    assert len(ideas_index["ideas"]) == 1
+    assert ideas_index["ideas"][0]["id"] == "I001"
+
+    idea_file = ideas_index["ideas"][0]["file"]
+    idea_path = tmp_tasks_dir / ".tasks" / "ideas" / idea_file
+    assert idea_path.exists()
+
+    content = idea_path.read_text()
+    assert "Run `/plan-task" in content
+    assert "tasks add" in content
+    assert "tasks bug" in content
+
+
+def test_idea_command_increments_idea_ids(runner, tmp_tasks_dir):
+    """idea IDs should increment sequentially in .tasks/ideas/."""
+    first = runner.invoke(cli, ["idea", "first idea"])
+    second = runner.invoke(cli, ["idea", "second idea"])
+
+    assert first.exit_code == 0
+    assert second.exit_code == 0
+
+    ideas_index_path = tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml"
+    ideas_index = yaml.safe_load(ideas_index_path.read_text())
+    ids = [entry["id"] for entry in ideas_index["ideas"]]
+    assert ids == ["I001", "I002"]

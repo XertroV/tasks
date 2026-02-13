@@ -569,8 +569,8 @@ def _validate_runtime_files(tree, findings):
 def _validate_uninitialized_todos(tree, findings):
     """Check for task/bug files that still have default/placeholder content."""
     default_markers = [
-        "- [ ] TODO: Add requirements",
-        "- [ ] TODO: Add acceptance criteria",
+        "- TODO: Add requirements",
+        "- TODO: Add acceptance criteria",
         "TODO: Add steps",
         "TODO: Describe expected behavior",
         "TODO: Describe actual behavior",

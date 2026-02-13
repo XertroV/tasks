@@ -83,6 +83,7 @@ Commands:
   unclaim         Release a claimed task
   blocked         Mark task as blocked and optionally grab next
   bug             Create a new bug report
+  idea            Capture an idea as planning intake
   search          Search tasks by pattern
   check           Check task tree consistency
   init            Initialize a new .tasks project
@@ -93,7 +94,7 @@ Commands:
   session         Manage agent sessions
   data            Export/summarize task data
   report          Generate reports (progress, velocity, estimates) [alias: r]
-  timeline        Display project timeline
+  timeline, tl    Display project timeline
   schema          Show file schema information
   blockers        Show blocking tasks
   skills          Install skill files
@@ -328,6 +329,7 @@ async function cmdList(args: string[]): Promise<void> {
         status: b.status,
         priority: b.priority,
         estimate_hours: b.estimateHours,
+        on_critical_path: criticalPath.includes(b.id),
       })),
     });
     return;
@@ -373,7 +375,8 @@ async function cmdList(args: string[]): Promise<void> {
       const isLast = i === bugsToShow.length - 1;
       const prefix = isLast ? "└── " : "├── ";
       const icon = getStatusIcon(b.status);
-      console.log(`  ${prefix}${icon} ${b.id}: ${b.title} [${b.priority}]`);
+      const critMarker = criticalPath.includes(b.id) ? `${pc.yellow("★")} ` : "";
+      console.log(`  ${prefix}${icon} ${critMarker}${b.id}: ${b.title} [${b.priority}]`);
     }
   }
 }
@@ -1242,7 +1245,7 @@ async function cmdAdd(args: string[]): Promise<void> {
     depends_on: dependsOn,
     tags,
   };
-  const body = bodyOpt ?? `\n# ${title}\n\n## Requirements\n\n- [ ] TODO: Add requirements\n\n## Acceptance Criteria\n\n- [ ] TODO: Add acceptance criteria\n`;
+  const body = bodyOpt ?? `\n# ${title}\n\n## Requirements\n\n- TODO: Add requirements\n\n## Acceptance Criteria\n\n- TODO: Add acceptance criteria\n`;
   await mkdir(dirname(fullFile), { recursive: true });
   await Bun.write(fullFile, `---\n${stringify(fm)}---\n${body}`);
 
@@ -1829,6 +1832,17 @@ async function cmdBug(args: string[]): Promise<void> {
   }
 }
 
+async function cmdIdea(args: string[]): Promise<void> {
+  const title = args.join(" ").trim();
+  if (!title) textError("idea requires IDEA_TEXT");
+
+  const loader = new TaskLoader();
+  const idea = await loader.createIdea({ title });
+  console.log(`Created idea: ${idea.id}`);
+  console.log(`File: .tasks/${idea.file}`);
+  console.log("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.");
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const cmd = args[0];
@@ -1907,6 +1921,9 @@ async function main(): Promise<void> {
     case "timeline":
       await cmdTimeline(rest);
       return;
+    case "tl":
+      await cmdTimeline(rest);
+      return;
     case "schema":
       await cmdSchema(rest);
       return;
@@ -1936,6 +1953,9 @@ async function main(): Promise<void> {
       return;
     case "bug":
       await cmdBug(rest);
+      return;
+    case "idea":
+      await cmdIdea(rest);
       return;
     default:
       textError(`Unknown command: ${cmd}`);

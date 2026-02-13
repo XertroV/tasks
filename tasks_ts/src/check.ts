@@ -295,8 +295,8 @@ async function validateRuntimeFiles(tree: TaskTree, findings: Finding[]): Promis
 
 async function validateUninitializedTodos(tree: TaskTree, findings: Finding[]): Promise<void> {
   const defaultMarkers = [
-    "- [ ] TODO: Add requirements",
-    "- [ ] TODO: Add acceptance criteria",
+    "- TODO: Add requirements",
+    "- TODO: Add acceptance criteria",
     "TODO: Add steps",
     "TODO: Describe expected behavior",
     "TODO: Describe actual behavior",

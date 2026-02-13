@@ -679,6 +679,7 @@ def _list_json(
             "status": b.status.value,
             "priority": b.priority.value,
             "estimate_hours": b.estimate_hours,
+            "on_critical_path": b.id in critical_path,
         }
         for b in getattr(tree, "bugs", [])
         if not unfinished or _is_unfinished(b.status)
@@ -862,7 +863,10 @@ def _list_text(
             is_last = i == len(bugs_to_show) - 1
             prefix = "└──" if is_last else "├──"
             icon = _get_status_icon(b.status)
-            console.print(f"  {prefix} {icon} {b.id}: {b.title} [{b.priority.value}]")
+            crit_marker = "[yellow]★[/] " if b.id in critical_path else ""
+            console.print(
+                f"  {prefix} {icon} {crit_marker}{b.id}: {b.title} [{b.priority.value}]"
+            )
         console.print()
 
 
@@ -2043,6 +2047,7 @@ def _register_all_commands():
         timeline,
         data,
         skills,
+        intake,
         schema,
         check,
     )
@@ -2055,6 +2060,7 @@ def _register_all_commands():
     timeline.register_commands(cli)
     data.register_commands(cli)
     skills.register_commands(cli)
+    intake.register_commands(cli)
     schema.register_commands(cli)
     check.register_commands(cli)
 

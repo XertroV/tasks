@@ -43,10 +43,32 @@ class CriticalPathCalculator:
         # Add all tasks as nodes
         for phase in self.tree.phases:
             self._add_phase_nodes(phase)
+        for bug in getattr(self.tree, "bugs", []):
+            self._add_bug_node(bug)
 
         # Add dependency edges
         for phase in self.tree.phases:
             self._add_phase_dependencies(phase)
+        self._add_bug_dependencies()
+
+    def _add_bug_node(self, bug: Task) -> None:
+        """Add a bug as a weighted graph node."""
+        multiplier = self.complexity_multipliers.get(bug.complexity.value, 1.0)
+        weight = 0 if bug.status == Status.DONE else bug.estimate_hours * multiplier
+
+        self.graph.add_node(
+            bug.id,
+            weight=weight,
+            status=bug.status.value,
+            task=bug,
+        )
+
+    def _add_bug_dependencies(self) -> None:
+        """Add dependency edges for bugs."""
+        for bug in getattr(self.tree, "bugs", []):
+            for dep_id in bug.depends_on:
+                if self.graph.has_node(dep_id):
+                    self.graph.add_edge(dep_id, bug.id)
 
     def _add_phase_nodes(self, phase: Phase) -> None:
         """Add nodes for all tasks in a phase."""
@@ -100,7 +122,9 @@ class CriticalPathCalculator:
             # Milestone-level dependencies
             for dep_milestone_id in milestone.depends_on:
                 # Resolve relative (M1) or absolute (P1.M1) milestone dependency IDs.
-                dep_milestone = self._resolve_milestone_dependency(dep_milestone_id, phase)
+                dep_milestone = self._resolve_milestone_dependency(
+                    dep_milestone_id, phase
+                )
                 if dep_milestone and dep_milestone.epics:
                     # Find last task of last epic in dep milestone
                     last_dep_epic = dep_milestone.epics[-1]
@@ -176,15 +200,15 @@ class CriticalPathCalculator:
             # Shouldn't happen after cycle check, but handle anyway
             raise RuntimeError(f"Topological sort failed: {str(e)}") from e
 
-        # Calculate longest path using dynamic programming
-        dist = {node: 0 for node in topo_order}
+        # Calculate longest path using dynamic programming.
+        # Seed each node with its own weight so isolated nodes are ranked correctly.
+        dist = {node: self.graph.nodes[node]["weight"] for node in topo_order}
         parent = {node: None for node in topo_order}
 
         for node in topo_order:
-            node_weight = self.graph.nodes[node]["weight"]
-
             for successor in self.graph.successors(node):
-                new_dist = dist[node] + node_weight
+                successor_weight = self.graph.nodes[successor]["weight"]
+                new_dist = dist[node] + successor_weight
                 if new_dist > dist[successor]:
                     dist[successor] = new_dist
                     parent[successor] = node
@@ -234,14 +258,22 @@ class CriticalPathCalculator:
                 continue
 
             priority_value = (
-                task.priority.value if hasattr(task.priority, "value") else str(task.priority)
+                task.priority.value
+                if hasattr(task.priority, "value")
+                else str(task.priority)
             )
             priority_rank = self.PRIORITY_RANK.get(priority_value, 999)
             on_critical = task_id in critical_path_pos
             cp_index = critical_path_pos.get(task_id, float("inf"))
 
             ranked.append(
-                (priority_rank, 0 if on_critical else 1, cp_index, original_idx, task_id)
+                (
+                    priority_rank,
+                    0 if on_critical else 1,
+                    cp_index,
+                    original_idx,
+                    task_id,
+                )
             )
 
         ranked.sort(key=lambda r: (r[0], r[1], r[2], r[3]))
@@ -377,6 +409,14 @@ class CriticalPathCalculator:
                         ):
                             available_tasks.append(task.id)
 
+        for bug in getattr(self.tree, "bugs", []):
+            if (
+                bug.status == Status.PENDING
+                and not bug.claimed_by
+                and self._check_dependencies(bug)
+            ):
+                available_tasks.append(bug.id)
+
         return available_tasks
 
     def find_sibling_tasks(self, primary_task: Task, count: int = 3) -> List[str]:
@@ -409,7 +449,7 @@ class CriticalPathCalculator:
         batch_ids = [primary_task.id]
         sibling_ids = []
 
-        for task in epic.tasks[primary_idx + 1:]:
+        for task in epic.tasks[primary_idx + 1 :]:
             if len(sibling_ids) >= count:
                 break
 
@@ -424,7 +464,9 @@ class CriticalPathCalculator:
 
         return sibling_ids
 
-    def _check_dependencies_within_batch(self, task: Task, batch_task_ids: List[str]) -> bool:
+    def _check_dependencies_within_batch(
+        self, task: Task, batch_task_ids: List[str]
+    ) -> bool:
         """Check if task's dependencies are satisfied within the batch context.
 
         A dependency is satisfied if it is either:
@@ -455,7 +497,10 @@ class CriticalPathCalculator:
                 )
                 if task_index and task_index > 0:
                     prev_task = epic.tasks[task_index - 1]
-                    if prev_task.status != Status.DONE and prev_task.id not in batch_task_ids:
+                    if (
+                        prev_task.status != Status.DONE
+                        and prev_task.id not in batch_task_ids
+                    ):
                         return False
 
         # Check phase-level dependencies (these must be fully satisfied - can't be in batch)
@@ -537,7 +582,9 @@ class CriticalPathCalculator:
                     continue
 
                 # Calculate diversity score
-                score = self._calculate_diversity_score(task, primary_task, selected_tasks)
+                score = self._calculate_diversity_score(
+                    task, primary_task, selected_tasks
+                )
 
                 if score > best_score:
                     best_score = score
@@ -552,7 +599,9 @@ class CriticalPathCalculator:
 
         return [task.id for task in selected_tasks]
 
-    def _calculate_diversity_score(self, task: Task, primary_task: Task, selected_tasks: List[Task]) -> int:
+    def _calculate_diversity_score(
+        self, task: Task, primary_task: Task, selected_tasks: List[Task]
+    ) -> int:
         """Calculate diversity score for a task - higher means more spread out."""
         score = 0
 
@@ -577,8 +626,9 @@ class CriticalPathCalculator:
 
     def _has_dependency_relationship(self, task_a: Task, task_b: Task) -> bool:
         """Check if task_a and task_b have any dependency relationship."""
-        return (self._is_in_dependency_chain(task_a, task_b.id) or
-                self._is_in_dependency_chain(task_b, task_a.id))
+        return self._is_in_dependency_chain(
+            task_a, task_b.id
+        ) or self._is_in_dependency_chain(task_b, task_a.id)
 
     def _is_in_dependency_chain(self, task: Task, target_id: str, visited=None) -> bool:
         """Recursively check if target_id is in task's dependency chain."""
@@ -600,7 +650,9 @@ class CriticalPathCalculator:
         # Check implicit dependencies (previous task in epic)
         epic = self.tree.find_epic(task.epic_id)
         if epic and not task.depends_on:
-            task_idx = next((i for i, t in enumerate(epic.tasks) if t.id == task.id), None)
+            task_idx = next(
+                (i for i, t in enumerate(epic.tasks) if t.id == task.id), None
+            )
             if task_idx and task_idx > 0:
                 prev_task = epic.tasks[task_idx - 1]
                 if prev_task.id == target_id:

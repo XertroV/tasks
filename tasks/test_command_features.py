@@ -296,6 +296,17 @@ def test_timeline_renders_ascii_timeline(runner, tmp_feature_tasks_dir):
     assert "Legend:" in result.output
 
 
+def test_tl_alias_matches_timeline_output(runner, tmp_feature_tasks_dir):
+    timeline_result = runner.invoke(cli, ["timeline", "--weeks", "4", "--show-done"])
+    alias_result = runner.invoke(cli, ["tl", "--weeks", "4", "--show-done"])
+
+    assert timeline_result.exit_code == 0
+    assert alias_result.exit_code == 0
+    assert "Project Timeline" in alias_result.output
+    assert "Legend:" in alias_result.output
+    assert alias_result.output == timeline_result.output
+
+
 def test_report_progress_json(runner, tmp_feature_tasks_dir):
     result = runner.invoke(cli, ["report", "progress", "--format", "json"])
     assert result.exit_code == 0

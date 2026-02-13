@@ -34,6 +34,11 @@ function parseTodo(content: string): { frontmatter: AnyRec; body: string } {
   return { frontmatter: {}, body: content };
 }
 
+function slugify(text: string, maxLength = 30): string {
+  const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  return base.length > maxLength ? base.slice(0, maxLength).replace(/-+$/g, "") : base;
+}
+
 export class TaskLoader {
   constructor(private readonly tasksDir = ".tasks") {
     if (!existsSync(tasksDir)) {
@@ -234,8 +239,7 @@ export class TaskLoader {
     }
 
     const bugId = `B${String(nextNum).padStart(3, "0")}`;
-    const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 30).replace(/-+$/g, "");
-    const filename = `${bugId}-${slug}.todo`;
+    const filename = `${bugId}-${slugify(data.title)}.todo`;
     const filePath = join(bugsDir, filename);
 
     const fm: AnyRec = {
@@ -276,6 +280,96 @@ export class TaskLoader {
       priority: (data.priority as Priority) ?? Priority.HIGH,
       dependsOn: data.dependsOn ?? [],
       tags: data.tags ?? [],
+      epicId: undefined,
+      milestoneId: undefined,
+      phaseId: undefined,
+    };
+  }
+
+  async createIdea(data: { title: string; estimate?: number; complexity?: string; priority?: string; dependsOn?: string[]; tags?: string[] }): Promise<import("./models").Task> {
+    const ideasDir = join(this.tasksDir, "ideas");
+    await mkdir(ideasDir, { recursive: true });
+    const indexPath = join(ideasDir, "index.yaml");
+
+    let nextNum = 1;
+    if (existsSync(indexPath)) {
+      const idx = this.mustYaml(indexPath);
+      const existing = ((idx.ideas as AnyRec[]) ?? [])
+        .map((e) => {
+          const id = String(e.id ?? "");
+          const idMatch = id.match(/^I(\d+)$/);
+          if (idMatch?.[1]) return Number(idMatch[1]);
+          const file = String(e.file ?? "");
+          const fileMatch = file.match(/^I(\d+)/);
+          return fileMatch?.[1] ? Number(fileMatch[1]) : 0;
+        })
+        .filter((n) => Number.isFinite(n) && n > 0);
+      if (existing.length) nextNum = Math.max(...existing) + 1;
+    }
+
+    const ideaId = `I${String(nextNum).padStart(3, "0")}`;
+    const filename = `${ideaId}-${slugify(data.title)}.todo`;
+    const filePath = join(ideasDir, filename);
+
+    const fm: AnyRec = {
+      id: ideaId,
+      title: data.title,
+      status: "pending",
+      estimate_hours: data.estimate ?? 1,
+      complexity: data.complexity ?? "medium",
+      priority: data.priority ?? "medium",
+      depends_on: data.dependsOn ?? [],
+      tags: data.tags ?? ["idea", "planning"],
+    };
+
+    const body = `
+# Idea Intake: ${data.title}
+
+## Original Idea
+
+${data.title}
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run \`/plan-task "${data.title}"\` to decompose this idea into actionable work.
+- Confirm placement in the current \`.tasks\` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with \`tasks add\` and related hierarchy commands (\`tasks add-epic\`, \`tasks add-milestone\`, \`tasks add-phase\`) as needed.
+- Create follow-up defects with \`tasks bug\` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- TODO: Add created task IDs
+- TODO: Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete \`.tasks\` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.
+`;
+    await writeFile(filePath, `---\n${stringify(fm)}---\n${body}`);
+
+    const idxData: AnyRec = existsSync(indexPath) ? this.mustYaml(indexPath) : { ideas: [] };
+    const ideasList = ((idxData.ideas as AnyRec[]) ?? []).slice();
+    ideasList.push({ id: ideaId, file: filename });
+    idxData.ideas = ideasList;
+    await mkdir(dirname(indexPath), { recursive: true });
+    await writeFile(indexPath, stringify(idxData));
+
+    return {
+      id: ideaId,
+      title: data.title,
+      file: join("ideas", filename),
+      status: Status.PENDING,
+      estimateHours: data.estimate ?? 1,
+      complexity: (data.complexity as Complexity) ?? Complexity.MEDIUM,
+      priority: (data.priority as Priority) ?? Priority.MEDIUM,
+      dependsOn: data.dependsOn ?? [],
+      tags: data.tags ?? ["idea", "planning"],
       epicId: undefined,
       milestoneId: undefined,
       phaseId: undefined,

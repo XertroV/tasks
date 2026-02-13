@@ -202,12 +202,12 @@ Test task description.
 
 ## Requirements
 
-- [ ] Requirement 1
-- [ ] Requirement 2
+- Requirement 1
+- Requirement 2
 
 ## Acceptance Criteria
 
-- [ ] Criterion 1
+- Criterion 1
 """
 
             with open(task_file, "w") as f:

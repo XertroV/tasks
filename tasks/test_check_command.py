@@ -255,9 +255,9 @@ def test_check_warns_when_todo_file_uninitialized(tmp_path, monkeypatch):
         "---\n\n"
         "# Task 1\n\n"
         "## Requirements\n\n"
-        "- [ ] TODO: Add requirements\n\n"
+        "- TODO: Add requirements\n\n"
         "## Acceptance Criteria\n\n"
-        "- [ ] TODO: Add acceptance criteria\n"
+        "- TODO: Add acceptance criteria\n"
     )
     with open(task_file, "w") as f:
         f.write(content)

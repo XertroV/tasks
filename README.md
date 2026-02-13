@@ -100,6 +100,7 @@ Core:
 - `check` - run consistency checks (missing files, broken dependencies, cycles, ID/path integrity).
 - `unclaim-stale` - release stale `in_progress` claims.
 - `add`, `add-epic`, `add-milestone`, `add-phase` - create new tasks/epics/milestones/phases.
+- `idea "..."` - capture a feature idea as a planning-intake `.todo` in `.tasks/ideas/` for later `/plan-task` style decomposition and ingestion.
 
 Workflow and analysis:
 
@@ -107,7 +108,7 @@ Workflow and analysis:
 - `blocked`, `skip`, `unclaim`, `handoff`, `why` - unblock/reassign/explain workflow.
 - `dash` - one-screen status dashboard.
 - `search PATTERN` and `blockers` - search and dependency-blocker analysis.
-- `timeline` - ASCII timeline/Gantt view.
+- `timeline` (`tl`) - ASCII timeline/Gantt view.
 - `session ...` - session tracking (`start`, `heartbeat`, `list`, `end`, `clean`).
 - `report ...` - reports (`progress`, `velocity`, `estimate-accuracy`).
 - `data ...` - exports (`export`, `summary`).
