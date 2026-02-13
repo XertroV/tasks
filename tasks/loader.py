@@ -658,8 +658,8 @@ TODO: Describe actual behavior
 
 ## Created Work Items
 
-- TODO: Add created task IDs
-- TODO: Add created bug IDs (if any)
+- Add created task IDs
+- Add created bug IDs (if any)
 
 ## Completion Criteria
 
