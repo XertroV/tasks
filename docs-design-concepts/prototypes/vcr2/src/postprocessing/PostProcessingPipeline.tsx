@@ -25,11 +25,10 @@ function CustomShaderPass({
   vertexShader: string;
   fragmentShader: string;
   insertIndex?: number;
-  materialRef?: React.RefObject<ShaderMaterial | null>;
+  materialRef?: React.MutableRefObject<ShaderMaterial | null>;
 }) {
   const { composer } = useContext(EffectComposerContext);
   const localMaterialRef = useRef<ShaderMaterial | null>(null);
-  const materialRefToUse = materialRef ?? localMaterialRef;
   const passRef = useRef<ShaderPass | null>(null);
 
   useEffect(() => {
@@ -40,7 +39,10 @@ function CustomShaderPass({
       vertexShader,
       fragmentShader,
     });
-    materialRefToUse.current = material;
+    localMaterialRef.current = material;
+    if (materialRef) {
+      materialRef.current = material;
+    }
 
     const pass = new ShaderPass(material, 'tDiffuse');
     passRef.current = pass;
@@ -57,11 +59,11 @@ function CustomShaderPass({
         }
         passRef.current.dispose();
       }
-      if (materialRefToUse.current) {
-        materialRefToUse.current.dispose();
+      if (localMaterialRef.current) {
+        localMaterialRef.current.dispose();
       }
     };
-  }, [composer, insertIndex, uniforms, vertexShader, fragmentShader, materialRefToUse]);
+  }, [composer, insertIndex, uniforms, vertexShader, fragmentShader, materialRef]);
 
   return null;
 }
@@ -172,9 +174,12 @@ export function PostProcessingPipeline() {
     <EffectComposer>
       <VHSPassEffect enabled={vhsEnabled} />
       <CRTPassEffect enabled={crtEnabled} />
-      {bloomEnabled && (
-        <Bloom intensity={0.2} luminanceThreshold={0.8} luminanceSmoothing={0.5} radius={0.5} />
-      )}
+      <Bloom
+        intensity={bloomEnabled ? 0.2 : 0}
+        luminanceThreshold={0.8}
+        luminanceSmoothing={0.5}
+        radius={bloomEnabled ? 0.5 : 0}
+      />
     </EffectComposer>
   );
 }

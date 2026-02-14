@@ -1,18 +1,23 @@
 ---
 id: P4.M1.E1.T008
 title: Zapper Leva debug controls
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: medium
 depends_on:
-- T005
-- T006
-- T007
+- P4.M1.E1.T005
+- P4.M1.E1.T006
+- P4.M1.E1.T007
 tags:
 - debug
 - leva
 - dx
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:26:54.108982+00:00'
+started_at: '2026-02-14T14:26:54.108982+00:00'
+completed_at: '2026-02-14T15:45:52.519083+00:00'
+duration_minutes: 78.97350155000001
 ---
 ## Requirements
 - Leva folder Lightgun: showZapper, showCable, zapperScale, offset XYZ sliders, recoilStrength, muzzleFlashIntensity

@@ -1,18 +1,23 @@
 ---
 id: P4.M1.E1.T007
 title: MuzzleFlash point light
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T001
-- T005
+- P4.M1.E1.T001
+- P4.M1.E1.T005
 tags:
 - r3f
 - lighting
 - animation
 - refs
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:26:54.107968+00:00'
+started_at: '2026-02-14T14:26:54.107968+00:00'
+completed_at: '2026-02-14T15:45:52.178832+00:00'
+duration_minutes: 78.96784758333334
 ---
 ## Requirements
 - PointLight at barrel tip [0,0,-0.19], color #FFFF00, distance 1, decay 2
@@ -24,3 +29,21 @@ tags:
 - Flash decays to zero in ~50ms
 - Illuminates nearby surfaces briefly
 - Zero intensity when idle
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P4.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 14:26 UTC
+**Sibling tasks**: P4.M1.E1.T008, P4.M1.E1.T009
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P4.M1.E1.T007 → P4.M1.E1.T008 → P4.M1.E1.T009
+Mark each done individually after completion.
+
+**Task files**:
+- P4.M1.E1.T007: .tasks/04-lightgun-navigation/01-lightgun-system/01-zapper-3d-model-and-controller/T007-muzzleflash-point-light.todo
+- P4.M1.E1.T008: .tasks/04-lightgun-navigation/01-lightgun-system/01-zapper-3d-model-and-controller/T008-zapper-leva-debug-controls.todo
+- P4.M1.E1.T009: .tasks/04-lightgun-navigation/01-lightgun-system/01-zapper-3d-model-and-controller/T009-zapper-integration-and-look-be.todo

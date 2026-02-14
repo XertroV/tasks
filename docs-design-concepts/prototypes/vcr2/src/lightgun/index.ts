@@ -13,3 +13,5 @@ export { useAiming } from './useAiming';
 export type { UseAimingOptions, UseAimingReturn } from './useAiming';
 export { ShootableTarget } from './ShootableTarget';
 export type { ShootableTargetProps } from './ShootableTarget';
+export { useZapperDebugControls } from './useZapperDebugControls';
+export type { ZapperDebugConfig } from './useZapperDebugControls';

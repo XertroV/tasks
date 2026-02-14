@@ -67,7 +67,7 @@ export function VCRDeck({ ...groupProps }: VCRDeckProps) {
         maxWidth={0.16}
         anchorX="center"
         anchorY="middle"
-        font="/fonts/vt323.woff"
+        font="/fonts/VT323-Regular.ttf"
       >
         {displayText}
       </Text>

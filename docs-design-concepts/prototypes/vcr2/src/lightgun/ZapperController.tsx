@@ -9,9 +9,11 @@ const AIM_SWAY_Y = 0.01;
 const RECOIL_DECAY = 0.05;
 const RECOIL_Z = 0.02;
 const RECOIL_Y = 0.01;
+const MUZZLE_FLASH_DECAY = 0.15;
 
 export interface ZapperControllerRef {
   triggerRecoil: () => void;
+  triggerMuzzleFlash: () => void;
   getGroup: () => Group | null;
 }
 
@@ -25,11 +27,15 @@ export const ZapperController = forwardRef<ZapperControllerRef, ZapperController
     const camera = useThree((state) => state.camera);
     const pointer = useThree((state) => state.pointer);
     const recoilRef = useRef(0);
+    const muzzleFlashRef = useRef(0);
     const aimSwayRef = useRef({ x: 0, y: 0 });
 
     useImperativeHandle(ref, () => ({
       triggerRecoil: () => {
         recoilRef.current = 1.0;
+      },
+      triggerMuzzleFlash: () => {
+        muzzleFlashRef.current = 1.0;
       },
       getGroup: () => groupRef.current,
     }));
@@ -76,11 +82,25 @@ export const ZapperController = forwardRef<ZapperControllerRef, ZapperController
           recoilRef.current = 0;
         }
       }
+
+      if (muzzleFlashRef.current > 0) {
+        muzzleFlashRef.current -= MUZZLE_FLASH_DECAY * (delta * 60);
+        if (muzzleFlashRef.current < 0) {
+          muzzleFlashRef.current = 0;
+        }
+      }
     });
 
     return (
       <group ref={groupRef}>
         <ZapperModel showCable={showCable} />
+        <pointLight
+          position={[0, 0, -0.19]}
+          color="#ffff00"
+          intensity={muzzleFlashRef.current * 3.0}
+          distance={1}
+          decay={2}
+        />
       </group>
     );
   }

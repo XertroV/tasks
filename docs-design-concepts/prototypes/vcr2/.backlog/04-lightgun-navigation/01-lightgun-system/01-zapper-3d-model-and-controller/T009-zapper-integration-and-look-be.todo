@@ -1,18 +1,23 @@
 ---
 id: P4.M1.E1.T009
 title: Zapper integration and look-behind compatibility
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T005
-- T006
-- T007
+- P4.M1.E1.T005
+- P4.M1.E1.T006
+- P4.M1.E1.T007
 tags:
 - r3f
 - integration
 - camera
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:26:54.109742+00:00'
+started_at: '2026-02-14T14:26:54.109742+00:00'
+completed_at: '2026-02-14T15:45:52.874702+00:00'
+duration_minutes: 78.97941585
 ---
 ## Requirements
 - Mount ZapperController in scene composition
