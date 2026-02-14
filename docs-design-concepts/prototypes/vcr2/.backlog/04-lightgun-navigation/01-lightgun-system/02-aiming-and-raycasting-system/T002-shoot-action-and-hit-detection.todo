@@ -1,16 +1,21 @@
 ---
 id: P4.M1.E2.T002
 title: Shoot action and hit detection
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
 depends_on:
-- T001
+- P4.M1.E2.T001
 tags:
 - aiming
 - shooting
 - interaction
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:12:33.547380+00:00'
+started_at: '2026-02-14T10:12:33.547380+00:00'
+completed_at: '2026-02-14T10:25:25.270358+00:00'
+duration_minutes: 12.86204945
 ---
 ## Requirements
 - shoot(): if currentTarget exists, call onShoot callback, return ShootResult

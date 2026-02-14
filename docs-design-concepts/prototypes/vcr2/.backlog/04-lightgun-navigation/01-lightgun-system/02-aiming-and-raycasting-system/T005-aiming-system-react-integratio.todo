@@ -1,19 +1,24 @@
 ---
 id: P4.M1.E2.T005
 title: Aiming system React integration hook
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T001
-- T002
-- T003
+- P4.M1.E2.T001
+- P4.M1.E2.T002
+- P4.M1.E2.T003
 tags:
 - aiming
 - hook
 - r3f
 - integration
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:12:33.549731+00:00'
+started_at: '2026-02-14T10:12:33.549731+00:00'
+completed_at: '2026-02-14T10:25:26.301729+00:00'
+duration_minutes: 12.8791998
 ---
 ## Requirements
 - useAiming() hook: creates AimingSystem, wires to useFrame

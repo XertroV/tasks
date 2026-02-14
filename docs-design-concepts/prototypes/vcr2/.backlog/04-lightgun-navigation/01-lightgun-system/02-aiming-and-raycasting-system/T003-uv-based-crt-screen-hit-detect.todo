@@ -1,17 +1,22 @@
 ---
 id: P4.M1.E2.T003
 title: UV-based CRT screen hit detection
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: high
 priority: critical
 depends_on:
-- T001
+- P4.M1.E2.T001
 tags:
 - aiming
 - raycaster
 - crt
 - uv
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:12:33.548157+00:00'
+started_at: '2026-02-14T10:12:33.548157+00:00'
+completed_at: '2026-02-14T10:25:25.618084+00:00'
+duration_minutes: 12.867831866666668
 ---
 ## Requirements
 - When raycaster hits CRT screen mesh, read UV coordinates

@@ -1,10 +1,9 @@
 agent: cli-user
 mode: siblings
-primary_task: P4.M1.E1.T001
+primary_task: P4.M1.E2.T001
 sibling_tasks:
-- P4.M1.E1.T002
-- P4.M1.E1.T003
-- P4.M1.E1.T004
-- P4.M1.E1.T005
-- P4.M1.E1.T006
-started_at: '2026-02-14T09:48:36.057246+00:00'
+- P4.M1.E2.T002
+- P4.M1.E2.T003
+- P4.M1.E2.T004
+- P4.M1.E2.T005
+started_at: '2026-02-14T10:12:33.550568+00:00'
