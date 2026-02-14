@@ -1,0 +1,24 @@
+---
+id: P3.M3.E1.T003
+title: Tracking distortion and head switching effects
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- shader
+- glsl
+- vhs
+- effect
+---
+## Requirements
+- Tracking: horizontal scanline shift proportional to uTrackingError, varies over time
+- Head switching: noise band at uHeadSwitchHeight position, 3-6% screen height, smoothstep edges
+- Both use shared noise functions
+## Acceptance Criteria
+- uTrackingError > 0 produces horizontal scanline shifts
+- Head switch band visible at uHeadSwitchHeight position
+- Band edges smooth (no hard cutoff)
+- Both zero at uniform value 0

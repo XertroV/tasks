@@ -1,0 +1,21 @@
+---
+id: P3.M1.E1.T002
+title: TypeScript type definitions for content and tape model
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- types
+- content
+- tape-model
+---
+## Requirements
+- Create src/types/content.ts with: TapeManifestEntry, TapePage, TapeLink, TapeModel, ParsedPage, ParsedSection, ParsedLine interfaces
+- Add SECTION_ORDER constant array and PAGE_DURATION_SECONDS = 150
+
+## Acceptance Criteria
+- All interfaces match content-navigation.md spec
+- File compiles with zero TypeScript errors under strict mode
+- Types importable from other modules

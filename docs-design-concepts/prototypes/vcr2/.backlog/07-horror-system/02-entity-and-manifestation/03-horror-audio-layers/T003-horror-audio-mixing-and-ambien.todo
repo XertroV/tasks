@@ -1,0 +1,23 @@
+---
+id: P7.M2.E3.T003
+title: Horror audio mixing and ambient detuning
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- horror
+- audio
+- mixing
+- detuning
+---
+## Requirements
+- Fluorescent buzz detunes during ESCALATING (pitch shift down)
+- Ambient drone darkens (lower filter cutoff)
+- All horror audio layers mixed relative to base audio
+## Acceptance Criteria
+- Fluorescent buzz sounds wrong during ESCALATING
+- Ambient gets darker/heavier with intensity
+- No audio clipping with all layers active
+- Smooth mixing transitions

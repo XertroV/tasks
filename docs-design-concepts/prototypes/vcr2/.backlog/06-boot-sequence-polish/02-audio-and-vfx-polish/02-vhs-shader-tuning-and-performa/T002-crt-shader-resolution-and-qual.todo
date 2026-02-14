@@ -1,0 +1,21 @@
+---
+id: P6.M2.E2.T002
+title: CRT shader resolution and quality pass
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- shader
+- tuning
+- crt
+---
+## Requirements
+- Tune CRT scanline count for render target resolution
+- Adjust phosphor mask intensity and pattern
+- Verify curvature doesn't distort text beyond readability
+## Acceptance Criteria
+- Scanlines visually appropriate for 1024x768 render target
+- Phosphor mask visible but not distracting
+- Text remains readable through CRT effects

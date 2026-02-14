@@ -1,0 +1,24 @@
+---
+id: P7.M1.E1.T002
+title: Implement HorrorStore with Zustand
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- store
+- zustand
+- state-machine
+---
+## Requirements
+- Create src/stores/horrorStore.ts with all state fields and defaults
+- Implement enable(), disable(), setPhase(), tick(), activateTrigger(), setEntityVisible(), setEffectOverride(), clearEffectOverrides()
+
+## Acceptance Criteria
+- Store initializes with correct defaults (enabled:true, phase:DORMANT, intensity:0)
+- enable() resets all horror state to DORMANT defaults
+- disable() clears all active horror state
+- tick() increments time counters only when enabled
+- Effect overrides are partial, clearable

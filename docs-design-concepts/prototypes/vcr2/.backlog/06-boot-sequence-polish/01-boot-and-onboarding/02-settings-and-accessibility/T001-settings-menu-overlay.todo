@@ -1,0 +1,22 @@
+---
+id: P6.M1.E2.T001
+title: Settings menu overlay
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- settings
+- ui
+- dom
+---
+## Requirements
+- DOM overlay settings panel, accessible via Escape key or settings target
+- Options: horror toggle, volume controls, reduced motion, font size
+- Semi-transparent backdrop, styled to match CRT aesthetic (green on black)
+## Acceptance Criteria
+- Settings panel toggles with Escape
+- All options functional
+- Styled consistently with CRT aesthetic
+- Closeable via click/shoot/Escape

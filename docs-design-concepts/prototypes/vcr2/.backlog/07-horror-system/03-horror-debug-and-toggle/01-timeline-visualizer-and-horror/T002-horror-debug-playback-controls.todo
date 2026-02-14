@@ -1,0 +1,22 @@
+---
+id: P7.M3.E1.T002
+title: Horror debug playback controls
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- debug
+- horror
+- controls
+---
+## Requirements
+- Buttons: Reset, force each phase (DORMANT through POST)
+- Time scale slider (0.1x to 10x speed)
+- Entity force controls: show/hide, intensity slider
+## Acceptance Criteria
+- Force phase buttons work immediately
+- Time scale affects horror timeline speed
+- Entity controls override store values

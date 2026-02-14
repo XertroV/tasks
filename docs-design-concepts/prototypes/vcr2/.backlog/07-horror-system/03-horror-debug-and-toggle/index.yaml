@@ -1,0 +1,29 @@
+id: P7.M3
+name: Horror Debug and Toggle
+status: pending
+estimate_hours: 9.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Timeline Visualizer and Horror Debug
+  path: 01-timeline-visualizer-and-horror
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Horror Toggle and Post-Horror Flow
+  path: 02-horror-toggle-and-post-horror
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

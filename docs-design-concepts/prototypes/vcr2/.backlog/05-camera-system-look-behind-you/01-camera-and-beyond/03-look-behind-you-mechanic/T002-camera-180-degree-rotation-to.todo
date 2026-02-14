@@ -1,0 +1,24 @@
+---
+id: P5.M1.E3.T002
+title: Camera 180-degree rotation to behind view
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- camera
+- rotation
+- animation
+---
+## Requirements
+- Smooth 180-degree camera rotation over ~1.5s using lerp/slerp
+- Camera rotates to face the back wall opening and hallway beyond
+- Zapper remains visible and functional during rotation
+- Set cameraStore.mode to look-behind
+## Acceptance Criteria
+- Rotation is smooth, not jarring (~1.5s duration)
+- Final view shows back wall opening and hallway corridor
+- Zapper tracks camera rotation correctly
+- cameraStore.mode reflects look-behind

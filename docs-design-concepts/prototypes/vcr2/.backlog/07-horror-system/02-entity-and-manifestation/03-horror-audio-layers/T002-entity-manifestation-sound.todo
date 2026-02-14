@@ -1,0 +1,23 @@
+---
+id: P7.M2.E3.T002
+title: Entity manifestation sound
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- horror
+- audio
+- entity
+- sound
+---
+## Requirements
+- Sound cue when entity face appears on screen
+- Low-frequency drone burst + high-frequency static hiss
+- Duration matches entity flash duration
+## Acceptance Criteria
+- Sound plays synchronized with entity appearance
+- Creates visceral unease
+- Scales with entity intensity
+- Different from ambient sounds

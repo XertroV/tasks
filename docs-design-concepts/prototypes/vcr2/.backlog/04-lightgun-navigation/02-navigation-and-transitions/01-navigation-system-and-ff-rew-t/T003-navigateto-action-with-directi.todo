@@ -1,0 +1,24 @@
+---
+id: P4.M2.E1.T003
+title: navigateTo action with direction calculation
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- store
+- navigation
+- transition
+---
+## Requirements
+- navigateTo(targetPageId): lookup manifest, compare tape positions for FF/REW direction
+- Reject if already transitioning, same page, or missing page
+- Set transition state, call vcrStore.setMode(), push history
+## Acceptance Criteria
+- Navigating to page ahead sets FF_START
+- Navigating to page behind sets REW_START
+- Self-navigation is no-op
+- Rejects during active transition

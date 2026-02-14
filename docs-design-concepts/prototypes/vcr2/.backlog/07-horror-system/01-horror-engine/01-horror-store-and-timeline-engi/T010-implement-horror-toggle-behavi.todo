@@ -1,0 +1,27 @@
+---
+id: P7.M1.E1.T010
+title: Implement horror toggle behavior
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- T002
+- T009
+tags:
+- toggle
+- transitions
+- ux
+---
+## Requirements
+- H key toggles horror, ?horror=false URL param, settings integration point
+- Toggle OFF: 1s fade-out (lerp intensity to 0), then disable()
+- Toggle ON: reset to DORMANT, fresh escalation
+- Add disabling transient field during fade-out
+
+## Acceptance Criteria
+- H key toggles horror on/off
+- ?horror=false disables on page load
+- Toggle OFF produces smooth 1s fade-out
+- Toggle ON resets to DORMANT with totalTime 0
+- Rapid toggle doesn't cause glitches

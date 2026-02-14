@@ -1,0 +1,37 @@
+id: P8.M1.E2
+name: Edge Case Testing and Cross-Browser
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-rapid-navigation-and-state-tra.todo
+  title: Rapid navigation and state transition testing
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-cross-browser-testing-chrome-f.todo
+  title: Cross-browser testing Chrome Firefox Safari
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-mobile-and-low-end-device-fall.todo
+  title: Mobile and low-end device fallback
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

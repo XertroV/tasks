@@ -1,0 +1,22 @@
+---
+id: P2.M2.E2.T001
+title: VCR deck body and tape slot geometry
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- geometry
+- vcr
+- r3f
+---
+## Requirements
+- VCR deck: rectangular box, black plastic, positioned below CRT on stand
+- Tape slot: recessed opening on front face
+- Transport buttons: row of rectangular buttons (non-interactive geometry only)
+## Acceptance Criteria
+- VCR visually identifiable as a VCR deck
+- Tape slot visible on front
+- Buttons visible but not yet interactive
+- Proportioned correctly relative to CRT

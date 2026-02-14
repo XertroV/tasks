@@ -1,0 +1,31 @@
+---
+id: P3.M1.E1.T007
+title: Content pipeline integration test
+status: pending
+estimate_hours: 1.75
+complexity: medium
+priority: high
+depends_on:
+- T001
+- T003
+- T004
+- T005
+- T006
+tags:
+- testing
+- integration
+- content
+---
+## Requirements
+- Test all 48 MDX files parse without errors
+- Test internal links resolve to valid page IDs
+- Test TapeModel positions are monotonically increasing
+- Test formatTimecode boundary values
+- Spot-check specific pages for expected content
+
+## Acceptance Criteria
+- All 48 files parse without throwing
+- No duplicate page IDs in manifest
+- All internal links resolve to valid IDs
+- TapeModel totalDuration equals 7200s
+- At least 3 pages spot-checked for expected title/sections

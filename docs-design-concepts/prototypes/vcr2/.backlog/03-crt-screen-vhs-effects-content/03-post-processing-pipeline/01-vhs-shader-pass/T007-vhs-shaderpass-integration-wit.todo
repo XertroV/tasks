@@ -1,0 +1,26 @@
+---
+id: P3.M3.E1.T007
+title: VHS ShaderPass integration with R3F
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- integration
+- r3f
+- postprocessing
+- vhs
+---
+## Requirements
+- React component/module exporting usable VHS post-processing pass
+- Load shaders via Vite ?raw, define all 13 uniforms with defaults
+- Integrate into EffectComposer: Scene -> VHS Pass -> subsequent passes
+- Noise.glsl string-concatenated into fragment source
+## Acceptance Criteria
+- Pass renders without WebGL errors in Chrome/Firefox/Safari
+- Default uniforms produce passthrough image
+- Uniforms updatable per-frame
+- Integrates into EffectComposer pipeline

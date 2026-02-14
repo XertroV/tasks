@@ -1,0 +1,29 @@
+---
+id: P2.M1.E2.T004
+title: Room scene composition component
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+- T002
+- T003
+tags:
+- composition
+- room
+- r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:54:06.342947+00:00'
+started_at: '2026-02-14T03:54:06.342947+00:00'
+completed_at: '2026-02-14T03:54:06.730832+00:00'
+duration_minutes: 0.006464466666666667
+---
+## Requirements
+- Room.tsx: composes all room elements (walls, floor, ceiling, lights, fog)
+- Manages material references for sharing with hallway segments
+- Exports material refs via context or props
+## Acceptance Criteria
+- Room renders complete enclosed environment
+- Materials accessible for hallway reuse
+- Single component mountable in scene

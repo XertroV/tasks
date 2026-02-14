@@ -1,0 +1,22 @@
+id: P1
+name: Project Scaffold & Tooling
+status: pending
+weeks: 1
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Foundation Setup
+  path: 01-foundation-setup
+  status: pending
+  estimate_hours: 5.0
+  complexity: low
+  depends_on: []
+  description: Project scaffold, toolchain config, shared utilities, directory structure
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

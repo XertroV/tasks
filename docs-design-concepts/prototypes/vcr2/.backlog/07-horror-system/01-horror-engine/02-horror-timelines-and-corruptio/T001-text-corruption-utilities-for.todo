@@ -1,0 +1,23 @@
+---
+id: P7.M1.E2.T001
+title: Text corruption utilities for zalgo and word replacement
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- horror
+- text
+- corruption
+- utility
+---
+## Requirements
+- src/horror/corruption-effects.ts: addZalgo(text, intensity), replaceWords(text, replacements, intensity)
+- Zalgo: add combining unicode characters proportional to intensity
+- Word replacement: substitute words >=5 chars with horror alternatives
+## Acceptance Criteria
+- addZalgo at intensity 0 returns original text
+- addZalgo at intensity 1 heavily corrupts text
+- replaceWords targets content words, not prepositions
+- Functions are pure with no side effects

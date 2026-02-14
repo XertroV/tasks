@@ -1,0 +1,26 @@
+---
+id: P3.M1.E1.T001
+title: Vite manifest plugin for content directory scanning
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- build-tooling
+- vite
+- content
+---
+## Requirements
+- Create vite-plugin-tape-manifest.ts as a Vite plugin
+- Scan symlinked content/docs/ for .mdx files, extract frontmatter
+- Generate TapeManifestEntry for each file with id, title, section, order
+- Section ordering: index, getting-started, agent-usage, operations (alpha), workflows, schema-and-data, parity, faq
+- Emit manifest as importable virtual module or generated JSON
+
+## Acceptance Criteria
+- Plugin registered in vite.config.ts, bun run build succeeds
+- Generated manifest contains all MDX files from docs directory
+- Each entry has correct id, title, section, order, file fields
+- Section ordering matches spec
+- Dev server regenerates on .mdx file changes

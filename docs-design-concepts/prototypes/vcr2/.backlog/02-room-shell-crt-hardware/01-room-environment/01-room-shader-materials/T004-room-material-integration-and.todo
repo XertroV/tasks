@@ -1,0 +1,29 @@
+---
+id: P2.M1.E1.T004
+title: Room material integration and Leva controls
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+- T002
+- T003
+tags:
+- integration
+- leva
+- room
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:51:18.161518+00:00'
+started_at: '2026-02-14T03:51:18.161518+00:00'
+completed_at: '2026-02-14T03:51:18.545255+00:00'
+duration_minutes: 0.006395466666666667
+---
+## Requirements
+- Wire all room materials into Leva Room folder
+- Controls: wallDecay, carpetWear, fog density
+- Materials respond to Leva changes in real-time
+## Acceptance Criteria
+- All material uniforms tunable via Leva
+- Changes visible immediately
+- Materials tree-shake debug controls in production

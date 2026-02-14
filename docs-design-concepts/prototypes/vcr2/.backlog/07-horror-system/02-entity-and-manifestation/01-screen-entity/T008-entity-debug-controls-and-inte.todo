@@ -1,0 +1,30 @@
+---
+id: P7.M2.E1.T008
+title: Entity debug controls and integration tests
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+- T002
+- T003
+- T004
+- T005
+- T006
+- T007
+tags:
+- debug
+- testing
+- integration
+- leva
+---
+## Requirements
+- Leva: Entity Visible, Intensity slider, Form dropdown, Flash Now button
+- Debug: entity state in TimelineVisualizer
+- Manual verification of each form at intensities 0.2, 0.5, 0.8, 1.0
+## Acceptance Criteria
+- All Leva controls affect entity rendering in real-time
+- Can force any form independently
+- Forms degrade gracefully at low intensities
+- Horror toggle-off results in clean cleanup

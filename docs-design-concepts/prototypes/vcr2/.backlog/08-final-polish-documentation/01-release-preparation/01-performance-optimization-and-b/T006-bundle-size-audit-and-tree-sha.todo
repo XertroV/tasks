@@ -1,0 +1,24 @@
+---
+id: P8.M1.E1.T006
+title: Bundle size audit and tree-shaking verification
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- bundle
+- dependencies
+- tree-shaking
+---
+## Requirements
+- Run bun run build, measure output size
+- Generate bundle treemap visualization
+- Verify leva absent from production, drei uses named imports
+- Check for import * patterns
+
+## Acceptance Criteria
+- Total bundle under 1MB (JS+CSS, excluding audio)
+- Leva absent from production bundle (zero bytes)
+- No unused dependencies in production
+- No import * from tree-shakeable packages

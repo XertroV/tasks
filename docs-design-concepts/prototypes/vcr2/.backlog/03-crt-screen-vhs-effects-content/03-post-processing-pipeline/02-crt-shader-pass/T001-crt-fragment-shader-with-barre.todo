@@ -1,0 +1,24 @@
+---
+id: P3.M3.E2.T001
+title: CRT fragment shader with barrel distortion and scanlines
+status: pending
+estimate_hours: 3.0
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- shader
+- glsl
+- crt
+- core
+---
+## Requirements
+- src/shaders/crt-pass.frag.glsl with uniforms: uCurvature, uScanlineIntensity, uScanlineCount, uPhosphorIntensity, uVignetteStrength, uFlicker, uBrightness, uResolution, uTime
+- Barrel distortion: remap UVs to simulate curved CRT glass
+- Scanlines: horizontal darkening every N pixels
+- Both effects gated by uniform value
+## Acceptance Criteria
+- Barrel distortion curves image toward edges
+- Scanlines visible as horizontal line pattern
+- At curvature=0 and scanlines=0, output is passthrough
+- Compiles without GLSL errors

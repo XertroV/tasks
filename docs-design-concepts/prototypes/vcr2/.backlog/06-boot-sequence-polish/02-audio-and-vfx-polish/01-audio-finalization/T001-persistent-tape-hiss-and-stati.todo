@@ -1,0 +1,20 @@
+---
+id: P6.M2.E1.T001
+title: Persistent tape hiss and static crackle
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- audio
+- ambient
+- tape
+---
+## Requirements
+- Tape hiss: pink noise low-passed at 8kHz, gain 0.08, always present when tape loaded
+- Static crackle: random clicks/pops at low rate (~2-4 per second)
+## Acceptance Criteria
+- Tape hiss always audible when VCR has tape
+- Crackle sounds random and natural
+- Both stop when tape ejected

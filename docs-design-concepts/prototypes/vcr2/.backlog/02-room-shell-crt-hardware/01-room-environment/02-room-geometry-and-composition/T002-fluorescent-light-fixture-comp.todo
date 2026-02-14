@@ -1,0 +1,30 @@
+---
+id: P2.M1.E2.T002
+title: Fluorescent light fixture component
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- lighting
+- r3f
+- component
+- room
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:51:31.274947+00:00'
+started_at: '2026-02-14T03:51:31.274947+00:00'
+completed_at: '2026-02-14T03:53:53.000098+00:00'
+duration_minutes: 2.3620856333333333
+---
+## Requirements
+- FluorescentLight.tsx: rectangular light fixture on ceiling
+- Configurable: baseIntensity, flickerEnabled, position
+- Light geometry: thin rectangular box with emissive material
+- PointLight or RectAreaLight for actual illumination
+- Characteristic fluorescent flicker (random intensity dips)
+## Acceptance Criteria
+- Light fixture visible on ceiling
+- Illuminates room with warm-white light
+- Flicker is subtle and intermittent (not constant)
+- baseIntensity configurable for hallway segments

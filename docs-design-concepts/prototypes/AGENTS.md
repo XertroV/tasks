@@ -1,0 +1,2 @@
+- When you see EPIC COMPLETE or MILESTONE COMPLETE, make sure to follow NEXT_STEPS and perform the corresponding review (and then also implement any fixes to address issues raised afterwards).
+- Ensure that everything we can practically test is tested (and that tests run fast) so we can iterate and build confidently and with speed. 

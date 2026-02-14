@@ -1,0 +1,25 @@
+---
+id: P2.M2.E2.T002
+title: VCR seven-segment LED display
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- display
+- vcr
+- text
+- r3f
+---
+## Requirements
+- LED display on VCR front face showing timecode/status
+- Use drei Text or custom segment geometry with emissive material
+- Display modes: off (--:--:--), timecode (HH:MM:SS:FF), status text (PLAY, PAUSE, LOADING)
+- Amber/red color for LED segments
+## Acceptance Criteria
+- Display visible and legible from camera position
+- Switches between off, timecode, and status modes
+- Emissive material glows appropriately
+- Accepts value updates from vcrStore

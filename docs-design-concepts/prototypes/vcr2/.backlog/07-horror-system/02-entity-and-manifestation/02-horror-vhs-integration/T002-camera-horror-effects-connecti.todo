@@ -1,0 +1,23 @@
+---
+id: P7.M2.E2.T002
+title: Camera horror effects connection
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- horror
+- camera
+- effects
+---
+## Requirements
+- Connect horror phase to camera horrorOverrides
+- ESCALATING: subtle drift begins
+- CLIMAX: drift intensifies, zoom-in, shake on entity events
+## Acceptance Criteria
+- Camera effects activate at correct phases
+- ESCALATING: subtle, barely noticeable drift
+- CLIMAX: more aggressive camera perturbation
+- Effects compose with breathing motion

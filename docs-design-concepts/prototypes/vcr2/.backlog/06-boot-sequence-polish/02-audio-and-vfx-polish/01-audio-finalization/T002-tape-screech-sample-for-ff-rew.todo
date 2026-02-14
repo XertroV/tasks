@@ -1,0 +1,21 @@
+---
+id: P6.M2.E1.T002
+title: Tape screech sample for FF/REW transitions
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- audio
+- sample
+- transition
+---
+## Requirements
+- Short tape screech/squeal sound for FF/REW start and stop moments
+- Can be procedural (filtered noise sweep) or a short sample
+- Plays at transition START and ARRIVE phases
+## Acceptance Criteria
+- Screech plays at FF/REW start and stop
+- Sounds like VCR tape mechanism
+- Not too loud relative to other audio

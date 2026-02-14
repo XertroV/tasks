@@ -1,0 +1,21 @@
+---
+id: P3.M1.E2.T004
+title: VCR store debug controls
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- T001
+tags:
+- vcr
+- debug
+- leva
+---
+## Requirements
+- Leva VCR folder: current state monitor, force state dropdown, tape position slider
+- Buttons to trigger each transport action
+## Acceptance Criteria
+- All controls functional
+- Force state changes VCR mode immediately
+- Tape position slider scrubs position

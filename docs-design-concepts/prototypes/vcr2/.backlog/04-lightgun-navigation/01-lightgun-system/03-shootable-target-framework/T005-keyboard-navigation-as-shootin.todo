@@ -1,0 +1,25 @@
+---
+id: P4.M1.E3.T005
+title: Keyboard navigation as shooting alternative
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- T001
+tags:
+- accessibility
+- keyboard
+- navigation
+---
+## Requirements
+- Tab cycles focus to next shootable target, Shift+Tab previous
+- Enter/Space shoots focused target
+- Arrow keys for page navigation, Escape for menu
+- B toggles Look Behind, M goes to menu
+- Focused target gets TARGETING visual state
+## Acceptance Criteria
+- Tab cycling works through all targets
+- Enter/Space triggers shoot on focused target
+- Arrow keys navigate pages
+- All keyboard shortcuts functional

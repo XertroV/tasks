@@ -1,0 +1,23 @@
+---
+id: P7.M2.E3.T001
+title: Whisper audio layer for horror phases
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- horror
+- audio
+- whisper
+- atmosphere
+---
+## Requirements
+- Subtle whispering sound during UNEASY+: procedural filtered noise with amplitude modulation
+- Not recognizable words, just the suggestion of whispering
+- Volume scales with horrorIntensity
+## Acceptance Criteria
+- Whisper audible during UNEASY phase
+- Increases with intensity
+- Sounds like distant whispering, not words
+- Stops on horror toggle-off

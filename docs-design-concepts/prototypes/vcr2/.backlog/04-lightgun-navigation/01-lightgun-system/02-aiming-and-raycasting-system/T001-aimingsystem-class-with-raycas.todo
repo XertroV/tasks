@@ -1,0 +1,23 @@
+---
+id: P4.M1.E2.T001
+title: AimingSystem class with raycaster
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- aiming
+- raycaster
+- threejs
+---
+## Requirements
+- src/lightgun/AimingSystem.ts: raycaster, mouse vector, target registry
+- updateMouse(event): convert screen coords to NDC
+- update(camera): raycast against registered targets
+- Target transition callbacks: onTarget, onUntarget
+## Acceptance Criteria
+- Raycaster correctly converts mouse to world ray
+- Registered targets detected on hover
+- onTarget/onUntarget fire on transitions
+- 1 raycast per frame against ~20-30 targets

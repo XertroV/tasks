@@ -1,0 +1,24 @@
+---
+id: P4.M1.E3.T001
+title: ShootableTarget component
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- interaction
+- target
+- r3f
+- component
+---
+## Requirements
+- src/lightgun/ShootableTarget.tsx: wrapper component for shootable objects
+- Auto-registers with AimingSystem on mount, unregisters on unmount
+- Props: onShoot callback, onTarget/onUntarget for hover effects
+- Works for both 3D objects (VCR buttons) and CRT screen links
+## Acceptance Criteria
+- Targets register/unregister automatically with lifecycle
+- onShoot fires when target is shot
+- onTarget/onUntarget fire on aim hover
+- No manual registration needed by consumers

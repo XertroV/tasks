@@ -1,0 +1,28 @@
+---
+id: P1.M1.E1.T006
+title: Configure Vite for GLSL raw imports and dev port
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on:
+- T005
+tags:
+- vite
+- glsl
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:46:00.338552+00:00'
+started_at: '2026-02-14T03:46:00.338552+00:00'
+completed_at: '2026-02-14T03:47:54.578384+00:00'
+duration_minutes: 1.90399705
+---
+## Requirements
+- Edit vite.config.ts: resolve.alias for @, server.port
+- Add TypeScript declaration for *.glsl?raw modules
+- Create minimal test.glsl to validate pipeline
+
+## Acceptance Criteria
+- .glsl files importable via ?raw suffix
+- TypeScript does not error on GLSL imports
+- bun run build succeeds with GLSL import present

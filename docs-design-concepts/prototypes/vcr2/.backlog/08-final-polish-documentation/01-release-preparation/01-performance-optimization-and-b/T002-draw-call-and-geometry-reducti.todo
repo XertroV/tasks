@@ -1,0 +1,24 @@
+---
+id: P8.M1.E1.T002
+title: Draw call and geometry reduction
+status: pending
+estimate_hours: 1.5
+complexity: high
+priority: critical
+depends_on:
+- T001
+tags:
+- performance
+- rendering
+- optimization
+---
+## Requirements
+- Analyze draw call sources, identify mergeable materials and instanceable meshes
+- Verify hallway segments use InstancedMesh
+- Check for per-frame geometry/material creation
+
+## Acceptance Criteria
+- Draw calls 50 or under in worst case
+- Triangle count 50K or under
+- No per-frame allocations of geometry/material/texture
+- Instancing applied to repeated geometry

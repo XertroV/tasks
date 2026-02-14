@@ -1,0 +1,22 @@
+---
+id: P7.M2.E2.T001
+title: Horror-driven VHS shader uniform modulation
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- horror
+- vhs
+- shader
+- integration
+---
+## Requirements
+- Map horrorStore.effectOverrides to VHS shader uniforms each frame
+- Smooth transitions when overrides change
+- Horror controller sets overrides per timeline events
+## Acceptance Criteria
+- Shader uniforms respond to horror phase changes
+- Transitions are smooth (no instant jumps)
+- All override types functional (tracking, noise, chroma, etc.)

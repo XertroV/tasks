@@ -1,0 +1,25 @@
+---
+id: P8.M1.E1.T004
+title: React render and state update audit
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- performance
+- react
+- state
+---
+## Requirements
+- Audit all useFrame callbacks for setState calls
+- Verify Zustand selectors are granular (individual fields not whole store)
+- Ensure static sub-trees use React.memo
+- Verify debug metrics run at 4Hz, disabled in production
+
+## Acceptance Criteria
+- Zero setState calls inside useFrame
+- No full-store subscriptions
+- Static geometry components do not re-render during gameplay
+- 60fps maintained during rapid state transitions

@@ -1,0 +1,23 @@
+---
+id: P5.M1.E3.T004
+title: Behind view Zapper behavior
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T002
+tags:
+- lightgun
+- camera
+- behind-view
+---
+## Requirements
+- Zapper visible and aimable in behind view
+- Firing produces recoil + flash but has no navigation effect
+- Only LOOK AT SCREEN post-it is shootable in behind view
+## Acceptance Criteria
+- Zapper visible bottom-right in behind view
+- Shooting produces visual/audio feedback
+- No navigation triggered from behind view
+- Only the return post-it is a valid target

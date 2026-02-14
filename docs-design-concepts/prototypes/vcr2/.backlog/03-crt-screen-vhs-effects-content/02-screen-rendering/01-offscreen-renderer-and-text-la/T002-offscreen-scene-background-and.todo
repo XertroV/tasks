@@ -1,0 +1,22 @@
+---
+id: P3.M2.E1.T002
+title: Offscreen scene background and spatial layout zones
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on:
+- T001
+tags:
+- rendering
+- layout
+- scene-graph
+---
+## Requirements
+- Background plane at z=0 with CRT Black #0A0A0A
+- Three zone groups: title (y 0.8-1.0), content (y -0.5-0.8), OSD (y -1.0--0.5)
+- Z-ordering: bg z=0, content z=0.1, OSD z=0.2, scanline z=0.5
+## Acceptance Criteria
+- Background fills orthographic view
+- Three zone groups at correct y-positions
+- Z-ordering prevents content occlusion

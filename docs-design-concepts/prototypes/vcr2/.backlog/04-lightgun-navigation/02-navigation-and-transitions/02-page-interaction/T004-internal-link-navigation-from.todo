@@ -1,0 +1,22 @@
+---
+id: P4.M2.E2.T004
+title: Internal link navigation from page content
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- navigation
+- links
+- content
+---
+## Requirements
+- Cyan links in page content are shootable
+- Shooting a link triggers navigateTo(targetPageId)
+- FF/REW direction based on tape position difference
+- Links to external URLs show brief indicator but don't navigate
+## Acceptance Criteria
+- Internal links trigger navigation with correct FF/REW
+- External links display indicator, no navigation
+- All internal links resolve to valid pages

@@ -1,0 +1,22 @@
+---
+id: P6.M2.E2.T003
+title: Mid-project performance checkpoint
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- performance
+- audit
+- checkpoint
+---
+## Requirements
+- Profile current state: draw calls, vertices, frame time, memory
+- Compare against budget (60fps, 50 calls, 50K verts, 200MB)
+- Identify any issues needing immediate attention before horror system
+## Acceptance Criteria
+- Performance numbers documented
+- Issues ranked by severity
+- Blocking issues have remediation plan
+- Non-blocking issues logged for Phase 7

@@ -1,0 +1,25 @@
+---
+id: P4.M1.E1.T002
+title: Zapper grip trigger guard and trigger geometry
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- r3f
+- geometry
+- procedural
+- 3d-model
+---
+## Requirements
+- Grip: boxGeometry angled 0.4rad, color #1A1A1A with texture ridges
+- Trigger guard: torusGeometry [0.02,0.003,8,12,PI], color #333333
+- Trigger: boxGeometry [0.008,0.015,0.004], color #4A4A4A
+- Expose trigger mesh ref for recoil animation
+
+## Acceptance Criteria
+- Black grip angled downward from barrel
+- Curved trigger guard visible
+- Total Zapper model under 200 vertices

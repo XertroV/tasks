@@ -1,0 +1,24 @@
+---
+id: P3.M2.E1.T001
+title: WebGLRenderTarget setup for offscreen screen content
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- rendering
+- setup
+- threejs
+---
+## Requirements
+- Create src/crt/ScreenRenderer.tsx
+- WebGLRenderTarget(1024,768) with LinearFilter, RGBAFormat, no stencil/depth
+- Orthographic camera: left=-1, right=1, bottom=-1, top=1
+- Dedicated offscreen THREE.Scene, render each frame via useFrame
+- Export render target texture for CRT screen quad
+## Acceptance Criteria
+- Render target rendered to every frame
+- Resolution 1024x768, Linear filter
+- Texture consumable by external material
+- Proper cleanup on unmount

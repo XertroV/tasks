@@ -1,0 +1,26 @@
+---
+id: P3.M1.E1.T006
+title: Runtime content file loader
+status: pending
+estimate_hours: 1.25
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- content
+- loader
+- runtime
+---
+## Requirements
+- Create src/content/contentLoader.ts with fetchMdxContent() and preloadPages()
+- Handle dev (Vite serves symlink) and production (public/ assets) paths
+- Throw typed ContentLoadError on failure
+- Add structured logging via Logger
+
+## Acceptance Criteria
+- fetchMdxContent returns raw MDX string in dev mode
+- Throws ContentLoadError with 404 for nonexistent file
+- preloadPages resolves after all pages load
+- No hardcoded absolute paths

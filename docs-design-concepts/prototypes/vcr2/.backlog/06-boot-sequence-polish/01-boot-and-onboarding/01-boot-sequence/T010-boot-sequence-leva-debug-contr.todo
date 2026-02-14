@@ -1,0 +1,23 @@
+---
+id: P6.M1.E1.T010
+title: Boot sequence Leva debug controls
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- T001
+- T002
+tags:
+- boot
+- debug
+- leva
+---
+## Requirements
+- Leva folder: skipBoot button, restartBoot button, currentPhase monitor, elapsed monitor, phaseSpeed slider, forcePhase select
+- Tree-shaken in production
+## Acceptance Criteria
+- All controls functional in dev mode
+- Phase speed multiplier affects timing
+- Force-phase allows jumping to any phase
+- No boot debug code in production

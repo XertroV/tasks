@@ -1,0 +1,26 @@
+---
+id: P4.M1.E1.T001
+title: Zapper barrel and barrel tip geometry
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- r3f
+- geometry
+- procedural
+- 3d-model
+---
+## Requirements
+- Create src/lightgun/ZapperModel.tsx
+- Barrel: cylinderGeometry [0.015,0.018,0.18,12], color #E85D04, roughness 0.4
+- Barrel tip: cylinderGeometry [0.019,0.019,0.01,12], color #3A3A3A
+- Barrel sight: boxGeometry [0.004,0.006,0.04], color #E85D04
+- All meshes in single group, accept forwarded ref
+
+## Acceptance Criteria
+- Orange barrel cylinder renders with slight taper
+- Dark gray ring at muzzle end
+- Raised sight ridge on top
+- Component accepts ref forwarded to root group

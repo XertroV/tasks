@@ -1,0 +1,24 @@
+---
+id: P7.M1.E2.T003
+title: Horror cycle regression test
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T002
+tags:
+- horror
+- testing
+- regression
+---
+## Requirements
+- Automated or semi-automated test running full horror cycle
+- Verify all phases transition correctly
+- Verify entity appears and disappears per timeline
+- Verify toggle-off works from any phase
+## Acceptance Criteria
+- All phases transition at correct times
+- Entity visibility matches timeline events
+- Toggle-off from any phase produces clean reset
+- No console errors during full cycle

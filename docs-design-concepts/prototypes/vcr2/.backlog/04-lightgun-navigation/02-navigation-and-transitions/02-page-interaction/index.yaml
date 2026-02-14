@@ -1,0 +1,57 @@
+id: P4.M2.E2
+name: Page Interaction
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-scroll-within-page-via-more-an.todo
+  title: Scroll within page via MORE and TOP targets
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-sequential-navigation-prev-and.todo
+  title: Sequential navigation PREV and NEXT targets
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-menu-target-for-returning-to-t.todo
+  title: MENU target for returning to table of contents
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-internal-link-navigation-from.todo
+  title: Internal link navigation from page content
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T005
+  file: T005-page-interaction-debug-control.todo
+  title: Page interaction debug controls
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - T001
+  - T002
+  - T003
+  - T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

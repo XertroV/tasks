@@ -1,0 +1,23 @@
+---
+id: P1.M1.E2.T002
+title: Symlink docs content directory
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- content
+- symlink
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:40:36.583877+00:00'
+started_at: '2026-02-14T03:40:36.583877+00:00'
+completed_at: '2026-02-14T03:43:48.684098+00:00'
+duration_minutes: 3.201670083333333
+---
+## Requirements
+- Create symlink: vcr2/content/docs -> ~/src/tasks/docs/src/content/docs
+- Verify Vite dev server serves symlinked files
+## Acceptance Criteria
+- Symlink exists and resolves correctly
+- MDX files accessible via dev server at /content/docs/

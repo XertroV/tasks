@@ -1,0 +1,27 @@
+---
+id: P4.M1.E2.T005
+title: Aiming system React integration hook
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+- T002
+- T003
+tags:
+- aiming
+- hook
+- r3f
+- integration
+---
+## Requirements
+- useAiming() hook: creates AimingSystem, wires to useFrame
+- Manages mouse event listeners on canvas
+- Exposes shoot(), registerTarget(), cursorState
+- Connects to Zustand aimingStore for crosshair state
+## Acceptance Criteria
+- Hook integrates into R3F render loop
+- Mouse events captured correctly
+- cursorState reflects current aiming state
+- Clean cleanup on unmount

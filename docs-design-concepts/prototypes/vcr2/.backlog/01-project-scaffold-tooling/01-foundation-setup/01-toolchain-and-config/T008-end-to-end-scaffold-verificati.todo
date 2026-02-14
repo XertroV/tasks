@@ -1,0 +1,29 @@
+---
+id: P1.M1.E1.T008
+title: End-to-end scaffold verification
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: critical
+depends_on:
+- T004
+- T007
+tags:
+- verify
+- smoke-test
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:46:01.183738+00:00'
+started_at: '2026-02-14T03:46:01.183738+00:00'
+completed_at: '2026-02-14T03:47:55.545284+00:00'
+duration_minutes: 1.9060254666666667
+---
+## Requirements
+- Run bun run dev, bun run build, bun run lint, bunx tsc --noEmit
+- Fix any issues surfaced
+
+## Acceptance Criteria
+- bun run dev starts without errors, renders R3F Canvas
+- bun run build completes with exit code 0
+- bun run lint exits with code 0
+- bunx tsc --noEmit exits with code 0
+- @/ path alias resolves correctly

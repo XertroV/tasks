@@ -1,0 +1,24 @@
+---
+id: P4.M2.E1.T010
+title: Navigation debug panel integration
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- T001
+- T004
+tags:
+- debug
+- leva
+- devtools
+---
+## Requirements
+- Debug panel: currentPageId, transitionState, progress bar, historyIndex
+- Leva Navigation folder: Force FF, Force REW, Go Back, Go Forward buttons
+- Collapsed by default
+## Acceptance Criteria
+- Debug panel shows current page at all times
+- During transition, progress updates visually
+- Force FF/REW buttons trigger visible transitions
+- Leva folder collapsed by default

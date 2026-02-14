@@ -1,0 +1,39 @@
+id: P7.M2.E2
+name: Horror-VHS Integration
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-horror-driven-vhs-shader-unifo.todo
+  title: Horror-driven VHS shader uniform modulation
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-camera-horror-effects-connecti.todo
+  title: Camera horror effects connection
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-temperature-color-shift-during.todo
+  title: Temperature color shift during horror
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

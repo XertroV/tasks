@@ -1,0 +1,25 @@
+---
+id: P5.M1.E1.T003
+title: Breathing micro-sway animation
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T002
+tags:
+- camera
+- animation
+- shader
+---
+## Requirements
+- Sinusoidal breathing motion on X and Y axes (~0.005-0.01 units)
+- Multiple sine waves at different frequencies for organic feel
+- Target (lookAt) also micro-sways at different phase
+- All values in refs, breathing can be disabled via flag
+
+## Acceptance Criteria
+- Subtle organic micro-sway visible when staring at scene
+- Multiple overlapping frequencies create natural motion
+- Amplitude never moves CRT out of comfortable view
+- Disabling flag results in perfectly static camera

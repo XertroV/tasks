@@ -1,0 +1,21 @@
+---
+id: P8.M1.E2.T003
+title: Mobile and low-end device fallback
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- testing
+- mobile
+- fallback
+---
+## Requirements
+- Detect mobile/low-end: reduce post-processing, disable horror, simplify geometry
+- Show graceful message if WebGL2 not available
+- Touch interaction alternative to lightgun (tap = shoot)
+## Acceptance Criteria
+- Graceful degradation on low-end devices
+- WebGL2 requirement detected and communicated
+- Touch fallback functional on tablets

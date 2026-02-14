@@ -1,0 +1,25 @@
+---
+id: P4.M1.E3.T002
+title: CRT screen link targets
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- interaction
+- target
+- crt
+- links
+---
+## Requirements
+- Generate shootable targets for each link on current CRT page
+- Targets update when page changes or scrolls
+- Link highlight on targeting: text color green->white, prefix arrow appears
+- On shoot: trigger navigation to link target page
+## Acceptance Criteria
+- All page links are shootable
+- Highlighting visible on hover
+- Shooting a link navigates to target page
+- Targets update on page change

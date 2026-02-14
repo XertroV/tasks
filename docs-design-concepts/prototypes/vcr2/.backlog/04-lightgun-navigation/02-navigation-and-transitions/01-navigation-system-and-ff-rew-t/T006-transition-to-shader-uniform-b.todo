@@ -1,0 +1,27 @@
+---
+id: P4.M2.E1.T006
+title: Transition-to-shader uniform bridge
+status: pending
+estimate_hours: 3.0
+complexity: high
+priority: critical
+depends_on:
+- T004
+tags:
+- shader
+- animation
+- useFrame
+- vhs
+- performance
+---
+## Requirements
+- Map transition phase+progress to VHS shader uniforms
+- START: uFFSpeed ramps 0->1, uStaticNoise spikes to 0.3
+- SEEK: uFFSpeed=1.0, uStaticNoise=0.05
+- ARRIVE: uFFSpeed ramps 1->0, uTrackingError wobbles and settles
+- All via direct uniform mutation, no setState
+## Acceptance Criteria
+- FF_START: uFFSpeed increases with quadratic ease-in
+- FF_SEEK: uFFSpeed exactly 1.0
+- FF_ARRIVE: uFFSpeed decreases with quadratic ease-out
+- IDLE: all transition uniforms at 0

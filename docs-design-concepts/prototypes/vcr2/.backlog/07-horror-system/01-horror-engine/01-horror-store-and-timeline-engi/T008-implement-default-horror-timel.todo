@@ -1,0 +1,26 @@
+---
+id: P7.M1.E1.T008
+title: Implement default horror timeline data
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- T005
+- T002
+tags:
+- data
+- timeline
+- content
+---
+## Requirements
+- Create src/horror/horror-timelines.ts with defaultTimeline: TimelineEvent[]
+- All ~15 events: flicker-increase, subtle-tracking, wrong-word, tracking-waves, static-bursts, entity-flash-1, text-corruption, entity-flash-2, wrong-page-content, entity-manifest, screen-text-takeover, climax-peak, fade-to-black
+- Export entityMessages data: wrongWords, textReplacements, screenTakeover, finalMessages
+
+## Acceptance Criteria
+- Timeline has events for all 5 phases
+- Event times and variances match spec
+- Repeat configurations match spec
+- entityMessages data matches spec content
+- Placeholder/stub actions compile

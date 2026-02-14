@@ -1,0 +1,24 @@
+---
+id: P3.M3.E1.T004
+title: Chroma bleed and dropout lines effects
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- shader
+- glsl
+- vhs
+- effect
+---
+## Requirements
+- Chroma bleed: R/G/B sampled at offset UVs, R shifts right, B shifts left
+- Dropouts: random horizontal line segments as white noise, density scales with uDropoutRate
+- Total 3 texture reads for chroma bleed
+## Acceptance Criteria
+- Color fringing visible on edges when uChromaBleed > 0
+- Dropouts appear as white noise line segments
+- Exactly 3 texture reads for chroma (R, G, B channels)
+- Both zero when uniforms at 0

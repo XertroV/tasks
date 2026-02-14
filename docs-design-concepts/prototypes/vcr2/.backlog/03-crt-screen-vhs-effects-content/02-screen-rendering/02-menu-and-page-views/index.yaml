@@ -1,0 +1,48 @@
+id: P3.M2.E2
+name: Menu and Page Views
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-menuview-component-for-table-o.todo
+  title: MenuView component for table of contents
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-pageview-component-for-documen.todo
+  title: PageView component for documentation display
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T003
+  file: T003-screen-view-switcher-between-m.todo
+  title: Screen view switcher between menu and page
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+  - T002
+- id: T004
+  file: T004-navigation-target-positions-pe.todo
+  title: Navigation target positions per page
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on:
+  - T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,23 @@
+---
+id: P6.M1.E1.T002
+title: BootSequence orchestrator component
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- T001
+tags:
+- boot
+- react
+- orchestration
+---
+## Requirements
+- src/boot/BootSequence.tsx reads bootStore and controls child systems per phase
+- Controls visibility, shader uniforms, audio on existing scene objects
+- Unmounts or becomes transparent after READY
+## Acceptance Criteria
+- Full boot plays in ~5 seconds
+- Each phase visually distinct
+- No flashes between phases
+- Under 200 LoC

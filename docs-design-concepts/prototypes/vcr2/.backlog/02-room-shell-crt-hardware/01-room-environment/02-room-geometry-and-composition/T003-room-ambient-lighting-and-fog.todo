@@ -1,0 +1,30 @@
+---
+id: P2.M1.E2.T003
+title: Room ambient lighting and fog setup
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+- T002
+tags:
+- lighting
+- fog
+- atmosphere
+- room
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:54:05.544773+00:00'
+started_at: '2026-02-14T03:54:05.544773+00:00'
+completed_at: '2026-02-14T03:54:05.934591+00:00'
+duration_minutes: 0.0064968
+---
+## Requirements
+- AmbientLight at low intensity (~0.15) for fill
+- Exponential fog for depth (density ~0.04, warm color)
+- Fog primarily affects hallway depth, subtle in main room
+## Acceptance Criteria
+- Room has ambient fill light
+- Fog visible at distance
+- Main room not significantly affected by fog
+- Atmospheric and slightly oppressive

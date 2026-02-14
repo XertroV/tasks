@@ -1,0 +1,25 @@
+---
+id: P5.M1.E1.T005
+title: Camera Leva debug controls
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- T003
+- T004
+tags:
+- camera
+- debug
+- leva
+---
+## Requirements
+- Leva Camera folder: posXYZ, targetXYZ, fov, breathingEnabled, amplitude, speed
+- Camera Horror Debug folder: forceDrift, forceZoom, forceShake
+- Controls tree-shaken in production
+
+## Acceptance Criteria
+- All controls functional in dev mode
+- Adjusting position moves camera immediately
+- Horror debug allows testing all three effects independently
+- Not present in production builds

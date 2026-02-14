@@ -1,0 +1,23 @@
+---
+id: P5.M1.E2.T002
+title: Three-segment corridor assembly
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- layout
+- scene-graph
+- hallways
+---
+## Requirements
+- BackroomsHallway parent placing 3 segments at ~4m, ~12m, ~20m
+- Base intensities: 0.6, 0.3, 0.1
+- Centered on back wall opening, continuous corridor appearance
+## Acceptance Criteria
+- 3 segments at correct world-space positions
+- Corridor appears continuous with no gaps
+- Segment 1 clear, Segment 2 dim, Segment 3 barely visible
+- Total 18 meshes, under 5K vertices

@@ -1,0 +1,26 @@
+---
+id: P3.M3.E1.T009
+title: VHS shader performance validation
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T003
+- T004
+- T005
+- T006
+- T007
+tags:
+- performance
+- validation
+- vhs
+---
+## Requirements
+- All effects at max intensity: frame contribution under 4ms at 1080p
+- Count texture reads: 5 or fewer per pixel
+- No additional render targets allocated
+## Acceptance Criteria
+- Frame contribution under 4ms at 1080p mid-range GPU
+- 5 or fewer texture reads verified in source
+- No shader compilation stalls after initial load

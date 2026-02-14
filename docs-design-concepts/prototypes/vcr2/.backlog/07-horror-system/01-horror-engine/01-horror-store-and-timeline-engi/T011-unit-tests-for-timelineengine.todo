@@ -1,0 +1,26 @@
+---
+id: P7.M1.E1.T011
+title: Unit tests for TimelineEngine
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- T006
+- T007
+tags:
+- test
+- engine
+- quality
+---
+## Requirements
+- Test event trigger timing, variance bounds, conditions, duration tracking
+- Test cleanup called exactly once, repeat events, priority ordering
+- Test pause/resume, reset, seek, getState
+- Test edge cases: zero deltaTime, time 0 event, large deltaTime
+
+## Acceptance Criteria
+- All test cases pass
+- Tests run in under 2 seconds (manual tick calls)
+- Deterministic (seeded random for variance tests)
+- Edge cases covered

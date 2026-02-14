@@ -1,0 +1,29 @@
+---
+id: P7.M1.E1.T009
+title: Implement HorrorController component
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on:
+- T002
+- T006
+- T008
+tags:
+- react
+- controller
+- integration
+---
+## Requirements
+- Create src/horror/HorrorController.tsx
+- Render null when disabled, mount HorrorEngine when enabled
+- In useFrame: tick engine and horror store each frame
+- Use refs and getState() for imperative access (no re-renders)
+- Clean up on unmount
+
+## Acceptance Criteria
+- Renders null when enabled:false
+- Timeline engine ticks every frame via useFrame
+- Phase transitions fire at correct times
+- Intensity interpolates smoothly each frame
+- No re-renders from useFrame

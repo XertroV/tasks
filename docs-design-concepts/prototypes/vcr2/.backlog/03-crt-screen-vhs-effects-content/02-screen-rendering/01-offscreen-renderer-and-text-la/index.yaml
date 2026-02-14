@@ -1,0 +1,107 @@
+id: P3.M2.E1
+name: Offscreen Renderer and Text Layout
+status: pending
+estimate_hours: 15.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-webglrendertarget-setup-for-of.todo
+  title: WebGLRenderTarget setup for offscreen screen content
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-offscreen-scene-background-and.todo
+  title: Offscreen scene background and spatial layout zones
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-vt323-font-loading-for-drei-te.todo
+  title: VT323 font loading for drei Text
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T004
+  file: T004-textlayout-component-with-styl.todo
+  title: TextLayout component with styled text lines
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+  - T003
+- id: T005
+  file: T005-title-area-rendering-in-top-zo.todo
+  title: Title area rendering in top zone
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T004
+- id: T006
+  file: T006-vcr-osd-area-with-mode-indicat.todo
+  title: VCR OSD area with mode indicator and timecode
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T002
+  - T003
+- id: T007
+  file: T007-scroll-offset-mechanism-for-co.todo
+  title: Scroll offset mechanism for content area
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T004
+- id: T008
+  file: T008-scanline-mask-overlay-in-offsc.todo
+  title: Scanline mask overlay in offscreen scene
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T002
+- id: T009
+  file: T009-screen-renderer-integration-wi.todo
+  title: Screen renderer integration with CRT screen quad
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+- id: T010
+  file: T010-screen-renderer-test-harness-w.todo
+  title: Screen renderer test harness with sample content
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T004
+  - T005
+  - T006
+stats:
+  total: 10
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 10

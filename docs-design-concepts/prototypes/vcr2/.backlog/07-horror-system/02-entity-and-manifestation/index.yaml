@@ -1,0 +1,37 @@
+id: P7.M2
+name: Entity and Manifestation
+status: pending
+estimate_hours: 31.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Screen Entity
+  path: 01-screen-entity
+  status: pending
+  estimate_hours: 23.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Horror-VHS Integration
+  path: 02-horror-vhs-integration
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Horror Audio Layers
+  path: 03-horror-audio-layers
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

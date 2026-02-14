@@ -1,0 +1,37 @@
+id: P6.M2.E2
+name: VHS Shader Tuning and Performance Audit
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-vhs-shader-default-values-tuni.todo
+  title: VHS shader default values tuning pass
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-crt-shader-resolution-and-qual.todo
+  title: CRT shader resolution and quality pass
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-mid-project-performance-checkp.todo
+  title: Mid-project performance checkpoint
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

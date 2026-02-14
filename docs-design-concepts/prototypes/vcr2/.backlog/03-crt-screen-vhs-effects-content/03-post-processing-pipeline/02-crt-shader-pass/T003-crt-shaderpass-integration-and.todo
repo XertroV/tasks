@@ -1,0 +1,27 @@
+---
+id: P3.M3.E2.T003
+title: CRT ShaderPass integration and Leva controls
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- integration
+- r3f
+- postprocessing
+- crt
+- leva
+---
+## Requirements
+- CRT pass as ShaderPass or custom Effect subclass
+- Integrates into EffectComposer after VHS pass
+- Leva CRT Display folder with all uniform controls
+- All uniforms have sensible defaults matching spec
+## Acceptance Criteria
+- CRT pass renders after VHS pass in pipeline
+- All Leva controls update uniforms in real-time
+- Default values produce convincing CRT look
+- No WebGL errors

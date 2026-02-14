@@ -1,0 +1,25 @@
+---
+id: P5.M1.E2.T006
+title: Visibility gate tied to Look Behind You
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: critical
+depends_on:
+- T002
+tags:
+- performance
+- integration
+- hallways
+- camera
+---
+## Requirements
+- BackroomsHallway subtree NOT rendered when facing forward
+- Activates only on Look Behind You signal
+- Use visible=false or unmount (0 draw calls when gated off)
+- No pop-in when hallways become visible
+## Acceptance Criteria
+- Facing forward: 0 additional draw calls from hallways
+- Look Behind activates: hallways appear instantly
+- Toggling back removes from render graph
+- No visual artifacts during transition

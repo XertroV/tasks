@@ -1,0 +1,45 @@
+---
+id: P2.M1.E2.T001
+title: Room walls floor and ceiling geometry
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- geometry
+- room
+- r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:51:31.273827+00:00'
+started_at: '2026-02-14T03:51:31.273827+00:00'
+completed_at: '2026-02-14T03:53:52.603083+00:00'
+duration_minutes: 2.3554874166666666
+---
+## Requirements
+- Room: 6m wide x 8m deep x 2.74m tall
+- 4 wall planes, floor plane, ceiling plane
+- Apply wallpaper material to walls, carpet to floor, ceiling-tile to ceiling
+- 2m wide opening in back wall for hallway corridor
+## Acceptance Criteria
+- Room is enclosed box with correct dimensions
+- Materials applied correctly to each surface
+- Back wall has 2m opening
+- Total room geometry under 1K vertices
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P2.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 03:51 UTC
+**Sibling tasks**: P2.M1.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P2.M1.E2.T001 → P2.M1.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P2.M1.E2.T001: .tasks/02-room-shell-crt-hardware/01-room-environment/02-room-geometry-and-composition/T001-room-walls-floor-and-ceiling-g.todo
+- P2.M1.E2.T002: .tasks/02-room-shell-crt-hardware/01-room-environment/02-room-geometry-and-composition/T002-fluorescent-light-fixture-comp.todo

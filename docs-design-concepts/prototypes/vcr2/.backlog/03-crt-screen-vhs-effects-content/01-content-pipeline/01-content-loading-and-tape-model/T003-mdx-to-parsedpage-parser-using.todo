@@ -1,0 +1,27 @@
+---
+id: P3.M1.E1.T003
+title: MDX-to-ParsedPage parser using marked
+status: pending
+estimate_hours: 3.5
+complexity: high
+priority: critical
+depends_on:
+- T002
+tags:
+- content
+- parser
+- marked
+---
+## Requirements
+- Create src/content/mdxParser.ts using marked lexer
+- Strip HTML/JSX, images, imports. Convert tables to aligned text
+- Classify lines: heading, text, code, link, list-item, blank
+- Resolve internal links to page IDs. Wrap text at ~60 chars
+- Group lines into ParsedSection objects split at headings
+
+## Acceptance Criteria
+- Parses all 48 MDX files without errors
+- Headings, code blocks, links, lists correctly classified
+- HTML/JSX tags completely stripped
+- Internal links resolve to valid page IDs
+- Line wrapping at ~60 characters

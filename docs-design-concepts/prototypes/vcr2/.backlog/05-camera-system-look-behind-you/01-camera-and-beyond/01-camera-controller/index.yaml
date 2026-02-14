@@ -1,0 +1,68 @@
+id: P5.M1.E1
+name: Camera Controller
+status: pending
+estimate_hours: 10.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-camera-store-and-configuration.todo
+  title: Camera store and configuration constants
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-cameracontroller-component-wit.todo
+  title: CameraController component with fixed look-at
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-breathing-micro-sway-animation.todo
+  title: Breathing micro-sway animation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T002
+- id: T004
+  file: T004-horror-override-api-for-drift.todo
+  title: Horror override API for drift zoom and shake
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on:
+  - T001
+  - T002
+- id: T005
+  file: T005-camera-leva-debug-controls.todo
+  title: Camera Leva debug controls
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - T003
+  - T004
+- id: T006
+  file: T006-camera-integration-test-and-pe.todo
+  title: Camera integration test and performance validation
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T005
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

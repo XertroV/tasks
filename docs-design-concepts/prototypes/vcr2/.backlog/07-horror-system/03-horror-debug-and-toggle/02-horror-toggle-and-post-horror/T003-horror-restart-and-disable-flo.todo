@@ -1,0 +1,24 @@
+---
+id: P7.M3.E2.T003
+title: Horror restart and disable flow
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T002
+tags:
+- horror
+- restart
+- disable
+- flow
+---
+## Requirements
+- PLAY flow: HorrorController resets, timeline begins fresh, docs resume
+- EJECT flow: 1s fade-out, horror disabled, docs page restored, horror remains off until re-enabled in settings
+- Both flows transition smoothly back to normal docs viewing
+## Acceptance Criteria
+- PLAY: fresh horror cycle begins from DORMANT
+- EJECT: smooth transition to horror-free docs
+- No visual glitches during either transition
+- Horror state correctly set in both cases

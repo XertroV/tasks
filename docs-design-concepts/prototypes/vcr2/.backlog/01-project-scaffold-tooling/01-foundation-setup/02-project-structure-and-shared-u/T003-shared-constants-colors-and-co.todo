@@ -1,0 +1,24 @@
+---
+id: P1.M1.E2.T003
+title: Shared constants colors and configuration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- shared
+- constants
+- colors
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:40:36.584756+00:00'
+started_at: '2026-02-14T03:40:36.584756+00:00'
+completed_at: '2026-02-14T03:45:07.556511+00:00'
+duration_minutes: 4.5161957
+---
+## Requirements
+- src/shared/constants.ts: CRT colors (#0A0A0A, #33FF33, #00FFFF, #FFAA00, #FF0000), Zapper colors, room dimensions, performance budgets
+- src/shared/colors.ts: named color exports for phosphor green, cyan link, amber code, etc.
+## Acceptance Criteria
+- All plan-specified colors defined as named constants
+- No magic color strings elsewhere in codebase (import from constants)

@@ -1,0 +1,37 @@
+id: P8.M1.E3
+name: Documentation and Final Verification
+status: pending
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-project-readme-and-setup-docum.todo
+  title: Project README and setup documentation
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-final-shader-parameter-documen.todo
+  title: Final shader parameter documentation
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-plan-document-update-and-proje.todo
+  title: Plan document update and project retrospective
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

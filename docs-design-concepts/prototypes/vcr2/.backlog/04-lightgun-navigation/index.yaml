@@ -1,0 +1,32 @@
+id: P4
+name: Lightgun + Navigation
+status: pending
+weeks: 2
+estimate_hours: 14.0
+complexity: medium
+depends_on:
+- P3
+milestones:
+- id: M1
+  name: Lightgun System
+  path: 01-lightgun-system
+  status: pending
+  estimate_hours: 24.0
+  complexity: high
+  depends_on: []
+  description: Zapper 3D model, aiming/raycasting, shootable target framework
+- id: M2
+  name: Navigation and Transitions
+  path: 02-navigation-and-transitions
+  status: pending
+  estimate_hours: 28.0
+  complexity: high
+  depends_on: []
+  description: Navigation store, FF/REW transitions, page interaction, procedural
+    audio
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

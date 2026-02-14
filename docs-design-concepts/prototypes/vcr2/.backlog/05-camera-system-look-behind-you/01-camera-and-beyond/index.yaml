@@ -1,0 +1,45 @@
+id: P5.M1
+name: Camera and Beyond
+status: pending
+estimate_hours: 37.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Camera Controller
+  path: 01-camera-controller
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Beyond Hallways
+  path: 02-beyond-hallways
+  status: pending
+  estimate_hours: 18.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E3
+  name: Look Behind You Mechanic
+  path: 03-look-behind-you-mechanic
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Spatial and Ambient Audio
+  path: 04-spatial-and-ambient-audio
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

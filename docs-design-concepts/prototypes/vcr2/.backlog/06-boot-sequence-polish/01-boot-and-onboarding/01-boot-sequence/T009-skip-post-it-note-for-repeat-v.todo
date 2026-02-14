@@ -1,0 +1,25 @@
+---
+id: P6.M1.E1.T009
+title: Skip post-it note for repeat visitors
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+- T002
+tags:
+- boot
+- ux
+- localstorage
+---
+## Requirements
+- Check localStorage for vcr2-visited key
+- If repeat visit: render SKIP post-it note (yellow, hand-written style)
+- Clicking/shooting SKIP calls bootStore.skip()
+- Set localStorage on first visit completion
+## Acceptance Criteria
+- First visit: no skip option
+- Second+ visit: SKIP visible within 0.5s
+- Clicking SKIP jumps to interactive state
+- localStorage persists across sessions

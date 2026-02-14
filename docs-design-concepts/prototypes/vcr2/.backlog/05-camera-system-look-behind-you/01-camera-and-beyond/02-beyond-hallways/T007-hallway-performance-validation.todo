@@ -1,0 +1,28 @@
+---
+id: P5.M1.E2.T007
+title: Hallway performance validation
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on:
+- T001
+- T002
+- T003
+- T004
+- T005
+- T006
+tags:
+- performance
+- validation
+- hallways
+---
+## Requirements
+- Profile: 18 meshes, under 5K vertices, shared materials
+- Confirm 0 GPU cost when gated off
+- Document results
+## Acceptance Criteria
+- Mesh count exactly 18 or under
+- Vertex count under 5K
+- No duplicate material instances
+- Results documented

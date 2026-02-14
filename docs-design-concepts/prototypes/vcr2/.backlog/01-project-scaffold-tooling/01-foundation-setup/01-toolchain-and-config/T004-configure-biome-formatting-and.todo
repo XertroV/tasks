@@ -1,0 +1,29 @@
+---
+id: P1.M1.E1.T004
+title: Configure Biome formatting and linting
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- T003
+tags:
+- biome
+- lint
+- format
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:45:59.431411+00:00'
+started_at: '2026-02-14T03:45:59.431411+00:00'
+completed_at: '2026-02-14T03:47:53.737482+00:00'
+duration_minutes: 1.9051010333333334
+---
+## Requirements
+- Create biome.json with recommended rules, TS/JSX support
+- Add lint and format scripts to package.json
+
+## Acceptance Criteria
+- biome.json exists at project root
+- bunx biome check . produces zero errors
+- bunx biome format --write . is idempotent
+- lint and format scripts exist in package.json

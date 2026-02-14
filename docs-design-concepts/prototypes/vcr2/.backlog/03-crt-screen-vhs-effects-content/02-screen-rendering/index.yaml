@@ -1,0 +1,29 @@
+id: P3.M2
+name: Screen Rendering
+status: pending
+estimate_hours: 19.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Offscreen Renderer and Text Layout
+  path: 01-offscreen-renderer-and-text-la
+  status: pending
+  estimate_hours: 15.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Menu and Page Views
+  path: 02-menu-and-page-views
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

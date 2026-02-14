@@ -1,0 +1,24 @@
+---
+id: P3.M3.E2.T002
+title: Phosphor mask vignette and flicker effects
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- shader
+- glsl
+- crt
+- effect
+---
+## Requirements
+- Phosphor mask: RGB sub-pixel pattern (every 3 pixels alternate R/G/B brightness)
+- Vignette: darken corners and edges, configurable strength
+- Flicker: subtle per-frame brightness variation (random, ~2% amplitude)
+## Acceptance Criteria
+- RGB phosphor pattern visible at close inspection
+- Vignette darkens edges naturally
+- Flicker is subtle and organic
+- All effects independent and tunable

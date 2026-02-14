@@ -1,0 +1,22 @@
+---
+id: P7.M1.E1.T001
+title: Define HorrorPhase type and HorrorState interface
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- store
+- types
+- foundation
+---
+## Requirements
+- Define HorrorPhase union: DORMANT | UNEASY | ESCALATING | CLIMAX | POST
+- Define HorrorState interface with all fields: enabled, phase, intensity, timeInPhase, totalTime, triggersActivated, lastTriggerTime, entityVisible, entityIntensity, effectOverrides
+- Define VHSUniforms type for effectOverrides
+
+## Acceptance Criteria
+- Types compile with zero errors under strict TypeScript
+- HorrorPhase is a string union matching spec exactly
+- All types exportable and importable

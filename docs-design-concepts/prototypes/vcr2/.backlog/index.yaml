@@ -1,0 +1,94 @@
+description: Haunted VCR documentation browser - immersive 3D Backrooms experience
+  for browsing CLI docs via CRT/VCR with NES Zapper interaction and toggleable horror
+  elements
+phases:
+- id: P1
+  name: Project Scaffold & Tooling
+  path: 01-project-scaffold-tooling
+  status: pending
+  weeks: 1
+  estimate_hours: 3.0
+  priority: critical
+  depends_on: []
+  description: Initialize project, install dependencies, configure toolchain, create
+    shared utilities
+- id: P2
+  name: Room Shell + CRT Hardware
+  path: 02-room-shell-crt-hardware
+  status: pending
+  weeks: 2
+  estimate_hours: 12.0
+  priority: high
+  depends_on:
+  - P1
+  description: Room environment with shader materials, CRT television model, VCR deck
+    model, debug foundation
+- id: P3
+  name: CRT Screen + VHS Effects + Content
+  path: 03-crt-screen-vhs-effects-content
+  status: pending
+  weeks: 3
+  estimate_hours: 16.0
+  priority: high
+  depends_on:
+  - P2
+  description: Content pipeline, CRT screen rendering, VHS/CRT post-processing shaders,
+    VCR state machine
+- id: P4
+  name: Lightgun + Navigation
+  path: 04-lightgun-navigation
+  status: pending
+  weeks: 2
+  estimate_hours: 14.0
+  priority: high
+  depends_on:
+  - P3
+  description: Zapper 3D model, aiming/raycasting, shootable targets, navigation transitions,
+    page interaction, procedural audio
+- id: P5
+  name: Camera System + Look Behind You
+  path: 05-camera-system-look-behind-you
+  status: pending
+  weeks: 2
+  estimate_hours: 8.0
+  priority: high
+  depends_on:
+  - P3
+  description: Camera controller, beyond hallways, Look Behind You mechanic, spatial
+    audio. Parallel with P4.
+- id: P6
+  name: Boot Sequence + Polish
+  path: 06-boot-sequence-polish
+  status: pending
+  weeks: 2
+  estimate_hours: 8.0
+  priority: medium
+  depends_on:
+  - P4
+  - P5
+  description: Cinematic boot sequence, settings, accessibility, audio finalization,
+    VHS shader tuning
+- id: P7
+  name: Horror System
+  path: 07-horror-system
+  status: pending
+  weeks: 3
+  estimate_hours: 16.0
+  priority: medium
+  depends_on:
+  - P6
+  description: Horror engine, timeline system, screen entity, VHS integration, horror
+    audio, debug visualizer, toggle flow
+- id: P8
+  name: Final Polish + Documentation
+  path: 08-final-polish-documentation
+  status: pending
+  weeks: 1
+  estimate_hours: 6.0
+  priority: medium
+  depends_on:
+  - P7
+  description: Performance optimization, bundle audit, cross-browser testing, documentation,
+    final verification
+project: vcr2
+timeline_weeks: 12

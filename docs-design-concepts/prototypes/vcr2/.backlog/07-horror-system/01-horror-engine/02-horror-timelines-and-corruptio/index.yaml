@@ -1,0 +1,39 @@
+id: P7.M1.E2
+name: Horror Timelines and Corruption Effects
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-text-corruption-utilities-for.todo
+  title: Text corruption utilities for zalgo and word replacement
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-horror-timeline-event-tuning-a.todo
+  title: Horror timeline event tuning and playthrough test
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-horror-cycle-regression-test.todo
+  title: Horror cycle regression test
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

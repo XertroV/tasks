@@ -1,0 +1,32 @@
+id: P6
+name: Boot Sequence + Polish
+status: pending
+weeks: 2
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P4
+- P5
+milestones:
+- id: M1
+  name: Boot and Onboarding
+  path: 01-boot-and-onboarding
+  status: pending
+  estimate_hours: 19.0
+  complexity: medium
+  depends_on: []
+  description: Cinematic boot sequence, settings menu, accessibility features
+- id: M2
+  name: Audio and VFX Polish
+  path: 02-audio-and-vfx-polish
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: Audio finalization, VHS shader tuning, performance audit
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,25 @@
+---
+id: P4.M1.E1.T008
+title: Zapper Leva debug controls
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- T005
+- T006
+- T007
+tags:
+- debug
+- leva
+- dx
+---
+## Requirements
+- Leva folder Lightgun: showZapper, showCable, zapperScale, offset XYZ sliders, recoilStrength, muzzleFlashIntensity
+- Test Fire button triggers recoil + muzzle flash
+
+## Acceptance Criteria
+- All controls under Lightgun folder in Leva
+- Adjusting offsets moves Zapper in real-time
+- Test Fire triggers both effects
+- showZapper false hides entirely

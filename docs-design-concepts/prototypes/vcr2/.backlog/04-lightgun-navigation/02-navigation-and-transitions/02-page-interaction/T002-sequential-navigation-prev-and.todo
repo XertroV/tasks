@@ -1,0 +1,23 @@
+---
+id: P4.M2.E2.T002
+title: Sequential navigation PREV and NEXT targets
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- navigation
+- sequential
+- targets
+---
+## Requirements
+- PREV and NEXT targets always visible at consistent positions
+- PREV navigates to previous page in tape order (REW transition)
+- NEXT navigates to next page (FF transition)
+- Disabled (grayed out) at first/last page
+## Acceptance Criteria
+- PREV/NEXT visible on every page
+- Shooting triggers FF/REW navigation transition
+- Disabled at boundaries
+- Consistent positioning

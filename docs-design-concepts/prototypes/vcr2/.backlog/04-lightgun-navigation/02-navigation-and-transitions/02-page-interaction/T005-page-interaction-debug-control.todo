@@ -1,0 +1,24 @@
+---
+id: P4.M2.E2.T005
+title: Page interaction debug controls
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- T001
+- T002
+- T003
+- T004
+tags:
+- debug
+- leva
+- interaction
+---
+## Requirements
+- Leva: show target hitboxes toggle, target count monitor
+- Debug overlay showing link UV positions
+## Acceptance Criteria
+- Hitbox visualization toggleable
+- Target count accurate
+- UV positions overlay functional

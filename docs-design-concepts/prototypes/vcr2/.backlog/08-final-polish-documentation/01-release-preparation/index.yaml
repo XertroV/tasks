@@ -1,0 +1,37 @@
+id: P8.M1
+name: Release Preparation
+status: pending
+estimate_hours: 14.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Performance Optimization and Bundle Audit
+  path: 01-performance-optimization-and-b
+  status: pending
+  estimate_hours: 7.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Edge Case Testing and Cross-Browser
+  path: 02-edge-case-testing-and-cross-br
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Documentation and Final Verification
+  path: 03-documentation-and-final-verifi
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

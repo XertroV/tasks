@@ -1,0 +1,22 @@
+---
+id: P5.M1.E2.T001
+title: HallwaySegment component with geometry
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- geometry
+- component
+- hallways
+---
+## Requirements
+- HallwaySegment R3F component: floor (carpet), ceiling (ceiling-tile), walls (wallpaper), light mount
+- Props: position, segmentIndex, baseIntensity
+- Reuse shader materials from main room (shared references, not cloned)
+- Simplified compared to main room (no furniture)
+## Acceptance Criteria
+- Renders 6 meshes with correct material assignments
+- Under 2K vertices per segment
+- Materials are shared references from main room

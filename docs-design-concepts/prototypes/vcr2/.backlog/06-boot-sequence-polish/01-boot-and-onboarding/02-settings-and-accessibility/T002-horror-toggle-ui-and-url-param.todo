@@ -1,0 +1,22 @@
+---
+id: P6.M1.E2.T002
+title: Horror toggle UI and URL parameter
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- horror
+- toggle
+- settings
+- url
+---
+## Requirements
+- Horror on/off toggle in settings menu
+- URL parameter ?horror=false disables on load
+- Visual indicator when horror is disabled
+## Acceptance Criteria
+- Toggle enables/disables horror via horrorStore
+- URL param works on initial load
+- State persists during session

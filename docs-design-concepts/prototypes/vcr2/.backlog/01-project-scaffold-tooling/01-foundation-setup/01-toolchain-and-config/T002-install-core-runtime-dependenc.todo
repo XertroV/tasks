@@ -1,0 +1,26 @@
+---
+id: P1.M1.E1.T002
+title: Install core runtime dependencies
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: critical
+depends_on:
+- T001
+tags:
+- deps
+- three
+- r3f
+- zustand
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:45:58.509334+00:00'
+started_at: '2026-02-14T03:45:58.509334+00:00'
+completed_at: '2026-02-14T03:47:52.930515+00:00'
+duration_minutes: 1.9070195333333333
+---
+## Requirements
+- Run bun add three @react-three/fiber @react-three/drei @react-three/postprocessing zustand marked
+
+## Acceptance Criteria
+- package.json lists three, @react-three/fiber, @react-three/drei, @react-three/postprocessing, zustand, marked under dependencies
+- bun install completes without peer-dependency errors

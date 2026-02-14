@@ -1,0 +1,22 @@
+---
+id: P6.M1.E2.T004
+title: Complete keyboard navigation support
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- accessibility
+- keyboard
+- navigation
+---
+## Requirements
+- All interactive elements reachable via Tab
+- Focus indicators visible (cyan outline matching targeting state)
+- Full keyboard shortcut list documented in settings/help
+## Acceptance Criteria
+- Tab reaches all shootable targets
+- Focus indicators clearly visible
+- Help/shortcut list accessible
+- All documented shortcuts functional

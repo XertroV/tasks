@@ -1,0 +1,28 @@
+---
+id: P1.M1.E1.T001
+title: Scaffold Vite + React + TypeScript project
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- scaffold
+- vite
+- bun
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:40:45.551325+00:00'
+started_at: '2026-02-14T03:40:45.551325+00:00'
+completed_at: '2026-02-14T03:43:21.120587+00:00'
+duration_minutes: 2.5928208666666666
+---
+## Requirements
+- Run bun create vite vcr2 --template react-ts
+- Run bun install inside the created directory
+- Verify generated file structure
+
+## Acceptance Criteria
+- vcr2/ directory exists with Vite React-TS template files
+- package.json contains react, react-dom, typescript, vite
+- bun install completes without errors
+- bun run dev starts Vite dev server

@@ -1,0 +1,25 @@
+---
+id: P3.M1.E2.T002
+title: VCR transport button actions
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- vcr
+- actions
+- interaction
+---
+## Requirements
+- Play: STOPPED/PAUSED -> PLAYING
+- Stop: any -> STOPPED
+- Pause: PLAYING -> PAUSED
+- FF: any (except EJECTED) -> FF with target position
+- REW: any (except EJECTED) -> REW with target position
+- Eject: any -> EJECTED
+## Acceptance Criteria
+- Each button action transitions to correct state
+- Invalid transitions rejected gracefully
+- State changes reflected in store immediately

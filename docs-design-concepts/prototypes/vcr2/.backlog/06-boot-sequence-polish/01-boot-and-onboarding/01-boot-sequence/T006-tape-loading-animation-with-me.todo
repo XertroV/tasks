@@ -1,0 +1,26 @@
+---
+id: P6.M1.E1.T006
+title: Tape loading animation with mechanical sounds
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- T001
+- T005
+tags:
+- boot
+- animation
+- vcr
+- audio
+---
+## Requirements
+- At 2.5s: VCR display shows LOADING, tape slot animation or display fallback
+- Mechanical clunk sounds (bandpass 800-2000Hz), motor spin-up
+- Tape hiss begins after load (pink noise, low-passed 8kHz)
+- Update vcrStore: EJECTED -> LOADING -> LOADED
+## Acceptance Criteria
+- Visual feedback of tape insertion
+- Two distinct mechanical sounds
+- VCR display shows loading state
+- Tape hiss audible by end of phase

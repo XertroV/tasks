@@ -1,0 +1,47 @@
+---
+id: P2.M1.E1.T001
+title: Wallpaper shader material
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- shader
+- glsl
+- material
+- room
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:48:13.364250+00:00'
+started_at: '2026-02-14T03:48:13.364250+00:00'
+completed_at: '2026-02-14T03:51:10.694047+00:00'
+duration_minutes: 2.9554964333333333
+---
+## Requirements
+- src/shaders/wallpaper.frag.glsl: yellowed wallpaper with faded damask pattern
+- Procedural: base color #C4B18C, pattern via fbm noise, vertical seam lines every ~1.2 units
+- Uniforms: uDecay (stain intensity), uTime (subtle moisture animation)
+- ShaderMaterial wrapping in src/room/WallpaperMaterial.tsx
+## Acceptance Criteria
+- Wallpaper has visible repeating pattern
+- Decay uniform controls yellowing/staining
+- Vertical seams visible at regular intervals
+- Subtle moisture animation when uTime advances
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P2.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 03:48 UTC
+**Sibling tasks**: P2.M1.E1.T002, P2.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P2.M1.E1.T001 → P2.M1.E1.T002 → P2.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P2.M1.E1.T001: .tasks/02-room-shell-crt-hardware/01-room-environment/01-room-shader-materials/T001-wallpaper-shader-material.todo
+- P2.M1.E1.T002: .tasks/02-room-shell-crt-hardware/01-room-environment/01-room-shader-materials/T002-carpet-shader-material.todo
+- P2.M1.E1.T003: .tasks/02-room-shell-crt-hardware/01-room-environment/01-room-shader-materials/T003-ceiling-tile-shader-material.todo

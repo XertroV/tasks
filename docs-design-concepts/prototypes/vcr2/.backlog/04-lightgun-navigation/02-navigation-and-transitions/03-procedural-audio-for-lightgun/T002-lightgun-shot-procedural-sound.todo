@@ -1,0 +1,23 @@
+---
+id: P4.M2.E3.T002
+title: Lightgun shot procedural sound
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- audio
+- procedural
+- lightgun
+---
+## Requirements
+- ProceduralSynth.createLightgunShot(): short noise burst + sine pop
+- Attack: 2ms, decay: 50ms, frequency sweep 2000->200Hz
+- Plays on every shoot action (hit or miss)
+## Acceptance Criteria
+- Sound plays on every shot
+- Sounds like electronic zap/pop
+- No audio artifacts or clicks
+- Under 5ms latency from trigger

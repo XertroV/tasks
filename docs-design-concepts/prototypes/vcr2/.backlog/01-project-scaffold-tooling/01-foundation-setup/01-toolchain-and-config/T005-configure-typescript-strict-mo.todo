@@ -1,0 +1,27 @@
+---
+id: P1.M1.E1.T005
+title: Configure TypeScript strict mode and path aliases
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- typescript
+- tsconfig
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:45:59.880797+00:00'
+started_at: '2026-02-14T03:45:59.880797+00:00'
+completed_at: '2026-02-14T03:47:54.136206+00:00'
+duration_minutes: 1.90425655
+---
+## Requirements
+- Edit tsconfig.json: strict true, baseUrl ., paths @/* to ./src/*
+- Set jsx to react-jsx, moduleResolution to bundler
+
+## Acceptance Criteria
+- tsconfig.json has strict: true
+- Path alias @/* maps to ./src/*
+- bunx tsc --noEmit passes with zero errors

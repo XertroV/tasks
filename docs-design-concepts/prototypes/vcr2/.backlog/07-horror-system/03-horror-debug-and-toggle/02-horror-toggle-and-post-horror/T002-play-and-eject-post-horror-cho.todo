@@ -1,0 +1,25 @@
+---
+id: P7.M3.E2.T002
+title: PLAY and EJECT post-horror choice
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- horror
+- post
+- choice
+- interaction
+---
+## Requirements
+- After final messages: two options appear on CRT: PLAY (restart horror cycle) and EJECT (disable horror, return to docs)
+- Both are shootable targets
+- PLAY: reset horror timer, begin fresh escalation
+- EJECT: toggle horror off, rewind to current doc page
+## Acceptance Criteria
+- Both options clearly visible and shootable
+- PLAY restarts horror from DORMANT
+- EJECT disables horror permanently for session
+- VCR state reflects chosen action

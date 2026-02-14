@@ -1,0 +1,22 @@
+---
+id: P6.M2.E1.T003
+title: Audio volume normalization and mixing
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- audio
+- mixing
+- normalization
+---
+## Requirements
+- Normalize all audio sources relative to each other
+- Hierarchy: SFX (loudest) > ambient > tape hiss > room tone
+- No clipping when multiple sources active simultaneously
+## Acceptance Criteria
+- No audio clipping in any scenario
+- SFX clearly audible over ambients
+- Master volume control scales all proportionally
+- Mixed levels feel natural and balanced

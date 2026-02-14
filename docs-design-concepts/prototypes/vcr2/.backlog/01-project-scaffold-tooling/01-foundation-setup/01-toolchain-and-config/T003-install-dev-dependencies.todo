@@ -1,0 +1,27 @@
+---
+id: P1.M1.E1.T003
+title: Install dev dependencies
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: critical
+depends_on:
+- T001
+tags:
+- deps
+- biome
+- types
+- leva
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:45:58.953180+00:00'
+started_at: '2026-02-14T03:45:58.953180+00:00'
+completed_at: '2026-02-14T03:47:53.354724+00:00'
+duration_minutes: 1.9066922
+---
+## Requirements
+- Run bun add -d leva @biomejs/biome @types/three
+
+## Acceptance Criteria
+- package.json lists leva, @biomejs/biome, @types/three under devDependencies
+- bunx biome --version prints version without error
+- TypeScript resolves Three.js types

@@ -1,0 +1,39 @@
+id: P7.M3.E1
+name: Timeline Visualizer and Horror Debug
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-timelinevisualizer-component.todo
+  title: TimelineVisualizer component
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-horror-debug-playback-controls.todo
+  title: Horror debug playback controls
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-horror-leva-controls-integrati.todo
+  title: Horror Leva controls integration
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

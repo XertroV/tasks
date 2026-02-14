@@ -1,0 +1,24 @@
+id: P5
+name: Camera System + Look Behind You
+status: pending
+weeks: 2
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P3
+milestones:
+- id: M1
+  name: Camera and Beyond
+  path: 01-camera-and-beyond
+  status: pending
+  estimate_hours: 37.0
+  complexity: high
+  depends_on: []
+  description: Camera controller, beyond hallways, Look Behind You mechanic, spatial
+    audio
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

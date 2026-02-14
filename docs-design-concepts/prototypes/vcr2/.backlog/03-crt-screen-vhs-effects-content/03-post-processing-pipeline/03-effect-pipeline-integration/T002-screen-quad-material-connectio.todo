@@ -1,0 +1,24 @@
+---
+id: P3.M3.E3.T002
+title: Screen quad material connection
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- integration
+- material
+- crt
+- pipeline
+---
+## Requirements
+- Connect ScreenRenderer RenderTarget texture as input to EffectComposer
+- Verify the full chain: offscreen scene -> RenderTarget -> VHS -> CRT -> Bloom -> screen quad
+- Screen quad on CRT TV model displays final post-processed output
+## Acceptance Criteria
+- Documentation text visible through full post-processing chain
+- VHS and CRT effects applied to screen content
+- Final output displayed on CRT TV in 3D scene
+- No double-processing or render order issues

@@ -1,0 +1,25 @@
+---
+id: P1.M1.E2.T005
+title: Zustand store boilerplate and patterns
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- zustand
+- stores
+- patterns
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:40:36.586434+00:00'
+started_at: '2026-02-14T03:40:36.586434+00:00'
+completed_at: '2026-02-14T03:45:08.376606+00:00'
+duration_minutes: 4.529835883333333
+---
+## Requirements
+- Create example store pattern in src/stores/ showing: typed state, actions, selector patterns, getState() for imperative access
+- Document the no-setState-in-useFrame rule as a code comment
+## Acceptance Criteria
+- Pattern file demonstrates correct Zustand usage
+- Comment documents the setState-in-useFrame anti-pattern
+- Importable as reference for all future stores

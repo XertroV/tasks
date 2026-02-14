@@ -1,0 +1,39 @@
+id: P3
+name: CRT Screen + VHS Effects + Content
+status: pending
+weeks: 3
+estimate_hours: 16.0
+complexity: medium
+depends_on:
+- P2
+milestones:
+- id: M1
+  name: Content Pipeline
+  path: 01-content-pipeline
+  status: pending
+  estimate_hours: 16.0
+  complexity: high
+  depends_on: []
+  description: Content loading, MDX parsing, tape model, VCR state machine
+- id: M2
+  name: Screen Rendering
+  path: 02-screen-rendering
+  status: pending
+  estimate_hours: 19.0
+  complexity: high
+  depends_on: []
+  description: Offscreen renderer, text layout, menu/page views
+- id: M3
+  name: Post-Processing Pipeline
+  path: 03-post-processing-pipeline
+  status: pending
+  estimate_hours: 14.0
+  complexity: critical
+  depends_on: []
+  description: VHS shader pass, CRT shader pass, effect pipeline integration (EffectComposer)
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

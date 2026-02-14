@@ -1,0 +1,39 @@
+id: P7
+name: Horror System
+status: pending
+weeks: 3
+estimate_hours: 16.0
+complexity: medium
+depends_on:
+- P6
+milestones:
+- id: M1
+  name: Horror Engine
+  path: 01-horror-engine
+  status: pending
+  estimate_hours: 34.0
+  complexity: critical
+  depends_on: []
+  description: Horror store, timeline engine, horror timelines, corruption effects
+- id: M2
+  name: Entity and Manifestation
+  path: 02-entity-and-manifestation
+  status: pending
+  estimate_hours: 31.0
+  complexity: high
+  depends_on: []
+  description: Screen entity, horror-VHS integration, horror audio layers
+- id: M3
+  name: Horror Debug and Toggle
+  path: 03-horror-debug-and-toggle
+  status: pending
+  estimate_hours: 9.0
+  complexity: medium
+  depends_on: []
+  description: Timeline visualizer, horror debug controls, post-horror flow
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

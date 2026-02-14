@@ -1,0 +1,22 @@
+---
+id: P6.M1.E1.T003
+title: Black screen overlay and room fade-in
+status: pending
+estimate_hours: 1.25
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- boot
+- visual
+- lighting
+---
+## Requirements
+- Full-screen black overlay, opacity 1.0 during BLACK, fades during ROOM_FADE
+- Scene lights fade from 0 to dim during ROOM_FADE
+- CRT screen remains dark, VCR deck visible
+## Acceptance Criteria
+- Pure black 0-0.5s, smooth fade to reveal room 0.5-1.5s
+- CRT clearly OFF, VCR deck visible
+- Overlay removed after READY

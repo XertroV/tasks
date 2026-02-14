@@ -1,0 +1,25 @@
+---
+id: P3.M2.E2.T003
+title: Screen view switcher between menu and page
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on:
+- T001
+- T002
+tags:
+- screen
+- navigation
+- view-switching
+---
+## Requirements
+- ScreenContent.tsx manages which view (MenuView or PageView) is active
+- Reads navigationStore and contentStore to determine view
+- Menu shown when currentPageId is null or 'menu'
+- Page shown when a page is loaded
+## Acceptance Criteria
+- Menu displays when no page selected
+- Page displays when content loaded
+- Switching between views is clean (no overlap)
+- Responds to store changes

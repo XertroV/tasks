@@ -1,0 +1,22 @@
+---
+id: P4.M1.E3.T004
+title: Post-it note targets
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- interaction
+- target
+- post-it
+---
+## Requirements
+- Shootable post-it notes: LOOK BEHIND YOU (TV bezel), SKIP (boot only)
+- Visual feedback: paper lifts slightly, shadow increases
+- On shoot: trigger corresponding action (camera rotate, boot skip)
+## Acceptance Criteria
+- Post-it notes respond to targeting
+- Lift effect visible on hover
+- Shooting triggers correct action

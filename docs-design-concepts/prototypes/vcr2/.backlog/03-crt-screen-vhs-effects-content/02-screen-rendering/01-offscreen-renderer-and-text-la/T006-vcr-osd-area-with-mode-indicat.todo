@@ -1,0 +1,23 @@
+---
+id: P3.M2.E1.T006
+title: VCR OSD area with mode indicator and timecode
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T002
+- T003
+tags:
+- osd
+- layout
+- vcr
+---
+## Requirements
+- Bottom 15% zone: mode indicator left (PLAY/PAUSE/FF/REW), timecode right (HH:MM:SS:FF amber)
+- Tracking indicator center when tracking > 0.1
+- Separator line at y=-0.5, slightly smaller text, semi-transparent dark background
+## Acceptance Criteria
+- Mode and timecode clearly legible and distinct from content
+- Tracking indicator appears/disappears on prop value
+- OSD background provides adequate contrast

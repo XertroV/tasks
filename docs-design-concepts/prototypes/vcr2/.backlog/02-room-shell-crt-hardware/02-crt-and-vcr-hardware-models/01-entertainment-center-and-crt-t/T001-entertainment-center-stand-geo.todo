@@ -1,0 +1,25 @@
+---
+id: P2.M2.E1.T001
+title: Entertainment center stand geometry
+status: in_progress
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- geometry
+- furniture
+- r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:56:15.587760+00:00'
+started_at: '2026-02-14T03:56:15.587760+00:00'
+completed_at: null
+---
+## Requirements
+- Simple wooden TV stand/entertainment center
+- Procedural box geometry with wood-tone material
+- Positioned against far wall, holds CRT TV and VCR
+## Acceptance Criteria
+- Stand visible, proportioned for 27-inch CRT
+- Positioned at correct depth against wall
+- Wood-tone material applied

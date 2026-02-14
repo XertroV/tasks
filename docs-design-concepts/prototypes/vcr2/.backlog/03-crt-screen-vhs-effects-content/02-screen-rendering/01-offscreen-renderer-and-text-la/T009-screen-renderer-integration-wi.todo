@@ -1,0 +1,25 @@
+---
+id: P3.M2.E1.T009
+title: Screen renderer integration with CRT screen quad
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- integration
+- rendering
+- pipeline
+---
+## Requirements
+- Export render target texture for CRT screen quad material
+- Verify texture orientation (not flipped/mirrored)
+- Verify aspect ratio maps correctly to curved screen
+- Content visible on CRT before post-processing connected
+## Acceptance Criteria
+- Documentation text visible on CRT television screen in 3D room
+- Text not flipped/mirrored/stretched
+- Content updates immediately reflect on CRT
+- Works without post-processing pipeline active

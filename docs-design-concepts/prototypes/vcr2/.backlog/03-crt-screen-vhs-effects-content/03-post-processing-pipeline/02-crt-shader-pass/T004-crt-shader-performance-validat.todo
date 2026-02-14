@@ -1,0 +1,22 @@
+---
+id: P3.M3.E2.T004
+title: CRT shader performance validation
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T003
+tags:
+- performance
+- validation
+- crt
+---
+## Requirements
+- Verify CRT pass under 3ms GPU time at 1080p
+- Check texture read count
+- Verify no additional render targets
+## Acceptance Criteria
+- Under 3ms GPU time at 1080p
+- Combined CRT+VHS under 8ms
+- No additional render targets allocated

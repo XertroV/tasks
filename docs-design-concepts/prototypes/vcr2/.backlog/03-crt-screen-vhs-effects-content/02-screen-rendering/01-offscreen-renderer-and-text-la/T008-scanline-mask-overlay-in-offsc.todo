@@ -1,0 +1,22 @@
+---
+id: P3.M2.E1.T008
+title: Scanline mask overlay in offscreen scene
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- T002
+tags:
+- visual-effect
+- overlay
+---
+## Requirements
+- Full-screen plane at z=0.5 with horizontal scanline pattern
+- Subtle opacity (0.05-0.1), complementary to post-processing CRT scanlines
+- ShaderMaterial with sin(y*lineCount) or pre-generated texture
+## Acceptance Criteria
+- Faint horizontal line pattern visible
+- Does not reduce text legibility
+- Can be disabled by setting opacity to 0
+- No measurable performance impact

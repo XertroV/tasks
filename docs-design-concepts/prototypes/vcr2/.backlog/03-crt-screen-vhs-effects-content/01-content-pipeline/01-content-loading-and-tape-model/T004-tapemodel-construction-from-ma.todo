@@ -1,0 +1,23 @@
+---
+id: P3.M1.E1.T004
+title: TapeModel construction from manifest
+status: pending
+estimate_hours: 1.25
+complexity: low
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- tape-model
+- content
+---
+## Requirements
+- Create src/content/tapeModel.ts with buildTapeModel(), getPageAtPosition(), formatTimecode(), getAdjacentPages()
+- Each page gets tapePosition = order * 150, duration = 150
+
+## Acceptance Criteria
+- buildTapeModel produces TapeModel with correct page count
+- formatTimecode(0) returns 00:00:00:00, formatTimecode(7200) returns 02:00:00:00
+- getPageAtPosition returns correct page for any valid position
+- getAdjacentPages returns null for boundary pages

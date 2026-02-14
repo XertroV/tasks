@@ -1,0 +1,29 @@
+id: P2.M1
+name: Room Environment
+status: pending
+estimate_hours: 10.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Room Shader Materials
+  path: 01-room-shader-materials
+  status: pending
+  estimate_hours: 5.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Room Geometry and Composition
+  path: 02-room-geometry-and-composition
+  status: pending
+  estimate_hours: 5.0
+  complexity: high
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

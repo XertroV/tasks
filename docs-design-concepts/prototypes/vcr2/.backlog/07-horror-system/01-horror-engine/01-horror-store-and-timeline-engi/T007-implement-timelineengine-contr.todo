@@ -1,0 +1,24 @@
+---
+id: P7.M1.E1.T007
+title: Implement TimelineEngine control methods
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T006
+tags:
+- engine
+- control
+- debug
+---
+## Requirements
+- Implement pause(), resume(), reset(), seek(time), getState()
+- reset() clears all state, calls cleanup on active events
+- seek() fast-forwards and triggers/cleans events correctly
+
+## Acceptance Criteria
+- pause() stops processing; resume() continues from current point
+- reset() returns to initial state, all cleanups called
+- seek() handles fast-forward correctly
+- getState() returns accurate snapshot

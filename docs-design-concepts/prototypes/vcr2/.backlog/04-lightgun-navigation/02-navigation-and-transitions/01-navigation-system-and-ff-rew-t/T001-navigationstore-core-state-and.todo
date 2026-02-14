@@ -1,0 +1,22 @@
+---
+id: P4.M2.E1.T001
+title: NavigationStore core state and type definitions
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- store
+- zustand
+- navigation
+- types
+---
+## Requirements
+- Create src/stores/navigationStore.ts with Zustand
+- TransitionState union: IDLE/FF_START/FF_SEEK/FF_ARRIVE/REW_START/REW_SEEK/REW_ARRIVE
+- State: currentPageId, currentTapePosition, targetPageId, targetTapePosition, currentPage, isLoading, transitionState, transitionProgress
+## Acceptance Criteria
+- Store returns all NavigationState fields
+- Initial transitionState is IDLE, currentPageId is index
+- TypeScript strict mode, no any types

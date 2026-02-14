@@ -1,0 +1,22 @@
+---
+id: P8.M1.E2.T002
+title: Cross-browser testing Chrome Firefox Safari
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- testing
+- cross-browser
+- compatibility
+---
+## Requirements
+- Test full experience in Chrome, Firefox, Safari (latest versions)
+- Verify: WebGL shaders compile, audio plays, interactions work
+- Document any browser-specific issues
+## Acceptance Criteria
+- All core features work in all 3 browsers
+- No shader compilation errors
+- Audio plays correctly
+- Browser-specific issues documented with workarounds

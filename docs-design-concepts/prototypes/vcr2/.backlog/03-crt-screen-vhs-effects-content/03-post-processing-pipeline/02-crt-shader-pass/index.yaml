@@ -1,0 +1,49 @@
+id: P3.M3.E2
+name: CRT Shader Pass
+status: pending
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-crt-fragment-shader-with-barre.todo
+  title: CRT fragment shader with barrel distortion and scanlines
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-phosphor-mask-vignette-and-fli.todo
+  title: Phosphor mask vignette and flicker effects
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-crt-shaderpass-integration-and.todo
+  title: CRT ShaderPass integration and Leva controls
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+- id: T004
+  file: T004-crt-shader-performance-validat.todo
+  title: CRT shader performance validation
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,24 @@
+---
+id: P5.M1.E3.T003
+title: Look At Screen floating post-it and return rotation
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on:
+- T002
+tags:
+- post-it
+- camera
+- interaction
+---
+## Requirements
+- When in behind view: floating LOOK AT SCREEN post-it appears in view
+- Shooting it triggers 180-degree rotation back to CRT
+- Same lerp duration (~1.5s)
+- cameraStore.mode returns to normal
+## Acceptance Criteria
+- Post-it visible in behind view
+- Shooting triggers smooth return rotation
+- Camera returns to exact default position/target
+- B keyboard shortcut also toggles

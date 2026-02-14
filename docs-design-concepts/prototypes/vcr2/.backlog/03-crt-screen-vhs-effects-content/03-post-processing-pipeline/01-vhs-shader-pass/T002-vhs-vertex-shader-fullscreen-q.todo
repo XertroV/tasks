@@ -1,0 +1,19 @@
+---
+id: P3.M3.E1.T002
+title: VHS vertex shader fullscreen quad
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- shader
+- glsl
+- vhs
+---
+## Requirements
+- src/shaders/vhs-pass.vert.glsl: standard fullscreen quad
+- Output vUv varying from attribute uv
+## Acceptance Criteria
+- Compiles without error
+- Outputs correct vUv for fragment shader

@@ -1,0 +1,27 @@
+---
+id: P4.M1.E1.T005
+title: ZapperController fixed-offset positioning and aim sway
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- T004
+tags:
+- r3f
+- useFrame
+- animation
+- refs
+---
+## Requirements
+- Position weapon at fixed offset from camera: (0.25, -0.15, -0.3) bottom-right
+- Use camera.localToWorld for world-space positioning
+- Copy camera quaternion to weapon group
+- Add subtle aim sway: mouse.x * 0.02 on rotation.y, mouse.y * 0.01 on rotation.x
+- All via refs, zero setState in useFrame
+
+## Acceptance Criteria
+- Zapper appears fixed at bottom-right like FPS weapon
+- Mouse movement causes subtle weapon sway
+- Zapper tracks camera position/rotation perfectly
+- No React re-renders from frame loop

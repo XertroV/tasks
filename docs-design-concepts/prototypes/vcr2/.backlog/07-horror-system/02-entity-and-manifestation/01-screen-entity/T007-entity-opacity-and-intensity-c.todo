@@ -1,0 +1,27 @@
+---
+id: P7.M2.E1.T007
+title: Entity opacity and intensity controller
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T002
+- T004
+- T005
+tags:
+- entity
+- controller
+- animation
+- integration
+---
+## Requirements
+- Central controller managing smooth interpolation of all entity parameters
+- Flash pattern: opacity spike in <0.1s, hold, fade in <0.3s
+- Build pattern: slow ramp from 0 to target over ~2s
+- Horror toggle-off: all values lerp to 0 over 1s
+## Acceptance Criteria
+- Entity parameters never jump, always smoothly interpolated
+- Flash and build patterns distinguishable
+- Toggle-off produces clean 1s fade
+- All animation via refs, no useState

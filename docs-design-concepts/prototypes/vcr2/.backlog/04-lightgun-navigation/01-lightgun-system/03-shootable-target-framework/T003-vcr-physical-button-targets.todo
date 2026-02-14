@@ -1,0 +1,24 @@
+---
+id: P4.M1.E3.T003
+title: VCR physical button targets
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- interaction
+- target
+- vcr
+- buttons
+---
+## Requirements
+- Shootable targets for PLAY, STOP, FF, REW, EJECT buttons on VCR deck
+- Visual feedback: button depresses slightly (translateZ), subtle glow
+- On shoot: trigger corresponding VCR store action
+## Acceptance Criteria
+- All 5 VCR buttons are shootable
+- Button depression visible on targeting
+- Each button triggers correct VCR action
+- Visual feedback immediate

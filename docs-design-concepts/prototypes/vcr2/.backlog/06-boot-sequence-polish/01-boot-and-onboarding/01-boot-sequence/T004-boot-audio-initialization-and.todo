@@ -1,0 +1,25 @@
+---
+id: P6.M1.E1.T004
+title: Boot audio initialization and fluorescent buzz
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- boot
+- audio
+- procedural
+- browser-policy
+---
+## Requirements
+- Fluorescent buzz fades in during BLACK (120Hz sawtooth, low-passed 300Hz)
+- Handle Web Audio autoplay policy with click/key prompt
+- Boot proceeds visually if audio not yet initialized
+- Audio starts seamlessly when interaction occurs
+## Acceptance Criteria
+- Buzz audible during black screen
+- No audio click/pop at start
+- Works across Chrome/Firefox/Safari autoplay policies
+- Boot not blocked waiting for interaction

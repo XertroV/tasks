@@ -1,0 +1,21 @@
+---
+id: P7.M3.E1.T003
+title: Horror Leva controls integration
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- T001
+tags:
+- debug
+- horror
+- leva
+---
+## Requirements
+- Leva Horror folder: enabled toggle, forcePhase, forceIntensity, timeScale, showEntityAlways
+- All controls drive horrorStore
+## Acceptance Criteria
+- All controls functional
+- forceIntensity -1 means auto
+- showEntityAlways overrides timeline

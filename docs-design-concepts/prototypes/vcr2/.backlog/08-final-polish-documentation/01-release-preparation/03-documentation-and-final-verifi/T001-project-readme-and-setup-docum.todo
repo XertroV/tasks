@@ -1,0 +1,20 @@
+---
+id: P8.M1.E3.T001
+title: Project README and setup documentation
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- documentation
+- readme
+---
+## Requirements
+- README.md: project description, setup instructions (bun install, bun dev), build instructions, architecture overview
+- Document environment variables, configuration, content symlink setup
+- List keyboard shortcuts and controls
+## Acceptance Criteria
+- New developer can set up and run project following README
+- All commands work as documented
+- Architecture overview covers key modules

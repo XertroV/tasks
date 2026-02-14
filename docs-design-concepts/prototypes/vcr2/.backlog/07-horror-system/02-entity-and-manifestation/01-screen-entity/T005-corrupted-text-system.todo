@@ -1,0 +1,25 @@
+---
+id: P7.M2.E1.T005
+title: Corrupted text system
+status: pending
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- T003
+- T002
+tags:
+- entity
+- text
+- corruption
+- content
+---
+## Requirements
+- Three tiers: Wrong Word (UNEASY), Text Replacement with zalgo (ESCALATING), Screen Takeover (CLIMAX)
+- useCorruptedText(originalText) hook reading horrorStore
+- Text reverts cleanly on horror toggle-off
+## Acceptance Criteria
+- UNEASY: single wrong word, subtle
+- ESCALATING: multiple words corrupted with zalgo
+- CLIMAX: all documentation replaced with red entity messages
+- Text reverts on horror disable

@@ -1,0 +1,23 @@
+---
+id: P3.M2.E1.T010
+title: Screen renderer test harness with sample content
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T004
+- T005
+- T006
+tags:
+- dev-tooling
+- testing
+---
+## Requirements
+- Dev-only sample content exercising all text types (heading, body, code, links, list items)
+- Over 20 lines to test scrolling
+- Activatable via ?test-screen=true URL param
+## Acceptance Criteria
+- Sample content renders all text types with correct styling
+- Scrolling works with sample content
+- Visually confirms color, size, spacing, emissive glow

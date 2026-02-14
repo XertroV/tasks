@@ -1,0 +1,24 @@
+---
+id: P7.M2.E2.T003
+title: Temperature color shift during horror
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- T001
+tags:
+- horror
+- shader
+- color
+- atmosphere
+---
+## Requirements
+- Subtle color temperature shift as horror intensifies
+- Normal: neutral/warm, CLIMAX: slightly cooler/desaturated
+- Applied as post-processing adjustment or ambient light change
+## Acceptance Criteria
+- Color shift barely perceptible during UNEASY
+- More noticeable during CLIMAX
+- Reverts on horror toggle-off
+- Doesn't break text readability

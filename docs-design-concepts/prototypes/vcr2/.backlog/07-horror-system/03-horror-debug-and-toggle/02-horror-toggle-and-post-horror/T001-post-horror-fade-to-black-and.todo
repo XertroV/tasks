@@ -1,0 +1,23 @@
+---
+id: P7.M3.E2.T001
+title: Post-horror fade-to-black and final messages
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- horror
+- post
+- fade
+- messages
+---
+## Requirements
+- After CLIMAX: screen fades to black over 2s
+- Final messages appear sequentially: THE TAPE IS ENDLESS, etc.
+- Each message visible for 3-4 seconds, green text on black
+## Acceptance Criteria
+- Smooth fade to black after CLIMAX
+- Messages appear sequentially
+- Green text on black, centered
+- Last message fades to choice screen

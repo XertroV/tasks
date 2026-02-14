@@ -1,0 +1,24 @@
+---
+id: P3.M3.E1.T005
+title: Static noise pause jitter and FF/REW effects
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- shader
+- glsl
+- vhs
+- effect
+---
+## Requirements
+- Static noise: per-pixel monochromatic noise, additive blend, computed not texture
+- Pause jitter: vertical jitter + horizontal wobble on UV
+- FF/REW: diagonal scan bands scrolling up (FF) or down (REW), horizontal offset within bands
+## Acceptance Criteria
+- Static noise changes every frame, faintly visible at 0.5
+- Pause jitter simulates unstable paused tape
+- FF produces upward-scrolling bands, REW produces downward
+- All three zero when respective uniforms at 0

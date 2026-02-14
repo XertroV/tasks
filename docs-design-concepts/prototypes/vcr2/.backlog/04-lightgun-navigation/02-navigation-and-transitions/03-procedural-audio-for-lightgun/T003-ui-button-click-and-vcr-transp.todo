@@ -1,0 +1,24 @@
+---
+id: P4.M2.E3.T003
+title: UI button click and VCR transport sounds
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- audio
+- procedural
+- vcr
+- ui
+---
+## Requirements
+- Button click: short filtered noise burst (~5ms) for VCR button presses
+- Transport mode sounds: FF whir (rising pitch noise), REW whir (similar but reversed feel)
+- Mechanical clunk for eject
+## Acceptance Criteria
+- Each VCR button has distinct click sound
+- FF/REW produce continuous whir while active
+- Eject has mechanical clunk
+- All procedurally generated

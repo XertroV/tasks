@@ -1,0 +1,23 @@
+---
+id: P3.M3.E3.T003
+title: Pipeline bypass and debug controls
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- T001
+- T002
+tags:
+- debug
+- pipeline
+- leva
+---
+## Requirements
+- Leva toggles to bypass individual passes (VHS on/off, CRT on/off, Bloom on/off)
+- Visual comparison mode: side-by-side or toggle
+- Log pipeline timing per pass
+## Acceptance Criteria
+- Each pass individually toggleable
+- Bypassing a pass shows clean input
+- Timing logged for performance analysis

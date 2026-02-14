@@ -1,0 +1,23 @@
+---
+id: P2.M2.E3.T002
+title: Leva controls setup and organization
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- debug
+- leva
+- setup
+---
+## Requirements
+- Central Leva provider in App.tsx (dev only)
+- Organized folders: VHS, CRT, Room, Camera, Lightgun, Horror, Audio
+- All folders collapsed by default
+- F1 hotkey toggles Leva visibility
+## Acceptance Criteria
+- Leva panel visible in dev mode only
+- Folders organized as specified
+- F1 toggles visibility
+- No Leva in production build

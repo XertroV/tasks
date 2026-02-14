@@ -1,0 +1,24 @@
+---
+id: P7.M2.E1.T001
+title: Entity face texture generator
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- procedural
+- canvas
+- texture
+- entity
+---
+## Requirements
+- generateEntityFace(): CanvasTexture on 256x256 canvas
+- Two asymmetric oval eyes with dark pupils, slightly open mouth
+- Horizontal scan line overlay, per-pixel noise pass
+- Generated once at startup, not per-frame
+## Acceptance Criteria
+- Returns valid CanvasTexture
+- Face deliberately crude and uncanny
+- Scan lines and noise give VHS feel
+- No external image assets required

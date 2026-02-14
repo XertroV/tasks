@@ -1,0 +1,24 @@
+---
+id: P3.M1.E2.T001
+title: VCR store with state machine
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- store
+- zustand
+- vcr
+- state-machine
+---
+## Requirements
+- src/stores/vcrStore.ts with states: EJECTED, LOADING, STOPPED, PLAYING, PAUSED, FF, REW
+- State: mode, tapeLoaded, currentTime, targetTime, displayText, isTransitioning
+- Valid transitions matrix (not all transitions allowed)
+- Actions: setMode(), eject(), loadTape(), setTargetPosition(), tick()
+## Acceptance Criteria
+- Store enforces valid transitions only
+- Invalid transitions logged as warnings
+- tick() advances currentTime when PLAYING
+- Display text computed from mode (PLAY, PAUSE, FF, REW, etc.)

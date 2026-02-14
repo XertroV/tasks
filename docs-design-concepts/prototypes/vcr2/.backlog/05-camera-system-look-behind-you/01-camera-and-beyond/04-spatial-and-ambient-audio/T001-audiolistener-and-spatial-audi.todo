@@ -1,0 +1,20 @@
+---
+id: P5.M1.E4.T001
+title: AudioListener and spatial audio setup
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- audio
+- spatial
+- threejs
+---
+## Requirements
+- THREE.AudioListener attached to main camera
+- Configure spatial audio parameters: distance model, refDistance, rolloffFactor
+## Acceptance Criteria
+- AudioListener attached and functional
+- Positional audio sources work relative to camera
+- Clean setup on mount, cleanup on unmount

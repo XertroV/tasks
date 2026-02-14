@@ -1,0 +1,27 @@
+---
+id: P6.M1.E1.T005
+title: TV power-on static burst and CRT hum
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- boot
+- visual
+- shader
+- crt
+- audio
+---
+## Requirements
+- At 1.5s: CRT activates with 200-300ms static burst then blue NO SIGNAL #0000AA
+- CRT scanline and barrel distortion effects activate
+- Screen emits light into room
+- CRT hum audio: 60Hz bandpass + 120Hz sine, fade-in 200ms
+## Acceptance Criteria
+- Static burst convincing (CRT warming up feel)
+- Blue NO SIGNAL stable by ~2.5s
+- Post-processing effects active
+- Blue light cast from screen into room

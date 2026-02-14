@@ -1,0 +1,128 @@
+id: P7.M1.E1
+name: Horror Store and Timeline Engine
+status: pending
+estimate_hours: 29.0
+complexity: critical
+depends_on: []
+tasks:
+- id: T001
+  file: T001-define-horrorphase-type-and-ho.todo
+  title: Define HorrorPhase type and HorrorState interface
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-implement-horrorstore-with-zus.todo
+  title: Implement HorrorStore with Zustand
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-implement-intensity-interpolat.todo
+  title: Implement intensity interpolation and easing
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T002
+- id: T004
+  file: T004-implement-phase-transition-log.todo
+  title: Implement phase transition logic with activity-gating
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T002
+  - T003
+- id: T005
+  file: T005-define-timelineevent-interface.todo
+  title: Define TimelineEvent interface and ActiveEvent tracking
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T006
+  file: T006-implement-timelineengine-core.todo
+  title: Implement TimelineEngine core tick trigger and cleanup
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T005
+  - T002
+- id: T007
+  file: T007-implement-timelineengine-contr.todo
+  title: Implement TimelineEngine control methods
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T006
+- id: T008
+  file: T008-implement-default-horror-timel.todo
+  title: Implement default horror timeline data
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T005
+  - T002
+- id: T009
+  file: T009-implement-horrorcontroller-com.todo
+  title: Implement HorrorController component
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T002
+  - T006
+  - T008
+- id: T010
+  file: T010-implement-horror-toggle-behavi.todo
+  title: Implement horror toggle behavior
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T002
+  - T009
+- id: T011
+  file: T011-unit-tests-for-timelineengine.todo
+  title: Unit tests for TimelineEngine
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T006
+  - T007
+- id: T012
+  file: T012-unit-tests-for-horrorstore.todo
+  title: Unit tests for HorrorStore
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T002
+  - T003
+  - T004
+stats:
+  total: 12
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 12

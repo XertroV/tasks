@@ -1,0 +1,26 @@
+---
+id: P3.M3.E1.T006
+title: Horror corruption function stub
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- T001
+tags:
+- shader
+- glsl
+- vhs
+- horror
+- stub
+---
+## Requirements
+- horrorCorruption(color, uv, intensity) function in fragment shader
+- At intensity 0: returns input unmodified
+- At intensity > 0: subtle red tint, periodic color inversion bands, occasional R/B swap
+- Called as final modification before output
+## Acceptance Criteria
+- Function exists and is called in main()
+- Input returned unmodified at intensity 0
+- Three sub-effects present as stubs
+- Clearly marked with TODO comments

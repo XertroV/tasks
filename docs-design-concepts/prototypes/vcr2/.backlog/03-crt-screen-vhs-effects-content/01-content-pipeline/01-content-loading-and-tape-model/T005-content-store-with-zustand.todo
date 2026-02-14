@@ -1,0 +1,28 @@
+---
+id: P3.M1.E1.T005
+title: Content store with Zustand
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T003
+- T004
+tags:
+- store
+- zustand
+- content
+- state
+---
+## Requirements
+- Create src/stores/contentStore.ts with manifest, tapeModel, loadedPages Map cache, currentPage, isLoading, loadError
+- Actions: loadManifest(), loadPage(pageId), getPageByTapePosition()
+- Cache all loaded pages (48 pages fits in memory)
+
+## Acceptance Criteria
+- Store initializes with empty manifest and null currentPage
+- loadManifest() populates manifest and builds TapeModel
+- loadPage() fetches, parses, caches, and sets currentPage
+- Second loadPage() for same ID returns cached result
+- loadError set on failure, cleared on success

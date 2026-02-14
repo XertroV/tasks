@@ -1,0 +1,22 @@
+---
+id: P3.M2.E1.T005
+title: Title area rendering in top zone
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T004
+tags:
+- text-rendering
+- layout
+---
+## Requirements
+- Page title in title zone (y 0.8-1.0), 1.5x body size, centered
+- Color green #33FF33 with emissive, truncate with ellipsis if too long
+- Subtle underline separator at y=0.8
+## Acceptance Criteria
+- Title centered at top, visually larger than body
+- Separated from content by thin line
+- Long titles truncate gracefully
+- Empty title renders no text

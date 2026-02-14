@@ -1,0 +1,87 @@
+id: P1.M1.E1
+name: Toolchain and Config
+status: pending
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-scaffold-vite-react-typescript.todo
+  title: Scaffold Vite + React + TypeScript project
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-install-core-runtime-dependenc.todo
+  title: Install core runtime dependencies
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-install-dev-dependencies.todo
+  title: Install dev dependencies
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: critical
+  depends_on:
+  - T001
+- id: T004
+  file: T004-configure-biome-formatting-and.todo
+  title: Configure Biome formatting and linting
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T003
+- id: T005
+  file: T005-configure-typescript-strict-mo.todo
+  title: Configure TypeScript strict mode and path aliases
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T006
+  file: T006-configure-vite-for-glsl-raw-im.todo
+  title: Configure Vite for GLSL raw imports and dev port
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T005
+- id: T007
+  file: T007-create-minimal-app-tsx-with-em.todo
+  title: Create minimal App.tsx with empty R3F Canvas
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T002
+  - T005
+  - T006
+- id: T008
+  file: T008-end-to-end-scaffold-verificati.todo
+  title: End-to-end scaffold verification
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T004
+  - T007
+stats:
+  total: 8
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 8

@@ -1,0 +1,59 @@
+id: P4.M1.E2
+name: Aiming and Raycasting System
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-aimingsystem-class-with-raycas.todo
+  title: AimingSystem class with raycaster
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-shoot-action-and-hit-detection.todo
+  title: Shoot action and hit detection
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-uv-based-crt-screen-hit-detect.todo
+  title: UV-based CRT screen hit detection
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T001
+- id: T004
+  file: T004-crosshair-dom-overlay-with-cur.todo
+  title: Crosshair DOM overlay with cursor states
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+- id: T005
+  file: T005-aiming-system-react-integratio.todo
+  title: Aiming system React integration hook
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+  - T002
+  - T003
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

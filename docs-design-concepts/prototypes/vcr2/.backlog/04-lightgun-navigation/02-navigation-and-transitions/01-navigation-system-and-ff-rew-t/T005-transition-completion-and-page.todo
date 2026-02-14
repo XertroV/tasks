@@ -1,0 +1,25 @@
+---
+id: P4.M2.E1.T005
+title: Transition completion and page load coordination
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T003
+- T004
+tags:
+- store
+- navigation
+- async
+- content-loading
+---
+## Requirements
+- completeTransition(): set isLoading, call loadPage, update currentPage/position
+- After load: set VCR to PLAY, then PAUSED after 300ms
+- Reset transition state to IDLE
+- Error handling: keep current page on failure
+## Acceptance Criteria
+- After transition, currentPageId equals former targetPageId
+- VCR goes PLAY then PAUSED 300ms later
+- On loadPage failure, current page retained, state reset to IDLE

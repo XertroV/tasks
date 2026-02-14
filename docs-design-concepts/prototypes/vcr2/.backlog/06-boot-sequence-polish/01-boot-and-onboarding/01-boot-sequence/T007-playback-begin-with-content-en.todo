@@ -1,0 +1,25 @@
+---
+id: P6.M1.E1.T007
+title: Playback begin with content entry
+status: pending
+estimate_hours: 1.5
+complexity: high
+priority: critical
+depends_on:
+- T001
+- T006
+tags:
+- boot
+- content
+- vhs
+- transition
+---
+## Requirements
+- At 4.0s: VCR shows PLAY, timecode starts, brief static burst
+- First doc page plays in with VHS tracking wobble that decays over 500ms
+- Content legible by 5.0s
+## Acceptance Criteria
+- Clear transition from blue screen to documentation
+- VCR display shows PLAY + running timecode
+- Tracking wobble visibly settles
+- Content readable by 5s mark

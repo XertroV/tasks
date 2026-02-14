@@ -1,0 +1,24 @@
+---
+id: P7.M2.E1.T006
+title: VCR display corruption and channel bleed effect
+status: pending
+estimate_hours: 3.5
+complexity: high
+priority: medium
+depends_on:
+- T002
+tags:
+- entity
+- vcr
+- channel-bleed
+- visual
+---
+## Requirements
+- VCR display corruption: glitch timecodes (66:66:66:66, HE:LP:ME:--), mode LED changes
+- Channel bleed: 3-5 pre-rendered canvas textures (dark room, figure silhouette, static, close-up eyes, empty hallway)
+- Brief flashes 1-3 frames during ESCALATING, additive blending
+## Acceptance Criteria
+- Normal timecode unaffected in DORMANT
+- Corrupted timecodes appear briefly in ESCALATING, permanently in CLIMAX
+- Channel bleed flashes extremely brief and unsettling
+- All textures procedurally generated, no external assets

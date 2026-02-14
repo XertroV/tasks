@@ -1,0 +1,25 @@
+---
+id: P3.M2.E1.T007
+title: Scroll offset mechanism for content area
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T004
+tags:
+- scrolling
+- layout
+- interaction-prep
+---
+## Requirements
+- scrollOffset ref shifts content group y-position
+- Clamp between 0 and (totalHeight - visibleHeight)
+- Expose scrollTo, scrollBy, scrollToTop, scrollToBottom methods
+- MORE and TOP indicators when content extends beyond viewport
+- Smooth lerped scrolling
+## Acceptance Criteria
+- Content with >20 lines scrolls correctly
+- Scroll is smooth (lerped), not instant
+- Clamps at bounds
+- Indicators appear/disappear appropriately

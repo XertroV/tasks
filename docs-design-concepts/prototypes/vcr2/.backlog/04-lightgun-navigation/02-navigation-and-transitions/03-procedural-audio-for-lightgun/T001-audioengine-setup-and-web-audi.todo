@@ -1,0 +1,23 @@
+---
+id: P4.M2.E3.T001
+title: AudioEngine setup and Web Audio initialization
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- audio
+- engine
+- webaudio
+---
+## Requirements
+- src/audio/AudioEngine.ts: singleton managing AudioContext
+- Handle autoplay policy: create context on first interaction
+- audioStore (Zustand): initialized, masterVolume, sfxVolume, ambientVolume, muted
+- Resume suspended context automatically
+## Acceptance Criteria
+- AudioContext created on first user interaction
+- Store tracks initialization state
+- Volume controls affect output
+- Mute toggles all audio

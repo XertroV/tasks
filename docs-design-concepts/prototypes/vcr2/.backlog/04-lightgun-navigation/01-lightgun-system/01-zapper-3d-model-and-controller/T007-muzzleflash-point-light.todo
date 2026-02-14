@@ -1,0 +1,26 @@
+---
+id: P4.M1.E1.T007
+title: MuzzleFlash point light
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+- T005
+tags:
+- r3f
+- lighting
+- animation
+- refs
+---
+## Requirements
+- PointLight at barrel tip [0,0,-0.19], color #FFFF00, distance 1, decay 2
+- Flash state in useRef, intensity = flashRef * 3.0, decay 0.15/frame (~50ms)
+- Export triggerMuzzleFlash() setting flashRef to 1.0
+
+## Acceptance Criteria
+- Bright yellow burst at barrel tip on trigger
+- Flash decays to zero in ~50ms
+- Illuminates nearby surfaces briefly
+- Zero intensity when idle

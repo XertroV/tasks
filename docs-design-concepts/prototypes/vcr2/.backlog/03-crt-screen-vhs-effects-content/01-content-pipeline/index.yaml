@@ -1,0 +1,29 @@
+id: P3.M1
+name: Content Pipeline
+status: pending
+estimate_hours: 16.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Content Loading and Tape Model
+  path: 01-content-loading-and-tape-model
+  status: pending
+  estimate_hours: 13.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: VCR State Machine
+  path: 02-vcr-state-machine
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

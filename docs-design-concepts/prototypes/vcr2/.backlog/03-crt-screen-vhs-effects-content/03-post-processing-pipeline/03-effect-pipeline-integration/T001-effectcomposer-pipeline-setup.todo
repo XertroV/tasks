@@ -1,0 +1,23 @@
+---
+id: P3.M3.E3.T001
+title: EffectComposer pipeline setup
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- postprocessing
+- pipeline
+- r3f
+---
+## Requirements
+- Set up @react-three/postprocessing EffectComposer
+- Pipeline order: Scene Render -> VHS Pass -> CRT Pass -> Bloom -> Output
+- Bloom: subtle UnrealBloomPass for CRT phosphor glow
+- Configure bloom: strength 0.2, radius 0.5, threshold 0.8
+## Acceptance Criteria
+- Full pipeline renders without errors
+- VHS effects visible on content
+- CRT effects layer on top
+- Subtle bloom glow on bright elements

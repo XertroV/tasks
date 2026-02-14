@@ -1,0 +1,25 @@
+---
+id: P5.M1.E1.T002
+title: CameraController component with fixed look-at
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- camera
+- r3f
+- component
+---
+## Requirements
+- Create src/camera/CameraController.tsx as null-rendering R3F component
+- Set camera position (0,1.2,-4), FOV 60, lookAt (0,0.9,-7) on mount
+- Enforce position/lookAt from refs every frame
+- Mouse does NOT affect camera (fixed look-at only)
+
+## Acceptance Criteria
+- Camera renders from correct position looking at CRT screen center
+- Mouse movement does not rotate camera
+- Camera position stable when breathing disabled
+- No setState in useFrame

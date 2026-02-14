@@ -1,0 +1,25 @@
+---
+id: P7.M2.E1.T004
+title: Static face manifestation with animation
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+- T002
+tags:
+- entity
+- visual
+- animation
+---
+## Requirements
+- Horizontal stretch (1.5-2x UV scale), scan line opacity modulation
+- Flash pattern: 0->target in 0.05-0.15s, hold, fade 0.1-0.3s
+- ESCALATING: brief flashes (0.15s, 0.4s). CLIMAX: sustained high opacity
+- Vertical drift (sinusoidal, +/-5% screen height)
+## Acceptance Criteria
+- Face recognizable primarily through eyes
+- Flash appearances feel like did I just see that
+- CLIMAX: unmistakably a face staring through screen
+- All transitions smoothly animated via refs

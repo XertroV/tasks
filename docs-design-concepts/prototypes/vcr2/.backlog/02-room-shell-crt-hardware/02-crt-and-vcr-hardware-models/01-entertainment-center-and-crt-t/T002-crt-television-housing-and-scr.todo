@@ -1,0 +1,25 @@
+---
+id: P2.M2.E1.T002
+title: CRT television housing and screen quad
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- geometry
+- crt
+- r3f
+- screen
+---
+## Requirements
+- CRT TV housing: rounded-corner box, dark gray plastic
+- Screen quad: front-facing plane with slight barrel curvature (curved inward)
+- Screen quad UVs set up for RenderTarget texture mapping
+- TV bezel visible around screen edges
+## Acceptance Criteria
+- CRT TV looks like a late-90s television
+- Screen quad accepts RenderTarget texture
+- Barrel curvature visible on screen quad
+- Bezel frames the screen

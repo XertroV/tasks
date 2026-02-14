@@ -1,0 +1,27 @@
+---
+id: P4.M1.E1.T009
+title: Zapper integration and look-behind compatibility
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T005
+- T006
+- T007
+tags:
+- r3f
+- integration
+- camera
+---
+## Requirements
+- Mount ZapperController in scene composition
+- Verify Zapper visible in both forward and 180-degree rotated views
+- Verify recoil/flash work in both orientations
+- Confirm vertex count under 350, no measurable FPS impact
+
+## Acceptance Criteria
+- Zapper visible bottom-right in both camera orientations
+- Recoil and muzzle flash work in both views
+- Draw calls for Zapper under 10
+- Performance: under 0.5ms frame contribution

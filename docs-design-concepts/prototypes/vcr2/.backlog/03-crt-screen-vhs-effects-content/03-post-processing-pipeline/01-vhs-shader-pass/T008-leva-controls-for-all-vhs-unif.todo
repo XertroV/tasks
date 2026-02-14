@@ -1,0 +1,24 @@
+---
+id: P3.M3.E1.T008
+title: Leva controls for all VHS uniforms
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- T007
+tags:
+- ui
+- leva
+- tuning
+- vhs
+---
+## Requirements
+- Leva VHS folder with sliders for all tuneable uniforms
+- Appropriate ranges: 0-1 for most, 0-3 for speeds
+- Real-time uniform updates on control change
+## Acceptance Criteria
+- All uniforms controllable via Leva
+- Changes update shader in real-time
+- uTime auto-incremented, not exposed
+- uResolution auto-set

@@ -1,0 +1,24 @@
+---
+id: P5.M1.E4.T004
+title: Ambient drone and room tone
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- T001
+tags:
+- audio
+- ambient
+- atmosphere
+---
+## Requirements
+- Low background drone for Backrooms atmosphere
+- Layered: filtered noise floor + low sine (~40Hz) + distant ventilation
+- Non-spatial (stereo, same in all directions)
+- Very subtle, just fills the silence
+## Acceptance Criteria
+- Ambient sound audible in quiet moments
+- Creates uneasy atmosphere
+- Not directional
+- Under 0.1 volume, doesn't compete with other audio

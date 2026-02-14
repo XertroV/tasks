@@ -1,0 +1,27 @@
+---
+id: P4.M1.E1.T006
+title: Recoil animation system
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T005
+tags:
+- r3f
+- animation
+- refs
+- useFrame
+---
+## Requirements
+- applyRecoil() called each frame, state in useRef (0-1)
+- Z kick-back: sin(t*PI)*0.02, Y kick-up: sin(t*PI)*0.01
+- Decay 0.05 per frame (~200ms at 60fps)
+- Export triggerRecoil() that sets ref to 1.0
+
+## Acceptance Criteria
+- triggerRecoil() causes kick backward and slightly upward
+- Animation completes in ~200ms
+- Smooth sinusoidal return to rest
+- Multiple rapid triggers reset cleanly
+- Zero setState, entirely ref-based

@@ -1,0 +1,23 @@
+---
+id: P7.M1.E1.T005
+title: Define TimelineEvent interface and ActiveEvent tracking
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- engine
+- types
+- foundation
+---
+## Requirements
+- Define TimelineEvent: id, time, timeVariance, duration, condition, action, cleanup, repeat (interval, count, intervalVariance), priority
+- Define ActiveEvent: event reference, startTime, elapsed, duration, repeatCount
+- Define TimelineDebugState for getState()
+
+## Acceptance Criteria
+- TimelineEvent matches spec exactly
+- action callback receives HorrorState
+- condition receives HorrorState, returns boolean
+- repeat.count optional (omitted = infinite)

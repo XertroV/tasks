@@ -1,0 +1,29 @@
+id: P1.M1
+name: Foundation Setup
+status: pending
+estimate_hours: 5.0
+complexity: low
+depends_on: []
+epics:
+- id: E1
+  name: Toolchain and Config
+  path: 01-toolchain-and-config
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+- id: E2
+  name: Project Structure and Shared Utilities
+  path: 02-project-structure-and-shared-u
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

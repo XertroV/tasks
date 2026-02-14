@@ -1,0 +1,93 @@
+id: P7.M2.E1
+name: Screen Entity
+status: pending
+estimate_hours: 23.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-entity-face-texture-generator.todo
+  title: Entity face texture generator
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-screenentity-base-component.todo
+  title: ScreenEntity base component
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-entity-message-data-and-select.todo
+  title: Entity message data and selection logic
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T004
+  file: T004-static-face-manifestation-with.todo
+  title: Static face manifestation with animation
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+  - T002
+- id: T005
+  file: T005-corrupted-text-system.todo
+  title: Corrupted text system
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - T003
+  - T002
+- id: T006
+  file: T006-vcr-display-corruption-and-cha.todo
+  title: VCR display corruption and channel bleed effect
+  status: pending
+  estimate_hours: 3.5
+  complexity: high
+  priority: medium
+  depends_on:
+  - T002
+- id: T007
+  file: T007-entity-opacity-and-intensity-c.todo
+  title: Entity opacity and intensity controller
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T002
+  - T004
+  - T005
+- id: T008
+  file: T008-entity-debug-controls-and-inte.todo
+  title: Entity debug controls and integration tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+  - T002
+  - T003
+  - T004
+  - T005
+  - T006
+  - T007
+stats:
+  total: 8
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 8

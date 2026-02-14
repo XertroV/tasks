@@ -1,0 +1,22 @@
+---
+id: P3.M1.E2.T003
+title: VCR timecode and display logic
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- vcr
+- display
+- timecode
+---
+## Requirements
+- Compute display text from mode: PLAY shows play icon + timecode, PAUSE shows pause icon + timecode, FF shows >> + advancing timecode, etc.
+- Timecode format: HH:MM:SS:FF at 30fps
+- Export getDisplayState(vcrState): { text: string, icon: string, timecode: string }
+## Acceptance Criteria
+- Display text correct for each mode
+- Timecode formats correctly
+- Mode icons match spec (play triangle, pause bars, etc.)

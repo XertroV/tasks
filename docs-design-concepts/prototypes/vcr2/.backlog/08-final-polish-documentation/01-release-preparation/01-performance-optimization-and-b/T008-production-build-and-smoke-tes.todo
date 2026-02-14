@@ -1,0 +1,32 @@
+---
+id: P8.M1.E1.T008
+title: Production build and smoke test
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on:
+- T002
+- T003
+- T004
+- T005
+- T006
+- T007
+tags:
+- production
+- smoke-test
+- release
+---
+## Requirements
+- bun run build with zero errors/warnings
+- bun run lint passes clean
+- Manual smoke test: boot, navigation, VCR controls, lightgun, horror, look-behind, audio
+- Re-measure final performance numbers
+
+## Acceptance Criteria
+- Build succeeds with zero errors/warnings
+- Lint passes clean
+- All smoke test scenarios pass
+- Zero console errors during smoke test
+- Final performance within budget
+- No debug UI visible in production

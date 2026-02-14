@@ -1,0 +1,26 @@
+---
+id: P3.M2.E1.T004
+title: TextLayout component with styled text lines
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+- T003
+tags:
+- text-rendering
+- layout
+- component
+---
+## Requirements
+- Create src/crt/TextLayout.tsx accepting ParsedLine array
+- Line-by-line vertical layout: char size ~0.04, line height 1.4x, left margin -0.9
+- Styling: body green #33FF33, headings 1.2x brighter, code amber #FFAA00, links cyan #00FFFF, list items with triangle prefix
+- All Text components anchorX=left, anchorY=top, max ~20 visible lines
+## Acceptance Criteria
+- 20 lines of mixed-type text render correctly
+- Each type visually distinguishable by color and size
+- Emissive glow visible on text
+- Long lines wrap, performance maintains 60fps

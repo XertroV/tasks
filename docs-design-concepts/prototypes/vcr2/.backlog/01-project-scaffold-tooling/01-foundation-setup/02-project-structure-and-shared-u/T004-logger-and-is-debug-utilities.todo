@@ -1,0 +1,27 @@
+---
+id: P1.M1.E2.T004
+title: Logger and IS_DEBUG utilities
+status: done
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on: []
+tags:
+- debug
+- logger
+- utility
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:40:36.585459+00:00'
+started_at: '2026-02-14T03:40:36.585459+00:00'
+completed_at: '2026-02-14T03:45:07.964902+00:00'
+duration_minutes: 4.52299055
+---
+## Requirements
+- src/debug/isDebug.ts: export IS_DEBUG = import.meta.env.DEV
+- src/debug/logger.ts: Logger class with debug/info/warn/error, colored console output, module-scoped
+- createLogger(module) factory function
+## Acceptance Criteria
+- IS_DEBUG is true in dev, false in production (Vite replaces)
+- Logger produces colored [Module] prefixed console output
+- debug/info gated behind IS_DEBUG
+- warn/error always available

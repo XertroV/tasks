@@ -1,0 +1,57 @@
+id: P4.M1.E3
+name: Shootable Target Framework
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-shootabletarget-component.todo
+  title: ShootableTarget component
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-crt-screen-link-targets.todo
+  title: CRT screen link targets
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-vcr-physical-button-targets.todo
+  title: VCR physical button targets
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T004
+  file: T004-post-it-note-targets.todo
+  title: Post-it note targets
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+- id: T005
+  file: T005-keyboard-navigation-as-shootin.todo
+  title: Keyboard navigation as shooting alternative
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - T001
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

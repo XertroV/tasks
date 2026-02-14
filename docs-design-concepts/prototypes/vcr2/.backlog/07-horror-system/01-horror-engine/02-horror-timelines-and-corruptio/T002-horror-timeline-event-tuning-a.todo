@@ -1,0 +1,24 @@
+---
+id: P7.M1.E2.T002
+title: Horror timeline event tuning and playthrough test
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- horror
+- timeline
+- tuning
+---
+## Requirements
+- Play through complete horror timeline (DORMANT through POST)
+- Tune event timing, variance, and intensity curves
+- Verify events don't overlap awkwardly
+- Document final timing in code comments
+## Acceptance Criteria
+- Full 3.5-minute horror cycle plays without glitches
+- Events feel natural and escalating
+- No event overlap causing visual artifacts
+- Timing documented

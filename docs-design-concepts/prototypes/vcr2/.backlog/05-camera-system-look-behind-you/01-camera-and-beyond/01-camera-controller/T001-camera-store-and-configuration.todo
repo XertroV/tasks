@@ -1,0 +1,22 @@
+---
+id: P5.M1.E1.T001
+title: Camera store and configuration constants
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- camera
+- store
+- config
+---
+## Requirements
+- Define camera constants: default position (0,1.2,-4), target (0,0.9,-7), FOV 60, breathing params
+- Create cameraStore.ts (Zustand): mode (normal/look-behind/horror-override), isTransitioning, horrorOverrides
+- Actions: setMode(), applyHorrorOverride(), clearHorrorOverrides()
+
+## Acceptance Criteria
+- Store exports typed Zustand store with mode, isTransitioning, horrorOverrides
+- Camera constants defined and importable
+- No setState designed for useFrame

@@ -1,0 +1,28 @@
+---
+id: P7.M1.E1.T006
+title: Implement TimelineEngine core tick trigger and cleanup
+status: pending
+estimate_hours: 4.0
+complexity: high
+priority: critical
+depends_on:
+- T005
+- T002
+tags:
+- engine
+- core
+- scheduling
+---
+## Requirements
+- TimelineEngine class: constructor(events[]), tick(deltaTime), shouldTrigger()
+- Track active events in Map, call action() on trigger, cleanup() on expire
+- Time variance resolved once per event (not re-randomized)
+- Priority ordering for simultaneous events
+- Handle instant events (duration 0)
+
+## Acceptance Criteria
+- Events trigger at specified time (plus/minus variance)
+- Active events tracked and cleaned up when duration expires
+- cleanup() called exactly once per event
+- Repeating events fire at correct intervals up to count limit
+- Higher priority processes first in same tick

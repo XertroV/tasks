@@ -1,0 +1,33 @@
+id: P2
+name: Room Shell + CRT Hardware
+status: pending
+weeks: 2
+estimate_hours: 12.0
+complexity: medium
+depends_on:
+- P1
+milestones:
+- id: M1
+  name: Room Environment
+  path: 01-room-environment
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on: []
+  description: Room shader materials (wallpaper, carpet, ceiling) and room geometry
+    composition with lighting
+- id: M2
+  name: CRT and VCR Hardware Models
+  path: 02-crt-and-vcr-hardware-models
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: CRT television 3D model, VCR deck model, debug foundation (panel +
+    Leva)
+stats:
+  total_tasks: 0
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 0

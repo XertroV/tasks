@@ -1,0 +1,99 @@
+id: P4.M1.E1
+name: Zapper 3D Model and Controller
+status: pending
+estimate_hours: 13.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-zapper-barrel-and-barrel-tip-g.todo
+  title: Zapper barrel and barrel tip geometry
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-zapper-grip-trigger-guard-and.todo
+  title: Zapper grip trigger guard and trigger geometry
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-cablegeometry-catenary-compone.todo
+  title: CableGeometry catenary component
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T004
+  file: T004-zappercontroller-camera-layer.todo
+  title: ZapperController camera layer setup
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+- id: T005
+  file: T005-zappercontroller-fixed-offset.todo
+  title: ZapperController fixed-offset positioning and aim sway
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T004
+- id: T006
+  file: T006-recoil-animation-system.todo
+  title: Recoil animation system
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T005
+- id: T007
+  file: T007-muzzleflash-point-light.todo
+  title: MuzzleFlash point light
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+  - T005
+- id: T008
+  file: T008-zapper-leva-debug-controls.todo
+  title: Zapper Leva debug controls
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T005
+  - T006
+  - T007
+- id: T009
+  file: T009-zapper-integration-and-look-be.todo
+  title: Zapper integration and look-behind compatibility
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T005
+  - T006
+  - T007
+stats:
+  total: 9
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 9

@@ -1,0 +1,25 @@
+---
+id: P5.M1.E1.T006
+title: Camera integration test and performance validation
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- T005
+tags:
+- camera
+- test
+- performance
+---
+## Requirements
+- Verify no conflict with other camera systems
+- Confirm 60fps with breathing active
+- Confirm 0 draw calls added
+- Test tab backgrounding recovery
+
+## Acceptance Criteria
+- Camera adds 0 draw calls, 0 vertices
+- 60fps with breathing active
+- Tab backgrounding doesn't cause position snap
+- CameraController mounted exactly once

@@ -1,0 +1,26 @@
+---
+id: P4.M2.E1.T009
+title: Navigation guards for rapid-fire and edge cases
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T003
+- T005
+tags:
+- store
+- navigation
+- robustness
+- error-handling
+---
+## Requirements
+- Reject navigateTo during active transition (with logging)
+- Reject for missing pages, self-navigation
+- cancelTransition() resets state to IDLE
+- 5-second timeout auto-cancels stuck transitions
+## Acceptance Criteria
+- 3 rapid navigateTo calls results in exactly 1 transition
+- Missing page doesn't crash, logs error
+- cancelTransition mid-transition resets cleanly
+- 5s timeout triggers auto-cancel

@@ -1,0 +1,25 @@
+---
+id: P4.M1.E2.T003
+title: UV-based CRT screen hit detection
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- T001
+tags:
+- aiming
+- raycaster
+- crt
+- uv
+---
+## Requirements
+- When raycaster hits CRT screen mesh, read UV coordinates
+- Map UV to link bounding boxes in offscreen scene
+- findLinkAtUV(uv, links, layout): returns link or null
+- More accurate than proxy meshes, simpler to maintain
+## Acceptance Criteria
+- Shooting CRT screen at a link UV position returns the link
+- Shooting CRT screen at empty area returns null
+- UV mapping accounts for barrel curvature
+- Updates when page content changes

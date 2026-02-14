@@ -1,0 +1,82 @@
+id: P5.M1.E2
+name: Beyond Hallways
+status: pending
+estimate_hours: 18.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-hallwaysegment-component-with.todo
+  title: HallwaySegment component with geometry
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-three-segment-corridor-assembl.todo
+  title: Three-segment corridor assembly
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-per-segment-fluorescent-lights.todo
+  title: Per-segment fluorescent lights and fog
+  status: pending
+  estimate_hours: 3.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+- id: T004
+  file: T004-back-wall-opening-and-corridor.todo
+  title: Back wall opening and corridor alignment
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T002
+- id: T005
+  file: T005-horror-phase-interactions-for.todo
+  title: Horror phase interactions for hallways
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T003
+  - T004
+- id: T006
+  file: T006-visibility-gate-tied-to-look-b.todo
+  title: Visibility gate tied to Look Behind You
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: critical
+  depends_on:
+  - T002
+- id: T007
+  file: T007-hallway-performance-validation.todo
+  title: Hallway performance validation
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+  - T002
+  - T003
+  - T004
+  - T005
+  - T006
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

@@ -1,0 +1,22 @@
+---
+id: P4.M1.E2.T002
+title: Shoot action and hit detection
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on:
+- T001
+tags:
+- aiming
+- shooting
+- interaction
+---
+## Requirements
+- shoot(): if currentTarget exists, call onShoot callback, return ShootResult
+- Miss handling: return {hit: false} when no target
+- Target registration/unregistration API
+## Acceptance Criteria
+- Shooting a target fires onShoot callback
+- Shooting nothing returns miss result
+- Targets cleanly register and unregister

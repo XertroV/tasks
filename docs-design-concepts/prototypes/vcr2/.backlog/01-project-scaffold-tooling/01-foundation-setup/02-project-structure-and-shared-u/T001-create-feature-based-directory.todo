@@ -1,0 +1,42 @@
+---
+id: P1.M1.E2.T001
+title: Create feature-based directory structure
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- scaffold
+- structure
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:40:36.582608+00:00'
+started_at: '2026-02-14T03:40:36.582608+00:00'
+completed_at: '2026-02-14T03:43:32.637283+00:00'
+duration_minutes: 2.9342441833333335
+---
+## Requirements
+- Create directories: src/room, src/crt, src/vcr, src/lightgun, src/horror, src/audio, src/content, src/camera, src/boot, src/debug, src/shared, src/stores, src/types, src/shaders
+## Acceptance Criteria
+- All directories exist
+- Each has a placeholder or index file if needed for imports
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P1.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 03:40 UTC
+**Sibling tasks**: P1.M1.E2.T002, P1.M1.E2.T003, P1.M1.E2.T004, P1.M1.E2.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P1.M1.E2.T001 → P1.M1.E2.T002 → P1.M1.E2.T003 → P1.M1.E2.T004 → P1.M1.E2.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P1.M1.E2.T001: .tasks/01-project-scaffold-tooling/01-foundation-setup/02-project-structure-and-shared-u/T001-create-feature-based-directory.todo
+- P1.M1.E2.T002: .tasks/01-project-scaffold-tooling/01-foundation-setup/02-project-structure-and-shared-u/T002-symlink-docs-content-directory.todo
+- P1.M1.E2.T003: .tasks/01-project-scaffold-tooling/01-foundation-setup/02-project-structure-and-shared-u/T003-shared-constants-colors-and-co.todo
+- P1.M1.E2.T004: .tasks/01-project-scaffold-tooling/01-foundation-setup/02-project-structure-and-shared-u/T004-logger-and-is-debug-utilities.todo
+- P1.M1.E2.T005: .tasks/01-project-scaffold-tooling/01-foundation-setup/02-project-structure-and-shared-u/T005-zustand-store-boilerplate-and.todo

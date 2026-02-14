@@ -1,0 +1,23 @@
+---
+id: P4.M2.E3.T004
+title: Audio Leva debug controls
+status: pending
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- T001
+- T002
+- T003
+tags:
+- audio
+- debug
+- leva
+---
+## Requirements
+- Leva Audio folder: masterVolume, sfxVolume, ambientVolume sliders, muted toggle
+- Test buttons to trigger each sound
+## Acceptance Criteria
+- Volume sliders affect output in real-time
+- Mute toggles all audio
+- Test buttons play each sound type

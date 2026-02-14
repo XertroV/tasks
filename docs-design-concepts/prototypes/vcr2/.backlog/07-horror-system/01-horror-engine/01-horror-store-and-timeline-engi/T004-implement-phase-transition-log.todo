@@ -1,0 +1,26 @@
+---
+id: P7.M1.E1.T004
+title: Implement phase transition logic with activity-gating
+status: pending
+estimate_hours: 3.0
+complexity: high
+priority: critical
+depends_on:
+- T002
+- T003
+tags:
+- store
+- state-machine
+- activity-detection
+---
+## Requirements
+- Auto phase transitions in tick(): DORMANT(60s)->UNEASY(60s)->ESCALATING(60s)->CLIMAX(30s)->POST
+- Transitions require BOTH: minimum time elapsed AND user idle (no activity for ~3-5s)
+- Add reportActivity() action and lastActivityTime field
+- POST is terminal (no auto transition)
+
+## Acceptance Criteria
+- DORMANT->UNEASY at or after 60s, delayed until user idle
+- Rapid user activity delays escalation
+- POST phase is terminal
+- Phase durations are runtime-configurable

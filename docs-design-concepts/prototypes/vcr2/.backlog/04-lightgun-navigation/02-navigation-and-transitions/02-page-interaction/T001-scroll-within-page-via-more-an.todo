@@ -1,0 +1,23 @@
+---
+id: P4.M2.E2.T001
+title: Scroll within page via MORE and TOP targets
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- scrolling
+- interaction
+- targets
+---
+## Requirements
+- MORE target at bottom of content when more text below viewport
+- TOP target when scrolled past top
+- Shooting MORE scrolls down one viewport, TOP scrolls to top
+- Smooth animated scroll
+## Acceptance Criteria
+- MORE appears when content extends below
+- TOP appears when scrolled down
+- Shooting triggers smooth scroll
+- Targets disappear when not applicable

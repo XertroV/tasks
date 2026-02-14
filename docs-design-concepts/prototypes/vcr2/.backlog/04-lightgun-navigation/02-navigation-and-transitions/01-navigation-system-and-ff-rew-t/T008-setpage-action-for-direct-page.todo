@@ -1,0 +1,22 @@
+---
+id: P4.M2.E1.T008
+title: setPage action for direct page assignment
+status: pending
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- store
+- navigation
+- content
+---
+## Requirements
+- setPage(pageId, page): directly set currentPageId, currentPage, currentTapePosition
+- No transition triggered, no history modification
+- Used for initial boot load and URL param jumps
+## Acceptance Criteria
+- Immediately sets current page with no transition
+- History not modified
+- transitionState remains IDLE

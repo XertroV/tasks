@@ -1,0 +1,25 @@
+---
+id: P4.M1.E2.T004
+title: Crosshair DOM overlay with cursor states
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- crosshair
+- dom
+- cursor
+- ux
+---
+## Requirements
+- src/lightgun/Crosshair.tsx: SVG crosshair overlay, fixed center
+- States: idle (green), targeting (cyan pulse), firing (yellow burst), miss (orange shake)
+- Native cursor hidden via CSS cursor:none
+- State transitions: IDLE->TARGETING->FIRING->IDLE/MISS
+## Acceptance Criteria
+- Crosshair visible at screen center
+- Color changes match cursor state
+- Targeting pulse animation visible
+- Native cursor hidden

@@ -1,0 +1,23 @@
+---
+id: P6.M1.E2.T003
+title: Reduced motion and accessibility features
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- accessibility
+- a11y
+- reduced-motion
+---
+## Requirements
+- Respect prefers-reduced-motion media query
+- When active: disable breathing sway, reduce VHS effects, disable flicker
+- ARIA labels on key interactive elements
+- Screen reader skip-to-content link
+## Acceptance Criteria
+- prefers-reduced-motion disables animations
+- ARIA labels present on interactive elements
+- Screen reader can access documentation content
+- No flashing or rapid movement in reduced motion mode

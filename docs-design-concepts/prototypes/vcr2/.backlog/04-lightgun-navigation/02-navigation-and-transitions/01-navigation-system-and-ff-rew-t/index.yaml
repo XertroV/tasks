@@ -1,0 +1,106 @@
+id: P4.M2.E1
+name: Navigation System and FF/REW Transitions
+status: pending
+estimate_hours: 19.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-navigationstore-core-state-and.todo
+  title: NavigationStore core state and type definitions
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-history-stack-with-goback-and.todo
+  title: History stack with goBack and goForward actions
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-navigateto-action-with-directi.todo
+  title: navigateTo action with direction calculation
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+- id: T004
+  file: T004-transition-timeline-engine-in.todo
+  title: Transition timeline engine in useFrame
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T003
+- id: T005
+  file: T005-transition-completion-and-page.todo
+  title: Transition completion and page load coordination
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T003
+  - T004
+- id: T006
+  file: T006-transition-to-shader-uniform-b.todo
+  title: Transition-to-shader uniform bridge
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - T004
+- id: T007
+  file: T007-timecode-interpolation-during.todo
+  title: Timecode interpolation during FF/REW
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T004
+- id: T008
+  file: T008-setpage-action-for-direct-page.todo
+  title: setPage action for direct page assignment
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+- id: T009
+  file: T009-navigation-guards-for-rapid-fi.todo
+  title: Navigation guards for rapid-fire and edge cases
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T003
+  - T005
+- id: T010
+  file: T010-navigation-debug-panel-integra.todo
+  title: Navigation debug panel integration
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - T001
+  - T004
+stats:
+  total: 10
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 10

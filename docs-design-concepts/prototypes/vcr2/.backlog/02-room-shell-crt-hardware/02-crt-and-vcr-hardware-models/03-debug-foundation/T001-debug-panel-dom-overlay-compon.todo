@@ -1,0 +1,23 @@
+---
+id: P2.M2.E3.T001
+title: Debug panel DOM overlay component
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- debug
+- panel
+- dom
+---
+## Requirements
+- src/debug/DebugPanel.tsx: fixed position DOM overlay (bottom-left)
+- Sections: Performance (FPS, frame time, draw calls), VCR state, Navigation, Horror
+- Toggle with backtick key
+- VT323 font, green-on-black terminal aesthetic
+## Acceptance Criteria
+- Panel toggles with backtick
+- Shows real-time FPS and draw calls
+- VCR/Navigation/Horror sections update live
+- Gated behind IS_DEBUG

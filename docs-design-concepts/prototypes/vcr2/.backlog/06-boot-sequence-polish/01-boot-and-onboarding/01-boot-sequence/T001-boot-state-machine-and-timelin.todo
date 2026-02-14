@@ -1,0 +1,22 @@
+---
+id: P6.M1.E1.T001
+title: Boot state machine and timeline controller
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- boot
+- state
+- zustand
+---
+## Requirements
+- bootStore.ts (Zustand) with phases: BLACK, ROOM_FADE, TV_POWER_ON, TAPE_LOAD, PLAYBACK_BEGIN, READY
+- State: currentPhase, phaseStartTime, elapsed, isSkipped, isComplete
+- Actions: advancePhase(), skip(), reset()
+- Phase transitions at 0s, 0.5s, 1.5s, 2.5s, 4.0s, 5.0s
+## Acceptance Criteria
+- Store sequences through all 6 phases with correct timing
+- skip() jumps directly to READY from any phase
+- Phase transitions deterministic and testable

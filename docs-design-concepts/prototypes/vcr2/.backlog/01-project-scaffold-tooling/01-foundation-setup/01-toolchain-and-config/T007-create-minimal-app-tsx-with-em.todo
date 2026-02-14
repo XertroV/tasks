@@ -1,0 +1,30 @@
+---
+id: P1.M1.E1.T007
+title: Create minimal App.tsx with empty R3F Canvas
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- T002
+- T005
+- T006
+tags:
+- r3f
+- canvas
+- app
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:46:00.759457+00:00'
+started_at: '2026-02-14T03:46:00.759457+00:00'
+completed_at: '2026-02-14T03:47:55.109685+00:00'
+duration_minutes: 1.9058369666666666
+---
+## Requirements
+- Replace Vite template boilerplate with Canvas from @react-three/fiber
+- Clean up template CSS, set body to fullscreen
+- Remove template assets (logos, counter component)
+
+## Acceptance Criteria
+- src/App.tsx renders a Canvas component
+- Opening dev server shows blank/black canvas with no console errors
+- No unused template boilerplate remains

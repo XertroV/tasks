@@ -1,0 +1,24 @@
+---
+id: P4.M2.E1.T002
+title: History stack with goBack and goForward actions
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T001
+tags:
+- store
+- navigation
+- history
+---
+## Requirements
+- Add history array and historyIndex to NavigationState
+- goBack() decrements index, initiates navigation with FF/REW direction
+- goForward() increments index, initiates navigation
+- Truncate forward history on new navigation (browser-like)
+## Acceptance Criteria
+- After A->B->C, goBack twice returns to A
+- After goBack to B, navigating to D makes history [A,B,D]
+- goBack at index 0 is no-op
+- History capped at 100 entries

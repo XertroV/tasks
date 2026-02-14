@@ -1,0 +1,22 @@
+---
+id: P3.M2.E1.T003
+title: VT323 font loading for drei Text
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- font
+- assets
+- drei
+---
+## Requirements
+- Download VT323-Regular.ttf to public/fonts/
+- Verify drei Text renders with font path
+- Handle loading state with useFontReady hook
+## Acceptance Criteria
+- VT323 renders correctly in drei Text
+- Characters crisp at ~0.04 units
+- No CORS/path errors in dev or production
+- MSDF rendering confirmed

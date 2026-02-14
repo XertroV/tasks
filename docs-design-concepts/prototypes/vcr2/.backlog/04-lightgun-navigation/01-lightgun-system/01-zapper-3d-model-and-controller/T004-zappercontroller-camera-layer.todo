@@ -1,0 +1,27 @@
+---
+id: P4.M1.E1.T004
+title: ZapperController camera layer setup
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- r3f
+- camera
+- layers
+- rendering
+---
+## Requirements
+- Create src/lightgun/ZapperController.tsx
+- Set Zapper meshes to camera layer 1 via traverse
+- Main camera enables both layer 0 (world) and layer 1 (weapon)
+- Implement depth separation to prevent world geometry clipping
+
+## Acceptance Criteria
+- Zapper renders on top of all world geometry
+- No z-fighting or clipping
+- Layer setup runs once on mount
+- Works with FOV and near/far plane changes

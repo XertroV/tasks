@@ -1,0 +1,26 @@
+---
+id: P5.M1.E2.T003
+title: Per-segment fluorescent lights and fog
+status: pending
+estimate_hours: 3.5
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+tags:
+- lighting
+- fog
+- atmosphere
+- hallways
+---
+## Requirements
+- FluorescentLight per segment with intensities 0.6, 0.3, 0.1
+- Exponential fog fading segments with distance
+- Fog does NOT affect main room quality
+- Fog color matches Backrooms aesthetic (warm yellowish-brown)
+## Acceptance Criteria
+- Each segment has working fluorescent light at correct intensity
+- Segment 1 slightly hazy, Segment 2 dim, Segment 3 barely perceptible
+- Fog does not degrade main room
+- No additional render passes for fog

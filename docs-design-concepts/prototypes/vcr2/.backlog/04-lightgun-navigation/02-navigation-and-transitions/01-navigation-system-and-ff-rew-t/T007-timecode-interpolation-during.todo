@@ -1,0 +1,24 @@
+---
+id: P4.M2.E1.T007
+title: Timecode interpolation during FF/REW
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- T004
+tags:
+- animation
+- vcr
+- timecode
+- useFrame
+---
+## Requirements
+- Interpolate tape position between current and target during transition
+- Easing: slow start, fast middle, slow end
+- Drive VCR timecode display
+## Acceptance Criteria
+- During FF, timecode monotonically increases
+- During REW, timecode monotonically decreases
+- At completion, timecode matches target exactly
+- Matches visual pacing (slow-fast-slow)

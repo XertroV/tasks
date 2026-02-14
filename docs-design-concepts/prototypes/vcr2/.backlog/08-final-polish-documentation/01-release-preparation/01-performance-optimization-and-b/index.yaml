@@ -1,0 +1,88 @@
+id: P8.M1.E1
+name: Performance Optimization and Bundle Audit
+status: pending
+estimate_hours: 7.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-runtime-performance-profiling.todo
+  title: Runtime performance profiling and baseline
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-draw-call-and-geometry-reducti.todo
+  title: Draw call and geometry reduction
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: critical
+  depends_on:
+  - T001
+- id: T003
+  file: T003-shader-and-post-processing-per.todo
+  title: Shader and post-processing performance pass
+  status: pending
+  estimate_hours: 1.0
+  complexity: high
+  priority: high
+  depends_on:
+  - T001
+- id: T004
+  file: T004-react-render-and-state-update.todo
+  title: React render and state update audit
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T005
+  file: T005-memory-leak-detection-and-clea.todo
+  title: Memory leak detection and cleanup
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T006
+  file: T006-bundle-size-audit-and-tree-sha.todo
+  title: Bundle size audit and tree-shaking verification
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T007
+  file: T007-debug-code-stripping-verificat.todo
+  title: Debug code stripping verification
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: critical
+  depends_on:
+  - T006
+- id: T008
+  file: T008-production-build-and-smoke-tes.todo
+  title: Production build and smoke test
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T002
+  - T003
+  - T004
+  - T005
+  - T006
+  - T007
+stats:
+  total: 8
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 8

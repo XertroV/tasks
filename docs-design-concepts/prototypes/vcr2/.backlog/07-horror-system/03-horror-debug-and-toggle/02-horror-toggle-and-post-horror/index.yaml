@@ -1,0 +1,39 @@
+id: P7.M3.E2
+name: Horror Toggle and Post-Horror Flow
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-post-horror-fade-to-black-and.todo
+  title: Post-horror fade-to-black and final messages
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-play-and-eject-post-horror-cho.todo
+  title: PLAY and EJECT post-horror choice
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-horror-restart-and-disable-flo.todo
+  title: Horror restart and disable flow
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

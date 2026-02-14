@@ -1,0 +1,24 @@
+---
+id: P7.M3.E1.T001
+title: TimelineVisualizer component
+status: pending
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- debug
+- timeline
+- visualizer
+- dom
+---
+## Requirements
+- Horizontal timeline bar (bottom panel): phase bands, event markers, playhead, intensity graph
+- Phase bands colored: DORMANT green, UNEASY amber, ESCALATING orange, CLIMAX red, POST dark red
+- Event markers: pending (gray), active (yellow), completed (green)
+- Toggle with Shift+backtick
+## Acceptance Criteria
+- Timeline shows all events positioned correctly
+- Playhead advances in real-time
+- Phase bands proportioned correctly
+- Clicking events forces them to trigger

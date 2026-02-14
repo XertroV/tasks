@@ -1,0 +1,23 @@
+---
+id: P2.M2.E3.T003
+title: Performance metrics collection hook
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on: []
+tags:
+- debug
+- performance
+- metrics
+---
+## Requirements
+- usePerformanceMetrics hook reading renderer.info at 4Hz
+- Updates debug store with FPS, frameTime, drawCalls, triangles, memoryUsed
+- Resets renderer.info after each collection
+- Disabled in production via IS_DEBUG
+## Acceptance Criteria
+- Metrics update 4 times per second
+- FPS/draw calls/triangles accurate
+- No performance impact from collection itself
+- Fully disabled in production

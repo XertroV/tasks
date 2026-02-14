@@ -1,0 +1,105 @@
+id: P3.M3.E1
+name: VHS Shader Pass
+status: pending
+estimate_hours: 12.0
+complexity: critical
+depends_on: []
+tasks:
+- id: T001
+  file: T001-vhs-fragment-shader-core-struc.todo
+  title: VHS fragment shader core structure with uniforms
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-vhs-vertex-shader-fullscreen-q.todo
+  title: VHS vertex shader fullscreen quad
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T003
+  file: T003-tracking-distortion-and-head-s.todo
+  title: Tracking distortion and head switching effects
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+- id: T004
+  file: T004-chroma-bleed-and-dropout-lines.todo
+  title: Chroma bleed and dropout lines effects
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T005
+  file: T005-static-noise-pause-jitter-and.todo
+  title: Static noise pause jitter and FF/REW effects
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T006
+  file: T006-horror-corruption-function-stu.todo
+  title: Horror corruption function stub
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T001
+- id: T007
+  file: T007-vhs-shaderpass-integration-wit.todo
+  title: VHS ShaderPass integration with R3F
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - T001
+  - T002
+- id: T008
+  file: T008-leva-controls-for-all-vhs-unif.todo
+  title: Leva controls for all VHS uniforms
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T007
+- id: T009
+  file: T009-vhs-shader-performance-validat.todo
+  title: VHS shader performance validation
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T003
+  - T004
+  - T005
+  - T006
+  - T007
+- id: T010
+  file: T010-shared-noise-glsl-utility-func.todo
+  title: Shared noise.glsl utility functions
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+stats:
+  total: 10
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 10

@@ -1,0 +1,23 @@
+---
+id: P3.M3.E1.T010
+title: Shared noise.glsl utility functions
+status: pending
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- shader
+- glsl
+- shared
+- utility
+---
+## Requirements
+- src/shaders/noise.glsl with hash, fbm, simplex noise functions
+- Importable via Vite ?raw for string concatenation into other shaders
+- Used by VHS, CRT, room material shaders
+## Acceptance Criteria
+- At least hash, fbm, and simplex noise functions defined
+- Functions produce visually correct noise
+- Importable and concatenatable into any shader
+- No duplicate noise functions across project

@@ -1,0 +1,27 @@
+---
+id: P2.M1.E1.T002
+title: Carpet shader material
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- shader
+- glsl
+- material
+- room
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:48:13.365382+00:00'
+started_at: '2026-02-14T03:48:13.365382+00:00'
+completed_at: '2026-02-14T03:51:11.182695+00:00'
+duration_minutes: 2.9636215000000004
+---
+## Requirements
+- src/shaders/carpet.frag.glsl: institutional carpet, muted brown-gray
+- Procedural texture via noise, subtle wear patterns
+- Uniforms: uWear (traffic pattern intensity), uColor
+## Acceptance Criteria
+- Carpet has visible texture grain
+- Wear patterns concentrated in traffic areas
+- Material looks institutional, not residential

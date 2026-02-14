@@ -1,0 +1,25 @@
+---
+id: P5.M1.E2.T005
+title: Horror phase interactions for hallways
+status: pending
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- T003
+- T004
+tags:
+- horror
+- atmosphere
+- hallways
+- phase-system
+---
+## Requirements
+- UNEASY: one distant light turns off (abrupt, permanent for phase)
+- ESCALATING: distant hum detuned (audio, few semitones flat)
+- CLIMAX: NO changes. Nothing visible EVER appears. Code comment enforces invariant
+## Acceptance Criteria
+- UNEASY: exactly one distant light off
+- ESCALATING: hum audibly detuned
+- CLIMAX: hallways identical to ESCALATING (empty)
+- Code comment documents nothing ever appears invariant

@@ -1,0 +1,24 @@
+---
+id: P5.M1.E2.T004
+title: Back wall opening and corridor alignment
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- T002
+tags:
+- geometry
+- room-integration
+- hallways
+---
+## Requirements
+- 2m-wide opening in main room back wall
+- Opening edges have wall thickness
+- Hallway corridor visible through opening, properly aligned
+- Hallways not rendered when Look Behind You inactive
+## Acceptance Criteria
+- Clear 2m opening in back wall
+- Hallway corridor visible and aligned through opening
+- No z-fighting at opening edges
+- Hallways unmounted when not active

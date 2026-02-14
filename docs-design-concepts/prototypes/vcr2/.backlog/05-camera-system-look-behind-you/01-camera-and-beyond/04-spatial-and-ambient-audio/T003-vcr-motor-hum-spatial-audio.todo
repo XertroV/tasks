@@ -1,0 +1,24 @@
+---
+id: P5.M1.E4.T003
+title: VCR motor hum spatial audio
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on:
+- T001
+tags:
+- audio
+- spatial
+- procedural
+- vcr
+---
+## Requirements
+- 60Hz bandpass noise + 120Hz sine at VCR deck position
+- Active when tape loaded and VCR not ejected
+- Volume adjusts with VCR mode (louder during FF/REW)
+## Acceptance Criteria
+- Hum positioned at VCR location
+- Active only when tape loaded
+- Louder during FF/REW transitions
+- Spatially correct from camera position

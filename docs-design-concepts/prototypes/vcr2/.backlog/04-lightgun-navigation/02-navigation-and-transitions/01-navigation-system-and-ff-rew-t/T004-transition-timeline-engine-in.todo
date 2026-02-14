@@ -1,0 +1,25 @@
+---
+id: P4.M2.E1.T004
+title: Transition timeline engine in useFrame
+status: pending
+estimate_hours: 3.0
+complexity: high
+priority: critical
+depends_on:
+- T003
+tags:
+- animation
+- transition
+- useFrame
+- performance
+---
+## Requirements
+- useNavigationTransition hook driving transitionProgress each frame
+- Duration 1.5s total: START(0-0.133), SEEK(0.133-0.733), ARRIVE(0.733-1.0)
+- Update transitionState at phase boundaries
+- All state via getState()/setState(), no React selectors in useFrame
+## Acceptance Criteria
+- Transition progresses through 3 phases over exactly 1.5s
+- Phase boundaries crossed at correct progress values
+- No React re-renders during transition
+- Zero object allocation in hot path

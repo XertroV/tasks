@@ -1,0 +1,27 @@
+---
+id: P7.M1.E1.T012
+title: Unit tests for HorrorStore
+status: pending
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on:
+- T002
+- T003
+- T004
+tags:
+- test
+- store
+- quality
+---
+## Requirements
+- Test initial state, enable/disable, tick increments, phase transitions
+- Test activity-gating delays transitions
+- Test intensity curve at key time points
+- Test effect overrides and entity visibility
+
+## Acceptance Criteria
+- All test cases pass
+- Phase transition timing verified
+- Intensity curve validated at 0s, 60s, 120s, 180s, 210s
+- Store reset behavior verified for both enable and disable

@@ -1,0 +1,28 @@
+---
+id: P2.M1.E1.T003
+title: Ceiling tile shader material
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- shader
+- glsl
+- material
+- room
+claimed_by: cli-user
+claimed_at: '2026-02-14T03:48:13.366232+00:00'
+started_at: '2026-02-14T03:48:13.366232+00:00'
+completed_at: '2026-02-14T03:51:11.690859+00:00'
+duration_minutes: 2.97207695
+---
+## Requirements
+- src/shaders/ceiling-tile.frag.glsl: acoustic ceiling tiles with grid
+- Procedural: white-gray speckled surface, dark grid lines between tiles
+- Tile size ~0.6x0.6 units with recessed grid gaps
+## Acceptance Criteria
+- Visible tile grid pattern
+- Speckled/textured tile surfaces
+- Grid lines darker/recessed
+- Looks like standard drop ceiling

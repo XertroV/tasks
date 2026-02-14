@@ -1,0 +1,21 @@
+---
+id: P6.M2.E2.T001
+title: VHS shader default values tuning pass
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- shader
+- tuning
+- vhs
+---
+## Requirements
+- Play through documentation in normal mode, adjust VHS defaults for pleasant reading
+- Defaults should be subtle: slight tracking, minimal noise, gentle chroma
+- Horror mode gradually increases all values
+## Acceptance Criteria
+- Normal mode: text clearly readable with subtle VHS character
+- Defaults documented in code comments
+- Each uniform has justified default value

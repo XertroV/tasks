@@ -1,0 +1,24 @@
+---
+id: P5.M1.E4.T002
+title: Fluorescent light buzz spatial audio
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- audio
+- spatial
+- procedural
+- ambient
+---
+## Requirements
+- 120Hz sawtooth, low-passed at 300Hz, PositionalAudio at ceiling light position
+- Subtle volume (~0.04), always present
+- Multiple lights may each have independent buzz
+## Acceptance Criteria
+- Buzz positioned at light fixture
+- Volume falls off with distance
+- Always present in normal operation
+- No audio clicks or pops

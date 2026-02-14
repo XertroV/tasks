@@ -1,0 +1,25 @@
+---
+id: P6.M1.E1.T008
+title: Ready state transition and cursor activation
+status: pending
+estimate_hours: 0.75
+complexity: medium
+priority: critical
+depends_on:
+- T001
+- T002
+- T007
+tags:
+- boot
+- state
+- interaction
+---
+## Requirements
+- At 5.0s: VCR shows PAUSE, Zapper becomes visible and active
+- All shootable targets become interactive
+- bootStore.isComplete = true
+## Acceptance Criteria
+- User can interact after 5.0s
+- VCR shows PAUSE state
+- Zapper visible and tracking mouse
+- No residual boot UI elements

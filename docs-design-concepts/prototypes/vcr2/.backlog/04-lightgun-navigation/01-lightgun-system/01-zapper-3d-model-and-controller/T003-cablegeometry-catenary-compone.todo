@@ -1,0 +1,26 @@
+---
+id: P4.M1.E1.T003
+title: CableGeometry catenary component
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- T001
+tags:
+- r3f
+- geometry
+- catenary
+- 3d-model
+---
+## Requirements
+- Create src/lightgun/CableGeometry.tsx with catenary curve
+- Props: start, end, thickness, color, segments
+- Use cosh sag formula, TubeGeometry with CatmullRomCurve3
+- Default: grip bottom to VCR area, thickness 0.004, 12 segments
+
+## Acceptance Criteria
+- Black cable hangs in natural catenary arc
+- Cable uses TubeGeometry (round cross-section)
+- Cable under 150 vertices
+- Changing props recalculates curve

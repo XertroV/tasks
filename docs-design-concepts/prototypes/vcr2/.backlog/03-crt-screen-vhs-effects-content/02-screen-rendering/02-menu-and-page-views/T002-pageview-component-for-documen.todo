@@ -1,0 +1,24 @@
+---
+id: P3.M2.E2.T002
+title: PageView component for documentation display
+status: pending
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- page
+- view
+- content
+- r3f
+---
+## Requirements
+- src/crt/PageView.tsx rendered in offscreen scene
+- Renders ParsedPage content via TextLayout
+- Shows title in title area, body in content area, nav in footer
+- Navigation elements: PREV, NEXT, MENU as shootable targets
+## Acceptance Criteria
+- Page content renders with correct styling per text type
+- Title displayed in title area
+- PREV/NEXT/MENU targets visible at appropriate positions
+- Accepts ParsedPage as prop

@@ -1,0 +1,21 @@
+---
+id: P4.M2.E2.T003
+title: MENU target for returning to table of contents
+status: pending
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on: []
+tags:
+- navigation
+- menu
+- target
+---
+## Requirements
+- MENU target visible on every page view
+- Shooting MENU rewinds to start and shows MenuView
+- VCR shows REW animation during rewind
+## Acceptance Criteria
+- MENU visible on all pages
+- Shooting navigates to menu with REW transition
+- VCR state reflects rewind
