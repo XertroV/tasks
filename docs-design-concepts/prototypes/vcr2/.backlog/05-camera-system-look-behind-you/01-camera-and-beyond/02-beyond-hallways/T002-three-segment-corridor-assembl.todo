@@ -1,16 +1,21 @@
 ---
 id: P5.M1.E2.T002
 title: Three-segment corridor assembly
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
+- P5.M1.E2.T001
 tags:
 - layout
 - scene-graph
 - hallways
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:47:11.579277+00:00'
+started_at: '2026-02-14T11:47:11.579277+00:00'
+completed_at: '2026-02-14T12:32:59.915123+00:00'
+duration_minutes: 45.80559725
 ---
 ## Requirements
 - BackroomsHallway parent placing 3 segments at ~4m, ~12m, ~20m

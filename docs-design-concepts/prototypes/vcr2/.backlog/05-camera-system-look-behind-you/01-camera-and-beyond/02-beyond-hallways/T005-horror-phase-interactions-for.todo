@@ -1,18 +1,23 @@
 ---
 id: P5.M1.E2.T005
 title: Horror phase interactions for hallways
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: high
 depends_on:
-- T003
-- T004
+- P5.M1.E2.T003
+- P5.M1.E2.T004
 tags:
 - horror
 - atmosphere
 - hallways
 - phase-system
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:47:11.581589+00:00'
+started_at: '2026-02-14T11:47:11.581589+00:00'
+completed_at: '2026-02-14T12:33:01.195457+00:00'
+duration_minutes: 45.82689761666666
 ---
 ## Requirements
 - UNEASY: one distant light turns off (abrupt, permanent for phase)

@@ -1,18 +1,23 @@
 ---
 id: P5.M1.E2.T003
 title: Per-segment fluorescent lights and fog
-status: pending
+status: done
 estimate_hours: 3.5
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
+- P5.M1.E2.T001
+- P5.M1.E2.T002
 tags:
 - lighting
 - fog
 - atmosphere
 - hallways
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:47:11.580142+00:00'
+started_at: '2026-02-14T11:47:11.580142+00:00'
+completed_at: '2026-02-14T12:33:00.329551+00:00'
+duration_minutes: 45.81248998333333
 ---
 ## Requirements
 - FluorescentLight per segment with intensities 0.6, 0.3, 0.1

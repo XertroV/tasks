@@ -1,7 +1,7 @@
 ---
 id: P5.M1.E2.T001
 title: HallwaySegment component with geometry
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - geometry
 - component
 - hallways
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:47:11.578294+00:00'
+started_at: '2026-02-14T11:47:11.578294+00:00'
+completed_at: '2026-02-14T12:32:59.519410+00:00'
+duration_minutes: 45.79901805
 ---
 ## Requirements
 - HallwaySegment R3F component: floor (carpet), ceiling (ceiling-tile), walls (wallpaper), light mount
@@ -20,3 +25,24 @@ tags:
 - Renders 6 meshes with correct material assignments
 - Under 2K vertices per segment
 - Materials are shared references from main room
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P5.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 11:47 UTC
+**Sibling tasks**: P5.M1.E2.T002, P5.M1.E2.T003, P5.M1.E2.T004, P5.M1.E2.T005, P5.M1.E2.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P5.M1.E2.T001 → P5.M1.E2.T002 → P5.M1.E2.T003 → P5.M1.E2.T004 → P5.M1.E2.T005 → P5.M1.E2.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P5.M1.E2.T001: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/02-beyond-hallways/T001-hallwaysegment-component-with.todo
+- P5.M1.E2.T002: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/02-beyond-hallways/T002-three-segment-corridor-assembl.todo
+- P5.M1.E2.T003: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/02-beyond-hallways/T003-per-segment-fluorescent-lights.todo
+- P5.M1.E2.T004: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/02-beyond-hallways/T004-back-wall-opening-and-corridor.todo
+- P5.M1.E2.T005: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/02-beyond-hallways/T005-horror-phase-interactions-for.todo
+- P5.M1.E2.T006: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/02-beyond-hallways/T006-visibility-gate-tied-to-look-b.todo
