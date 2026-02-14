@@ -1,17 +1,22 @@
 ---
 id: P3.M2.E2.T003
 title: Screen view switcher between menu and page
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
 depends_on:
-- T001
-- T002
+- P3.M2.E2.T001
+- P3.M2.E2.T002
 tags:
 - screen
 - navigation
 - view-switching
+claimed_by: cli-user
+claimed_at: '2026-02-14T08:23:01.885969+00:00'
+started_at: '2026-02-14T08:23:01.885969+00:00'
+completed_at: '2026-02-14T08:57:20.463537+00:00'
+duration_minutes: 34.30962598333333
 ---
 ## Requirements
 - ScreenContent.tsx manages which view (MenuView or PageView) is active
@@ -23,3 +28,20 @@ tags:
 - Page displays when content loaded
 - Switching between views is clean (no overlap)
 - Responds to store changes
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 08:23 UTC
+**Sibling tasks**: P3.M2.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M2.E2.T003 → P3.M2.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M2.E2.T003: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/02-menu-and-page-views/T003-screen-view-switcher-between-m.todo
+- P3.M2.E2.T004: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/02-menu-and-page-views/T004-navigation-target-positions-pe.todo

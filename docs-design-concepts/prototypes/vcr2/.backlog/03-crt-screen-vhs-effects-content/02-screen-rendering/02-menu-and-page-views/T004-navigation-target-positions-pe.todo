@@ -1,16 +1,21 @@
 ---
 id: P3.M2.E2.T004
 title: Navigation target positions per page
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
 depends_on:
-- T002
+- P3.M2.E2.T002
 tags:
 - navigation
 - targets
 - content
+claimed_by: cli-user
+claimed_at: '2026-02-14T08:23:01.887299+00:00'
+started_at: '2026-02-14T08:23:01.887299+00:00'
+completed_at: '2026-02-14T08:57:20.799484+00:00'
+duration_minutes: 34.315202916666664
 ---
 ## Requirements
 - Compute shootable target positions for each page: internal links, PREV, NEXT, MENU, MORE, TOP
