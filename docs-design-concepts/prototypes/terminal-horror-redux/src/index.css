@@ -1,0 +1,240 @@
+@import "tailwindcss";
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=VT323&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --vhs-green: #33FF33;
+  --vhs-amber: #FFAA00;
+  --vcr-cyan: #00FFFF;
+  --vcr-blue: #00BFFF;
+  --crt-black: #000000;
+  --backrooms-beige: #C4B998;
+  --backrooms-shadow: #8A7D5C;
+  --carpet-brown: #8B7355;
+  --entity-red: #FF0000;
+  
+  --cursor-idle: #33FF33;
+  --cursor-targeting: #00FFFF;
+  --cursor-firing: #FFFF00;
+  --cursor-disabled: #666666;
+  
+  --vcr-bg-primary: rgba(0, 0, 40, 0.85);
+  --vcr-bg-selected: rgba(0, 80, 120, 0.85);
+  --vcr-border: #00BFFF;
+  --vcr-text: #00FFFF;
+  --vcr-text-dim: #008888;
+  --vcr-highlight: #FFFFFF;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+body {
+  font-family: 'IBM Plex Mono', monospace;
+  -webkit-font-smoothing: none;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.lightgun-mode {
+  cursor: none !important;
+}
+
+.lightgun-mode * {
+  cursor: none !important;
+}
+
+.crt-screen {
+  position: relative;
+  background: #000;
+  border-radius: 20px;
+  overflow: hidden;
+}
+
+.crt-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.3) 2px,
+    rgba(0, 0, 0, 0.3) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+.crt-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.4) 100%),
+    linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 20;
+}
+
+.vhs-text {
+  color: var(--vhs-green);
+  font-family: 'VT323', 'IBM Plex Mono', monospace;
+  text-shadow: 
+    0 0 5px var(--vhs-green),
+    0 0 10px var(--vhs-green),
+    0 0 20px rgba(51, 255, 51, 0.5);
+}
+
+.vhs-text::selection {
+  background: rgba(51, 255, 51, 0.3);
+  text-shadow: 
+    -1px 0 #FF0000,
+    1px 0 #00FFFF;
+}
+
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.3) 2px,
+    rgba(0, 0, 0, 0.3) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+.head-switching {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 12%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8) 0%,
+    rgba(255, 255, 255, 0.1) 30%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+.head-switching::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 1px,
+    rgba(255, 255, 255, 0.15) 1px,
+    rgba(255, 255, 255, 0.15) 2px
+  );
+  animation: head-switch-scroll 0.1s steps(3) infinite;
+}
+
+@keyframes head-switch-scroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(3px); }
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 50%,
+    rgba(0, 0, 0, 0.5) 100%
+  );
+  pointer-events: none;
+}
+
+.shootable {
+  position: relative;
+  display: inline-block;
+  padding: 8px 16px;
+  margin: 4px;
+  font-family: 'VT323', 'IBM Plex Mono', monospace;
+  font-size: 24px;
+  color: var(--vcr-text);
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background: var(--vcr-bg-primary);
+  border: 3px solid var(--vcr-border);
+  box-shadow: 
+    inset 2px 2px 0 rgba(255, 255, 255, 0.2),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(0, 0, 0, 0.8);
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  user-select: none;
+  transition: all 0.15s ease-out;
+}
+
+.shootable.targeting,
+.shootable:hover {
+  border-color: #FFFF00;
+  background: var(--vcr-bg-selected);
+  color: var(--vcr-highlight);
+  box-shadow:
+    inset 2px 2px 0 rgba(255, 255, 255, 0.3),
+    inset -2px -2px 0 rgba(0, 0, 0, 0.4),
+    0 0 20px rgba(255, 255, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 0, 0.8);
+  transform: scale(1.02);
+}
+
+.shootable.hit {
+  animation: hit-flash 0.5s ease-out;
+}
+
+@keyframes hit-flash {
+  0% {
+    background: #FF6600;
+    border-color: #FFFF00;
+    transform: scale(1.1);
+    filter: brightness(2);
+  }
+  20% {
+    background: var(--vcr-bg-selected);
+    transform: scale(0.95);
+  }
+  40% {
+    background: #FF6600;
+    transform: scale(1.05);
+  }
+  100% {
+    background: var(--vcr-bg-primary);
+    border-color: var(--vcr-border);
+    transform: scale(1);
+    filter: brightness(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

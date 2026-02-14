@@ -15,3 +15,12 @@ dist/
 .pytest_cache/
 .mypy_cache/
 *-log.txt
+
+# Docs site artifacts
+docs/node_modules/
+docs/dist/
+docs/.astro/
+docs/.generated/
+
+
+node_modules/
