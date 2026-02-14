@@ -1,16 +1,21 @@
 ---
 id: P3.M1.E2.T004
 title: VCR store debug controls
-status: pending
+status: done
 estimate_hours: 0.5
 complexity: low
 priority: medium
 depends_on:
-- T001
+- P3.M1.E2.T001
 tags:
 - vcr
 - debug
 - leva
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:40:24.751807+00:00'
+started_at: '2026-02-14T07:40:24.751807+00:00'
+completed_at: '2026-02-14T08:04:16.866210+00:00'
+duration_minutes: 23.868573233333333
 ---
 ## Requirements
 - Leva VCR folder: current state monitor, force state dropdown, tape position slider

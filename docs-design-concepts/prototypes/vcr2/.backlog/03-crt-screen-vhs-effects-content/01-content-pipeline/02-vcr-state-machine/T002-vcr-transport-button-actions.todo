@@ -1,16 +1,21 @@
 ---
 id: P3.M1.E2.T002
 title: VCR transport button actions
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T001
+- P3.M1.E2.T001
 tags:
 - vcr
 - actions
 - interaction
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:40:24.749781+00:00'
+started_at: '2026-02-14T07:40:24.749781+00:00'
+completed_at: '2026-02-14T08:04:16.154546+00:00'
+duration_minutes: 23.85674595
 ---
 ## Requirements
 - Play: STOPPED/PAUSED -> PLAYING
@@ -23,3 +28,21 @@ tags:
 - Each button action transitions to correct state
 - Invalid transitions rejected gracefully
 - State changes reflected in store immediately
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 07:40 UTC
+**Sibling tasks**: P3.M1.E2.T003, P3.M1.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M1.E2.T002 → P3.M1.E2.T003 → P3.M1.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M1.E2.T002: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/02-vcr-state-machine/T002-vcr-transport-button-actions.todo
+- P3.M1.E2.T003: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/02-vcr-state-machine/T003-vcr-timecode-and-display-logic.todo
+- P3.M1.E2.T004: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/02-vcr-state-machine/T004-vcr-store-debug-controls.todo

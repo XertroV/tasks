@@ -16,6 +16,7 @@ interface VCRActions {
   eject: () => void;
   loadTape: () => void;
   setTargetPosition: (time: number) => void;
+  setPosition: (time: number) => void;
   tick: (delta: number) => void;
   play: () => void;
   pause: () => void;
@@ -143,6 +144,15 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
       targetTime: Math.max(0, time),
       isTransitioning: true,
       displayText: formatTimecode(Math.max(0, time)),
+    });
+  },
+
+  setPosition: (time) => {
+    const current = get();
+    const newTime = Math.max(0, time);
+    set({
+      currentTime: newTime,
+      displayText: computeDisplayText({ ...current, currentTime: newTime }),
     });
   },
 

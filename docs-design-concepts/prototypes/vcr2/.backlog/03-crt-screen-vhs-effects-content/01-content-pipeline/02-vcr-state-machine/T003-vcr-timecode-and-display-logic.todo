@@ -1,16 +1,21 @@
 ---
 id: P3.M1.E2.T003
 title: VCR timecode and display logic
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
 depends_on:
-- T001
+- P3.M1.E2.T001
 tags:
 - vcr
 - display
 - timecode
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:40:24.750922+00:00'
+started_at: '2026-02-14T07:40:24.750922+00:00'
+completed_at: '2026-02-14T08:04:16.503477+00:00'
+duration_minutes: 23.862542416666667
 ---
 ## Requirements
 - Compute display text from mode: PLAY shows play icon + timecode, PAUSE shows pause icon + timecode, FF shows >> + advancing timecode, etc.
