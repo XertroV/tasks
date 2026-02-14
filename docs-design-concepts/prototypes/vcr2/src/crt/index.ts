@@ -32,3 +32,5 @@ export { DocsScreenView } from './DocsScreenView';
 export type { DocsScreenViewProps } from './DocsScreenView';
 export { TestScreenHarness, useTestScreenMode } from './TestScreenHarness';
 export type { TestScreenHarnessProps } from './TestScreenHarness';
+export { ScanlineOverlay } from './ScanlineOverlay';
+export type { ScanlineOverlayProps } from './ScanlineOverlay';

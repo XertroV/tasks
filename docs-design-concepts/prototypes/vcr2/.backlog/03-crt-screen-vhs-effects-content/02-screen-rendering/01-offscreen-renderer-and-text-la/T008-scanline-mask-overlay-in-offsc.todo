@@ -1,15 +1,20 @@
 ---
 id: P3.M2.E1.T008
 title: Scanline mask overlay in offscreen scene
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: medium
 depends_on:
-- T002
+- P3.M2.E1.T002
 tags:
 - visual-effect
 - overlay
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:34:53.376305+00:00'
+started_at: '2026-02-14T09:34:53.376305+00:00'
+completed_at: '2026-02-14T09:43:50.976663+00:00'
+duration_minutes: 8.960005816666667
 ---
 ## Requirements
 - Full-screen plane at z=0.5 with horizontal scanline pattern
