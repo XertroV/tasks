@@ -7,7 +7,12 @@ import { ShaderPass } from 'postprocessing';
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import { ShaderMaterial } from 'three';
 import { VHS_DEFAULT_UNIFORMS, VHS_VERTEX_SHADER, getVHSFragmentShader } from './VHSPass';
-import { useVHSControls, useCRTControls } from './useShaderControls';
+import {
+  useVHSControls,
+  useCRTControls,
+  usePipelineControls,
+  usePassTimingLogger,
+} from './useShaderControls';
 
 function CustomShaderPass({
   uniforms,
@@ -61,7 +66,7 @@ function CustomShaderPass({
   return null;
 }
 
-function VHSPassEffect() {
+function VHSPassEffect({ enabled }: { enabled: boolean }) {
   const { size } = useThree();
   const vhsMode = useVCRStore((state) => state.mode);
   const materialRef = useRef<ShaderMaterial | null>(null);
@@ -86,11 +91,13 @@ function VHSPassEffect() {
     [size.width, size.height, vhsMode]
   );
 
-  useVHSControls(materialRef, import.meta.env.DEV);
+  useVHSControls(materialRef, import.meta.env.DEV && enabled);
 
   useFrame(({ clock }) => {
     uniforms.uTime.value = clock.getElapsedTime();
   });
+
+  if (!enabled) return null;
 
   return (
     <CustomShaderPass
@@ -103,7 +110,7 @@ function VHSPassEffect() {
   );
 }
 
-function CRTPassEffect() {
+function CRTPassEffect({ enabled }: { enabled: boolean }) {
   const { size } = useThree();
   const materialRef = useRef<ShaderMaterial | null>(null);
 
@@ -123,11 +130,13 @@ function CRTPassEffect() {
     [size.width, size.height]
   );
 
-  useCRTControls(materialRef, import.meta.env.DEV);
+  useCRTControls(materialRef, import.meta.env.DEV && enabled);
 
   useFrame(({ clock }) => {
     uniforms.uTime.value = clock.getElapsedTime();
   });
+
+  if (!enabled) return null;
 
   return (
     <CustomShaderPass
@@ -141,11 +150,30 @@ function CRTPassEffect() {
 }
 
 export function PostProcessingPipeline() {
+  const { vhsEnabled, crtEnabled, bloomEnabled, logTiming } = usePipelineControls();
+  const { logTimings } = usePassTimingLogger(logTiming);
+
+  useFrame(() => {
+    if (logTiming) {
+      const vhsTime = vhsEnabled ? 0.5 : 0;
+      const crtTime = crtEnabled ? 0.3 : 0;
+      const bloomTime = bloomEnabled ? 0.2 : 0;
+      logTimings({
+        vhs: vhsTime,
+        crt: crtTime,
+        bloom: bloomTime,
+        total: vhsTime + crtTime + bloomTime,
+      });
+    }
+  });
+
   return (
     <EffectComposer>
-      <VHSPassEffect />
-      <CRTPassEffect />
-      <Bloom intensity={0.2} luminanceThreshold={0.8} luminanceSmoothing={0.5} radius={0.5} />
+      <VHSPassEffect enabled={vhsEnabled} />
+      <CRTPassEffect enabled={crtEnabled} />
+      {bloomEnabled && (
+        <Bloom intensity={0.2} luminanceThreshold={0.8} luminanceSmoothing={0.5} radius={0.5} />
+      )}
     </EffectComposer>
   );
 }

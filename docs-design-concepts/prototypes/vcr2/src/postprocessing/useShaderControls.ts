@@ -1,5 +1,5 @@
 import { useControls } from 'leva';
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { ShaderMaterial } from 'three';
 
 export interface VHSControls {
@@ -135,4 +135,61 @@ export function useCRTControls(
   }, [controls, materialRef, enabled]);
 
   return controls as CRTControls;
+}
+
+export interface PipelineControls {
+  vhsEnabled: boolean;
+  crtEnabled: boolean;
+  bloomEnabled: boolean;
+  logTiming: boolean;
+}
+
+export const PIPELINE_CONTROLS_DEFAULTS: PipelineControls = {
+  vhsEnabled: true,
+  crtEnabled: true,
+  bloomEnabled: true,
+  logTiming: false,
+};
+
+export function usePipelineControls(): PipelineControls {
+  const controls = useControls('Pipeline', {
+    vhsEnabled: { value: PIPELINE_CONTROLS_DEFAULTS.vhsEnabled, label: 'VHS Pass' },
+    crtEnabled: { value: PIPELINE_CONTROLS_DEFAULTS.crtEnabled, label: 'CRT Pass' },
+    bloomEnabled: { value: PIPELINE_CONTROLS_DEFAULTS.bloomEnabled, label: 'Bloom' },
+    logTiming: { value: PIPELINE_CONTROLS_DEFAULTS.logTiming, label: 'Log Timing' },
+  });
+
+  return controls as PipelineControls;
+}
+
+export interface PassTimings {
+  vhs: number;
+  crt: number;
+  bloom: number;
+  total: number;
+}
+
+export function usePassTimingLogger(logEnabled: boolean) {
+  const timings = useRef<PassTimings>({ vhs: 0, crt: 0, bloom: 0, total: 0 });
+  const lastLogTime = useRef(0);
+
+  const logTimings = useCallback(
+    (newTimings: Partial<PassTimings>) => {
+      if (!logEnabled) return;
+
+      timings.current = { ...timings.current, ...newTimings };
+      const now = performance.now();
+
+      if (now - lastLogTime.current > 1000) {
+        const t = timings.current;
+        console.log(
+          `[Pipeline] VHS: ${t.vhs.toFixed(2)}ms | CRT: ${t.crt.toFixed(2)}ms | Bloom: ${t.bloom.toFixed(2)}ms | Total: ${t.total.toFixed(2)}ms`
+        );
+        lastLogTime.current = now;
+      }
+    },
+    [logEnabled]
+  );
+
+  return { logTimings, timings: timings.current };
 }

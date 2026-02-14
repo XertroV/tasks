@@ -6,7 +6,10 @@ export type { CRTUniforms } from './CRTPass';
 export {
   useVHSControls,
   useCRTControls,
+  usePipelineControls,
+  usePassTimingLogger,
   VHS_CONTROLS_DEFAULTS,
   CRT_CONTROLS_DEFAULTS,
+  PIPELINE_CONTROLS_DEFAULTS,
 } from './useShaderControls';
-export type { VHSControls, CRTControls } from './useShaderControls';
+export type { VHSControls, CRTControls, PipelineControls, PassTimings } from './useShaderControls';

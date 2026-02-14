@@ -1,17 +1,22 @@
 ---
 id: P3.M3.E3.T002
 title: Screen quad material connection
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
+- P3.M3.E3.T001
 tags:
 - integration
 - material
 - crt
 - pipeline
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:17:03.598257+00:00'
+started_at: '2026-02-14T07:17:03.598257+00:00'
+completed_at: '2026-02-14T07:20:07.227182+00:00'
+duration_minutes: 3.0604819
 ---
 ## Requirements
 - Connect ScreenRenderer RenderTarget texture as input to EffectComposer
@@ -22,3 +27,20 @@ tags:
 - VHS and CRT effects applied to screen content
 - Final output displayed on CRT TV in 3D scene
 - No double-processing or render order issues
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-14 07:17 UTC
+**Sibling tasks**: P3.M3.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M3.E3.T002 → P3.M3.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M3.E3.T002: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/03-effect-pipeline-integration/T002-screen-quad-material-connectio.todo
+- P3.M3.E3.T003: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/03-effect-pipeline-integration/T003-pipeline-bypass-and-debug-cont.todo
