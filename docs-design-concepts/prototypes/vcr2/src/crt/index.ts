@@ -19,3 +19,16 @@ export type { VcrOSDProps } from './VcrOSD';
 export { useFontReady, getFontPath } from './useFontReady';
 export { useScrollController, clampScroll } from './useScrollController';
 export type { ScrollController } from './useScrollController';
+export {
+  ScreenContent,
+  ScreenRenderer as ScreenRendererNew,
+  useRenderTargetTexture as useRenderTargetTextureNew,
+} from './ScreenContent';
+export type {
+  ScreenContentProps,
+  ScreenRendererProps as ScreenRendererNewProps,
+} from './ScreenContent';
+export { DocsScreenView } from './DocsScreenView';
+export type { DocsScreenViewProps } from './DocsScreenView';
+export { TestScreenHarness, useTestScreenMode } from './TestScreenHarness';
+export type { TestScreenHarnessProps } from './TestScreenHarness';

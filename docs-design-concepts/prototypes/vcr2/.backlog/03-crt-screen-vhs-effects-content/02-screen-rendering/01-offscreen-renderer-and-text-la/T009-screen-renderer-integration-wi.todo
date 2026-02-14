@@ -1,17 +1,22 @@
 ---
 id: P3.M2.E1.T009
 title: Screen renderer integration with CRT screen quad
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
+- P3.M2.E1.T001
+- P3.M2.E1.T002
 tags:
 - integration
 - rendering
 - pipeline
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:57:45.087625+00:00'
+started_at: '2026-02-14T06:57:45.087625+00:00'
+completed_at: '2026-02-14T07:05:31.131546+00:00'
+duration_minutes: 7.767398549999999
 ---
 ## Requirements
 - Export render target texture for CRT screen quad material
@@ -23,3 +28,20 @@ tags:
 - Text not flipped/mirrored/stretched
 - Content updates immediately reflect on CRT
 - Works without post-processing pipeline active
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 06:57 UTC
+**Sibling tasks**: P3.M2.E1.T010
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M2.E1.T009 → P3.M2.E1.T010
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M2.E1.T009: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T009-screen-renderer-integration-wi.todo
+- P3.M2.E1.T010: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T010-screen-renderer-test-harness-w.todo
