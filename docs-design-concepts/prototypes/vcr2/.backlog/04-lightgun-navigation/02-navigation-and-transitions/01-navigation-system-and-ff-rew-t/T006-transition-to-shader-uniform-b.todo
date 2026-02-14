@@ -1,18 +1,23 @@
 ---
 id: P4.M2.E1.T006
 title: Transition-to-shader uniform bridge
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: high
 priority: critical
 depends_on:
-- T004
+- P4.M2.E1.T004
 tags:
 - shader
 - animation
 - useFrame
 - vhs
 - performance
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:44:08.264224+00:00'
+started_at: '2026-02-14T10:44:08.264224+00:00'
+completed_at: '2026-02-14T10:49:07.871112+00:00'
+duration_minutes: 4.993447983333334
 ---
 ## Requirements
 - Map transition phase+progress to VHS shader uniforms

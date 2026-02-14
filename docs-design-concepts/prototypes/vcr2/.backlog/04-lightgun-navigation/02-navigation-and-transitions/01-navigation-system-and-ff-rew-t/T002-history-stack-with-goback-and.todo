@@ -1,16 +1,21 @@
 ---
 id: P4.M2.E1.T002
 title: History stack with goBack and goForward actions
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
+- P4.M2.E1.T001
 tags:
 - store
 - navigation
 - history
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:44:08.261300+00:00'
+started_at: '2026-02-14T10:44:08.261300+00:00'
+completed_at: '2026-02-14T10:49:06.501103+00:00'
+duration_minutes: 4.970663233333334
 ---
 ## Requirements
 - Add history array and historyIndex to NavigationState

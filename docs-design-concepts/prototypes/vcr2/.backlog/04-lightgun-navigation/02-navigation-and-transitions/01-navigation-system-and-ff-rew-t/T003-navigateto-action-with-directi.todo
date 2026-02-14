@@ -1,17 +1,22 @@
 ---
 id: P4.M2.E1.T003
 title: navigateTo action with direction calculation
-status: pending
+status: done
 estimate_hours: 2.5
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
+- P4.M2.E1.T001
+- P4.M2.E1.T002
 tags:
 - store
 - navigation
 - transition
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:44:08.262043+00:00'
+started_at: '2026-02-14T10:44:08.262043+00:00'
+completed_at: '2026-02-14T10:49:06.843024+00:00'
+duration_minutes: 4.976349466666666
 ---
 ## Requirements
 - navigateTo(targetPageId): lookup manifest, compare tape positions for FF/REW direction

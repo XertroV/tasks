@@ -1,7 +1,7 @@
 ---
 id: P4.M2.E1.T001
 title: NavigationStore core state and type definitions
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - zustand
 - navigation
 - types
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:44:08.260308+00:00'
+started_at: '2026-02-14T10:44:08.260308+00:00'
+completed_at: '2026-02-14T10:49:06.155192+00:00'
+duration_minutes: 4.964914583333334
 ---
 ## Requirements
 - Create src/stores/navigationStore.ts with Zustand
@@ -20,3 +25,24 @@ tags:
 - Store returns all NavigationState fields
 - Initial transitionState is IDLE, currentPageId is index
 - TypeScript strict mode, no any types
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P4.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 10:44 UTC
+**Sibling tasks**: P4.M2.E1.T002, P4.M2.E1.T003, P4.M2.E1.T004, P4.M2.E1.T005, P4.M2.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P4.M2.E1.T001 → P4.M2.E1.T002 → P4.M2.E1.T003 → P4.M2.E1.T004 → P4.M2.E1.T005 → P4.M2.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P4.M2.E1.T001: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T001-navigationstore-core-state-and.todo
+- P4.M2.E1.T002: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T002-history-stack-with-goback-and.todo
+- P4.M2.E1.T003: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T003-navigateto-action-with-directi.todo
+- P4.M2.E1.T004: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T004-transition-timeline-engine-in.todo
+- P4.M2.E1.T005: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T005-transition-completion-and-page.todo
+- P4.M2.E1.T006: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T006-transition-to-shader-uniform-b.todo
