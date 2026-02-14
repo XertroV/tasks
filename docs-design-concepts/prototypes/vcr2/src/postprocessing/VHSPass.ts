@@ -1,5 +1,6 @@
 import noise from '@/shaders/noise.glsl?raw';
 import vhsFrag from '@/shaders/vhs-pass.frag.glsl?raw';
+import vhsVert from '@/shaders/vhs-pass.vert.glsl?raw';
 
 export interface VHSPassUniforms {
   uTime: number;
@@ -31,13 +32,7 @@ export const VHS_DEFAULT_UNIFORMS: VHSPassUniforms = {
   uGlitchSeed: 0,
 };
 
-export const VHS_VERTEX_SHADER = `
-  varying vec2 vUv;
-  void main() {
-    vUv = uv;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-  }
-`;
+export const VHS_VERTEX_SHADER = vhsVert;
 
 export function getVHSFragmentShader(): string {
   return `${noise}\n${vhsFrag.replace('#include noise.glsl', '')}`;

@@ -1,7 +1,7 @@
 ---
 id: P3.M3.E1.T002
 title: VHS vertex shader fullscreen quad
-status: pending
+status: done
 estimate_hours: 0.5
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - shader
 - glsl
 - vhs
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:38:03.271264+00:00'
+started_at: '2026-02-14T05:38:03.271264+00:00'
+completed_at: '2026-02-14T05:43:24.721192+00:00'
+duration_minutes: 5.357498616666667
 ---
 ## Requirements
 - src/shaders/vhs-pass.vert.glsl: standard fullscreen quad
