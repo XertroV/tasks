@@ -1,7 +1,7 @@
 ---
 id: P3.M1.E1.T002
 title: TypeScript type definitions for content and tape model
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - types
 - content
 - tape-model
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:55:24.138612+00:00'
+started_at: '2026-02-14T04:55:24.138612+00:00'
+completed_at: '2026-02-14T04:56:50.479878+00:00'
+duration_minutes: 1.4390208333333334
 ---
 ## Requirements
 - Create src/types/content.ts with: TapeManifestEntry, TapePage, TapeLink, TapeModel, ParsedPage, ParsedSection, ParsedLine interfaces
