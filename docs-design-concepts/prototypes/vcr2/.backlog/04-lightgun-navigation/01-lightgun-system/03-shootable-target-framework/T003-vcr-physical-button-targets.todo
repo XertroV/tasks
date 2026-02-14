@@ -1,17 +1,22 @@
 ---
 id: P4.M1.E3.T003
 title: VCR physical button targets
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P4.M1.E3.T001
 tags:
 - interaction
 - target
 - vcr
 - buttons
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:30:00.517368+00:00'
+started_at: '2026-02-14T10:30:00.517368+00:00'
+completed_at: '2026-02-14T10:40:53.632481+00:00'
+duration_minutes: 10.885251733333332
 ---
 ## Requirements
 - Shootable targets for PLAY, STOP, FF, REW, EJECT buttons on VCR deck

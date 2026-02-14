@@ -1,16 +1,21 @@
 ---
 id: P4.M1.E3.T004
 title: Post-it note targets
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
 depends_on:
-- T001
+- P4.M1.E3.T001
 tags:
 - interaction
 - target
 - post-it
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:30:00.518105+00:00'
+started_at: '2026-02-14T10:30:00.518105+00:00'
+completed_at: '2026-02-14T10:40:53.992990+00:00'
+duration_minutes: 10.891247933333334
 ---
 ## Requirements
 - Shootable post-it notes: LOOK BEHIND YOU (TV bezel), SKIP (boot only)

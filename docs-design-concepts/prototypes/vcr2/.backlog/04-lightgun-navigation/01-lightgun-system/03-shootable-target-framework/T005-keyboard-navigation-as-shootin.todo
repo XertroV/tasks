@@ -1,16 +1,21 @@
 ---
 id: P4.M1.E3.T005
 title: Keyboard navigation as shooting alternative
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: medium
 depends_on:
-- T001
+- P4.M1.E3.T001
 tags:
 - accessibility
 - keyboard
 - navigation
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:30:00.518883+00:00'
+started_at: '2026-02-14T10:30:00.518883+00:00'
+completed_at: '2026-02-14T10:40:54.353198+00:00'
+duration_minutes: 10.897238433333333
 ---
 ## Requirements
 - Tab cycles focus to next shootable target, Shift+Tab previous
