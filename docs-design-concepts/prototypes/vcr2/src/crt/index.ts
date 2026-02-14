@@ -6,3 +6,5 @@ export { ScreenRenderer, useScreenRenderer, useRenderTargetTexture } from './Scr
 export type { ScreenRendererProps } from './ScreenRenderer';
 export { MenuView } from './MenuView';
 export type { MenuViewProps } from './MenuView';
+export { PageView } from './PageView';
+export type { PageViewProps } from './PageView';
