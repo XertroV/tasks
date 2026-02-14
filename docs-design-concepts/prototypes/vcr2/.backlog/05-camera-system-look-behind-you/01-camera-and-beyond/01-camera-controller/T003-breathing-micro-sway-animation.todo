@@ -1,16 +1,21 @@
 ---
 id: P5.M1.E1.T003
 title: Breathing micro-sway animation
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T002
+- P5.M1.E1.T002
 tags:
 - camera
 - animation
 - shader
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:16:15.029474+00:00'
+started_at: '2026-02-14T11:16:15.029474+00:00'
+completed_at: '2026-02-14T11:39:41.207857+00:00'
+duration_minutes: 23.436306233333333
 ---
 ## Requirements
 - Sinusoidal breathing motion on X and Y axes (~0.005-0.01 units)

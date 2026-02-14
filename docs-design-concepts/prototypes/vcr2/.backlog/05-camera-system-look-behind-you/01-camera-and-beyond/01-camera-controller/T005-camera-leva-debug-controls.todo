@@ -1,17 +1,22 @@
 ---
 id: P5.M1.E1.T005
 title: Camera Leva debug controls
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: medium
 depends_on:
-- T003
-- T004
+- P5.M1.E1.T003
+- P5.M1.E1.T004
 tags:
 - camera
 - debug
 - leva
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:16:15.031272+00:00'
+started_at: '2026-02-14T11:16:15.031272+00:00'
+completed_at: '2026-02-14T11:39:41.895881+00:00'
+duration_minutes: 23.447743333333335
 ---
 ## Requirements
 - Leva Camera folder: posXYZ, targetXYZ, fov, breathingEnabled, amplitude, speed

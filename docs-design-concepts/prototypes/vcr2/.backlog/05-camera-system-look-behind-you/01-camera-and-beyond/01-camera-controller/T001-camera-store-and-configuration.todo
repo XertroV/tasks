@@ -1,7 +1,7 @@
 ---
 id: P5.M1.E1.T001
 title: Camera store and configuration constants
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - camera
 - store
 - config
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:16:15.025961+00:00'
+started_at: '2026-02-14T11:16:15.025961+00:00'
+completed_at: '2026-02-14T11:39:40.517580+00:00'
+duration_minutes: 23.424860116666665
 ---
 ## Requirements
 - Define camera constants: default position (0,1.2,-4), target (0,0.9,-7), FOV 60, breathing params
@@ -20,3 +25,24 @@ tags:
 - Store exports typed Zustand store with mode, isTransitioning, horrorOverrides
 - Camera constants defined and importable
 - No setState designed for useFrame
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P5.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 11:16 UTC
+**Sibling tasks**: P5.M1.E1.T002, P5.M1.E1.T003, P5.M1.E1.T004, P5.M1.E1.T005, P5.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P5.M1.E1.T001 → P5.M1.E1.T002 → P5.M1.E1.T003 → P5.M1.E1.T004 → P5.M1.E1.T005 → P5.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P5.M1.E1.T001: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/01-camera-controller/T001-camera-store-and-configuration.todo
+- P5.M1.E1.T002: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/01-camera-controller/T002-cameracontroller-component-wit.todo
+- P5.M1.E1.T003: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/01-camera-controller/T003-breathing-micro-sway-animation.todo
+- P5.M1.E1.T004: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/01-camera-controller/T004-horror-override-api-for-drift.todo
+- P5.M1.E1.T005: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/01-camera-controller/T005-camera-leva-debug-controls.todo
+- P5.M1.E1.T006: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/01-camera-controller/T006-camera-integration-test-and-pe.todo

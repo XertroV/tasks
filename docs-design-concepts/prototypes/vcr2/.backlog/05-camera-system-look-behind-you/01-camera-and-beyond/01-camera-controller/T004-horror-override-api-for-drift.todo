@@ -1,17 +1,22 @@
 ---
 id: P5.M1.E1.T004
 title: Horror override API for drift zoom and shake
-status: pending
+status: done
 estimate_hours: 2.5
 complexity: high
 priority: high
 depends_on:
-- T001
-- T002
+- P5.M1.E1.T001
+- P5.M1.E1.T002
 tags:
 - camera
 - horror
 - api
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:16:15.030407+00:00'
+started_at: '2026-02-14T11:16:15.030407+00:00'
+completed_at: '2026-02-14T11:39:41.549810+00:00'
+duration_minutes: 23.441989883333335
 ---
 ## Requirements
 - Drift: involuntary position offset via Perlin noise, slow (~0.3-0.5 units/sec max)

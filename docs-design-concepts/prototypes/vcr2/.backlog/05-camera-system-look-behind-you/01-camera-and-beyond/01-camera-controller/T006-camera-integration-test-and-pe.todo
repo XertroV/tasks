@@ -1,16 +1,21 @@
 ---
 id: P5.M1.E1.T006
 title: Camera integration test and performance validation
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: medium
 depends_on:
-- T005
+- P5.M1.E1.T005
 tags:
 - camera
 - test
 - performance
+claimed_by: cli-user
+claimed_at: '2026-02-14T11:16:15.032085+00:00'
+started_at: '2026-02-14T11:16:15.032085+00:00'
+completed_at: '2026-02-14T11:39:42.259528+00:00'
+duration_minutes: 23.453790566666665
 ---
 ## Requirements
 - Verify no conflict with other camera systems
