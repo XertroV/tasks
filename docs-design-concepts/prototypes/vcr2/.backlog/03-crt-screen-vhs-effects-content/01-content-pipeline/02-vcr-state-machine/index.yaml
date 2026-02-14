@@ -1,6 +1,6 @@
 id: P3.M1.E2
 name: VCR State Machine
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 depends_on: []
@@ -8,7 +8,7 @@ tasks:
 - id: T001
   file: T001-vcr-store-with-state-machine.todo
   title: VCR store with state machine
-  status: pending
+  status: done
   estimate_hours: 1.5
   complexity: medium
   priority: critical
@@ -16,7 +16,7 @@ tasks:
 - id: T002
   file: T002-vcr-transport-button-actions.todo
   title: VCR transport button actions
-  status: pending
+  status: done
   estimate_hours: 1.0
   complexity: low
   priority: high
@@ -25,7 +25,7 @@ tasks:
 - id: T003
   file: T003-vcr-timecode-and-display-logic.todo
   title: VCR timecode and display logic
-  status: pending
+  status: done
   estimate_hours: 0.75
   complexity: low
   priority: high
@@ -34,7 +34,7 @@ tasks:
 - id: T004
   file: T004-vcr-store-debug-controls.todo
   title: VCR store debug controls
-  status: pending
+  status: done
   estimate_hours: 0.5
   complexity: low
   priority: medium
@@ -42,7 +42,7 @@ tasks:
   - T001
 stats:
   total: 4
-  done: 0
+  done: 4
   in_progress: 0
   blocked: 0
-  pending: 4
+  pending: 0
