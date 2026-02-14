@@ -317,6 +317,8 @@ class TaskLoader:
         priority = frontmatter.get("priority", task_data.get("priority", "medium"))
         depends_on = frontmatter.get("depends_on", task_data.get("depends_on", []))
 
+        depends_on = self._expand_depends_on(depends_on, epic_path)
+
         # Parse datetime fields
         claimed_at = self._parse_datetime(frontmatter.get("claimed_at"))
         started_at = self._parse_datetime(frontmatter.get("started_at"))
@@ -392,6 +394,29 @@ class TaskLoader:
             return datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
         except:
             return None
+
+    def _expand_depends_on(self, depends_on: list, epic_path: TaskPath) -> list[str]:
+        """Expand short dependency IDs to fully qualified IDs.
+
+        Converts:
+        - "T001" -> "P1.M1.E1.T001" (within same epic)
+        - "P1.M2.E3.T004" -> "P1.M2.E3.T004" (already qualified, unchanged)
+        """
+        if not depends_on or not isinstance(depends_on, list):
+            return []
+
+        expanded = []
+        for dep in depends_on:
+            if not isinstance(dep, str):
+                continue
+            if dep.startswith("P") and dep.count(".") >= 3:
+                expanded.append(dep)
+            elif dep.startswith("T"):
+                expanded_dep = f"{epic_path.full_id}.{dep}"
+                expanded.append(expanded_dep)
+            else:
+                expanded.append(dep)
+        return expanded
 
     def save_task(self, task: Task) -> None:
         """Save task updates to its .todo file."""
