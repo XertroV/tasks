@@ -34,6 +34,6 @@ milestones:
 stats:
   total_tasks: 42
   done: 15
-  in_progress: 0
+  in_progress: 6
   blocked: 0
-  pending: 27
+  pending: 21

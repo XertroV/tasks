@@ -24,6 +24,6 @@ epics:
 stats:
   total_tasks: 14
   done: 3
-  in_progress: 0
+  in_progress: 6
   blocked: 0
-  pending: 11
+  pending: 5

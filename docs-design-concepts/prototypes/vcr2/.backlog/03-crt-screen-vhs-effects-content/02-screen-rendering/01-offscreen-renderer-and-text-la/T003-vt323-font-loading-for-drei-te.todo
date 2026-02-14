@@ -1,7 +1,7 @@
 ---
 id: P3.M2.E1.T003
 title: VT323 font loading for drei Text
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - font
 - assets
 - drei
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:46:44.710636+00:00'
+started_at: '2026-02-14T06:46:44.710636+00:00'
+completed_at: '2026-02-14T06:56:53.653780+00:00'
+duration_minutes: 10.149052233333332
 ---
 ## Requirements
 - Download VT323-Regular.ttf to public/fonts/

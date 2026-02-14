@@ -1,18 +1,23 @@
 ---
 id: P3.M2.E1.T004
 title: TextLayout component with styled text lines
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
-- T003
+- P3.M2.E1.T001
+- P3.M2.E1.T002
+- P3.M2.E1.T003
 tags:
 - text-rendering
 - layout
 - component
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:46:44.711355+00:00'
+started_at: '2026-02-14T06:46:44.711355+00:00'
+completed_at: '2026-02-14T06:56:54.058902+00:00'
+duration_minutes: 10.155792283333334
 ---
 ## Requirements
 - Create src/crt/TextLayout.tsx accepting ParsedLine array

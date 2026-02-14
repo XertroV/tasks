@@ -1,16 +1,21 @@
 ---
 id: P3.M2.E1.T002
 title: Offscreen scene background and spatial layout zones
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
 depends_on:
-- T001
+- P3.M2.E1.T001
 tags:
 - rendering
 - layout
 - scene-graph
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:46:44.709502+00:00'
+started_at: '2026-02-14T06:46:44.709502+00:00'
+completed_at: '2026-02-14T06:56:53.173662+00:00'
+duration_minutes: 10.14106905
 ---
 ## Requirements
 - Background plane at z=0 with CRT Black #0A0A0A
@@ -20,3 +25,24 @@ tags:
 - Background fills orthographic view
 - Three zone groups at correct y-positions
 - Z-ordering prevents content occlusion
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 06:46 UTC
+**Sibling tasks**: P3.M2.E1.T003, P3.M2.E1.T004, P3.M2.E1.T005, P3.M2.E1.T006, P3.M2.E1.T007
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M2.E1.T002 → P3.M2.E1.T003 → P3.M2.E1.T004 → P3.M2.E1.T005 → P3.M2.E1.T006 → P3.M2.E1.T007
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M2.E1.T002: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T002-offscreen-scene-background-and.todo
+- P3.M2.E1.T003: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T003-vt323-font-loading-for-drei-te.todo
+- P3.M2.E1.T004: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T004-textlayout-component-with-styl.todo
+- P3.M2.E1.T005: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T005-title-area-rendering-in-top-zo.todo
+- P3.M2.E1.T006: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T006-vcr-osd-area-with-mode-indicat.todo
+- P3.M2.E1.T007: .tasks/03-crt-screen-vhs-effects-content/02-screen-rendering/01-offscreen-renderer-and-text-la/T007-scroll-offset-mechanism-for-co.todo

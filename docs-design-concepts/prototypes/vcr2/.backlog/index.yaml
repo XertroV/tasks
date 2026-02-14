@@ -95,9 +95,9 @@ timeline_weeks: 12
 stats:
   total_tasks: 199
   done: 44
-  in_progress: 0
+  in_progress: 6
   blocked: 0
-  pending: 155
+  pending: 149
   total_estimate_hours: 83.0
 critical_path:
 - P6.M2.E2.T001
@@ -111,4 +111,4 @@ critical_path:
 - P7.M1.E1.T006
 - P7.M1.E1.T007
 - P7.M1.E1.T011
-next_available: P3.M2.E1.T002
+next_available: P3.M3.E1.T003

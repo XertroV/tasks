@@ -1,17 +1,22 @@
 ---
 id: P3.M2.E1.T006
 title: VCR OSD area with mode indicator and timecode
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T002
-- T003
+- P3.M2.E1.T002
+- P3.M2.E1.T003
 tags:
 - osd
 - layout
 - vcr
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:46:44.712760+00:00'
+started_at: '2026-02-14T06:46:44.712760+00:00'
+completed_at: '2026-02-14T06:56:54.834241+00:00'
+duration_minutes: 10.168691116666668
 ---
 ## Requirements
 - Bottom 15% zone: mode indicator left (PLAY/PAUSE/FF/REW), timecode right (HH:MM:SS:FF amber)

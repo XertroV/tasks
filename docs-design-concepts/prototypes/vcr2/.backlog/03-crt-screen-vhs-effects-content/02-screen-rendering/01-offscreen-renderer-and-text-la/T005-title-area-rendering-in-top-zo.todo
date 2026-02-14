@@ -1,15 +1,20 @@
 ---
 id: P3.M2.E1.T005
 title: Title area rendering in top zone
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T004
+- P3.M2.E1.T004
 tags:
 - text-rendering
 - layout
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:46:44.712108+00:00'
+started_at: '2026-02-14T06:46:44.712108+00:00'
+completed_at: '2026-02-14T06:56:54.448157+00:00'
+duration_minutes: 10.162267316666666
 ---
 ## Requirements
 - Page title in title zone (y 0.8-1.0), 1.5x body size, centered

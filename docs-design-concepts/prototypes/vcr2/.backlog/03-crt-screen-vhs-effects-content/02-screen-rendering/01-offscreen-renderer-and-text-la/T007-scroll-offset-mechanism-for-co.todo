@@ -1,16 +1,21 @@
 ---
 id: P3.M2.E1.T007
 title: Scroll offset mechanism for content area
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T004
+- P3.M2.E1.T004
 tags:
 - scrolling
 - layout
 - interaction-prep
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:46:44.713477+00:00'
+started_at: '2026-02-14T06:46:44.713477+00:00'
+completed_at: '2026-02-14T06:56:55.222989+00:00'
+duration_minutes: 10.1751583
 ---
 ## Requirements
 - scrollOffset ref shifts content group y-position
