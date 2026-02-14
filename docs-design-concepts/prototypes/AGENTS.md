@@ -2,3 +2,4 @@
 - Ensure that everything we can practically test is tested (and that tests run fast) so we can iterate and build confidently and with speed. 
 - After each set of tasks you completed, ensure the build compiles and tests pass, and fix any issues that arise. Commit these fixes after you make them.
 - After each set of tasks completed, you should always commit ALL changes.
+- Always use `bun` and do not use `npm`
