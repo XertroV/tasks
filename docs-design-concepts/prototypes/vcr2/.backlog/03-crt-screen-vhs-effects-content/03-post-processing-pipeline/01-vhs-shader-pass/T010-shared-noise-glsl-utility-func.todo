@@ -1,7 +1,7 @@
 ---
 id: P3.M3.E1.T010
 title: Shared noise.glsl utility functions
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - glsl
 - shared
 - utility
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:00:31.938628+00:00'
+started_at: '2026-02-14T09:00:31.938628+00:00'
+completed_at: '2026-02-14T09:06:26.642005+00:00'
+duration_minutes: 5.911722800000001
 ---
 ## Requirements
 - src/shaders/noise.glsl with hash, fbm, simplex noise functions

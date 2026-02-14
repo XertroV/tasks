@@ -1,20 +1,25 @@
 ---
 id: P3.M3.E1.T009
 title: VHS shader performance validation
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T003
-- T004
-- T005
-- T006
-- T007
+- P3.M3.E1.T003
+- P3.M3.E1.T004
+- P3.M3.E1.T005
+- P3.M3.E1.T006
+- P3.M3.E1.T007
 tags:
 - performance
 - validation
 - vhs
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:00:31.937550+00:00'
+started_at: '2026-02-14T09:00:31.937550+00:00'
+completed_at: '2026-02-14T09:06:26.293843+00:00'
+duration_minutes: 5.905938083333334
 ---
 ## Requirements
 - All effects at max intensity: frame contribution under 4ms at 1080p
@@ -24,3 +29,20 @@ tags:
 - Frame contribution under 4ms at 1080p mid-range GPU
 - 5 or fewer texture reads verified in source
 - No shader compilation stalls after initial load
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 09:00 UTC
+**Sibling tasks**: P3.M3.E1.T010
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M3.E1.T009 → P3.M3.E1.T010
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M3.E1.T009: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T009-vhs-shader-performance-validat.todo
+- P3.M3.E1.T010: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T010-shared-noise-glsl-utility-func.todo
