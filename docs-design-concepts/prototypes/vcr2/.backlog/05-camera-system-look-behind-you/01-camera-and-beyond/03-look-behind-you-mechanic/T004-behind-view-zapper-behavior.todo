@@ -1,16 +1,21 @@
 ---
 id: P5.M1.E3.T004
 title: Behind view Zapper behavior
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T002
+- P5.M1.E3.T002
 tags:
 - lightgun
 - camera
 - behind-view
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:36:38.276761+00:00'
+started_at: '2026-02-14T12:36:38.276761+00:00'
+completed_at: '2026-02-14T13:22:56.858674+00:00'
+duration_minutes: 46.309698366666666
 ---
 ## Requirements
 - Zapper visible and aimable in behind view

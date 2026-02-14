@@ -1,16 +1,21 @@
 ---
 id: P5.M1.E3.T002
 title: Camera 180-degree rotation to behind view
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
+- P5.M1.E3.T001
 tags:
 - camera
 - rotation
 - animation
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:36:38.275054+00:00'
+started_at: '2026-02-14T12:36:38.275054+00:00'
+completed_at: '2026-02-14T13:22:56.160768+00:00'
+duration_minutes: 46.2980951
 ---
 ## Requirements
 - Smooth 180-degree camera rotation over ~1.5s using lerp/slerp
