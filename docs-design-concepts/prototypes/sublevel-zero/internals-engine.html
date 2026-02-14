@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dependency Engine Internals — THE BACKLOGS</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* Page-specific high-decay overrides */
+    .water-stain-active {
+      position: fixed;
+      bottom: 0; right: 0;
+      width: 50vw; height: 50vh;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(ellipse at 85% 85%, rgba(0, 140, 180, 0.035), transparent 65%);
+      animation: stain-reveal 600ms ease-out 300ms forwards;
+      opacity: 0;
+    }
+
+    /* Classification mutation at high decay */
+    .protocol-header__classification--mutated {
+      color: color-mix(in srgb, #5B8FD4, #00A8A8 50%);
+      animation: class-flicker 3s ease-in-out infinite;
+    }
+
+    /* Thermal receipt artifacts at high decay */
+    .thermal-receipt--decayed .thermal-receipt__header {
+      letter-spacing: 0.02em;
+    }
+
+    /* Corruption bar cracks */
+    .corruption-bar__fill--fractured {
+      background: linear-gradient(90deg,
+        #F0B830 0%, #F0B830 15%,
+        transparent 15.5%, transparent 17%,
+        #00A8A8 17.5%, #00A8A8 32%,
+        transparent 32.5%, transparent 34%,
+        color-mix(in srgb, #00A8A8, #5B8FD4 30%) 34.5%, color-mix(in srgb, #00A8A8, #5B8FD4 30%) 50%,
+        transparent 50.5%, transparent 52%,
+        #00A8A8 52.5%, #00A8A8 55%
+      );
+    }
+
+    /* Uninvited redactions scattered in content */
+    .glitch-text {
+      display: inline;
+      position: relative;
+    }
+    .glitch-text::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      background: rgba(32, 42, 54, 0.75);
+      transition: opacity 300ms;
+      pointer-events: none;
+    }
+    .glitch-text:hover::after {
+      opacity: 0.2;
+    }
+
+    /* Heading skew more visible */
+    h2 {
+      transform: skewX(calc(0.55 * -0.25deg));
+    }
+
+    /* Wet-sheen tile accent */
+    .tile-accent-band--wet {
+      background: linear-gradient(90deg,
+        #162838 0%,
+        rgba(0, 200, 240, 0.18) 30%,
+        #162838 60%,
+        rgba(0, 200, 240, 0.08) 85%,
+        #162838 100%
+      ) !important;
+    }
+  </style>
+</head>
+<body style="--page-decay: 0.55;" data-page-decay="0.55" data-decay="high">
+
+  <div class="caustic-shimmer" aria-hidden="true" style="opacity: 0.028;"></div>
+  <div class="water-stain-active" aria-hidden="true"></div>
+
+  <div class="page-layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar__header">TABLE OF CONTENTS</div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-CMD</span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="commands.html" class="sidebar__link">Commands Reference</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="commands-grab.html" class="sidebar__link">bl grab</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl list</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl tree</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-CFG</span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Configuration</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-INT</span>
+          <span class="led" style="animation-delay: -1.8s;" aria-hidden="true"></span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="internals-engine.html" class="sidebar__link sidebar__link--active">
+              Dependency Engine
+            </a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Session Management</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Critical Path Solver</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Claim Arbitration</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__telemetry">
+        SYS: <span style="color: var(--lz-accent-amber);">UNSTABLE</span> &nbsp;|&nbsp; DEPTH: 5 &nbsp;|&nbsp; DECAY: 0.55
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content-area">
+      <div class="tile-accent-band tile-accent-band--wet" aria-hidden="true"></div>
+
+      <!-- Protocol Header -->
+      <div class="protocol-header">
+        <div class="protocol-header__row">
+          <span class="protocol-header__id">PROTOCOL: BL-INT-ENG░NE</span>
+          <span class="protocol-header__classification protocol-header__classification--mutated">LEVEL ? // [STATUS UNCLEAR]</span>
+          <span class="protocol-header__date">2026-02-14</span>
+        </div>
+        <div class="corruption-bar">
+          <div class="corruption-bar__track">
+            <div class="corruption-bar__fill corruption-bar__fill--fractured" style="width: 55%;"></div>
+          </div>
+          <div class="corruption-bar__meta">
+            <span class="corruption-bar__depth">[DEPTH: 5]</span>
+            <span class="led" data-monitoring-led style="animation-delay: -2.2s;animation-duration:2.2s;" aria-hidden="true"></span>
+            <span class="corruption-bar__status" data-monitoring-status style="transition: opacity 200ms;">SYS: MONITORING</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <h1 data-split-flap="DEPENDENCY ENGINE INTERNALS">DEPENDENCY ENGINE INTERNALS</h1>
+
+        <p>
+          The dependency engine is the core scheduling component of The Backlogs system. It constructs
+          a directed acyclic graph (DAG) from all task dependency declarations, computes the
+          critical path using a <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">modified CCPM buffer-chain algorithm</span>,
+          and produces an ordered work queue for agent consumption.
+        </p>
+
+        <p>
+          This document describes the internal architecture. Modifications to the engine require
+          <span class="redacted--uninvited">authorization from the Backlog Operations</span> division
+          and should not be attempted without a full understanding of the
+          <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">graph traversal invariants</span>.
+        </p>
+
+        <div class="callout callout--critical">
+          <div class="callout__label">
+            <span class="led led--red" style="width:4px;height:4px;" aria-hidden="true"></span>
+            [CRITICAL — SEE ADDENDUM]
+          </div>
+          <p>
+            Direct modification of the dependency DAG at runtime is prohibited under Protocol
+            BL-INT-007. The graph is reconstructed from disk on every <code>bl sync</code>
+            invocation. Mutating the in-memory representation will cause state divergence between
+            the engine and the filesystem, leading to <span class="redacted--uninvited">irrecoverable scheduling anomalies</span>
+            and potential claim conflicts across all active agents.
+          </p>
+        </div>
+
+        <h2><span class="section-num">§5.1</span> Graph Construction</h2>
+
+        <p>
+          The engine scans the <code>.backlog/</code> hierarchy recursively, parsing each
+          <code>.todo</code> file's YAML frontmatter to extract dependency declarations. Dependencies
+          are expressed as task ID references (e.g., <code>depends_on: [P1.M1.E1.T003]</code>).
+        </p>
+
+        <!-- Thermal Receipt #1 -->
+        <div class="thermal-receipt thermal-receipt--decayed">
+          <div class="thermal-receipt__perforation-top" aria-hidden="true"></div>
+          <div class="thermal-receipt__header">
+            SYSTEM LOG — ENTRY #<span data-entry-num>001</span><br>
+            2026-02-14 &nbsp;03:22:17 &nbsp; <span style="color:var(--lz-receipt-fade);">░░RBLD</span>
+          </div>
+          <div class="thermal-receipt__body">
+            <code><span class="cmt"># Graph construction trace</span>
+<span class="kw">scan</span>  .backlog/01-core/01-engine/01-scheduling/
+<span class="kw">parse</span> T001-dag-builder.todo        <span class="num">deps: 0</span>
+<span class="kw">parse</span> T002-topo-sort.todo          <span class="num">deps: [T001]</span>
+<span class="kw">parse</span> T003-critical-path.todo      <span class="num">deps: [T001, T002]</span>
+<span class="kw">parse</span> T004-buffer-sizing.todo      <span class="num">deps: [T003]</span>
+<span class="kw">parse</span> T005-claim-resolution.todo   <span class="num">deps: [T003]</span>
+
+<span class="kw">graph</span> 5 nodes, 6 edges, 0 cycles
+<span class="kw">chain</span> T001 → T002 → T003 → T004  <span class="str">(critical)</span>
+<span class="kw">chain</span> T001 → T002 → T003 → T005  <span class="str">(parallel)</span></code>
+          </div>
+          <div class="thermal-receipt__perforation-bottom" aria-hidden="true"></div>
+          <div class="thermal-receipt__scissors" aria-hidden="true">✂ — — — — — — — — — —</div>
+        </div>
+
+        <h2><span class="section-num">§5.2</span> Topological Ordering</h2>
+
+        <p>
+          After graph construction, the engine performs a topological sort using
+          <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">Kahn's algorithm with priority-weighted tie-breaking</span>.
+          This produces a linear ordering that respects all dependency constraints while preferring
+          high-priority tasks when multiple orderings are valid.
+        </p>
+
+        <p>
+          The sort is <span class="redacted--uninvited">deterministic given identical input</span> — the same
+          backlog state always produces the same ordering. This property is critical for
+          multi-agent consistency: all agents working from the same <code>.backlog/</code>
+          filesystem see the same work queue.
+        </p>
+
+        <!-- Thermal Receipt #2 -->
+        <div class="thermal-receipt thermal-receipt--decayed">
+          <div class="thermal-receipt__perforation-top" aria-hidden="true"></div>
+          <div class="thermal-receipt__header">
+            SYSTEM LOG — ENTRY #<span data-entry-num>002</span><br>
+            2026-02-14 &nbsp;03:22:18 &nbsp; <span style="color:var(--lz-receipt-fade);">░ORT</span>
+          </div>
+          <div class="thermal-receipt__body" style="padding-bottom: 50px;">
+            <code><span class="cmt"># Topological sort output</span>
+<span class="kw">topo</span>  processing 847 tasks across 12 epics
+<span class="kw">topo</span>  priority groups: critical=23, high=189, medium=412, low=223
+<span class="kw">topo</span>  cycle detection: <span class="str">PASS</span> (0 cycles)
+<span class="kw">topo</span>  orphan detection: <span class="str">PASS</span> (0 orphans)
+
+<span class="kw">order</span> [0001] P1.M1.E1.T001  dag-builder        <span class="num">critical</span>
+<span class="kw">order</span> [0002] P1.M1.E1.T002  topo-sort           <span class="num">critical</span>
+<span class="kw">order</span> [0003] P1.M1.E1.T003  critical-path       <span class="num">critical</span>
+<span class="kw">order</span> [0004] P1.M2.E1.T001  api-schema          <span class="num">high</span>
+<span class="kw">order</span> [0005] P1.M1.E1.T004  buffer-sizing       <span class="num">high</span>
+<span class="cmt">      ...838 more entries...</span></code>
+            <div class="thermal-receipt__fade">[...log continues...]</div>
+          </div>
+          <div class="thermal-receipt__perforation-bottom" aria-hidden="true"></div>
+          <div class="thermal-receipt__scissors" aria-hidden="true">✂ — — — — — — — — — —</div>
+        </div>
+
+        <h2><span class="section-num">§5.3</span> Critical Path Computation</h2>
+
+        <p>
+          The critical path is computed using a forward-backward pass algorithm. Each task's
+          earliest start time (ES), earliest finish time (EF), latest start time (LS), and
+          latest finish time (LF) are calculated. Tasks where ES = LS (zero total float) form
+          the critical path.
+        </p>
+
+        <div class="redacted-block">
+          <div class="redacted-block__label">[REDACTED — CLEARANCE REQUIRED] — BUFFER CHAIN INTERNALS</div>
+          <div class="redacted-block__content">
+            <div class="redacted-block__bars">
+              <div class="redacted-block__bar" style="width: 100%;"></div>
+              <div class="redacted-block__bar" style="width: 95%;"></div>
+              <div class="redacted-block__bar" style="width: 100%;"></div>
+              <div class="redacted-block__bar" style="width: 75%;"></div>
+              <div class="redacted-block__bar" style="width: 100%;"></div>
+              <div class="redacted-block__bar" style="width: 88%;"></div>
+              <div class="redacted-block__bar" style="width: 65%;"></div>
+              <div class="redacted-block__bar" style="width: 100%;"></div>
+            </div>
+            <div class="redacted-block__text">
+              Buffer = sqrt(sum(safety^2)) for<br>
+              each chain. Project buffer placed<br>
+              at chain terminus. Feeding buffers<br>
+              at merge points. Buffer penetration<br>
+              zones: green &lt;33%, yellow &lt;66%,<br>
+              red &gt;66%. Fever chart computed<br>
+              per sync cycle. Aggressive cut:<br>
+              estimates reduced 50% per CCPM.
+            </div>
+          </div>
+        </div>
+
+        <h2><span class="section-num">§5.4</span> Claim Resolution</h2>
+
+        <p>
+          When <span class="redacted--uninvited">multiple agents</span> request the same task, the claim
+          resolution subsystem applies <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">first-writer-wins semantics</span>
+          with filesystem-level atomic operations. Claims are written as entries in the task's
+          YAML frontmatter:
+        </p>
+
+        <pre><code>---
+id: P1.M2.E1.T042
+title: Implement retry logic
+status: in_progress
+claimed_by: agent-primary-01
+claimed_at: 2026-02-14T08:47:23Z
+heartbeat: 2026-02-14T08:52:01Z
+---</code></pre>
+
+        <p>
+          Stale claims are detected when the <code>heartbeat</code> timestamp exceeds the
+          configured threshold (default: 30 minutes). The <code>bl unclaim-stale</code> command
+          scans for and releases stale claims, returning tasks to the <code>available</code> pool.
+        </p>
+
+        <div class="callout callout--caution" style="transform: rotate(-0.3deg);">
+          <div class="callout__label">
+            <span class="led" style="width:4px;height:4px;animation-delay:-1.1s;" aria-hidden="true"></span>
+            [CAUTION]
+          </div>
+          <p>
+            The stale claim threshold should not be set below 10 minutes. Agents performing
+            complex tasks may experience legitimate gaps in heartbeat transmission. Setting the
+            threshold too low will cause <span class="redacted--uninvited">premature claim revocation</span>
+            and duplicate work.
+          </p>
+        </div>
+
+        <!-- Thermal Receipt #3 -->
+        <div class="thermal-receipt thermal-receipt--decayed">
+          <div class="thermal-receipt__perforation-top" aria-hidden="true"></div>
+          <div class="thermal-receipt__header">
+            SYSTEM LOG — ENTRY #<span data-entry-num>003</span><br>
+            2026-02-14 &nbsp;03:22:44 &nbsp; <span style="color:var(--lz-receipt-fade);">CL░IM</span>
+          </div>
+          <div class="thermal-receipt__body">
+            <code><span class="cmt"># Claim resolution trace</span>
+<span class="kw">claim</span> agent-primary-01 → P1.M2.E1.T042
+<span class="kw">lock</span>  acquired filesystem lock on T042.todo
+<span class="kw">write</span> claimed_by: agent-primary-01
+<span class="kw">write</span> claimed_at: 2026-02-14T08:47:23Z
+<span class="kw">write</span> status: in_progress
+<span class="kw">free</span>  released lock
+<span class="str">OK</span>    claim registered in 12ms</code>
+          </div>
+          <div class="thermal-receipt__perforation-bottom" aria-hidden="true"></div>
+          <div class="thermal-receipt__scissors" aria-hidden="true">✂ — — — — — — — — — —</div>
+        </div>
+
+        <h2><span class="section-num">§5.5</span> Cycle Detection</h2>
+
+        <p>
+          The engine rejects dependency graphs containing cycles. Detection uses a DFS-based
+          algorithm that runs during <code>bl check</code> and <code>bl sync</code>. When a
+          cycle is detected, the engine reports the full cycle path and refuses to compute
+          the critical path.
+        </p>
+
+        <div class="redacted-block">
+          <div class="redacted-block__label">[REDACTED — CLEARANCE REQUIRED] — CYCLE RECOVERY PROCEDURES</div>
+          <div class="redacted-block__content">
+            <div class="redacted-block__bars">
+              <div class="redacted-block__bar" style="width: 90%;"></div>
+              <div class="redacted-block__bar" style="width: 100%;"></div>
+              <div class="redacted-block__bar" style="width: 78%;"></div>
+              <div class="redacted-block__bar" style="width: 95%;"></div>
+              <div class="redacted-block__bar" style="width: 55%;"></div>
+            </div>
+            <div class="redacted-block__text">
+              Recovery: remove weakest edge in<br>
+              cycle (lowest priority dependency).<br>
+              If ambiguous, prompt operator. Log<br>
+              all cycle breaks to .backlog/audit.<br>
+              Never auto-break without record.
+            </div>
+          </div>
+        </div>
+
+        <h2><span class="section-num">§5.6</span> Performance Characteristics</h2>
+
+        <p>
+          Graph construction is O(n) in the number of tasks. Topological sort is O(n + e) where
+          e is the edge count. Critical path computation adds another O(n + e) pass. In practice,
+          a backlog with 1,000 tasks and 2,500 dependency edges completes full sync in under
+          <span class="redacted--uninvited">200 milliseconds</span> on commodity hardware.
+        </p>
+
+        <p>
+          The engine caches the computed graph in memory during a session. Cache invalidation
+          occurs on any filesystem change detected via
+          <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">mtime-based change detection</span>
+          on <code>.todo</code> files. A full rebuild is forced by <code>bl sync --force</code>.
+        </p>
+
+        <div class="callout callout--note">
+          <div class="callout__label">[NOTE]</div>
+          <p>
+            For backlogs exceeding 5,000 tasks, consider partitioning into multiple
+            <code>.backlog/</code> projects using the phase-level split strategy documented in
+            <a href="#">BL-CFG-SCALE</a>. The engine's memory usage scales linearly but the
+            <span class="redacted--uninvited">DAG visualization</span> becomes impractical beyond
+            this threshold.
+          </p>
+        </div>
+
+        <p style="margin-top: 3rem;">
+          <a href="commands.html">← Commands Reference</a> &nbsp;|&nbsp;
+          <a href="index.html">Master Index</a>
+        </p>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

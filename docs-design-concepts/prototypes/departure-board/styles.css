@@ -1,0 +1,1060 @@
+/* =============================================
+   DEPARTURE BOARD -- The Backlogs Transit Terminal
+   ============================================= */
+
+/* --- Google Fonts --- */
+@import url('https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@400;600;700&family=Saira:wght@400;500;600&family=Azeret+Mono:wght@400;500&display=swap');
+
+/* --- CSS Custom Properties --- */
+:root {
+  --terminal-black: #0C0C0E;
+  --terminal-housing: #18181C;
+  --terminal-frame: #242428;
+  --flap-face: #1C1E24;
+  --flap-text: #F0E8C8;
+  --flap-text-dim: #8A8470;
+  --led-amber: #FFB020;
+  --led-amber-dim: #805818;
+  --led-amber-glow: rgba(255, 176, 32, 0.2);
+  --led-red: #FF3828;
+  --led-red-glow: rgba(255, 56, 40, 0.15);
+  --led-green: #30D858;
+  --led-green-dim: #186830;
+  --code-bg: #101014;
+  --code-border: #28282E;
+  --bench-gray: #3A3A40;
+  --dot-matrix: #FFB020;
+
+  --font-display: 'Saira Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Saira', 'Helvetica Neue', sans-serif;
+  --font-mono: 'Azeret Mono', 'Consolas', monospace;
+
+  --flap-split: linear-gradient(
+    to bottom,
+    transparent 49%,
+    rgba(12, 12, 14, 0.08) 49%,
+    rgba(12, 12, 14, 0.08) 51%,
+    transparent 51%
+  );
+}
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--terminal-black);
+  color: var(--flap-text);
+  font-family: var(--font-body);
+  font-weight: 400;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--led-amber);
+  text-decoration: none;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+a:hover {
+  color: #FFD070;
+  text-shadow: 0 0 8px var(--led-amber-glow);
+}
+
+::selection {
+  background: rgba(255, 176, 32, 0.3);
+  color: var(--flap-text);
+}
+
+/* --- Layout Shell --- */
+.site-wrapper {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  min-width: 260px;
+  background: var(--terminal-housing);
+  border-right: 1px solid var(--terminal-frame);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Sidebar Styles --- */
+.sidebar-header {
+  padding: 20px 16px 12px;
+  border-bottom: 1px solid var(--terminal-frame);
+}
+
+.sidebar-logo {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--flap-text);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sidebar-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--flap-text-dim);
+  letter-spacing: 0.05em;
+  margin-top: 4px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 8px 0;
+}
+
+.nav-section {
+  padding: 0 0 4px 0;
+}
+
+.nav-section-header {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11px;
+  color: var(--flap-text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  padding: 12px 16px 6px;
+  border-top: 1px solid var(--terminal-frame);
+}
+
+.nav-section:first-child .nav-section-header {
+  border-top: none;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 16px 7px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--flap-text-dim);
+  text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: rgba(255, 176, 32, 0.06);
+  color: var(--flap-text);
+  text-shadow: none;
+}
+
+.nav-item.active {
+  color: var(--flap-text);
+  font-weight: 500;
+  background: rgba(255, 176, 32, 0.08);
+}
+
+.nav-item.active .led-dot {
+  background: var(--led-amber);
+  box-shadow: 0 0 6px var(--led-amber-glow);
+}
+
+.led-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--led-amber-dim);
+  flex-shrink: 0;
+  animation: led-pulse 3s ease-in-out infinite;
+}
+
+.led-dot.green {
+  background: var(--led-green);
+}
+
+.led-dot.green.dim {
+  background: var(--led-green-dim);
+}
+
+.led-dot.red {
+  background: var(--led-red);
+}
+
+.led-dot.amber {
+  background: var(--led-amber);
+}
+
+.sidebar-footer {
+  padding: 12px 16px;
+  border-top: 1px solid var(--terminal-frame);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--flap-text-dim);
+  line-height: 1.5;
+}
+
+.sidebar-footer .system-label {
+  color: var(--led-amber);
+  font-family: var(--font-display);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+/* --- LED Pulse Animation --- */
+@keyframes led-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes led-pulse-boarding {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+/* --- Departure Card Header (Page Header) --- */
+.departure-card {
+  height: 56px;
+  background: var(--terminal-housing);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  border-bottom: 1px solid var(--terminal-frame);
+  flex-shrink: 0;
+}
+
+.departure-card-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.departure-card-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--flap-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.departure-card-route {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--flap-text-dim);
+  letter-spacing: 0.06em;
+}
+
+.departure-card-date {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--flap-text-dim);
+}
+
+/* --- Content Area --- */
+.content-area {
+  padding: 40px 48px 80px;
+  max-width: 820px;
+}
+
+.content-area h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--flap-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+  margin-bottom: 4px;
+}
+
+.content-area h1::after {
+  content: '';
+  display: block;
+  width: 100%;
+  height: 1px;
+  background: var(--led-amber);
+  margin-top: 8px;
+  margin-bottom: 24px;
+}
+
+.content-area h2 {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1.35rem;
+  color: var(--flap-text);
+  margin-top: 40px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.content-area h2 .led-dot {
+  animation-delay: calc(var(--i, 0) * 0.4s);
+}
+
+.content-area h3 {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 1.1rem;
+  color: var(--flap-text-dim);
+  margin-top: 28px;
+  margin-bottom: 12px;
+}
+
+.content-area p {
+  margin-bottom: 16px;
+  max-width: 70ch;
+  font-size: 16.5px;
+}
+
+.content-area strong {
+  font-weight: 600;
+  color: var(--flap-text);
+}
+
+.content-area code:not(pre code) {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  padding: 2px 6px;
+  border-radius: 2px;
+  color: var(--led-amber);
+}
+
+/* --- Code Blocks --- */
+.code-block {
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  border-radius: 0;
+  margin: 20px 0 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.code-block-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--flap-text-dim);
+  padding: 6px 14px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--code-border);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+.code-block pre {
+  padding: 14px 16px;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--flap-text);
+}
+
+.code-block .comment {
+  color: var(--flap-text-dim);
+}
+
+.code-block .string {
+  color: var(--led-green);
+}
+
+.code-block .keyword {
+  color: var(--led-amber);
+}
+
+/* --- Speaker Grille Divider (HR) --- */
+.speaker-grille {
+  height: 8px;
+  margin: 32px 0;
+  background-image: radial-gradient(circle, var(--bench-gray) 1px, transparent 1px);
+  background-size: 6px 6px;
+  background-position: 0 0;
+  opacity: 0.5;
+}
+
+/* --- Callout Patterns --- */
+.callout {
+  border: 1px solid var(--code-border);
+  padding: 16px 20px;
+  margin: 20px 0 24px;
+  background: var(--terminal-housing);
+  position: relative;
+}
+
+.callout-header {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.callout-body {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--flap-text);
+}
+
+.callout-body code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  background: var(--code-bg);
+  border: 1px solid var(--code-border);
+  padding: 2px 6px;
+  border-radius: 2px;
+  color: var(--led-amber);
+}
+
+/* Note - INFORMATION */
+.callout.note .callout-header {
+  color: var(--led-amber);
+}
+
+.callout.note {
+  border-color: var(--code-border);
+}
+
+/* Warning - DELAY NOTICE */
+.callout.warning {
+  background: rgba(255, 176, 32, 0.04);
+  border-color: rgba(255, 176, 32, 0.2);
+}
+
+.callout.warning .callout-header {
+  color: var(--led-amber);
+}
+
+.callout.warning .led-dot {
+  animation: led-pulse-boarding 1.5s ease-in-out infinite;
+}
+
+/* Tip - SERVICE ADVISORY */
+.callout.tip {
+  border-left: 3px solid var(--led-green-dim);
+}
+
+.callout.tip .callout-header {
+  color: var(--led-green);
+}
+
+/* Danger - SERVICE CANCELLED */
+.callout.danger {
+  background: rgba(255, 56, 40, 0.04);
+  border-color: rgba(255, 56, 40, 0.2);
+}
+
+.callout.danger .callout-header {
+  color: var(--led-red);
+}
+
+/* =============================================
+   STATUS BOARD TABLE -- Signature Component
+   ============================================= */
+
+.status-board-wrapper {
+  border: 3px solid var(--terminal-frame);
+  border-radius: 2px;
+  overflow: hidden;
+  margin: 24px 0 28px;
+  background: var(--terminal-black);
+}
+
+.status-board-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-body);
+  font-size: 15px;
+}
+
+.status-board-table thead th {
+  background: var(--terminal-black);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--flap-text-dim);
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--terminal-frame);
+}
+
+.status-board-table tbody td {
+  padding: 10px 14px;
+  background: var(--flap-face);
+  color: var(--flap-text);
+  border-bottom: 1px solid rgba(12, 12, 14, 0.5);
+  position: relative;
+  transition: background 0.15s;
+}
+
+/* Split-flap center line on cells */
+.status-board-table tbody td::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--terminal-black);
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.status-board-table tbody tr {
+  transition: background 0.15s;
+}
+
+.status-board-table tbody tr:hover td {
+  background: var(--terminal-housing);
+  box-shadow: inset 3px 0 0 0 rgba(255, 176, 32, 0.15);
+}
+
+/* Status LED in table cells */
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-cell .led-dot {
+  width: 7px;
+  height: 7px;
+}
+
+.status-text.required { color: var(--led-green); }
+.status-text.optional { color: var(--led-amber); }
+.status-text.deprecated { color: var(--led-red); }
+
+/* Table cell flap animation chars */
+.flap-char {
+  display: inline-block;
+  position: relative;
+}
+
+.flap-char.animating {
+  animation: flap-settle var(--flap-duration, 300ms) steps(1) forwards;
+  animation-delay: var(--flap-delay, 0ms);
+}
+
+/* =============================================
+   HOMEPAGE -- Departure Board Hero
+   ============================================= */
+
+.hero-section {
+  width: 100%;
+  padding: 0;
+}
+
+.hero-header {
+  text-align: center;
+  padding: 48px 24px 24px;
+}
+
+.hero-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(2.5rem, 7vw, 4.5rem);
+  color: var(--flap-text);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  margin-bottom: 8px;
+}
+
+.hero-subtitle {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.3vw, 13px);
+  color: var(--flap-text-dim);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* The Departure Board Display */
+.departure-board {
+  border: 3px solid var(--terminal-frame);
+  border-radius: 2px;
+  margin: 24px auto;
+  max-width: 900px;
+  background: var(--terminal-black);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.5),
+    0 4px 20px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.board-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.board-table thead th {
+  background: var(--terminal-black);
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--flap-text-dim);
+  padding: 12px 16px 10px;
+  text-align: left;
+  border-bottom: 2px solid var(--terminal-frame);
+}
+
+.board-table tbody td {
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 16px;
+  background: var(--flap-face);
+  color: var(--flap-text);
+  border-bottom: 1px solid rgba(12, 12, 14, 0.4);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.board-table tbody td::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--terminal-black);
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.board-table tbody tr {
+  transition: background 0.15s;
+}
+
+.board-table tbody tr:hover td {
+  background: var(--terminal-housing);
+}
+
+.board-table tbody tr a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Status colors in the board */
+.board-status {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.06em;
+}
+
+.board-status.on-time { color: var(--led-green); }
+.board-status.delayed { color: var(--led-amber); }
+.board-status.cancelled { color: var(--led-red); }
+.board-status.boarding {
+  color: var(--led-amber);
+  animation: led-pulse-boarding 1.5s ease-in-out infinite;
+}
+
+.board-route {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--flap-text-dim);
+}
+
+.board-platform {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--flap-text-dim);
+}
+
+/* Split-flap character cell */
+.split-flap-cell {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  min-width: 0.6em;
+  text-align: center;
+  position: relative;
+  vertical-align: middle;
+}
+
+.split-flap-cell.space {
+  min-width: 0.35em;
+}
+
+/* --- Dot-Matrix Ticker --- */
+.ticker-bar {
+  background: var(--terminal-housing);
+  border-top: 1px solid var(--terminal-frame);
+  padding: 10px 0;
+  overflow: hidden;
+  position: relative;
+  margin-top: 24px;
+}
+
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 35s linear infinite;
+}
+
+.ticker-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--dot-matrix);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 0 60px;
+}
+
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* --- Homepage specific layout --- */
+.home-content {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.home-main {
+  flex: 1;
+  padding: 0 32px 48px;
+}
+
+.home-nav-links {
+  max-width: 900px;
+  margin: 32px auto 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.home-nav-card {
+  background: var(--terminal-housing);
+  border: 1px solid var(--terminal-frame);
+  padding: 20px;
+  transition: background 0.15s, border-color 0.15s;
+  display: block;
+  text-decoration: none;
+}
+
+.home-nav-card:hover {
+  background: var(--terminal-frame);
+  border-color: var(--led-amber-dim);
+  text-shadow: none;
+}
+
+.home-nav-card h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--flap-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.home-nav-card p {
+  font-size: 13.5px;
+  color: var(--flap-text-dim);
+  line-height: 1.5;
+}
+
+/* --- Footer --- */
+.site-footer {
+  background: var(--terminal-housing);
+  border-top: 1px solid var(--terminal-frame);
+  padding: 16px 28px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--flap-text-dim);
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+/* =============================================
+   SPLIT-FLAP ANIMATION SYSTEM
+   ============================================= */
+
+.split-flap-char {
+  display: inline-block;
+  position: relative;
+  background: var(--flap-face);
+  background-image: var(--flap-split);
+  min-width: 0.65em;
+  text-align: center;
+  padding: 2px 1px;
+  margin: 0 0.5px;
+  border-radius: 1px;
+  transform-origin: center center;
+  vertical-align: baseline;
+}
+
+.split-flap-char.space-char {
+  background: transparent;
+  background-image: none;
+  min-width: 0.4em;
+}
+
+/* During animation: the character displayed is the ::before pseudo content */
+.split-flap-char.flipping {
+  animation: flap-pinch var(--char-flip-dur, 280ms) steps(1) forwards;
+}
+
+.split-flap-char.flipping .char-inner {
+  visibility: hidden;
+}
+
+.split-flap-char.flipping::before {
+  content: attr(data-flip-char);
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The scaleY pinch keyframes */
+@keyframes flap-pinch {
+  0%   { transform: scaleY(0.82); }
+  20%  { transform: scaleY(1.0); }
+  40%  { transform: scaleY(0.85); }
+  60%  { transform: scaleY(1.0); }
+  80%  { transform: scaleY(0.88); }
+  100% { transform: scaleY(1.0); }
+}
+
+/* After settling, fade out the cell bg */
+.split-flap-char.settled {
+  animation: settle-fade 400ms ease-out forwards;
+}
+
+@keyframes settle-fade {
+  0% { background-color: var(--flap-face); }
+  100% { background-color: transparent; background-image: none; }
+}
+
+/* Hero title split-flap: keep the cells visible */
+.departure-board .split-flap-char.settled {
+  animation: none;
+  background: var(--flap-face);
+  background-image: var(--flap-split);
+}
+
+/* =============================================
+   RESPONSIVE
+   ============================================= */
+
+@media (max-width: 900px) {
+  .sidebar {
+    display: none;
+  }
+
+  .departure-card {
+    padding: 0 16px;
+  }
+
+  .content-area {
+    padding: 24px 20px 60px;
+  }
+
+  .home-main {
+    padding: 0 16px 40px;
+  }
+
+  /* Board becomes cards on mobile */
+  .board-table thead {
+    display: none;
+  }
+
+  .board-table,
+  .board-table tbody,
+  .board-table tr,
+  .board-table td {
+    display: block;
+  }
+
+  .board-table tr {
+    background: var(--flap-face);
+    border: 1px solid var(--terminal-frame);
+    margin-bottom: 8px;
+    padding: 12px 16px;
+  }
+
+  .board-table td {
+    padding: 4px 0;
+    border: none;
+    background: transparent;
+    font-size: 14px;
+  }
+
+  .board-table td::after {
+    display: none;
+  }
+
+  .board-table td::before {
+    content: attr(data-label);
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--flap-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  /* Status board tables also become cards */
+  .status-board-table thead {
+    display: none;
+  }
+
+  .status-board-table,
+  .status-board-table tbody,
+  .status-board-table tr,
+  .status-board-table td {
+    display: block;
+  }
+
+  .status-board-table tr {
+    background: var(--flap-face);
+    border-bottom: 2px solid var(--terminal-frame);
+    padding: 12px 14px;
+  }
+
+  .status-board-table td {
+    padding: 3px 0;
+    border: none;
+    background: transparent;
+  }
+
+  .status-board-table td::after {
+    display: none;
+  }
+
+  .status-board-table td::before {
+    content: attr(data-label);
+    font-family: var(--font-display);
+    font-size: 10px;
+    color: var(--flap-text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 9px;
+  }
+
+  .home-nav-links {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =============================================
+   MOBILE NAV TOGGLE
+   ============================================= */
+
+.mobile-nav-toggle {
+  display: none;
+  background: var(--terminal-housing);
+  border: 1px solid var(--terminal-frame);
+  color: var(--flap-text);
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  cursor: pointer;
+  margin: 8px 16px;
+}
+
+@media (max-width: 900px) {
+  .mobile-nav-toggle {
+    display: block;
+  }
+
+  .sidebar.open {
+    display: flex;
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+  }
+}
+
+/* =============================================
+   REDUCED MOTION
+   ============================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .ticker-track {
+    animation: none !important;
+  }
+
+  .led-dot {
+    opacity: 1 !important;
+    animation: none !important;
+  }
+
+  .split-flap-char {
+    animation: none !important;
+  }
+}

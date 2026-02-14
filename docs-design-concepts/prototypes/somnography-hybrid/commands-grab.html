@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CH2: Grab | PSG-2026-0214</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="commands-grab" data-decay="0.25" class="stage-N2">
+<div class="page-wrapper">
+
+  <!-- Decay background traces -->
+  <div class="decay-traces">
+    <svg id="decay-traces-svg" preserveAspectRatio="none"></svg>
+  </div>
+  <div class="decay-warmth"></div>
+
+  <!-- Hypnogram -->
+  <div class="hypnogram">
+    <svg id="hypnogram-svg" viewBox="0 0 860 64" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="hypno-glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <div id="hypnogram-tooltip" class="hypnogram-tooltip"></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-margin-ruler"></div>
+      <div class="sidebar-title">Monitoring Channels</div>
+      <ul class="channel-list">
+        <li class="channel-item">
+          <a href="index.html">
+            <span class="electrode-dot alpha"></span>
+            CH0: OVERVIEW
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="commands.html">
+            <span class="electrode-dot beta"></span>
+            CH1: COMMANDS
+          </a>
+        </li>
+        <li class="channel-item active">
+          <a href="commands-grab.html">
+            <span class="electrode-dot theta"></span>
+            CH2: GRAB
+            <svg class="active-trace" viewBox="0 0 40 12" data-color="#DDAA33" data-freq="2"></svg>
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="#">
+            <span class="electrode-dot delta"></span>
+            CH3: CONFIG
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="internals.html">
+            <span class="electrode-dot rem"></span>
+            CH4: INTERNALS
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content decay-blur">
+
+      <!-- Study Annotation Header -->
+      <div class="study-header">
+        <div><span class="label">CHANNEL:</span> <span class="value">CH2-A3 (bl grab)</span></div>
+        <div><span class="label">EPOCH:</span> <span class="value">2026-02-14 03:47</span></div>
+        <div><span class="label">STAGE:</span> <span class="value"><span class="stage-badge">N2 (Medium Documentation)</span></span></div>
+        <div><span class="label">NOTES:</span> <span class="value">Theta wave intrusions noted. See annotation at &sect;3.2.</span></div>
+      </div>
+
+      <h1>bl grab</h1>
+      <svg class="h1-wave" data-color="#DDAA33" data-freq="2" viewBox="0 0 500 16"></svg>
+
+      <p>The <code>grab</code> command automatically selects and claims the next available task from the backlog. It uses the dependency engine to identify tasks whose prerequisites are satisfied, then applies priority scoring to select the optimal work item.</p>
+
+      <h2>Usage</h2>
+
+<pre><code>backlog grab [OPTIONS]
+
+<span class="code-comment"># Options:</span>
+  --single          <span class="code-comment"># Claim exactly one task (default)</span>
+  --multi           <span class="code-comment"># Claim multiple independent tasks</span>
+  --tag TAG         <span class="code-comment"># Filter by tag before selecting</span>
+  --complexity C    <span class="code-comment"># Max complexity threshold</span></code></pre>
+
+      <h2>Selection Algorithm</h2>
+
+      <p>When multiple tasks are available, <code>grab</code> evaluates candidates using a weighted scoring function:</p>
+
+      <!-- Redacted section -->
+      <div class="redaction-block">
+        <div class="redaction-block-header">[Data Suppressed &mdash; Ethics Review Pending]</div>
+        <div class="redaction-block-content">
+          <p>The internal algorithm for task selection uses a composite scoring function combining critical path position (40% weight), priority value (25%), dependency fan-out count (20%), and estimated complexity inverse (15%). Tasks on the critical path receive a 2.5x multiplier. When multiple tasks score within a 5% threshold, the engine falls back to FIFO ordering based on task creation timestamp.</p>
+        </div>
+      </div>
+
+      <p>The algorithm considers dependency readiness as a hard filter &mdash; only tasks with all prerequisites in <code>done</code> status are eligible. Soft factors like <span class="redacted"><span class="redacted-content">agent affinity scoring</span></span><span class="redaction-label">[data suppressed &mdash; ethics review pending]</span> and <span class="redacted"><span class="redacted-content">temporal proximity weighting</span></span><span class="redaction-label">[data suppressed &mdash; ethics review pending]</span> are applied after the initial filter.</p>
+
+      <h2>Sibling Batching</h2>
+
+      <p>When the <code>--multi</code> flag is set, <code>grab</code> attempts to claim a batch of related tasks. It identifies sibling tasks within the same epic that share no mutual dependencies:</p>
+
+<pre><code><span class="code-comment"># Grab a batch of independent siblings</span>
+backlog grab --multi
+
+<span class="code-comment"># the engine finds tasks like:</span>
+<span class="code-comment">#   P1.M2.E3.T004 -- write unit tests</span>
+<span class="code-comment">#   P1.M2.E3.T005 -- update documentation</span>
+<span class="code-comment">#   P1.M2.E3.T006 -- add CLI flag</span>
+<span class="code-comment"># all independent, all in the same epic</span></code></pre>
+
+      <!-- TIP callout (researcher note) -->
+      <div class="callout callout-tip">
+        <div class="callout-header">note to self &mdash;</div>
+        <p>The sibling batching behavior mirrors what the subject describes in dream session 14: "I found a corridor where all the doors opened at once. Behind each door was a different task, but they were all labeled with the same floor number." Coincidence? The algorithm was designed independently. Reviewing the dependency graph structure.</p>
+      </div>
+
+      <h2>Context Management</h2>
+
+      <p>After a successful <code>grab</code>, the claimed task becomes the active working context. This context persists across commands until explicitly changed via <code>work --clear</code> or until the task is completed with <code>done</code>.</p>
+
+      <p>The context file is stored at <code>.backlog/.context.yaml</code> and tracks the current task ID, claim timestamp, and session identifier for multi-agent coordination.</p>
+
+      <h2>Error Handling</h2>
+
+      <p>If no tasks are available (all tasks are either completed, blocked, or claimed by other agents), <code>grab</code> exits with status code 1 and displays:</p>
+
+<pre><code><span class="code-comment"># No available tasks</span>
+$ backlog grab
+No available tasks. All work is either:
+  - completed (42 tasks)
+  - blocked (3 tasks, see `backlog blockers`)
+  - claimed by other agents (2 tasks)
+
+<span class="code-comment"># the corridors are empty. there is nothing to work on.</span>
+<span class="code-comment"># and yet the building continues.</span></code></pre>
+
+      <div class="page-footer">
+        <span>EPOCH 03:47 | CH2-A3 | N2</span>
+        <span>PSG-2026-0214</span>
+      </div>
+
+    </main>
+  </div>
+
+</div>
+<script src="scripts.js"></script>
+</body>
+</html>

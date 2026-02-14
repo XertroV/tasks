@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CH4: Internals | PSG-2026-0214</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="internals" data-decay="0.6" class="stage-REM">
+<div class="page-wrapper">
+
+  <!-- Decay background traces (heavy at REM) -->
+  <div class="decay-traces">
+    <svg id="decay-traces-svg" preserveAspectRatio="none" style="width:100%;height:100%;"></svg>
+  </div>
+  <div class="decay-warmth"></div>
+
+  <!-- Hypnogram -->
+  <div class="hypnogram">
+    <svg id="hypnogram-svg" viewBox="0 0 860 64" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="hypno-glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <div id="hypnogram-tooltip" class="hypnogram-tooltip"></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-margin-ruler"></div>
+      <div class="sidebar-title">Monitoring Channels</div>
+      <ul class="channel-list">
+        <li class="channel-item">
+          <a href="index.html">
+            <span class="electrode-dot alpha"></span>
+            CH0: OVERVIEW
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="commands.html">
+            <span class="electrode-dot beta"></span>
+            CH1: COMMANDS
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="commands-grab.html">
+            <span class="electrode-dot theta"></span>
+            CH2: GRAB
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="#">
+            <span class="electrode-dot delta"></span>
+            CH3: CONFIG
+          </a>
+        </li>
+        <li class="channel-item active">
+          <a href="internals.html">
+            <span class="electrode-dot rem"></span>
+            CH4: INTERNALS
+            <svg class="active-trace" viewBox="0 0 40 12" data-color="#CC3344" data-freq="6"></svg>
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content decay-blur">
+
+      <!-- Study Annotation Header -->
+      <div class="study-header">
+        <div><span class="label">CHANNEL:</span> <span class="value">CH4-A7 (internals)</span></div>
+        <div><span class="label">EPOCH:</span> <span class="value">2026-02-14 04:33</span></div>
+        <div><span class="label">STAGE:</span> <span class="value"><span class="stage-badge">REM (Dreaming / Deep Internals)</span></span></div>
+        <div><span class="label">NOTES:</span> <span class="value" style="color: var(--somno-rem-red);">ANOMALOUS READINGS &mdash; See researcher annotations below. Theta-delta coupling exceeds baseline by 340%.</span></div>
+      </div>
+
+      <h1>Internals</h1>
+      <svg class="h1-wave" data-color="#CC3344" data-freq="1.5" viewBox="0 0 500 16"></svg>
+
+      <p>The dependency engine constructs a <span class="involuntary-redaction">directed acyclic graph</span> from all task definitions within the <code>.backlog/</code> hierarchy. Each node represents a task; edges encode dependency relationships declared in task frontmatter. The engine validates <span class="involuntary-redaction">cycle-freedom</span> on every mutation and maintains a topological ordering for scheduling.</p>
+
+      <!-- REM INTRUSION callout -->
+      <div class="callout callout-rem-intrusion">
+        <div class="callout-header">
+          <span class="pulse-dot"></span>
+          REM Intrusion
+        </div>
+        <p>Anomalous theta-delta coupling detected at epoch 04:33. Subject's documentation references non-Euclidean task hierarchies. The dependency graph described below exhibits topological properties inconsistent with finite directed acyclic structures. Cross-referencing with dream session logs 12-17.</p>
+        <span class="callout-ref">(Alert triggered automatically by monitoring system. Technician notified.)</span>
+      </div>
+
+      <h2>Critical Path Analysis</h2>
+
+      <p>The engine implements a variant of the Critical Chain Project Management (CCPM) algorithm. The <span class="involuntary-redaction">critical path</span> is computed as the longest dependency chain from any leaf task to the project root, weighted by estimated duration and <span class="involuntary-redaction">complexity coefficients</span>.</p>
+
+<pre><code><span class="code-comment"># Critical path computation (simplified)</span>
+def compute_critical_path(graph):
+    <span class="code-comment"># topological sort ensures we process</span>
+    <span class="code-comment"># dependencies before dependents</span>
+    order = topological_sort(graph)
+
+    longest = {}
+    for node in order:
+        deps = graph.predecessors(node)
+        if not deps:
+            longest[node] = node.estimate
+        else:
+            longest[node] = node.estimate + max(
+                longest[d] for d in deps
+            )
+
+    <span class="code-comment"># the path traces back from the maximum</span>
+    <span class="code-comment"># through the graph like a corridor that</span>
+    <span class="code-comment"># always leads deeper. you cannot turn around.</span>
+    critical = trace_back(longest, max_node)
+    return critical</code></pre>
+
+      <!-- Block redaction -->
+      <div class="redaction-block">
+        <div class="redaction-block-header">[Data Suppressed &mdash; Ethics Review Pending &mdash; Ref: BL-INT-047]</div>
+        <div class="redaction-block-content">
+          <p>The graph pruning algorithm removes completed subtrees and collapses single-child chains. During pruning, the engine occasionally detects phantom edges &mdash; dependency relationships that exist in the computed graph but have no corresponding declaration in any task file. These phantom edges are logged but not removed, as removing them causes the dependency resolver to enter an infinite loop. The source of phantom edges has not been determined. They appear only in projects with more than 127 tasks.</p>
+        </div>
+      </div>
+
+      <h2>Task Scheduling Heuristics</h2>
+
+      <p>When multiple <span class="involuntary-redaction">agents</span> are operating concurrently, the scheduler must distribute tasks to minimize <span class="involuntary-redaction">critical path contention</span>. The heuristics are:</p>
+
+      <p><strong>1. Dependency fan-out priority.</strong> Tasks that unblock the most downstream work are scheduled first. The fan-out is computed as the transitive closure of the dependency subgraph rooted at each <span class="involuntary-redaction">candidate task</span>.</p>
+
+      <p><strong>2. Agent affinity.</strong> The scheduler tracks which agents have previously worked on related tasks (same epic, same tags) and prefers to assign <span class="redacted redacted-anomalous"><span class="redacted-content">continuation work to the same agent to minimize context-switching overhead</span></span><span class="redaction-label">[data suppressed &mdash; ethics review pending]</span>.</p>
+
+      <p><strong>3. Stale claim detection.</strong> Agent sessions emit heartbeats at configurable intervals. A claim is considered stale when the owning agent's heartbeat exceeds the <span class="redacted redacted-anomalous"><span class="redacted-content">staleness threshold, typically 30 minutes for interactive sessions and 10 minutes for automated agents</span></span><span class="redaction-label">[data suppressed &mdash; ethics review pending]</span>.</p>
+
+      <!-- ANOMALY callout -->
+      <div class="callout callout-anomaly">
+        <div class="callout-header">Anomaly Detected</div>
+        <p>During dream session 16, the subject described a "task board that rearranged itself when you weren't looking." The stale claim detection system logs show three instances where task claims were released and re-acquired within a single scheduler tick (< 100ms). No agent session was active at the time. Heartbeat records for these intervals show a session ID that does not match any registered agent.</p>
+        <span class="callout-ref">(Cross-reference: PSG channel 4, epochs 04:10&ndash;04:18. Theta burst during subject narration.)</span>
+      </div>
+
+      <h2>Graph Integrity Checks</h2>
+
+      <p>The <code>backlog check</code> command performs a suite of consistency validations:</p>
+
+<pre><code><span class="code-comment"># Integrity check output</span>
+$ backlog check
+Checking .backlog/ integrity...
+
+  [OK] Task file structure valid (147 files)
+  [OK] YAML frontmatter parseable (147/147)
+  [OK] Dependency references resolve (312 edges)
+  [OK] No dependency cycles detected
+  <span style="color: var(--somno-trace-theta);">[WARN]</span> 3 phantom edges detected (see BL-INT-047)
+  <span style="color: var(--somno-rem-red);">[ERR]</span>  Task P3.M1.E2.T014 references non-existent
+         dependency "P3.M1.E2.T000"
+  <span style="color: var(--somno-rem-red);">[ERR]</span>  <span class="involuntary-redaction">Task ID T000 does not exist in any</span>
+         <span class="involuntary-redaction">known index. It has never existed.</span>
+         <span class="involuntary-redaction">The reference predates the project.</span>
+
+<span class="code-comment"># 2 errors, 1 warning</span>
+<span class="code-comment"># the building has rooms that were never built</span></code></pre>
+
+      <!-- Another redacted block -->
+      <div class="redaction-block">
+        <div class="redaction-block-header">[Content Redacted &mdash; Clearance Level 3 Required &mdash; Ref: BL-INT-051]</div>
+        <div class="redaction-block-content">
+          <p>The session management subsystem maintains a YAML file at .backlog/.sessions.yaml tracking active agent sessions. Each session record includes agent ID, start time, last heartbeat, and a list of claimed task IDs. The session file is locked using filesystem advisory locks during writes. In multi-agent environments with more than 4 concurrent agents, the lock contention has been observed to cause a phenomenon where session records appear to merge &mdash; two distinct agent sessions collapse into a single record with properties from both. This has only been observed on ext4 filesystems. The merged session continues to emit heartbeats from both agents' intervals simultaneously.</p>
+        </div>
+      </div>
+
+      <!-- Researcher's annotation -->
+      <div class="researcher-note">
+        I've seen this pattern before. The corridors in the subject's dream match the actual dependency graph layout. Not metaphorically &mdash; the spatial coordinates the subject reports during REM narration correspond to node positions in the force-directed graph visualization with a Pearson correlation of 0.94. This shouldn't be possible. The subject has never seen the graph. The graph was computed after the dream sessions began. I am requesting an independent review of both datasets.
+        <span class="sig">&mdash;Dr. M, 04:52, overnight shift</span>
+      </div>
+
+      <h2>Performance Characteristics</h2>
+
+      <p>The dependency engine processes the full task graph in O(V + E) time for topological sorting and O(V &times; E) worst-case for critical path computation with <span class="involuntary-redaction">buffer</span> insertion. For typical project sizes (50&ndash;500 tasks), full recomputation completes in under 200ms.</p>
+
+      <p>The <code>sync</code> command triggers a full recomputation and persists the results. Between syncs, the engine uses incremental updates &mdash; only recomputing the subgraph affected by a status change.</p>
+
+      <!-- Final REM intrusion -->
+      <div class="callout callout-rem-intrusion">
+        <div class="callout-header">
+          <span class="pulse-dot"></span>
+          REM Intrusion
+        </div>
+        <p>Subject's eye movement frequency has increased to 4.2 Hz &mdash; significantly above the typical 1&ndash;2 Hz range. EEG shows sustained theta-delta coupling with intermittent gamma bursts. The subject is speaking: <em>"The tasks are the rooms. The dependencies are the corridors. When you complete a task, a room disappears, but the corridor remains. There are corridors that connect to rooms that were never built. I can see them. I can see all of them."</em></p>
+        <p style="margin-top: 0.75rem; font-size: 13px; color: var(--somno-ink-light);">Monitoring will continue. Do not wake the subject.</p>
+      </div>
+
+      <div class="page-footer">
+        <span>EPOCH 04:33 | CH4-A7 | REM</span>
+        <span style="color: var(--somno-rem-red);">PSG-2026-0214 &mdash; ANOMALOUS</span>
+      </div>
+
+    </main>
+  </div>
+
+</div>
+<script src="scripts.js"></script>
+</body>
+</html>

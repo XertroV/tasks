@@ -1,0 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+@import "tailwindcss";
+
+:root {
+  font-family: 'VT323', monospace;
+  background-color: #000;
+  color: #33ff33;
+}
+
+body, html, #root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #000;
+}

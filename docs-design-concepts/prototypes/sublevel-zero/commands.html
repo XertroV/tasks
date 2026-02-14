@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commands Reference — THE BACKLOGS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="--page-decay: 0.10;" data-page-decay="0.10">
+
+  <div class="caustic-shimmer" aria-hidden="true"></div>
+
+  <div class="page-layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar__header">TABLE OF CONTENTS</div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-CMD</span>
+          <span class="led" style="animation-delay: -0.4s;" aria-hidden="true"></span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="commands.html" class="sidebar__link sidebar__link--active">
+              Commands Reference
+            </a>
+          </li>
+          <li class="sidebar__item">
+            <a href="commands-grab.html" class="sidebar__link">bl grab</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl list</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl tree</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl cycle</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl done</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl show</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-CFG</span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Configuration</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Project Setup</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-INT</span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="internals-engine.html" class="sidebar__link">Dependency Engine</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Session Management</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__telemetry">
+        SYS: OK &nbsp;|&nbsp; DEPTH: 2 &nbsp;|&nbsp; DECAY: 0.10
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content-area">
+      <div class="tile-accent-band" aria-hidden="true"></div>
+
+      <!-- Protocol Header -->
+      <div class="protocol-header">
+        <div class="protocol-header__row">
+          <span class="protocol-header__id">PROTOCOL: BL-CMD</span>
+          <span class="protocol-header__classification">LEVEL 0 // OPEN</span>
+          <span class="protocol-header__date">2026-02-14</span>
+        </div>
+        <div class="corruption-bar">
+          <div class="corruption-bar__track">
+            <div class="corruption-bar__fill" style="width: 10%;"></div>
+          </div>
+          <div class="corruption-bar__meta">
+            <span class="corruption-bar__depth">[DEPTH: 2]</span>
+            <span class="led" data-monitoring-led style="animation-delay: -1.5s;" aria-hidden="true"></span>
+            <span class="corruption-bar__status" data-monitoring-status style="transition: opacity 200ms;">SYS: MONITORING</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <h1 data-split-flap="COMMANDS REFERENCE">COMMANDS REFERENCE</h1>
+
+        <p>
+          The <code>bl</code> command provides a comprehensive interface to The Backlogs system.
+          All operations on phases, milestones, epics, and tasks are conducted through this
+          procedural interface. Each command is documented with its full parameter set and
+          expected behavioral contract.
+        </p>
+
+        <div class="callout callout--note">
+          <div class="callout__label">[NOTE]</div>
+          <p>
+            <code>bl</code> is a registered alias for <code>backlog</code>. The two commands are
+            interchangeable. The <code>tasks</code> alias is also supported for backward
+            compatibility with legacy installations.
+          </p>
+        </div>
+
+        <h2><span class="section-num">§2.1</span> Core Task Operations</h2>
+
+        <p>
+          The following commands form the primary operational interface for task lifecycle management.
+          Each command operates within the context of the current working directory's <code>.backlog/</code>
+          hierarchy.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Function</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bl list</code></td>
+              <td>Filter and view tasks. Supports <code>--available</code>, <code>--progress</code>, <code>--json</code>, <code>--bugs</code>, <code>--ideas</code>.</td>
+            </tr>
+            <tr>
+              <td><code>bl grab</code></td>
+              <td>Automatically claim the next available task from the critical path. See <a href="commands-grab.html">BL-CMD-GRAB</a>.</td>
+            </tr>
+            <tr>
+              <td><code>bl tree</code></td>
+              <td>Full hierarchical view of the backlog structure. Supports <code>--depth</code>, <code>--details</code>, <code>--unfinished</code>.</td>
+            </tr>
+            <tr>
+              <td><code>bl cycle</code></td>
+              <td>Complete current task and auto-claim next. Combines <code>done</code> + <code>grab</code>.</td>
+            </tr>
+            <tr>
+              <td><code>bl done</code></td>
+              <td>Mark the current task as complete. Shows newly unblocked work.</td>
+            </tr>
+            <tr>
+              <td><code>bl show</code></td>
+              <td>Detailed task information. Uses current context if no ID provided.</td>
+            </tr>
+            <tr>
+              <td><code>bl blocked</code></td>
+              <td>Mark current task as blocked. Requires <code>--reason</code>.</td>
+            </tr>
+            <tr>
+              <td><code>bl why</code></td>
+              <td>Explain dependency readiness for a given task.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><span class="section-num">§2.2</span> Example Output</h2>
+
+        <p>
+          A typical invocation of <code>bl list --available</code> produces the following output:
+        </p>
+
+        <pre><code>$ bl list --available
+
+  Available Tasks (4)
+  ───────────────────────────────────────────────
+  P1.M2.E1.T042  Implement retry logic     high    2h   0 deps
+  P1.M2.E1.T043  Add timeout config        medium  1h   0 deps
+  P1.M2.E2.T001  Setup test harness        high    3h   0 deps
+  P1.M3.E1.T001  Design API schema         high    4h   0 deps
+
+  Critical path: P1.M2.E1.T042 → P1.M2.E1.T043 → P1.M2.E2.T001</code></pre>
+
+        <h2><span class="section-num">§2.3</span> Workflow Shortcuts</h2>
+
+        <p>
+          For common operational patterns, the following shortcut commands are provided.
+          These combine multiple operations into single procedural steps.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Command</th>
+              <th>Function</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>bl grab</code></td>
+              <td>Auto-claim next work (<code>--single</code>, <code>--multi</code>, sibling batching)</td>
+            </tr>
+            <tr>
+              <td><code>bl cycle</code></td>
+              <td><code>done</code> + auto-claim next</td>
+            </tr>
+            <tr>
+              <td><code>bl work</code></td>
+              <td>Set, show, or clear working context</td>
+            </tr>
+            <tr>
+              <td><code>bl handoff</code></td>
+              <td>Transfer to another agent (<code>--to</code>, <code>--notes</code>)</td>
+            </tr>
+            <tr>
+              <td><code>bl skip</code></td>
+              <td>Skip current task without completing</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">[TIP]</div>
+          <p>
+            Use <code>bl cycle</code> for the fastest claim-work-complete loop. It is equivalent
+            to running <code>bl done</code> followed by <code>bl grab</code>, but handles edge
+            cases around sibling task batching automatically.
+          </p>
+        </div>
+
+        <p style="margin-top: 3rem;">
+          <a href="index.html">← Return to Master Index</a>
+        </p>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

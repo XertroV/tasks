@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Commands Reference -- THE BACKLOGS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <button class="mobile-nav-toggle">Menu</button>
+
+  <div class="site-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" style="text-decoration:none;">
+          <div class="sidebar-logo">The Backlogs</div>
+        </a>
+        <div class="sidebar-subtitle">Transit Authority Docs</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-header">Getting Started</div>
+          <a href="index.html" class="nav-item">
+            <span class="led-dot green" style="animation-delay: 0s;"></span>
+            Overview
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.3s;"></span>
+            Installation
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.6s;"></span>
+            Quick Start
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header">Commands</div>
+          <a href="commands.html" class="nav-item active">
+            <span class="led-dot amber" style="animation-delay: 0.2s;"></span>
+            All Commands
+          </a>
+          <a href="commands-grab.html" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.5s;"></span>
+            bl grab
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.8s;"></span>
+            bl cycle
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 1.1s;"></span>
+            bl done
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 1.4s;"></span>
+            bl tree
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header">Reference</div>
+          <a href="#" class="nav-item">
+            <span class="led-dot" style="animation-delay: 0.4s;"></span>
+            Configuration
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot" style="animation-delay: 0.7s;"></span>
+            File Formats
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot" style="animation-delay: 1.0s;"></span>
+            Agent Workflows
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-label">
+          <span class="led-dot amber" style="animation-delay: 2s;"></span>
+          Information
+        </div>
+        SYS: OK | DEPTH: 2<br>
+        TERMINAL: BL-DOC-02<br>
+        SESSION: ACTIVE
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Departure Card Header -->
+      <div class="departure-card">
+        <div class="departure-card-left">
+          <span class="led-dot green" style="animation-delay: 0.5s;"></span>
+          <span class="departure-card-title">Commands Reference</span>
+        </div>
+        <span class="departure-card-route">BL-CMD-000</span>
+        <span class="departure-card-date">LAST UPDATED: 2026-02-14</span>
+      </div>
+
+      <!-- Content -->
+      <div class="content-area">
+
+        <h1 class="page-title-animated">Commands Reference</h1>
+
+        <p>
+          The Backlogs CLI provides a comprehensive set of commands for managing hierarchical project backlogs.
+          All commands are available via the <code>backlog</code>, <code>bl</code>, or <code>tasks</code> entry points.
+        </p>
+
+        <p>
+          Commands are organized into core task operations, workflow shortcuts, reporting tools, and project management utilities.
+          The table below lists all primary commands with their current deployment status.
+        </p>
+
+        <h2 style="--i: 0;">
+          <span class="led-dot amber" style="animation-delay: 0.3s;"></span>
+          Core Commands
+        </h2>
+
+        <p>
+          These are the essential commands for day-to-day backlog management. Required commands are available on all platforms;
+          optional commands provide additional functionality; deprecated commands will be removed in a future release.
+        </p>
+
+        <!-- STATUS BOARD TABLE -->
+        <div class="status-board-wrapper">
+          <table class="status-board-table">
+            <thead>
+              <tr>
+                <th>Command</th>
+                <th>Description</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-label="Command"><code>bl list</code></td>
+                <td data-label="Description">List all tasks with filters</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot green" style="animation-delay: 0s;"></span>
+                    <span class="status-text required">required</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl grab</code></td>
+                <td data-label="Description">Auto-claim next available task</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot green" style="animation-delay: 0.2s;"></span>
+                    <span class="status-text required">required</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl tree</code></td>
+                <td data-label="Description">Show full task hierarchy</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 0.4s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl cycle</code></td>
+                <td data-label="Description">Complete current + grab next</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot green" style="animation-delay: 0.6s;"></span>
+                    <span class="status-text required">required</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl done</code></td>
+                <td data-label="Description">Mark task as complete</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot green" style="animation-delay: 0.8s;"></span>
+                    <span class="status-text required">required</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl show</code></td>
+                <td data-label="Description">Display detailed task info</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 1.0s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl blocked</code></td>
+                <td data-label="Description">Mark task as blocked</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 1.2s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl why</code></td>
+                <td data-label="Description">Explain dependency readiness</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 1.4s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Command"><code>bl search</code></td>
+                <td data-label="Description">Full-text search across tasks</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot red" style="animation-delay: 1.6s;"></span>
+                    <span class="status-text deprecated">deprecated</span>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="speaker-grille"></div>
+
+        <h2 style="--i: 1;">
+          <span class="led-dot amber" style="animation-delay: 0.7s;"></span>
+          Workflow Shortcuts
+        </h2>
+
+        <p>
+          Workflow shortcuts combine multiple operations into single commands. The most common pattern is the
+          <strong>claim-work-complete loop</strong>, which can be executed manually or automated with <code>bl cycle</code>.
+        </p>
+
+        <div class="code-block">
+          <div class="code-block-label">Example</div>
+          <pre><span class="comment"># The standard workflow loop</span>
+backlog grab            <span class="comment"># pick up next task</span>
+backlog show            <span class="comment"># read the details</span>
+<span class="comment"># ... do the work ...</span>
+backlog done            <span class="comment"># complete it</span>
+backlog grab            <span class="comment"># next one</span>
+
+<span class="comment"># Or just use cycle to combine done + grab:</span>
+backlog cycle</pre>
+        </div>
+
+        <p>
+          For multi-agent environments, the <code>grab</code> command includes built-in claim locking and
+          stale-claim detection. See the <a href="commands-grab.html">bl grab</a> documentation for details
+          on the scheduling algorithm and conflict resolution.
+        </p>
+
+        <!-- Callout: Note -->
+        <div class="callout note">
+          <div class="callout-header">
+            <span class="led-dot amber" style="animation-delay: 0.3s;"></span>
+            Information
+          </div>
+          <div class="callout-body">
+            All commands support <code>--json</code> output for programmatic consumption. Agent tooling
+            commands (<code>session</code>, <code>unclaim-stale</code>) are designed specifically for
+            automated workflows.
+          </div>
+        </div>
+
+        <div class="speaker-grille"></div>
+
+        <h2 style="--i: 2;">
+          <span class="led-dot amber" style="animation-delay: 1.1s;"></span>
+          Pause and Hand Off
+        </h2>
+
+        <p>
+          When work is blocked or needs to transfer between agents, use the dedicated commands:
+        </p>
+
+        <div class="code-block">
+          <div class="code-block-label">Output</div>
+          <pre><span class="keyword">$</span> backlog blocked --reason <span class="string">"waiting on API key"</span>
+<span class="comment"># Task P1.M2.E1.T042 marked as BLOCKED</span>
+<span class="comment"># Reason: waiting on API key</span>
+
+<span class="keyword">$</span> backlog handoff --to agent-2 --notes <span class="string">"impl done, needs tests"</span>
+<span class="comment"># Task P1.M2.E1.T042 transferred to agent-2</span></pre>
+        </div>
+
+        <!-- Callout: Tip -->
+        <div class="callout tip">
+          <div class="callout-header">
+            <span class="led-dot green" style="animation-delay: 0.8s;"></span>
+            Service Advisory
+          </div>
+          <div class="callout-body">
+            Use <code>bl handoff --notes</code> to include context for the receiving agent. Good handoff notes
+            reduce ramp-up time and prevent duplicate work.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="site-footer">
+        LIMINAL TRANSIT AUTHORITY &mdash; TERMINAL BL-DOC-02 &mdash; 2026-02-14
+      </footer>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

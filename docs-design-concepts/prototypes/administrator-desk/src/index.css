@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+:root {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent default scrolling, we'll handle it */
+  background-color: #000;
+  color: #333;
+}

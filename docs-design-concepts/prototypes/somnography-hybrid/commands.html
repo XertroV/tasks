@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CH1: Commands | PSG-2026-0214</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="commands" data-decay="0.1" class="stage-N1">
+<div class="page-wrapper">
+
+  <!-- Decay background traces (faint at N1) -->
+  <div class="decay-traces">
+    <svg id="decay-traces-svg" preserveAspectRatio="none"></svg>
+  </div>
+
+  <!-- Hypnogram Timeline -->
+  <div class="hypnogram">
+    <svg id="hypnogram-svg" viewBox="0 0 860 64" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="hypno-glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <div id="hypnogram-tooltip" class="hypnogram-tooltip"></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-margin-ruler"></div>
+      <div class="sidebar-title">Monitoring Channels</div>
+      <ul class="channel-list">
+        <li class="channel-item">
+          <a href="index.html">
+            <span class="electrode-dot alpha"></span>
+            CH0: OVERVIEW
+          </a>
+        </li>
+        <li class="channel-item active">
+          <a href="commands.html">
+            <span class="electrode-dot beta"></span>
+            CH1: COMMANDS
+            <svg class="active-trace" viewBox="0 0 40 12" data-color="#55CC66" data-freq="4"></svg>
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="commands-grab.html">
+            <span class="electrode-dot theta"></span>
+            CH2: GRAB
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="#">
+            <span class="electrode-dot delta"></span>
+            CH3: CONFIG
+          </a>
+        </li>
+        <li class="channel-item">
+          <a href="internals.html">
+            <span class="electrode-dot rem"></span>
+            CH4: INTERNALS
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Study Annotation Header -->
+      <div class="study-header">
+        <div><span class="label">CHANNEL:</span> <span class="value">CH1-A1 (commands)</span></div>
+        <div><span class="label">EPOCH:</span> <span class="value">2026-02-14 02:14</span></div>
+        <div><span class="label">STAGE:</span> <span class="value"><span class="stage-badge">N1 (Light Documentation)</span></span></div>
+        <div><span class="label">NOTES:</span> <span class="value">Subject responsive to stimuli. Alpha rhythm dominant.</span></div>
+      </div>
+
+      <h1>Commands</h1>
+      <svg class="h1-wave" data-color="#55CC66" data-freq="4" viewBox="0 0 500 16"></svg>
+
+      <p>The Backlogs provides the following command set for navigating the task hierarchy. Each command operates within the context of a <code>.backlog/</code> project directory containing YAML indexes and Markdown task files.</p>
+
+      <h2>Core Task Operations</h2>
+
+      <p>The primary command loop follows a claim-work-complete pattern. Tasks are selected from the dependency graph based on critical path analysis and priority scoring.</p>
+
+      <table class="command-table">
+        <thead>
+          <tr>
+            <th>Command</th>
+            <th>Description</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>backlog list</code></td>
+            <td>Filter and view tasks with flags like <code>--available</code>, <code>--progress</code>, <code>--json</code></td>
+            <td><span class="status-dot active"></span>Stable</td>
+          </tr>
+          <tr>
+            <td><code>backlog tree</code></td>
+            <td>Full hierarchical view with <code>--depth</code> and <code>--details</code> options</td>
+            <td><span class="status-dot active"></span>Stable</td>
+          </tr>
+          <tr>
+            <td><code>backlog show [ID]</code></td>
+            <td>Detailed task information; uses working context if no ID given</td>
+            <td><span class="status-dot active"></span>Stable</td>
+          </tr>
+          <tr>
+            <td><code>backlog grab</code></td>
+            <td>Auto-claim next available task from the critical path</td>
+            <td><span class="status-dot available"></span><a href="commands-grab.html">See CH2</a></td>
+          </tr>
+          <tr>
+            <td><code>backlog done</code></td>
+            <td>Complete current task, display newly unblocked work</td>
+            <td><span class="status-dot active"></span>Stable</td>
+          </tr>
+          <tr>
+            <td><code>backlog cycle</code></td>
+            <td>Combined <code>done</code> + <code>grab</code> in one operation</td>
+            <td><span class="status-dot warning"></span>See notes</td>
+          </tr>
+          <tr>
+            <td><code>backlog sync</code></td>
+            <td>Recalculate statistics and critical path analysis</td>
+            <td><span class="status-dot active"></span>Stable</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- ANNOTATION callout -->
+      <div class="callout callout-annotation">
+        <div class="callout-header">Annotation</div>
+        <p>All commands operate relative to the nearest <code>.backlog/</code> directory. The engine walks upward from the current working directory to locate the project root. If multiple backlog directories exist in the path, the nearest ancestor is used.</p>
+        <span class="callout-ref">(See epoch 02:14 &mdash; alpha rhythm consistent during command execution)</span>
+      </div>
+
+      <h2>Workflow Shortcuts</h2>
+
+      <p>For continuous work sessions, the workflow shortcuts eliminate the claim-inspect-work-complete ceremony:</p>
+
+<pre><code><span class="code-comment"># The standard loop</span>
+backlog grab            <span class="code-comment"># pick up next task</span>
+backlog show            <span class="code-comment"># read the details</span>
+<span class="code-comment"># ... do the work ...</span>
+backlog done            <span class="code-comment"># complete it</span>
+
+<span class="code-comment"># Or simply:</span>
+backlog cycle           <span class="code-comment"># done + grab in one step</span></code></pre>
+
+      <p>The <code>grab</code> command uses a sophisticated selection algorithm that considers dependency readiness, critical path position, priority weighting, and agent affinity. See <a href="commands-grab.html">CH2: Grab</a> for detailed documentation.</p>
+
+      <p>Additional workflow commands include <code>blocked</code> for marking impediments, <code>skip</code> for deferring tasks, and <code>handoff</code> for transferring work between agents.</p>
+
+      <div class="page-footer">
+        <span>EPOCH 02:14 | CH1-A1 | N1</span>
+        <span>PSG-2026-0214</span>
+      </div>
+
+    </main>
+  </div>
+
+</div>
+<script src="scripts.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+---
+import { loadParity } from '../lib/generated';
+
+const { command } = Astro.props;
+const parity = loadParity();
+const status = parity.parity[command]?.status ?? 'expected';
+const notes = parity.parity[command]?.notes ?? [];
+---
+<span class={`parity-chip ${status === 'gap' ? 'gap' : ''}`} title={notes.join(' | ')}>
+  {status === 'gap' ? 'Parity gap (bug)' : 'Parity: expected'}
+</span>

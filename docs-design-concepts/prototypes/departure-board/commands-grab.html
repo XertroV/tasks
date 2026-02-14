@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bl grab -- THE BACKLOGS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <button class="mobile-nav-toggle">Menu</button>
+
+  <div class="site-wrapper">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <a href="index.html" style="text-decoration:none;">
+          <div class="sidebar-logo">The Backlogs</div>
+        </a>
+        <div class="sidebar-subtitle">Transit Authority Docs</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <div class="nav-section-header">Getting Started</div>
+          <a href="index.html" class="nav-item">
+            <span class="led-dot green" style="animation-delay: 0s;"></span>
+            Overview
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.3s;"></span>
+            Installation
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.6s;"></span>
+            Quick Start
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header">Commands</div>
+          <a href="commands.html" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.2s;"></span>
+            All Commands
+          </a>
+          <a href="commands-grab.html" class="nav-item active">
+            <span class="led-dot amber" style="animation-delay: 0.5s;"></span>
+            bl grab
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 0.8s;"></span>
+            bl cycle
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 1.1s;"></span>
+            bl done
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot green dim" style="animation-delay: 1.4s;"></span>
+            bl tree
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-header">Reference</div>
+          <a href="#" class="nav-item">
+            <span class="led-dot" style="animation-delay: 0.4s;"></span>
+            Configuration
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot" style="animation-delay: 0.7s;"></span>
+            File Formats
+          </a>
+          <a href="#" class="nav-item">
+            <span class="led-dot" style="animation-delay: 1.0s;"></span>
+            Agent Workflows
+          </a>
+        </div>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-label">
+          <span class="led-dot amber" style="animation-delay: 2s;"></span>
+          Information
+        </div>
+        SYS: OK | DEPTH: 3<br>
+        TERMINAL: BL-DOC-03<br>
+        SESSION: ACTIVE
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+
+      <!-- Departure Card Header -->
+      <div class="departure-card">
+        <div class="departure-card-left">
+          <span class="led-dot green" style="animation-delay: 0.3s;"></span>
+          <span class="departure-card-title">bl grab</span>
+        </div>
+        <span class="departure-card-route">BL-CMD-GRAB</span>
+        <span class="departure-card-date">LAST UPDATED: 2026-02-14</span>
+      </div>
+
+      <!-- Content -->
+      <div class="content-area">
+
+        <h1 class="page-title-animated">bl grab</h1>
+
+        <p>
+          Auto-claim the next available task from the backlog. The <code>grab</code> command uses the dependency graph
+          and critical-path engine to select the highest-priority unblocked task, then claims it for the current agent.
+        </p>
+
+        <p>
+          This is the primary entry point for the <strong>claim-work-complete</strong> workflow loop. In multi-agent
+          environments, <code>grab</code> includes built-in claim locking to prevent conflicts between simultaneous agents.
+        </p>
+
+        <h2 style="--i: 0;">
+          <span class="led-dot amber" style="animation-delay: 0.3s;"></span>
+          Usage
+        </h2>
+
+        <div class="code-block">
+          <div class="code-block-label">Example</div>
+          <pre><span class="comment"># Grab the single highest-priority task</span>
+<span class="keyword">$</span> bl grab --single
+
+<span class="comment"># Output:</span>
+Claimed: P1.M2.E1.T042
+  Title: Implement split-flap animation engine
+  Priority: high
+  Estimate: 2h
+  Dependencies: P1.M2.E1.T041 (done)</pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-block-label">Example</div>
+          <pre><span class="comment"># Grab multiple related tasks (sibling batching)</span>
+<span class="keyword">$</span> bl grab --multi
+
+<span class="comment"># Output:</span>
+Claimed 3 tasks (sibling batch):
+  P1.M2.E1.T042  Implement split-flap animation engine
+  P1.M2.E1.T043  Add LED pulse CSS animations
+  P1.M2.E1.T044  Create status board table component
+  Combined estimate: 5h</pre>
+        </div>
+
+        <h2 style="--i: 1;">
+          <span class="led-dot amber" style="animation-delay: 0.7s;"></span>
+          Options
+        </h2>
+
+        <p>
+          The following options control how <code>grab</code> selects and claims tasks:
+        </p>
+
+        <!-- STATUS BOARD TABLE -- Options -->
+        <div class="status-board-wrapper">
+          <table class="status-board-table">
+            <thead>
+              <tr>
+                <th>Option</th>
+                <th>Description</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td data-label="Option"><code>--single</code></td>
+                <td data-label="Description">Claim only one task (default)</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot green" style="animation-delay: 0s;"></span>
+                    <span class="status-text required">required</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Option"><code>--multi</code></td>
+                <td data-label="Description">Claim a batch of sibling tasks</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 0.3s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Option"><code>--priority</code></td>
+                <td data-label="Description">Filter by priority level</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 0.6s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Option"><code>--tag</code></td>
+                <td data-label="Description">Filter by task tag</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 0.9s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+              <tr>
+                <td data-label="Option"><code>--dry-run</code></td>
+                <td data-label="Description">Show what would be claimed without claiming</td>
+                <td data-label="Status">
+                  <span class="status-cell">
+                    <span class="led-dot amber" style="animation-delay: 1.2s;"></span>
+                    <span class="status-text optional">optional</span>
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="speaker-grille"></div>
+
+        <h2 style="--i: 2;">
+          <span class="led-dot amber" style="animation-delay: 1.1s;"></span>
+          Scheduling Algorithm
+        </h2>
+
+        <p>
+          The <code>grab</code> command selects tasks based on a weighted scoring algorithm that considers:
+        </p>
+
+        <p>
+          <strong>1. Critical path position.</strong> Tasks on the critical path are prioritized to minimize total project duration.
+          The engine computes a CCPM-style (Critical Chain Project Management) schedule and identifies the longest dependency chain.
+        </p>
+
+        <p>
+          <strong>2. Dependency readiness.</strong> Only tasks whose dependencies are fully satisfied are considered.
+          Use <code>bl why &lt;ID&gt;</code> to inspect why a specific task is or is not ready.
+        </p>
+
+        <p>
+          <strong>3. Priority and complexity.</strong> Higher-priority tasks are selected first. Within the same priority,
+          lower-complexity tasks are preferred to maximize throughput.
+        </p>
+
+        <div class="code-block">
+          <div class="code-block-label">Output</div>
+          <pre><span class="keyword">$</span> bl grab --dry-run
+<span class="comment"># Evaluating 47 available tasks...</span>
+<span class="comment"># Critical path tasks: 12</span>
+<span class="comment"># Ready tasks: 8</span>
+<span class="comment">#</span>
+<span class="comment"># Would claim:</span>
+  P1.M2.E1.T042  <span class="string">Implement split-flap animation engine</span>
+    Score: 0.94 (critical: 0.4, priority: 0.3, complexity: 0.24)
+    Estimate: 2h
+    Blocked by: nothing (all deps satisfied)</pre>
+        </div>
+
+        <div class="speaker-grille"></div>
+
+        <h2 style="--i: 3;">
+          <span class="led-dot amber" style="animation-delay: 1.5s;"></span>
+          Multi-Agent Environments
+        </h2>
+
+        <p>
+          In environments where multiple agents operate on the same backlog concurrently, <code>grab</code> uses
+          file-level locking and session heartbeats to prevent claim conflicts.
+        </p>
+
+        <!-- Callout: Warning -->
+        <div class="callout warning">
+          <div class="callout-header">
+            <span class="led-dot amber" style="animation-delay: 0.5s;"></span>
+            Delay Notice
+          </div>
+          <div class="callout-body">
+            In multi-agent environments, always run <code>bl session start</code> before beginning work.
+            Without an active session, <code>grab</code> cannot detect stale claims from other agents,
+            which may lead to duplicate work or claim conflicts. Use <code>bl unclaim-stale</code> to
+            recover from orphaned claims.
+          </div>
+        </div>
+
+        <p>
+          Each agent maintains a heartbeat via <code>bl session heartbeat</code>. If an agent's heartbeat
+          expires (default: 10 minutes), its claims are considered stale and can be reclaimed by other agents.
+          The stale threshold is configurable in <code>.backlog/config.yaml</code>.
+        </p>
+
+        <div class="code-block">
+          <div class="code-block-label">Example</div>
+          <pre><span class="comment"># Start an agent session</span>
+<span class="keyword">$</span> bl session start
+<span class="comment"># Session started: agent-1 (pid: 42847)</span>
+
+<span class="comment"># Check for stale claims</span>
+<span class="keyword">$</span> bl unclaim-stale
+<span class="comment"># Released 2 stale claims:</span>
+<span class="comment">#   P1.M1.E2.T018 (agent-3, last heartbeat: 47m ago)</span>
+<span class="comment">#   P1.M1.E2.T019 (agent-3, last heartbeat: 47m ago)</span>
+
+<span class="comment"># Now grab safely</span>
+<span class="keyword">$</span> bl grab</pre>
+        </div>
+
+        <!-- Callout: Danger -->
+        <div class="callout danger">
+          <div class="callout-header">
+            <span class="led-dot red" style="animation-delay: 0.2s;"></span>
+            Service Cancelled
+          </div>
+          <div class="callout-body">
+            Never manually edit <code>.backlog/.sessions.yaml</code> while agents are running.
+            Corrupted session data can cause all agents to lose their claims simultaneously.
+            Use <code>bl session clean</code> to safely remove stale sessions.
+          </div>
+        </div>
+
+        <div class="speaker-grille"></div>
+
+        <h2 style="--i: 4;">
+          <span class="led-dot amber" style="animation-delay: 1.9s;"></span>
+          Related Commands
+        </h2>
+
+        <p>
+          <code>bl grab</code> works best as part of the larger workflow. Related commands include:
+        </p>
+
+        <p>
+          <strong><a href="commands.html">bl cycle</a></strong> &mdash; Combines <code>done</code> + <code>grab</code>
+          into a single operation. The recommended way to move through tasks sequentially.
+        </p>
+
+        <p>
+          <strong><a href="commands.html">bl done</a></strong> &mdash; Marks the current task as complete and reports
+          any newly unblocked tasks.
+        </p>
+
+        <p>
+          <strong><a href="commands.html">bl claim &lt;ID&gt;</a></strong> &mdash; Claim a specific task by ID instead
+          of letting the scheduler choose. Use this when you know exactly which task to work on.
+        </p>
+
+        <!-- Callout: Note -->
+        <div class="callout note">
+          <div class="callout-header">
+            <span class="led-dot amber" style="animation-delay: 1.1s;"></span>
+            Information
+          </div>
+          <div class="callout-body">
+            For explicit task claiming when IDs are known, prefer <code>bl claim &lt;ID&gt;</code> over
+            <code>bl grab</code>. Use <code>grab</code> for automatic selection when you want the scheduler
+            to decide what to work on next.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <footer class="site-footer">
+        LIMINAL TRANSIT AUTHORITY &mdash; TERMINAL BL-DOC-03 &mdash; 2026-02-14
+      </footer>
+    </div>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

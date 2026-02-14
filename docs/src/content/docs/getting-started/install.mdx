@@ -1,0 +1,22 @@
+---
+title: Install
+---
+
+## Python CLI install
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -e ".[dev]"
+```
+
+## TypeScript/Bun implementation
+
+```bash
+cd backlog_ts
+bun install
+bun run src/cli.ts --help
+```
+
+## Command aliases
+
+Use `bl` in docs and scripts. `backlog` and `tasks` map to the same CLI.

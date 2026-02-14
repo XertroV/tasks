@@ -1,0 +1,5 @@
+
+
+
+
+Ohh, Idea for the terminal: it can be like a VCR that loads code (visual glitches, google about what code looks like, there are some good articles about rendering code, I think some early amiga games did that to create scifi effects), so the VHS in the VCR loads code and then it plays out each page and pauses (and we get the iconic VCR pause). Now the VCR acts like a touchscreen because the protagonist has a lightgun! (like for theh NES) and that allows you to 'shoot' a link on the screen to go to that page. When we transition pages, we 'fast forward' through the tape to the right place, play out the page load, and then pause waiting for more input. Sometimes the page we're going to might require rewinding instead of fast forwarding. How does that sound? Pretty fun unique idea yeah?

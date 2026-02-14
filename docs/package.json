@@ -1,0 +1,16 @@
+{
+  "name": "the-backlogs-docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "generate:reference": "node scripts/extract-python-help.mjs && node scripts/extract-ts-help.mjs && node scripts/normalize-commands.mjs && node scripts/compute-parity-status.mjs",
+    "build": "bun run generate:reference && astro build",
+    "preview": "astro preview",
+    "check": "bun run generate:reference && astro check && astro build"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.31.0",
+    "astro": "^5.0.0"
+  }
+}

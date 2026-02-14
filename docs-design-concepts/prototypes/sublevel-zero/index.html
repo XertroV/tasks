@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE BACKLOGS — Sublevel Zero</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="--page-decay: 0;">
+
+  <!-- Scan line overlay via body::after -->
+  <!-- Tile grid via body::before -->
+
+  <!-- Caustic shimmer (barely visible at decay 0) -->
+  <div class="caustic-shimmer" aria-hidden="true"></div>
+
+  <div class="landing">
+
+    <!-- Tile accent band -->
+    <div class="tile-accent-band" aria-hidden="true"></div>
+
+    <!-- Hero Section -->
+    <section class="hero">
+      <!-- Grid decoration (right side) -->
+      <div class="hero__grid-decoration" aria-hidden="true"></div>
+      <div class="hero__grid-caustic" aria-hidden="true"></div>
+
+      <!-- Protocol Bar -->
+      <div class="hero__protocol-bar">
+        <span>LIMINAL SYSTEMS INC. — PROCEDURAL DOCUMENTATION</span>
+        <span>DOCUMENT: THE BACKLOGS // MASTER INDEX</span>
+        <span class="classified">CLASSIFICATION: SUBLEVEL 0 // OPEN DISTRIBUTION</span>
+      </div>
+
+      <!-- Title with split-flap animation -->
+      <div class="hero__title-area">
+        <div class="hero__title-rule" aria-hidden="true"></div>
+        <h1 class="hero__title" data-split-flap="THE BACKLOGS">THE BACKLOGS</h1>
+      </div>
+
+      <!-- Subtitle -->
+      <p class="hero__subtitle">
+        A hierarchical backlog management system for infinite corridors.
+        Phases, milestones, epics, and tasks — stored as plain files on disk, dependency-aware,
+        critical-path-scheduled, and maintained by procedural mandate.
+      </p>
+
+      <!-- Footer items -->
+      <div class="hero__footer">
+        <div class="stamp">APPROVED</div>
+        <div class="hero__status">
+          <span class="led" aria-hidden="true"></span>
+          <span>SYSTEM STATUS: MONITORING</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Departure Board Navigation -->
+    <section class="departure-board">
+      <div class="departure-board__title">DEPARTURES — DOCUMENTATION INDEX</div>
+
+      <!-- Desktop table -->
+      <table>
+        <thead>
+          <tr>
+            <th>Destination</th>
+            <th>Route</th>
+            <th>Status</th>
+            <th>Platform</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><a href="commands.html">Commands Reference</a></td>
+            <td><span class="route">BL-CMD</span></td>
+            <td>
+              <span class="status status--ontime">
+                <span class="led led--green" style="width:5px;height:5px;animation-delay:-0.5s;" aria-hidden="true"></span>
+                ON TIME
+              </span>
+            </td>
+            <td><span class="platform">§2</span></td>
+          </tr>
+          <tr>
+            <td><a href="commands-grab.html">bl grab — Task Selection</a></td>
+            <td><span class="route">BL-CMD-GRAB</span></td>
+            <td>
+              <span class="status status--ontime">
+                <span class="led led--green" style="width:5px;height:5px;animation-delay:-1.2s;" aria-hidden="true"></span>
+                ON TIME
+              </span>
+            </td>
+            <td><span class="platform">§2.3</span></td>
+          </tr>
+          <tr>
+            <td><a href="#">Configuration</a></td>
+            <td><span class="route">BL-CFG</span></td>
+            <td>
+              <span class="status status--monitoring">
+                <span class="led" style="width:5px;height:5px;animation-delay:-2.1s;" aria-hidden="true"></span>
+                MONITORING
+              </span>
+            </td>
+            <td><span class="platform">§3</span></td>
+          </tr>
+          <tr>
+            <td><a href="#">Reference</a></td>
+            <td><span class="route">BL-REF</span></td>
+            <td>
+              <span class="status status--ontime">
+                <span class="led led--green" style="width:5px;height:5px;animation-delay:-0.8s;" aria-hidden="true"></span>
+                ON TIME
+              </span>
+            </td>
+            <td><span class="platform">§4</span></td>
+          </tr>
+          <tr>
+            <td><a href="internals-engine.html">Internals — Dependency Engine</a></td>
+            <td><span class="route">BL-INT</span></td>
+            <td>
+              <span class="status status--delayed">
+                <span class="led led--red" style="width:5px;height:5px;" aria-hidden="true"></span>
+                DELAYED
+              </span>
+            </td>
+            <td><span class="platform">§5</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Mobile nav -->
+      <div class="departure-board__mobile">
+        <a href="commands.html">
+          <span>Commands Reference</span>
+          <span class="route">BL-CMD</span>
+        </a>
+        <a href="commands-grab.html">
+          <span>bl grab — Task Selection</span>
+          <span class="route">BL-CMD-GRAB</span>
+        </a>
+        <a href="#">
+          <span>Configuration</span>
+          <span class="route">BL-CFG</span>
+        </a>
+        <a href="#">
+          <span>Reference</span>
+          <span class="route">BL-REF</span>
+        </a>
+        <a href="internals-engine.html">
+          <span>Internals — Dependency Engine</span>
+          <span class="route">BL-INT</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="landing-footer">
+      LIMINAL SYSTEMS INC. — SUBLEVEL 0 — CORRIDOR B — ALL DOCUMENTATION SUBJECT TO PROCEDURAL REVIEW
+    </footer>
+
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

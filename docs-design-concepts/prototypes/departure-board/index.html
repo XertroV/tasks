@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THE BACKLOGS -- Liminal Transit Authority</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="home-content">
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-header">
+        <h1 class="hero-title">THE BACKLOGS</h1>
+        <p class="hero-subtitle">Liminal Transit Authority &mdash; Documentation Terminal</p>
+      </div>
+
+      <!-- The Departure Board -->
+      <div class="departure-board" style="margin: 0 auto; max-width: 900px; width: calc(100% - 48px);">
+        <table class="board-table">
+          <thead>
+            <tr>
+              <th>Destination</th>
+              <th>Route</th>
+              <th>Status</th>
+              <th>Platform</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr onclick="window.location='commands.html'">
+              <td data-label="Destination"><a href="commands.html">Getting Started</a></td>
+              <td data-label="Route"><span class="board-route">BL-001</span></td>
+              <td data-label="Status"><span class="board-status on-time">ON TIME</span></td>
+              <td data-label="Platform"><span class="board-platform">SH.1</span></td>
+            </tr>
+            <tr onclick="window.location='commands.html'">
+              <td data-label="Destination"><a href="commands.html">Commands Reference</a></td>
+              <td data-label="Route"><span class="board-route">BL-002</span></td>
+              <td data-label="Status"><span class="board-status on-time">ON TIME</span></td>
+              <td data-label="Platform"><span class="board-platform">SH.2</span></td>
+            </tr>
+            <tr onclick="window.location='commands.html'">
+              <td data-label="Destination"><a href="commands.html">Configuration</a></td>
+              <td data-label="Route"><span class="board-route">BL-003</span></td>
+              <td data-label="Status"><span class="board-status delayed">DELAYED</span></td>
+              <td data-label="Platform"><span class="board-platform">SH.3</span></td>
+            </tr>
+            <tr>
+              <td data-label="Destination">API Reference</td>
+              <td data-label="Route"><span class="board-route">BL-004</span></td>
+              <td data-label="Status"><span class="board-status on-time">ON TIME</span></td>
+              <td data-label="Platform"><span class="board-platform">SH.4</span></td>
+            </tr>
+            <tr>
+              <td data-label="Destination">Troubleshooting</td>
+              <td data-label="Route"><span class="board-route">BL-005</span></td>
+              <td data-label="Status"><span class="board-status cancelled">CANCELLED</span></td>
+              <td data-label="Platform"><span class="board-platform">--</span></td>
+            </tr>
+            <tr onclick="window.location='commands-grab.html'">
+              <td data-label="Destination"><a href="commands-grab.html">Advanced Guides</a></td>
+              <td data-label="Route"><span class="board-route">BL-006</span></td>
+              <td data-label="Status"><span class="board-status boarding">BOARDING</span></td>
+              <td data-label="Platform"><span class="board-platform">SH.5</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Dot-Matrix Ticker -->
+    <div class="ticker-bar">
+      <div class="ticker-track">
+        <span class="ticker-text">Attention: All scheduled departures are subject to spatial discontinuity. Please remain in the waiting area. &bull; Service advisories are posted at each platform. &bull; Do not attempt to access unmarked corridors beyond platform SH.7. &bull; </span>
+        <span class="ticker-text">Attention: All scheduled departures are subject to spatial discontinuity. Please remain in the waiting area. &bull; Service advisories are posted at each platform. &bull; Do not attempt to access unmarked corridors beyond platform SH.7. &bull; </span>
+      </div>
+    </div>
+
+    <!-- Navigation Cards -->
+    <div class="home-main">
+      <div class="home-nav-links">
+        <a href="commands.html" class="home-nav-card">
+          <h3><span class="led-dot green" style="animation-delay: 0s;"></span> Commands Reference</h3>
+          <p>Complete listing of all backlog commands, usage patterns, and option flags.</p>
+        </a>
+        <a href="commands-grab.html" class="home-nav-card">
+          <h3><span class="led-dot amber" style="animation-delay: 0.5s;"></span> bl grab</h3>
+          <p>Auto-claim the next available task. Smart scheduling for single and multi-agent environments.</p>
+        </a>
+        <a href="#" class="home-nav-card">
+          <h3><span class="led-dot amber" style="animation-delay: 1.0s;"></span> Configuration</h3>
+          <p>Project-level config, agent defaults, stale thresholds, and timeline settings.</p>
+        </a>
+        <a href="#" class="home-nav-card">
+          <h3><span class="led-dot" style="animation-delay: 1.5s;"></span> Troubleshooting</h3>
+          <p>Common issues, dependency cycles, claim conflicts, and recovery procedures.</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+      LIMINAL TRANSIT AUTHORITY &mdash; DOCUMENTATION TERMINAL v0.1.0 &mdash; 2026-02-14 &mdash; ALL DEPARTURES SUBJECT TO CHANGE
+    </footer>
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

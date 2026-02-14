@@ -1,0 +1,127 @@
+:root {
+  --sl-color-accent-low: #332600;
+  --sl-color-accent: #c7a13f;
+  --sl-color-accent-high: #fce6a2;
+  --sl-color-bg: #121004;
+  --sl-color-bg-nav: #171407;
+  --sl-color-bg-sidebar: #151206;
+  --sl-color-text: #f4ebce;
+  --sl-color-text-accent: #ffe8a3;
+  --sl-color-text-invert: #0d0b03;
+  --sl-color-gray-1: #ede0bc;
+  --sl-color-gray-2: #d0bf91;
+  --sl-color-gray-3: #9d8c62;
+  --sl-color-gray-4: #6f603f;
+  --sl-color-gray-5: #4f442b;
+  --sl-color-gray-6: #312a1a;
+  --sl-color-black: #090701;
+
+  --tb-paper: #2a2212;
+  --tb-panel: #1b160a;
+  --tb-amber: #c3a043;
+  --tb-hot: #f6e3a1;
+  --tb-flicker-a: 0.94;
+  --tb-flicker-b: 1;
+}
+
+:root,
+:root[data-theme='light'] {
+  --sl-font: "Alegreya Sans", "IBM Plex Sans", "Segoe UI", sans-serif;
+  --sl-font-system: "Alegreya Sans", "IBM Plex Sans", "Segoe UI", sans-serif;
+  --sl-font-mono: "IBM Plex Mono", "JetBrains Mono", monospace;
+}
+
+body {
+  background:
+    radial-gradient(1200px 320px at 50% -80px, rgba(243, 211, 129, 0.18), transparent),
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 243, 208, 0.015) 0px,
+      rgba(255, 243, 208, 0.015) 2px,
+      transparent 2px,
+      transparent 6px
+    ),
+    linear-gradient(180deg, #141107 0%, #0f0c04 100%);
+}
+
+main {
+  position: relative;
+}
+
+main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  background-image: radial-gradient(circle at 2px 2px, #f3d68e 1px, transparent 0);
+  background-size: 19px 19px;
+  mix-blend-mode: soft-light;
+}
+
+.hero {
+  border: 1px solid rgba(240, 209, 127, 0.34);
+  background: linear-gradient(180deg, rgba(28, 22, 10, 0.86), rgba(19, 15, 7, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 235, 172, 0.08), 0 0 60px rgba(192, 146, 27, 0.12);
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+}
+
+.backrooms-sign {
+  display: inline-block;
+  letter-spacing: 0.08em;
+  color: var(--tb-hot);
+  text-shadow:
+    0 0 6px rgba(244, 221, 152, 0.55),
+    0 0 18px rgba(220, 176, 62, 0.4);
+  animation: flicker 4.3s infinite steps(1, end);
+}
+
+.corridor-rule {
+  height: 1px;
+  margin: 1.25rem 0;
+  background: linear-gradient(90deg, transparent, rgba(234, 200, 112, 0.35), transparent);
+  position: relative;
+}
+
+.corridor-rule::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  width: 18px;
+  height: 9px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(236, 208, 126, 0.42);
+  opacity: 0.7;
+}
+
+.parity-chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0.1rem 0.52rem;
+  font-size: 0.76rem;
+  border: 1px solid rgba(241, 218, 153, 0.28);
+  background: rgba(255, 228, 137, 0.06);
+}
+
+.parity-chip.gap {
+  color: #ffd8b3;
+  border-color: rgba(255, 166, 122, 0.45);
+  background: rgba(124, 45, 24, 0.35);
+}
+
+@keyframes flicker {
+  0%, 5%, 7%, 8%, 10%, 12%, 19%, 25%, 52%, 100% {
+    opacity: var(--tb-flicker-b);
+  }
+  6%, 9%, 11%, 24%, 51% {
+    opacity: var(--tb-flicker-a);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backrooms-sign {
+    animation: none;
+  }
+}

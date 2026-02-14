@@ -6,6 +6,7 @@
 - Proactively exploit refactor opportunities towards a cleaner, more maintainable codebase. Always remove code duplication where practical.
  - When implementing features, implement them for both the python `backlog/` and typescript `backlog_ts/`.
  - Ensure `backlog/` and `backlog_ts/` are kept in sync (especially behaviorally)
+- For JavaScript/TypeScript tooling and scripts, prefer `bun` over `npm` in all commands and docs.
 
 ## Task CLI quick rules (agent-facing)
 

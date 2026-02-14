@@ -1,0 +1,11 @@
+---
+title: Multi-Agent
+---
+
+```bash
+bl session start --agent agent-a --task P1.M1.E1.T001
+bl handoff --to agent-b --notes "impl done, needs tests"
+bl session heartbeat --agent agent-a --progress "handoff complete"
+```
+
+Use `bl unclaim-stale` to recover abandoned claims.

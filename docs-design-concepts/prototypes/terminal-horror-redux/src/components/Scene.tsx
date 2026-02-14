@@ -1,7 +1,7 @@
 import { Canvas, useThree, useFrame } from '@react-three/fiber';
-import { PerspectiveCamera, OrbitControls } from '@react-three/drei';
+import { OrbitControls } from '@react-three/drei';
 import { useControls, folder } from 'leva';
-import { Suspense, useRef, useEffect } from 'react';
+import { Suspense } from 'react';
 import * as THREE from 'three';
 import Room from './Room';
 import Floor from './Floor';
@@ -15,7 +15,6 @@ import TheEntity from './TheEntity';
 
 function SceneContent({ controls, crtControls }: { controls: any; crtControls: any }) {
   const { camera, scene } = useThree();
-  const fogRef = useRef<THREE.Fog | null>(null);
   
   // Update camera position and FOV reactively
   useFrame(() => {

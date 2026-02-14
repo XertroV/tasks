@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>bl grab — THE BACKLOGS</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body style="--page-decay: 0.25;" data-page-decay="0.25">
+
+  <div class="caustic-shimmer" aria-hidden="true"></div>
+
+  <div class="page-layout">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sidebar__header">TABLE OF CONTENTS</div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-CMD</span>
+          <span class="led" style="animation-delay: -0.4s;" aria-hidden="true"></span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="commands.html" class="sidebar__link">Commands Reference</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="commands-grab.html" class="sidebar__link sidebar__link--active">
+              bl grab
+            </a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl list</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl tree</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl cycle</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl done</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">bl show</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-CFG</span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Configuration</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Project Setup</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__section">
+        <div class="sidebar__section-title">
+          <span>BL-INT</span>
+        </div>
+        <ul class="sidebar__items">
+          <li class="sidebar__item">
+            <a href="internals-engine.html" class="sidebar__link">Dependency Engine</a>
+          </li>
+          <li class="sidebar__item">
+            <a href="#" class="sidebar__link">Session Management</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="sidebar__telemetry">
+        SYS: OK &nbsp;|&nbsp; DEPTH: 3 &nbsp;|&nbsp; DECAY: 0.25
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="content-area">
+      <div class="tile-accent-band" aria-hidden="true"></div>
+
+      <!-- Protocol Header -->
+      <div class="protocol-header">
+        <div class="protocol-header__row">
+          <span class="protocol-header__id">PROTOCOL: BL-CMD-GRAB</span>
+          <span class="protocol-header__classification">LEVEL 0 // OPEN</span>
+          <span class="protocol-header__date">2026-02-14</span>
+        </div>
+        <div class="corruption-bar">
+          <div class="corruption-bar__track">
+            <div class="corruption-bar__fill corruption-bar__fill--medium" style="width: 25%;"></div>
+          </div>
+          <div class="corruption-bar__meta">
+            <span class="corruption-bar__depth">[DEPTH: 3]</span>
+            <span class="led" data-monitoring-led style="animation-delay: -0.7s;" aria-hidden="true"></span>
+            <span class="corruption-bar__status" data-monitoring-status style="transition: opacity 200ms;">SYS: MONITORING</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="content">
+        <h1 data-split-flap="BL GRAB">BL GRAB</h1>
+
+        <p>
+          The <code>bl grab</code> command automatically selects and claims the next available task
+          from the backlog's critical path. It evaluates all unblocked tasks, applies the
+          <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">priority scoring algorithm</span>
+          to determine optimal selection, and assigns ownership to the current agent.
+        </p>
+
+        <h2><span class="section-num">§2.3.1</span> Usage</h2>
+
+        <pre><code>bl grab [OPTIONS]
+
+Options:
+  --single          Claim exactly one task (default)
+  --multi           Claim multiple related tasks (sibling batching)
+  --dry-run         Show what would be claimed without claiming
+  --priority HIGH   Override priority filter
+  --complexity LOW  Override complexity filter</code></pre>
+
+        <h2><span class="section-num">§2.3.2</span> Behavior</h2>
+
+        <p>
+          When invoked, <code>bl grab</code> performs the following sequence:
+        </p>
+
+        <ol style="margin: 1rem 0; padding-left: 24px; max-width: 68ch;">
+          <li style="margin-bottom: 0.5rem;">Scans all tasks with status <code>pending</code> or <code>available</code></li>
+          <li style="margin-bottom: 0.5rem;">Filters to tasks whose dependencies are fully resolved</li>
+          <li style="margin-bottom: 0.5rem;">Applies the <span class="redacted" title="[REDACTED — CLEARANCE REQUIRED]">CCPM-weighted scoring heuristic</span> to rank candidates</li>
+          <li style="margin-bottom: 0.5rem;">Claims the highest-scoring task and sets working context</li>
+          <li style="margin-bottom: 0.5rem;">If <code>--multi</code> is specified, also claims sibling tasks in the same epic</li>
+        </ol>
+
+        <div class="callout callout--caution">
+          <div class="callout__label">
+            <span class="led" style="width:4px;height:4px;animation-delay:-0.3s;" aria-hidden="true"></span>
+            [CAUTION]
+          </div>
+          <p>
+            In multi-agent environments, <code>bl grab</code> uses optimistic locking on task claims.
+            If two agents attempt to grab the same task simultaneously, the first writer wins and the
+            second agent will receive a <code>CLAIM_CONFLICT</code> error. Use <code>bl grab --dry-run</code>
+            to preview selection before committing.
+          </p>
+        </div>
+
+        <h2><span class="section-num">§2.3.3</span> Examples</h2>
+
+        <p>Standard single-task grab:</p>
+
+        <pre><code>$ bl grab --single
+Claimed: P1.M2.E1.T042
+  Title: Implement retry logic
+  Priority: high
+  Estimate: 2h
+  Dependencies: none (all resolved)
+
+Working context set to P1.M2.E1.T042</code></pre>
+
+        <p>Multi-task grab with sibling batching:</p>
+
+        <!-- Thermal Receipt -->
+        <div class="thermal-receipt">
+          <div class="thermal-receipt__perforation-top" aria-hidden="true"></div>
+          <div class="thermal-receipt__header">
+            SYSTEM LOG — ENTRY #<span data-entry-num>001</span><br>
+            2026-02-14 &nbsp;08:47:23
+          </div>
+          <div class="thermal-receipt__body" style="padding-bottom: 40px;">
+            <code>$ bl grab --multi
+
+<span class="kw">Claimed 3 tasks</span> (sibling batch from P1.M2.E1):
+
+  P1.M2.E1.T042  Implement retry logic      <span class="num">high  2h</span>
+  P1.M2.E1.T043  Add timeout config          <span class="num">med   1h</span>
+  P1.M2.E1.T044  Write integration tests     <span class="num">med   2h</span>
+
+<span class="cmt">Total estimated effort: 5h</span>
+<span class="cmt">Critical path impact: -3h buffer consumed</span>
+<span class="kw">Working context set to P1.M2.E1.T042</span> (first in batch)</code>
+            <div class="thermal-receipt__fade">[...log continues...]</div>
+          </div>
+          <div class="thermal-receipt__perforation-bottom" aria-hidden="true"></div>
+          <div class="thermal-receipt__scissors" aria-hidden="true">✂ — — — — — — — — — —</div>
+        </div>
+
+        <h2><span class="section-num">§2.3.4</span> Options Reference</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Option</th>
+              <th>Default</th>
+              <th>Description</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>--single</code></td>
+              <td>true</td>
+              <td>Claim exactly one task</td>
+            </tr>
+            <tr>
+              <td><code>--multi</code></td>
+              <td>false</td>
+              <td>Enable sibling batching</td>
+            </tr>
+            <tr>
+              <td><code>--dry-run</code></td>
+              <td>false</td>
+              <td>Preview without claiming</td>
+            </tr>
+            <tr>
+              <td><code>--priority</code></td>
+              <td>any</td>
+              <td>Filter: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td>
+            </tr>
+            <tr>
+              <td><code>--complexity</code></td>
+              <td>any</td>
+              <td>Filter: <code>trivial</code>, <code>low</code>, <code>medium</code>, <code>high</code>, <code>extreme</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h2><span class="section-num">§2.3.5</span> Selection Algorithm</h2>
+
+        <!-- Redacted block -->
+        <div class="redacted-block">
+          <div class="redacted-block__label">[REDACTED — CLEARANCE REQUIRED]</div>
+          <div class="redacted-block__content">
+            <div class="redacted-block__bars">
+              <div class="redacted-block__bar" style="width: 95%;"></div>
+              <div class="redacted-block__bar" style="width: 80%;"></div>
+              <div class="redacted-block__bar" style="width: 88%;"></div>
+              <div class="redacted-block__bar" style="width: 60%;"></div>
+              <div class="redacted-block__bar" style="width: 92%;"></div>
+              <div class="redacted-block__bar" style="width: 45%;"></div>
+            </div>
+            <div class="redacted-block__text">
+              score = (priority_weight * 0.4)<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; + (critical_path_pos * 0.3)<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; + (dependency_freed * 0.2)<br>
+              &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; + (age_factor * 0.1)<br>
+              <br>
+              Sibling bonus: +15% if epic has<br>
+              &gt;2 unblocked tasks in same epic
+            </div>
+          </div>
+        </div>
+
+        <div class="callout callout--tip">
+          <div class="callout__label">[TIP]</div>
+          <p>
+            The selection algorithm prioritizes tasks on the critical path. If you want to work on
+            a specific task instead, use <code>bl claim &lt;TASK_ID&gt;</code> for explicit selection.
+          </p>
+        </div>
+
+        <p style="margin-top: 3rem;">
+          <a href="commands.html">← Back to Commands Reference</a> &nbsp;|&nbsp;
+          <a href="index.html">Master Index</a>
+        </p>
+      </div>
+    </main>
+
+  </div>
+
+  <script src="scripts.js"></script>
+</body>
+</html>

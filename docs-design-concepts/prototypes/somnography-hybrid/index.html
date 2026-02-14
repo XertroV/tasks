@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PSG-2026-0214 | The Backlogs -- Somnography Lab</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body data-page="index" data-decay="0">
+<div class="page-wrapper">
+
+  <!-- Hypnogram Timeline -->
+  <div class="hypnogram" style="margin-top: 1.5rem;">
+    <svg id="hypnogram-svg" viewBox="0 0 860 64" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <filter id="hypno-glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge>
+            <feMergeNode in="blur"/>
+            <feMergeNode in="SourceGraphic"/>
+          </feMerge>
+        </filter>
+      </defs>
+    </svg>
+    <div id="hypnogram-tooltip" class="hypnogram-tooltip"></div>
+  </div>
+
+  <!-- Hero: Study Cover Page -->
+  <div class="hero">
+
+    <div class="study-cover">
+      <div class="study-meta">
+        <div><span class="meta-label">SUBJECT:</span> <span class="meta-value" style="font-family: var(--font-display); font-size: 1.1em; font-weight: 700;">The Backlogs</span></div>
+        <div><span class="meta-label">STUDY ID:</span> <span class="meta-value">PSG-2026-0214</span></div>
+        <div><span class="meta-label">RECORDING START:</span> <span class="meta-value"><span id="recording-timer">00:00:00</span></span></div>
+        <div><span class="meta-label">STATUS:</span> <span class="meta-value status-active">MONITORING</span></div>
+        <div><span class="meta-label">TECHNICIAN:</span> <span class="meta-value">Dr. M (overnight shift)</span></div>
+        <div><span class="meta-label">PROTOCOL:</span> <span class="meta-value">Standard PSG + extended EEG</span></div>
+      </div>
+
+      <!-- EEG Traces -->
+      <div class="eeg-traces">
+        <svg id="eeg-traces-svg" viewBox="0 0 540 120" preserveAspectRatio="xMidYMid meet">
+        </svg>
+      </div>
+    </div>
+
+    <p style="font-family: var(--font-body); font-size: 14px; color: var(--somno-ink-light); max-width: 520px; margin: 0 auto 2.5rem; line-height: 1.7;">
+      Polysomnographic monitoring of hierarchical backlog management system. Subject presents recurring dream content involving infinite office corridors, task dependency graphs, and a building with no exit. Monitoring channels mapped to documentation depth.
+    </p>
+
+    <!-- Channel Navigation -->
+    <nav class="channel-nav">
+      <a href="commands.html">
+        <span class="electrode-dot alpha"></span>
+        <svg class="nav-wave" viewBox="0 0 32 10" data-freq="2" data-amp="4" data-color="#4477CC"></svg>
+        <span>CH1: COMMANDS</span>
+      </a>
+      <a href="commands-grab.html">
+        <span class="electrode-dot theta"></span>
+        <svg class="nav-wave" viewBox="0 0 32 10" data-freq="1" data-amp="4" data-color="#DDAA33"></svg>
+        <span>CH2: GRAB</span>
+      </a>
+      <a href="internals.html">
+        <span class="electrode-dot rem"></span>
+        <svg class="nav-wave" viewBox="0 0 32 10" data-freq="0.3" data-amp="4" data-color="#CC3344"></svg>
+        <span>CH3: INTERNALS</span>
+      </a>
+    </nav>
+
+  </div>
+
+  <div class="recording-status">
+    <span class="rec-dot"></span>
+    RECORDING IN PROGRESS &mdash; ALL CHANNELS NOMINAL &mdash; PSG-2026-0214
+  </div>
+
+</div>
+<script src="scripts.js"></script>
+</body>
+</html>

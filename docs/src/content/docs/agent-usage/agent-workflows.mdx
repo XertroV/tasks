@@ -1,0 +1,18 @@
+---
+title: Agent Workflows
+---
+
+Recommended loop for coding agents:
+
+```bash
+bl grab --single --agent agent-name
+bl show
+# implement + test
+bl done
+```
+
+For explicit IDs, prefer:
+
+```bash
+bl claim <TASK_ID> [TASK_ID ...]
+```

@@ -1,0 +1,32 @@
+---
+import { loadCommands } from '../lib/generated';
+
+const { command } = Astro.props;
+const data = loadCommands();
+const entry = data.commands.find((c) => c.name === command);
+---
+{entry ? (
+  <section>
+    <h2>Generated Reference</h2>
+    {entry.usage && <p><code>{entry.usage}</code></p>}
+    {entry.aliases.length > 0 && <p><strong>Aliases:</strong> {entry.aliases.join(', ')}</p>}
+    <table>
+      <thead>
+        <tr><th>Option</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        {entry.options.map((opt) => (
+          <tr>
+            <td><code>{opt.flag}</code></td>
+            <td>{opt.description}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+) : (
+  <section>
+    <h2>Generated Reference</h2>
+    <p>No generated reference data found for <code>{command}</code> yet.</p>
+  </section>
+)}
