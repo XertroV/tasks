@@ -1,7 +1,7 @@
 ---
 id: P2.M2.E1.T003
 title: CRT screen emissive lighting
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
@@ -11,6 +11,11 @@ tags:
 - lighting
 - crt
 - emissive
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:31:13.575453+00:00'
+started_at: '2026-02-14T04:31:13.575453+00:00'
+completed_at: '2026-02-14T04:32:26.419763+00:00'
+duration_minutes: 1.2140716833333334
 ---
 ## Requirements
 - Screen quad material has emissive property for room illumination

@@ -1,7 +1,7 @@
 ---
 id: P2.M2.E2.T002
 title: VCR seven-segment LED display
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -12,6 +12,11 @@ tags:
 - vcr
 - text
 - r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:35:27.466827+00:00'
+started_at: '2026-02-14T04:35:27.466827+00:00'
+completed_at: '2026-02-14T04:36:53.573165+00:00'
+duration_minutes: 1.4351054499999998
 ---
 ## Requirements
 - LED display on VCR front face showing timecode/status

@@ -22,8 +22,8 @@ epics:
   depends_on: []
   description: ''
 stats:
-  total_tasks: 0
-  done: 0
+  total_tasks: 13
+  done: 13
   in_progress: 0
   blocked: 0
   pending: 0

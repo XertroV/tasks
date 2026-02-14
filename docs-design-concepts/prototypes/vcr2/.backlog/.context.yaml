@@ -1,6 +1,0 @@
-agent: cli-user
-current_task: P2.M2.E1.T001
-mode: single
-sibling_tasks:
-- P2.M1.E2.T002
-started_at: '2026-02-14T03:56:15.589001+00:00'

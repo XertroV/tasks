@@ -26,8 +26,8 @@ milestones:
   description: CRT television 3D model, VCR deck model, debug foundation (panel +
     Leva)
 stats:
-  total_tasks: 0
-  done: 0
+  total_tasks: 16
+  done: 13
   in_progress: 0
   blocked: 0
-  pending: 0
+  pending: 3

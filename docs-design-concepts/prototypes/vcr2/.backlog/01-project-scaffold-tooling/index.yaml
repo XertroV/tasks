@@ -15,8 +15,8 @@ milestones:
   depends_on: []
   description: Project scaffold, toolchain config, shared utilities, directory structure
 stats:
-  total_tasks: 0
-  done: 0
+  total_tasks: 13
+  done: 13
   in_progress: 0
   blocked: 0
   pending: 0

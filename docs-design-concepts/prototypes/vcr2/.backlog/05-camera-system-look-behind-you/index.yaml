@@ -17,8 +17,8 @@ milestones:
   description: Camera controller, beyond hallways, Look Behind You mechanic, spatial
     audio
 stats:
-  total_tasks: 0
+  total_tasks: 21
   done: 0
   in_progress: 0
   blocked: 0
-  pending: 0
+  pending: 21

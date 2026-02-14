@@ -25,8 +25,8 @@ milestones:
   description: Navigation store, FF/REW transitions, page interaction, procedural
     audio
 stats:
-  total_tasks: 0
+  total_tasks: 38
   done: 0
   in_progress: 0
   blocked: 0
-  pending: 0
+  pending: 38

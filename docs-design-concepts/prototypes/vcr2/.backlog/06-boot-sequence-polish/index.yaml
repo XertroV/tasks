@@ -25,8 +25,8 @@ milestones:
   depends_on: []
   description: Audio finalization, VHS shader tuning, performance audit
 stats:
-  total_tasks: 0
+  total_tasks: 20
   done: 0
   in_progress: 0
   blocked: 0
-  pending: 0
+  pending: 20

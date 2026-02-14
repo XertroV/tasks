@@ -1,7 +1,7 @@
 ---
 id: P2.M2.E2.T001
 title: VCR deck body and tape slot geometry
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - geometry
 - vcr
 - r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:16:23.968704+00:00'
+started_at: '2026-02-14T04:16:23.968704+00:00'
+completed_at: '2026-02-14T04:18:02.536046+00:00'
+duration_minutes: 1.6427888666666666
 ---
 ## Requirements
 - VCR deck: rectangular box, black plastic, positioned below CRT on stand

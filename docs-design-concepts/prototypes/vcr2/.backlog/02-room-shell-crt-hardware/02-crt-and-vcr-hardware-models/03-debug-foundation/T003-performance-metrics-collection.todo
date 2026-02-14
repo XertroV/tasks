@@ -1,7 +1,7 @@
 ---
 id: P2.M2.E3.T003
 title: Performance metrics collection hook
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
@@ -10,6 +10,11 @@ tags:
 - debug
 - performance
 - metrics
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:21:14.381746+00:00'
+started_at: '2026-02-14T04:21:14.381746+00:00'
+completed_at: '2026-02-14T04:22:03.259812+00:00'
+duration_minutes: 0.8146342666666667
 ---
 ## Requirements
 - usePerformanceMetrics hook reading renderer.info at 4Hz

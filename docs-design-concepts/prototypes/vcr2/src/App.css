@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=VT323&display=swap");
+
 * {
   margin: 0;
   padding: 0;
@@ -15,4 +17,43 @@ body {
 .app {
   width: 100vw;
   height: 100vh;
+}
+
+.debug-panel {
+  position: fixed;
+  bottom: 16px;
+  left: 16px;
+  z-index: 1000;
+  width: 280px;
+  border: 1px solid #33ff33;
+  background: rgba(0, 0, 0, 0.88);
+  color: #33ff33;
+  padding: 12px;
+  font-family: "VT323", monospace;
+  font-size: 20px;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+  text-shadow: 0 0 6px rgba(51, 255, 51, 0.45);
+}
+
+.debug-panel__title {
+  margin-bottom: 8px;
+  font-size: 24px;
+  letter-spacing: 0.08em;
+}
+
+.debug-panel__section {
+  border-top: 1px solid rgba(51, 255, 51, 0.35);
+  padding-top: 6px;
+  margin-top: 6px;
+}
+
+.debug-panel__section h3 {
+  font-size: 21px;
+  margin-bottom: 2px;
+}
+
+.debug-panel__hint {
+  margin-top: 8px;
+  opacity: 0.85;
 }
