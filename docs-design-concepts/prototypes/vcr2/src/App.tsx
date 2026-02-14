@@ -1,9 +1,9 @@
 import { Canvas } from '@react-three/fiber';
 import './App.css';
+import { PostProcessingPipeline } from '@/postprocessing';
 import { Room } from '@/room';
 import type { RoomSurfaceMaterials } from '@/room/RoomGeometry';
 import { useVCRStore } from '@/vcr';
-import { PostProcessingPipeline } from '@/postprocessing';
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 
 const DebugMount = import.meta.env.DEV

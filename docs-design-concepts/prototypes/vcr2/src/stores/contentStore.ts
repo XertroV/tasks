@@ -1,9 +1,16 @@
-import { create } from 'zustand';
-import type { TapeManifestEntry } from '@/content/index';
-import { buildTapeModel, formatTimecode, getAdjacentPages, getPageAtPosition, type TapeModel, type TapePage } from '@/content/tapeModel';
 import { fetchMdxContent, preloadPages } from '@/content/contentLoader';
-import { parseMdx, type ParsedPage } from '@/content/mdxParser';
+import type { TapeManifestEntry } from '@/content/index';
+import { type ParsedPage, parseMdx } from '@/content/mdxParser';
+import {
+  type TapeModel,
+  type TapePage,
+  buildTapeModel,
+  formatTimecode,
+  getAdjacentPages,
+  getPageAtPosition,
+} from '@/content/tapeModel';
 import { createLogger } from '@/debug/logger';
+import { create } from 'zustand';
 
 const logger = createLogger('ContentStore');
 

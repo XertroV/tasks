@@ -1,7 +1,7 @@
-import type { Uniform } from 'three';
-import { ShaderMaterial } from 'three';
 import fragmentShader from '@/shaders/crt-pass.frag.glsl?raw';
 import vertexShader from '@/shaders/crt-pass.vert.glsl?raw';
+import type { Uniform } from 'three';
+import { ShaderMaterial } from 'three';
 
 export interface CRTUniforms {
   uCurvature: number;

@@ -1,12 +1,12 @@
-import { useFrame, useThree } from '@react-three/fiber';
-import { Bloom, EffectComposer, EffectComposerContext } from '@react-three/postprocessing';
-import { useContext, useEffect, useMemo, useRef } from 'react';
-import { ShaderMaterial } from 'three';
-import { ShaderPass } from 'postprocessing';
-import { getVHSFragmentShader, VHS_DEFAULT_UNIFORMS, VHS_VERTEX_SHADER } from './VHSPass';
-import { useVCRStore } from '@/vcr';
 import crtFrag from '@/shaders/crt-pass.frag.glsl?raw';
 import crtVert from '@/shaders/crt-pass.vert.glsl?raw';
+import { useVCRStore } from '@/vcr';
+import { useFrame, useThree } from '@react-three/fiber';
+import { Bloom, EffectComposer, EffectComposerContext } from '@react-three/postprocessing';
+import { ShaderPass } from 'postprocessing';
+import { useContext, useEffect, useMemo, useRef } from 'react';
+import { ShaderMaterial } from 'three';
+import { VHS_DEFAULT_UNIFORMS, VHS_VERTEX_SHADER, getVHSFragmentShader } from './VHSPass';
 
 function CustomShaderPass({
   uniforms,

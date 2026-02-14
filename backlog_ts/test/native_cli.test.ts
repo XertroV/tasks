@@ -50,13 +50,18 @@ function setupFixture(includeBug = false): string {
   return r;
 }
 
-function run(args: string[], cwd: string) {
+function run(args: string[], cwd: string, extraEnv: NodeJS.ProcessEnv = {}) {
   const cliPath = join(fileURLToPath(new URL("..", import.meta.url)), "src", "cli.ts");
   return Bun.spawnSync(["bun", "run", cliPath, ...args], {
     cwd,
     stdout: "pipe",
     stderr: "pipe",
+    env: { ...process.env, ...extraEnv },
   });
+}
+
+function runWithColor(args: string[], cwd: string) {
+  return run(args, cwd, { FORCE_COLOR: "1", TERM: "xterm-256color" });
 }
 
 describe("native cli", () => {
@@ -845,6 +850,17 @@ tags: []
     expect(out).toContain("P1: Phase");
     expect(out).toContain("P1.M1:");
     expect(out).toContain("Project Progress");
+  });
+
+  test("list --progress shows yellow in-progress bar segment", () => {
+    root = setupFixture();
+    let p = run(["claim", "P1.M1.E1.T001", "--agent", "test"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = runWithColor(["list", "--progress"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("▓");
   });
 
   test("list --progress --unfinished filters completed items", () => {

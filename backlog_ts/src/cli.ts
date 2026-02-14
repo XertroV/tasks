@@ -161,11 +161,32 @@ function getPhaseStats(phase: Phase): { done: number; total: number } {
 }
 
 function makeProgressBar(done: number, total: number, width = 20): string {
-  if (total === 0) return "░".repeat(width);
-  const pct = done / total;
-  const filled = Math.floor(width * pct);
-  const empty = width - filled;
-  return "█".repeat(filled) + "░".repeat(empty);
+  return makeProgressBarWithInProgress(done, 0, total, width);
+}
+
+function makeProgressBarWithInProgress(
+  done: number,
+  inProgress: number,
+  total: number,
+  width = 20,
+): string {
+  if (total === 0) return pc.dim("░".repeat(width));
+
+  const safeDone = Math.max(0, done);
+  const safeInProgress = Math.max(0, inProgress);
+  const remainingInProgress = Math.max(total - safeDone, 0);
+  const clampedInProgress = Math.min(safeInProgress, remainingInProgress);
+
+  const doneWidth = Math.min(width, Math.floor((safeDone / total) * width));
+  const inProgressWidth = Math.min(
+    width - doneWidth,
+    Math.floor(((safeDone + clampedInProgress) / total) * width) - doneWidth,
+  );
+  const pendingWidth = Math.max(width - doneWidth - inProgressWidth, 0);
+
+  return `${pc.green("█".repeat(doneWidth))}${pc.yellow("▓".repeat(inProgressWidth))}${pc.dim(
+    "░".repeat(pendingWidth),
+  )}`;
 }
 
 function listWithProgress(
@@ -198,7 +219,7 @@ function listWithProgress(
       continue;
     }
 
-    const bar = makeProgressBar(done, total);
+    const bar = makeProgressBarWithInProgress(done, inProgress, total);
 
     let indicator: string;
     if (inProgress > 0) {
@@ -222,7 +243,7 @@ function listWithProgress(
 
       if (mPct === 100) continue;
 
-      const mBar = makeProgressBar(mDone, mTotal, 15);
+      const mBar = makeProgressBarWithInProgress(mDone, mInProgress, mTotal, 15);
 
       const mInd = mInProgress > 0 ? pc.yellow("→") : "○";
 

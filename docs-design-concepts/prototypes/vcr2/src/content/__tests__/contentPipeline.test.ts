@@ -1,12 +1,30 @@
-import { describe, it, expect } from 'bun:test';
-import { parseMdx } from '../mdxParser';
-import { buildTapeModel, formatTimecode, parseTimecode, getPageAtPosition, getAdjacentPages } from '../tapeModel';
+import { describe, expect, it } from 'bun:test';
 import type { TapeManifestEntry } from '../index';
+import { parseMdx } from '../mdxParser';
+import {
+  buildTapeModel,
+  formatTimecode,
+  getAdjacentPages,
+  getPageAtPosition,
+  parseTimecode,
+} from '../tapeModel';
 
 const mockManifest: TapeManifestEntry[] = [
   { id: 'index', title: 'Home', section: 'index', order: 0, file: 'index.mdx' },
-  { id: 'getting-started', title: 'Getting Started', section: 'getting-started', order: 1000, file: 'getting-started/intro.mdx' },
-  { id: 'operations', title: 'Operations', section: 'operations', order: 2000, file: 'operations/index.mdx' },
+  {
+    id: 'getting-started',
+    title: 'Getting Started',
+    section: 'getting-started',
+    order: 1000,
+    file: 'getting-started/intro.mdx',
+  },
+  {
+    id: 'operations',
+    title: 'Operations',
+    section: 'operations',
+    order: 2000,
+    file: 'operations/index.mdx',
+  },
 ];
 
 const sampleMdx = `---
@@ -51,7 +69,9 @@ describe('mdxParser', () => {
 
   it('classifies headings correctly', () => {
     const result = parseMdx(sampleMdx, mockManifest[0], mockManifest);
-    const headingLines = result.sections.flatMap((s) => s.lines.filter((l) => l.type === 'heading'));
+    const headingLines = result.sections.flatMap((s) =>
+      s.lines.filter((l) => l.type === 'heading')
+    );
     expect(headingLines.length).toBeGreaterThan(0);
   });
 

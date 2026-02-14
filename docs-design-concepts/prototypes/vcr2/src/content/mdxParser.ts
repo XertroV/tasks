@@ -1,6 +1,6 @@
-import { marked, type Tokens } from 'marked';
-import type { TapeManifestEntry } from './index';
 import { createLogger } from '@/debug/logger';
+import { type Tokens, marked } from 'marked';
+import type { TapeManifestEntry } from './index';
 
 const logger = createLogger('MdxParser');
 
@@ -101,7 +101,7 @@ function parseTable(table: Tokens.Table): ParsedLine[] {
   const lines: ParsedLine[] = [];
 
   const colWidths = table.header.map((cell: Tokens.TableCell, i: number) => {
-    const dataWidths = table.rows.map((row: Tokens.TableCell[]) => (row[i]?.text?.length ?? 0));
+    const dataWidths = table.rows.map((row: Tokens.TableCell[]) => row[i]?.text?.length ?? 0);
     return Math.max(cell.text.length, ...dataWidths);
   });
 
@@ -114,7 +114,9 @@ function parseTable(table: Tokens.Table): ParsedLine[] {
   lines.push({ type: 'text', content: `| ${separatorRow} |` });
 
   for (const row of table.rows) {
-    const rowText = row.map((cell: Tokens.TableCell, i: number) => (cell.text ?? '').padEnd(colWidths[i] ?? 0)).join(' | ');
+    const rowText = row
+      .map((cell: Tokens.TableCell, i: number) => (cell.text ?? '').padEnd(colWidths[i] ?? 0))
+      .join(' | ');
     lines.push({ type: 'text', content: `| ${rowText} |` });
   }
 

@@ -486,3 +486,11 @@ def test_list_progress_shows_phase_and_milestone_ids(runner, tmp_feature_tasks_d
     assert "P1.M1:" in result.output
     # Check the header
     assert "Project Progress" in result.output
+
+
+def test_list_progress_shows_in_progress_color_segment(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["list", "--progress"], color=True)
+    assert result.exit_code == 0
+
+    # In-progress work should have a distinct bar segment.
+    assert "▓" in result.output

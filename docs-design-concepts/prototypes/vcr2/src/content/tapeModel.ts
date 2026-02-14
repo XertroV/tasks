@@ -1,6 +1,6 @@
+import { createLogger } from '@/debug/logger';
 import type { TapeManifestEntry } from './index';
 import type { ParsedPage } from './mdxParser';
-import { createLogger } from '@/debug/logger';
 
 const logger = createLogger('TapeModel');
 
@@ -67,8 +67,8 @@ export function getAdjacentPages(
   }
 
   return {
-    prev: index > 0 ? model.pages[index - 1]?.id ?? null : null,
-    next: index < model.pages.length - 1 ? model.pages[index + 1]?.id ?? null : null,
+    prev: index > 0 ? (model.pages[index - 1]?.id ?? null) : null,
+    next: index < model.pages.length - 1 ? (model.pages[index + 1]?.id ?? null) : null,
   };
 }
 

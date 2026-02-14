@@ -1,5 +1,5 @@
-import type { TapeManifestEntry } from './index';
 import { createLogger } from '@/debug/logger';
+import type { TapeManifestEntry } from './index';
 
 const logger = createLogger('ContentLoader');
 

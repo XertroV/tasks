@@ -484,6 +484,30 @@ def _show_filter_banner(complexity=None, priority=None):
         console.print(f"[dim]Filtering by {'; '.join(parts)}[/]\n")
 
 
+def _build_progress_bar(done: int, in_progress: int, total: int, width: int = 20) -> str:
+    if total == 0:
+        return "[dim]" + "░" * width + "[/]"
+
+    safe_done = max(done, 0)
+    safe_in_progress = max(in_progress, 0)
+    safe_in_progress = min(safe_in_progress, max(total - safe_done, 0))
+
+    done_width = min(width, round((safe_done / total) * width))
+    in_progress_width = min(
+        width - done_width,
+        round(((safe_done + safe_in_progress) / total) * width) - done_width,
+    )
+    pending_width = max(width - done_width - in_progress_width, 0)
+
+    done_bar = "█" * done_width
+    in_progress_bar = "▓" * in_progress_width
+    pending_bar = "░" * pending_width
+
+    return (
+        f"[green]{done_bar}[/][yellow]{in_progress_bar}[/][dim]{pending_bar}[/]"
+    )
+
+
 def _list_with_progress(
     tree,
     critical_path,
@@ -539,7 +563,7 @@ def _list_with_progress(
             completed_phases.append((phase.id, phase.name, total))
             continue
 
-        bar = make_progress_bar(done, total)
+        bar = _build_progress_bar(done, in_progress, total)
 
         if in_progress > 0:
             indicator = "[yellow]→[/]"
@@ -584,7 +608,7 @@ def _list_with_progress(
             if m_pct == 100:
                 continue
 
-            m_bar = make_progress_bar(m_done, m_total, width=15)
+            m_bar = _build_progress_bar(m_done, m_in_progress, m_total, width=15)
 
             if m_in_progress > 0:
                 m_ind = "[yellow]→[/]"
