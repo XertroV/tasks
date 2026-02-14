@@ -18,26 +18,24 @@ function App() {
   const [crtScreenMode, setCrtScreenMode] = useState<'no-signal' | 'docs'>('no-signal');
 
   useEffect(() => {
-    const vcr = useVCRStore.getState();
-    vcr.setDisplayOff();
-
-    const loadingId = window.setTimeout(() => {
-      useVCRStore.getState().setStatusText('LOADING');
-    }, 600);
+    const loadId = window.setTimeout(() => {
+      useVCRStore.getState().loadTape();
+    }, 300);
 
     const timeoutId = window.setTimeout(() => {
       setCrtScreenMode('docs');
-      useVCRStore.getState().setTimecodeSeconds(0);
-    }, 1800);
+      useVCRStore.getState().play();
+    }, 2500);
 
-    const start = performance.now();
     const intervalId = window.setInterval(() => {
-      const elapsedSeconds = (performance.now() - start) / 1000;
-      useVCRStore.getState().setTimecodeSeconds(elapsedSeconds);
+      const state = useVCRStore.getState();
+      if (state.mode === 'PLAYING' || state.mode === 'FF' || state.mode === 'REW') {
+        state.tick(0.1);
+      }
     }, 100);
 
     return () => {
-      window.clearTimeout(loadingId);
+      window.clearTimeout(loadId);
       window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };

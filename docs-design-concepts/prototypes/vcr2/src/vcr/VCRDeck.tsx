@@ -20,22 +20,8 @@ const BUTTON_COUNT = 5;
 
 export interface VCRDeckProps extends GroupProps {}
 
-function formatTimecode(totalSeconds: number) {
-  const safeSeconds = Math.max(totalSeconds, 0);
-  const hours = Math.floor(safeSeconds / 3600);
-  const minutes = Math.floor((safeSeconds % 3600) / 60);
-  const seconds = Math.floor(safeSeconds % 60);
-  const frames = Math.floor((safeSeconds % 1) * 30);
-
-  return [hours, minutes, seconds, frames]
-    .map((value) => value.toString().padStart(2, '0'))
-    .join(':');
-}
-
 export function VCRDeck({ ...groupProps }: VCRDeckProps) {
-  const displayMode = useVCRStore((state) => state.displayMode);
-  const statusText = useVCRStore((state) => state.statusText);
-  const timecodeSeconds = useVCRStore((state) => state.timecodeSeconds);
+  const displayText = useVCRStore((state) => state.displayText);
 
   const buttonOffsets = useMemo(() => {
     const totalWidth = BUTTON_COUNT * BUTTON_WIDTH + (BUTTON_COUNT - 1) * BUTTON_GAP;
@@ -46,13 +32,6 @@ export function VCRDeck({ ...groupProps }: VCRDeckProps) {
       (_, index) => startX + index * (BUTTON_WIDTH + BUTTON_GAP)
     );
   }, []);
-
-  const displayText =
-    displayMode === 'off'
-      ? '--:--:--'
-      : displayMode === 'timecode'
-        ? formatTimecode(timecodeSeconds)
-        : statusText;
 
   return (
     <group {...groupProps}>

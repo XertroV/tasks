@@ -24,9 +24,8 @@ export function DebugStateBridge() {
   const setVCR = useDebugPanelStore((state) => state.setVCR);
   const setNavigation = useDebugPanelStore((state) => state.setNavigation);
   const setHorror = useDebugPanelStore((state) => state.setHorror);
-  const vcrDisplayMode = useVCRStore((state) => state.displayMode);
-  const vcrStatusText = useVCRStore((state) => state.statusText);
-  const vcrTimecodeSeconds = useVCRStore((state) => state.timecodeSeconds);
+  const vcrMode = useVCRStore((state) => state.mode);
+  const vcrCurrentTime = useVCRStore((state) => state.currentTime);
   const elapsedSinceFlush = useRef(0);
   const timelineSeconds = useRef(0);
 
@@ -42,12 +41,9 @@ export function DebugStateBridge() {
     const pageIndex = Math.floor((timeline / PAGE_DURATION_SECONDS) % TOTAL_PAGES) + 1;
     const horrorIntensity = (Math.sin(timeline * 0.8) + 1) * 0.5;
 
-    const vcrMode =
-      vcrDisplayMode === 'off' ? 'OFF' : vcrDisplayMode === 'timecode' ? 'PLAYING' : vcrStatusText;
-
     setVCR({
       mode: vcrMode,
-      timecode: formatTimecode(vcrTimecodeSeconds),
+      timecode: formatTimecode(vcrCurrentTime),
     });
 
     setNavigation({

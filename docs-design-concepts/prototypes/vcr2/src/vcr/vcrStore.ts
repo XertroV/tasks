@@ -1,27 +1,226 @@
 import { create } from 'zustand';
 
-export type VCRDisplayMode = 'off' | 'timecode' | 'status';
+export type VCRMode = 'EJECTED' | 'LOADING' | 'STOPPED' | 'PLAYING' | 'PAUSED' | 'FF' | 'REW';
 
-interface VCRStore {
-  displayMode: VCRDisplayMode;
-  timecodeSeconds: number;
-  statusText: string;
-  setDisplayOff: () => void;
-  setStatusText: (statusText: string) => void;
-  setTimecodeSeconds: (seconds: number) => void;
+interface VCRState {
+  mode: VCRMode;
+  tapeLoaded: boolean;
+  currentTime: number;
+  targetTime: number | null;
+  displayText: string;
+  isTransitioning: boolean;
 }
 
-export const useVCRStore = create<VCRStore>((set) => ({
-  displayMode: 'off',
-  timecodeSeconds: 0,
-  statusText: 'STOP',
-  setDisplayOff: () => {
-    set({ displayMode: 'off' });
+interface VCRActions {
+  setMode: (mode: VCRMode) => void;
+  eject: () => void;
+  loadTape: () => void;
+  setTargetPosition: (time: number) => void;
+  tick: (delta: number) => void;
+  play: () => void;
+  pause: () => void;
+  stop: () => void;
+  fastForward: () => void;
+  rewind: () => void;
+}
+
+type VCRStore = VCRState & VCRActions;
+
+const VALID_TRANSITIONS: Record<VCRMode, VCRMode[]> = {
+  EJECTED: ['LOADING'],
+  LOADING: ['STOPPED', 'EJECTED'],
+  STOPPED: ['PLAYING', 'FF', 'REW', 'EJECTED'],
+  PLAYING: ['PAUSED', 'STOPPED', 'FF', 'REW'],
+  PAUSED: ['PLAYING', 'STOPPED', 'FF', 'REW'],
+  FF: ['STOPPED', 'PAUSED', 'PLAYING'],
+  REW: ['STOPPED', 'PAUSED', 'PLAYING'],
+};
+
+const DISPLAY_TEXT: Record<VCRMode, string> = {
+  EJECTED: '--:--:--',
+  LOADING: 'LOADING',
+  STOPPED: 'STOP',
+  PLAYING: 'PLAY',
+  PAUSED: 'PAUSE',
+  FF: 'FF',
+  REW: 'REW',
+};
+
+function formatTimecode(seconds: number): string {
+  const safe = Math.max(0, seconds);
+  const h = Math.floor(safe / 3600);
+  const m = Math.floor((safe % 3600) / 60);
+  const s = Math.floor(safe % 60);
+  const f = Math.floor((safe % 1) * 30);
+
+  return [h, m, s, f].map((v) => v.toString().padStart(2, '0')).join(':');
+}
+
+function computeDisplayText(state: VCRState): string {
+  if (state.mode === 'EJECTED' || state.mode === 'LOADING') {
+    return DISPLAY_TEXT[state.mode];
+  }
+
+  if (state.isTransitioning && state.targetTime !== null) {
+    return formatTimecode(state.targetTime);
+  }
+
+  return formatTimecode(state.currentTime);
+}
+
+function isValidTransition(from: VCRMode, to: VCRMode): boolean {
+  return VALID_TRANSITIONS[from]?.includes(to) ?? false;
+}
+
+export const useVCRStore = create<VCRStore>((set, get) => ({
+  mode: 'EJECTED',
+  tapeLoaded: false,
+  currentTime: 0,
+  targetTime: null,
+  displayText: '--:--:--',
+  isTransitioning: false,
+
+  setMode: (newMode) => {
+    const current = get();
+
+    if (!isValidTransition(current.mode, newMode)) {
+      console.warn(`[VCR] Invalid transition: ${current.mode} -> ${newMode}`);
+      return;
+    }
+
+    set({
+      mode: newMode,
+      displayText: computeDisplayText({ ...current, mode: newMode }),
+    });
   },
-  setStatusText: (statusText) => {
-    set({ displayMode: 'status', statusText });
+
+  eject: () => {
+    const current = get();
+
+    if (!isValidTransition(current.mode, 'EJECTED')) {
+      console.warn(`[VCR] Cannot eject from ${current.mode}`);
+      return;
+    }
+
+    set({
+      mode: 'EJECTED',
+      tapeLoaded: false,
+      currentTime: 0,
+      targetTime: null,
+      displayText: '--:--:--',
+      isTransitioning: false,
+    });
   },
-  setTimecodeSeconds: (seconds) => {
-    set({ displayMode: 'timecode', timecodeSeconds: Math.max(seconds, 0) });
+
+  loadTape: () => {
+    const current = get();
+
+    if (current.mode !== 'EJECTED') {
+      console.warn(`[VCR] Can only load tape when EJECTED, current: ${current.mode}`);
+      return;
+    }
+
+    set({
+      mode: 'LOADING',
+      tapeLoaded: true,
+      displayText: 'LOADING',
+    });
+
+    setTimeout(() => {
+      const state = get();
+      if (state.mode === 'LOADING') {
+        set({
+          mode: 'STOPPED',
+          currentTime: 0,
+          displayText: 'STOP',
+        });
+      }
+    }, 1500);
+  },
+
+  setTargetPosition: (time) => {
+    set({
+      targetTime: Math.max(0, time),
+      isTransitioning: true,
+      displayText: formatTimecode(Math.max(0, time)),
+    });
+  },
+
+  tick: (delta) => {
+    const state = get();
+    let newTime = state.currentTime;
+
+    switch (state.mode) {
+      case 'PLAYING':
+        newTime = state.currentTime + delta;
+        break;
+      case 'FF':
+        newTime = state.currentTime + delta * 4;
+        break;
+      case 'REW':
+        newTime = Math.max(0, state.currentTime - delta * 4);
+        break;
+      default:
+        return;
+    }
+
+    set({
+      currentTime: newTime,
+      displayText: computeDisplayText({ ...state, currentTime: newTime }),
+    });
+  },
+
+  play: () => {
+    const current = get();
+    if (isValidTransition(current.mode, 'PLAYING')) {
+      set({
+        mode: 'PLAYING',
+        isTransitioning: false,
+        displayText: computeDisplayText({ ...current, mode: 'PLAYING' }),
+      });
+    }
+  },
+
+  pause: () => {
+    const current = get();
+    if (isValidTransition(current.mode, 'PAUSED')) {
+      set({
+        mode: 'PAUSED',
+        displayText: 'PAUSE',
+      });
+    }
+  },
+
+  stop: () => {
+    const current = get();
+    if (isValidTransition(current.mode, 'STOPPED')) {
+      set({
+        mode: 'STOPPED',
+        isTransitioning: false,
+        displayText: 'STOP',
+      });
+    }
+  },
+
+  fastForward: () => {
+    const current = get();
+    if (isValidTransition(current.mode, 'FF')) {
+      set({
+        mode: 'FF',
+        displayText: 'FF',
+      });
+    }
+  },
+
+  rewind: () => {
+    const current = get();
+    if (isValidTransition(current.mode, 'REW')) {
+      set({
+        mode: 'REW',
+        displayText: 'REW',
+      });
+    }
   },
 }));
+
+export type { VCRState, VCRActions };

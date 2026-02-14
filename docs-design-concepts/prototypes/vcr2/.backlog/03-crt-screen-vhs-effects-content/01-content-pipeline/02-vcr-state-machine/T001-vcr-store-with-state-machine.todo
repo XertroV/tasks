@@ -1,7 +1,7 @@
 ---
 id: P3.M1.E2.T001
 title: VCR store with state machine
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - zustand
 - vcr
 - state-machine
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:57:22.129849+00:00'
+started_at: '2026-02-14T04:57:22.129849+00:00'
+completed_at: '2026-02-14T05:01:16.581094+00:00'
+duration_minutes: 3.9075205
 ---
 ## Requirements
 - src/stores/vcrStore.ts with states: EJECTED, LOADING, STOPPED, PLAYING, PAUSED, FF, REW
