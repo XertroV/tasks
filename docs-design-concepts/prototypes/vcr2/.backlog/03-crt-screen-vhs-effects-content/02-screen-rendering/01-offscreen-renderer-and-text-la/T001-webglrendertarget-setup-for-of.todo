@@ -1,7 +1,7 @@
 ---
 id: P3.M2.E1.T001
 title: WebGLRenderTarget setup for offscreen screen content
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - rendering
 - setup
 - threejs
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:03:27.645209+00:00'
+started_at: '2026-02-14T05:03:27.645209+00:00'
+completed_at: '2026-02-14T05:06:37.947351+00:00'
+duration_minutes: 3.1717022
 ---
 ## Requirements
 - Create src/crt/ScreenRenderer.tsx
