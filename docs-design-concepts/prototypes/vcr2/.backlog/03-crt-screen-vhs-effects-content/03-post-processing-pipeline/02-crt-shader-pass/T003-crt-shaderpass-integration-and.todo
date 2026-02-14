@@ -1,19 +1,24 @@
 ---
 id: P3.M3.E2.T003
 title: CRT ShaderPass integration and Leva controls
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
+- P3.M3.E2.T001
+- P3.M3.E2.T002
 tags:
 - integration
 - r3f
 - postprocessing
 - crt
 - leva
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:17:18.500678+00:00'
+started_at: '2026-02-14T09:17:18.500678+00:00'
+completed_at: '2026-02-14T09:29:40.148462+00:00'
+duration_minutes: 12.36079625
 ---
 ## Requirements
 - CRT pass as ShaderPass or custom Effect subclass

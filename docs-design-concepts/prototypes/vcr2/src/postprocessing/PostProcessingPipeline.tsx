@@ -121,6 +121,7 @@ function CRTPassEffect({ enabled }: { enabled: boolean }) {
       uScanlineIntensity: { value: 0.3 },
       uScanlineCount: { value: 480 },
       uPhosphorIntensity: { value: 0.2 },
+      uPhosphorMask: { value: 0.15 },
       uVignetteStrength: { value: 0.4 },
       uFlicker: { value: 0.08 },
       uBrightness: { value: 1.0 },

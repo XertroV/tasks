@@ -1,16 +1,21 @@
 ---
 id: P3.M3.E2.T004
 title: CRT shader performance validation
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T003
+- P3.M3.E2.T003
 tags:
 - performance
 - validation
 - crt
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:17:18.501739+00:00'
+started_at: '2026-02-14T09:17:18.501739+00:00'
+completed_at: '2026-02-14T09:29:40.487953+00:00'
+duration_minutes: 12.36643675
 ---
 ## Requirements
 - Verify CRT pass under 3ms GPU time at 1080p

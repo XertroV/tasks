@@ -80,6 +80,7 @@ export interface CRTControls {
   scanlineIntensity: number;
   scanlineCount: number;
   phosphorIntensity: number;
+  phosphorMask: number;
   vignetteStrength: number;
   flicker: number;
   brightness: number;
@@ -90,6 +91,7 @@ export const CRT_CONTROLS_DEFAULTS: CRTControls = {
   scanlineIntensity: 0.3,
   scanlineCount: 480,
   phosphorIntensity: 0.2,
+  phosphorMask: 0.15,
   vignetteStrength: 0.4,
   flicker: 0.08,
   brightness: 1.0,
@@ -114,6 +116,7 @@ export function useCRTControls(
       max: 1,
       step: 0.01,
     },
+    phosphorMask: { value: CRT_CONTROLS_DEFAULTS.phosphorMask, min: 0, max: 1, step: 0.01 },
     vignetteStrength: { value: CRT_CONTROLS_DEFAULTS.vignetteStrength, min: 0, max: 2, step: 0.01 },
     flicker: { value: CRT_CONTROLS_DEFAULTS.flicker, min: 0, max: 0.5, step: 0.01 },
     brightness: { value: CRT_CONTROLS_DEFAULTS.brightness, min: 0.5, max: 1.5, step: 0.01 },
@@ -129,6 +132,7 @@ export function useCRTControls(
     if (uniforms.uScanlineIntensity) uniforms.uScanlineIntensity.value = controls.scanlineIntensity;
     if (uniforms.uScanlineCount) uniforms.uScanlineCount.value = controls.scanlineCount;
     if (uniforms.uPhosphorIntensity) uniforms.uPhosphorIntensity.value = controls.phosphorIntensity;
+    if (uniforms.uPhosphorMask) uniforms.uPhosphorMask.value = controls.phosphorMask;
     if (uniforms.uVignetteStrength) uniforms.uVignetteStrength.value = controls.vignetteStrength;
     if (uniforms.uFlicker) uniforms.uFlicker.value = controls.flicker;
     if (uniforms.uBrightness) uniforms.uBrightness.value = controls.brightness;

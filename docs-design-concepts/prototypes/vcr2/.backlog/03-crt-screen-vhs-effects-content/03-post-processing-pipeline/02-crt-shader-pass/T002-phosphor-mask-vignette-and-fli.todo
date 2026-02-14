@@ -1,17 +1,22 @@
 ---
 id: P3.M3.E2.T002
 title: Phosphor mask vignette and flicker effects
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P3.M3.E2.T001
 tags:
 - shader
 - glsl
 - crt
 - effect
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:17:18.499272+00:00'
+started_at: '2026-02-14T09:17:18.499272+00:00'
+completed_at: '2026-02-14T09:29:39.789654+00:00'
+duration_minutes: 12.3548395
 ---
 ## Requirements
 - Phosphor mask: RGB sub-pixel pattern (every 3 pixels alternate R/G/B brightness)
@@ -22,3 +27,21 @@ tags:
 - Vignette darkens edges naturally
 - Flicker is subtle and organic
 - All effects independent and tunable
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 09:17 UTC
+**Sibling tasks**: P3.M3.E2.T003, P3.M3.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M3.E2.T002 → P3.M3.E2.T003 → P3.M3.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M3.E2.T002: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/02-crt-shader-pass/T002-phosphor-mask-vignette-and-fli.todo
+- P3.M3.E2.T003: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/02-crt-shader-pass/T003-crt-shaderpass-integration-and.todo
+- P3.M3.E2.T004: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/02-crt-shader-pass/T004-crt-shader-performance-validat.todo

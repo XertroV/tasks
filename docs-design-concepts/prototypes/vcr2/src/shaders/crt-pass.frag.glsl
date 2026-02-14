@@ -4,6 +4,7 @@ uniform float uCurvature;
 uniform float uScanlineIntensity;
 uniform float uScanlineCount;
 uniform float uPhosphorIntensity;
+uniform float uPhosphorMask;
 uniform float uVignetteStrength;
 uniform float uFlicker;
 uniform float uBrightness;
@@ -31,6 +32,25 @@ float scanline(float y, float count, float intensity) {
     float scanlinePos = y * count;
     float scanlineValue = sin(scanlinePos * 3.14159) * 0.5 + 0.5;
     return mix(1.0, scanlineValue, intensity);
+}
+
+vec3 phosphorMask(vec2 uv, float intensity) {
+    if (intensity <= 0.0) return vec3(1.0);
+
+    float pixelX = uv.x * uResolution.x;
+    float subPixel = mod(pixelX, 3.0);
+    
+    vec3 mask = vec3(1.0);
+    
+    if (subPixel < 1.0) {
+        mask = vec3(1.0, 0.85, 0.85);
+    } else if (subPixel < 2.0) {
+        mask = vec3(0.85, 1.0, 0.85);
+    } else {
+        mask = vec3(0.85, 0.85, 1.0);
+    }
+    
+    return mix(vec3(1.0), mask, intensity);
 }
 
 vec3 phosphorGlow(vec3 color, vec2 uv, float intensity) {
@@ -76,6 +96,9 @@ void main() {
 
     float scanlineMult = scanline(uv.y, uScanlineCount, uScanlineIntensity);
     color.rgb *= scanlineMult;
+
+    vec3 mask = phosphorMask(uv, uPhosphorMask);
+    color.rgb *= mask;
 
     color.rgb = phosphorGlow(color.rgb, uv, uPhosphorIntensity);
 
