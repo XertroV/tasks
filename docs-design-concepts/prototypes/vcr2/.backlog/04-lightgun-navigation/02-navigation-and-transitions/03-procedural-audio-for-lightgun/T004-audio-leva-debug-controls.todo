@@ -1,18 +1,23 @@
 ---
 id: P4.M2.E3.T004
 title: Audio Leva debug controls
-status: pending
+status: done
 estimate_hours: 0.5
 complexity: low
 priority: medium
 depends_on:
-- T001
-- T002
-- T003
+- P4.M2.E3.T001
+- P4.M2.E3.T002
+- P4.M2.E3.T003
 tags:
 - audio
 - debug
 - leva
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:54:24.998080+00:00'
+started_at: '2026-02-14T10:54:24.998080+00:00'
+completed_at: '2026-02-14T11:12:31.111012+00:00'
+duration_minutes: 18.101882049999997
 ---
 ## Requirements
 - Leva Audio folder: masterVolume, sfxVolume, ambientVolume sliders, muted toggle

@@ -1,7 +1,7 @@
 ---
 id: P4.M2.E3.T001
 title: AudioEngine setup and Web Audio initialization
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - audio
 - engine
 - webaudio
+claimed_by: cli-user
+claimed_at: '2026-02-14T10:54:24.995451+00:00'
+started_at: '2026-02-14T10:54:24.995451+00:00'
+completed_at: '2026-02-14T11:12:30.058953+00:00'
+duration_minutes: 18.084391533333335
 ---
 ## Requirements
 - src/audio/AudioEngine.ts: singleton managing AudioContext
@@ -21,3 +26,22 @@ tags:
 - Store tracks initialization state
 - Volume controls affect output
 - Mute toggles all audio
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P4.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-14 10:54 UTC
+**Sibling tasks**: P4.M2.E3.T002, P4.M2.E3.T003, P4.M2.E3.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P4.M2.E3.T001 → P4.M2.E3.T002 → P4.M2.E3.T003 → P4.M2.E3.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P4.M2.E3.T001: .tasks/04-lightgun-navigation/02-navigation-and-transitions/03-procedural-audio-for-lightgun/T001-audioengine-setup-and-web-audi.todo
+- P4.M2.E3.T002: .tasks/04-lightgun-navigation/02-navigation-and-transitions/03-procedural-audio-for-lightgun/T002-lightgun-shot-procedural-sound.todo
+- P4.M2.E3.T003: .tasks/04-lightgun-navigation/02-navigation-and-transitions/03-procedural-audio-for-lightgun/T003-ui-button-click-and-vcr-transp.todo
+- P4.M2.E3.T004: .tasks/04-lightgun-navigation/02-navigation-and-transitions/03-procedural-audio-for-lightgun/T004-audio-leva-debug-controls.todo
