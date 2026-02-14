@@ -8,10 +8,10 @@ import { useContext, useEffect, useMemo, useRef } from 'react';
 import { ShaderMaterial } from 'three';
 import { VHS_DEFAULT_UNIFORMS, VHS_VERTEX_SHADER, getVHSFragmentShader } from './VHSPass';
 import {
-  useVHSControls,
   useCRTControls,
-  usePipelineControls,
   usePassTimingLogger,
+  usePipelineControls,
+  useVHSControls,
 } from './useShaderControls';
 
 function CustomShaderPass({

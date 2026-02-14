@@ -1,7 +1,7 @@
+import type { VCRMode } from '@/vcr/vcrStore';
 import { Text } from '@react-three/drei';
 import type { GroupProps } from '@react-three/fiber';
 import { Z_ORDER } from './OffscreenBackground';
-import type { VCRMode } from '@/vcr/vcrStore';
 
 const AMBER = '#ffaa00';
 const CYAN = '#00ffff';

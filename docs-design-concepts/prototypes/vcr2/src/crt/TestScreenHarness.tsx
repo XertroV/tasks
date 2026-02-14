@@ -1,10 +1,10 @@
-import type { GroupProps } from '@react-three/fiber';
-import { useState, useEffect } from 'react';
 import type { ParsedLine } from '@/types/content';
+import type { GroupProps } from '@react-three/fiber';
+import { useEffect, useState } from 'react';
+import { OffscreenBackground } from './OffscreenBackground';
 import { TextLayout } from './TextLayout';
 import { TitleArea } from './TitleArea';
 import { VcrOSD } from './VcrOSD';
-import { OffscreenBackground } from './OffscreenBackground';
 import { clampScroll } from './useScrollController';
 
 const SAMPLE_LINES: ParsedLine[] = [

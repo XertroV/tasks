@@ -1,15 +1,15 @@
-import { useFrame } from '@react-three/fiber';
-import { useRef, useState, useEffect, useMemo } from 'react';
-import type { GroupProps } from '@react-three/fiber';
+import { formatTimecode } from '@/stores/contentStore';
 import type { ParsedPage } from '@/types/content';
+import { useVCRStore } from '@/vcr';
+import type { VCRMode } from '@/vcr/vcrStore';
+import { useFrame } from '@react-three/fiber';
+import type { GroupProps } from '@react-three/fiber';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { OffscreenBackground } from './OffscreenBackground';
 import { TextLayout } from './TextLayout';
 import { TitleArea } from './TitleArea';
 import { VcrOSD } from './VcrOSD';
-import { OffscreenBackground } from './OffscreenBackground';
 import { clampScroll } from './useScrollController';
-import { useVCRStore } from '@/vcr';
-import { formatTimecode } from '@/stores/contentStore';
-import type { VCRMode } from '@/vcr/vcrStore';
 
 export interface DocsScreenViewProps extends GroupProps {
   page: ParsedPage | null;

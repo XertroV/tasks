@@ -1,10 +1,10 @@
+import type { ParsedLine } from '@/types/content';
 import { Text } from '@react-three/drei';
 import type { GroupProps } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
 import type { ReactElement } from 'react';
 import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
 import type * as THREE from 'three';
-import type { ParsedLine } from '@/types/content';
 import { ZONES, Z_ORDER } from './OffscreenBackground';
 
 const CYAN = '#00ffff';

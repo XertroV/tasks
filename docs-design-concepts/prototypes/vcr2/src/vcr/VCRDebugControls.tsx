@@ -1,4 +1,4 @@
-import { useControls, button } from 'leva';
+import { button, useControls } from 'leva';
 import { useEffect } from 'react';
 import { useVCRStore } from './vcrStore';
 import type { VCRMode } from './vcrStore';
