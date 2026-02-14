@@ -1,7 +1,7 @@
 ---
 id: P3.M2.E2.T001
 title: MenuView component for table of contents
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - view
 - content
 - r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:09:33.387866+00:00'
+started_at: '2026-02-14T05:09:33.387866+00:00'
+completed_at: '2026-02-14T05:12:47.875945+00:00'
+duration_minutes: 3.2414677333333333
 ---
 ## Requirements
 - src/crt/MenuView.tsx rendered in offscreen scene

@@ -4,3 +4,5 @@ export { CRTTelevision } from './CRTTelevision';
 export type { CRTTelevisionProps } from './CRTTelevision';
 export { ScreenRenderer, useScreenRenderer, useRenderTargetTexture } from './ScreenRenderer';
 export type { ScreenRendererProps } from './ScreenRenderer';
+export { MenuView } from './MenuView';
+export type { MenuViewProps } from './MenuView';
