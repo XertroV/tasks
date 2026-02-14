@@ -1,17 +1,22 @@
 ---
 id: P3.M3.E1.T003
 title: Tracking distortion and head switching effects
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
+- P3.M3.E1.T001
 tags:
 - shader
 - glsl
 - vhs
 - effect
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:06:14.502410+00:00'
+started_at: '2026-02-14T07:06:14.502410+00:00'
+completed_at: '2026-02-14T07:14:24.305456+00:00'
+duration_minutes: 8.16338395
 ---
 ## Requirements
 - Tracking: horizontal scanline shift proportional to uTrackingError, varies over time
@@ -22,3 +27,24 @@ tags:
 - Head switch band visible at uHeadSwitchHeight position
 - Band edges smooth (no hard cutoff)
 - Both zero at uniform value 0
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 07:06 UTC
+**Sibling tasks**: P3.M3.E1.T004, P3.M3.E1.T005, P3.M3.E1.T006, P3.M3.E1.T007, P3.M3.E1.T008
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M3.E1.T003 → P3.M3.E1.T004 → P3.M3.E1.T005 → P3.M3.E1.T006 → P3.M3.E1.T007 → P3.M3.E1.T008
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M3.E1.T003: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T003-tracking-distortion-and-head-s.todo
+- P3.M3.E1.T004: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T004-chroma-bleed-and-dropout-lines.todo
+- P3.M3.E1.T005: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T005-static-noise-pause-jitter-and.todo
+- P3.M3.E1.T006: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T006-horror-corruption-function-stu.todo
+- P3.M3.E1.T007: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T007-vhs-shaderpass-integration-wit.todo
+- P3.M3.E1.T008: .tasks/03-crt-screen-vhs-effects-content/03-post-processing-pipeline/01-vhs-shader-pass/T008-leva-controls-for-all-vhs-unif.todo

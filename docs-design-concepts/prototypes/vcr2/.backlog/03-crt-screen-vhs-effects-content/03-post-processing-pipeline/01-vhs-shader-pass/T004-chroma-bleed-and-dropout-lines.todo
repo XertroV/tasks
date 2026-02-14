@@ -1,17 +1,22 @@
 ---
 id: P3.M3.E1.T004
 title: Chroma bleed and dropout lines effects
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P3.M3.E1.T001
 tags:
 - shader
 - glsl
 - vhs
 - effect
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:06:14.503941+00:00'
+started_at: '2026-02-14T07:06:14.503941+00:00'
+completed_at: '2026-02-14T07:14:24.718859+00:00'
+duration_minutes: 8.170248366666666
 ---
 ## Requirements
 - Chroma bleed: R/G/B sampled at offset UVs, R shifts right, B shifts left

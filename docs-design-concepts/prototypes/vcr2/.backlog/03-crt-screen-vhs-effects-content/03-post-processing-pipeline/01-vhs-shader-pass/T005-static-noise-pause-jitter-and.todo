@@ -1,17 +1,22 @@
 ---
 id: P3.M3.E1.T005
 title: Static noise pause jitter and FF/REW effects
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P3.M3.E1.T001
 tags:
 - shader
 - glsl
 - vhs
 - effect
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:06:14.504943+00:00'
+started_at: '2026-02-14T07:06:14.504943+00:00'
+completed_at: '2026-02-14T07:14:25.133965+00:00'
+duration_minutes: 8.177150166666667
 ---
 ## Requirements
 - Static noise: per-pixel monochromatic noise, additive blend, computed not texture

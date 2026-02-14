@@ -7,20 +7,24 @@ import { ShaderPass } from 'postprocessing';
 import { useContext, useEffect, useMemo, useRef } from 'react';
 import { ShaderMaterial } from 'three';
 import { VHS_DEFAULT_UNIFORMS, VHS_VERTEX_SHADER, getVHSFragmentShader } from './VHSPass';
+import { useVHSControls, useCRTControls } from './useShaderControls';
 
 function CustomShaderPass({
   uniforms,
   vertexShader,
   fragmentShader,
   insertIndex = 0,
+  materialRef,
 }: {
   uniforms: Record<string, { value: unknown }>;
   vertexShader: string;
   fragmentShader: string;
   insertIndex?: number;
+  materialRef?: React.RefObject<ShaderMaterial | null>;
 }) {
   const { composer } = useContext(EffectComposerContext);
-  const materialRef = useRef<ShaderMaterial | null>(null);
+  const localMaterialRef = useRef<ShaderMaterial | null>(null);
+  const materialRefToUse = materialRef ?? localMaterialRef;
   const passRef = useRef<ShaderPass | null>(null);
 
   useEffect(() => {
@@ -31,7 +35,7 @@ function CustomShaderPass({
       vertexShader,
       fragmentShader,
     });
-    materialRef.current = material;
+    materialRefToUse.current = material;
 
     const pass = new ShaderPass(material, 'tDiffuse');
     passRef.current = pass;
@@ -48,11 +52,11 @@ function CustomShaderPass({
         }
         passRef.current.dispose();
       }
-      if (materialRef.current) {
-        materialRef.current.dispose();
+      if (materialRefToUse.current) {
+        materialRefToUse.current.dispose();
       }
     };
-  }, [composer, insertIndex, uniforms, vertexShader, fragmentShader]);
+  }, [composer, insertIndex, uniforms, vertexShader, fragmentShader, materialRefToUse]);
 
   return null;
 }
@@ -60,6 +64,7 @@ function CustomShaderPass({
 function VHSPassEffect() {
   const { size } = useThree();
   const vhsMode = useVCRStore((state) => state.mode);
+  const materialRef = useRef<ShaderMaterial | null>(null);
 
   const uniforms = useMemo(
     () => ({
@@ -81,6 +86,8 @@ function VHSPassEffect() {
     [size.width, size.height, vhsMode]
   );
 
+  useVHSControls(materialRef, import.meta.env.DEV);
+
   useFrame(({ clock }) => {
     uniforms.uTime.value = clock.getElapsedTime();
   });
@@ -91,12 +98,14 @@ function VHSPassEffect() {
       vertexShader={VHS_VERTEX_SHADER}
       fragmentShader={getVHSFragmentShader()}
       insertIndex={0}
+      materialRef={materialRef}
     />
   );
 }
 
 function CRTPassEffect() {
   const { size } = useThree();
+  const materialRef = useRef<ShaderMaterial | null>(null);
 
   const uniforms = useMemo(
     () => ({
@@ -114,6 +123,8 @@ function CRTPassEffect() {
     [size.width, size.height]
   );
 
+  useCRTControls(materialRef, import.meta.env.DEV);
+
   useFrame(({ clock }) => {
     uniforms.uTime.value = clock.getElapsedTime();
   });
@@ -124,6 +135,7 @@ function CRTPassEffect() {
       vertexShader={crtVert}
       fragmentShader={crtFrag}
       insertIndex={1}
+      materialRef={materialRef}
     />
   );
 }

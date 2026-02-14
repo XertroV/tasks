@@ -1,17 +1,22 @@
 ---
 id: P3.M3.E1.T008
 title: Leva controls for all VHS uniforms
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: high
 depends_on:
-- T007
+- P3.M3.E1.T007
 tags:
 - ui
 - leva
 - tuning
 - vhs
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:06:14.507292+00:00'
+started_at: '2026-02-14T07:06:14.507292+00:00'
+completed_at: '2026-02-14T07:14:26.310103+00:00'
+duration_minutes: 8.196713366666666
 ---
 ## Requirements
 - Leva VHS folder with sliders for all tuneable uniforms
