@@ -7,3 +7,5 @@ export {
   playMenuClick,
 } from './ProceduralSynth';
 export { useAudioDebugControls } from './useAudioDebugControls';
+export { useAudioListener, SpatialAudioSetup } from './SpatialAudio';
+export type { SpatialAudioConfig } from './SpatialAudio';

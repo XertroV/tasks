@@ -1,7 +1,7 @@
 ---
 id: P5.M1.E4.T001
 title: AudioListener and spatial audio setup
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - audio
 - spatial
 - threejs
+claimed_by: cli-user
+claimed_at: '2026-02-14T13:45:27.803602+00:00'
+started_at: '2026-02-14T13:45:27.803602+00:00'
+completed_at: '2026-02-14T14:19:13.201819+00:00'
+duration_minutes: 33.75663675
 ---
 ## Requirements
 - THREE.AudioListener attached to main camera
@@ -18,3 +23,22 @@ tags:
 - AudioListener attached and functional
 - Positional audio sources work relative to camera
 - Clean setup on mount, cleanup on unmount
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P5.M1.E4)
+**Agent**: cli-user
+**Date**: 2026-02-14 13:45 UTC
+**Sibling tasks**: P5.M1.E4.T002, P5.M1.E4.T003, P5.M1.E4.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P5.M1.E4.T001 → P5.M1.E4.T002 → P5.M1.E4.T003 → P5.M1.E4.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P5.M1.E4.T001: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/04-spatial-and-ambient-audio/T001-audiolistener-and-spatial-audi.todo
+- P5.M1.E4.T002: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/04-spatial-and-ambient-audio/T002-fluorescent-light-buzz-spatial.todo
+- P5.M1.E4.T003: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/04-spatial-and-ambient-audio/T003-vcr-motor-hum-spatial-audio.todo
+- P5.M1.E4.T004: .tasks/05-camera-system-look-behind-you/01-camera-and-beyond/04-spatial-and-ambient-audio/T004-ambient-drone-and-room-tone.todo

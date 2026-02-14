@@ -1,17 +1,22 @@
 ---
 id: P5.M1.E4.T003
 title: VCR motor hum spatial audio
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
 depends_on:
-- T001
+- P5.M1.E4.T001
 tags:
 - audio
 - spatial
 - procedural
 - vcr
+claimed_by: cli-user
+claimed_at: '2026-02-14T13:45:27.805463+00:00'
+started_at: '2026-02-14T13:45:27.805463+00:00'
+completed_at: '2026-02-14T14:19:13.887210+00:00'
+duration_minutes: 33.76802896666667
 ---
 ## Requirements
 - 60Hz bandpass noise + 120Hz sine at VCR deck position

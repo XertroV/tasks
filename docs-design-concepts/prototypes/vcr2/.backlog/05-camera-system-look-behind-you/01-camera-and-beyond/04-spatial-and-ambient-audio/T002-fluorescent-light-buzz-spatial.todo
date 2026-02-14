@@ -1,17 +1,22 @@
 ---
 id: P5.M1.E4.T002
 title: Fluorescent light buzz spatial audio
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P5.M1.E4.T001
 tags:
 - audio
 - spatial
 - procedural
 - ambient
+claimed_by: cli-user
+claimed_at: '2026-02-14T13:45:27.804624+00:00'
+started_at: '2026-02-14T13:45:27.804624+00:00'
+completed_at: '2026-02-14T14:19:13.539437+00:00'
+duration_minutes: 33.762246733333335
 ---
 ## Requirements
 - 120Hz sawtooth, low-passed at 300Hz, PositionalAudio at ceiling light position

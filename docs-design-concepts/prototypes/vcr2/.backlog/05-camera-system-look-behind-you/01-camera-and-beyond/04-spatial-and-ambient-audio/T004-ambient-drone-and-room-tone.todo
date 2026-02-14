@@ -1,16 +1,21 @@
 ---
 id: P5.M1.E4.T004
 title: Ambient drone and room tone
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: medium
 depends_on:
-- T001
+- P5.M1.E4.T001
 tags:
 - audio
 - ambient
 - atmosphere
+claimed_by: cli-user
+claimed_at: '2026-02-14T13:45:27.806212+00:00'
+started_at: '2026-02-14T13:45:27.806212+00:00'
+completed_at: '2026-02-14T14:19:14.243641+00:00'
+duration_minutes: 33.77395703333333
 ---
 ## Requirements
 - Low background drone for Backrooms atmosphere
