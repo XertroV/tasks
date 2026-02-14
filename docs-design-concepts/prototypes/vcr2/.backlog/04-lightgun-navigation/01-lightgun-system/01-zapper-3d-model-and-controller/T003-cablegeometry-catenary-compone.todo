@@ -1,17 +1,22 @@
 ---
 id: P4.M1.E1.T003
 title: CableGeometry catenary component
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P4.M1.E1.T001
 tags:
 - r3f
 - geometry
 - catenary
 - 3d-model
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:48:36.054515+00:00'
+started_at: '2026-02-14T09:48:36.054515+00:00'
+completed_at: '2026-02-14T09:56:51.061592+00:00'
+duration_minutes: 8.250117783333334
 ---
 ## Requirements
 - Create src/lightgun/CableGeometry.tsx with catenary curve

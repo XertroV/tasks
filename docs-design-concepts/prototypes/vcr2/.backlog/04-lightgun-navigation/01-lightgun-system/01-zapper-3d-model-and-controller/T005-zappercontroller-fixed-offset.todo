@@ -1,17 +1,22 @@
 ---
 id: P4.M1.E1.T005
 title: ZapperController fixed-offset positioning and aim sway
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: high
 priority: critical
 depends_on:
-- T004
+- P4.M1.E1.T004
 tags:
 - r3f
 - useFrame
 - animation
 - refs
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:48:36.055906+00:00'
+started_at: '2026-02-14T09:48:36.055906+00:00'
+completed_at: '2026-02-14T10:08:36.019047+00:00'
+duration_minutes: 19.99938505
 ---
 ## Requirements
 - Position weapon at fixed offset from camera: (0.25, -0.15, -0.3) bottom-right

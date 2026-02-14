@@ -1,18 +1,23 @@
 ---
 id: P4.M1.E1.T004
 title: ZapperController camera layer setup
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: high
 priority: critical
 depends_on:
-- T001
-- T002
+- P4.M1.E1.T001
+- P4.M1.E1.T002
 tags:
 - r3f
 - camera
 - layers
 - rendering
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:48:36.055209+00:00'
+started_at: '2026-02-14T09:48:36.055209+00:00'
+completed_at: '2026-02-14T10:08:35.668840+00:00'
+duration_minutes: 19.993560366666667
 ---
 ## Requirements
 - Create src/lightgun/ZapperController.tsx

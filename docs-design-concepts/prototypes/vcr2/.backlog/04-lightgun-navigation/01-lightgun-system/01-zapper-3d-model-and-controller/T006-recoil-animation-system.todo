@@ -1,17 +1,22 @@
 ---
 id: P4.M1.E1.T006
 title: Recoil animation system
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T005
+- P4.M1.E1.T005
 tags:
 - r3f
 - animation
 - refs
 - useFrame
+claimed_by: cli-user
+claimed_at: '2026-02-14T09:48:36.056603+00:00'
+started_at: '2026-02-14T09:48:36.056603+00:00'
+completed_at: '2026-02-14T10:08:36.379185+00:00'
+duration_minutes: 20.005376133333336
 ---
 ## Requirements
 - applyRecoil() called each frame, state in useRef (0-1)

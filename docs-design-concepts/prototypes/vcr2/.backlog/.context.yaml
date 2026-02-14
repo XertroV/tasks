@@ -1,7 +1,10 @@
 agent: cli-user
-current_task: P3.M2.E1.T008
-mode: single
+mode: siblings
+primary_task: P4.M1.E1.T001
 sibling_tasks:
-- P3.M3.E2.T003
-- P3.M3.E2.T004
-started_at: '2026-02-14T09:34:53.377455+00:00'
+- P4.M1.E1.T002
+- P4.M1.E1.T003
+- P4.M1.E1.T004
+- P4.M1.E1.T005
+- P4.M1.E1.T006
+started_at: '2026-02-14T09:48:36.057246+00:00'
