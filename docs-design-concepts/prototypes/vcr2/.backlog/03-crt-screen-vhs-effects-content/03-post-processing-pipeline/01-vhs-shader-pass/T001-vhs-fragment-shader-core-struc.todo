@@ -1,7 +1,7 @@
 ---
 id: P3.M3.E1.T001
 title: VHS fragment shader core structure with uniforms
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - glsl
 - vhs
 - core
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:30:21.411310+00:00'
+started_at: '2026-02-14T05:30:21.411310+00:00'
+completed_at: '2026-02-14T05:37:35.408342+00:00'
+duration_minutes: 7.233283666666667
 ---
 ## Requirements
 - src/shaders/vhs-pass.frag.glsl with all 13 uniforms: uTime, uTrackingError, uHeadSwitchHeight, uHeadSwitchNoise, uChromaBleed, uDropoutRate, uStaticNoise, uPauseJitter, uFFSpeed, uREWSpeed, uHorrorIntensity, uGlitchSeed, uResolution

@@ -94,14 +94,14 @@ project: vcr2
 timeline_weeks: 12
 stats:
   total_tasks: 199
-  done: 34
+  done: 35
   in_progress: 0
   blocked: 0
-  pending: 165
+  pending: 164
   total_estimate_hours: 83.0
 critical_path:
 - P6.M1.E2.T001
 - P6.M1.E2.T002
 - P6.M1.E2.T003
 - P6.M1.E2.T004
-next_available: P3.M2.E2.T002
+next_available: P3.M3.E1.T001
