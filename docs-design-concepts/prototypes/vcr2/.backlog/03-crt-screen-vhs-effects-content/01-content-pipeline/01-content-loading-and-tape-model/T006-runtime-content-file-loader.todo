@@ -1,17 +1,22 @@
 ---
 id: P3.M1.E1.T006
 title: Runtime content file loader
-status: pending
+status: done
 estimate_hours: 1.25
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
+- P3.M1.E1.T001
+- P3.M1.E1.T002
 tags:
 - content
 - loader
 - runtime
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:11:37.381856+00:00'
+started_at: '2026-02-14T06:11:37.381856+00:00'
+completed_at: '2026-02-14T06:20:04.621343+00:00'
+duration_minutes: 8.453991133333334
 ---
 ## Requirements
 - Create src/content/contentLoader.ts with fetchMdxContent() and preloadPages()

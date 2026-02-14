@@ -1,16 +1,21 @@
 ---
 id: P3.M1.E1.T003
 title: MDX-to-ParsedPage parser using marked
-status: pending
+status: done
 estimate_hours: 3.5
 complexity: high
 priority: critical
 depends_on:
-- T002
+- P3.M1.E1.T002
 tags:
 - content
 - parser
 - marked
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:11:37.379216+00:00'
+started_at: '2026-02-14T06:11:37.379216+00:00'
+completed_at: '2026-02-14T06:20:03.352206+00:00'
+duration_minutes: 8.43288275
 ---
 ## Requirements
 - Create src/content/mdxParser.ts using marked lexer
@@ -25,3 +30,23 @@ tags:
 - HTML/JSX tags completely stripped
 - Internal links resolve to valid page IDs
 - Line wrapping at ~60 characters
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 06:11 UTC
+**Sibling tasks**: P3.M1.E1.T004, P3.M1.E1.T005, P3.M1.E1.T006, P3.M1.E1.T007
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M1.E1.T003 → P3.M1.E1.T004 → P3.M1.E1.T005 → P3.M1.E1.T006 → P3.M1.E1.T007
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M1.E1.T003: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/01-content-loading-and-tape-model/T003-mdx-to-parsedpage-parser-using.todo
+- P3.M1.E1.T004: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/01-content-loading-and-tape-model/T004-tapemodel-construction-from-ma.todo
+- P3.M1.E1.T005: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/01-content-loading-and-tape-model/T005-content-store-with-zustand.todo
+- P3.M1.E1.T006: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/01-content-loading-and-tape-model/T006-runtime-content-file-loader.todo
+- P3.M1.E1.T007: .tasks/03-crt-screen-vhs-effects-content/01-content-pipeline/01-content-loading-and-tape-model/T007-content-pipeline-integration-t.todo

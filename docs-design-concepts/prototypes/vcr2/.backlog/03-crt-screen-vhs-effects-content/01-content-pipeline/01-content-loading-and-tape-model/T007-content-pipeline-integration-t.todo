@@ -1,20 +1,25 @@
 ---
 id: P3.M1.E1.T007
 title: Content pipeline integration test
-status: pending
+status: done
 estimate_hours: 1.75
 complexity: medium
 priority: high
 depends_on:
-- T001
-- T003
-- T004
-- T005
-- T006
+- P3.M1.E1.T001
+- P3.M1.E1.T003
+- P3.M1.E1.T004
+- P3.M1.E1.T005
+- P3.M1.E1.T006
 tags:
 - testing
 - integration
 - content
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:11:37.382554+00:00'
+started_at: '2026-02-14T06:11:37.382554+00:00'
+completed_at: '2026-02-14T06:27:11.115859+00:00'
+duration_minutes: 15.562221566666667
 ---
 ## Requirements
 - Test all 48 MDX files parse without errors
