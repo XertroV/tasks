@@ -1,6 +1,6 @@
 id: P3.M3.E3
 name: Effect Pipeline Integration
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: high
 depends_on: []
@@ -8,7 +8,7 @@ tasks:
 - id: T001
   file: T001-effectcomposer-pipeline-setup.todo
   title: EffectComposer pipeline setup
-  status: pending
+  status: done
   estimate_hours: 1.5
   complexity: medium
   priority: critical
@@ -16,7 +16,7 @@ tasks:
 - id: T002
   file: T002-screen-quad-material-connectio.todo
   title: Screen quad material connection
-  status: pending
+  status: done
   estimate_hours: 1.0
   complexity: medium
   priority: critical
@@ -25,7 +25,7 @@ tasks:
 - id: T003
   file: T003-pipeline-bypass-and-debug-cont.todo
   title: Pipeline bypass and debug controls
-  status: pending
+  status: done
   estimate_hours: 0.5
   complexity: low
   priority: medium
@@ -34,7 +34,7 @@ tasks:
   - T002
 stats:
   total: 3
-  done: 0
+  done: 3
   in_progress: 0
   blocked: 0
-  pending: 3
+  pending: 0
