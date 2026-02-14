@@ -146,6 +146,7 @@ export interface Epic {
   name: string;
   path: string;
   status: Status;
+  locked?: boolean;
   estimateHours: number;
   complexity: Complexity;
   dependsOn: string[];
@@ -160,6 +161,7 @@ export interface Milestone {
   name: string;
   path: string;
   status: Status;
+  locked?: boolean;
   estimateHours: number;
   complexity: Complexity;
   dependsOn: string[];
@@ -173,6 +175,7 @@ export interface Phase {
   name: string;
   path: string;
   status: Status;
+  locked?: boolean;
   weeks: number;
   estimateHours: number;
   priority: Priority;

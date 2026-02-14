@@ -2328,6 +2328,32 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
         raise click.Abort()
 
 
+@cli.command()
+@click.argument("item_id")
+def lock(item_id):
+    """Lock a phase/milestone/epic so no new child items can be added."""
+    try:
+        loader = TaskLoader()
+        canonical_id = loader.set_item_locked(item_id, True)
+        console.print(f"[green]✓ Locked:[/] {canonical_id}")
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
+@cli.command()
+@click.argument("item_id")
+def unlock(item_id):
+    """Unlock a phase/milestone/epic so new child items can be added."""
+    try:
+        loader = TaskLoader()
+        canonical_id = loader.set_item_locked(item_id, False)
+        console.print(f"[green]✓ Unlocked:[/] {canonical_id}")
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
 # ============================================================================
 # Bug Command
 # ============================================================================

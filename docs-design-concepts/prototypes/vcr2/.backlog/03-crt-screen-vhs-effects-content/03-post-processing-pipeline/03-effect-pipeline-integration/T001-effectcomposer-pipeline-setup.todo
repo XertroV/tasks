@@ -1,7 +1,7 @@
 ---
 id: P3.M3.E3.T001
 title: EffectComposer pipeline setup
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - postprocessing
 - pipeline
 - r3f
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:50:56.818311+00:00'
+started_at: '2026-02-14T05:50:56.818311+00:00'
+completed_at: '2026-02-14T05:59:18.285531+00:00'
+duration_minutes: 8.357786833333334
 ---
 ## Requirements
 - Set up @react-three/postprocessing EffectComposer

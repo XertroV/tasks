@@ -447,7 +447,7 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
             f"  2. Check acceptance criteria in {format_epic_path(tree, epic)} are met"
         )
         console.print("  3. Ensure integration between all tasks in the epic")
-        console.print("  4. Run `mix lint` and fix any warnings")
+        console.print("  4. Run liter (if available) and fix any warnings")
         console.print()
 
         # Check milestone completion
@@ -465,8 +465,8 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
                 "  1. Spawn a comprehensive review subagent (in addition to the epic review agent)"
             )
             console.print("  2. Verify all epics integrate correctly together")
-            console.print("  3. Run full test suite: `mix test`")
-            console.print("  4. Run `mix lint` and fix any warnings")
+            console.print("  3. Run full test suite")
+            console.print("  4. Run linter (if available) and fix any warnings")
             console.print()
 
     return result

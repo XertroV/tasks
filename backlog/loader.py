@@ -112,6 +112,7 @@ class TaskLoader:
                     priority=Priority(phase_data.get("priority", "medium")),
                     depends_on=phase_data.get("depends_on", []),
                     description=phase_data.get("description"),
+                    locked=bool(phase_data.get("locked", False)),
                 )
 
             phase_index_path = phase_path / "index.yaml"
@@ -127,6 +128,7 @@ class TaskLoader:
                 priority=Priority(phase_data.get("priority", "medium")),
                 depends_on=phase_data.get("depends_on", []),
                 description=phase_data.get("description"),
+                locked=bool(phase_data.get("locked", phase_index.get("locked", False))),
             )
 
             # Load milestones
@@ -178,6 +180,9 @@ class TaskLoader:
                 depends_on=milestone_data.get("depends_on", []),
                 description=milestone_data.get("description"),
                 phase_id=phase_id,
+                locked=bool(
+                    milestone_data.get("locked", milestone_index.get("locked", False))
+                ),
             )
 
             # Load epics
@@ -240,6 +245,7 @@ class TaskLoader:
             description=epic_data.get("description"),
             milestone_id=ms_path.full_id,  # Fully qualified: "P1.M1"
             phase_id=ms_path.phase,
+            locked=bool(epic_data.get("locked", epic_index.get("locked", False))),
         )
 
         # Load tasks
@@ -783,6 +789,24 @@ TODO: Describe actual behavior
         epic_dir = self._find_epic_dir(epic_path)
         if not epic_dir:
             raise ValueError(f"Epic directory not found for: {epic_id}")
+        tree = self.load()
+        epic = tree.find_epic(epic_id)
+        if not epic:
+            raise ValueError(f"Epic not found: {epic_id}")
+        milestone = tree.find_milestone(epic.milestone_id or "")
+        phase = tree.find_phase(epic.phase_id or "")
+        if phase and phase.locked:
+            raise ValueError(
+                f"Phase {phase.id} has been closed and cannot accept new milestones. Create a new phase."
+            )
+        if milestone and milestone.locked:
+            raise ValueError(
+                f"Milestone {milestone.id} has been closed and cannot accept new epics. The agent should create a new epic."
+            )
+        if epic.locked:
+            raise ValueError(
+                f"Epic {epic_id} has been closed and cannot accept new tasks. The agent should create a new epic."
+            )
 
         # Determine next task number
         next_num = self._get_next_task_number(epic_dir)
@@ -878,6 +902,19 @@ TODO: Describe actual behavior
         milestone_dir = self._find_milestone_dir(ms_path)
         if not milestone_dir:
             raise ValueError(f"Milestone directory not found for: {milestone_id}")
+        tree = self.load()
+        milestone = tree.find_milestone(milestone_id)
+        if not milestone:
+            raise ValueError(f"Milestone not found: {milestone_id}")
+        phase = tree.find_phase(milestone.phase_id or "")
+        if phase and phase.locked:
+            raise ValueError(
+                f"Phase {phase.id} has been closed and cannot accept new milestones. Create a new phase."
+            )
+        if milestone.locked:
+            raise ValueError(
+                f"Milestone {milestone_id} has been closed and cannot accept new epics. The agent should create a new epic."
+            )
 
         # Determine next epic number
         next_num = self._get_next_epic_number(milestone_dir)
@@ -904,6 +941,7 @@ TODO: Describe actual behavior
             "estimate_hours": epic_data.get("estimate_hours", 4.0),
             "complexity": epic_data.get("complexity", "medium"),
             "depends_on": epic_data.get("depends_on", []),
+            "locked": False,
             "tasks": [],
             "stats": {
                 "total": 0,
@@ -939,6 +977,7 @@ TODO: Describe actual behavior
             description=epic_data.get("description"),
             milestone_id=milestone_id,
             phase_id=ms_path.phase,
+            locked=False,
         )
 
     def create_milestone(self, phase_id: str, milestone_data: dict):
@@ -965,6 +1004,14 @@ TODO: Describe actual behavior
         phase_dir = self._find_phase_dir(phase_path)
         if not phase_dir:
             raise ValueError(f"Phase directory not found for: {phase_id}")
+        tree = self.load()
+        phase = tree.find_phase(phase_id)
+        if not phase:
+            raise ValueError(f"Phase not found: {phase_id}")
+        if phase.locked:
+            raise ValueError(
+                f"Phase {phase_id} has been closed and cannot accept new milestones. Create a new phase."
+            )
 
         # Determine next milestone number
         next_num = self._get_next_milestone_number(phase_dir)
@@ -991,6 +1038,7 @@ TODO: Describe actual behavior
             "estimate_hours": milestone_data.get("estimate_hours", 8.0),
             "complexity": milestone_data.get("complexity", "medium"),
             "depends_on": milestone_data.get("depends_on", []),
+            "locked": False,
             "epics": [],
             "stats": {
                 "total_tasks": 0,
@@ -1025,6 +1073,7 @@ TODO: Describe actual behavior
             depends_on=milestone_data.get("depends_on", []),
             description=milestone_data.get("description"),
             phase_id=phase_id,
+            locked=False,
         )
 
     def create_phase(self, phase_data: dict):
@@ -1066,6 +1115,7 @@ TODO: Describe actual behavior
             "id": phase_id,
             "name": phase_data["name"],
             "status": "pending",
+            "locked": False,
             "weeks": phase_data.get("weeks", 2),
             "estimate_hours": phase_data.get("estimate_hours", 40.0),
             "complexity": "medium",
@@ -1102,6 +1152,7 @@ TODO: Describe actual behavior
             priority=Priority(phase_data.get("priority", "medium")),
             depends_on=phase_data.get("depends_on", []),
             description=phase_data.get("description"),
+            locked=False,
         )
 
     def _find_epic_dir(self, epic_path: TaskPath) -> Optional[Path]:
@@ -1256,6 +1307,7 @@ TODO: Describe actual behavior
             "complexity": milestone_data.get("complexity", "medium"),
             "depends_on": milestone_data.get("depends_on", []),
             "description": milestone_data.get("description", ""),
+            "locked": False,
         }
 
         if "milestones" not in index:
@@ -1286,6 +1338,7 @@ TODO: Describe actual behavior
             "priority": phase_data.get("priority", "medium"),
             "depends_on": phase_data.get("depends_on", []),
             "description": phase_data.get("description", ""),
+            "locked": False,
         }
 
         if "phases" not in index:
@@ -1368,6 +1421,7 @@ TODO: Describe actual behavior
             "complexity": epic_data.get("complexity", "medium"),
             "depends_on": epic_data.get("depends_on", []),
             "description": epic_data.get("description", ""),
+            "locked": False,
         }
 
         if "epics" not in index:
@@ -1707,3 +1761,74 @@ TODO: Describe actual behavior
             "new_id": new_id,
             "remapped_ids": remap,
         }
+
+    def set_item_locked(self, item_id: str, locked: bool) -> str:
+        """Set lock state for phase/milestone/epic in both list and local index files."""
+        path = TaskPath.parse(item_id)
+        tree = self.load()
+        desired = bool(locked)
+
+        if path.is_phase:
+            phase = tree.find_phase(path.full_id)
+            if not phase:
+                raise ValueError(f"Phase not found: {item_id}")
+            root_path = self.tasks_dir / "index.yaml"
+            root = self._load_yaml(root_path)
+            for entry in root.get("phases", []):
+                if entry.get("id") in {phase.id, path.phase}:
+                    entry["locked"] = desired
+                    break
+            self._write_yaml(root_path, root)
+            phase_index_path = self.tasks_dir / phase.path / "index.yaml"
+            if phase_index_path.exists():
+                phase_index = self._load_yaml(phase_index_path)
+                phase_index["locked"] = desired
+                self._write_yaml(phase_index_path, phase_index)
+            return phase.id
+
+        if path.is_milestone:
+            milestone = tree.find_milestone(path.full_id)
+            if not milestone:
+                raise ValueError(f"Milestone not found: {item_id}")
+            phase = tree.find_phase(milestone.phase_id or "")
+            if not phase:
+                raise ValueError(f"Phase not found for milestone: {item_id}")
+            phase_index_path = self.tasks_dir / phase.path / "index.yaml"
+            phase_index = self._load_yaml(phase_index_path)
+            for entry in phase_index.get("milestones", []):
+                if entry.get("id") in {milestone.id, path.milestone}:
+                    entry["locked"] = desired
+                    break
+            self._write_yaml(phase_index_path, phase_index)
+            ms_index_path = self.tasks_dir / phase.path / milestone.path / "index.yaml"
+            if ms_index_path.exists():
+                ms_index = self._load_yaml(ms_index_path)
+                ms_index["locked"] = desired
+                self._write_yaml(ms_index_path, ms_index)
+            return milestone.id
+
+        if path.is_epic:
+            epic = tree.find_epic(path.full_id)
+            if not epic:
+                raise ValueError(f"Epic not found: {item_id}")
+            milestone = tree.find_milestone(epic.milestone_id or "")
+            phase = tree.find_phase(epic.phase_id or "")
+            if not milestone or not phase:
+                raise ValueError(f"Could not resolve parent paths for epic: {item_id}")
+            ms_index_path = self.tasks_dir / phase.path / milestone.path / "index.yaml"
+            ms_index = self._load_yaml(ms_index_path)
+            for entry in ms_index.get("epics", []):
+                if entry.get("id") in {epic.id, path.epic}:
+                    entry["locked"] = desired
+                    break
+            self._write_yaml(ms_index_path, ms_index)
+            epic_index_path = (
+                self.tasks_dir / phase.path / milestone.path / epic.path / "index.yaml"
+            )
+            if epic_index_path.exists():
+                epic_index = self._load_yaml(epic_index_path)
+                epic_index["locked"] = desired
+                self._write_yaml(epic_index_path, epic_index)
+            return epic.id
+
+        raise ValueError("lock/unlock supports only phase, milestone, or epic IDs")

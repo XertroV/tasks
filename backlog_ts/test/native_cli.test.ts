@@ -518,6 +518,39 @@ tags: []
     expect(p.stdout.toString()).toContain("Created phase:");
   });
 
+  test("lock/unlock gates add commands for epic, milestone, and phase", () => {
+    root = setupFixture();
+
+    let p = run(["lock", "P1.M1.E1"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Locked: P1.M1.E1");
+
+    p = run(["add", "P1.M1.E1", "--title", "Blocked"], root);
+    expect(p.exitCode).not.toBe(0);
+    const addErr = `${p.stdout.toString()}\n${p.stderr.toString()}`;
+    expect(addErr).toContain("has been closed and cannot accept new tasks");
+    expect(addErr.toLowerCase()).toContain("agent should create a new epic");
+
+    p = run(["unlock", "P1.M1.E1"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["add", "P1.M1.E1", "--title", "Allowed"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["lock", "P1.M1"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["add-epic", "P1.M1", "--title", "Blocked Epic"], root);
+    expect(p.exitCode).not.toBe(0);
+    const addEpicErr = `${p.stdout.toString()}\n${p.stderr.toString()}`;
+    expect(addEpicErr).toContain("has been closed and cannot accept new epics");
+
+    p = run(["lock", "P1"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["add-milestone", "P1", "--title", "Blocked Milestone"], root);
+    expect(p.exitCode).not.toBe(0);
+    const addMsErr = `${p.stdout.toString()}\n${p.stderr.toString()}`;
+    expect(addMsErr).toContain("has been closed and cannot accept new milestones");
+  });
+
   test("move task to different epic renumbers ID", () => {
     root = setupFixture();
     const tasksRoot = join(root, ".tasks");

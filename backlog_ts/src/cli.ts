@@ -93,6 +93,8 @@ Commands:
   add-epic        Add a new epic to a milestone
   add-milestone   Add a new milestone to a phase
   add-phase       Add a new phase to the project
+  lock            Lock a phase/milestone/epic
+  unlock          Unlock a phase/milestone/epic
   move            Move task/epic/milestone to new parent
   session         Manage agent sessions
   data            Export/summarize task data
@@ -1437,6 +1439,15 @@ async function cmdAdd(args: string[]): Promise<void> {
   const phase = findPhase(tree, epic.phaseId ?? "");
   const milestone = findMilestone(tree, epic.milestoneId ?? "");
   if (!phase || !milestone) textError(`Could not resolve parent paths for epic: ${epicId}`);
+  if (phase.locked) {
+    textError(`Phase ${phase.id} has been closed and cannot accept new milestones. Create a new phase.`);
+  }
+  if (milestone.locked) {
+    textError(`Milestone ${milestone.id} has been closed and cannot accept new epics. The agent should create a new epic.`);
+  }
+  if (epic.locked) {
+    textError(`Epic ${epic.id} has been closed and cannot accept new tasks. The agent should create a new epic.`);
+  }
 
   const epicDir = join(getDataDirName(), phase.path, milestone.path, epic.path);
   const existing = epic.tasks
@@ -1499,6 +1510,12 @@ async function cmdAddEpic(args: string[]): Promise<void> {
   if (!milestone) textError(`Milestone not found: ${milestoneId}`);
   const phase = findPhase(tree, milestone.phaseId ?? "");
   if (!phase) textError(`Phase not found for milestone: ${milestoneId}`);
+  if (phase.locked) {
+    textError(`Phase ${phase.id} has been closed and cannot accept new milestones. Create a new phase.`);
+  }
+  if (milestone.locked) {
+    textError(`Milestone ${milestone.id} has been closed and cannot accept new epics. The agent should create a new epic.`);
+  }
 
   const existing = milestone.epics
     .map((e) => Number((e.id.match(/\.E(\d+)$/)?.[1] ?? "0")))
@@ -1513,6 +1530,7 @@ async function cmdAddEpic(args: string[]): Promise<void> {
     id: fullId,
     name: title,
     status: "pending",
+    locked: false,
     estimate_hours: estimate,
     complexity,
     depends_on: dependsOn,
@@ -1528,6 +1546,7 @@ async function cmdAddEpic(args: string[]): Promise<void> {
     name: title,
     path: dirName,
     status: "pending",
+    locked: false,
     estimate_hours: estimate,
     complexity,
     depends_on: dependsOn,
@@ -1551,6 +1570,9 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
   const tree = await loader.load();
   const phase = findPhase(tree, phaseId);
   if (!phase) textError(`Phase not found: ${phaseId}`);
+  if (phase.locked) {
+    textError(`Phase ${phase.id} has been closed and cannot accept new milestones. Create a new phase.`);
+  }
 
   const existing = phase.milestones
     .map((m) => Number((m.id.match(/\.M(\d+)$/)?.[1] ?? "0")))
@@ -1565,6 +1587,7 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
     id: fullId,
     name: title,
     status: "pending",
+    locked: false,
     estimate_hours: estimate,
     complexity,
     depends_on: dependsOn,
@@ -1580,6 +1603,7 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
     name: title,
     path: dirName,
     status: "pending",
+    locked: false,
     estimate_hours: estimate,
     complexity,
     depends_on: dependsOn,
@@ -1613,6 +1637,7 @@ async function cmdAddPhase(args: string[]): Promise<void> {
     id: phaseId,
     name: title,
     status: "pending",
+    locked: false,
     weeks,
     estimate_hours: estimate,
     complexity: "medium",
@@ -1625,6 +1650,7 @@ async function cmdAddPhase(args: string[]): Promise<void> {
     name: title,
     path: dirName,
     status: "pending",
+    locked: false,
     weeks,
     estimate_hours: estimate,
     priority,
@@ -1647,6 +1673,22 @@ async function cmdMove(args: string[]): Promise<void> {
   console.log(`Moved: ${result.source_id}`);
   console.log(`To: ${result.dest_id}`);
   console.log(`New ID: ${result.new_id}`);
+}
+
+async function cmdLock(args: string[]): Promise<void> {
+  const itemId = args.find((a) => !a.startsWith("-"));
+  if (!itemId) textError("lock requires ITEM_ID");
+  const loader = new TaskLoader();
+  const canonicalId = await loader.setItemLocked(itemId, true);
+  console.log(`Locked: ${canonicalId}`);
+}
+
+async function cmdUnlock(args: string[]): Promise<void> {
+  const itemId = args.find((a) => !a.startsWith("-"));
+  if (!itemId) textError("unlock requires ITEM_ID");
+  const loader = new TaskLoader();
+  const canonicalId = await loader.setItemLocked(itemId, false);
+  console.log(`Unlocked: ${canonicalId}`);
 }
 
 type InstallOp = { client: string; artifact: string; path: string; action?: string };
@@ -2226,6 +2268,12 @@ async function main(): Promise<void> {
       return;
     case "add-phase":
       await cmdAddPhase(rest);
+      return;
+    case "lock":
+      await cmdLock(rest);
+      return;
+    case "unlock":
+      await cmdUnlock(rest);
       return;
     case "move":
       await cmdMove(rest);

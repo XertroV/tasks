@@ -1,7 +1,7 @@
 ---
 id: P3.M3.E2.T001
 title: CRT fragment shader with barrel distortion and scanlines
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: high
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - glsl
 - crt
 - core
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:43:54.664097+00:00'
+started_at: '2026-02-14T05:43:54.664097+00:00'
+completed_at: '2026-02-14T05:49:44.136592+00:00'
+duration_minutes: 5.8245414
 ---
 ## Requirements
 - src/shaders/crt-pass.frag.glsl with uniforms: uCurvature, uScanlineIntensity, uScanlineCount, uPhosphorIntensity, uVignetteStrength, uFlicker, uBrightness, uResolution, uTime

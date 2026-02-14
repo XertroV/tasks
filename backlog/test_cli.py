@@ -1213,6 +1213,42 @@ def test_set_requires_at_least_one_property(runner, tmp_tasks_dir):
     assert "set requires at least one property flag" in result.output
 
 
+def test_lock_epic_blocks_add_and_unlock_restores_add(runner, tmp_tasks_dir_short_ids):
+    lock_result = runner.invoke(cli, ["lock", "P1.M1.E1"])
+    assert lock_result.exit_code == 0
+    assert "Locked: P1.M1.E1" in lock_result.output
+
+    blocked_add = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Should Fail"])
+    assert blocked_add.exit_code != 0
+    assert "has been closed and cannot accept new tasks" in blocked_add.output
+    assert "create a new epic" in blocked_add.output.lower()
+
+    unlock_result = runner.invoke(cli, ["unlock", "P1.M1.E1"])
+    assert unlock_result.exit_code == 0
+    assert "Unlocked: P1.M1.E1" in unlock_result.output
+
+    allowed_add = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Should Succeed"])
+    assert allowed_add.exit_code == 0
+    assert "Created task:" in allowed_add.output
+
+
+def test_lock_milestone_and_phase_blocks_higher_level_adds(runner, tmp_tasks_dir_short_ids):
+    lock_milestone = runner.invoke(cli, ["lock", "P1.M1"])
+    assert lock_milestone.exit_code == 0
+    blocked_epic_add = runner.invoke(cli, ["add-epic", "P1.M1", "--title", "Should Fail"])
+    assert blocked_epic_add.exit_code != 0
+    assert "has been closed and cannot accept new epics" in blocked_epic_add.output
+    assert "create a new epic" in blocked_epic_add.output.lower()
+
+    lock_phase = runner.invoke(cli, ["lock", "P1"])
+    assert lock_phase.exit_code == 0
+    blocked_milestone_add = runner.invoke(
+        cli, ["add-milestone", "P1", "--title", "Should Fail"]
+    )
+    assert blocked_milestone_add.exit_code != 0
+    assert "has been closed and cannot accept new milestones" in blocked_milestone_add.output
+
+
 def test_show_idea_pending_displays_instructions(runner, tmp_tasks_dir):
     """show on a pending idea should display an Instructions section."""
     create = runner.invoke(cli, ["idea", "refactor auth module"])

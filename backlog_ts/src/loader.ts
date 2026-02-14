@@ -77,6 +77,7 @@ export class TaskLoader {
       name: String(phaseData.name ?? ""),
       path: String(phaseData.path ?? ""),
       status: coerceStatus(phaseData.status, Status.PENDING),
+      locked: Boolean(phaseData.locked ?? false),
       weeks: Number(phaseData.weeks ?? 0),
       estimateHours: estimateHoursFrom(phaseData),
       priority: (phaseData.priority as Priority) ?? Priority.MEDIUM,
@@ -100,6 +101,7 @@ export class TaskLoader {
       name: String(milestoneData.name ?? ""),
       path: String(milestoneData.path ?? ""),
       status: coerceStatus(milestoneData.status, Status.PENDING),
+      locked: Boolean(milestoneData.locked ?? false),
       estimateHours: estimateHoursFrom(milestoneData),
       complexity: (milestoneData.complexity as Complexity) ?? Complexity.MEDIUM,
       dependsOn: ((milestoneData.depends_on as string[]) ?? []).slice(),
@@ -123,6 +125,7 @@ export class TaskLoader {
       name: String(epicData.name ?? ""),
       path: String(epicData.path ?? ""),
       status: coerceStatus(epicData.status, Status.PENDING),
+      locked: Boolean(epicData.locked ?? false),
       estimateHours: estimateHoursFrom(epicData),
       complexity: (epicData.complexity as Complexity) ?? Complexity.MEDIUM,
       dependsOn: ((epicData.depends_on as string[]) ?? []).slice(),
@@ -685,5 +688,89 @@ ${data.title}
       new_id: remap[sourceId] ?? sourceId,
       remapped_ids: remap,
     };
+  }
+
+  async setItemLocked(itemId: string, locked: boolean): Promise<string> {
+    const path = TaskPath.parse(itemId);
+    const tree = await this.load();
+    const desired = Boolean(locked);
+
+    if (path.isPhase) {
+      const phase = tree.phases.find((p) => p.id === path.fullId);
+      if (!phase) throw new Error(`Phase not found: ${itemId}`);
+      const rootPath = join(this.tasksDir, "index.yaml");
+      const root = this.mustYaml(rootPath);
+      const phases = ((root.phases as AnyRec[]) ?? []).slice();
+      for (const p of phases) {
+        if (String(p.id ?? "") === phase.id || String(p.id ?? "") === path.phase) {
+          p.locked = desired;
+          break;
+        }
+      }
+      root.phases = phases;
+      await this.writeYaml(rootPath, root);
+      const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
+      if (existsSync(phaseIndexPath)) {
+        const idx = this.mustYaml(phaseIndexPath);
+        idx.locked = desired;
+        await this.writeYaml(phaseIndexPath, idx);
+      }
+      return phase.id;
+    }
+
+    if (path.isMilestone) {
+      const milestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === path.fullId);
+      if (!milestone) throw new Error(`Milestone not found: ${itemId}`);
+      const phase = tree.phases.find((p) => p.id === milestone.phaseId);
+      if (!phase) throw new Error(`Phase not found for milestone: ${itemId}`);
+      const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
+      const phaseIndex = this.mustYaml(phaseIndexPath);
+      const milestones = ((phaseIndex.milestones as AnyRec[]) ?? []).slice();
+      for (const m of milestones) {
+        const id = String(m.id ?? "");
+        if (id === milestone.id || id === (path.milestone ?? "")) {
+          m.locked = desired;
+          break;
+        }
+      }
+      phaseIndex.milestones = milestones;
+      await this.writeYaml(phaseIndexPath, phaseIndex);
+      const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+      if (existsSync(msIndexPath)) {
+        const msIndex = this.mustYaml(msIndexPath);
+        msIndex.locked = desired;
+        await this.writeYaml(msIndexPath, msIndex);
+      }
+      return milestone.id;
+    }
+
+    if (path.isEpic) {
+      const epic = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => e.id === path.fullId);
+      if (!epic) throw new Error(`Epic not found: ${itemId}`);
+      const milestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === epic.milestoneId);
+      const phase = tree.phases.find((p) => p.id === epic.phaseId);
+      if (!milestone || !phase) throw new Error(`Could not resolve parent paths for epic: ${itemId}`);
+      const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+      const msIndex = this.mustYaml(msIndexPath);
+      const epics = ((msIndex.epics as AnyRec[]) ?? []).slice();
+      for (const e of epics) {
+        const id = String(e.id ?? "");
+        if (id === epic.id || id === (path.epic ?? "")) {
+          e.locked = desired;
+          break;
+        }
+      }
+      msIndex.epics = epics;
+      await this.writeYaml(msIndexPath, msIndex);
+      const epicIndexPath = join(this.tasksDir, phase.path, milestone.path, epic.path, "index.yaml");
+      if (existsSync(epicIndexPath)) {
+        const epicIndex = this.mustYaml(epicIndexPath);
+        epicIndex.locked = desired;
+        await this.writeYaml(epicIndexPath, epicIndex);
+      }
+      return epic.id;
+    }
+
+    throw new Error("lock/unlock supports only phase, milestone, or epic IDs");
   }
 }

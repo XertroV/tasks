@@ -259,6 +259,7 @@ class Epic:
     depends_on: List[str] = field(default_factory=list)
     tasks: List[Task] = field(default_factory=list)
     description: Optional[str] = None
+    locked: bool = False
 
     # Computed
     milestone_id: Optional[str] = None
@@ -294,6 +295,7 @@ class Milestone:
     depends_on: List[str] = field(default_factory=list)
     epics: List[Epic] = field(default_factory=list)
     description: Optional[str] = None
+    locked: bool = False
 
     # Computed
     phase_id: Optional[str] = None
@@ -335,6 +337,7 @@ class Phase:
     depends_on: List[str] = field(default_factory=list)
     milestones: List[Milestone] = field(default_factory=list)
     description: Optional[str] = None
+    locked: bool = False
 
     @property
     def stats(self):

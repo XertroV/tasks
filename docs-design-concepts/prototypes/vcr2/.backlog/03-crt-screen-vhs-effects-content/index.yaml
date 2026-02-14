@@ -33,7 +33,7 @@ milestones:
   description: VHS shader pass, CRT shader pass, effect pipeline integration (EffectComposer)
 stats:
   total_tasks: 42
-  done: 6
+  done: 8
   in_progress: 0
   blocked: 0
-  pending: 36
+  pending: 34
