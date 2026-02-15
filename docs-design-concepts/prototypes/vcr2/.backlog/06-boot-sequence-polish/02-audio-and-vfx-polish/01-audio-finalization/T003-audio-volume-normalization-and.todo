@@ -1,7 +1,7 @@
 ---
 id: P6.M2.E1.T003
 title: Audio volume normalization and mixing
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
@@ -10,6 +10,11 @@ tags:
 - audio
 - mixing
 - normalization
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:45:56.542796+00:00'
+started_at: '2026-02-15T01:45:56.542796+00:00'
+completed_at: '2026-02-15T01:46:47.755154+00:00'
+duration_minutes: 0.8535391
 ---
 ## Requirements
 - Normalize all audio sources relative to each other

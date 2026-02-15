@@ -1,8 +1,7 @@
 agent: cli-user
 mode: siblings
-primary_task: P6.M1.E2.T001
+primary_task: P6.M2.E1.T001
 sibling_tasks:
-- P6.M1.E2.T002
-- P6.M1.E2.T003
-- P6.M1.E2.T004
-started_at: '2026-02-15T01:42:11.612900+00:00'
+- P6.M2.E1.T002
+- P6.M2.E1.T003
+started_at: '2026-02-15T01:45:56.543565+00:00'

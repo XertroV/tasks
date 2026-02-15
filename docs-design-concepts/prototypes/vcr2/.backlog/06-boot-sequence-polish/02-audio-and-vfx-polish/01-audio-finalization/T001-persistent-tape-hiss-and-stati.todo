@@ -1,7 +1,7 @@
 ---
 id: P6.M2.E1.T001
 title: Persistent tape hiss and static crackle
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
@@ -10,6 +10,11 @@ tags:
 - audio
 - ambient
 - tape
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:45:56.540284+00:00'
+started_at: '2026-02-15T01:45:56.540284+00:00'
+completed_at: '2026-02-15T01:46:46.958226+00:00'
+duration_minutes: 0.8402989000000001
 ---
 ## Requirements
 - Tape hiss: pink noise low-passed at 8kHz, gain 0.08, always present when tape loaded
@@ -18,3 +23,21 @@ tags:
 - Tape hiss always audible when VCR has tape
 - Crackle sounds random and natural
 - Both stop when tape ejected
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:45 UTC
+**Sibling tasks**: P6.M2.E1.T002, P6.M2.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M2.E1.T001 → P6.M2.E1.T002 → P6.M2.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M2.E1.T001: .tasks/06-boot-sequence-polish/02-audio-and-vfx-polish/01-audio-finalization/T001-persistent-tape-hiss-and-stati.todo
+- P6.M2.E1.T002: .tasks/06-boot-sequence-polish/02-audio-and-vfx-polish/01-audio-finalization/T002-tape-screech-sample-for-ff-rew.todo
+- P6.M2.E1.T003: .tasks/06-boot-sequence-polish/02-audio-and-vfx-polish/01-audio-finalization/T003-audio-volume-normalization-and.todo
