@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E3.T001
 title: Project README and setup documentation
-status: in_progress
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: high
@@ -12,7 +12,8 @@ tags:
 claimed_by: cli-user
 claimed_at: '2026-02-15T04:01:49.370730+00:00'
 started_at: '2026-02-15T04:01:49.370730+00:00'
-completed_at: null
+completed_at: '2026-02-15T04:02:45.079005+00:00'
+duration_minutes: 0.9284710833333333
 ---
 ## Requirements
 - README.md: project description, setup instructions (bun install, bun dev), build instructions, architecture overview
