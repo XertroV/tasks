@@ -1,16 +1,21 @@
 ---
 id: P7.M2.E2.T002
 title: Camera horror effects connection
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P7.M2.E2.T001
 tags:
 - horror
 - camera
 - effects
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:13:08.713632+00:00'
+started_at: '2026-02-15T02:13:08.713632+00:00'
+completed_at: '2026-02-15T02:14:51.890760+00:00'
+duration_minutes: 1.7196186166666665
 ---
 ## Requirements
 - Connect horror phase to camera horrorOverrides

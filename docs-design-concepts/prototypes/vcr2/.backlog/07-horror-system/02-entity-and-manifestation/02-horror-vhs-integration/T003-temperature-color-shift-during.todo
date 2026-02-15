@@ -1,17 +1,22 @@
 ---
 id: P7.M2.E2.T003
 title: Temperature color shift during horror
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: medium
 depends_on:
-- T001
+- P7.M2.E2.T001
 tags:
 - horror
 - shader
 - color
 - atmosphere
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:13:08.715043+00:00'
+started_at: '2026-02-15T02:13:08.715043+00:00'
+completed_at: '2026-02-15T02:14:52.327304+00:00'
+duration_minutes: 1.7268708666666666
 ---
 ## Requirements
 - Subtle color temperature shift as horror intensifies

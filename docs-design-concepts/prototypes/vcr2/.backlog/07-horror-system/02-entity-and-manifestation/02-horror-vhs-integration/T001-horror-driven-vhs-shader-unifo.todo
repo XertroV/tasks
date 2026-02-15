@@ -1,7 +1,7 @@
 ---
 id: P7.M2.E2.T001
 title: Horror-driven VHS shader uniform modulation
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - vhs
 - shader
 - integration
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:13:08.711955+00:00'
+started_at: '2026-02-15T02:13:08.711955+00:00'
+completed_at: '2026-02-15T02:14:51.470760+00:00'
+duration_minutes: 1.7126463666666667
 ---
 ## Requirements
 - Map horrorStore.effectOverrides to VHS shader uniforms each frame
@@ -20,3 +25,21 @@ tags:
 - Shader uniforms respond to horror phase changes
 - Transitions are smooth (no instant jumps)
 - All override types functional (tracking, noise, chroma, etc.)
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 02:13 UTC
+**Sibling tasks**: P7.M2.E2.T002, P7.M2.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M2.E2.T001 → P7.M2.E2.T002 → P7.M2.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M2.E2.T001: .tasks/07-horror-system/02-entity-and-manifestation/02-horror-vhs-integration/T001-horror-driven-vhs-shader-unifo.todo
+- P7.M2.E2.T002: .tasks/07-horror-system/02-entity-and-manifestation/02-horror-vhs-integration/T002-camera-horror-effects-connecti.todo
+- P7.M2.E2.T003: .tasks/07-horror-system/02-entity-and-manifestation/02-horror-vhs-integration/T003-temperature-color-shift-during.todo
