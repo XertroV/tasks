@@ -1,21 +1,26 @@
 ---
 id: P5.M1.E2.T007
 title: Hallway performance validation
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
 depends_on:
-- T001
-- T002
-- T003
-- T004
-- T005
-- T006
+- P5.M1.E2.T001
+- P5.M1.E2.T002
+- P5.M1.E2.T003
+- P5.M1.E2.T004
+- P5.M1.E2.T005
+- P5.M1.E2.T006
 tags:
 - performance
 - validation
 - hallways
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:15:05.857565+00:00'
+started_at: '2026-02-15T01:15:05.857565+00:00'
+completed_at: '2026-02-15T01:15:53.217640+00:00'
+duration_minutes: 0.7893344
 ---
 ## Requirements
 - Profile: 18 meshes, under 5K vertices, shared materials
