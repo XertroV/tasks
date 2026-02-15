@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E1.T008
 title: Production build and smoke test
-status: in_progress
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: critical
@@ -19,7 +19,8 @@ tags:
 claimed_by: cli-user
 claimed_at: '2026-02-15T03:56:55.364195+00:00'
 started_at: '2026-02-15T03:56:55.364195+00:00'
-completed_at: null
+completed_at: '2026-02-15T04:00:06.540397+00:00'
+duration_minutes: 3.1862699
 ---
 ## Requirements
 - bun run build with zero errors/warnings

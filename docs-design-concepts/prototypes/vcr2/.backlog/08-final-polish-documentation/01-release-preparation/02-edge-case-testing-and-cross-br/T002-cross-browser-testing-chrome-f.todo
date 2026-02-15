@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E2.T002
 title: Cross-browser testing Chrome Firefox Safari
-status: pending
+status: in_progress
 estimate_hours: 2.0
 complexity: medium
 priority: high
@@ -10,6 +10,10 @@ tags:
 - testing
 - cross-browser
 - compatibility
+claimed_by: cli-user
+claimed_at: '2026-02-15T04:00:11.519746+00:00'
+started_at: '2026-02-15T04:00:11.519746+00:00'
+completed_at: null
 ---
 ## Requirements
 - Test full experience in Chrome, Firefox, Safari (latest versions)

@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E2.T001
 title: Rapid navigation and state transition testing
-status: pending
+status: in_progress
 estimate_hours: 1.0
 complexity: medium
 priority: high
@@ -10,6 +10,10 @@ tags:
 - testing
 - edge-cases
 - navigation
+claimed_by: cli-user
+claimed_at: '2026-02-15T04:00:11.517835+00:00'
+started_at: '2026-02-15T04:00:11.517835+00:00'
+completed_at: null
 ---
 ## Requirements
 - Test rapid page navigation (10+ navigations in quick succession)
@@ -21,3 +25,21 @@ tags:
 - Horror toggle mid-transition handles gracefully
 - Tab backgrounding recovers cleanly
 - No console errors in any scenario
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 04:00 UTC
+**Sibling tasks**: P8.M1.E2.T002, P8.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E2.T001 → P8.M1.E2.T002 → P8.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E2.T001: .tasks/08-final-polish-documentation/01-release-preparation/02-edge-case-testing-and-cross-br/T001-rapid-navigation-and-state-tra.todo
+- P8.M1.E2.T002: .tasks/08-final-polish-documentation/01-release-preparation/02-edge-case-testing-and-cross-br/T002-cross-browser-testing-chrome-f.todo
+- P8.M1.E2.T003: .tasks/08-final-polish-documentation/01-release-preparation/02-edge-case-testing-and-cross-br/T003-mobile-and-low-end-device-fall.todo
