@@ -1,17 +1,22 @@
 ---
 id: P4.M2.E1.T010
 title: Navigation debug panel integration
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: medium
 depends_on:
-- T001
-- T004
+- P4.M2.E1.T001
+- P4.M2.E1.T004
 tags:
 - debug
 - leva
 - devtools
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:07:42.351651+00:00'
+started_at: '2026-02-15T01:07:42.351651+00:00'
+completed_at: '2026-02-15T01:08:35.364635+00:00'
+duration_minutes: 0.8835495333333333
 ---
 ## Requirements
 - Debug panel: currentPageId, transitionState, progress bar, historyIndex

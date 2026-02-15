@@ -1,18 +1,23 @@
 ---
 id: P4.M2.E1.T009
 title: Navigation guards for rapid-fire and edge cases
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T003
-- T005
+- P4.M2.E1.T003
+- P4.M2.E1.T005
 tags:
 - store
 - navigation
 - robustness
 - error-handling
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:07:42.350365+00:00'
+started_at: '2026-02-15T01:07:42.350365+00:00'
+completed_at: '2026-02-15T01:08:34.953323+00:00'
+duration_minutes: 0.8767157333333333
 ---
 ## Requirements
 - Reject navigateTo during active transition (with logging)

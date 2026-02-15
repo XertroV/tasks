@@ -1,17 +1,22 @@
 ---
 id: P4.M2.E1.T007
 title: Timecode interpolation during FF/REW
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T004
+- P4.M2.E1.T004
 tags:
 - animation
 - vcr
 - timecode
 - useFrame
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:07:42.346823+00:00'
+started_at: '2026-02-15T01:07:42.346823+00:00'
+completed_at: '2026-02-15T01:08:34.157265+00:00'
+duration_minutes: 0.8635072
 ---
 ## Requirements
 - Interpolate tape position between current and target during transition
@@ -22,3 +27,22 @@ tags:
 - During REW, timecode monotonically decreases
 - At completion, timecode matches target exactly
 - Matches visual pacing (slow-fast-slow)
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P4.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:07 UTC
+**Sibling tasks**: P4.M2.E1.T008, P4.M2.E1.T009, P4.M2.E1.T010
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P4.M2.E1.T007 → P4.M2.E1.T008 → P4.M2.E1.T009 → P4.M2.E1.T010
+Mark each done individually after completion.
+
+**Task files**:
+- P4.M2.E1.T007: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T007-timecode-interpolation-during.todo
+- P4.M2.E1.T008: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T008-setpage-action-for-direct-page.todo
+- P4.M2.E1.T009: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T009-navigation-guards-for-rapid-fi.todo
+- P4.M2.E1.T010: .tasks/04-lightgun-navigation/02-navigation-and-transitions/01-navigation-system-and-ff-rew-t/T010-navigation-debug-panel-integra.todo
