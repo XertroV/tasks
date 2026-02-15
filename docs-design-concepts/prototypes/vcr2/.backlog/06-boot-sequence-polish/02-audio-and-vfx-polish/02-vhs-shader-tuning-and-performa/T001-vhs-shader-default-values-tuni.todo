@@ -1,7 +1,7 @@
 ---
 id: P6.M2.E2.T001
 title: VHS shader default values tuning pass
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -10,6 +10,11 @@ tags:
 - shader
 - tuning
 - vhs
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:34:19.469973+00:00'
+started_at: '2026-02-15T01:34:19.469973+00:00'
+completed_at: '2026-02-15T01:36:21.776997+00:00'
+duration_minutes: 2.0384502666666666
 ---
 ## Requirements
 - Play through documentation in normal mode, adjust VHS defaults for pleasant reading
@@ -19,3 +24,21 @@ tags:
 - Normal mode: text clearly readable with subtle VHS character
 - Defaults documented in code comments
 - Each uniform has justified default value
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:34 UTC
+**Sibling tasks**: P6.M2.E2.T002, P6.M2.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M2.E2.T001 → P6.M2.E2.T002 → P6.M2.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M2.E2.T001: .tasks/06-boot-sequence-polish/02-audio-and-vfx-polish/02-vhs-shader-tuning-and-performa/T001-vhs-shader-default-values-tuni.todo
+- P6.M2.E2.T002: .tasks/06-boot-sequence-polish/02-audio-and-vfx-polish/02-vhs-shader-tuning-and-performa/T002-crt-shader-resolution-and-qual.todo
+- P6.M2.E2.T003: .tasks/06-boot-sequence-polish/02-audio-and-vfx-polish/02-vhs-shader-tuning-and-performa/T003-mid-project-performance-checkp.todo

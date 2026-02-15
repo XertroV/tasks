@@ -1,7 +1,7 @@
 ---
 id: P6.M2.E2.T002
 title: CRT shader resolution and quality pass
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: high
@@ -10,6 +10,11 @@ tags:
 - shader
 - tuning
 - crt
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:34:19.472303+00:00'
+started_at: '2026-02-15T01:34:19.472303+00:00'
+completed_at: '2026-02-15T01:36:22.196544+00:00'
+duration_minutes: 2.0454038666666667
 ---
 ## Requirements
 - Tune CRT scanline count for render target resolution

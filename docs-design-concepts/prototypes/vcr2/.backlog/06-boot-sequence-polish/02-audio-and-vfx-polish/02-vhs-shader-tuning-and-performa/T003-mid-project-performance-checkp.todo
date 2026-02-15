@@ -1,7 +1,7 @@
 ---
 id: P6.M2.E2.T003
 title: Mid-project performance checkpoint
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -10,6 +10,11 @@ tags:
 - performance
 - audit
 - checkpoint
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:34:19.473397+00:00'
+started_at: '2026-02-15T01:34:19.473397+00:00'
+completed_at: '2026-02-15T01:36:22.613827+00:00'
+duration_minutes: 2.05234035
 ---
 ## Requirements
 - Profile current state: draw calls, vertices, frame time, memory
