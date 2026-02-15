@@ -1,16 +1,21 @@
 ---
 id: P7.M3.E1.T002
 title: Horror debug playback controls
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: high
 depends_on:
-- T001
+- P7.M3.E1.T001
 tags:
 - debug
 - horror
 - controls
+claimed_by: cli-user
+claimed_at: '2026-02-15T03:31:02.870245+00:00'
+started_at: '2026-02-15T03:31:02.870245+00:00'
+completed_at: '2026-02-15T03:40:43.147862+00:00'
+duration_minutes: 9.671293366666667
 ---
 ## Requirements
 - Buttons: Reset, force each phase (DORMANT through POST)

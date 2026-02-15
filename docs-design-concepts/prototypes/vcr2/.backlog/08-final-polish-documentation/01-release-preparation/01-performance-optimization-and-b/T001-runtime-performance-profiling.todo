@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E1.T001
 title: Runtime performance profiling and baseline
-status: pending
+status: in_progress
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -9,6 +9,10 @@ depends_on: []
 tags:
 - performance
 - profiling
+claimed_by: cli-user
+claimed_at: '2026-02-15T03:41:24.160163+00:00'
+started_at: '2026-02-15T03:41:24.160163+00:00'
+completed_at: null
 ---
 ## Requirements
 - Profile production build across 4 scene states: idle, navigation, horror, look-behind
@@ -19,3 +23,24 @@ tags:
 - Baseline measurements captured for all 4 scene states
 - Deviations from performance budget clearly identified
 - Frame-time spikes >20ms flagged with call-stack attribution
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 03:41 UTC
+**Sibling tasks**: P8.M1.E1.T002, P8.M1.E1.T003, P8.M1.E1.T004, P8.M1.E1.T005, P8.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E1.T001 → P8.M1.E1.T002 → P8.M1.E1.T003 → P8.M1.E1.T004 → P8.M1.E1.T005 → P8.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E1.T001: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T001-runtime-performance-profiling.todo
+- P8.M1.E1.T002: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T002-draw-call-and-geometry-reducti.todo
+- P8.M1.E1.T003: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T003-shader-and-post-processing-per.todo
+- P8.M1.E1.T004: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T004-react-render-and-state-update.todo
+- P8.M1.E1.T005: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T005-memory-leak-detection-and-clea.todo
+- P8.M1.E1.T006: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T006-bundle-size-audit-and-tree-sha.todo

@@ -1,11 +1,17 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { visualizer } from 'rollup-plugin-visualizer';
 import { vitePluginTapeManifest } from './src/content/vite-plugin-tape-manifest';
 
-// https://vitejs.dev/config/
+const isAnalyze = process.env.ANALYZE === 'true';
+
 export default defineConfig({
-  plugins: [react(), vitePluginTapeManifest('./content/docs')],
+  plugins: [
+    react(),
+    vitePluginTapeManifest('./content/docs'),
+    isAnalyze && visualizer({ open: true, gzipSize: true }),
+  ].filter(Boolean),
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -13,5 +19,16 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules/three/')) return 'three';
+          if (id.includes('node_modules/@react-three/')) return 'react-three';
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) return 'react';
+        },
+      },
+    },
   },
 });
