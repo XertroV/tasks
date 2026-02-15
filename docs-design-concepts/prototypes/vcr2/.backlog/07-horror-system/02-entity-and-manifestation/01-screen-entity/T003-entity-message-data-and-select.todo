@@ -1,7 +1,7 @@
 ---
 id: P7.M2.E1.T003
 title: Entity message data and selection logic
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - data
 - entity
 - text
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:04:39.288106+00:00'
+started_at: '2026-02-15T02:04:39.288106+00:00'
+completed_at: '2026-02-15T02:05:32.005757+00:00'
+duration_minutes: 0.87862735
 ---
 ## Requirements
 - Entity message arrays: wrongWords, textReplacements, screenTakeover, finalMessages

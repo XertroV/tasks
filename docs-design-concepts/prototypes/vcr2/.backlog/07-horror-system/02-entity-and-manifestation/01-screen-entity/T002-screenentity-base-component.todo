@@ -1,17 +1,22 @@
 ---
 id: P7.M2.E1.T002
 title: ScreenEntity base component
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: critical
 depends_on:
-- T001
+- P7.M2.E1.T001
 tags:
 - r3f
 - component
 - entity
 - offscreen-scene
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:04:39.286275+00:00'
+started_at: '2026-02-15T02:04:39.286275+00:00'
+completed_at: '2026-02-15T02:05:31.586931+00:00'
+duration_minutes: 0.8716774333333334
 ---
 ## Requirements
 - src/horror/ScreenEntity.tsx in offscreen scene (RenderTarget)

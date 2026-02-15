@@ -1,7 +1,7 @@
 ---
 id: P7.M2.E1.T001
 title: Entity face texture generator
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - canvas
 - texture
 - entity
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:04:39.284948+00:00'
+started_at: '2026-02-15T02:04:39.284948+00:00'
+completed_at: '2026-02-15T02:05:31.163953+00:00'
+duration_minutes: 0.8646498499999999
 ---
 ## Requirements
 - generateEntityFace(): CanvasTexture on 256x256 canvas
@@ -22,3 +27,24 @@ tags:
 - Face deliberately crude and uncanny
 - Scan lines and noise give VHS feel
 - No external image assets required
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 02:04 UTC
+**Sibling tasks**: P7.M2.E1.T002, P7.M2.E1.T003, P7.M2.E1.T004, P7.M2.E1.T005, P7.M2.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M2.E1.T001 → P7.M2.E1.T002 → P7.M2.E1.T003 → P7.M2.E1.T004 → P7.M2.E1.T005 → P7.M2.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M2.E1.T001: .tasks/07-horror-system/02-entity-and-manifestation/01-screen-entity/T001-entity-face-texture-generator.todo
+- P7.M2.E1.T002: .tasks/07-horror-system/02-entity-and-manifestation/01-screen-entity/T002-screenentity-base-component.todo
+- P7.M2.E1.T003: .tasks/07-horror-system/02-entity-and-manifestation/01-screen-entity/T003-entity-message-data-and-select.todo
+- P7.M2.E1.T004: .tasks/07-horror-system/02-entity-and-manifestation/01-screen-entity/T004-static-face-manifestation-with.todo
+- P7.M2.E1.T005: .tasks/07-horror-system/02-entity-and-manifestation/01-screen-entity/T005-corrupted-text-system.todo
+- P7.M2.E1.T006: .tasks/07-horror-system/02-entity-and-manifestation/01-screen-entity/T006-vcr-display-corruption-and-cha.todo

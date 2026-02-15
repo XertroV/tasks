@@ -1,18 +1,23 @@
 ---
 id: P7.M2.E1.T005
 title: Corrupted text system
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: high
 priority: high
 depends_on:
-- T003
-- T002
+- P7.M2.E1.T003
+- P7.M2.E1.T002
 tags:
 - entity
 - text
 - corruption
 - content
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:04:39.290345+00:00'
+started_at: '2026-02-15T02:04:39.290345+00:00'
+completed_at: '2026-02-15T02:05:32.865694+00:00'
+duration_minutes: 0.8929220833333333
 ---
 ## Requirements
 - Three tiers: Wrong Word (UNEASY), Text Replacement with zalgo (ESCALATING), Screen Takeover (CLIMAX)
