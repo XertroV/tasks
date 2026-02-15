@@ -1,7 +1,7 @@
 ---
 id: P7.M2.E3.T003
 title: Horror audio mixing and ambient detuning
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: medium
@@ -11,6 +11,11 @@ tags:
 - audio
 - mixing
 - detuning
+claimed_by: cli-user
+claimed_at: '2026-02-15T03:26:34.205247+00:00'
+started_at: '2026-02-15T03:26:34.205247+00:00'
+completed_at: '2026-02-15T03:27:29.935854+00:00'
+duration_minutes: 0.9288432833333334
 ---
 ## Requirements
 - Fluorescent buzz detunes during ESCALATING (pitch shift down)

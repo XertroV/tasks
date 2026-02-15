@@ -1,7 +1,7 @@
 ---
 id: P7.M2.E3.T001
 title: Whisper audio layer for horror phases
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -11,6 +11,11 @@ tags:
 - audio
 - whisper
 - atmosphere
+claimed_by: cli-user
+claimed_at: '2026-02-15T03:26:34.202319+00:00'
+started_at: '2026-02-15T03:26:34.202319+00:00'
+completed_at: '2026-02-15T03:27:29.194296+00:00'
+duration_minutes: 0.9165328
 ---
 ## Requirements
 - Subtle whispering sound during UNEASY+: procedural filtered noise with amplitude modulation
@@ -21,3 +26,21 @@ tags:
 - Increases with intensity
 - Sounds like distant whispering, not words
 - Stops on horror toggle-off
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-15 03:26 UTC
+**Sibling tasks**: P7.M2.E3.T002, P7.M2.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M2.E3.T001 → P7.M2.E3.T002 → P7.M2.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M2.E3.T001: .tasks/07-horror-system/02-entity-and-manifestation/03-horror-audio-layers/T001-whisper-audio-layer-for-horror.todo
+- P7.M2.E3.T002: .tasks/07-horror-system/02-entity-and-manifestation/03-horror-audio-layers/T002-entity-manifestation-sound.todo
+- P7.M2.E3.T003: .tasks/07-horror-system/02-entity-and-manifestation/03-horror-audio-layers/T003-horror-audio-mixing-and-ambien.todo

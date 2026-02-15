@@ -1,7 +1,7 @@
 ---
 id: P7.M2.E3.T002
 title: Entity manifestation sound
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: high
@@ -11,6 +11,11 @@ tags:
 - audio
 - entity
 - sound
+claimed_by: cli-user
+claimed_at: '2026-02-15T03:26:34.204324+00:00'
+started_at: '2026-02-15T03:26:34.204324+00:00'
+completed_at: '2026-02-15T03:27:29.568448+00:00'
+duration_minutes: 0.9227352666666667
 ---
 ## Requirements
 - Sound cue when entity face appears on screen
