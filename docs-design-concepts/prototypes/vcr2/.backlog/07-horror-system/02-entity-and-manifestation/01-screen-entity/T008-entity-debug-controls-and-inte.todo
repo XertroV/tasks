@@ -1,23 +1,28 @@
 ---
 id: P7.M2.E1.T008
 title: Entity debug controls and integration tests
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T001
-- T002
-- T003
-- T004
-- T005
-- T006
-- T007
+- P7.M2.E1.T001
+- P7.M2.E1.T002
+- P7.M2.E1.T003
+- P7.M2.E1.T004
+- P7.M2.E1.T005
+- P7.M2.E1.T006
+- P7.M2.E1.T007
 tags:
 - debug
 - testing
 - integration
 - leva
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:43:23.381993+00:00'
+started_at: '2026-02-15T02:43:23.381993+00:00'
+completed_at: '2026-02-15T03:20:23.263807+00:00'
+duration_minutes: 36.998029849999995
 ---
 ## Requirements
 - Leva: Entity Visible, Intensity slider, Form dropdown, Flash Now button
