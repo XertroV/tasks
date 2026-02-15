@@ -1,16 +1,21 @@
 ---
 id: P7.M1.E1.T007
 title: Implement TimelineEngine control methods
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T006
+- P7.M1.E1.T006
 tags:
 - engine
 - control
 - debug
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:25:39.374671+00:00'
+started_at: '2026-02-15T02:25:39.374671+00:00'
+completed_at: '2026-02-15T02:39:38.672667+00:00'
+duration_minutes: 13.988299783333334
 ---
 ## Requirements
 - Implement pause(), resume(), reset(), seek(time), getState()
@@ -22,3 +27,20 @@ tags:
 - reset() returns to initial state, all cleanups called
 - seek() handles fast-forward correctly
 - getState() returns accurate snapshot
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 02:25 UTC
+**Sibling tasks**: P7.M1.E1.T011
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M1.E1.T007 → P7.M1.E1.T011
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M1.E1.T007: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T007-implement-timelineengine-contr.todo
+- P7.M1.E1.T011: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T011-unit-tests-for-timelineengine.todo

@@ -1,17 +1,22 @@
 ---
 id: P7.M1.E1.T011
 title: Unit tests for TimelineEngine
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: high
 depends_on:
-- T006
-- T007
+- P7.M1.E1.T006
+- P7.M1.E1.T007
 tags:
 - test
 - engine
 - quality
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:25:39.376340+00:00'
+started_at: '2026-02-15T02:25:39.376340+00:00'
+completed_at: '2026-02-15T02:40:38.987195+00:00'
+duration_minutes: 14.9935141
 ---
 ## Requirements
 - Test event trigger timing, variance bounds, conditions, duration tracking
