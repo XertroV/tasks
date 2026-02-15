@@ -1,7 +1,7 @@
 ---
 id: P4.M2.E2.T003
 title: MENU target for returning to table of contents
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: low
 priority: high
@@ -10,6 +10,11 @@ tags:
 - navigation
 - menu
 - target
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:11:26.057406+00:00'
+started_at: '2026-02-15T01:11:26.057406+00:00'
+completed_at: '2026-02-15T01:12:21.720269+00:00'
+duration_minutes: 0.9277142166666666
 ---
 ## Requirements
 - MENU target visible on every page view

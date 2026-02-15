@@ -1,7 +1,7 @@
 ---
 id: P4.M2.E2.T002
 title: Sequential navigation PREV and NEXT targets
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
@@ -10,6 +10,11 @@ tags:
 - navigation
 - sequential
 - targets
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:11:26.056412+00:00'
+started_at: '2026-02-15T01:11:26.056412+00:00'
+completed_at: '2026-02-15T01:12:21.333615+00:00'
+duration_minutes: 0.9212865499999999
 ---
 ## Requirements
 - PREV and NEXT targets always visible at consistent positions

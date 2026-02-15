@@ -1,7 +1,7 @@
 ---
 id: P4.M2.E2.T001
 title: Scroll within page via MORE and TOP targets
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -10,6 +10,11 @@ tags:
 - scrolling
 - interaction
 - targets
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:11:26.054177+00:00'
+started_at: '2026-02-15T01:11:26.054177+00:00'
+completed_at: '2026-02-15T01:12:20.941756+00:00'
+duration_minutes: 0.91479285
 ---
 ## Requirements
 - MORE target at bottom of content when more text below viewport
@@ -21,3 +26,23 @@ tags:
 - TOP appears when scrolled down
 - Shooting triggers smooth scroll
 - Targets disappear when not applicable
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P4.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:11 UTC
+**Sibling tasks**: P4.M2.E2.T002, P4.M2.E2.T003, P4.M2.E2.T004, P4.M2.E2.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P4.M2.E2.T001 → P4.M2.E2.T002 → P4.M2.E2.T003 → P4.M2.E2.T004 → P4.M2.E2.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P4.M2.E2.T001: .tasks/04-lightgun-navigation/02-navigation-and-transitions/02-page-interaction/T001-scroll-within-page-via-more-an.todo
+- P4.M2.E2.T002: .tasks/04-lightgun-navigation/02-navigation-and-transitions/02-page-interaction/T002-sequential-navigation-prev-and.todo
+- P4.M2.E2.T003: .tasks/04-lightgun-navigation/02-navigation-and-transitions/02-page-interaction/T003-menu-target-for-returning-to-t.todo
+- P4.M2.E2.T004: .tasks/04-lightgun-navigation/02-navigation-and-transitions/02-page-interaction/T004-internal-link-navigation-from.todo
+- P4.M2.E2.T005: .tasks/04-lightgun-navigation/02-navigation-and-transitions/02-page-interaction/T005-page-interaction-debug-control.todo

@@ -1,7 +1,7 @@
 ---
 id: P4.M2.E2.T004
 title: Internal link navigation from page content
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - navigation
 - links
 - content
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:11:26.058255+00:00'
+started_at: '2026-02-15T01:11:26.058255+00:00'
+completed_at: '2026-02-15T01:12:22.129303+00:00'
+duration_minutes: 0.9345173166666666
 ---
 ## Requirements
 - Cyan links in page content are shootable

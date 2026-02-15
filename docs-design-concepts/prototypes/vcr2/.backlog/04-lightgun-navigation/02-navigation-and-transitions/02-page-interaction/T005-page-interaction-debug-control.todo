@@ -1,19 +1,24 @@
 ---
 id: P4.M2.E2.T005
 title: Page interaction debug controls
-status: pending
+status: done
 estimate_hours: 0.5
 complexity: low
 priority: medium
 depends_on:
-- T001
-- T002
-- T003
-- T004
+- P4.M2.E2.T001
+- P4.M2.E2.T002
+- P4.M2.E2.T003
+- P4.M2.E2.T004
 tags:
 - debug
 - leva
 - interaction
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:11:26.059284+00:00'
+started_at: '2026-02-15T01:11:26.059284+00:00'
+completed_at: '2026-02-15T01:12:22.539509+00:00'
+duration_minutes: 0.9413369333333333
 ---
 ## Requirements
 - Leva: show target hitboxes toggle, target count monitor
