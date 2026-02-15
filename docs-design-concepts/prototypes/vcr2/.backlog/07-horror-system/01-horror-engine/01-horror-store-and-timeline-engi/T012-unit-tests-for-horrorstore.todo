@@ -1,18 +1,23 @@
 ---
 id: P7.M1.E1.T012
 title: Unit tests for HorrorStore
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: low
 priority: high
 depends_on:
-- T002
-- T003
-- T004
+- P7.M1.E1.T002
+- P7.M1.E1.T003
+- P7.M1.E1.T004
 tags:
 - test
 - store
 - quality
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:22:44.500567+00:00'
+started_at: '2026-02-15T02:22:44.500567+00:00'
+completed_at: '2026-02-15T02:23:43.626789+00:00'
+duration_minutes: 0.9854368666666667
 ---
 ## Requirements
 - Test initial state, enable/disable, tick increments, phase transitions

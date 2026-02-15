@@ -1,17 +1,22 @@
 ---
 id: P7.M1.E1.T008
 title: Implement default horror timeline data
-status: pending
+status: done
 estimate_hours: 2.5
 complexity: medium
 priority: high
 depends_on:
-- T005
-- T002
+- P7.M1.E1.T005
+- P7.M1.E1.T002
 tags:
 - data
 - timeline
 - content
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:22:44.496898+00:00'
+started_at: '2026-02-15T02:22:44.496898+00:00'
+completed_at: '2026-02-15T02:23:42.476723+00:00'
+duration_minutes: 0.9663302
 ---
 ## Requirements
 - Create src/horror/horror-timelines.ts with defaultTimeline: TimelineEvent[]
@@ -24,3 +29,22 @@ tags:
 - Repeat configurations match spec
 - entityMessages data matches spec content
 - Placeholder/stub actions compile
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 02:22 UTC
+**Sibling tasks**: P7.M1.E1.T009, P7.M1.E1.T010, P7.M1.E1.T012
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M1.E1.T008 → P7.M1.E1.T009 → P7.M1.E1.T010 → P7.M1.E1.T012
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M1.E1.T008: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T008-implement-default-horror-timel.todo
+- P7.M1.E1.T009: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T009-implement-horrorcontroller-com.todo
+- P7.M1.E1.T010: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T010-implement-horror-toggle-behavi.todo
+- P7.M1.E1.T012: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T012-unit-tests-for-horrorstore.todo
