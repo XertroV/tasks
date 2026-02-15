@@ -1,7 +1,7 @@
 ---
 id: P6.M1.E2.T001
 title: Settings menu overlay
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -10,6 +10,11 @@ tags:
 - settings
 - ui
 - dom
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:42:11.607552+00:00'
+started_at: '2026-02-15T01:42:11.607552+00:00'
+completed_at: '2026-02-15T01:42:59.311946+00:00'
+duration_minutes: 0.7950730666666667
 ---
 ## Requirements
 - DOM overlay settings panel, accessible via Escape key or settings target
@@ -20,3 +25,22 @@ tags:
 - All options functional
 - Styled consistently with CRT aesthetic
 - Closeable via click/shoot/Escape
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:42 UTC
+**Sibling tasks**: P6.M1.E2.T002, P6.M1.E2.T003, P6.M1.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E2.T001 → P6.M1.E2.T002 → P6.M1.E2.T003 → P6.M1.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E2.T001: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/02-settings-and-accessibility/T001-settings-menu-overlay.todo
+- P6.M1.E2.T002: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/02-settings-and-accessibility/T002-horror-toggle-ui-and-url-param.todo
+- P6.M1.E2.T003: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/02-settings-and-accessibility/T003-reduced-motion-and-accessibili.todo
+- P6.M1.E2.T004: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/02-settings-and-accessibility/T004-complete-keyboard-navigation-s.todo

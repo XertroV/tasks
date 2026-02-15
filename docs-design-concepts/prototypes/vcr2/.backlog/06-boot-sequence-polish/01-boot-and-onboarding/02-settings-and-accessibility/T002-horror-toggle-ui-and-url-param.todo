@@ -1,7 +1,7 @@
 ---
 id: P6.M1.E2.T002
 title: Horror toggle UI and URL parameter
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
@@ -11,6 +11,11 @@ tags:
 - toggle
 - settings
 - url
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:42:11.609454+00:00'
+started_at: '2026-02-15T01:42:11.609454+00:00'
+completed_at: '2026-02-15T01:42:59.725589+00:00'
+duration_minutes: 0.8019354333333334
 ---
 ## Requirements
 - Horror on/off toggle in settings menu
