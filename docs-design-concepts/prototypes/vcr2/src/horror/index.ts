@@ -17,3 +17,6 @@ export type {
 } from './EntityOpacityController';
 export { useEntityDebugControls } from './useEntityDebugControls';
 export type { EntityDebugConfig } from './useEntityDebugControls';
+export { useHorrorDebugControls } from './useHorrorDebugControls';
+export type { HorrorDebugConfig } from './useHorrorDebugControls';
+export { TimelineVisualizer } from './TimelineVisualizer';
