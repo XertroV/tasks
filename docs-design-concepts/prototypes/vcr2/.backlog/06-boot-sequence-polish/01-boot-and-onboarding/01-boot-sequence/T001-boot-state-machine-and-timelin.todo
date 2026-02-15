@@ -1,7 +1,7 @@
 ---
 id: P6.M1.E1.T001
 title: Boot state machine and timeline controller
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - boot
 - state
 - zustand
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:18:31.402130+00:00'
+started_at: '2026-02-15T01:18:31.402130+00:00'
+completed_at: '2026-02-15T01:27:45.980386+00:00'
+duration_minutes: 9.242970766666668
 ---
 ## Requirements
 - bootStore.ts (Zustand) with phases: BLACK, ROOM_FADE, TV_POWER_ON, TAPE_LOAD, PLAYBACK_BEGIN, READY
@@ -20,3 +25,24 @@ tags:
 - Store sequences through all 6 phases with correct timing
 - skip() jumps directly to READY from any phase
 - Phase transitions deterministic and testable
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:18 UTC
+**Sibling tasks**: P6.M1.E1.T002, P6.M1.E1.T003, P6.M1.E1.T004, P6.M1.E1.T005, P6.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E1.T001 → P6.M1.E1.T002 → P6.M1.E1.T003 → P6.M1.E1.T004 → P6.M1.E1.T005 → P6.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E1.T001: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T001-boot-state-machine-and-timelin.todo
+- P6.M1.E1.T002: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T002-bootsequence-orchestrator-comp.todo
+- P6.M1.E1.T003: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T003-black-screen-overlay-and-room.todo
+- P6.M1.E1.T004: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T004-boot-audio-initialization-and.todo
+- P6.M1.E1.T005: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T005-tv-power-on-static-burst-and-c.todo
+- P6.M1.E1.T006: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T006-tape-loading-animation-with-me.todo

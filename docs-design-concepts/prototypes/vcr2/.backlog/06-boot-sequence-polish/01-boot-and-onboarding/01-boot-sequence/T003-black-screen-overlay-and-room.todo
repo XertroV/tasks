@@ -1,16 +1,21 @@
 ---
 id: P6.M1.E1.T003
 title: Black screen overlay and room fade-in
-status: pending
+status: done
 estimate_hours: 1.25
 complexity: low
 priority: high
 depends_on:
-- T001
+- P6.M1.E1.T001
 tags:
 - boot
 - visual
 - lighting
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:18:31.405772+00:00'
+started_at: '2026-02-15T01:18:31.405772+00:00'
+completed_at: '2026-02-15T01:27:46.880246+00:00'
+duration_minutes: 9.257907583333333
 ---
 ## Requirements
 - Full-screen black overlay, opacity 1.0 during BLACK, fades during ROOM_FADE

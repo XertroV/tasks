@@ -1,17 +1,22 @@
 ---
 id: P6.M1.E1.T004
 title: Boot audio initialization and fluorescent buzz
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P6.M1.E1.T001
 tags:
 - boot
 - audio
 - procedural
 - browser-policy
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:18:31.406847+00:00'
+started_at: '2026-02-15T01:18:31.406847+00:00'
+completed_at: '2026-02-15T01:27:47.346194+00:00'
+duration_minutes: 9.265655633333333
 ---
 ## Requirements
 - Fluorescent buzz fades in during BLACK (120Hz sawtooth, low-passed 300Hz)

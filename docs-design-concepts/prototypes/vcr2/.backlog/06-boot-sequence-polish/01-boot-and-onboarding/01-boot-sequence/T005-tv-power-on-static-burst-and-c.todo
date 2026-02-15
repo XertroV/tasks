@@ -1,19 +1,24 @@
 ---
 id: P6.M1.E1.T005
 title: TV power-on static burst and CRT hum
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: high
 priority: critical
 depends_on:
-- T001
-- T002
+- P6.M1.E1.T001
+- P6.M1.E1.T002
 tags:
 - boot
 - visual
 - shader
 - crt
 - audio
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:18:31.407864+00:00'
+started_at: '2026-02-15T01:18:31.407864+00:00'
+completed_at: '2026-02-15T01:27:47.785665+00:00'
+duration_minutes: 9.272963066666668
 ---
 ## Requirements
 - At 1.5s: CRT activates with 200-300ms static burst then blue NO SIGNAL #0000AA
