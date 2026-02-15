@@ -1,17 +1,22 @@
 ---
 id: P6.M1.E1.T010
 title: Boot sequence Leva debug controls
-status: pending
+status: done
 estimate_hours: 0.5
 complexity: low
 priority: medium
 depends_on:
-- T001
-- T002
+- P6.M1.E1.T001
+- P6.M1.E1.T002
 tags:
 - boot
 - debug
 - leva
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:30:37.910654+00:00'
+started_at: '2026-02-15T01:30:37.910654+00:00'
+completed_at: '2026-02-15T01:31:37.602446+00:00'
+duration_minutes: 0.9948628166666666
 ---
 ## Requirements
 - Leva folder: skipBoot button, restartBoot button, currentPhase monitor, elapsed monitor, phaseSpeed slider, forcePhase select

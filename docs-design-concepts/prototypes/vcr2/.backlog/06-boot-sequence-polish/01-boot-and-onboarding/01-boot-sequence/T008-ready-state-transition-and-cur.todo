@@ -1,18 +1,23 @@
 ---
 id: P6.M1.E1.T008
 title: Ready state transition and cursor activation
-status: pending
+status: done
 estimate_hours: 0.75
 complexity: medium
 priority: critical
 depends_on:
-- T001
-- T002
-- T007
+- P6.M1.E1.T001
+- P6.M1.E1.T002
+- P6.M1.E1.T007
 tags:
 - boot
 - state
 - interaction
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:30:37.907013+00:00'
+started_at: '2026-02-15T01:30:37.907013+00:00'
+completed_at: '2026-02-15T01:31:36.661002+00:00'
+duration_minutes: 0.97923295
 ---
 ## Requirements
 - At 5.0s: VCR shows PAUSE, Zapper becomes visible and active

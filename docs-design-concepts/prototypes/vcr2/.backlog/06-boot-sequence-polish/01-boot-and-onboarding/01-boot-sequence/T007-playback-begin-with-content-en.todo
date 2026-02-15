@@ -1,18 +1,23 @@
 ---
 id: P6.M1.E1.T007
 title: Playback begin with content entry
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: high
 priority: critical
 depends_on:
-- T001
-- T006
+- P6.M1.E1.T001
+- P6.M1.E1.T006
 tags:
 - boot
 - content
 - vhs
 - transition
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:30:37.903675+00:00'
+started_at: '2026-02-15T01:30:37.903675+00:00'
+completed_at: '2026-02-15T01:31:36.167407+00:00'
+duration_minutes: 0.9710619666666667
 ---
 ## Requirements
 - At 4.0s: VCR shows PLAY, timecode starts, brief static burst
@@ -23,3 +28,22 @@ tags:
 - VCR display shows PLAY + running timecode
 - Tracking wobble visibly settles
 - Content readable by 5s mark
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:30 UTC
+**Sibling tasks**: P6.M1.E1.T008, P6.M1.E1.T009, P6.M1.E1.T010
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E1.T007 → P6.M1.E1.T008 → P6.M1.E1.T009 → P6.M1.E1.T010
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E1.T007: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T007-playback-begin-with-content-en.todo
+- P6.M1.E1.T008: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T008-ready-state-transition-and-cur.todo
+- P6.M1.E1.T009: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T009-skip-post-it-note-for-repeat-v.todo
+- P6.M1.E1.T010: .tasks/06-boot-sequence-polish/01-boot-and-onboarding/01-boot-sequence/T010-boot-sequence-leva-debug-contr.todo
