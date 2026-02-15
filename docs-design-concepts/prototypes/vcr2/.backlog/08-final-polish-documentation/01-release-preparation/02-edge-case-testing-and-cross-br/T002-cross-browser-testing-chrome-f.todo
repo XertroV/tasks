@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E2.T002
 title: Cross-browser testing Chrome Firefox Safari
-status: in_progress
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
@@ -13,7 +13,8 @@ tags:
 claimed_by: cli-user
 claimed_at: '2026-02-15T04:00:11.519746+00:00'
 started_at: '2026-02-15T04:00:11.519746+00:00'
-completed_at: null
+completed_at: '2026-02-15T04:01:45.039235+00:00'
+duration_minutes: 1.558658
 ---
 ## Requirements
 - Test full experience in Chrome, Firefox, Safari (latest versions)

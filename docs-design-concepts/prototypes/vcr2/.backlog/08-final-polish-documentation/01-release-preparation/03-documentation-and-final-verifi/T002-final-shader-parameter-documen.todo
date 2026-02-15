@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E3.T002
 title: Final shader parameter documentation
-status: pending
+status: in_progress
 estimate_hours: 0.75
 complexity: low
 priority: medium
@@ -9,6 +9,10 @@ depends_on: []
 tags:
 - documentation
 - shaders
+claimed_by: cli-user
+claimed_at: '2026-02-15T04:01:49.372672+00:00'
+started_at: '2026-02-15T04:01:49.372672+00:00'
+completed_at: null
 ---
 ## Requirements
 - Document all VHS and CRT shader uniforms with value ranges and descriptions

@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E3.T001
 title: Project README and setup documentation
-status: pending
+status: in_progress
 estimate_hours: 1.5
 complexity: low
 priority: high
@@ -9,6 +9,10 @@ depends_on: []
 tags:
 - documentation
 - readme
+claimed_by: cli-user
+claimed_at: '2026-02-15T04:01:49.370730+00:00'
+started_at: '2026-02-15T04:01:49.370730+00:00'
+completed_at: null
 ---
 ## Requirements
 - README.md: project description, setup instructions (bun install, bun dev), build instructions, architecture overview
@@ -18,3 +22,21 @@ tags:
 - New developer can set up and run project following README
 - All commands work as documented
 - Architecture overview covers key modules
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-15 04:01 UTC
+**Sibling tasks**: P8.M1.E3.T002, P8.M1.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E3.T001 → P8.M1.E3.T002 → P8.M1.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E3.T001: .tasks/08-final-polish-documentation/01-release-preparation/03-documentation-and-final-verifi/T001-project-readme-and-setup-docum.todo
+- P8.M1.E3.T002: .tasks/08-final-polish-documentation/01-release-preparation/03-documentation-and-final-verifi/T002-final-shader-parameter-documen.todo
+- P8.M1.E3.T003: .tasks/08-final-polish-documentation/01-release-preparation/03-documentation-and-final-verifi/T003-plan-document-update-and-proje.todo
