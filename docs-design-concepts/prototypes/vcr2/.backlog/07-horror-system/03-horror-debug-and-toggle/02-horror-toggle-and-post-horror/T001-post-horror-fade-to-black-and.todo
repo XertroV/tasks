@@ -1,7 +1,7 @@
 ---
 id: P7.M3.E2.T001
 title: Post-horror fade-to-black and final messages
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
@@ -11,6 +11,11 @@ tags:
 - post
 - fade
 - messages
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:17:20.322392+00:00'
+started_at: '2026-02-15T02:17:20.322392+00:00'
+completed_at: '2026-02-15T02:20:07.478806+00:00'
+duration_minutes: 2.7859400833333337
 ---
 ## Requirements
 - After CLIMAX: screen fades to black over 2s
@@ -21,3 +26,21 @@ tags:
 - Messages appear sequentially
 - Green text on black, centered
 - Last message fades to choice screen
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 02:17 UTC
+**Sibling tasks**: P7.M3.E2.T002, P7.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M3.E2.T001 → P7.M3.E2.T002 → P7.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M3.E2.T001: .tasks/07-horror-system/03-horror-debug-and-toggle/02-horror-toggle-and-post-horror/T001-post-horror-fade-to-black-and.todo
+- P7.M3.E2.T002: .tasks/07-horror-system/03-horror-debug-and-toggle/02-horror-toggle-and-post-horror/T002-play-and-eject-post-horror-cho.todo
+- P7.M3.E2.T003: .tasks/07-horror-system/03-horror-debug-and-toggle/02-horror-toggle-and-post-horror/T003-horror-restart-and-disable-flo.todo

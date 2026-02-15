@@ -1,17 +1,22 @@
 ---
 id: P7.M3.E2.T002
 title: PLAY and EJECT post-horror choice
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P7.M3.E2.T001
 tags:
 - horror
 - post
 - choice
 - interaction
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:17:20.324111+00:00'
+started_at: '2026-02-15T02:17:20.324111+00:00'
+completed_at: '2026-02-15T02:20:07.923851+00:00'
+duration_minutes: 2.79332885
 ---
 ## Requirements
 - After final messages: two options appear on CRT: PLAY (restart horror cycle) and EJECT (disable horror, return to docs)

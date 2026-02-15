@@ -1,17 +1,22 @@
 ---
 id: P7.M3.E2.T003
 title: Horror restart and disable flow
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T002
+- P7.M3.E2.T002
 tags:
 - horror
 - restart
 - disable
 - flow
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:17:20.325092+00:00'
+started_at: '2026-02-15T02:17:20.325092+00:00'
+completed_at: '2026-02-15T02:20:08.362999+00:00'
+duration_minutes: 2.8006316333333334
 ---
 ## Requirements
 - PLAY flow: HorrorController resets, timeline begins fresh, docs resume
