@@ -1,16 +1,21 @@
 ---
 id: P7.M1.E2.T002
 title: Horror timeline event tuning and playthrough test
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: high
 depends_on:
-- T001
+- P7.M1.E2.T001
 tags:
 - horror
 - timeline
 - tuning
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:08:13.861150+00:00'
+started_at: '2026-02-15T02:08:13.861150+00:00'
+completed_at: '2026-02-15T02:10:26.920809+00:00'
+duration_minutes: 2.2176608
 ---
 ## Requirements
 - Play through complete horror timeline (DORMANT through POST)

@@ -1,16 +1,21 @@
 ---
 id: P7.M1.E2.T003
 title: Horror cycle regression test
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: high
 depends_on:
-- T002
+- P7.M1.E2.T002
 tags:
 - horror
 - testing
 - regression
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:08:13.862456+00:00'
+started_at: '2026-02-15T02:08:13.862456+00:00'
+completed_at: '2026-02-15T02:10:27.341638+00:00'
+duration_minutes: 2.2246527
 ---
 ## Requirements
 - Automated or semi-automated test running full horror cycle

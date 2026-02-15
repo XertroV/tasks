@@ -1,7 +1,7 @@
 ---
 id: P7.M1.E2.T001
 title: Text corruption utilities for zalgo and word replacement
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: critical
@@ -11,6 +11,11 @@ tags:
 - text
 - corruption
 - utility
+claimed_by: cli-user
+claimed_at: '2026-02-15T02:08:13.859258+00:00'
+started_at: '2026-02-15T02:08:13.859258+00:00'
+completed_at: '2026-02-15T02:10:26.507609+00:00'
+duration_minutes: 2.2108056499999997
 ---
 ## Requirements
 - src/horror/corruption-effects.ts: addZalgo(text, intensity), replaceWords(text, replacements, intensity)
@@ -21,3 +26,21 @@ tags:
 - addZalgo at intensity 1 heavily corrupts text
 - replaceWords targets content words, not prepositions
 - Functions are pure with no side effects
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-15 02:08 UTC
+**Sibling tasks**: P7.M1.E2.T002, P7.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M1.E2.T001 → P7.M1.E2.T002 → P7.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M1.E2.T001: .tasks/07-horror-system/01-horror-engine/02-horror-timelines-and-corruptio/T001-text-corruption-utilities-for.todo
+- P7.M1.E2.T002: .tasks/07-horror-system/01-horror-engine/02-horror-timelines-and-corruptio/T002-horror-timeline-event-tuning-a.todo
+- P7.M1.E2.T003: .tasks/07-horror-system/01-horror-engine/02-horror-timelines-and-corruptio/T003-horror-cycle-regression-test.todo
