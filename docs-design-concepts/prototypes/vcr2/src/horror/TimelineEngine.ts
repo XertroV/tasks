@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useHorrorStore, type TimelineEvent } from './horrorStore';
+import { type TimelineEvent, useHorrorStore } from './horrorStore';
 
 export interface TimelineEngineState {
   isPaused: boolean;

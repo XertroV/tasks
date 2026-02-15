@@ -1,6 +1,6 @@
+import type { GroupProps } from '@react-three/fiber';
 import { forwardRef, useMemo, useRef } from 'react';
 import type { Group, Mesh } from 'three';
-import type { GroupProps } from '@react-three/fiber';
 import { CatmullRomCurve3, TubeGeometry, Vector3 } from 'three';
 
 const BARREL_COLOR = '#E85D04';

@@ -1,4 +1,4 @@
-import { useControls, button } from 'leva';
+import { button, useControls } from 'leva';
 import type { ZapperControllerRef } from './ZapperController';
 
 export interface ZapperDebugConfig {

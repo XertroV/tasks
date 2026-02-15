@@ -1,6 +1,6 @@
-import type { GroupProps } from '@react-three/fiber';
-import { Text } from '@react-three/drei';
 import { useCameraStore } from '@/camera';
+import { Text } from '@react-three/drei';
+import type { GroupProps } from '@react-three/fiber';
 
 export interface PostItNoteProps extends GroupProps {
   text?: string;

@@ -1,7 +1,7 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
 import { visualizer } from 'rollup-plugin-visualizer';
+import { defineConfig } from 'vite';
 import { vitePluginTapeManifest } from './src/content/vite-plugin-tape-manifest';
 
 const isAnalyze = process.env.ANALYZE === 'true';
@@ -26,7 +26,8 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules/three/')) return 'three';
           if (id.includes('node_modules/@react-three/')) return 'react-three';
-          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/')) return 'react';
+          if (id.includes('node_modules/react/') || id.includes('node_modules/react-dom/'))
+            return 'react';
         },
       },
     },

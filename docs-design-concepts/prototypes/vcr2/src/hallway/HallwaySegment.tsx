@@ -1,14 +1,14 @@
-import { useMemo, useRef, useEffect } from 'react';
-import type { GroupProps } from '@react-three/fiber';
-import { useFrame } from '@react-three/fiber';
-import type { ShaderMaterial } from 'three';
-import { ShaderMaterial as ThreeShaderMaterial } from 'three';
 import carpetFrag from '@/shaders/carpet.frag.glsl?raw';
 import ceilingFrag from '@/shaders/ceiling-tile.frag.glsl?raw';
 import defaultVert from '@/shaders/default.vert.glsl?raw';
 import noise from '@/shaders/noise.glsl?raw';
 import wallpaperFrag from '@/shaders/wallpaper.frag.glsl?raw';
 import wallpaperVert from '@/shaders/wallpaper.vert.glsl?raw';
+import type { GroupProps } from '@react-three/fiber';
+import { useFrame } from '@react-three/fiber';
+import { useEffect, useMemo, useRef } from 'react';
+import type { ShaderMaterial } from 'three';
+import { ShaderMaterial as ThreeShaderMaterial } from 'three';
 
 const SEGMENT_LENGTH = 4;
 const SEGMENT_WIDTH = 2.5;

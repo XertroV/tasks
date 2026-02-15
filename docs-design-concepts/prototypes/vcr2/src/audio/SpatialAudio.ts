@@ -1,5 +1,5 @@
-import { useEffect, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
 import { AudioListener } from 'three';
 
 export interface SpatialAudioConfig {

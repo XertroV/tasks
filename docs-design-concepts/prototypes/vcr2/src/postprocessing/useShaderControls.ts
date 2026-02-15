@@ -34,27 +34,24 @@ export function useVHSControls(
   materialRef: React.RefObject<ShaderMaterial | null>,
   enabled = true
 ): VHSControls {
-  const controls = useControls(
-    'VHS',
-    {
-      trackingError: { value: VHS_CONTROLS_DEFAULTS.trackingError, min: 0, max: 1, step: 0.01 },
-      headSwitchHeight: {
-        value: VHS_CONTROLS_DEFAULTS.headSwitchHeight,
-        min: 0.01,
-        max: 0.2,
-        step: 0.01,
-      },
-      headSwitchNoise: { value: VHS_CONTROLS_DEFAULTS.headSwitchNoise, min: 0, max: 1, step: 0.01 },
-      chromaBleed: { value: VHS_CONTROLS_DEFAULTS.chromaBleed, min: 0, max: 1, step: 0.01 },
-      dropoutRate: { value: VHS_CONTROLS_DEFAULTS.dropoutRate, min: 0, max: 1, step: 0.01 },
-      staticNoise: { value: VHS_CONTROLS_DEFAULTS.staticNoise, min: 0, max: 1, step: 0.01 },
-      pauseJitter: { value: VHS_CONTROLS_DEFAULTS.pauseJitter, min: 0, max: 1, step: 0.01 },
-      ffSpeed: { value: VHS_CONTROLS_DEFAULTS.ffSpeed, min: 0, max: 3, step: 0.1 },
-      rewSpeed: { value: VHS_CONTROLS_DEFAULTS.rewSpeed, min: 0, max: 3, step: 0.1 },
-      horrorIntensity: { value: VHS_CONTROLS_DEFAULTS.horrorIntensity, min: 0, max: 1, step: 0.01 },
-      glitchSeed: { value: VHS_CONTROLS_DEFAULTS.glitchSeed, min: 0, max: 100, step: 1 },
-    }
-  );
+  const controls = useControls('VHS', {
+    trackingError: { value: VHS_CONTROLS_DEFAULTS.trackingError, min: 0, max: 1, step: 0.01 },
+    headSwitchHeight: {
+      value: VHS_CONTROLS_DEFAULTS.headSwitchHeight,
+      min: 0.01,
+      max: 0.2,
+      step: 0.01,
+    },
+    headSwitchNoise: { value: VHS_CONTROLS_DEFAULTS.headSwitchNoise, min: 0, max: 1, step: 0.01 },
+    chromaBleed: { value: VHS_CONTROLS_DEFAULTS.chromaBleed, min: 0, max: 1, step: 0.01 },
+    dropoutRate: { value: VHS_CONTROLS_DEFAULTS.dropoutRate, min: 0, max: 1, step: 0.01 },
+    staticNoise: { value: VHS_CONTROLS_DEFAULTS.staticNoise, min: 0, max: 1, step: 0.01 },
+    pauseJitter: { value: VHS_CONTROLS_DEFAULTS.pauseJitter, min: 0, max: 1, step: 0.01 },
+    ffSpeed: { value: VHS_CONTROLS_DEFAULTS.ffSpeed, min: 0, max: 3, step: 0.1 },
+    rewSpeed: { value: VHS_CONTROLS_DEFAULTS.rewSpeed, min: 0, max: 3, step: 0.1 },
+    horrorIntensity: { value: VHS_CONTROLS_DEFAULTS.horrorIntensity, min: 0, max: 1, step: 0.01 },
+    glitchSeed: { value: VHS_CONTROLS_DEFAULTS.glitchSeed, min: 0, max: 100, step: 1 },
+  });
 
   useEffect(() => {
     if (!enabled || !materialRef.current) return;
@@ -104,29 +101,26 @@ export function useCRTControls(
   materialRef: React.RefObject<ShaderMaterial | null>,
   enabled = true
 ): CRTControls {
-  const controls = useControls(
-    'CRT',
-    {
-      curvature: { value: CRT_CONTROLS_DEFAULTS.curvature, min: 0, max: 0.5, step: 0.01 },
-      scanlineIntensity: {
-        value: CRT_CONTROLS_DEFAULTS.scanlineIntensity,
-        min: 0,
-        max: 1,
-        step: 0.01,
-      },
-      scanlineCount: { value: CRT_CONTROLS_DEFAULTS.scanlineCount, min: 100, max: 1080, step: 10 },
-      phosphorIntensity: {
-        value: CRT_CONTROLS_DEFAULTS.phosphorIntensity,
-        min: 0,
-        max: 1,
-        step: 0.01,
-      },
-      phosphorMask: { value: CRT_CONTROLS_DEFAULTS.phosphorMask, min: 0, max: 1, step: 0.01 },
-      vignetteStrength: { value: CRT_CONTROLS_DEFAULTS.vignetteStrength, min: 0, max: 2, step: 0.01 },
-      flicker: { value: CRT_CONTROLS_DEFAULTS.flicker, min: 0, max: 0.5, step: 0.01 },
-      brightness: { value: CRT_CONTROLS_DEFAULTS.brightness, min: 0.5, max: 1.5, step: 0.01 },
-    }
-  );
+  const controls = useControls('CRT', {
+    curvature: { value: CRT_CONTROLS_DEFAULTS.curvature, min: 0, max: 0.5, step: 0.01 },
+    scanlineIntensity: {
+      value: CRT_CONTROLS_DEFAULTS.scanlineIntensity,
+      min: 0,
+      max: 1,
+      step: 0.01,
+    },
+    scanlineCount: { value: CRT_CONTROLS_DEFAULTS.scanlineCount, min: 100, max: 1080, step: 10 },
+    phosphorIntensity: {
+      value: CRT_CONTROLS_DEFAULTS.phosphorIntensity,
+      min: 0,
+      max: 1,
+      step: 0.01,
+    },
+    phosphorMask: { value: CRT_CONTROLS_DEFAULTS.phosphorMask, min: 0, max: 1, step: 0.01 },
+    vignetteStrength: { value: CRT_CONTROLS_DEFAULTS.vignetteStrength, min: 0, max: 2, step: 0.01 },
+    flicker: { value: CRT_CONTROLS_DEFAULTS.flicker, min: 0, max: 0.5, step: 0.01 },
+    brightness: { value: CRT_CONTROLS_DEFAULTS.brightness, min: 0.5, max: 1.5, step: 0.01 },
+  });
 
   useEffect(() => {
     if (!enabled || !materialRef.current) return;

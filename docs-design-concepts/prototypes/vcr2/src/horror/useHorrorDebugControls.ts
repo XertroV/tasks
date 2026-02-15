@@ -1,7 +1,7 @@
-import { useControls, button } from 'leva';
-import { useHorrorStore, type HorrorPhase } from './horrorStore';
-import { useRef, useCallback } from 'react';
+import { button, useControls } from 'leva';
+import { useCallback, useRef } from 'react';
 import type { TimelineEngine } from './TimelineEngine';
+import { type HorrorPhase, useHorrorStore } from './horrorStore';
 
 export interface HorrorDebugConfig {
   enabled: boolean;

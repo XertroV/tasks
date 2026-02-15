@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useHorrorStore, type HorrorPhase, type TimelineEvent } from './horrorStore';
+import { type HorrorPhase, type TimelineEvent, useHorrorStore } from './horrorStore';
 
 const PHASE_COLORS: Record<HorrorPhase, string> = {
   DORMANT: '#22c55e',
@@ -57,16 +57,52 @@ export function TimelineVisualizer({
 
   // Generate mock events for visualization (in real use, these would come from TimelineEngine)
   const mockEvents: TimelineEvent[] = [
-    { id: '1', type: 'flicker', triggerTime: 5, duration: 0.5, intensity: 0.3, isComplete: elapsed > 5.5 },
-    { id: '2', type: 'audio_cue', triggerTime: 15, duration: 2, intensity: 0.5, isComplete: elapsed > 17 },
-    { id: '3', type: 'visual_glitch', triggerTime: 25, duration: 1, intensity: 0.7, isComplete: elapsed > 26 },
-    { id: '4', type: 'camera_drift', triggerTime: 35, duration: 3, intensity: 0.8, isComplete: elapsed > 38 },
-    { id: '5', type: 'content_change', triggerTime: 45, duration: 0.5, intensity: 1.0, isComplete: elapsed > 45.5 },
+    {
+      id: '1',
+      type: 'flicker',
+      triggerTime: 5,
+      duration: 0.5,
+      intensity: 0.3,
+      isComplete: elapsed > 5.5,
+    },
+    {
+      id: '2',
+      type: 'audio_cue',
+      triggerTime: 15,
+      duration: 2,
+      intensity: 0.5,
+      isComplete: elapsed > 17,
+    },
+    {
+      id: '3',
+      type: 'visual_glitch',
+      triggerTime: 25,
+      duration: 1,
+      intensity: 0.7,
+      isComplete: elapsed > 26,
+    },
+    {
+      id: '4',
+      type: 'camera_drift',
+      triggerTime: 35,
+      duration: 3,
+      intensity: 0.8,
+      isComplete: elapsed > 38,
+    },
+    {
+      id: '5',
+      type: 'content_change',
+      triggerTime: 45,
+      duration: 0.5,
+      intensity: 1.0,
+      isComplete: elapsed > 45.5,
+    },
   ];
 
   const getEventStatus = (event: TimelineEvent): 'pending' | 'active' | 'completed' => {
     if (event.isComplete) return 'completed';
-    if (elapsed >= event.triggerTime && elapsed < event.triggerTime + event.duration) return 'active';
+    if (elapsed >= event.triggerTime && elapsed < event.triggerTime + event.duration)
+      return 'active';
     return 'pending';
   };
 
@@ -98,8 +134,8 @@ export function TimelineVisualizer({
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
         <span>
-          Phase: <span style={{ color: PHASE_COLORS[phase] }}>{phase}</span> | Intensity: {(intensity * 100).toFixed(0)}% |
-          Elapsed: {elapsed.toFixed(1)}s
+          Phase: <span style={{ color: PHASE_COLORS[phase] }}>{phase}</span> | Intensity:{' '}
+          {(intensity * 100).toFixed(0)}% | Elapsed: {elapsed.toFixed(1)}s
         </span>
         <span style={{ opacity: 0.5 }}>Shift+` to toggle</span>
       </div>
@@ -108,29 +144,37 @@ export function TimelineVisualizer({
       <div style={{ flex: 1, position: 'relative', backgroundColor: '#1a1a1a', borderRadius: 4 }}>
         {/* Phase bands */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-          {(['DORMANT', 'QUIET', 'UNEASE', 'TENSION', 'DREAD', 'TERROR'] as HorrorPhase[]).map((p) => {
-            const width = (1 / 6) * 100;
-            const isActive = p === phase;
-            return (
-              <div
-                key={p}
-                style={{
-                  width: `${width}%`,
-                  height: '100%',
-                  backgroundColor: PHASE_COLORS[p],
-                  opacity: isActive ? 0.4 : 0.15,
-                  borderRight: '1px solid rgba(255,255,255,0.1)',
-                  transition: 'opacity 0.3s',
-                }}
-                title={p}
-              />
-            );
-          })}
+          {(['DORMANT', 'QUIET', 'UNEASE', 'TENSION', 'DREAD', 'TERROR'] as HorrorPhase[]).map(
+            (p) => {
+              const width = (1 / 6) * 100;
+              const isActive = p === phase;
+              return (
+                <div
+                  key={p}
+                  style={{
+                    width: `${width}%`,
+                    height: '100%',
+                    backgroundColor: PHASE_COLORS[p],
+                    opacity: isActive ? 0.4 : 0.15,
+                    borderRight: '1px solid rgba(255,255,255,0.1)',
+                    transition: 'opacity 0.3s',
+                  }}
+                  title={p}
+                />
+              );
+            }
+          )}
         </div>
 
         {/* Intensity graph overlay */}
         <svg
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            pointerEvents: 'none',
+          }}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
@@ -159,7 +203,9 @@ export function TimelineVisualizer({
             <div
               key={event.id}
               onClick={() => handleEventClick(event)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleEventClick(event); }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleEventClick(event);
+              }}
               tabIndex={0}
               role="button"
               style={{
@@ -212,15 +258,39 @@ export function TimelineVisualizer({
       {/* Event legend */}
       <div style={{ display: 'flex', gap: 16, marginTop: 4, opacity: 0.7 }}>
         <span>
-          <span style={{ display: 'inline-block', width: 10, height: 10, backgroundColor: EVENT_COLORS.pending, marginRight: 4 }} />
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              backgroundColor: EVENT_COLORS.pending,
+              marginRight: 4,
+            }}
+          />
           Pending
         </span>
         <span>
-          <span style={{ display: 'inline-block', width: 10, height: 10, backgroundColor: EVENT_COLORS.active, marginRight: 4 }} />
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              backgroundColor: EVENT_COLORS.active,
+              marginRight: 4,
+            }}
+          />
           Active
         </span>
         <span>
-          <span style={{ display: 'inline-block', width: 10, height: 10, backgroundColor: EVENT_COLORS.completed, marginRight: 4 }} />
+          <span
+            style={{
+              display: 'inline-block',
+              width: 10,
+              height: 10,
+              backgroundColor: EVENT_COLORS.completed,
+              marginRight: 4,
+            }}
+          />
           Completed
         </span>
       </div>

@@ -1,6 +1,6 @@
+import { useFrame, useThree } from '@react-three/fiber';
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react';
 import type { Group } from 'three';
-import { useFrame, useThree } from '@react-three/fiber';
 import { ZapperModel } from './ZapperModel';
 
 const WEAPON_OFFSET = { x: 0.25, y: -0.15, z: -0.3 };

@@ -1,16 +1,20 @@
 ---
 id: P8.M1.E1.T007
 title: Debug code stripping verification
-status: pending
+status: in_progress
 estimate_hours: 0.5
 complexity: low
 priority: critical
 depends_on:
-- T006
+- P8.M1.E1.T006
 tags:
 - bundle
 - debug
 - production
+claimed_by: cli-user
+claimed_at: '2026-02-15T03:56:55.362081+00:00'
+started_at: '2026-02-15T03:56:55.362081+00:00'
+completed_at: null
 ---
 ## Requirements
 - Verify IS_DEBUG replaced with false in production
@@ -22,3 +26,20 @@ tags:
 - Zero Leva code in production bundle
 - No debug hotkey bindings
 - No console.log or console.debug
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 03:56 UTC
+**Sibling tasks**: P8.M1.E1.T008
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E1.T007 → P8.M1.E1.T008
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E1.T007: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T007-debug-code-stripping-verificat.todo
+- P8.M1.E1.T008: .tasks/08-final-polish-documentation/01-release-preparation/01-performance-optimization-and-b/T008-production-build-and-smoke-tes.todo

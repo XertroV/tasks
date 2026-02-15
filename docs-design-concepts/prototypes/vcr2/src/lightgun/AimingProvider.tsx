@@ -1,11 +1,11 @@
-import { createContext, useContext, useRef, useCallback, useState, useEffect } from 'react';
+import { useFrame, useThree } from '@react-three/fiber';
+import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
 import {
   AimingSystem,
   type AimingTarget,
-  type ShootResult,
   type CursorState,
+  type ShootResult,
 } from './AimingSystem';
 
 interface AimingContextValue {

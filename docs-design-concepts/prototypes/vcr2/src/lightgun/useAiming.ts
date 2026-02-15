@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback, useState } from 'react';
 import { useThree } from '@react-three/fiber';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AimingSystem,
   type AimingTarget,
-  type ShootResult,
   type CursorState,
+  type ShootResult,
 } from './AimingSystem';
 
 export interface UseAimingOptions {

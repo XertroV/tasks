@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E1.T003
 title: Shader and post-processing performance pass
-status: in_progress
+status: done
 estimate_hours: 1.0
 complexity: high
 priority: high
@@ -14,7 +14,8 @@ tags:
 claimed_by: cli-user
 claimed_at: '2026-02-15T03:41:24.162604+00:00'
 started_at: '2026-02-15T03:41:24.162604+00:00'
-completed_at: null
+completed_at: '2026-02-15T03:56:49.352903+00:00'
+duration_minutes: 15.419838033333333
 ---
 ## Requirements
 - Profile GPU time for CRT+VHS pipeline, confirm 5 or fewer texture reads per pixel

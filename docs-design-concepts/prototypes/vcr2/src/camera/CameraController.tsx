@@ -1,7 +1,7 @@
-import { useRef, useEffect } from 'react';
-import { useThree, useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
+import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { useCameraStore, CAMERA_CONFIG, getCameraPosition, getCameraTarget } from './cameraStore';
+import { CAMERA_CONFIG, getCameraPosition, getCameraTarget, useCameraStore } from './cameraStore';
 
 export function CameraController() {
   const { camera } = useThree();

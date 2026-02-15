@@ -1,6 +1,6 @@
-import { useRef, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useBootStore, getPhaseDuration } from './bootStore';
+import { useEffect, useRef } from 'react';
+import { getPhaseDuration, useBootStore } from './bootStore';
 
 export interface BootSequenceProps {
   onComplete?: () => void;

@@ -1,5 +1,5 @@
-import { create } from 'zustand';
 import * as THREE from 'three';
+import { create } from 'zustand';
 
 export const CAMERA_CONFIG = {
   defaultPosition: new THREE.Vector3(0, 1.2, -4),

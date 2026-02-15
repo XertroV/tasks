@@ -1,6 +1,6 @@
+import type { GroupProps } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
 import type { Group, Intersection } from 'three';
-import type { GroupProps } from '@react-three/fiber';
 import { useAimingContext } from './AimingProvider';
 
 export interface ShootableTargetProps extends Omit<GroupProps, 'id'> {

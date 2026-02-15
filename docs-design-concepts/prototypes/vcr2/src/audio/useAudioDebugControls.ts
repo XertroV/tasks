@@ -1,10 +1,10 @@
-import { useControls, button } from 'leva';
+import { button, useControls } from 'leva';
 import {
-  useAudioStore,
-  playLightgunShot,
   playButtonClick,
-  playVcrTransport,
+  playLightgunShot,
   playMenuClick,
+  playVcrTransport,
+  useAudioStore,
 } from './index';
 
 export function useAudioDebugControls(_enabled = true) {

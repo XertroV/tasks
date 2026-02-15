@@ -1,6 +1,6 @@
+import { FluorescentLight } from '@/room/FluorescentLight';
 import type { GroupProps } from '@react-three/fiber';
 import { HallwaySegment } from './HallwaySegment';
-import { FluorescentLight } from '@/room/FluorescentLight';
 
 const SEGMENT_CONFIGS: { position: [number, number, number]; intensity: number }[] = [
   { position: [0, 0, 4], intensity: 0.6 },

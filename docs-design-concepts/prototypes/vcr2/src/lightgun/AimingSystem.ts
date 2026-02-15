@@ -1,5 +1,5 @@
 import { Raycaster, Vector2 } from 'three';
-import type { Camera, Object3D, Intersection } from 'three';
+import type { Camera, Intersection, Object3D } from 'three';
 
 export interface AimingTarget {
   id: string;

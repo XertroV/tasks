@@ -1,7 +1,7 @@
 ---
 id: P8.M1.E1.T001
 title: Runtime performance profiling and baseline
-status: in_progress
+status: done
 estimate_hours: 1.5
 complexity: medium
 priority: critical
@@ -12,7 +12,8 @@ tags:
 claimed_by: cli-user
 claimed_at: '2026-02-15T03:41:24.160163+00:00'
 started_at: '2026-02-15T03:41:24.160163+00:00'
-completed_at: null
+completed_at: '2026-02-15T03:56:48.519368+00:00'
+duration_minutes: 15.405986566666666
 ---
 ## Requirements
 - Profile production build across 4 scene states: idle, navigation, horror, look-behind
