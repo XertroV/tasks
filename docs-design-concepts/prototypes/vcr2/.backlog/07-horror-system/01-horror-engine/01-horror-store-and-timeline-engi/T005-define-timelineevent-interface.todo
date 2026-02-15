@@ -1,7 +1,7 @@
 ---
 id: P7.M1.E1.T005
 title: Define TimelineEvent interface and ActiveEvent tracking
-status: pending
+status: done
 estimate_hours: 1.5
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - engine
 - types
 - foundation
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:49:29.559382+00:00'
+started_at: '2026-02-15T01:49:29.559382+00:00'
+completed_at: '2026-02-15T01:58:49.791602+00:00'
+duration_minutes: 9.337203516666667
 ---
 ## Requirements
 - Define TimelineEvent: id, time, timeVariance, duration, condition, action, cleanup, repeat (interval, count, intervalVariance), priority

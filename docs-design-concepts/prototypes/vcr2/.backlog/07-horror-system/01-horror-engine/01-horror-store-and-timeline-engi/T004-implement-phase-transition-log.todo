@@ -1,17 +1,22 @@
 ---
 id: P7.M1.E1.T004
 title: Implement phase transition logic with activity-gating
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: high
 priority: critical
 depends_on:
-- T002
-- T003
+- P7.M1.E1.T002
+- P7.M1.E1.T003
 tags:
 - store
 - state-machine
 - activity-detection
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:49:29.558338+00:00'
+started_at: '2026-02-15T01:49:29.558338+00:00'
+completed_at: '2026-02-15T01:58:49.326434+00:00'
+duration_minutes: 9.329467933333332
 ---
 ## Requirements
 - Auto phase transitions in tick(): DORMANT(60s)->UNEASY(60s)->ESCALATING(60s)->CLIMAX(30s)->POST

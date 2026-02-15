@@ -1,7 +1,7 @@
 ---
 id: P7.M1.E1.T001
 title: Define HorrorPhase type and HorrorState interface
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: low
 priority: critical
@@ -10,6 +10,11 @@ tags:
 - store
 - types
 - foundation
+claimed_by: cli-user
+claimed_at: '2026-02-15T01:49:29.554038+00:00'
+started_at: '2026-02-15T01:49:29.554038+00:00'
+completed_at: '2026-02-15T01:58:47.863654+00:00'
+duration_minutes: 9.305160116666666
 ---
 ## Requirements
 - Define HorrorPhase union: DORMANT | UNEASY | ESCALATING | CLIMAX | POST
@@ -20,3 +25,24 @@ tags:
 - Types compile with zero errors under strict TypeScript
 - HorrorPhase is a string union matching spec exactly
 - All types exportable and importable
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-15 01:49 UTC
+**Sibling tasks**: P7.M1.E1.T002, P7.M1.E1.T003, P7.M1.E1.T004, P7.M1.E1.T005, P7.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M1.E1.T001 → P7.M1.E1.T002 → P7.M1.E1.T003 → P7.M1.E1.T004 → P7.M1.E1.T005 → P7.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M1.E1.T001: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T001-define-horrorphase-type-and-ho.todo
+- P7.M1.E1.T002: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T002-implement-horrorstore-with-zus.todo
+- P7.M1.E1.T003: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T003-implement-intensity-interpolat.todo
+- P7.M1.E1.T004: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T004-implement-phase-transition-log.todo
+- P7.M1.E1.T005: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T005-define-timelineevent-interface.todo
+- P7.M1.E1.T006: .tasks/07-horror-system/01-horror-engine/01-horror-store-and-timeline-engi/T006-implement-timelineengine-core.todo
