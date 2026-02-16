@@ -44,7 +44,7 @@ export function ScreenRenderer({ children, width = 1024, height = 768 }: ScreenR
       magFilter: NearestFilter,
       format: RGBAFormat,
       stencilBuffer: false,
-      depthBuffer: true,
+      depthBuffer: true, // Required for proper z-ordering of overlapping 2D UI elements
     });
 
     const offscreenScene = new Scene();

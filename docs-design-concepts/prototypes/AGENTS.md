@@ -3,3 +3,4 @@
 - After each set of tasks you completed, ensure the build compiles and tests pass, and fix any issues that arise. Commit these fixes after you make them.
 - After each set of tasks completed, you should always commit ALL changes.
 - Always use `bun` and do not use `npm`
+- Use the `backlog` command for interacting with project tasks and the backlog. See `backlog agents` for common instructions and run `backlog` for common commands and descriptions.

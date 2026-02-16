@@ -1,0 +1,62 @@
+---
+id: P9.M1.E1.T001
+title: 'Review P1.M1.E1: Toolchain and Config'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T05:00:04.036833+00:00'
+started_at: '2026-02-16T05:00:04.036833+00:00'
+completed_at: '2026-02-16T05:02:33.395892+00:00'
+duration_minutes: 2.48931745
+---
+
+# Review P1.M1.E1: Toolchain and Config
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ Vite React-TS scaffold
+- ✅ Core deps installed (three, r3f, zustand, etc.)
+- ✅ Dev deps installed (leva, biome, etc.)
+- ✅ biome.json exists
+- ✅ tsconfig strict mode + path alias
+- ✅ GLSL type declarations
+- ✅ App.tsx renders Canvas
+- ✅ Build succeeds
+- ✅ TypeScript compiles
+- ✅ Dev server starts
+
+## Unmet Requirements / Bugs
+
+| Issue | Severity |
+|-------|----------|
+| `bun run lint` exits with code 1 | MEDIUM |
+| 5 formatting/import sorting errors | LOW |
+
+## Recommendations
+
+1. Run `bun run format` to fix import sorting
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 05:00 UTC
+**Sibling tasks**: P9.M1.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M1.E1.T001 → P9.M1.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M1.E1.T001: .tasks/09-review-phase/01-review-p1-project-scaffold-too/01-review-p1-m1-foundation-setup/T001-review-p1-m1-e1-toolchain-and.todo
+- P9.M1.E1.T002: .tasks/09-review-phase/01-review-p1-project-scaffold-too/01-review-p1-m1-foundation-setup/T002-review-p1-m1-e2-project-struct.todo

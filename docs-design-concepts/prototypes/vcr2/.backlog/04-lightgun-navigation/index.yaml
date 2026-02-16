@@ -26,7 +26,7 @@ milestones:
     audio
 stats:
   total_tasks: 38
-  done: 0
+  done: 38
   in_progress: 0
   blocked: 0
-  pending: 38
+  pending: 0

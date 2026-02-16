@@ -1,0 +1,45 @@
+---
+id: P9.M3.E3.T002
+title: 'Review P3.M3.E2: CRT Shader Pass'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:55:11.399289+00:00'
+started_at: '2026-02-16T02:55:11.399289+00:00'
+completed_at: '2026-02-16T03:02:35.640454+00:00'
+duration_minutes: 7.404019233333333
+---
+
+# Review P3.M3.E2: CRT Shader Pass
+
+**Review Status: PASS** (with minor notes)
+
+## Completed Requirements
+
+- ✅ T001: All 9 uniforms declared
+- ✅ T001: Barrel distortion with UV remapping
+- ✅ T001: Scanlines with configurable count/intensity
+- ✅ T001: Effects gated by uniform value
+- ✅ T002: RGB phosphor mask pattern
+- ✅ T002: Vignette darkening
+- ✅ T002: Per-frame flicker variation
+- ✅ T003: CRTPassEffect component with insertIndex=1
+- ✅ T003: Leva controls via useCRTControls
+- ✅ T003: Sensible defaults matching spec
+- ✅ T004: Only 1 texture read (meets <3ms budget)
+- ✅ T004: No additional render targets
+
+## Unmet Requirements / Bugs
+
+| Issue | Location | Details |
+|-------|----------|---------|
+| PhosphorMask in controls but not uniforms interface | `CRTPass.ts:6-14` | `CRTUniforms` interface missing `uPhosphorMask` but shader and controls have it |
+
+## Recommendations
+
+1. Add `uPhosphorMask` to `CRTUniforms` interface for consistency

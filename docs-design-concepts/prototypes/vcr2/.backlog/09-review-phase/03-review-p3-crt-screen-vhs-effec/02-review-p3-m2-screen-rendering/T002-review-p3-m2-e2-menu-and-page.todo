@@ -1,0 +1,43 @@
+---
+id: P9.M3.E2.T002
+title: 'Review P3.M2.E2: Menu and Page Views'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:59:22.999655+00:00'
+started_at: '2026-02-16T03:59:22.999655+00:00'
+completed_at: '2026-02-16T04:09:00.255499+00:00'
+duration_minutes: 9.620930566666667
+---
+
+# Review P3.M2.E2: Menu and Page Views
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ MenuView.tsx exists with section listings
+- ✅ PageView.tsx renders ParsedPage content
+- ✅ Section headers visually distinct
+- ✅ Page titles as cyan links
+- ✅ PREV/NEXT/MENU navigation elements
+
+## Unmet Requirements / Bugs
+
+| Issue | Severity |
+|-------|----------|
+| View switcher not implemented (MenuView/PageView) | CRITICAL |
+| Navigation target positions not computed | CRITICAL |
+| UV coordinates not exported for raycaster | CRITICAL |
+| VT323 font path not set on Text components | MINOR |
+
+## Recommendations
+
+1. Implement view switching in ScreenContent or new component
+2. Create useLinkPositions() hook for UV coordinates
+3. Add VT323 font path to all Text components

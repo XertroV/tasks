@@ -1,0 +1,32 @@
+id: P9.M4
+name: 'Review P4: Lightgun + Navigation'
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P4.M1: Lightgun System'
+  path: 01-review-p4-m1-lightgun-system
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Review P4.M2: Navigation and Transitions'
+  path: 02-review-p4-m2-navigation-and-tr
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

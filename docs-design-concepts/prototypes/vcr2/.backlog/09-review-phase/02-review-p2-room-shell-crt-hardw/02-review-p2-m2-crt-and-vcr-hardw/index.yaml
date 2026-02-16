@@ -1,0 +1,38 @@
+id: P9.M2.E2
+name: 'Review P2.M2: CRT and VCR Hardware Models'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p2-m2-e1-entertainment.todo
+  title: 'Review P2.M2.E1: Entertainment Center and CRT TV Model'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p2-m2-e2-vcr-deck-model.todo
+  title: 'Review P2.M2.E2: VCR Deck Model'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-review-p2-m2-e3-debug-foundati.todo
+  title: 'Review P2.M2.E3: Debug Foundation'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

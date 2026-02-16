@@ -1,5 +1,9 @@
-import { detectDeviceCapabilities, getRecommendedSettings, type DeviceCapabilities } from '@/utils/deviceCapabilities';
-import { createContext, useContext, useMemo, useState, useEffect } from 'react';
+import {
+  type DeviceCapabilities,
+  detectDeviceCapabilities,
+  getRecommendedSettings,
+} from '@/utils/deviceCapabilities';
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 
 interface DeviceContextValue {
   capabilities: DeviceCapabilities;

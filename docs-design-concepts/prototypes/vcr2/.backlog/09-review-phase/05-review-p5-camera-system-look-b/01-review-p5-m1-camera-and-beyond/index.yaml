@@ -1,0 +1,46 @@
+id: P9.M5.E1
+name: 'Review P5.M1: Camera and Beyond'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p5-m1-e1-camera-control.todo
+  title: 'Review P5.M1.E1: Camera Controller'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p5-m1-e2-beyond-hallway.todo
+  title: 'Review P5.M1.E2: Beyond Hallways'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-review-p5-m1-e3-look-behind-yo.todo
+  title: 'Review P5.M1.E3: Look Behind You Mechanic'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-review-p5-m1-e4-spatial-and-am.todo
+  title: 'Review P5.M1.E4: Spatial and Ambient Audio'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

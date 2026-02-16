@@ -1,0 +1,44 @@
+---
+id: P9.M7.E3.T002
+title: 'Review P7.M3.E2: Horror Toggle and Post-Horror Flow'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:48:12.418534+00:00'
+started_at: '2026-02-16T04:48:12.418534+00:00'
+completed_at: '2026-02-16T04:59:13.223457+00:00'
+duration_minutes: 11.013415233333335
+---
+
+# Review P7.M3.E2: Horror Toggle and Post-Horror Flow
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+None.
+
+## Unmet Requirements / Bugs
+
+| Issue | Severity |
+|-------|----------|
+| NO POST-HORROR COMPONENTS | CRITICAL |
+| NO POST phase in HorrorPhase type | CRITICAL |
+| NO horrorEnabled/toggleHorror | CRITICAL |
+| NO PLAY/EJECT targets | CRITICAL |
+| NO final messages | CRITICAL |
+| NO transition back to docs | HIGH |
+| NO restart flow | HIGH |
+
+## Recommendations
+
+1. Add POST phase to HorrorPhase type
+2. Create PostHorrorScreen component
+3. Create HorrorChoiceScreen with PLAY/EJECT targets
+4. Add horrorEnabled state and toggle actions
+5. Wire up post-horror flow

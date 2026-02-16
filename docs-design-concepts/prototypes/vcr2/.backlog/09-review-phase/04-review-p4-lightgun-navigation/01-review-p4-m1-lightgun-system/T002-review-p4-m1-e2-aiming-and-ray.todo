@@ -1,0 +1,45 @@
+---
+id: P9.M4.E1.T002
+title: 'Review P4.M1.E2: Aiming and Raycasting System'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:03:58.025409+00:00'
+started_at: '2026-02-16T03:03:58.025409+00:00'
+completed_at: '2026-02-16T03:12:41.376743+00:00'
+duration_minutes: 8.7225218
+---
+
+# Review P4.M1.E2: Aiming and Raycasting System
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+| Task | Description | Status |
+|------|-------------|--------|
+| T001 | AimingSystem class with raycaster | ✅ Complete |
+| T002 | Shoot action and hit detection | ✅ Complete |
+| T004 | Crosshair DOM overlay component | ✅ Created |
+
+## Unmet Requirements / Bugs
+
+| Issue | Location | Details |
+|-------|----------|---------|
+| AimingProvider not mounted | `App.tsx` | ShootableTarget will error without it |
+| T003 UV-based CRT hit detection | Missing | `findLinkAtUV(uv, links, layout)` not implemented |
+| Crosshair not rendered | `Crosshair.tsx` | Component exists but unused |
+| useAiming uses separate animation loop | `useAiming.ts:104-120` | Uses requestAnimationFrame instead of useFrame |
+| onShoot callback not triggered | `useAiming.ts:43-49` | handleClick doesn't call options.onShoot |
+
+## Recommendations
+
+1. Mount AimingProvider wrapper in App.tsx Canvas
+2. Render Crosshair component
+3. Implement findLinkAtUV for CRT screen hit detection
+4. Fix useAiming to use useFrame consistently

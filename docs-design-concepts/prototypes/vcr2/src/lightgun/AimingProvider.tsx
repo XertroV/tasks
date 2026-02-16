@@ -1,3 +1,4 @@
+import { playLightgunShot } from '@/audio';
 import { useFrame, useThree } from '@react-three/fiber';
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
@@ -84,6 +85,7 @@ export function AimingProvider({ children, onShoot }: AimingProviderProps) {
     }
 
     const result = systemRef.current.shoot();
+    playLightgunShot();
     if (onShoot) {
       onShoot(result);
     }

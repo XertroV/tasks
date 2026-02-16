@@ -44,6 +44,15 @@ export class AimingSystem {
     this.mouseNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
   }
 
+  updateTouch(touch: Touch, canvas?: HTMLCanvasElement): void {
+    const targetCanvas = canvas ?? document.querySelector('canvas');
+    if (!targetCanvas) return;
+
+    const rect = targetCanvas.getBoundingClientRect();
+    this.mouseNDC.x = ((touch.clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouseNDC.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
+  }
+
   update(camera: Camera): void {
     this.raycaster.setFromCamera(this.mouseNDC, camera);
 

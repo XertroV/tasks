@@ -410,6 +410,19 @@ def _filter_unfinished_tasks(tasks):
     return [t for t in tasks if _is_unfinished(t.status)]
 
 
+def _find_list_task(tree, task_id):
+    """Resolve normal/auxiliary task IDs for list/available rendering."""
+    if task_id.startswith("B"):
+        for bug in getattr(tree, "bugs", []):
+            if bug.id == task_id:
+                return bug
+    elif task_id.startswith("I"):
+        for idea in getattr(tree, "ideas", []):
+            if idea.id == task_id:
+                return idea
+    return tree.find_task(task_id)
+
+
 def _include_aux_item(status, unfinished=False, show_completed_aux=False):
     """Check whether auxiliary list items (bugs/ideas) should be shown."""
     if unfinished:
@@ -748,29 +761,21 @@ def _list_available(
     include_ideas=True,
 ):
     """List available tasks with optional complexity/priority filtering."""
-    if complexity or priority:
-        filtered_available = []
-        for task_id in all_available:
-            t = tree.find_task(task_id)
-            if t and _task_matches_filters(t, complexity, priority):
-                filtered_available.append(task_id)
-        all_available = filtered_available
-
-    all_available = [
-        task_id
-        for task_id in all_available
+    resolved_available = []
+    for task_id in all_available:
+        task = _find_list_task(tree, task_id)
+        if not task:
+            continue
+        if not _task_matches_filters(task, complexity, priority):
+            continue
         if (
             (task_id.startswith("B") and include_bugs)
             or (task_id.startswith("I") and include_ideas)
-            or (
-                not task_id.startswith("B")
-                and not task_id.startswith("I")
-                and include_normal
-            )
-        )
-    ]
+            or (not task_id.startswith("B") and not task_id.startswith("I") and include_normal)
+        ):
+            resolved_available.append(task)
 
-    if not all_available:
+    if not resolved_available:
         if complexity or priority:
             filters = []
             if complexity:
@@ -784,45 +789,63 @@ def _list_available(
             console.print("[yellow]No available tasks found.[/]")
         return
 
-    console.print(f"\n[bold green]Available Tasks ({len(all_available)}):[/]\n")
+    console.print(f"\n[bold green]Available Tasks ({len(resolved_available)}):[/]\n")
     _show_filter_banner(complexity, priority)
 
     if output_json:
         output = []
-        for task_id in all_available:
-            t = tree.find_task(task_id)
-            if t:
-                output.append(
-                    {
-                        "id": t.id,
-                        "title": t.title,
-                        "estimate_hours": t.estimate_hours,
-                        "complexity": t.complexity.value,
-                        "priority": t.priority.value,
-                        "on_critical_path": task_id in critical_path,
-                    }
-                )
+        for task in resolved_available:
+            output.append(
+                {
+                    "id": task.id,
+                    "title": task.title,
+                    "estimate_hours": task.estimate_hours,
+                    "complexity": task.complexity.value,
+                    "priority": task.priority.value,
+                    "on_critical_path": task.id in critical_path,
+                }
+            )
         click.echo(json.dumps(output, indent=2))
-    else:
-        by_phase = {}
-        for task_id in all_available:
-            t = tree.find_task(task_id)
-            if t:
-                task_path = TaskPath.parse(task_id)
-                if task_path.phase not in by_phase:
-                    by_phase[task_path.phase] = []
-                by_phase[task_path.phase].append(t)
+        return
 
-        for phase_id, tasks in sorted(by_phase.items()):
-            p = tree.find_phase(phase_id)
-            if p:
-                console.print(f"\n[bold cyan]{p.name}[/] ({len(tasks)} available)")
-                for t in tasks:
-                    crit_marker = "[yellow]★[/] " if t.id in critical_path else "  "
-                    console.print(f"  {crit_marker}[bold]{t.id}:[/] {t.title}")
-                    console.print(f"     {t.estimate_hours}h, {t.complexity.value}")
+    by_phase = {}
+    bugs = []
+    ideas = []
 
-        console.print(f"\n[dim]★ = On critical path[/]\n")
+    for task in resolved_available:
+        if task.id.startswith("B"):
+            bugs.append(task)
+            continue
+        if task.id.startswith("I"):
+            ideas.append(task)
+            continue
+        task_path = TaskPath.parse(task.id)
+        if task_path.phase not in by_phase:
+            by_phase[task_path.phase] = []
+        by_phase[task_path.phase].append(task)
+
+    for phase_id, tasks in sorted(by_phase.items()):
+        p = tree.find_phase(phase_id)
+        if p:
+            console.print(f"\n[bold cyan]{p.name}[/] ({len(tasks)} available)")
+            for t in tasks:
+                crit_marker = "[yellow]★[/] " if t.id in critical_path else "  "
+                console.print(f"  {crit_marker}[bold]{t.id}:[/] {t.title}")
+                console.print(f"     {t.estimate_hours}h, {t.complexity.value}")
+
+    if bugs:
+        console.print(f"\n[bold cyan]Bugs ({len(bugs)} available)[/]")
+        for task in bugs:
+            crit_marker = "[yellow]★[/] " if task.id in critical_path else "  "
+            console.print(f"  {crit_marker}[bold]{task.id}:[/] {task.title}")
+
+    if ideas:
+        console.print(f"\n[bold cyan]Ideas ({len(ideas)} available)[/]")
+        for task in ideas:
+            crit_marker = "[yellow]★[/] " if task.id in critical_path else "  "
+            console.print(f"  {crit_marker}[bold]{task.id}:[/] {task.title}")
+
+    console.print(f"\n[dim]★ = On critical path[/]\n")
 
 
 def _list_json(
@@ -1847,6 +1870,22 @@ def done(task_id, verify):
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
+        raise click.Abort()
+
+
+@cli.command()
+@click.argument("item_id")
+def undone(item_id):
+    """Mark a task/epic/milestone/phase as not done (pending)."""
+    try:
+        loader = TaskLoader()
+        result = loader.set_item_not_done(item_id)
+        console.print(
+            f"\n[green]✓ Marked not done:[/] {result['item_id']}\n"
+            f"  Reset tasks: {result['updated_tasks']}\n"
+        )
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
 
 

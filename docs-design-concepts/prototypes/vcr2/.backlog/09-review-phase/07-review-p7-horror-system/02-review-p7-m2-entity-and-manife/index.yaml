@@ -1,0 +1,38 @@
+id: P9.M7.E2
+name: 'Review P7.M2: Entity and Manifestation'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p7-m2-e1-screen-entity.todo
+  title: 'Review P7.M2.E1: Screen Entity'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p7-m2-e2-horror-vhs-int.todo
+  title: 'Review P7.M2.E2: Horror-VHS Integration'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-review-p7-m2-e3-horror-audio-l.todo
+  title: 'Review P7.M2.E3: Horror Audio Layers'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useState } from 'react';
 import { LINE_HEIGHT, MAX_VISIBLE_LINES } from './TextLayout';
 
 export interface ScrollController {
@@ -10,38 +10,57 @@ export interface ScrollController {
   getMaxScroll: (totalLines: number) => number;
 }
 
-export function useScrollController(
-  initialOffset = 0
-): [number, ScrollController, (offset: number) => void] {
-  const offsetRef = useRef(initialOffset);
-  const setOffsetRef = useRef<((offset: number) => void) | null>(null);
+export interface ScrollControllerResult {
+  scrollOffset: number;
+  controller: ScrollController;
+  scrollDown: () => void;
+  scrollTop: () => void;
+  canScrollDown: boolean;
+}
 
-  const scrollTo = useCallback((newOffset: number) => {
-    offsetRef.current = newOffset;
-    setOffsetRef.current?.(newOffset);
-  }, []);
+export function useScrollController(initialOffset = 0, totalLines = 100): ScrollControllerResult {
+  const [scrollOffset, setScrollOffset] = useState(initialOffset);
+  const maxScroll = (totalLines - MAX_VISIBLE_LINES) * LINE_HEIGHT;
 
-  const scrollBy = useCallback((delta: number) => {
-    offsetRef.current += delta;
-    setOffsetRef.current?.(offsetRef.current);
-  }, []);
+  const scrollTo = useCallback(
+    (newOffset: number) => {
+      setScrollOffset(Math.max(0, Math.min(newOffset, maxScroll)));
+    },
+    [maxScroll]
+  );
+
+  const scrollBy = useCallback(
+    (delta: number) => {
+      setScrollOffset((prev) => Math.max(0, Math.min(prev + delta, maxScroll)));
+    },
+    [maxScroll]
+  );
 
   const scrollToTop = useCallback(() => {
-    scrollTo(0);
-  }, [scrollTo]);
-
-  const scrollToBottom = useCallback(() => {
-    offsetRef.current = Number.POSITIVE_INFINITY;
-    setOffsetRef.current?.(offsetRef.current);
+    setScrollOffset(0);
   }, []);
 
-  const getOffset = useCallback(() => offsetRef.current, []);
+  const scrollToBottom = useCallback(() => {
+    setScrollOffset(maxScroll);
+  }, [maxScroll]);
 
-  const getMaxScroll = useCallback((totalLines: number) => {
-    const totalHeight = totalLines * LINE_HEIGHT;
+  const getOffset = useCallback(() => scrollOffset, [scrollOffset]);
+
+  const getMaxScrollCb = useCallback((_totalLines: number) => {
+    const totalHeight = _totalLines * LINE_HEIGHT;
     const visibleHeight = MAX_VISIBLE_LINES * LINE_HEIGHT;
     return Math.max(0, totalHeight - visibleHeight);
   }, []);
+
+  const scrollDown = useCallback(() => {
+    scrollBy(LINE_HEIGHT * 5);
+  }, [scrollBy]);
+
+  const scrollTop = useCallback(() => {
+    scrollToTop();
+  }, [scrollToTop]);
+
+  const canScrollDown = scrollOffset < maxScroll;
 
   const controller: ScrollController = {
     scrollTo,
@@ -49,14 +68,16 @@ export function useScrollController(
     scrollToTop,
     scrollToBottom,
     getOffset,
-    getMaxScroll,
+    getMaxScroll: getMaxScrollCb,
   };
 
-  const setOffset = useCallback((offset: number) => {
-    offsetRef.current = offset;
-  }, []);
-
-  return [offsetRef.current, controller, setOffset];
+  return {
+    scrollOffset,
+    controller,
+    scrollDown,
+    scrollTop,
+    canScrollDown,
+  };
 }
 
 export function clampScroll(offset: number, totalLines: number): number {

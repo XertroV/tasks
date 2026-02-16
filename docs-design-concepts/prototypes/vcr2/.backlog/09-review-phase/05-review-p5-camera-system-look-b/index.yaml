@@ -1,0 +1,23 @@
+id: P9.M5
+name: 'Review P5: Camera System + Look Behind You'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P5.M1: Camera and Beyond'
+  path: 01-review-p5-m1-camera-and-beyond
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

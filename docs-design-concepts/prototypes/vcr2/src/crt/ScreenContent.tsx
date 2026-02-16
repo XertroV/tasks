@@ -1,3 +1,6 @@
+import { HorrorEntity } from '@/horror';
+import { useContentStore } from '@/stores/contentStore';
+import { useNavigationStore } from '@/stores/navigationStore';
 import { useFrame, useThree } from '@react-three/fiber';
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
@@ -9,6 +12,8 @@ import {
   Scene,
   WebGLRenderTarget,
 } from 'three';
+import { MenuView } from './MenuView';
+import { PageView } from './PageView';
 
 interface ScreenRendererContextValue {
   renderTarget: WebGLRenderTarget | null;
@@ -44,7 +49,7 @@ export function ScreenRenderer({ children, width = 1024, height = 768 }: ScreenR
       magFilter: NearestFilter,
       format: RGBAFormat,
       stencilBuffer: false,
-      depthBuffer: true,
+      depthBuffer: true, // Required for proper z-ordering of overlapping 2D UI elements
     });
 
     const offscreenScene = new Scene();
@@ -105,10 +110,20 @@ export function ScreenContent({ children }: ScreenContentProps) {
 
 function OffscreenScene({ children }: { children?: ReactNode }) {
   const { scene } = useScreenRenderer();
+  const currentPageId = useNavigationStore((state) => state.currentPageId);
+  const currentPage = useContentStore((state) => state.currentPage);
 
   if (!scene) {
     return null;
   }
 
-  return <primitive object={scene}>{children}</primitive>;
+  const showMenu = currentPageId === null || currentPageId === 'menu';
+
+  return (
+    <primitive object={scene}>
+      {children}
+      {showMenu ? <MenuView /> : <PageView page={currentPage} />}
+      <HorrorEntity />
+    </primitive>
+  );
 }

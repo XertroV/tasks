@@ -1,0 +1,41 @@
+id: P9.M7
+name: 'Review P7: Horror System'
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P7.M1: Horror Engine'
+  path: 01-review-p7-m1-horror-engine
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Review P7.M2: Entity and Manifestation'
+  path: 02-review-p7-m2-entity-and-manife
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: 'Review P7.M3: Horror Debug and Toggle'
+  path: 03-review-p7-m3-horror-debug-and
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

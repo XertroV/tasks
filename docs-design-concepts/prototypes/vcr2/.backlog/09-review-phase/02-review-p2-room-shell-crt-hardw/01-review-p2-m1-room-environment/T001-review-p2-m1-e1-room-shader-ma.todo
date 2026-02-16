@@ -1,0 +1,60 @@
+---
+id: P9.M2.E1.T001
+title: 'Review P2.M1.E1: Room Shader Materials'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:56:36.872798+00:00'
+started_at: '2026-02-16T03:56:36.872798+00:00'
+completed_at: '2026-02-16T03:58:49.039956+00:00'
+duration_minutes: 2.2027857333333336
+---
+
+# Review P2.M1.E1: Room Shader Materials
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ Wallpaper shader with yellowed pattern, seam lines, decay
+- ✅ Carpet shader with muted brown-gray, wear patterns
+- ✅ Ceiling tile shader with grid pattern, speckled texture
+- ✅ All uniforms declared (uDecay, uTime, uWear, uColor, etc.)
+- ✅ ShaderMaterial components created
+
+## Unmet Requirements / Bugs
+
+| Task | Issue | Severity |
+|------|-------|----------|
+| T004 | Leva controls NOT implemented | HIGH |
+| T004 | useRoomMaterialControls returns static values only | HIGH |
+| T004 | wallDecay, carpetWear, fogDensity not tunable | HIGH |
+
+## Recommendations
+
+1. Implement actual Leva controls in `useRoomMaterialControls`
+2. Connect controls to RoomGeometry uniforms via props
+3. Add fog density control
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 03:56 UTC
+**Sibling tasks**: P9.M2.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M2.E1.T001 → P9.M2.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M2.E1.T001: .tasks/09-review-phase/02-review-p2-room-shell-crt-hardw/01-review-p2-m1-room-environment/T001-review-p2-m1-e1-room-shader-ma.todo
+- P9.M2.E1.T002: .tasks/09-review-phase/02-review-p2-room-shell-crt-hardw/01-review-p2-m1-room-environment/T002-review-p2-m1-e2-room-geometry.todo

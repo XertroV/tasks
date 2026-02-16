@@ -9,6 +9,7 @@ interface VCRState {
   targetTime: number | null;
   displayText: string;
   isTransitioning: boolean;
+  transitionProgress: number;
 }
 
 interface VCRActions {
@@ -17,6 +18,7 @@ interface VCRActions {
   loadTape: () => void;
   setTargetPosition: (time: number) => void;
   setPosition: (time: number) => void;
+  setTransitionProgress: (progress: number) => void;
   tick: (delta: number) => void;
   play: () => void;
   pause: () => void;
@@ -63,7 +65,9 @@ function computeDisplayText(state: VCRState): string {
   }
 
   if (state.isTransitioning && state.targetTime !== null) {
-    return formatTimecode(state.targetTime);
+    const interpolated =
+      state.currentTime + (state.targetTime - state.currentTime) * (state.transitionProgress ?? 0);
+    return formatTimecode(interpolated);
   }
 
   return formatTimecode(state.currentTime);
@@ -80,6 +84,7 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
   targetTime: null,
   displayText: '--:--:--',
   isTransitioning: false,
+  transitionProgress: 0,
 
   setMode: (newMode) => {
     const current = get();
@@ -110,6 +115,7 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
       targetTime: null,
       displayText: '--:--:--',
       isTransitioning: false,
+      transitionProgress: 0,
     });
   },
 
@@ -143,6 +149,7 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
     set({
       targetTime: Math.max(0, time),
       isTransitioning: true,
+      transitionProgress: 0,
       displayText: formatTimecode(Math.max(0, time)),
     });
   },
@@ -153,6 +160,15 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
     set({
       currentTime: newTime,
       displayText: computeDisplayText({ ...current, currentTime: newTime }),
+    });
+  },
+
+  setTransitionProgress: (progress) => {
+    const current = get();
+    const clampedProgress = Math.max(0, Math.min(1, progress));
+    set({
+      transitionProgress: clampedProgress,
+      displayText: computeDisplayText({ ...current, transitionProgress: clampedProgress }),
     });
   },
 
@@ -186,6 +202,7 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
       set({
         mode: 'PLAYING',
         isTransitioning: false,
+        transitionProgress: 0,
         displayText: computeDisplayText({ ...current, mode: 'PLAYING' }),
       });
     }
@@ -196,6 +213,8 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
     if (isValidTransition(current.mode, 'PAUSED')) {
       set({
         mode: 'PAUSED',
+        isTransitioning: false,
+        transitionProgress: 0,
         displayText: 'PAUSE',
       });
     }
@@ -207,6 +226,7 @@ export const useVCRStore = create<VCRStore>((set, get) => ({
       set({
         mode: 'STOPPED',
         isTransitioning: false,
+        transitionProgress: 0,
         displayText: 'STOP',
       });
     }

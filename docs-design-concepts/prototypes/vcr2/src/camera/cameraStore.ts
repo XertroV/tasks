@@ -1,9 +1,10 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three';
+import type { Vector3 as Vector3Type } from 'three';
 import { create } from 'zustand';
 
 export const CAMERA_CONFIG = {
-  defaultPosition: new THREE.Vector3(0, 1.2, -4),
-  defaultTarget: new THREE.Vector3(0, 0.9, -7),
+  defaultPosition: new Vector3(0, 1.2, -4),
+  defaultTarget: new Vector3(0, 0.9, -7),
   fov: 60,
   near: 0.1,
   far: 100,
@@ -14,8 +15,8 @@ export const CAMERA_CONFIG = {
     rotationFrequency: 0.15,
   },
   lookBehind: {
-    targetPosition: new THREE.Vector3(0, 1.4, -4),
-    targetLookAt: new THREE.Vector3(0, 1.0, 0),
+    targetPosition: new Vector3(0, 1.4, -4),
+    targetLookAt: new Vector3(0, 1.0, 0),
     transitionDuration: 0.8,
   },
 } as const;
@@ -26,7 +27,7 @@ export interface HorrorOverrides {
   driftIntensity: number;
   shakeIntensity: number;
   zoomIntensity: number;
-  targetOffset: THREE.Vector3;
+  targetOffset: Vector3Type;
 }
 
 export interface CameraState {
@@ -50,7 +51,7 @@ const DEFAULT_HORROR_OVERRIDES: HorrorOverrides = {
   driftIntensity: 0,
   shakeIntensity: 0,
   zoomIntensity: 0,
-  targetOffset: new THREE.Vector3(0, 0, 0),
+  targetOffset: new Vector3(0, 0, 0),
 };
 
 export const useCameraStore = create<CameraStore>((set, get) => ({
@@ -94,14 +95,14 @@ export const useCameraStore = create<CameraStore>((set, get) => ({
   },
 }));
 
-export function getCameraTarget(mode: CameraMode): THREE.Vector3 {
+export function getCameraTarget(mode: CameraMode): Vector3 {
   if (mode === 'look-behind') {
     return CAMERA_CONFIG.lookBehind.targetLookAt.clone();
   }
   return CAMERA_CONFIG.defaultTarget.clone();
 }
 
-export function getCameraPosition(mode: CameraMode): THREE.Vector3 {
+export function getCameraPosition(mode: CameraMode): Vector3 {
   if (mode === 'look-behind') {
     return CAMERA_CONFIG.lookBehind.targetPosition.clone();
   }

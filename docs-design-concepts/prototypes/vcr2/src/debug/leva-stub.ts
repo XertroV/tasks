@@ -1,0 +1,10 @@
+export const Leva = () => null;
+export const LevaPanel = () => null;
+export const folder = () => ({});
+export const useControls = () => ({});
+export const button = () => {};
+export const monitor = () => {};
+export const useStoreContext = () => ({});
+export const LevaStoreProvider = ({ children }: { children: React.ReactNode }) => children;
+export const levaStore = {};
+export const useCreateStore = () => ({});

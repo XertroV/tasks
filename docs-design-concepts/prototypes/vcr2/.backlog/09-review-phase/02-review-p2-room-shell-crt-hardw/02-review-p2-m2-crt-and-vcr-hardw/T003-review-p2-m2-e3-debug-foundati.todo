@@ -1,0 +1,48 @@
+---
+id: P9.M2.E2.T003
+title: 'Review P2.M2.E3: Debug Foundation'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:54:46.838704+00:00'
+started_at: '2026-02-16T02:54:46.838704+00:00'
+completed_at: '2026-02-16T02:55:05.834600+00:00'
+duration_minutes: 0.3165979166666667
+---
+
+# Review P2.M2.E3: Debug Foundation
+
+**Review Status: PASS**
+
+## Completed Requirements
+
+| Task | Requirement | Implementation |
+|------|-------------|----------------|
+| T001 | Fixed position DOM overlay | `App.css:23-26` - `position: fixed; bottom: 16px; left: 16px` |
+| T001 | Performance section | `DebugPanel.tsx:35-42` - FPS, frame time, draw calls, triangles, heap |
+| T001 | VCR/Navigation/Horror sections | `DebugPanel.tsx:44-60` |
+| T001 | Backtick toggle | `DebugPanel.tsx:12-25` |
+| T001 | VT323 font, green-on-black | `App.css:32-36` - VT323, `#33ff33` on black |
+| T001 | IS_DEBUG gated | `App.tsx:9-15` - lazy loaded only in dev |
+| T002 | Leva in App.tsx (dev only) | `DebugMount.tsx:15-22`, `App.tsx:61-65` |
+| T002 | Organized folders | `DebugLeva.tsx:12-19` - VHS, CRT, Room, Camera, Lightgun, Horror, Audio |
+| T002 | Folders collapsed | `DebugLeva.tsx:13-19` - `collapsed: true` |
+| T002 | F1 toggle | `DebugLeva.tsx:23-36` |
+| T003 | usePerformanceMetrics hook | `usePerformanceMetrics.ts:13-50` |
+| T003 | 4Hz updates (250ms) | `constants.ts:65`, `usePerformanceMetrics.ts:28` |
+| T003 | renderer.info reading | `usePerformanceMetrics.ts:39-41` |
+| T003 | Reset renderer.info | `usePerformanceMetrics.ts:44` |
+| T003 | IS_DEBUG disabled in production | `usePerformanceMetrics.ts:20-22` |
+
+## Unmet Requirements / Issues
+
+None. All acceptance criteria met.
+
+## Recommendations
+
+No action needed - epic complete.

@@ -93,6 +93,19 @@ describe("native cli", () => {
     expect(list.stdout.toString()).toContain("★ B001: Critical Bug");
   });
 
+  test("list --available includes bugs and ideas", () => {
+    root = setupFixture(true);
+
+    const idea = run(["idea", "capture planning intake"], root);
+    expect(idea.exitCode).toBe(0);
+
+    const list = run(["list", "--available"], root);
+    expect(list.exitCode).toBe(0);
+    const output = list.stdout.toString();
+    expect(output).toContain("B001: Critical Bug");
+    expect(output).toContain("I001: capture planning intake");
+  });
+
   test("list hides completed bugs by default and can include via flag", () => {
     root = setupFixture(true);
     const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
@@ -143,6 +156,50 @@ describe("native cli", () => {
     const rootIndex = readFileSync(join(root, ".tasks", "index.yaml"), "utf8");
     expect(rootIndex).toContain("critical_path:");
     expect(rootIndex).toContain("next_available:");
+  });
+
+  test("undone resets single task to pending", () => {
+    root = setupFixture();
+    const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    let todo = readFileSync(todoPath, "utf8");
+    todo = todo.replace("status: pending", "status: done");
+    writeFileSync(todoPath, todo);
+
+    const p = run(["undone", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(readFileSync(todoPath, "utf8")).toContain("status: pending");
+  });
+
+  test("undone resets phase hierarchy and descendant tasks", () => {
+    root = setupFixture();
+    const t001Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const t002Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    writeFileSync(t001Path, readFileSync(t001Path, "utf8").replace("status: pending", "status: done"));
+    writeFileSync(t002Path, readFileSync(t002Path, "utf8").replace("status: pending", "status: done"));
+
+    const rootIndexPath = join(root, ".tasks", "index.yaml");
+    writeFileSync(
+      rootIndexPath,
+      readFileSync(rootIndexPath, "utf8").replace("path: 01-phase\n", "path: 01-phase\n    status: done\n"),
+    );
+    const phaseIndexPath = join(root, ".tasks", "01-phase", "index.yaml");
+    writeFileSync(
+      phaseIndexPath,
+      readFileSync(phaseIndexPath, "utf8").replace("path: 01-ms\n", "path: 01-ms\n    status: done\n"),
+    );
+    const msIndexPath = join(root, ".tasks", "01-phase", "01-ms", "index.yaml");
+    writeFileSync(
+      msIndexPath,
+      readFileSync(msIndexPath, "utf8").replace("path: 01-epic\n", "path: 01-epic\n    status: done\n"),
+    );
+
+    const p = run(["undone", "P1"], root);
+    expect(p.exitCode).toBe(0);
+    expect(readFileSync(rootIndexPath, "utf8")).toContain("status: pending");
+    expect(readFileSync(phaseIndexPath, "utf8")).toContain("status: pending");
+    expect(readFileSync(msIndexPath, "utf8")).toContain("status: pending");
+    expect(readFileSync(t001Path, "utf8")).toContain("status: pending");
+    expect(readFileSync(t002Path, "utf8")).toContain("status: pending");
   });
 
   test("set updates task properties", () => {

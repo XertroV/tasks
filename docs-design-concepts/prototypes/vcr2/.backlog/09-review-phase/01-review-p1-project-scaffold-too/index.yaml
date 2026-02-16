@@ -1,0 +1,23 @@
+id: P9.M1
+name: 'Review P1: Project Scaffold & Tooling'
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P1.M1: Foundation Setup'
+  path: 01-review-p1-m1-foundation-setup
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

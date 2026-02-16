@@ -1,0 +1,58 @@
+---
+id: P9.M6.E2.T001
+title: 'Review P6.M2.E1: Audio Finalization'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:21:10.313860+00:00'
+started_at: '2026-02-16T04:21:10.313860+00:00'
+completed_at: '2026-02-16T04:24:46.194034+00:00'
+duration_minutes: 3.59800255
+---
+
+# Review P6.M2.E1: Audio Finalization
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ✅ Master volume scaling
+- ✅ SFX/ambient gain hierarchy
+
+## Unmet Requirements / Bugs
+
+| Task | Issue | Severity |
+|------|-------|----------|
+| T001 | Tape hiss NOT implemented | HIGH |
+| T001 | Static crackle NOT implemented | HIGH |
+| T002 | FF/REW screech NOT implemented | HIGH |
+| T003 | Tape/room tone layers missing | MEDIUM |
+
+## Recommendations
+
+1. Implement tape hiss with pink noise + lowpass at 8kHz
+2. Add static crackle random clicks/pops
+3. Add FF/REW screech triggered by VCR mode transitions
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M6.E2)
+**Agent**: cli-user
+**Date**: 2026-02-16 04:21 UTC
+**Sibling tasks**: P9.M6.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M6.E2.T001 → P9.M6.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M6.E2.T001: .tasks/09-review-phase/06-review-p6-boot-sequence-polish/02-review-p6-m2-audio-and-vfx-pol/T001-review-p6-m2-e1-audio-finaliza.todo
+- P9.M6.E2.T002: .tasks/09-review-phase/06-review-p6-boot-sequence-polish/02-review-p6-m2-audio-and-vfx-pol/T002-review-p6-m2-e2-vhs-shader-tun.todo

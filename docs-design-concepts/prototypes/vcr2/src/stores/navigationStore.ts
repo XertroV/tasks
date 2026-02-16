@@ -41,6 +41,7 @@ export interface NavigationActions {
   cancelTransition: () => void;
   canGoBack: () => boolean;
   canGoForward: () => boolean;
+  isTransitionActive: () => boolean;
 }
 
 type NavigationStore = NavigationState & NavigationActions;
@@ -60,6 +61,10 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   navigateTo: (pageId: string) => {
     const state = get();
     if (pageId === state.currentPageId) return;
+    if (state.transitionState !== 'IDLE') {
+      console.warn('[Navigation] navigateTo rejected - transition in progress');
+      return;
+    }
 
     const newHistory = state.history.slice(0, state.historyIndex + 1);
     newHistory.push(pageId);
@@ -76,6 +81,10 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   goBack: () => {
     const state = get();
     if (state.historyIndex <= 0) return;
+    if (state.transitionState !== 'IDLE') {
+      console.warn('[Navigation] goBack rejected - transition in progress');
+      return;
+    }
 
     const newIndex = state.historyIndex - 1;
     const targetId = state.history[newIndex];
@@ -93,6 +102,10 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   goForward: () => {
     const state = get();
     if (state.historyIndex >= state.history.length - 1) return;
+    if (state.transitionState !== 'IDLE') {
+      console.warn('[Navigation] goForward rejected - transition in progress');
+      return;
+    }
 
     const newIndex = state.historyIndex + 1;
     const targetId = state.history[newIndex];
@@ -181,6 +194,11 @@ export const useNavigationStore = create<NavigationStore>((set, get) => ({
   canGoForward: () => {
     const state = get();
     return state.historyIndex < state.history.length - 1;
+  },
+
+  isTransitionActive: () => {
+    const state = get();
+    return state.transitionState !== 'IDLE';
   },
 }));
 

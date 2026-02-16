@@ -12,6 +12,7 @@ export const Z_ORDER = {
   background: 0,
   content: 0.1,
   osd: 0.2,
+  entity: 0.25,
   scanline: 0.5,
 } as const;
 

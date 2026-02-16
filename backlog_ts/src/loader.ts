@@ -773,4 +773,152 @@ ${data.title}
 
     throw new Error("lock/unlock supports only phase, milestone, or epic IDs");
   }
+
+  async setItemNotDone(itemId: string): Promise<{ item_id: string; updated_tasks: number }> {
+    const tree = await this.load();
+
+    const resetTask = async (task: Task): Promise<void> => {
+      task.status = Status.PENDING;
+      task.claimedBy = undefined;
+      task.claimedAt = undefined;
+      task.startedAt = undefined;
+      task.completedAt = undefined;
+      task.durationMinutes = undefined;
+      await this.saveTask(task);
+    };
+
+    const directTask = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)))
+      .concat(tree.bugs ?? [])
+      .concat(tree.ideas ?? [])
+      .find((t) => t.id === itemId);
+    if (directTask) {
+      await resetTask(directTask);
+      return { item_id: directTask.id, updated_tasks: 1 };
+    }
+
+    const path = TaskPath.parse(itemId);
+
+    if (path.isPhase) {
+      const phase = tree.phases.find((p) => p.id === path.fullId);
+      if (!phase) throw new Error(`Phase not found: ${itemId}`);
+
+      const rootPath = join(this.tasksDir, "index.yaml");
+      const root = this.mustYaml(rootPath);
+      for (const entry of ((root.phases as AnyRec[]) ?? [])) {
+        if (String(entry.id ?? "") === phase.id || String(entry.id ?? "") === path.phase) {
+          entry.status = Status.PENDING;
+          break;
+        }
+      }
+      await this.writeYaml(rootPath, root);
+
+      const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
+      if (existsSync(phaseIndexPath)) {
+        const phaseIndex = this.mustYaml(phaseIndexPath);
+        phaseIndex.status = Status.PENDING;
+        for (const entry of ((phaseIndex.milestones as AnyRec[]) ?? [])) entry.status = Status.PENDING;
+        await this.writeYaml(phaseIndexPath, phaseIndex);
+      }
+
+      let updated = 0;
+      for (const milestone of phase.milestones) {
+        const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+        if (existsSync(msIndexPath)) {
+          const msIndex = this.mustYaml(msIndexPath);
+          msIndex.status = Status.PENDING;
+          for (const entry of ((msIndex.epics as AnyRec[]) ?? [])) entry.status = Status.PENDING;
+          await this.writeYaml(msIndexPath, msIndex);
+        }
+        for (const epic of milestone.epics) {
+          const epicIndexPath = join(this.tasksDir, phase.path, milestone.path, epic.path, "index.yaml");
+          if (existsSync(epicIndexPath)) {
+            const epicIndex = this.mustYaml(epicIndexPath);
+            epicIndex.status = Status.PENDING;
+            await this.writeYaml(epicIndexPath, epicIndex);
+          }
+          for (const task of epic.tasks) {
+            await resetTask(task);
+            updated += 1;
+          }
+        }
+      }
+      return { item_id: phase.id, updated_tasks: updated };
+    }
+
+    if (path.isMilestone) {
+      const milestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === path.fullId);
+      if (!milestone) throw new Error(`Milestone not found: ${itemId}`);
+      const phase = tree.phases.find((p) => p.id === milestone.phaseId);
+      if (!phase) throw new Error(`Phase not found for milestone: ${itemId}`);
+
+      const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
+      const phaseIndex = this.mustYaml(phaseIndexPath);
+      for (const entry of ((phaseIndex.milestones as AnyRec[]) ?? [])) {
+        const id = String(entry.id ?? "");
+        if (id === milestone.id || id === (path.milestone ?? "")) {
+          entry.status = Status.PENDING;
+          break;
+        }
+      }
+      await this.writeYaml(phaseIndexPath, phaseIndex);
+
+      const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+      if (existsSync(msIndexPath)) {
+        const msIndex = this.mustYaml(msIndexPath);
+        msIndex.status = Status.PENDING;
+        for (const entry of ((msIndex.epics as AnyRec[]) ?? [])) entry.status = Status.PENDING;
+        await this.writeYaml(msIndexPath, msIndex);
+      }
+
+      let updated = 0;
+      for (const epic of milestone.epics) {
+        const epicIndexPath = join(this.tasksDir, phase.path, milestone.path, epic.path, "index.yaml");
+        if (existsSync(epicIndexPath)) {
+          const epicIndex = this.mustYaml(epicIndexPath);
+          epicIndex.status = Status.PENDING;
+          await this.writeYaml(epicIndexPath, epicIndex);
+        }
+        for (const task of epic.tasks) {
+          await resetTask(task);
+          updated += 1;
+        }
+      }
+      return { item_id: milestone.id, updated_tasks: updated };
+    }
+
+    if (path.isEpic) {
+      const epic = tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => e.id === path.fullId);
+      if (!epic) throw new Error(`Epic not found: ${itemId}`);
+      const milestone = tree.phases.flatMap((p) => p.milestones).find((m) => m.id === epic.milestoneId);
+      const phase = tree.phases.find((p) => p.id === epic.phaseId);
+      if (!milestone || !phase) throw new Error(`Could not resolve parent paths for epic: ${itemId}`);
+
+      const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+      const msIndex = this.mustYaml(msIndexPath);
+      for (const entry of ((msIndex.epics as AnyRec[]) ?? [])) {
+        const id = String(entry.id ?? "");
+        if (id === epic.id || id === (path.epic ?? "")) {
+          entry.status = Status.PENDING;
+          break;
+        }
+      }
+      await this.writeYaml(msIndexPath, msIndex);
+
+      const epicIndexPath = join(this.tasksDir, phase.path, milestone.path, epic.path, "index.yaml");
+      if (existsSync(epicIndexPath)) {
+        const epicIndex = this.mustYaml(epicIndexPath);
+        epicIndex.status = Status.PENDING;
+        await this.writeYaml(epicIndexPath, epicIndex);
+      }
+
+      let updated = 0;
+      for (const task of epic.tasks) {
+        await resetTask(task);
+        updated += 1;
+      }
+      return { item_id: epic.id, updated_tasks: updated };
+    }
+
+    throw new Error("undone supports only task, phase, milestone, or epic IDs");
+  }
 }

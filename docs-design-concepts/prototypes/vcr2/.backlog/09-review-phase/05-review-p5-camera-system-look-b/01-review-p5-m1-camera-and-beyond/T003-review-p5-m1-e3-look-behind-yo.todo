@@ -1,0 +1,47 @@
+---
+id: P9.M5.E1.T003
+title: 'Review P5.M1.E3: Look Behind You Mechanic'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:42:40.007390+00:00'
+started_at: '2026-02-16T02:42:40.007390+00:00'
+completed_at: '2026-02-16T02:53:33.950472+00:00'
+duration_minutes: 10.8990512
+---
+
+# Review P5.M1.E3: Look Behind You Mechanic
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ✅ PostItNote component with hand-written text style
+- ✅ LookBehindYouPostIt triggers setMode('look-behind') (`PostItNote.tsx:54-55`)
+- ✅ cameraStore has lookBehind config with targetPosition/targetLookAt (`cameraStore.ts:16-20`)
+
+## Unmet Requirements / Bugs
+
+- ❌ **CRITICAL: PostItNote NEVER rendered in App.tsx** - Component exists but not used
+- ❌ **No "Look At Screen" return post-it** - Task T003 requires floating post-it in behind view
+- ❌ **No B keyboard shortcut** - Task T003.AC4 requires "B keyboard shortcut also toggles"
+- ❌ **Zapper behavior in behind view not constrained** - T004 requires "Only the return post-it is a valid target" in behind view
+- ❌ **Actual 180° rotation not verified** - Mode switch exists but rotation depends on CameraController being mounted
+
+## Code Locations
+
+- `src/App.tsx` - No import of `LookBehindYouPostIt`
+- `src/interaction/PostItNote.tsx` - No LookAtScreenPostIt component
+- No keyboard handler for 'B' key found
+
+## Recommendations
+
+1. **Immediate**: Import and mount `LookBehindYouPostIt` on TV bezel in `App.tsx`
+2. Create `LookAtScreenPostIt` component for return transition
+3. Add keyboard handler for 'B' key to toggle camera mode
+4. Constrain zapper targets when in 'look-behind' mode

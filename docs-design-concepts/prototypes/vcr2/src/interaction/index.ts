@@ -1,2 +1,2 @@
-export { PostItNote, LookBehindYouPostIt } from './PostItNote';
+export { PostItNote, LookBehindYouPostIt, LookAtScreenPostIt, SkipBootPostIt } from './PostItNote';
 export type { PostItNoteProps } from './PostItNote';

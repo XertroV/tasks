@@ -1,0 +1,30 @@
+id: P9.M6.E1
+name: 'Review P6.M1: Boot and Onboarding'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p6-m1-e1-boot-sequence.todo
+  title: 'Review P6.M1.E1: Boot Sequence'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p6-m1-e2-settings-and-a.todo
+  title: 'Review P6.M1.E2: Settings and Accessibility'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

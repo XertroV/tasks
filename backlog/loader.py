@@ -1857,3 +1857,139 @@ TODO: Describe actual behavior
             return epic.id
 
         raise ValueError("lock/unlock supports only phase, milestone, or epic IDs")
+
+    def set_item_not_done(self, item_id: str) -> dict:
+        """Mark a task or hierarchy item as not done (pending)."""
+        tree = self.load()
+
+        def reset_task(task: Task) -> None:
+            task.status = Status.PENDING
+            task.claimed_by = None
+            task.claimed_at = None
+            task.started_at = None
+            task.completed_at = None
+            task.duration_minutes = None
+            self.save_task(task)
+
+        # Handle direct task IDs first (includes bugs/ideas)
+        task = tree.find_task(item_id)
+        if task:
+            reset_task(task)
+            return {"item_id": task.id, "updated_tasks": 1}
+
+        path = TaskPath.parse(item_id)
+
+        if path.is_phase:
+            phase = tree.find_phase(path.full_id)
+            if not phase:
+                raise ValueError(f"Phase not found: {item_id}")
+
+            root_path = self.tasks_dir / "index.yaml"
+            root = self._load_yaml(root_path)
+            for entry in root.get("phases", []):
+                if entry.get("id") in {phase.id, path.phase}:
+                    entry["status"] = Status.PENDING.value
+                    break
+            self._write_yaml(root_path, root)
+
+            phase_index_path = self.tasks_dir / phase.path / "index.yaml"
+            if phase_index_path.exists():
+                phase_index = self._load_yaml(phase_index_path)
+                phase_index["status"] = Status.PENDING.value
+                for entry in phase_index.get("milestones", []):
+                    entry["status"] = Status.PENDING.value
+                self._write_yaml(phase_index_path, phase_index)
+
+            updated = 0
+            for milestone in phase.milestones:
+                ms_index_path = self.tasks_dir / phase.path / milestone.path / "index.yaml"
+                if ms_index_path.exists():
+                    ms_index = self._load_yaml(ms_index_path)
+                    ms_index["status"] = Status.PENDING.value
+                    for entry in ms_index.get("epics", []):
+                        entry["status"] = Status.PENDING.value
+                    self._write_yaml(ms_index_path, ms_index)
+
+                for epic in milestone.epics:
+                    epic_index_path = (
+                        self.tasks_dir / phase.path / milestone.path / epic.path / "index.yaml"
+                    )
+                    if epic_index_path.exists():
+                        epic_index = self._load_yaml(epic_index_path)
+                        epic_index["status"] = Status.PENDING.value
+                        self._write_yaml(epic_index_path, epic_index)
+                    for t in epic.tasks:
+                        reset_task(t)
+                        updated += 1
+            return {"item_id": phase.id, "updated_tasks": updated}
+
+        if path.is_milestone:
+            milestone = tree.find_milestone(path.full_id)
+            if not milestone:
+                raise ValueError(f"Milestone not found: {item_id}")
+            phase = tree.find_phase(milestone.phase_id or "")
+            if not phase:
+                raise ValueError(f"Phase not found for milestone: {item_id}")
+
+            phase_index_path = self.tasks_dir / phase.path / "index.yaml"
+            phase_index = self._load_yaml(phase_index_path)
+            for entry in phase_index.get("milestones", []):
+                if entry.get("id") in {milestone.id, path.milestone}:
+                    entry["status"] = Status.PENDING.value
+                    break
+            self._write_yaml(phase_index_path, phase_index)
+
+            ms_index_path = self.tasks_dir / phase.path / milestone.path / "index.yaml"
+            if ms_index_path.exists():
+                ms_index = self._load_yaml(ms_index_path)
+                ms_index["status"] = Status.PENDING.value
+                for entry in ms_index.get("epics", []):
+                    entry["status"] = Status.PENDING.value
+                self._write_yaml(ms_index_path, ms_index)
+
+            updated = 0
+            for epic in milestone.epics:
+                epic_index_path = (
+                    self.tasks_dir / phase.path / milestone.path / epic.path / "index.yaml"
+                )
+                if epic_index_path.exists():
+                    epic_index = self._load_yaml(epic_index_path)
+                    epic_index["status"] = Status.PENDING.value
+                    self._write_yaml(epic_index_path, epic_index)
+                for t in epic.tasks:
+                    reset_task(t)
+                    updated += 1
+            return {"item_id": milestone.id, "updated_tasks": updated}
+
+        if path.is_epic:
+            epic = tree.find_epic(path.full_id)
+            if not epic:
+                raise ValueError(f"Epic not found: {item_id}")
+            milestone = tree.find_milestone(epic.milestone_id or "")
+            phase = tree.find_phase(epic.phase_id or "")
+            if not milestone or not phase:
+                raise ValueError(f"Could not resolve parent paths for epic: {item_id}")
+
+            ms_index_path = self.tasks_dir / phase.path / milestone.path / "index.yaml"
+            ms_index = self._load_yaml(ms_index_path)
+            for entry in ms_index.get("epics", []):
+                if entry.get("id") in {epic.id, path.epic}:
+                    entry["status"] = Status.PENDING.value
+                    break
+            self._write_yaml(ms_index_path, ms_index)
+
+            epic_index_path = (
+                self.tasks_dir / phase.path / milestone.path / epic.path / "index.yaml"
+            )
+            if epic_index_path.exists():
+                epic_index = self._load_yaml(epic_index_path)
+                epic_index["status"] = Status.PENDING.value
+                self._write_yaml(epic_index_path, epic_index)
+
+            updated = 0
+            for t in epic.tasks:
+                reset_task(t)
+                updated += 1
+            return {"item_id": epic.id, "updated_tasks": updated}
+
+        raise ValueError("undone supports only task, phase, milestone, or epic IDs")

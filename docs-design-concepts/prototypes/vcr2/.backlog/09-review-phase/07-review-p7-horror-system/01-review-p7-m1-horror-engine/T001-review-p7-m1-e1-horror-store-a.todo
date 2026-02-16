@@ -1,0 +1,69 @@
+---
+id: P9.M7.E1.T001
+title: 'Review P7.M1.E1: Horror Store and Timeline Engine'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:25:10.283791+00:00'
+started_at: '2026-02-16T04:25:10.283791+00:00'
+completed_at: '2026-02-16T04:47:04.583797+00:00'
+duration_minutes: 21.904999933333333
+---
+
+# Review P7.M1.E1: Horror Store and Timeline Engine
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ✅ TimelineEngine control methods (pause/resume/reset/seek)
+- ✅ Basic Zustand store
+- ✅ EntityOpacityController
+- ✅ HorrorCameraBridge
+- ✅ TimelineVisualizer
+- ✅ Leva debug controls
+
+## Unmet Requirements / Bugs
+
+| Task | Issue | Severity |
+|------|-------|----------|
+| T001 | HorrorPhase values don't match spec | CRITICAL |
+| T002 | Missing HorrorState fields (enabled, timeInPhase, etc.) | HIGH |
+| T003 | No 210s intensity curve | HIGH |
+| T004 | Phase transitions not time-based | HIGH |
+| T005 | TimelineEvent interface incomplete | MEDIUM |
+| T006 | No time variance/condition/repeat logic | MEDIUM |
+| T008 | horror-timelines.ts MISSING | CRITICAL |
+| T009 | HorrorController.tsx MISSING | CRITICAL |
+| T010 | H key toggle NOT implemented | HIGH |
+| T011-T012 | Tests MISSING | MEDIUM |
+
+## Recommendations
+
+1. Reconcile phase definitions with spec
+2. Complete HorrorStore with time-based transitions
+3. Create missing files (horror-timelines.ts, HorrorController.tsx)
+4. Implement toggle system (H key, URL params)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 04:25 UTC
+**Sibling tasks**: P9.M7.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M7.E1.T001 → P9.M7.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M7.E1.T001: .tasks/09-review-phase/07-review-p7-horror-system/01-review-p7-m1-horror-engine/T001-review-p7-m1-e1-horror-store-a.todo
+- P9.M7.E1.T002: .tasks/09-review-phase/07-review-p7-horror-system/01-review-p7-m1-horror-engine/T002-review-p7-m1-e2-horror-timelin.todo

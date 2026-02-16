@@ -1,0 +1,42 @@
+---
+id: P9.M7.E1.T002
+title: 'Review P7.M1.E2: Horror Timelines and Corruption Effects'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:25:10.285784+00:00'
+started_at: '2026-02-16T04:25:10.285784+00:00'
+completed_at: '2026-02-16T04:47:12.318553+00:00'
+duration_minutes: 22.033879316666667
+---
+
+# Review P7.M1.E2: Horror Timelines and Corruption Effects
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+None.
+
+## Unmet Requirements / Bugs
+
+| Task | Issue | Severity |
+|------|-------|----------|
+| T001 | corruption-effects.ts MISSING | CRITICAL |
+| T001 | addZalgo function NOT implemented | HIGH |
+| T001 | replaceWords function NOT implemented | HIGH |
+| T002 | 15 timeline events NOT defined | HIGH |
+| T002 | entityMessages data MISSING | HIGH |
+| T003 | Regression tests MISSING | MEDIUM |
+
+## Recommendations
+
+1. Create corruption-effects.ts with zalgo/word replacement
+2. Define timeline events per spec
+3. Add entity message data
+4. Write regression tests

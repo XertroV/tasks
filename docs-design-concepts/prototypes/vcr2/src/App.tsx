@@ -1,10 +1,53 @@
 import { Canvas } from '@react-three/fiber';
 import './App.css';
+import { SpatialAudioSetup, initAudioOnInteraction, useTapeAudio } from '@/audio';
+import {
+  BootOverlay,
+  BootSequence,
+  SettingsPanel,
+  useBootAudio,
+  useBootDebugControls,
+  useBootStore,
+  useSettingsStore,
+} from '@/boot';
+import { CameraController, useCameraStore } from '@/camera';
+import { BackroomsHallway } from '@/hallway';
+import { HorrorCameraBridge, PostHorrorScreen, useHorrorStore } from '@/horror';
+import { LookAtScreenPostIt, LookBehindYouPostIt, SkipBootPostIt } from '@/interaction/PostItNote';
+import {
+  AimingProvider,
+  CrosshairRenderer,
+  KeyboardNavigation,
+  ZapperController,
+  useZapperDebugControls,
+} from '@/lightgun';
+import type { ZapperControllerRef } from '@/lightgun';
 import { PostProcessingPipeline } from '@/postprocessing';
 import { Room } from '@/room';
-import type { RoomSurfaceMaterials } from '@/room/RoomGeometry';
+import { DeviceProvider, WebGL2Fallback } from '@/utils/DeviceProvider';
 import { useVCRStore } from '@/vcr';
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+
+function ZapperWithDebugControls() {
+  const zapperRef = useRef<ZapperControllerRef>(null);
+  const debug = useZapperDebugControls(zapperRef, import.meta.env.DEV);
+  const isBootComplete = useBootStore((state) => state.isComplete);
+
+  if (!debug.showZapper || !isBootComplete) return null;
+
+  return (
+    <ZapperController
+      ref={zapperRef}
+      showCable={debug.showCable}
+      scale={debug.zapperScale}
+      offsetX={debug.offsetX}
+      offsetY={debug.offsetY}
+      offsetZ={debug.offsetZ}
+      recoilStrength={debug.recoilStrength}
+      muzzleFlashIntensity={debug.muzzleFlashIntensity}
+    />
+  );
+}
 
 const DebugMount = import.meta.env.DEV
   ? lazy(() => import('@/debug/DebugMount').then((module) => ({ default: module.DebugMount })))
@@ -14,20 +57,41 @@ const DebugOverlay = import.meta.env.DEV
   ? lazy(() => import('@/debug/DebugMount').then((module) => ({ default: module.DebugOverlay })))
   : null;
 
-function App() {
-  const materialRefs = useRef<RoomSurfaceMaterials | null>(null);
+function TapeAudio() {
+  useTapeAudio();
+  return null;
+}
+
+function BootAudioPlayer() {
+  useBootAudio();
+  return null;
+}
+
+function BootDebugPanel() {
+  if (import.meta.env.DEV) {
+    useBootDebugControls(true);
+  }
+  return null;
+}
+
+function BootVCRController() {
+  const currentPhase = useBootStore((state) => state.currentPhase);
   const [crtScreenMode, setCrtScreenMode] = useState<'no-signal' | 'docs'>('no-signal');
 
   useEffect(() => {
-    const loadId = window.setTimeout(() => {
+    if (currentPhase === 'TV_POWER_ON') {
       useVCRStore.getState().loadTape();
-    }, 300);
+    }
+  }, [currentPhase]);
 
-    const timeoutId = window.setTimeout(() => {
+  useEffect(() => {
+    if (currentPhase === 'PLAYBACK_BEGIN' && crtScreenMode === 'no-signal') {
       setCrtScreenMode('docs');
       useVCRStore.getState().play();
-    }, 2500);
+    }
+  }, [currentPhase, crtScreenMode]);
 
+  useEffect(() => {
     const intervalId = window.setInterval(() => {
       const state = useVCRStore.getState();
       if (state.mode === 'PLAYING' || state.mode === 'FF' || state.mode === 'REW') {
@@ -36,34 +100,121 @@ function App() {
     }, 100);
 
     return () => {
-      window.clearTimeout(loadId);
-      window.clearTimeout(timeoutId);
       window.clearInterval(intervalId);
     };
   }, []);
 
+  return <Room crtScreenMode={crtScreenMode} onMaterialsReady={() => {}} />;
+}
+
+function useKeyboardShortcuts() {
+  const cameraMode = useCameraStore((state) => state.mode);
+  const setCameraMode = useCameraStore((state) => state.setMode);
+  const toggleSettings = useSettingsStore((state) => state.toggleOpen);
+  const isSettingsOpen = useSettingsStore((state) => state.isOpen);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (e.key.toLowerCase()) {
+        case 'b':
+          if (!isSettingsOpen) {
+            const newMode = cameraMode === 'normal' ? 'look-behind' : 'normal';
+            setCameraMode(newMode);
+          }
+          break;
+        case 'h':
+          if (!isSettingsOpen) {
+            useHorrorStore.getState().toggleEnabled();
+          }
+          break;
+        case 's':
+          if (!isSettingsOpen) {
+            toggleSettings();
+          }
+          break;
+        case 'escape':
+          if (isSettingsOpen) {
+            toggleSettings();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cameraMode, setCameraMode, toggleSettings, isSettingsOpen]);
+}
+
+function PostHorrorFlowHandler() {
+  const handleRestart = () => {
+    useHorrorStore.getState().enable();
+  };
+
+  const handleComplete = () => {
+    useHorrorStore.getState().disable();
+  };
+
+  return <PostHorrorScreen onRestart={handleRestart} onComplete={handleComplete} />;
+}
+
+function App() {
+  const syncWithSystemPreferences = useSettingsStore((state) => state.syncWithSystemPreferences);
+
+  useEffect(() => {
+    initAudioOnInteraction();
+  }, []);
+
+  useEffect(() => {
+    syncWithSystemPreferences();
+  }, [syncWithSystemPreferences]);
+
+  useKeyboardShortcuts();
+
+  const cameraMode = useCameraStore((state) => state.mode);
+
   return (
-    <div className="app">
-      <Canvas camera={{ position: [0, 1.2, -2], fov: 60 }}>
-        <Room
-          crtScreenMode={crtScreenMode}
-          onMaterialsReady={(materials) => {
-            materialRefs.current = materials;
-          }}
-        />
-        <PostProcessingPipeline />
-        {DebugMount ? (
+    <DeviceProvider>
+      <WebGL2Fallback />
+      <div className="app">
+        <BootOverlay />
+        <PostHorrorFlowHandler />
+        <TapeAudio />
+        <BootAudioPlayer />
+        <BootDebugPanel />
+        <Canvas camera={{ position: [0, 1.2, -2], fov: 60 }}>
+          <BootSequence />
+          <AimingProvider>
+            <SpatialAudioSetup />
+            <KeyboardNavigation />
+            <BootVCRController />
+            <LookBehindYouPostIt position={[-0.5, 1.1, -6.3]} rotation={[0, 0, 0.1]} />
+            <LookAtScreenPostIt position={[0, 1.4, -3]} rotation={[0, Math.PI, 0]} />
+            <SkipBootPostIt position={[0.5, 1.1, -3]} rotation={[0, Math.PI, -0.1]} />
+            {cameraMode !== 'look-behind' && <BackroomsHallway />}
+            <CameraController />
+            <HorrorCameraBridge />
+            <PostProcessingPipeline />
+            <CrosshairRenderer />
+            <ZapperWithDebugControls />
+          </AimingProvider>
+          {DebugMount ? (
+            <Suspense fallback={null}>
+              <DebugMount />
+            </Suspense>
+          ) : null}
+        </Canvas>
+        {DebugOverlay ? (
           <Suspense fallback={null}>
-            <DebugMount />
+            <DebugOverlay />
           </Suspense>
         ) : null}
-      </Canvas>
-      {DebugOverlay ? (
-        <Suspense fallback={null}>
-          <DebugOverlay />
-        </Suspense>
-      ) : null}
-    </div>
+        <SettingsPanel />
+      </div>
+    </DeviceProvider>
   );
 }
 

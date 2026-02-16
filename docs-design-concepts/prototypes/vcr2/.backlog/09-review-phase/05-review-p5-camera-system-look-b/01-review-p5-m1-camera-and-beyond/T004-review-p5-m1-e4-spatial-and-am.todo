@@ -1,0 +1,49 @@
+---
+id: P9.M5.E1.T004
+title: 'Review P5.M1.E4: Spatial and Ambient Audio'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:42:40.008477+00:00'
+started_at: '2026-02-16T02:42:40.008477+00:00'
+completed_at: '2026-02-16T02:53:34.461647+00:00'
+duration_minutes: 10.907552583333334
+---
+
+# Review P5.M1.E4: Spatial and Ambient Audio
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ✅ AudioEngine with master/sfx/ambient gain nodes (`AudioEngine.ts`)
+- ✅ SpatialAudioSetup and useAudioListener hooks (`SpatialAudio.ts`)
+- ✅ Audio debug controls in Leva (`useAudioDebugControls.ts`)
+
+## Unmet Requirements / Bugs
+
+- ❌ **CRITICAL: SpatialAudioSetup NEVER mounted** - Not in App.tsx
+- ❌ **No AudioListener attached to camera** - Hook exists but never called
+- ❌ **Fluorescent light buzz NOT implemented** - T002 requires "120Hz sawtooth, low-passed at 300Hz, PositionalAudio at ceiling light position"
+- ❌ **VCR motor hum NOT implemented** - T003 requires "60Hz bandpass noise + 120Hz sine at VCR deck position"
+- ❌ **Ambient drone/room tone NOT implemented** - T004 requires "filtered noise floor + low sine (~40Hz) + distant ventilation"
+- ❌ **No PositionalAudio usage anywhere** - Grep returned 0 results
+
+## Code Locations
+
+- `src/App.tsx` - No `SpatialAudioSetup` imported or mounted
+- `src/audio/` - No procedural ambient audio generators
+- `src/room/FluorescentLight.tsx` - Has light but no audio source
+
+## Recommendations
+
+1. **Immediate**: Import and mount `SpatialAudioSetup` in `App.tsx` Canvas
+2. Implement procedural fluorescent buzz generator with PositionalAudio
+3. Implement VCR motor hum generator at VCR deck position
+4. Implement ambient drone/room tone layer
+5. Attach AudioListener to camera entity

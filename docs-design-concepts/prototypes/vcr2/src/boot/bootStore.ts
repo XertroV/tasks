@@ -38,7 +38,7 @@ const PHASE_ORDER: BootPhase[] = [
 const PHASE_DURATIONS: Record<BootPhase, number> = {
   BLACK: 0.5,
   ROOM_FADE: 1.0,
-  TV_POWER_ON: 1.0,
+  TV_POWER_ON: 1.5,
   TAPE_LOAD: 1.5,
   PLAYBACK_BEGIN: 0.5,
   READY: Number.POSITIVE_INFINITY,

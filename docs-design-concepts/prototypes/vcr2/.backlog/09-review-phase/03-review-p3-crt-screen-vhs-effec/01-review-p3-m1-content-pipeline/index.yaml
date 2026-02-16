@@ -1,0 +1,30 @@
+id: P9.M3.E1
+name: 'Review P3.M1: Content Pipeline'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p3-m1-e1-content-loadin.todo
+  title: 'Review P3.M1.E1: Content Loading and Tape Model'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p3-m1-e2-vcr-state-mach.todo
+  title: 'Review P3.M1.E2: VCR State Machine'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

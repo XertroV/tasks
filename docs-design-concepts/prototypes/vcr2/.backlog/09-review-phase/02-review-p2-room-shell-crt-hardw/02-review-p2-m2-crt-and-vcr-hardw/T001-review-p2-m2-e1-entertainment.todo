@@ -1,0 +1,63 @@
+---
+id: P9.M2.E2.T001
+title: 'Review P2.M2.E1: Entertainment Center and CRT TV Model'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:54:46.836421+00:00'
+started_at: '2026-02-16T02:54:46.836421+00:00'
+completed_at: '2026-02-16T02:55:04.847664+00:00'
+duration_minutes: 0.3001871166666667
+---
+
+# Review P2.M2.E1: Entertainment Center and CRT TV Model
+
+**Review Status: PASS**
+
+## Completed Requirements
+
+| Task | Requirement | Implementation |
+|------|-------------|----------------|
+| T001 | Simple wooden TV stand | `EntertainmentCenter.tsx:13-27` - procedural box geometry |
+| T001 | Wood-tone material | `#5b3a25` with roughness 0.72, metalness 0.06 |
+| T001 | Positioned against far wall | `TV_WALL_Z = -6`, correct wall gap calculation |
+| T002 | CRT TV housing with rounded corners | `CRTTelevision.tsx:70-73` - box geometry with dark gray `#3c3d40` |
+| T002 | Screen quad with barrel curvature | `CRTTelevision.tsx:23-39` - `createCurvedScreenGeometry()` creates inward curvature |
+| T002 | Screen quad UVs for RenderTarget | `CRTTelevision.tsx:92` - `map={screenTexture}` |
+| T002 | TV bezel visible | `CRTTelevision.tsx:105-131` - 4 bezel meshes frame the screen |
+| T003 | Screen emissive property | `CRTTelevision.tsx:88-89` - emissive color and intensity |
+| T003 | PointLight from screen | `CRTTelevision.tsx:96-103` - PointLight with distance 3.5, decay 2 |
+| T003 | Light color matches content | `CRTTelevision.tsx:51` - blue `#5fa8ff` for no-signal, green `#33ff66` for docs |
+| T003 | Intensity proportional to brightness | `CRTTelevision.tsx:52-53` - calculated from `screenBrightness` |
+
+## Unmet Requirements / Issues
+
+None. All acceptance criteria met.
+
+## Recommendations
+
+No action needed - epic complete.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-16 02:54 UTC
+**Sibling tasks**: P9.M2.E2.T002, P9.M2.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M2.E2.T001 → P9.M2.E2.T002 → P9.M2.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M2.E2.T001: .tasks/09-review-phase/02-review-p2-room-shell-crt-hardw/02-review-p2-m2-crt-and-vcr-hardw/T001-review-p2-m2-e1-entertainment.todo
+- P9.M2.E2.T002: .tasks/09-review-phase/02-review-p2-room-shell-crt-hardw/02-review-p2-m2-crt-and-vcr-hardw/T002-review-p2-m2-e2-vcr-deck-model.todo
+- P9.M2.E2.T003: .tasks/09-review-phase/02-review-p2-room-shell-crt-hardw/02-review-p2-m2-crt-and-vcr-hardw/T003-review-p2-m2-e3-debug-foundati.todo

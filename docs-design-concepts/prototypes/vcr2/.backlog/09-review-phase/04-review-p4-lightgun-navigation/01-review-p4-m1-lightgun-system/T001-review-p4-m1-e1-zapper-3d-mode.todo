@@ -1,0 +1,66 @@
+---
+id: P9.M4.E1.T001
+title: 'Review P4.M1.E1: Zapper 3D Model and Controller'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:03:58.023133+00:00'
+started_at: '2026-02-16T03:03:58.023133+00:00'
+completed_at: '2026-02-16T03:12:40.475868+00:00'
+duration_minutes: 8.7075453
+---
+
+# Review P4.M1.E1: Zapper 3D Model and Controller
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+| Task | Description | Status |
+|------|-------------|--------|
+| T001 | Barrel/tip/sight geometry | ✅ Complete |
+| T002 | Grip/trigger guard/trigger geometry | ✅ Complete |
+| T003 | Cable catenary curve | ✅ Complete |
+| T004 | Camera layer setup (layer 1) | ✅ Complete |
+| T005 | Fixed offset positioning + aim sway | ✅ Complete |
+| T006 | Recoil animation system | ✅ Complete |
+| T007 | Muzzle flash point light | ✅ Complete |
+| T008 | Leva debug controls hook | ✅ Created |
+
+## Unmet Requirements / Bugs
+
+| Issue | Location | Details |
+|-------|----------|---------|
+| ZapperController not mounted | `App.tsx:62-88` | Entire Zapper system implemented but not integrated |
+| Debug controls not applied | `ZapperController.tsx:6-12` | Leva values ignored, hardcoded constants used |
+| CableGeometry not separate file | `ZapperModel.tsx:23-34` | T003 specified separate file, inline instead |
+
+## Recommendations
+
+1. Mount ZapperController in App.tsx Canvas
+2. Connect useZapperDebugControls return values to ZapperController
+3. Extract cable geometry to separate file (optional)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M4.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 03:03 UTC
+**Sibling tasks**: P9.M4.E1.T002, P9.M4.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M4.E1.T001 → P9.M4.E1.T002 → P9.M4.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M4.E1.T001: .tasks/09-review-phase/04-review-p4-lightgun-navigation/01-review-p4-m1-lightgun-system/T001-review-p4-m1-e1-zapper-3d-mode.todo
+- P9.M4.E1.T002: .tasks/09-review-phase/04-review-p4-lightgun-navigation/01-review-p4-m1-lightgun-system/T002-review-p4-m1-e2-aiming-and-ray.todo
+- P9.M4.E1.T003: .tasks/09-review-phase/04-review-p4-lightgun-navigation/01-review-p4-m1-lightgun-system/T003-review-p4-m1-e3-shootable-targ.todo

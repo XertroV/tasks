@@ -1,0 +1,65 @@
+---
+id: P9.M8.E1.T001
+title: 'Review P8.M1.E1: Performance Optimization and Bundle Audit'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:46:29.307591+00:00'
+started_at: '2026-02-16T03:46:29.307591+00:00'
+completed_at: '2026-02-16T03:52:01.419606+00:00'
+duration_minutes: 5.5352001
+---
+
+# Review P8.M1.E1: Performance Optimization and Bundle Audit
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ Performance profiling infrastructure (`usePerformanceMetrics.ts`)
+- ✅ Noise functions centralized in `src/shaders/noise.glsl`
+- ✅ Zustand selectors are granular
+- ✅ Debug metrics use IS_DEBUG flag
+- ✅ Material cleanup in useEffect returns
+- ✅ Bundle chunking configured in vite.config.ts
+- ✅ Tests pass (15/15)
+
+## Unmet Requirements / Bugs
+
+| Issue | Severity |
+|-------|----------|
+| Leva in production bundle | CRITICAL |
+| Console.log in production | HIGH |
+| `import * as THREE` prevents tree-shaking | MEDIUM |
+| No InstancedMesh for hallway | MEDIUM |
+| Lint fails (import sorting) | LOW |
+
+## Recommendations
+
+1. Guard DebugLeva import with IS_DEBUG check
+2. Replace `import * as THREE` with named imports
+3. Run `bun run format` to fix lint issues
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M8.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 03:46 UTC
+**Sibling tasks**: P9.M8.E1.T002, P9.M8.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M8.E1.T001 → P9.M8.E1.T002 → P9.M8.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M8.E1.T001: .tasks/09-review-phase/08-review-p8-final-polish-documen/01-review-p8-m1-release-preparati/T001-review-p8-m1-e1-performance-op.todo
+- P9.M8.E1.T002: .tasks/09-review-phase/08-review-p8-final-polish-documen/01-review-p8-m1-release-preparati/T002-review-p8-m1-e2-edge-case-test.todo
+- P9.M8.E1.T003: .tasks/09-review-phase/08-review-p8-final-polish-documen/01-review-p8-m1-release-preparati/T003-review-p8-m1-e3-documentation.todo

@@ -1,0 +1,67 @@
+---
+id: P9.M5.E1.T001
+title: 'Review P5.M1.E1: Camera Controller'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:42:40.004253+00:00'
+started_at: '2026-02-16T02:42:40.004253+00:00'
+completed_at: '2026-02-16T02:53:13.778308+00:00'
+duration_minutes: 10.562900766666667
+---
+
+# Review P5.M1.E1: Camera Controller
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ Camera store with mode, isTransitioning, horrorOverrides (`cameraStore.ts`)
+- ✅ Camera constants: defaultPosition, defaultTarget, FOV 60, breathing params
+- ✅ Actions: setMode(), applyHorrorOverride(), clearHorrorOverrides()
+- ✅ Breathing micro-sway with sinusoidal motion (`CameraController.tsx:44-48`)
+- ✅ Horror overrides: drift, shake, zoom implemented (`CameraController.tsx:55-73`)
+
+## Unmet Requirements / Bugs
+
+- ❌ **CameraController NOT mounted in App.tsx** - Component exists but never rendered
+- ❌ **Leva debug controls for camera NOT implemented** - `DebugLeva.tsx:16` has placeholder folder only
+- ❌ **Multiple breathing frequencies not implemented** - Task T003 required "multiple sine waves at different frequencies", but only single sine (`CameraController.tsx:44-45`)
+- ⚠️ **Index.yaml shows `status: pending`** despite .todo files showing `done`
+
+## Code Locations
+
+- `src/App.tsx:47-53` - CameraController missing from Canvas
+- `src/camera/CameraController.tsx:44-48` - Single breathing frequency, not multiple
+- `src/debug/DebugLeva.tsx:16` - Empty Camera folder placeholder
+
+## Recommendations
+
+1. **Immediate**: Integrate `CameraController` into `App.tsx` scene graph
+2. Add Leva camera debug controls
+3. Implement multi-frequency breathing (2-3 overlaid sine waves)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 02:42 UTC
+**Sibling tasks**: P9.M5.E1.T002, P9.M5.E1.T003, P9.M5.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M5.E1.T001 → P9.M5.E1.T002 → P9.M5.E1.T003 → P9.M5.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M5.E1.T001: .tasks/09-review-phase/05-review-p5-camera-system-look-b/01-review-p5-m1-camera-and-beyond/T001-review-p5-m1-e1-camera-control.todo
+- P9.M5.E1.T002: .tasks/09-review-phase/05-review-p5-camera-system-look-b/01-review-p5-m1-camera-and-beyond/T002-review-p5-m1-e2-beyond-hallway.todo
+- P9.M5.E1.T003: .tasks/09-review-phase/05-review-p5-camera-system-look-b/01-review-p5-m1-camera-and-beyond/T003-review-p5-m1-e3-look-behind-yo.todo
+- P9.M5.E1.T004: .tasks/09-review-phase/05-review-p5-camera-system-look-b/01-review-p5-m1-camera-and-beyond/T004-review-p5-m1-e4-spatial-and-am.todo

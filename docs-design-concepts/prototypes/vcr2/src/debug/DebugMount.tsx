@@ -1,3 +1,4 @@
+import { TimelineVisualizer } from '@/horror';
 import { DebugLeva } from './DebugLeva';
 import { DebugMetricsProbe } from './DebugMetricsProbe';
 import { DebugPanel } from './DebugPanel';
@@ -17,6 +18,7 @@ export function DebugOverlay() {
     <>
       <DebugLeva />
       <DebugPanel />
+      <TimelineVisualizer />
     </>
   );
 }

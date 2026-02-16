@@ -1,6 +1,7 @@
 import { useFrame, useThree } from '@react-three/fiber';
 import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
+import type { OrthographicCamera, PerspectiveCamera } from 'three';
 import { CAMERA_CONFIG, getCameraPosition, getCameraTarget, useCameraStore } from './cameraStore';
 
 export function CameraController() {
@@ -9,13 +10,13 @@ export function CameraController() {
   const horrorOverrides = useCameraStore((state) => state.horrorOverrides);
   const isTransitioning = useCameraStore((state) => state.isTransitioning);
 
-  const targetPositionRef = useRef(new THREE.Vector3());
-  const targetLookAtRef = useRef(new THREE.Vector3());
+  const targetPositionRef = useRef(new Vector3());
+  const targetLookAtRef = useRef(new Vector3());
   const breathTimeRef = useRef(0);
 
   useEffect(() => {
     if (camera && 'fov' in camera) {
-      const perspCam = camera as THREE.PerspectiveCamera;
+      const perspCam = camera as PerspectiveCamera;
       perspCam.fov = CAMERA_CONFIG.fov;
       perspCam.near = CAMERA_CONFIG.near;
       perspCam.far = CAMERA_CONFIG.far;
@@ -31,7 +32,7 @@ export function CameraController() {
   useFrame((_, delta) => {
     if (!camera) return;
 
-    if ((camera as THREE.OrthographicCamera).isOrthographicCamera) {
+    if ('isOrthographicCamera' in camera && (camera as OrthographicCamera).isOrthographicCamera) {
       return;
     }
 
@@ -41,11 +42,14 @@ export function CameraController() {
     const baseLook = targetLookAtRef.current.clone();
 
     const breathing = CAMERA_CONFIG.breathing;
+    const t = breathTimeRef.current;
     const breathOffset =
-      Math.sin(breathTimeRef.current * breathing.frequency * Math.PI * 2) * breathing.amplitude;
+      Math.sin(t * 0.2 * Math.PI * 2) * breathing.amplitude * 0.5 +
+      Math.sin(t * 0.33 * Math.PI * 2) * breathing.amplitude * 0.3 +
+      Math.sin(t * 0.5 * Math.PI * 2) * breathing.amplitude * 0.2;
     const rotationOffset =
-      Math.sin(breathTimeRef.current * breathing.rotationFrequency * Math.PI * 2) *
-      breathing.rotationAmplitude;
+      Math.sin(t * 0.15 * Math.PI * 2) * breathing.rotationAmplitude * 0.6 +
+      Math.sin(t * 0.27 * Math.PI * 2) * breathing.rotationAmplitude * 0.4;
 
     const targetPos = basePos.clone();
     const targetLook = baseLook.clone();
@@ -75,7 +79,7 @@ export function CameraController() {
     const lerpFactor = isTransitioning ? 0.05 : 0.1;
     camera.position.lerp(targetPos, lerpFactor);
 
-    const currentLookAt = new THREE.Vector3();
+    const currentLookAt = new Vector3();
     camera.getWorldDirection(currentLookAt);
     currentLookAt.add(camera.position);
 

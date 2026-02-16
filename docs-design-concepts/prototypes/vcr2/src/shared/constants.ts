@@ -1,10 +1,19 @@
-// CRT Screen Colors
-export const CRT_BLACK = '#0A0A0A';
-export const PHOSPHOR_GREEN = '#33FF33';
-export const PHOSPHOR_GREEN_BRIGHT = '#44FF44';
-export const CYAN_LINK = '#00FFFF';
-export const AMBER_CODE = '#FFAA00';
-export const RED_HORROR = '#FF0000';
+// CRT Screen Colors - import from colors.ts to avoid duplication
+export {
+	CRT_BLACK,
+	CRT_BLACK_PURE,
+	PHOSPHOR_GREEN,
+	PHOSPHOR_GREEN_DIM,
+	PHOSPHOR_GREEN_BRIGHT,
+	LINK_CYAN,
+	CODE_AMBER,
+	HORROR_RED,
+	TEXT_COLORS,
+	TEXT_EMISSIVE,
+} from './colors';
+
+// Aliases for backwards compatibility
+export { LINK_CYAN as CYAN_LINK, CODE_AMBER as AMBER_CODE, HORROR_RED as RED_HORROR } from './colors';
 
 // Zapper Colors
 export const ZAPPER_BARREL = '#E85D04';
@@ -39,17 +48,8 @@ export const PAGE_DURATION_SECONDS = 150;
 export const TOTAL_PAGES = 48;
 export const TOTAL_TAPE_DURATION = PAGE_DURATION_SECONDS * TOTAL_PAGES; // 7200s = 2:00:00
 
-// VHS Defaults
-export const VHS_DEFAULTS = {
-  trackingError: 0.02,
-  headSwitchNoise: 0.3,
-  chromaBleed: 0.15,
-  dropoutRate: 0.05,
-  staticNoise: 0.03,
-  pauseJitter: 0.1,
-  ffSpeed: 0,
-  rewSpeed: 0,
-};
+// VHS Defaults - See src/postprocessing/VHSPass.ts for actual VHS shader uniform defaults
+// These were consolidated into VHS_DEFAULT_UNIFORMS in VHSPass.ts
 
 // Horror Timeline
 export const HORROR_PHASE_DURATIONS = {
@@ -57,6 +57,7 @@ export const HORROR_PHASE_DURATIONS = {
   UNEASY: 60,
   ESCALATING: 60,
   CLIMAX: 30,
+  POST: Number.POSITIVE_INFINITY,
 };
 export const HORROR_TOTAL_DURATION = 210; // 3.5 minutes
 

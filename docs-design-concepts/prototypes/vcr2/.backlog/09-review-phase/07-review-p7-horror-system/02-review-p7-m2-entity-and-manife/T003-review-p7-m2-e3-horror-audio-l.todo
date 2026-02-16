@@ -1,0 +1,40 @@
+---
+id: P9.M7.E2.T003
+title: 'Review P7.M2.E3: Horror Audio Layers'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:29:17.047599+00:00'
+started_at: '2026-02-16T03:29:17.047599+00:00'
+completed_at: '2026-02-16T03:43:01.208318+00:00'
+duration_minutes: 13.736011683333334
+---
+
+# Review P7.M2.E3: Horror Audio Layers
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ✅ AudioEngine with master/sfx/ambient gain nodes
+- ✅ ProceduralSynth with basic sounds
+
+## Unmet Requirements / Bugs
+
+| Task | Requirement | Status |
+|------|-------------|--------|
+| T001 | Whisper audio layer | ❌ NOT IMPLEMENTED |
+| T002 | Entity manifestation sound | ❌ NOT IMPLEMENTED |
+| T003 | Horror audio mixing (detuning) | ❌ NOT IMPLEMENTED |
+
+## Recommendations
+
+1. Add `createWhisper()` to ProceduralSynth
+2. Add `createEntitySound()` for manifestation cues
+3. Create `useHorrorAudio()` hook to respond to phase changes
+4. Implement audio detuning based on horror intensity

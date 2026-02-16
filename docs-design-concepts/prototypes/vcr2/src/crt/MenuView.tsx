@@ -85,6 +85,7 @@ export function MenuView({ scrollOffset = 0, selectedId = null, ...groupProps }:
         maxWidth={1.8}
         anchorX="center"
         anchorY="top"
+        font="/fonts/VT323-Regular.ttf"
       >
         THE BACKLOGS {'//'} DOCUMENTATION
       </Text>
@@ -98,6 +99,7 @@ export function MenuView({ scrollOffset = 0, selectedId = null, ...groupProps }:
           maxWidth={1.7}
           anchorX="left"
           anchorY="top"
+          font="/fonts/VT323-Regular.ttf"
         >
           {line.text}
         </Text>
@@ -110,6 +112,7 @@ export function MenuView({ scrollOffset = 0, selectedId = null, ...groupProps }:
         maxWidth={1.8}
         anchorX="center"
         anchorY="bottom"
+        font="/fonts/VT323-Regular.ttf"
       >
         {[
           `SCROLL: ${Math.floor(scrollOffset)}/${Math.max(0, lines.length - MAX_VISIBLE_LINES)}`,

@@ -1,0 +1,43 @@
+---
+id: P9.M4.E1.T003
+title: 'Review P4.M1.E3: Shootable Target Framework'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:03:58.027609+00:00'
+started_at: '2026-02-16T03:03:58.027609+00:00'
+completed_at: '2026-02-16T03:12:42.226668+00:00'
+duration_minutes: 8.73665045
+---
+
+# Review P4.M1.E3: Shootable Target Framework
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+| Task | Description | Status |
+|------|-------------|--------|
+| T001 | ShootableTarget component | ✅ Complete |
+
+## Unmet Requirements / Bugs
+
+| Issue | Location | Details |
+|-------|----------|---------|
+| T002 CRT screen link targets | Missing | No code generates shootable targets for page links |
+| T003 VCR button targets | `VCRDeck.tsx:75-88` | Buttons exist but NOT wrapped with ShootableTarget |
+| T004 Post-it note targets | `PostItNote.tsx:46-79` | Has onShoot prop but NOT wrapped with ShootableTarget |
+| T005 Keyboard navigation | Missing | No Tab/Enter/Space/arrow key handling |
+| Target visual feedback | Missing | No highlight/lift/glow effects on targeting |
+
+## Recommendations
+
+1. Wrap VCR buttons with ShootableTarget and add onShoot handlers
+2. Wrap PostItNote with ShootableTarget
+3. Implement keyboard navigation (Tab cycling, Enter shoot)
+4. Add visual feedback for targeted states

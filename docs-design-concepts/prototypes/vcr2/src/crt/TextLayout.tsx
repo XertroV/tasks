@@ -35,7 +35,7 @@ function renderLine(line: ParsedLine, y: number, key: string): LineRender | null
     return null;
   }
 
-  let color = WHITE;
+  let color = GREEN;
   let fontSize = CHAR_SIZE;
 
   switch (line.type) {

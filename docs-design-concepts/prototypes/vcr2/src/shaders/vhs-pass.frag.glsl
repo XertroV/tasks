@@ -65,7 +65,13 @@ void applyDropout(inout vec4 color, vec2 uv) {
   float dropoutNoise = noise(vec2(uv.y * 500.0, uTime * 10.0));
   if (dropoutNoise > 1.0 - uDropoutRate * 0.1) {
     float dropoutStrength = randomVec2(uv + uTime) * uDropoutRate;
-    color.rgb *= 1.0 - dropoutStrength * 0.8;
+    float lineSeed = floor(uv.y * 500.0) + floor(uTime * 30.0);
+    vec3 whiteNoise = vec3(
+      0.7 + 0.3 * random(lineSeed),
+      0.7 + 0.3 * random(lineSeed + 100.0),
+      0.7 + 0.3 * random(lineSeed + 200.0)
+    );
+    color.rgb = mix(color.rgb, whiteNoise, dropoutStrength * 0.95);
   }
 }
 
@@ -92,25 +98,38 @@ void applyFFREWEffect(inout vec4 color, vec2 uv) {
   if (uFFSpeed <= 0.0 && uREWSpeed <= 0.0) return;
 
   float speed = max(uFFSpeed, uREWSpeed);
-  int lines = int(speed * 20.0) + 1;
+  float offset1 = 0.02 * speed;
+  float offset2 = 0.035 * speed;
 
-  for (int i = 1; i <= 5; i++) {
-    if (i > lines) break;
-
-    float offset = float(i) * 0.015;
-    if (uFFSpeed > 0.0) {
-      vec4 offsetColor = texture2D(tDiffuse, vec2(uv.x, uv.y - offset));
-      color.rgb = mix(color.rgb, offsetColor.rgb, 0.15 * speed);
-    }
-    if (uREWSpeed > 0.0) {
-      vec4 offsetColor = texture2D(tDiffuse, vec2(uv.x, uv.y + offset));
-      color.rgb = mix(color.rgb, offsetColor.rgb, 0.15 * speed);
-    }
+  if (uFFSpeed > 0.0) {
+    vec4 offsetColor1 = texture2D(tDiffuse, vec2(uv.x, uv.y - offset1));
+    vec4 offsetColor2 = texture2D(tDiffuse, vec2(uv.x, uv.y - offset2));
+    color.rgb = mix(color.rgb, (offsetColor1.rgb + offsetColor2.rgb) * 0.5, 0.25 * speed);
+  }
+  if (uREWSpeed > 0.0) {
+    vec4 offsetColor = texture2D(tDiffuse, vec2(uv.x, uv.y + offset1));
+    color.rgb = mix(color.rgb, offsetColor.rgb, 0.25 * speed);
   }
 }
 
 void applyHorrorEffects(inout vec4 color, vec2 uv) {
   if (uHorrorIntensity <= 0.0) return;
+
+  color.r += uHorrorIntensity * 0.15;
+  color.gb -= uHorrorIntensity * 0.05;
+
+  float inversionBand = step(0.5, fract(uv.y * 20.0 + uTime * 0.5));
+  if (inversionBand > 0.5 && uHorrorIntensity > 0.3) {
+    float bandIntensity = (uHorrorIntensity - 0.3) * 1.4;
+    color.rgb = mix(color.rgb, 1.0 - color.rgb, bandIntensity * 0.5);
+  }
+
+  float swapTrigger = step(0.95, noise(vec3(uv * 30.0, uTime * 3.0)));
+  if (swapTrigger > 0.5) {
+    float temp = color.r;
+    color.r = color.b;
+    color.b = temp;
+  }
 
   float horrorNoise = noise(vec3(uv * 50.0, uTime * 2.0));
   color.rgb = mix(color.rgb, color.rgb * 0.7, horrorNoise * uHorrorIntensity * 0.3);

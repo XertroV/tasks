@@ -1,0 +1,30 @@
+id: P9.M6.E2
+name: 'Review P6.M2: Audio and VFX Polish'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p6-m2-e1-audio-finaliza.todo
+  title: 'Review P6.M2.E1: Audio Finalization'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p6-m2-e2-vhs-shader-tun.todo
+  title: 'Review P6.M2.E2: VHS Shader Tuning and Performance Audit'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

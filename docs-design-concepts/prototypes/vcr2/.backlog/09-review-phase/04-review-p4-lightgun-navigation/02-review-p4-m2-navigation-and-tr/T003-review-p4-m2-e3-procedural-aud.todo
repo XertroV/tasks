@@ -1,0 +1,46 @@
+---
+id: P9.M4.E2.T003
+title: 'Review P4.M2.E3: Procedural Audio for Lightgun and UI'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:13:16.687930+00:00'
+started_at: '2026-02-16T03:13:16.687930+00:00'
+completed_at: '2026-02-16T03:29:02.393612+00:00'
+duration_minutes: 15.7617612
+---
+
+# Review P4.M2.E3: Procedural Audio for Lightgun and UI
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ AudioEngine singleton with AudioContext management
+- ✅ audioStore with volume/mute state
+- ✅ Autoplay policy handling
+- ✅ `createLightgunShot()` - noise burst + sine pop
+- ✅ `createButtonClick()` - short square wave click
+- ✅ `createVcrTransport()` - filtered noise burst
+- ✅ `createMenuClick()` - short sine click
+- ✅ Leva Audio folder with volume sliders and test buttons
+
+## Unmet Requirements / Bugs
+
+| Task | Requirement | Issue |
+|------|-------------|-------|
+| T002 | Sound plays on every shot | **NOT WIRED** - Function exists but never called |
+| T003 | FF whir (rising pitch noise) | **MISSING** |
+| T003 | REW whir (reversed feel) | **MISSING** |
+| T003 | VCR button click sounds | **NOT WIRED** |
+
+## Recommendations
+
+1. Wire `playLightgunShot()` into `AimingProvider.onShoot`
+2. Add continuous FF/REW audio with pitch modulation
+3. Connect VCR button clicks to audio

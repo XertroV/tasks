@@ -39,7 +39,7 @@ epics:
   description: ''
 stats:
   total_tasks: 21
-  done: 0
+  done: 21
   in_progress: 0
   blocked: 0
-  pending: 21
+  pending: 0

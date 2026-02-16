@@ -1,0 +1,41 @@
+id: P9.M3
+name: 'Review P3: CRT Screen + VHS Effects + Content'
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P3.M1: Content Pipeline'
+  path: 01-review-p3-m1-content-pipeline
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Review P3.M2: Screen Rendering'
+  path: 02-review-p3-m2-screen-rendering
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: 'Review P3.M3: Post-Processing Pipeline'
+  path: 03-review-p3-m3-post-processing-p
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

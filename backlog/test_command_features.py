@@ -476,6 +476,19 @@ def test_list_available_priority_filter(runner, tmp_feature_tasks_dir):
     assert "P1.M1.E2.T003" not in result.output
 
 
+def test_list_available_includes_bugs_and_ideas(runner, tmp_feature_tasks_dir):
+    """list --available should include bugs and ideas in output."""
+    bug = runner.invoke(cli, ["bug", "--title", "critical bug", "--simple"])
+    assert bug.exit_code == 0
+    idea = runner.invoke(cli, ["idea", "capture a planning intake"])
+    assert idea.exit_code == 0
+
+    result = runner.invoke(cli, ["list", "--available"])
+    assert result.exit_code == 0
+    assert "B001: critical bug" in result.output
+    assert "I001: capture a planning intake" in result.output
+
+
 def test_list_progress_shows_phase_and_milestone_ids(runner, tmp_feature_tasks_dir):
     result = runner.invoke(cli, ["list", "--progress"])
     assert result.exit_code == 0

@@ -1,0 +1,42 @@
+---
+id: P9.M3.E3.T003
+title: 'Review P3.M3.E3: Effect Pipeline Integration'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:55:11.400226+00:00'
+started_at: '2026-02-16T02:55:11.400226+00:00'
+completed_at: '2026-02-16T03:02:36.118106+00:00'
+duration_minutes: 7.411964483333334
+---
+
+# Review P3.M3.E3: Effect Pipeline Integration
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ T001: EffectComposer from @react-three/postprocessing
+- ✅ T001: Pipeline order: VHS → CRT → Bloom
+- ✅ T001: Bloom params match spec (strength 0.2, radius 0.5, threshold 0.8)
+- ✅ T003: Individual pass toggles (vhsEnabled, crtEnabled, bloomEnabled)
+- ✅ T003: logTiming flag exists
+
+## Unmet Requirements / Bugs
+
+| Issue | Location | Details |
+|-------|----------|---------|
+| No RenderTarget connection | `PostProcessingPipeline.tsx` | T002 requires connecting ScreenRenderer RenderTarget texture as input - not implemented |
+| Hardcoded timing values | `PostProcessingPipeline.tsx:159-171` | T003 requires actual pass timing but logs hardcoded placeholder values |
+| No visual comparison mode | N/A | T003 requires "side-by-side or toggle" comparison mode - not implemented |
+
+## Recommendations
+
+1. Implement offscreen RenderTarget → EffectComposer chain for screen content
+2. Replace placeholder timing with actual GPU timing
+3. Add visual comparison mode for debugging

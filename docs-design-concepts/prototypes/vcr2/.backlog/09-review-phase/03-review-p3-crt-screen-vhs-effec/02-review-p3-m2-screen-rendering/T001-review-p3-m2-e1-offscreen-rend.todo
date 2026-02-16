@@ -1,0 +1,64 @@
+---
+id: P9.M3.E2.T001
+title: 'Review P3.M2.E1: Offscreen Renderer and Text Layout'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:59:22.997100+00:00'
+started_at: '2026-02-16T03:59:22.997100+00:00'
+completed_at: '2026-02-16T04:08:59.322580+00:00'
+duration_minutes: 9.605424466666667
+---
+
+# Review P3.M2.E1: Offscreen Renderer and Text Layout
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ ScreenRenderer with WebGLRenderTarget 1024x768
+- ✅ Orthographic camera setup
+- ✅ Background plane with CRT Black
+- ✅ Three zone groups at correct positions
+- ✅ VT323 font loaded
+- ✅ TextLayout with proper character sizing
+- ✅ Title in zone y 0.8-1.0
+- ✅ Status bar with mode/timecode
+- ✅ Scroll controller with bounds
+- ✅ Scanline overlay
+- ✅ Test harness
+
+## Unmet Requirements / Bugs
+
+| Issue | Location |
+|-------|----------|
+| Body text color is WHITE instead of GREEN | `TextLayout.tsx:38` |
+| depthBuffer: true but spec says "no stencil/depth" | `ScreenRenderer.tsx:47` |
+
+## Recommendations
+
+1. Fix body text color to GREEN in TextLayout
+2. Document depthBuffer decision or remove
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-16 03:59 UTC
+**Sibling tasks**: P9.M3.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M3.E2.T001 → P9.M3.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M3.E2.T001: .tasks/09-review-phase/03-review-p3-crt-screen-vhs-effec/02-review-p3-m2-screen-rendering/T001-review-p3-m2-e1-offscreen-rend.todo
+- P9.M3.E2.T002: .tasks/09-review-phase/03-review-p3-crt-screen-vhs-effec/02-review-p3-m2-screen-rendering/T002-review-p3-m2-e2-menu-and-page.todo

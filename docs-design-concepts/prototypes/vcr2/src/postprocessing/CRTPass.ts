@@ -8,6 +8,7 @@ export interface CRTUniforms {
   uScanlineIntensity: number;
   uScanlineCount: number;
   uPhosphorIntensity: number;
+  uPhosphorMask: number;
   uVignetteStrength: number;
   uFlicker: number;
   uBrightness: number;
@@ -18,6 +19,7 @@ export const defaultCRTUniforms: CRTUniforms = {
   uScanlineIntensity: 0.3,
   uScanlineCount: 480,
   uPhosphorIntensity: 0.2,
+  uPhosphorMask: 0.15,
   uVignetteStrength: 0.4,
   uFlicker: 0.08,
   uBrightness: 1.0,
@@ -33,6 +35,7 @@ export function createCRTMaterial(uniforms: Partial<CRTUniforms> = {}) {
       uScanlineIntensity: { value: merged.uScanlineIntensity },
       uScanlineCount: { value: merged.uScanlineCount },
       uPhosphorIntensity: { value: merged.uPhosphorIntensity },
+      uPhosphorMask: { value: merged.uPhosphorMask },
       uVignetteStrength: { value: merged.uVignetteStrength },
       uFlicker: { value: merged.uFlicker },
       uBrightness: { value: merged.uBrightness },

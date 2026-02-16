@@ -1,0 +1,32 @@
+id: P9.M6
+name: 'Review P6: Boot Sequence + Polish'
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P6.M1: Boot and Onboarding'
+  path: 01-review-p6-m1-boot-and-onboardi
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Review P6.M2: Audio and VFX Polish'
+  path: 02-review-p6-m2-audio-and-vfx-pol
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

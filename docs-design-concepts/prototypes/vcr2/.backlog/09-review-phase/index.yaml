@@ -1,0 +1,88 @@
+id: P9
+name: Review Phase
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 20.0
+complexity: medium
+depends_on:
+- P8
+milestones:
+- id: M1
+  name: 'Review P1: Project Scaffold & Tooling'
+  path: 01-review-p1-project-scaffold-too
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M2
+  name: 'Review P2: Room Shell + CRT Hardware'
+  path: 02-review-p2-room-shell-crt-hardw
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M3
+  name: 'Review P3: CRT Screen + VHS Effects + Content'
+  path: 03-review-p3-crt-screen-vhs-effec
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M4
+  name: 'Review P4: Lightgun + Navigation'
+  path: 04-review-p4-lightgun-navigation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M5
+  name: 'Review P5: Camera System + Look Behind You'
+  path: 05-review-p5-camera-system-look-b
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M6
+  name: 'Review P6: Boot Sequence + Polish'
+  path: 06-review-p6-boot-sequence-polish
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M7
+  name: 'Review P7: Horror System'
+  path: 07-review-p7-horror-system
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M8
+  name: 'Review P8: Final Polish + Documentation'
+  path: 08-review-p8-final-polish-documen
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+stats:
+  total_tasks: 38
+  done: 38
+  in_progress: 0
+  blocked: 0
+  pending: 0

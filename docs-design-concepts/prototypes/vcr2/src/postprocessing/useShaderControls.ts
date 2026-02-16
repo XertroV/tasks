@@ -1,3 +1,5 @@
+import { IS_DEBUG } from '@/debug/isDebug';
+import { useHorrorStore } from '@/horror';
 import { useControls } from 'leva';
 import { useCallback, useEffect, useRef } from 'react';
 import type { ShaderMaterial } from 'three';
@@ -34,6 +36,7 @@ export function useVHSControls(
   materialRef: React.RefObject<ShaderMaterial | null>,
   enabled = true
 ): VHSControls {
+  const horrorIntensity = useHorrorStore((state) => state.intensity);
   const controls = useControls('VHS', {
     trackingError: { value: VHS_CONTROLS_DEFAULTS.trackingError, min: 0, max: 1, step: 0.01 },
     headSwitchHeight: {
@@ -68,9 +71,9 @@ export function useVHSControls(
     if (uniforms.uPauseJitter) uniforms.uPauseJitter.value = controls.pauseJitter;
     if (uniforms.uFFSpeed) uniforms.uFFSpeed.value = controls.ffSpeed;
     if (uniforms.uREWSpeed) uniforms.uREWSpeed.value = controls.rewSpeed;
-    if (uniforms.uHorrorIntensity) uniforms.uHorrorIntensity.value = controls.horrorIntensity;
+    if (uniforms.uHorrorIntensity) uniforms.uHorrorIntensity.value = horrorIntensity;
     if (uniforms.uGlitchSeed) uniforms.uGlitchSeed.value = controls.glitchSeed;
-  }, [controls, materialRef, enabled]);
+  }, [controls, materialRef, enabled, horrorIntensity]);
 
   return (controls as VHSControls) || VHS_CONTROLS_DEFAULTS;
 }
@@ -146,6 +149,7 @@ export interface PipelineControls {
   crtEnabled: boolean;
   bloomEnabled: boolean;
   logTiming: boolean;
+  comparisonMode: 'off' | 'split' | 'toggle';
 }
 
 export const PIPELINE_CONTROLS_DEFAULTS: PipelineControls = {
@@ -153,6 +157,7 @@ export const PIPELINE_CONTROLS_DEFAULTS: PipelineControls = {
   crtEnabled: true,
   bloomEnabled: true,
   logTiming: false,
+  comparisonMode: 'off',
 };
 
 export function usePipelineControls(): PipelineControls {
@@ -161,6 +166,10 @@ export function usePipelineControls(): PipelineControls {
     crtEnabled: { value: PIPELINE_CONTROLS_DEFAULTS.crtEnabled, label: 'CRT Pass' },
     bloomEnabled: { value: PIPELINE_CONTROLS_DEFAULTS.bloomEnabled, label: 'Bloom' },
     logTiming: { value: PIPELINE_CONTROLS_DEFAULTS.logTiming, label: 'Log Timing' },
+    comparisonMode: {
+      value: PIPELINE_CONTROLS_DEFAULTS.comparisonMode,
+      options: ['off', 'split', 'toggle'] as const,
+    },
   });
 
   return (controls as PipelineControls) || PIPELINE_CONTROLS_DEFAULTS;
@@ -186,9 +195,11 @@ export function usePassTimingLogger(logEnabled: boolean) {
 
       if (now - lastLogTime.current > 1000) {
         const t = timings.current;
-        console.log(
-          `[Pipeline] VHS: ${t.vhs.toFixed(2)}ms | CRT: ${t.crt.toFixed(2)}ms | Bloom: ${t.bloom.toFixed(2)}ms | Total: ${t.total.toFixed(2)}ms`
-        );
+        if (IS_DEBUG) {
+          console.log(
+            `[Pipeline] VHS: ${t.vhs.toFixed(2)}ms | CRT: ${t.crt.toFixed(2)}ms | Bloom: ${t.bloom.toFixed(2)}ms | Total: ${t.total.toFixed(2)}ms`
+          );
+        }
         lastLogTime.current = now;
       }
     },

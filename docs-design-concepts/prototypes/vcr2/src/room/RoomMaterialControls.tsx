@@ -1,25 +1,28 @@
-import { IS_DEBUG } from '@/debug/isDebug';
 import { CARPET_BASE, CEILING_BASE, WALLPAPER_BASE } from '@/shared/constants';
+import { useControls } from 'leva';
 
-/**
- * Leva controls for room materials
- * Only available in development mode (IS_DEBUG)
- */
+const DEFAULT_VALUES = {
+  wallDecay: 0.5,
+  carpetWear: 0.3,
+  fogDensity: 0.04,
+};
+
 export function useRoomMaterialControls() {
-  if (IS_DEBUG) {
-    return {
-      wallDecay: 0.5,
-      carpetWear: 0.3,
-      fogDensity: 0.04,
-    };
-  }
+  const { wallDecay, carpetWear, fogDensity } = useControls(
+    'Room Materials',
+    {
+      wallDecay: { value: DEFAULT_VALUES.wallDecay, min: 0, max: 1, step: 0.01 },
+      carpetWear: { value: DEFAULT_VALUES.carpetWear, min: 0, max: 1, step: 0.01 },
+      fogDensity: { value: DEFAULT_VALUES.fogDensity, min: 0, max: 0.1, step: 0.001 },
+    },
+    { collapsed: false }
+  );
 
   return {
-    wallDecay: 0.5,
-    carpetWear: 0.3,
-    fogDensity: 0.04,
+    wallDecay,
+    carpetWear,
+    fogDensity,
   };
 }
 
-// Export base colors for materials
 export { WALLPAPER_BASE, CARPET_BASE, CEILING_BASE };

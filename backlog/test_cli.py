@@ -488,6 +488,60 @@ class TestDoneCommand:
 
         assert "duration_minutes:" in content
 
+    def test_undone_resets_single_task(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task", status="done")
+        result = runner.invoke(cli, ["undone", "P1.M1.E1.T001"])
+        assert result.exit_code == 0
+
+        task_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
+        content = task_file.read_text()
+        assert "status: pending" in content
+
+    def test_undone_resets_phase_and_descendants(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="done")
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="done")
+
+        root_index = tmp_tasks_dir / ".tasks" / "index.yaml"
+        root_index.write_text(root_index.read_text().replace("status: in_progress", "status: done"))
+
+        phase_index = tmp_tasks_dir / ".tasks" / "01-test-phase" / "index.yaml"
+        phase_index.write_text(phase_index.read_text().replace("status: in_progress", "status: done"))
+
+        ms_index = (
+            tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "index.yaml"
+        )
+        ms_index.write_text(ms_index.read_text().replace("status: in_progress", "status: done"))
+
+        result = runner.invoke(cli, ["undone", "P1"])
+        assert result.exit_code == 0
+
+        assert "status: pending" in root_index.read_text()
+        assert "status: pending" in phase_index.read_text()
+        assert "status: pending" in ms_index.read_text()
+        assert "status: pending" in (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        ).read_text()
+        assert "status: pending" in (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T002-test-task.todo"
+        ).read_text()
+
 
 class TestNextCommand:
     """Tests for the next command."""

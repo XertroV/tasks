@@ -1,4 +1,4 @@
-import { useThree } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   AimingSystem,
@@ -27,6 +27,8 @@ export function useAiming(options: UseAimingOptions = {}): UseAimingReturn {
   const systemRef = useRef<AimingSystem | null>(null);
   const [cursorState, setCursorState] = useState<CursorState>('idle');
   const [currentTargetId, setCurrentTargetId] = useState<string | null>(null);
+  const optionsRef = useRef(options);
+  optionsRef.current = options;
 
   useEffect(() => {
     const system = new AimingSystem();
@@ -41,47 +43,74 @@ export function useAiming(options: UseAimingOptions = {}): UseAimingReturn {
     };
 
     const handleClick = () => {
-      if (system.currentTarget) {
-        setCurrentTargetId(system.currentTarget.id);
-        if (options.onTarget) {
-          options.onTarget(system.currentTarget.id);
-        }
+      const result = system.shoot();
+      if (result.hit && optionsRef.current.onTarget) {
+        setCurrentTargetId(result.targetId ?? null);
+        optionsRef.current.onTarget(result.targetId ?? '');
+      }
+      if (optionsRef.current.onShoot) {
+        optionsRef.current.onShoot(result);
+      }
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (event.touches.length > 0) {
+        system.updateTouch(event.touches[0], gl.domElement);
+      }
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      event.preventDefault();
+      const result = system.shoot();
+      if (result.hit && optionsRef.current.onTarget) {
+        setCurrentTargetId(result.targetId ?? null);
+        optionsRef.current.onTarget(result.targetId ?? '');
+      }
+      if (optionsRef.current.onShoot) {
+        optionsRef.current.onShoot(result);
       }
     };
 
     gl.domElement.addEventListener('mousemove', handleMouseMove);
     gl.domElement.addEventListener('click', handleClick);
+    gl.domElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+    gl.domElement.addEventListener('touchend', handleTouchEnd);
 
     return () => {
       gl.domElement.removeEventListener('mousemove', handleMouseMove);
       gl.domElement.removeEventListener('click', handleClick);
+      gl.domElement.removeEventListener('touchmove', handleTouchMove);
+      gl.domElement.removeEventListener('touchend', handleTouchEnd);
       systemRef.current = null;
     };
-  }, [gl.domElement, options]);
+  }, [gl.domElement]);
 
-  const registerTarget = useCallback(
-    (target: AimingTarget) => {
-      if (systemRef.current) {
-        const originalOnTarget = target.onTarget;
-        const originalOnUntarget = target.onUntarget;
+  useFrame(() => {
+    if (systemRef.current) {
+      systemRef.current.update(camera);
+    }
+  });
 
-        target.onTarget = () => {
-          setCurrentTargetId(target.id);
-          if (originalOnTarget) originalOnTarget();
-          if (options.onTarget) options.onTarget(target.id);
-        };
+  const registerTarget = useCallback((target: AimingTarget) => {
+    if (systemRef.current) {
+      const originalOnTarget = target.onTarget;
+      const originalOnUntarget = target.onUntarget;
 
-        target.onUntarget = () => {
-          setCurrentTargetId(null);
-          if (originalOnUntarget) originalOnUntarget();
-          if (options.onUntarget) options.onUntarget(target.id);
-        };
+      target.onTarget = () => {
+        setCurrentTargetId(target.id);
+        if (originalOnTarget) originalOnTarget();
+        if (optionsRef.current.onTarget) optionsRef.current.onTarget(target.id);
+      };
 
-        systemRef.current.registerTarget(target);
-      }
-    },
-    [options]
-  );
+      target.onUntarget = () => {
+        setCurrentTargetId(null);
+        if (originalOnUntarget) originalOnUntarget();
+        if (optionsRef.current.onUntarget) optionsRef.current.onUntarget(target.id);
+      };
+
+      systemRef.current.registerTarget(target);
+    }
+  }, []);
 
   const unregisterTarget = useCallback((id: string) => {
     if (systemRef.current) {
@@ -95,29 +124,11 @@ export function useAiming(options: UseAimingOptions = {}): UseAimingReturn {
     }
 
     const result = systemRef.current.shoot();
-    if (options.onShoot) {
-      options.onShoot(result);
+    if (optionsRef.current.onShoot) {
+      optionsRef.current.onShoot(result);
     }
     return result;
-  }, [options]);
-
-  useEffect(() => {
-    const system = systemRef.current;
-    if (!system) return;
-
-    const updateFrame = () => {
-      system.update(camera);
-    };
-
-    const frameId = requestAnimationFrame(function loop() {
-      updateFrame();
-      requestAnimationFrame(loop);
-    });
-
-    return () => {
-      cancelAnimationFrame(frameId);
-    };
-  }, [camera]);
+  }, []);
 
   return {
     registerTarget,

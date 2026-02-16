@@ -1,0 +1,32 @@
+id: P9.M2
+name: 'Review P2: Room Shell + CRT Hardware'
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Review P2.M1: Room Environment'
+  path: 01-review-p2-m1-room-environment
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Review P2.M2: CRT and VCR Hardware Models'
+  path: 02-review-p2-m2-crt-and-vcr-hardw
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

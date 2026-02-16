@@ -1,0 +1,67 @@
+---
+id: P9.M4.E2.T001
+title: 'Review P4.M2.E1: Navigation System and FF/REW Transitions'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:13:16.684822+00:00'
+started_at: '2026-02-16T03:13:16.684822+00:00'
+completed_at: '2026-02-16T03:29:00.897175+00:00'
+duration_minutes: 15.736872049999999
+---
+
+# Review P4.M2.E1: Navigation System and FF/REW Transitions
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ NavigationStore with Zustand created
+- ✅ TransitionState union defined (IDLE/FF_START/FF_SEEK/FF_ARRIVE/REW_START/REW_SEEK/REW_ARRIVE)
+- ✅ History stack with goBack/goForward implemented
+- ✅ navigateTo action with direction calculation
+- ✅ cancelTransition action
+- ✅ canGoBack/canGoForward guards
+
+## Unmet Requirements / Bugs
+
+| Task | Requirement | Issue |
+|------|-------------|-------|
+| T004 | `useNavigationTransition` hook driving transitionProgress | **MISSING** |
+| T004 | Duration 1.5s with START/SEEK/ARRIVE phases | **MISSING** |
+| T005 | After transition, VCR goes PLAY then PAUSED 300ms later | **NOT IMPLEMENTED** |
+| T006 | Map transition phase to VHS shader uniforms | **MISSING** |
+| T007 | Timecode interpolation during FF/REW | **MISSING** |
+| T009 | Reject navigateTo during active transition | **MISSING** |
+| T009 | 5-second timeout auto-cancels stuck transitions | **MISSING** |
+| T010 | Leva Navigation folder with debug controls | **MISSING** |
+
+## Recommendations
+
+1. Create `useNavigationTransition` hook with phase timing (1.5s total)
+2. Bridge navigation state to `VHSPass.ts` uniforms
+3. Add transition guard to navigateTo
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M4.E2)
+**Agent**: cli-user
+**Date**: 2026-02-16 03:13 UTC
+**Sibling tasks**: P9.M4.E2.T002, P9.M4.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M4.E2.T001 → P9.M4.E2.T002 → P9.M4.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M4.E2.T001: .tasks/09-review-phase/04-review-p4-lightgun-navigation/02-review-p4-m2-navigation-and-tr/T001-review-p4-m2-e1-navigation-sys.todo
+- P9.M4.E2.T002: .tasks/09-review-phase/04-review-p4-lightgun-navigation/02-review-p4-m2-navigation-and-tr/T002-review-p4-m2-e2-page-interacti.todo
+- P9.M4.E2.T003: .tasks/09-review-phase/04-review-p4-lightgun-navigation/02-review-p4-m2-navigation-and-tr/T003-review-p4-m2-e3-procedural-aud.todo

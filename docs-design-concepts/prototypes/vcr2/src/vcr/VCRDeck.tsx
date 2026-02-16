@@ -1,3 +1,5 @@
+import { playButtonClick, playVcrTransport } from '@/audio';
+import { ShootableTarget } from '@/lightgun';
 import { Text } from '@react-three/drei';
 import type { GroupProps } from '@react-three/fiber';
 import { useMemo } from 'react';
@@ -72,20 +74,67 @@ export function VCRDeck({ ...groupProps }: VCRDeckProps) {
         {displayText}
       </Text>
 
-      {buttonOffsets.map((xOffset) => (
-        <mesh
-          key={xOffset}
-          position={[
-            xOffset,
-            -VCR_HEIGHT / 2 + BUTTON_HEIGHT / 2 + 0.004,
-            VCR_DEPTH / 2 - BUTTON_DEPTH / 2 - 0.01,
-          ]}
-          castShadow
-        >
-          <boxGeometry args={[BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_DEPTH]} />
-          <meshStandardMaterial color="#1d1d1d" metalness={0.15} roughness={0.7} />
-        </mesh>
-      ))}
+      {buttonOffsets.map((xOffset, index) => {
+        const buttonActions: Record<number, { id: string; action: () => void }> = {
+          0: {
+            id: 'vcr-rew',
+            action: () => {
+              playButtonClick();
+              playVcrTransport();
+              useVCRStore.getState().rewind();
+            },
+          },
+          1: {
+            id: 'vcr-play',
+            action: () => {
+              playButtonClick();
+              playVcrTransport();
+              useVCRStore.getState().play();
+            },
+          },
+          2: {
+            id: 'vcr-stop',
+            action: () => {
+              playButtonClick();
+              playVcrTransport();
+              useVCRStore.getState().stop();
+            },
+          },
+          3: {
+            id: 'vcr-ff',
+            action: () => {
+              playButtonClick();
+              playVcrTransport();
+              useVCRStore.getState().fastForward();
+            },
+          },
+          4: {
+            id: 'vcr-eject',
+            action: () => {
+              playButtonClick();
+              playVcrTransport();
+              useVCRStore.getState().eject();
+            },
+          },
+        };
+        const { id, action } = buttonActions[index] ?? { id: `vcr-btn-${index}`, action: () => {} };
+
+        return (
+          <ShootableTarget key={xOffset} targetId={id} onShoot={action}>
+            <mesh
+              position={[
+                xOffset,
+                -VCR_HEIGHT / 2 + BUTTON_HEIGHT / 2 + 0.004,
+                VCR_DEPTH / 2 - BUTTON_DEPTH / 2 - 0.01,
+              ]}
+              castShadow
+            >
+              <boxGeometry args={[BUTTON_WIDTH, BUTTON_HEIGHT, BUTTON_DEPTH]} />
+              <meshStandardMaterial color="#1d1d1d" metalness={0.15} roughness={0.7} />
+            </mesh>
+          </ShootableTarget>
+        );
+      })}
     </group>
   );
 }

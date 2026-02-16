@@ -1,0 +1,30 @@
+id: P9.M3.E2
+name: 'Review P3.M2: Screen Rendering'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p3-m2-e1-offscreen-rend.todo
+  title: 'Review P3.M2.E1: Offscreen Renderer and Text Layout'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p3-m2-e2-menu-and-page.todo
+  title: 'Review P3.M2.E2: Menu and Page Views'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

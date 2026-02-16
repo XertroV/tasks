@@ -77,6 +77,7 @@ Commands:
   claim           Claim specific task ID(s)
   grab            Auto-claim next task (or claim IDs)
   done            Mark task as complete
+  undone          Mark task/epic/milestone/phase as not done
   cycle           Complete current task and grab next
   dash            Show quick dashboard of project status
   update          Update task status
@@ -313,6 +314,102 @@ function getTreeChars(isLast: boolean): { branch: string; continuation: string }
   };
 }
 
+function listAvailable(
+  tree: TaskTree,
+  availableIds: string[],
+  criticalPath: string[],
+  statusFilter: string[],
+  outputJson: boolean,
+  includeNormal: boolean,
+  includeBugs: boolean,
+  includeIdeas: boolean,
+): void {
+  const availableTasks = availableIds
+    .map((taskId) => findTask(tree, taskId))
+    .filter((task): task is Task => !!task)
+    .filter((task) => {
+      const isBug = /^B\d+$/.test(task.id);
+      const isIdea = /^I\d+$/.test(task.id);
+      if (isBug) return includeBugs;
+      if (isIdea) return includeIdeas;
+      return includeNormal;
+    })
+    .filter((task) => (statusFilter.length ? statusFilter.includes(task.status) : true));
+
+  if (!availableTasks.length) {
+    console.log("No available tasks found.");
+    return;
+  }
+
+  if (outputJson) {
+    const output = availableTasks.map((task) => ({
+      id: task.id,
+      title: task.title,
+      estimate_hours: task.estimateHours,
+      complexity: task.complexity,
+      priority: task.priority,
+      on_critical_path: criticalPath.includes(task.id),
+    }));
+    jsonOut(output);
+    return;
+  }
+
+  const normalTasks = new Map<string, Task[]>();
+  const bugs: Task[] = [];
+  const ideas: Task[] = [];
+  for (const task of availableTasks) {
+    if (isBugId(task.id)) {
+      bugs.push(task);
+      continue;
+    }
+    if (isIdeaId(task.id)) {
+      ideas.push(task);
+      continue;
+    }
+    const phaseId = task.phaseId ?? "UNKNOWN";
+    const grouped = normalTasks.get(phaseId) ?? [];
+    grouped.push(task);
+    normalTasks.set(phaseId, grouped);
+  }
+
+  console.log(`\n${pc.green(`Available Tasks (${availableTasks.length}):`)}`);
+  console.log();
+
+  for (const phase of tree.phases) {
+    const tasks = normalTasks.get(phase.id);
+    if (!tasks?.length) continue;
+
+    console.log(pc.bold(`${phase.name} (${tasks.length} available)`));
+    for (const task of tasks) {
+      const critMarker = criticalPath.includes(task.id) ? `${pc.yellow("★")} ` : "";
+      console.log(`  ${critMarker}${task.id}: ${task.title}`);
+    }
+    console.log();
+  }
+
+  if (bugs.length > 0) {
+    console.log(pc.bold(`Bugs (${bugs.length})`));
+    for (let i = 0; i < bugs.length; i++) {
+      const bug = bugs[i]!;
+      const isLast = i === bugs.length - 1;
+      const prefix = isLast ? "└── " : "├── ";
+      const critMarker = criticalPath.includes(bug.id) ? `${pc.yellow("★")} ` : "";
+      console.log(`  ${prefix}${critMarker}${bug.id}: ${bug.title}`);
+    }
+  }
+
+  if (ideas.length > 0) {
+    console.log(pc.bold(`Ideas (${ideas.length})`));
+    for (let i = 0; i < ideas.length; i++) {
+      const idea = ideas[i]!;
+      const isLast = i === ideas.length - 1;
+      const prefix = isLast ? "└── " : "├── ";
+      const critMarker = criticalPath.includes(idea.id) ? `${pc.yellow("★")} ` : "";
+      console.log(`  ${prefix}${critMarker}${idea.id}: ${idea.title}`);
+    }
+  }
+}
+
 async function cmdList(args: string[]): Promise<void> {
   const outputJson = parseFlag(args, "--json");
   const statusFilter = parseOpt(args, "--status")?.split(",") ?? [];
@@ -320,6 +417,7 @@ async function cmdList(args: string[]): Promise<void> {
   const unfinished = parseFlag(args, "--unfinished");
   const bugsOnly = parseFlag(args, "--bugs");
   const ideasOnly = parseFlag(args, "--ideas");
+  const available = parseFlag(args, "--available");
   const showCompletedAux = parseFlag(args, "--show-completed-aux");
   const showProgress = parseFlag(args, "--progress");
   const includeNormal = !bugsOnly && !ideasOnly;
@@ -335,6 +433,11 @@ async function cmdList(args: string[]): Promise<void> {
 
   if (showProgress) {
     listWithProgress(tree, unfinished, showCompletedAux, includeNormal, includeBugs, includeIdeas);
+    return;
+  }
+
+  if (available) {
+    listAvailable(tree, calc.findAllAvailable(), criticalPath, statusFilter, outputJson, includeNormal, includeBugs, includeIdeas);
     return;
   }
 
@@ -902,6 +1005,16 @@ async function cmdDone(args: string[]): Promise<void> {
     }
     throw e;
   }
+}
+
+async function cmdUndone(args: string[]): Promise<void> {
+  const itemId = args.find((a) => !a.startsWith("-"));
+  if (!itemId) textError("undone requires ITEM_ID");
+
+  const loader = new TaskLoader();
+  const result = await loader.setItemNotDone(itemId);
+  console.log(`Marked not done: ${result.item_id}`);
+  console.log(`Reset tasks: ${result.updated_tasks}`);
 }
 
 async function cmdCycle(args: string[]): Promise<void> {
@@ -2217,6 +2330,9 @@ async function main(): Promise<void> {
       return;
     case "done":
       await cmdDone(rest);
+      return;
+    case "undone":
+      await cmdUndone(rest);
       return;
     case "cycle":
       await cmdCycle(rest);

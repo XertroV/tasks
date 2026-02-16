@@ -1,0 +1,38 @@
+id: P9.M8.E1
+name: 'Review P8.M1: Release Preparation'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p8-m1-e1-performance-op.todo
+  title: 'Review P8.M1.E1: Performance Optimization and Bundle Audit'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p8-m1-e2-edge-case-test.todo
+  title: 'Review P8.M1.E2: Edge Case Testing and Cross-Browser'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-review-p8-m1-e3-documentation.todo
+  title: 'Review P8.M1.E3: Documentation and Final Verification'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

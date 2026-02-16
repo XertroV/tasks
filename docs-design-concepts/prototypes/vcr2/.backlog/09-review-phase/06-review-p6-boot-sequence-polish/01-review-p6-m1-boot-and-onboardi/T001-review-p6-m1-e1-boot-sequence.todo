@@ -1,0 +1,67 @@
+---
+id: P9.M6.E1.T001
+title: 'Review P6.M1.E1: Boot Sequence'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:09:27.632591+00:00'
+started_at: '2026-02-16T04:09:27.632591+00:00'
+completed_at: '2026-02-16T04:19:49.490966+00:00'
+duration_minutes: 10.364305916666666
+---
+
+# Review P6.M1.E1: Boot Sequence
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ Boot state machine with 6 phases (BLACK→READY)
+- ✅ Actions (advancePhase, skip, reset)
+- ✅ Audio autoplay policy handling
+
+## Unmet Requirements / Bugs
+
+| Task | Issue | Severity |
+|------|-------|----------|
+| T001 | `elapsed` never updated | MEDIUM |
+| T001 | Phase durations don't match spec (4.5s vs 5.0s) | MEDIUM |
+| T002 | BootSequence.tsx NOT imported in App.tsx | CRITICAL |
+| T003 | Black screen overlay NOT implemented | CRITICAL |
+| T004 | Fluorescent buzz NOT implemented | HIGH |
+| T005 | TV power-on static burst NOT implemented | HIGH |
+| T006 | Tape loading animation NOT implemented | HIGH |
+| T007 | Boot timing hardcoded in App.tsx | CRITICAL |
+| T008 | Zapper visible immediately, no boot-phase gate | HIGH |
+| T009 | Skip post-it note NOT implemented | MEDIUM |
+| T010 | Boot Leva controls NOT implemented | LOW |
+
+## Recommendations
+
+1. Integrate BootSequence into App.tsx
+2. Create BootOverlay component
+3. Add boot-phase gates to interactive elements
+4. Replace hardcoded timeouts with bootStore
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M6.E1)
+**Agent**: cli-user
+**Date**: 2026-02-16 04:09 UTC
+**Sibling tasks**: P9.M6.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M6.E1.T001 → P9.M6.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M6.E1.T001: .tasks/09-review-phase/06-review-p6-boot-sequence-polish/01-review-p6-m1-boot-and-onboardi/T001-review-p6-m1-e1-boot-sequence.todo
+- P9.M6.E1.T002: .tasks/09-review-phase/06-review-p6-boot-sequence-polish/01-review-p6-m1-boot-and-onboardi/T002-review-p6-m1-e2-settings-and-a.todo

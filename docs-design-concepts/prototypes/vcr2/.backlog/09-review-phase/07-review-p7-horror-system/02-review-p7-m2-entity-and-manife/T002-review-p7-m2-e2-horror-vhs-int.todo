@@ -1,0 +1,40 @@
+---
+id: P9.M7.E2.T002
+title: 'Review P7.M2.E2: Horror-VHS Integration'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:29:17.044758+00:00'
+started_at: '2026-02-16T03:29:17.044758+00:00'
+completed_at: '2026-02-16T03:43:00.200943+00:00'
+duration_minutes: 13.71926925
+---
+
+# Review P7.M2.E2: Horror-VHS Integration
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ⚠️ VHS shader has `applyHorrorEffects()` function
+- ⚠️ cameraStore has full HorrorOverrides interface
+- ⚠️ CameraController applies overrides when present
+
+## Unmet Requirements / Bugs
+
+| Task | Requirement | Issue |
+|------|-------------|-------|
+| T001 | Horror-driven VHS shader | uHorrorIntensity reads from Leva, not horrorStore |
+| T002 | Camera horror effects | applyHorrorOverride() exists but never called |
+| T003 | Temperature color shift | No color grading/desaturation |
+
+## Recommendations
+
+1. Subscribe to useHorrorStore in VHSPassEffect and set uniforms
+2. Create HorrorCameraBridge component to connect phase to camera overrides
+3. Add color temperature shift in post-processing

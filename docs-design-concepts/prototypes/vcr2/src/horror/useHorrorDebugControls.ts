@@ -10,25 +10,21 @@ export interface HorrorDebugConfig {
   showEntityAlways: boolean;
 }
 
-const PHASE_ORDER: HorrorPhase[] = ['DORMANT', 'QUIET', 'UNEASE', 'TENSION', 'DREAD', 'TERROR'];
+const PHASE_ORDER: HorrorPhase[] = ['DORMANT', 'UNEASY', 'ESCALATING', 'CLIMAX', 'POST'];
 
 const PHASE_INTENSITY_MAP: Record<HorrorPhase, number> = {
   DORMANT: 0,
-  QUIET: 0.1,
-  UNEASE: 0.3,
-  TENSION: 0.5,
-  DREAD: 0.7,
-  TERROR: 0.9,
+  UNEASY: 0.2,
+  ESCALATING: 0.5,
+  CLIMAX: 0.8,
+  POST: 1.0,
 };
 
 export function useHorrorDebugControls(
   engineRef?: React.RefObject<TimelineEngine | null>
 ): HorrorDebugConfig {
   const setPhase = useHorrorStore((state) => state.setPhase);
-  const setIntensity = useHorrorStore((state) => state.setIntensity);
-  const setTargetIntensity = useHorrorStore((state) => state.setTargetIntensity);
-  const setActive = useHorrorStore((state) => state.setActive);
-  const reset = useHorrorStore((state) => state.reset);
+  const reset = useHorrorStore.getState().reset;
 
   const configRef = useRef<HorrorDebugConfig>({
     enabled: true,
@@ -41,11 +37,10 @@ export function useHorrorDebugControls(
     (phase: HorrorPhase) => {
       const intensity = PHASE_INTENSITY_MAP[phase];
       setPhase(phase);
-      setIntensity(intensity);
-      setTargetIntensity(intensity);
-      setActive(true);
+      useHorrorStore.getState().tick(0.001);
+      console.debug('[HorrorDebug] Force phase:', phase, 'intensity:', intensity);
     },
-    [setPhase, setIntensity, setTargetIntensity, setActive]
+    [setPhase]
   );
 
   const phaseButtons = PHASE_ORDER.reduce(

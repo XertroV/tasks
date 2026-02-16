@@ -1,13 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { IS_DEBUG } from '@/debug/isDebug';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { getTimelineEngine } from './TimelineEngine';
 import { type HorrorPhase, type TimelineEvent, useHorrorStore } from './horrorStore';
 
 const PHASE_COLORS: Record<HorrorPhase, string> = {
   DORMANT: '#22c55e',
-  QUIET: '#84cc16',
-  UNEASE: '#eab308',
-  TENSION: '#f97316',
-  DREAD: '#ef4444',
-  TERROR: '#7f1d1d',
+  UNEASY: '#eab308',
+  ESCALATING: '#f97316',
+  CLIMAX: '#ef4444',
+  POST: '#7f1d1d',
 };
 
 const EVENT_COLORS = {
@@ -32,9 +33,9 @@ export function TimelineVisualizer({
 
   const phase = useHorrorStore((state) => state.phase);
   const intensity = useHorrorStore((state) => state.intensity);
-  const elapsed = useHorrorStore((state) => state.elapsed);
+  const totalTime = useHorrorStore((state) => state.totalTime);
+  const activeEvents = useHorrorStore((state) => state.activeEvents);
 
-  // Toggle with Shift+`
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.shiftKey && e.key === '`') {
@@ -46,69 +47,36 @@ export function TimelineVisualizer({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Sync visible prop
   useEffect(() => {
     setIsVisible(visible);
   }, [visible]);
 
   if (!isVisible) return null;
 
-  const playheadPosition = (elapsed / totalDuration) * 100;
+  const playheadPosition = (totalTime / totalDuration) * 100;
 
-  // Generate mock events for visualization (in real use, these would come from TimelineEngine)
-  const mockEvents: TimelineEvent[] = [
-    {
-      id: '1',
-      type: 'flicker',
-      triggerTime: 5,
-      duration: 0.5,
-      intensity: 0.3,
-      isComplete: elapsed > 5.5,
-    },
-    {
-      id: '2',
-      type: 'audio_cue',
-      triggerTime: 15,
-      duration: 2,
-      intensity: 0.5,
-      isComplete: elapsed > 17,
-    },
-    {
-      id: '3',
-      type: 'visual_glitch',
-      triggerTime: 25,
-      duration: 1,
-      intensity: 0.7,
-      isComplete: elapsed > 26,
-    },
-    {
-      id: '4',
-      type: 'camera_drift',
-      triggerTime: 35,
-      duration: 3,
-      intensity: 0.8,
-      isComplete: elapsed > 38,
-    },
-    {
-      id: '5',
-      type: 'content_change',
-      triggerTime: 45,
-      duration: 0.5,
-      intensity: 1.0,
-      isComplete: elapsed > 45.5,
-    },
-  ];
+  const events = useMemo(() => {
+    const engine = getTimelineEngine();
+    if (engine) {
+      return engine.getScheduledEvents();
+    }
+    return activeEvents;
+  }, [activeEvents]);
 
   const getEventStatus = (event: TimelineEvent): 'pending' | 'active' | 'completed' => {
     if (event.isComplete) return 'completed';
-    if (elapsed >= event.triggerTime && elapsed < event.triggerTime + event.duration)
-      return 'active';
+    if (totalTime >= event.time && totalTime < event.time + event.duration) return 'active';
     return 'pending';
   };
 
   const handleEventClick = (event: TimelineEvent) => {
-    console.log('[TimelineVisualizer] Event clicked:', event.id, event);
-    // In real implementation, this would trigger the event via TimelineEngine
+    if (IS_DEBUG) {
+      const engine = getTimelineEngine();
+      if (engine) {
+        engine.seek(event.time);
+        console.log('[TimelineVisualizer] Seek to event:', event.id, 'at time:', event.time);
+      }
+    }
   };
 
   return (
@@ -131,22 +99,21 @@ export function TimelineVisualizer({
         zIndex: 10000,
       }}
     >
-      {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
         <span>
           Phase: <span style={{ color: PHASE_COLORS[phase] }}>{phase}</span> | Intensity:{' '}
-          {(intensity * 100).toFixed(0)}% | Elapsed: {elapsed.toFixed(1)}s
+          {(intensity * 100).toFixed(0)}% | Time: {totalTime.toFixed(1)}s
         </span>
-        <span style={{ opacity: 0.5 }}>Shift+` to toggle</span>
+        <span style={{ opacity: 0.5 }}>Shift+` to toggle | Click events to seek</span>
       </div>
 
-      {/* Timeline bar */}
       <div style={{ flex: 1, position: 'relative', backgroundColor: '#1a1a1a', borderRadius: 4 }}>
-        {/* Phase bands */}
         <div style={{ position: 'absolute', inset: 0, display: 'flex' }}>
-          {(['DORMANT', 'QUIET', 'UNEASE', 'TENSION', 'DREAD', 'TERROR'] as HorrorPhase[]).map(
-            (p) => {
-              const width = (1 / 6) * 100;
+          {(['DORMANT', 'UNEASY', 'ESCALATING', 'CLIMAX', 'POST'] as HorrorPhase[]).map(
+            (p, index) => {
+              const phaseWidths = [60, 60, 60, 30, 60];
+              const totalWidth = phaseWidths.reduce((a, b) => a + b, 0);
+              const width = (phaseWidths[index] / totalWidth) * 100;
               const isActive = p === phase;
               return (
                 <div
@@ -166,7 +133,6 @@ export function TimelineVisualizer({
           )}
         </div>
 
-        {/* Intensity graph overlay */}
         <svg
           style={{
             position: 'absolute',
@@ -184,7 +150,6 @@ export function TimelineVisualizer({
               <stop offset="100%" stopColor="#fff" stopOpacity={0} />
             </linearGradient>
           </defs>
-          {/* Draw intensity as a simple line from current position */}
           <polyline
             points={`${Math.max(0, playheadPosition - 10)}%,${(1 - intensity) * 100}% ${playheadPosition}%,${(1 - intensity) * 100}%`}
             fill="none"
@@ -193,9 +158,8 @@ export function TimelineVisualizer({
           />
         </svg>
 
-        {/* Event markers */}
-        {mockEvents.map((event) => {
-          const left = (event.triggerTime / totalDuration) * 100;
+        {events.map((event) => {
+          const left = (event.time / totalDuration) * 100;
           const status = getEventStatus(event);
           const width = Math.max(2, (event.duration / totalDuration) * 100);
 
@@ -221,12 +185,11 @@ export function TimelineVisualizer({
                 cursor: 'pointer',
                 border: status === 'active' ? '2px solid #fff' : 'none',
               }}
-              title={`${event.type} @ ${event.triggerTime}s (${status})`}
+              title={`Event @ ${event.time}s (${status})`}
             />
           );
         })}
 
-        {/* Playhead */}
         <div
           style={{
             position: 'absolute',
@@ -239,7 +202,6 @@ export function TimelineVisualizer({
           }}
         />
 
-        {/* Playhead time label */}
         <div
           style={{
             position: 'absolute',
@@ -251,11 +213,10 @@ export function TimelineVisualizer({
             whiteSpace: 'nowrap',
           }}
         >
-          {elapsed.toFixed(1)}s
+          {totalTime.toFixed(1)}s
         </div>
       </div>
 
-      {/* Event legend */}
       <div style={{ display: 'flex', gap: 16, marginTop: 4, opacity: 0.7 }}>
         <span>
           <span

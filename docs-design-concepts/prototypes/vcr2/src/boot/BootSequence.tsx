@@ -13,6 +13,7 @@ export function BootSequence({ onComplete, autoStart = true }: BootSequenceProps
   const isComplete = useBootStore((state) => state.isComplete);
   const advancePhase = useBootStore((state) => state.advancePhase);
   const setPhaseStartTime = useBootStore((state) => state.setPhaseStartTime);
+  const updateElapsed = useBootStore((state) => state.updateElapsed);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -34,6 +35,8 @@ export function BootSequence({ onComplete, autoStart = true }: BootSequenceProps
     const now = performance.now() / 1000;
     const phaseElapsed = now - phaseStartTime;
     const phaseDuration = getPhaseDuration(currentPhase);
+
+    updateElapsed(phaseElapsed);
 
     if (phaseElapsed >= phaseDuration) {
       advancePhase();

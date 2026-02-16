@@ -1,0 +1,71 @@
+---
+id: P9.M3.E3.T001
+title: 'Review P3.M3.E1: VHS Shader Pass'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:55:11.398102+00:00'
+started_at: '2026-02-16T02:55:11.398102+00:00'
+completed_at: '2026-02-16T03:02:35.131494+00:00'
+duration_minutes: 7.395556383333333
+---
+
+# Review P3.M3.E1: VHS Shader Pass
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ T001: 13 uniforms declared in fragment shader
+- ✅ T001: Sequential pipeline with gated effects
+- ✅ T001: Passthrough when all uniforms at zero
+- ✅ T001: Noise imported via Vite ?raw and concatenated
+- ✅ T002: Vertex shader with vUv output
+- ✅ T003: Tracking distortion with time-varying horizontal shift
+- ✅ T003: Head switch noise band with smoothstep edges
+- ✅ T004: Chroma bleed effect (2 offset texture samples)
+- ✅ T004: Dropout lines
+- ✅ T005: Static noise computed
+- ✅ T005: Pause jitter (UV displacement)
+- ✅ T005: FF/REW directional effects
+- ✅ T006: Horror effects with intensity gating
+- ✅ T007: R3F ShaderPass integration
+- ✅ T008: Leva controls for all tunable uniforms
+
+## Unmet Requirements / Bugs
+
+| Issue | Location | Details |
+|-------|----------|---------|
+| Texture read count exceeds spec | `vhs-pass.frag.glsl:91-110` | T009 requires ≤5 reads. Main(1) + chroma(2) + FF/REW loop(up to 10) = 13 reads worst case |
+| Dropouts not white noise | `vhs-pass.frag.glsl:62-70` | T004 specifies "white noise line segments" but implementation darkens colors |
+| Missing horror stub effects | `vhs-pass.frag.glsl:112-125` | T006 specifies red tint, color inversion bands, R/B swap - not implemented |
+
+## Recommendations
+
+1. Reduce FF/REW texture reads (max 2-3 offset samples instead of 5)
+2. Fix dropout effect to produce white noise lines, not darkening
+3. Add missing horror stub effects or document as intentional simplification
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-16 02:55 UTC
+**Sibling tasks**: P9.M3.E3.T002, P9.M3.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M3.E3.T001 → P9.M3.E3.T002 → P9.M3.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M3.E3.T001: .tasks/09-review-phase/03-review-p3-crt-screen-vhs-effec/03-review-p3-m3-post-processing-p/T001-review-p3-m3-e1-vhs-shader-pas.todo
+- P9.M3.E3.T002: .tasks/09-review-phase/03-review-p3-crt-screen-vhs-effec/03-review-p3-m3-post-processing-p/T002-review-p3-m3-e2-crt-shader-pas.todo
+- P9.M3.E3.T003: .tasks/09-review-phase/03-review-p3-crt-screen-vhs-effec/03-review-p3-m3-post-processing-p/T003-review-p3-m3-e3-effect-pipelin.todo

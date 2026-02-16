@@ -1,11 +1,19 @@
 import { useEffect, useRef } from 'react';
-import { type TimelineEvent, useHorrorStore } from './horrorStore';
+import type { HorrorState, TimelineEvent } from './horrorStore';
+import { useHorrorStore } from './horrorStore';
+
+let globalEngineInstance: TimelineEngine | null = null;
+
+export function getTimelineEngine(): TimelineEngine | null {
+  return globalEngineInstance;
+}
 
 export interface TimelineEngineState {
   isPaused: boolean;
   currentTime: number;
   lastTickTime: number;
   scheduledEvents: TimelineEvent[];
+  activeRepeatedEvents: Map<string, number>;
   onEventTrigger?: (event: TimelineEvent) => void;
   onEventComplete?: (event: TimelineEvent) => void;
 }
@@ -16,9 +24,16 @@ export interface TimelineEngineConfig {
   defaultEvents?: TimelineEvent[];
 }
 
+function applyTimeVariance(time: number, variance: number | undefined, seed: number): number {
+  if (!variance) return time;
+  const random = ((seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff;
+  return time + (random - 0.5) * 2 * variance;
+}
+
 export class TimelineEngine {
   private state: TimelineEngineState;
   private frameId: number | null = null;
+  private seedCounter = 0;
 
   constructor(config: TimelineEngineConfig = {}) {
     this.state = {
@@ -26,25 +41,21 @@ export class TimelineEngine {
       currentTime: 0,
       lastTickTime: performance.now() / 1000,
       scheduledEvents: config.defaultEvents ?? [],
+      activeRepeatedEvents: new Map(),
       onEventTrigger: config.onEventTrigger,
       onEventComplete: config.onEventComplete,
     };
   }
 
-  /**
-   * Start the timeline engine
-   */
   start(): void {
     if (this.frameId !== null) return;
 
+    globalEngineInstance = this;
     this.state.isPaused = false;
     this.state.lastTickTime = performance.now() / 1000;
     this.tick();
   }
 
-  /**
-   * Pause the timeline engine
-   */
   pause(): void {
     this.state.isPaused = true;
     if (this.frameId !== null) {
@@ -53,9 +64,6 @@ export class TimelineEngine {
     }
   }
 
-  /**
-   * Resume from paused state
-   */
   resume(): void {
     if (!this.state.isPaused) return;
 
@@ -64,65 +72,52 @@ export class TimelineEngine {
     this.tick();
   }
 
-  /**
-   * Reset the engine to initial state, calling cleanup on all active events
-   */
   reset(): void {
-    // Call cleanup on all active events
     for (const event of this.state.scheduledEvents) {
-      if (!event.isComplete && this.state.onEventComplete) {
-        this.state.onEventComplete(event);
+      if (!event.isComplete && this.state.onEventComplete && event.cleanup) {
+        event.cleanup();
       }
     }
 
-    // Reset horror store
     useHorrorStore.getState().reset();
 
-    // Reset engine state
     this.state.currentTime = 0;
     this.state.lastTickTime = performance.now() / 1000;
     this.state.scheduledEvents = this.state.scheduledEvents.map((e) => ({
       ...e,
       isComplete: false,
     }));
+    this.state.activeRepeatedEvents.clear();
 
-    // Restart if not paused
     if (!this.state.isPaused) {
       this.start();
     }
   }
 
-  /**
-   * Seek to a specific time, handling fast-forward and triggering/cleaning events
-   */
   seek(targetTime: number): void {
     const previousTime = this.state.currentTime;
     this.state.currentTime = targetTime;
 
-    // Process events between previous time and target time
     for (const event of this.state.scheduledEvents) {
       if (event.isComplete) continue;
 
-      // Event should have triggered
-      if (event.triggerTime <= targetTime && event.triggerTime > previousTime) {
-        // Trigger the event
+      const triggerTime = event.time;
+
+      if (triggerTime <= targetTime && triggerTime > previousTime) {
         if (this.state.onEventTrigger) {
           this.state.onEventTrigger(event);
         }
-
-        // Add to active events in store
+        event.action(useHorrorStore.getState());
         useHorrorStore.getState().addEvent(event);
 
-        // Check if event should have completed
-        if (event.triggerTime + event.duration <= targetTime) {
+        if (triggerTime + event.duration <= targetTime) {
           event.isComplete = true;
           if (this.state.onEventComplete) {
             this.state.onEventComplete(event);
           }
           useHorrorStore.getState().removeEvent(event.id);
         }
-      } else if (event.triggerTime + event.duration <= targetTime && !event.isComplete) {
-        // Event should have completed
+      } else if (triggerTime + event.duration <= targetTime && !event.isComplete) {
         event.isComplete = true;
         if (this.state.onEventComplete) {
           this.state.onEventComplete(event);
@@ -132,43 +127,30 @@ export class TimelineEngine {
     }
   }
 
-  /**
-   * Get current engine state snapshot
-   */
-  getState(): TimelineEngineState & { storeState: ReturnType<typeof useHorrorStore.getState> } {
+  getState(): TimelineEngineState & { storeState: HorrorState } {
     return {
       ...this.state,
       storeState: useHorrorStore.getState(),
     };
   }
 
-  /**
-   * Add a new event to the timeline
-   */
   addEvent(event: TimelineEvent): void {
     this.state.scheduledEvents.push(event);
-    // Sort by trigger time
-    this.state.scheduledEvents.sort((a, b) => a.triggerTime - b.triggerTime);
+    this.state.scheduledEvents.sort((a, b) => a.time - b.time);
   }
 
-  /**
-   * Remove an event from the timeline
-   */
   removeEvent(id: string): void {
     const index = this.state.scheduledEvents.findIndex((e) => e.id === id);
     if (index >= 0) {
       const event = this.state.scheduledEvents[index];
-      if (!event.isComplete && this.state.onEventComplete) {
-        this.state.onEventComplete(event);
+      if (!event.isComplete && event.cleanup) {
+        event.cleanup();
       }
       this.state.scheduledEvents.splice(index, 1);
     }
     useHorrorStore.getState().removeEvent(id);
   }
 
-  /**
-   * Core tick function - called every frame
-   */
   private tick = (): void => {
     if (this.state.isPaused) return;
 
@@ -177,78 +159,103 @@ export class TimelineEngine {
     this.state.lastTickTime = now;
     this.state.currentTime += delta;
 
-    // Update elapsed time in store
-    useHorrorStore.getState().updateElapsed(delta);
+    useHorrorStore.getState().tick(delta);
 
-    // Interpolate intensity toward target
-    const store = useHorrorStore.getState();
-    const newIntensity = this.interpolateIntensity(
-      store.intensity,
-      store.targetIntensity,
-      0.5,
-      delta
-    );
-    useHorrorStore.getState().setIntensity(newIntensity);
-
-    // Process scheduled events
     this.processEvents();
 
-    // Continue ticking
     this.frameId = requestAnimationFrame(this.tick);
   };
 
   private processEvents(): void {
     const currentTime = this.state.currentTime;
+    const storeState = useHorrorStore.getState();
 
-    for (const event of this.state.scheduledEvents) {
+    const sortedEvents = [...this.state.scheduledEvents].sort(
+      (a, b) => (a.priority ?? 0) - (b.priority ?? 0)
+    );
+
+    for (const event of sortedEvents) {
       if (event.isComplete) continue;
 
-      // Check if event should trigger
-      if (
-        event.triggerTime <= currentTime &&
-        !useHorrorStore.getState().activeEvents.find((e) => e.id === event.id)
-      ) {
-        // Trigger the event
+      const eventTime = applyTimeVariance(event.time, event.timeVariance, this.seedCounter++);
+      const repeatKey = event.id;
+      const lastTriggerTime =
+        this.state.activeRepeatedEvents.get(repeatKey) ?? Number.NEGATIVE_INFINITY;
+
+      let shouldTrigger = false;
+
+      if (event.repeat) {
+        const { interval, count, intervalVariance } = event.repeat;
+        const repeatCount = this.state.activeRepeatedEvents.has(repeatKey)
+          ? Math.floor((currentTime - eventTime) / interval) + 1
+          : 0;
+
+        if (count !== undefined && repeatCount >= count) {
+          event.isComplete = true;
+          continue;
+        }
+
+        const nextTrigger = eventTime + repeatCount * interval;
+        const intervalWithVariance = intervalVariance
+          ? applyTimeVariance(nextTrigger, intervalVariance, this.seedCounter++)
+          : nextTrigger;
+
+        if (currentTime >= intervalWithVariance && lastTriggerTime < intervalWithVariance) {
+          shouldTrigger = true;
+        }
+      } else {
+        if (currentTime >= eventTime && lastTriggerTime < eventTime) {
+          shouldTrigger = true;
+        }
+      }
+
+      if (shouldTrigger) {
+        if (event.condition && !event.condition(storeState)) {
+          continue;
+        }
+
         if (this.state.onEventTrigger) {
           this.state.onEventTrigger(event);
         }
-        useHorrorStore.getState().addEvent(event);
+
+        event.action(storeState);
+        this.state.activeRepeatedEvents.set(repeatKey, currentTime);
+
+        if (!event.repeat) {
+          useHorrorStore.getState().addEvent(event);
+        }
       }
 
-      // Check if event should complete
-      if (event.triggerTime + event.duration <= currentTime) {
-        event.isComplete = true;
-        if (this.state.onEventComplete) {
-          this.state.onEventComplete(event);
+      if (!event.repeat) {
+        const endTime = eventTime + event.duration;
+        if (currentTime >= endTime && !event.isComplete) {
+          event.isComplete = true;
+          if (this.state.onEventComplete) {
+            this.state.onEventComplete(event);
+          }
+          if (event.cleanup) {
+            event.cleanup();
+          }
+          useHorrorStore.getState().removeEvent(event.id);
         }
-        useHorrorStore.getState().removeEvent(event.id);
       }
     }
   }
 
-  private interpolateIntensity(
-    current: number,
-    target: number,
-    speed: number,
-    delta: number
-  ): number {
-    const diff = target - current;
-    const change = diff * speed * delta;
-    return current + change;
-  }
-
-  /**
-   * Clean up the engine
-   */
   dispose(): void {
     this.pause();
     this.state.scheduledEvents = [];
+    this.state.activeRepeatedEvents.clear();
+    if (globalEngineInstance === this) {
+      globalEngineInstance = null;
+    }
+  }
+
+  getScheduledEvents(): TimelineEvent[] {
+    return this.state.scheduledEvents;
   }
 }
 
-/**
- * React hook for using TimelineEngine
- */
 export function useTimelineEngine(config: TimelineEngineConfig = {}): TimelineEngine {
   const engineRef = useRef<TimelineEngine | null>(null);
 

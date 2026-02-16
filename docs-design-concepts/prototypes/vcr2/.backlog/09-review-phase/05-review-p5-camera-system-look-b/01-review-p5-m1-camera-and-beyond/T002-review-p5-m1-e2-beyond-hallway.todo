@@ -1,0 +1,52 @@
+---
+id: P9.M5.E1.T002
+title: 'Review P5.M1.E2: Beyond Hallways'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:42:40.006240+00:00'
+started_at: '2026-02-16T02:42:40.006240+00:00'
+completed_at: '2026-02-16T02:53:33.448291+00:00'
+duration_minutes: 10.89070055
+---
+
+# Review P5.M1.E2: Beyond Hallways
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ✅ HallwaySegment component with geometry (`HallwaySegment.tsx`)
+- ✅ BackroomsHallway with 3 segments at ~4m, ~12m, ~20m (`BackroomsHallway.tsx:5-9`)
+- ✅ Per-segment base intensities: 0.6, 0.3, 0.1
+- ✅ Per-segment FluorescentLight integration
+- ✅ Back wall opening with HALLWAY_OPENING_WIDTH=2 (`RoomGeometry.tsx:58-59, 152-171`)
+
+## Unmet Requirements / Bugs
+
+- ❌ **CRITICAL: BackroomsHallway NEVER imported or rendered** - Component exists but is not used anywhere
+- ❌ **Visibility gate not implemented** - No conditional rendering based on camera mode
+- ❌ **Horror phase interactions not implemented:**
+  - UNEASY: "one distant light turns off" - No code
+  - ESCALATING: "distant hum detuned" - No code
+  - No code comment enforcing "nothing ever appears invariant" (T005.AC3)
+- ❌ **Fog for hallways not implemented** - Main room has fog but hallways have none
+- ❌ **Materials NOT shared references** - HallwaySegment creates new ShaderMaterials instead of reusing from main room
+
+## Code Locations
+
+- `src/App.tsx` - No import of `BackroomsHallway`
+- `src/hallway/HallwaySegment.tsx:35-84` - Creates new materials instead of using shared refs
+- `src/hallway/BackroomsHallway.tsx` - Never consumed
+
+## Recommendations
+
+1. **Immediate**: Import and render `BackroomsHallway` in `App.tsx`
+2. Add visibility gate: only render when `cameraStore.mode !== 'look-behind'` or appropriate condition
+3. Implement horror phase lighting changes for each segment
+4. Share material references with main room for consistency

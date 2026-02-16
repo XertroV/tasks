@@ -1,0 +1,67 @@
+---
+id: P9.M7.E3.T001
+title: 'Review P7.M3.E1: Timeline Visualizer and Horror Debug'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:48:12.416679+00:00'
+started_at: '2026-02-16T04:48:12.416679+00:00'
+completed_at: '2026-02-16T04:55:57.452755+00:00'
+duration_minutes: 7.7506010000000005
+---
+
+# Review P7.M3.E1: Timeline Visualizer and Horror Debug
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ Horizontal timeline bar with phase bands
+- ✅ Phase bands colored
+- ✅ Event markers (pending/active/completed)
+- ✅ Playhead advances in real-time
+- ✅ Intensity graph
+- ✅ Toggle with Shift+`
+- ✅ Leva Horror folder
+- ✅ Force phase buttons
+- ✅ Time scale slider
+
+## Unmet Requirements / Bugs
+
+| Issue | Severity |
+|-------|----------|
+| TimelineVisualizer NOT RENDERED | HIGH |
+| Event click doesn't trigger events | HIGH |
+| useHorrorDebugControls NOT INTEGRATED | HIGH |
+| useEntityDebugControls NOT INTEGRATED | MEDIUM |
+| Mock events instead of real | MEDIUM |
+| Phase mismatch with constants | MEDIUM |
+
+## Recommendations
+
+1. Add TimelineVisualizer to DebugOverlay
+2. Connect event clicks to TimelineEngine
+3. Integrate debug controls in DebugLeva
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M7.E3)
+**Agent**: cli-user
+**Date**: 2026-02-16 04:48 UTC
+**Sibling tasks**: P9.M7.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M7.E3.T001 → P9.M7.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M7.E3.T001: .tasks/09-review-phase/07-review-p7-horror-system/03-review-p7-m3-horror-debug-and/T001-review-p7-m3-e1-timeline-visua.todo
+- P9.M7.E3.T002: .tasks/09-review-phase/07-review-p7-horror-system/03-review-p7-m3-horror-debug-and/T002-review-p7-m3-e2-horror-toggle.todo

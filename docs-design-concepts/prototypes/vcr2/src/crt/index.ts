@@ -18,7 +18,7 @@ export { VcrOSD } from './VcrOSD';
 export type { VcrOSDProps } from './VcrOSD';
 export { useFontReady, getFontPath } from './useFontReady';
 export { useScrollController, clampScroll } from './useScrollController';
-export type { ScrollController } from './useScrollController';
+export type { ScrollController, ScrollControllerResult } from './useScrollController';
 export {
   ScreenContent,
   ScreenRenderer as ScreenRendererNew,

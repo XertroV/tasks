@@ -10,6 +10,8 @@ uniform float uFlicker;
 uniform float uBrightness;
 uniform vec2 uResolution;
 uniform float uTime;
+uniform float uTemperatureShift;
+uniform float uDesaturation;
 
 uniform sampler2D tDiffuse;
 
@@ -82,6 +84,27 @@ float flicker(float time, float intensity) {
     return 1.0 - flickerNoise * intensity * 0.15;
 }
 
+vec3 applyTemperatureShift(vec3 color, float shift) {
+    if (shift <= 0.0) return color;
+    
+    vec3 coldColor = vec3(0.6, 0.7, 0.9);
+    vec3 warmColor = vec3(0.9, 0.5, 0.3);
+    
+    vec3 targetColor = mix(coldColor, warmColor, shift);
+    return mix(color, color * targetColor, shift * 0.5);
+}
+
+float luminance(vec3 color) {
+    return dot(color, vec3(0.299, 0.587, 0.114));
+}
+
+vec3 applyDesaturation(vec3 color, float amount) {
+    if (amount <= 0.0) return color;
+    
+    float gray = luminance(color);
+    return mix(color, vec3(gray), amount);
+}
+
 void main() {
     vec2 uv = vUv;
 
@@ -107,6 +130,10 @@ void main() {
 
     float flickerMult = flicker(uTime, uFlicker);
     color.rgb *= flickerMult;
+
+    color.rgb = applyTemperatureShift(color.rgb, uTemperatureShift);
+    
+    color.rgb = applyDesaturation(color.rgb, uDesaturation);
 
     color.rgb *= uBrightness;
 

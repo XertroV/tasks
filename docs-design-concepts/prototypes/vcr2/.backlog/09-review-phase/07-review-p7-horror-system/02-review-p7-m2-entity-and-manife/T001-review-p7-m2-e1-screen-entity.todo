@@ -1,0 +1,64 @@
+---
+id: P9.M7.E2.T001
+title: 'Review P7.M2.E1: Screen Entity'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:29:17.040702+00:00'
+started_at: '2026-02-16T03:29:17.040702+00:00'
+completed_at: '2026-02-16T03:42:59.393272+00:00'
+duration_minutes: 13.705875916666667
+---
+
+# Review P7.M2.E1: Screen Entity
+
+**Review Status: FAIL**
+
+## Completed Requirements
+
+- ⚠️ EntityOpacityController class exists but unused
+- ⚠️ Debug hooks exist but not mounted
+
+## Unmet Requirements / Bugs
+
+| Task | Requirement | Status |
+|------|-------------|--------|
+| T001 | Entity face texture generation | ❌ NOT IMPLEMENTED |
+| T002 | ScreenEntity component | ❌ NOT IMPLEMENTED |
+| T003 | Entity message data | ❌ NOT IMPLEMENTED |
+| T004 | Static face manifestation | ❌ NOT IMPLEMENTED |
+| T005 | Corrupted text system | ❌ NOT IMPLEMENTED |
+| T006 | VCR display corruption | ❌ NOT IMPLEMENTED |
+| T007 | Entity opacity controller | ⚠️ EXISTS BUT UNUSED |
+| T008 | Debug controls & integration | ⚠️ PARTIAL |
+
+## Recommendations
+
+1. Create `ScreenEntity.tsx` with procedural face texture generation
+2. Implement entity messages and corrupted text system
+3. Add VCR display corruption (timecodes, channel bleed)
+4. Integrate EntityOpacityController with horror store
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M7.E2)
+**Agent**: cli-user
+**Date**: 2026-02-16 03:29 UTC
+**Sibling tasks**: P9.M7.E2.T002, P9.M7.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M7.E2.T001 → P9.M7.E2.T002 → P9.M7.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M7.E2.T001: .tasks/09-review-phase/07-review-p7-horror-system/02-review-p7-m2-entity-and-manife/T001-review-p7-m2-e1-screen-entity.todo
+- P9.M7.E2.T002: .tasks/09-review-phase/07-review-p7-horror-system/02-review-p7-m2-entity-and-manife/T002-review-p7-m2-e2-horror-vhs-int.todo
+- P9.M7.E2.T003: .tasks/09-review-phase/07-review-p7-horror-system/02-review-p7-m2-entity-and-manife/T003-review-p7-m2-e3-horror-audio-l.todo

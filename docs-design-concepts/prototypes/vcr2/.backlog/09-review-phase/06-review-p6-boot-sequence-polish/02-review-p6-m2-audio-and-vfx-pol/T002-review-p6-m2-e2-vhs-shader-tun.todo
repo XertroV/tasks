@@ -1,0 +1,43 @@
+---
+id: P9.M6.E2.T002
+title: 'Review P6.M2.E2: VHS Shader Tuning and Performance Audit'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:21:10.316276+00:00'
+started_at: '2026-02-16T04:21:10.316276+00:00'
+completed_at: '2026-02-16T04:24:46.759574+00:00'
+duration_minutes: 3.607388133333333
+---
+
+# Review P6.M2.E2: VHS Shader Tuning and Performance Audit
+
+**Review Status: NEEDS_WORK**
+
+## Completed Requirements
+
+- ✅ CRT shader scanlines appropriate for resolution
+- ✅ Phosphor mask visible but not distracting
+- ✅ Text remains readable
+- ✅ Performance metrics captured
+
+## Unmet Requirements / Bugs
+
+| Task | Issue | Severity |
+|------|-------|----------|
+| T001 | VHS defaults inconsistent across files | MEDIUM |
+| T001 | VHS_DEFAULTS in constants.ts never imported | LOW |
+| T001 | No documentation of default value rationale | LOW |
+| T003 | No documented performance comparison | MEDIUM |
+| T003 | No issue log or remediation plan | LOW |
+
+## Recommendations
+
+1. Consolidate VHS defaults to single source
+2. Add code comments documenting default choices
+3. Document performance checkpoint with actual measurements
