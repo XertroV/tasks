@@ -35,6 +35,20 @@ Dual implementation: **Python** (`backlog/`) and **TypeScript/Bun** (`backlog_ts
 
 ## Install
 
+One-shot installer (Linux/macOS, no sudo required):
+
+```bash
+./install.sh
+```
+
+This clones the repo into `~/.backlogs/backlogs` by default, creates a virtualenv, installs the Python CLI, and links `backlog`, `bl`, and `tasks` into your user bin directory (or `/usr/local/bin` when running as root).
+
+You can override defaults with:
+
+- `BACKLOG_REPO_URL` (default: `https://github.com/XertroV/tasks.git`)
+- `BACKLOG_CLONE_DIR` (must end with `backlogs`)
+- `BACKLOG_BIN_DIR`
+
 Local editable (for development):
 
 ```bash
