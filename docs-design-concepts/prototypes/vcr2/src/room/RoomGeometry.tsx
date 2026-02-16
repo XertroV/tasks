@@ -8,6 +8,7 @@ import { HALLWAY_OPENING_WIDTH, ROOM_DEPTH, ROOM_HEIGHT, ROOM_WIDTH } from '@/sh
 import { useFrame } from '@react-three/fiber';
 import type { GroupProps } from '@react-three/fiber';
 import { useEffect, useMemo, useRef } from 'react';
+import { Color } from 'three';
 import type { ShaderMaterial } from 'three';
 
 export interface RoomSurfaceMaterials {
@@ -19,6 +20,8 @@ export interface RoomSurfaceMaterials {
 export interface RoomGeometryProps extends GroupProps {
   wallDecay?: number;
   carpetWear?: number;
+  wallBaseColor?: string;
+  carpetBaseColor?: string;
   onMaterialsReady?: (materials: RoomSurfaceMaterials) => void;
 }
 
@@ -33,6 +36,8 @@ const ceilingShader = `${noise}\n${ceilingFrag}`;
 export function RoomGeometry({
   wallDecay = 0.5,
   carpetWear = 0.3,
+  wallBaseColor = '#d4c082',
+  carpetBaseColor = '#5e4a34',
   onMaterialsReady,
   ...groupProps
 }: RoomGeometryProps) {
@@ -62,24 +67,24 @@ export function RoomGeometry({
     () => ({
       uTime: { value: 0 },
       uDecay: { value: wallDecay },
-      uBaseColor: { value: [0.77, 0.69, 0.55] },
+      uBaseColor: { value: new Color(wallBaseColor).toArray() },
       uStripScale: { value: 5.0 },
       uSeamWidth: { value: 0.02 },
       uStainStrength: { value: 0.6 },
       uFlicker: { value: 0.2 },
       uBreathIntensity: { value: 0.3 },
     }),
-    [wallDecay]
+    [wallDecay, wallBaseColor]
   );
 
   const floorUniforms = useMemo(
     () => ({
       uWear: { value: carpetWear },
-      uColor: { value: [0.42, 0.36, 0.31] },
+      uColor: { value: new Color(carpetBaseColor).toArray() },
       uLoopScale: { value: 52.0 },
       uTrackStrength: { value: 0.7 },
     }),
-    [carpetWear]
+    [carpetWear, carpetBaseColor]
   );
 
   const ceilingUniforms = useMemo(

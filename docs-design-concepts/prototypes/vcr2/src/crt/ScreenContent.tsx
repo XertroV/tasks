@@ -3,7 +3,7 @@ import { useContentStore } from '@/stores/contentStore';
 import { useNavigationStore } from '@/stores/navigationStore';
 import { useFrame, useThree } from '@react-three/fiber';
 import type { ReactNode } from 'react';
-import { createContext, useContext, useEffect, useMemo, useRef } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import {
   LinearFilter,
   NearestFilter,
@@ -77,13 +77,19 @@ export function ScreenRenderer({ children, width = 1024, height = 768 }: ScreenR
     gl.setRenderTarget(null);
   }, 1);
 
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    setReady(true);
+  }, []);
+
   const contextValue = useMemo(
     () => ({
       renderTarget: renderTarget.current,
       scene: scene.current,
       camera: camera.current,
     }),
-    []
+    [ready]
   );
 
   return (
@@ -101,14 +107,6 @@ export interface ScreenContentProps {
 }
 
 export function ScreenContent({ children }: ScreenContentProps) {
-  return (
-    <ScreenRenderer>
-      <OffscreenScene>{children}</OffscreenScene>
-    </ScreenRenderer>
-  );
-}
-
-function OffscreenScene({ children }: { children?: ReactNode }) {
   const { scene } = useScreenRenderer();
   const currentPageId = useNavigationStore((state) => state.currentPageId);
   const currentPage = useContentStore((state) => state.currentPage);

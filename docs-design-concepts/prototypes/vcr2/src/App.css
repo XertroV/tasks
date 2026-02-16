@@ -19,6 +19,25 @@ body {
   height: 100vh;
 }
 
+.freecam-hint {
+  position: fixed;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  border: 1px solid rgba(255, 226, 153, 0.75);
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffe9b8;
+  padding: 8px 12px;
+  font-family: "VT323", monospace;
+  font-size: 18px;
+  line-height: 1.05;
+  letter-spacing: 0.03em;
+  text-align: center;
+  text-shadow: 0 0 6px rgba(255, 226, 153, 0.35);
+  pointer-events: none;
+}
+
 .debug-panel {
   position: fixed;
   bottom: 16px;

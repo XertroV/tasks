@@ -1,19 +1,23 @@
 // CRT Screen Colors - import from colors.ts to avoid duplication
 export {
-	CRT_BLACK,
-	CRT_BLACK_PURE,
-	PHOSPHOR_GREEN,
-	PHOSPHOR_GREEN_DIM,
-	PHOSPHOR_GREEN_BRIGHT,
-	LINK_CYAN,
-	CODE_AMBER,
-	HORROR_RED,
-	TEXT_COLORS,
-	TEXT_EMISSIVE,
+  CRT_BLACK,
+  CRT_BLACK_PURE,
+  PHOSPHOR_GREEN,
+  PHOSPHOR_GREEN_DIM,
+  PHOSPHOR_GREEN_BRIGHT,
+  LINK_CYAN,
+  CODE_AMBER,
+  HORROR_RED,
+  TEXT_COLORS,
+  TEXT_EMISSIVE,
 } from './colors';
 
 // Aliases for backwards compatibility
-export { LINK_CYAN as CYAN_LINK, CODE_AMBER as AMBER_CODE, HORROR_RED as RED_HORROR } from './colors';
+export {
+  LINK_CYAN as CYAN_LINK,
+  CODE_AMBER as AMBER_CODE,
+  HORROR_RED as RED_HORROR,
+} from './colors';
 
 // Zapper Colors
 export const ZAPPER_BARREL = '#E85D04';
@@ -22,8 +26,8 @@ export const ZAPPER_TRIGGER_GUARD = '#333333';
 export const ZAPPER_TRIGGER = '#4A4A4A';
 
 // Room Colors
-export const WALLPAPER_BASE = '#C4B18C';
-export const CARPET_BASE = '#6B5B4F';
+export const WALLPAPER_BASE = '#D4C082';
+export const CARPET_BASE = '#5E4A34';
 export const CEILING_BASE = '#E8E8E8';
 
 // Room Dimensions

@@ -7,3 +7,4 @@ export {
   type HorrorOverrides,
 } from './cameraStore';
 export { CameraController } from './CameraController';
+export { DebugFreecamController } from './DebugFreecamController';

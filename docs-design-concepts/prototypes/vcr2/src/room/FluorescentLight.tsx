@@ -7,6 +7,7 @@ import { PositionalAudio as ThreePositionalAudio } from 'three';
 export interface FluorescentLightProps extends GroupProps {
   length?: number;
   baseIntensity?: number;
+  lightColor?: string;
   flickerEnabled?: boolean;
   audioEnabled?: boolean;
 }
@@ -43,6 +44,7 @@ function createFluorescentBuzz(listener: AudioListener): PositionalAudio | null 
 export function FluorescentLight({
   length = 1.2,
   baseIntensity = 1.8,
+  lightColor = '#ffe1a8',
   flickerEnabled = true,
   audioEnabled = true,
   ...groupProps
@@ -89,7 +91,7 @@ export function FluorescentLight({
         lightRef.current.intensity = baseIntensity;
       }
       if (tubeRef.current) {
-        tubeRef.current.emissiveIntensity = 0.8;
+        tubeRef.current.emissiveIntensity = 0.68;
       }
       return;
     }
@@ -112,7 +114,7 @@ export function FluorescentLight({
     }
 
     if (tubeRef.current) {
-      tubeRef.current.emissiveIntensity = 0.8 * flicker;
+      tubeRef.current.emissiveIntensity = 0.68 * flicker;
     }
   });
 
@@ -127,16 +129,16 @@ export function FluorescentLight({
         <cylinderGeometry args={[0.015, 0.015, length - 0.1, 12]} />
         <meshStandardMaterial
           ref={tubeRef}
-          color="#fff8e7"
-          emissive="#fff8e7"
-          emissiveIntensity={0.8}
+          color={lightColor}
+          emissive={lightColor}
+          emissiveIntensity={0.68}
           roughness={0.4}
         />
       </mesh>
 
       <pointLight
         ref={lightRef}
-        color="#fff8e7"
+        color={lightColor}
         intensity={baseIntensity}
         distance={5}
         decay={2}

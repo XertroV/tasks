@@ -10,7 +10,9 @@ import {
   useBootStore,
   useSettingsStore,
 } from '@/boot';
-import { CameraController, useCameraStore } from '@/camera';
+import { CameraController, DebugFreecamController, useCameraStore } from '@/camera';
+import { ScreenContent, ScreenRenderer, useRenderTargetTexture } from '@/crt';
+import { createLogger } from '@/debug/logger';
 import { BackroomsHallway } from '@/hallway';
 import { HorrorCameraBridge, PostHorrorScreen, useHorrorStore } from '@/horror';
 import { LookAtScreenPostIt, LookBehindYouPostIt, SkipBootPostIt } from '@/interaction/PostItNote';
@@ -27,6 +29,8 @@ import { Room } from '@/room';
 import { DeviceProvider, WebGL2Fallback } from '@/utils/DeviceProvider';
 import { useVCRStore } from '@/vcr';
 import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+
+const logger = createLogger('Freecam');
 
 function ZapperWithDebugControls() {
   const zapperRef = useRef<ZapperControllerRef>(null);
@@ -77,6 +81,7 @@ function BootDebugPanel() {
 function BootVCRController() {
   const currentPhase = useBootStore((state) => state.currentPhase);
   const [crtScreenMode, setCrtScreenMode] = useState<'no-signal' | 'docs'>('no-signal');
+  const screenTexture = useRenderTargetTexture();
 
   useEffect(() => {
     if (currentPhase === 'TV_POWER_ON') {
@@ -104,7 +109,9 @@ function BootVCRController() {
     };
   }, []);
 
-  return <Room crtScreenMode={crtScreenMode} onMaterialsReady={() => {}} />;
+  return (
+    <Room crtScreenMode={crtScreenMode} screenTexture={screenTexture} onMaterialsReady={() => {}} />
+  );
 }
 
 function useKeyboardShortcuts() {
@@ -136,6 +143,12 @@ function useKeyboardShortcuts() {
             toggleSettings();
           }
           break;
+        case 'c':
+          if (!isSettingsOpen) {
+            const newMode = cameraMode === 'freecam' ? 'normal' : 'freecam';
+            setCameraMode(newMode);
+          }
+          break;
         case 'escape':
           if (isSettingsOpen) {
             toggleSettings();
@@ -161,6 +174,15 @@ function PostHorrorFlowHandler() {
   return <PostHorrorScreen onRestart={handleRestart} onComplete={handleComplete} />;
 }
 
+function FreecamHint() {
+  return (
+    <div className="freecam-hint">
+      <div>FREECAM ACTIVE</div>
+      <div>Click to lock mouse | WASD move | Shift boost | Space/E up | Ctrl/Q down | C exit</div>
+    </div>
+  );
+}
+
 function App() {
   const syncWithSystemPreferences = useSettingsStore((state) => state.syncWithSystemPreferences);
 
@@ -175,6 +197,18 @@ function App() {
   useKeyboardShortcuts();
 
   const cameraMode = useCameraStore((state) => state.mode);
+  const previousModeRef = useRef(cameraMode);
+
+  useEffect(() => {
+    const previousMode = previousModeRef.current;
+    if (previousMode !== 'freecam' && cameraMode === 'freecam') {
+      logger.debug('Enabling debug freecam');
+    }
+    if (previousMode === 'freecam' && cameraMode !== 'freecam') {
+      logger.debug('Disabling debug freecam');
+    }
+    previousModeRef.current = cameraMode;
+  }, [cameraMode]);
 
   return (
     <DeviceProvider>
@@ -186,32 +220,37 @@ function App() {
         <BootAudioPlayer />
         <BootDebugPanel />
         <Canvas camera={{ position: [0, 1.2, -2], fov: 60 }}>
-          <BootSequence />
-          <AimingProvider>
-            <SpatialAudioSetup />
-            <KeyboardNavigation />
-            <BootVCRController />
-            <LookBehindYouPostIt position={[-0.5, 1.1, -6.3]} rotation={[0, 0, 0.1]} />
-            <LookAtScreenPostIt position={[0, 1.4, -3]} rotation={[0, Math.PI, 0]} />
-            <SkipBootPostIt position={[0.5, 1.1, -3]} rotation={[0, Math.PI, -0.1]} />
-            {cameraMode !== 'look-behind' && <BackroomsHallway />}
-            <CameraController />
-            <HorrorCameraBridge />
-            <PostProcessingPipeline />
-            <CrosshairRenderer />
-            <ZapperWithDebugControls />
-          </AimingProvider>
-          {DebugMount ? (
-            <Suspense fallback={null}>
-              <DebugMount />
-            </Suspense>
-          ) : null}
+          <ScreenRenderer>
+            <BootSequence />
+            <AimingProvider>
+              <SpatialAudioSetup />
+              <KeyboardNavigation />
+              <BootVCRController />
+              <LookBehindYouPostIt position={[-0.5, 1.1, -6.3]} rotation={[0, 0, 0.1]} />
+              <LookAtScreenPostIt position={[0, 1.4, -3]} rotation={[0, Math.PI, 0]} />
+              <SkipBootPostIt position={[0.5, 1.1, -3]} rotation={[0, Math.PI, -0.1]} />
+              {cameraMode !== 'look-behind' && <BackroomsHallway />}
+              <CameraController />
+              <DebugFreecamController />
+              <HorrorCameraBridge />
+              <PostProcessingPipeline />
+              <ZapperWithDebugControls />
+            </AimingProvider>
+            <ScreenContent />
+            {DebugMount ? (
+              <Suspense fallback={null}>
+                <DebugMount />
+              </Suspense>
+            ) : null}
+          </ScreenRenderer>
         </Canvas>
         {DebugOverlay ? (
           <Suspense fallback={null}>
             <DebugOverlay />
           </Suspense>
         ) : null}
+        <CrosshairRenderer />
+        {cameraMode === 'freecam' ? <FreecamHint /> : null}
         <SettingsPanel />
       </div>
     </DeviceProvider>

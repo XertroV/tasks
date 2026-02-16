@@ -10,6 +10,7 @@ export type { AimingProviderProps } from './AimingProvider';
 export { Crosshair } from './Crosshair';
 export type { CrosshairProps } from './Crosshair';
 export { CrosshairRenderer } from './CrosshairRenderer';
+export { useAimingStore } from './aimingStore';
 export { useAiming } from './useAiming';
 export type { UseAimingOptions, UseAimingReturn } from './useAiming';
 export { ShootableTarget } from './ShootableTarget';

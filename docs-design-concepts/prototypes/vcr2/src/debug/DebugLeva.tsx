@@ -30,9 +30,9 @@ export function DebugLeva() {
     Camera: folder(
       {
         mode: {
-          options: ['normal', 'look-behind'] as const,
+          options: ['normal', 'look-behind', 'freecam'] as const,
           value: mode,
-          onChange: (v: 'normal' | 'look-behind') => setMode(v),
+          onChange: (v: 'normal' | 'look-behind' | 'freecam') => setMode(v),
         },
         transitioning: { value: isTransitioning, disabled: true },
       },

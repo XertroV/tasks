@@ -94,14 +94,14 @@ vec3 applyTemperatureShift(vec3 color, float shift) {
     return mix(color, color * targetColor, shift * 0.5);
 }
 
-float luminance(vec3 color) {
+float calcLuminance(vec3 color) {
     return dot(color, vec3(0.299, 0.587, 0.114));
 }
 
 vec3 applyDesaturation(vec3 color, float amount) {
     if (amount <= 0.0) return color;
     
-    float gray = luminance(color);
+    float gray = calcLuminance(color);
     return mix(color, vec3(gray), amount);
 }
 

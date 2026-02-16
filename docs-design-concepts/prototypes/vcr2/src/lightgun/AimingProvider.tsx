@@ -1,6 +1,6 @@
 import { playLightgunShot } from '@/audio';
 import { useFrame, useThree } from '@react-three/fiber';
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import {
   AimingSystem,
@@ -8,6 +8,7 @@ import {
   type CursorState,
   type ShootResult,
 } from './AimingSystem';
+import { useAimingStore } from './aimingStore';
 
 interface AimingContextValue {
   registerTarget: (target: AimingTarget) => void;
@@ -27,8 +28,10 @@ export interface AimingProviderProps {
 export function AimingProvider({ children, onShoot }: AimingProviderProps) {
   const { camera, gl } = useThree();
   const systemRef = useRef<AimingSystem | null>(null);
-  const [cursorState, setCursorState] = useState<CursorState>('idle');
-  const [currentTargetId, setCurrentTargetId] = useState<string | null>(null);
+  const setCursorState = useAimingStore((state) => state.setCursorState);
+  const setCurrentTargetId = useAimingStore((state) => state.setCurrentTargetId);
+  const cursorState = useAimingStore((state) => state.cursorState);
+  const currentTargetId = useAimingStore((state) => state.currentTargetId);
 
   useEffect(() => {
     const system = new AimingSystem();
@@ -46,7 +49,7 @@ export function AimingProvider({ children, onShoot }: AimingProviderProps) {
       gl.domElement.removeEventListener('mousemove', handleMouseMove);
       systemRef.current = null;
     };
-  }, [gl.domElement]);
+  }, [gl.domElement, setCursorState]);
 
   useFrame(() => {
     if (systemRef.current) {
@@ -54,24 +57,27 @@ export function AimingProvider({ children, onShoot }: AimingProviderProps) {
     }
   });
 
-  const registerTarget = useCallback((target: AimingTarget) => {
-    if (systemRef.current) {
-      const originalOnTarget = target.onTarget;
-      const originalOnUntarget = target.onUntarget;
+  const registerTarget = useCallback(
+    (target: AimingTarget) => {
+      if (systemRef.current) {
+        const originalOnTarget = target.onTarget;
+        const originalOnUntarget = target.onUntarget;
 
-      target.onTarget = () => {
-        setCurrentTargetId(target.id);
-        if (originalOnTarget) originalOnTarget();
-      };
+        target.onTarget = () => {
+          setCurrentTargetId(target.id);
+          if (originalOnTarget) originalOnTarget();
+        };
 
-      target.onUntarget = () => {
-        setCurrentTargetId(null);
-        if (originalOnUntarget) originalOnUntarget();
-      };
+        target.onUntarget = () => {
+          setCurrentTargetId(null);
+          if (originalOnUntarget) originalOnUntarget();
+        };
 
-      systemRef.current.registerTarget(target);
-    }
-  }, []);
+        systemRef.current.registerTarget(target);
+      }
+    },
+    [setCurrentTargetId]
+  );
 
   const unregisterTarget = useCallback((id: string) => {
     if (systemRef.current) {

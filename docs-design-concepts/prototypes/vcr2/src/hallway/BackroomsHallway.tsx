@@ -58,7 +58,7 @@ export function BackroomsHallway({ showLights = true, ...groupProps }: Backrooms
               <pointLight
                 ref={distantLightRef}
                 position={[0, 2.5, 0]}
-                color="#fff8e7"
+                color="#ffe1a8"
                 intensity={uneasePhase ? 0.1 : 0.45}
                 distance={6}
                 decay={2}

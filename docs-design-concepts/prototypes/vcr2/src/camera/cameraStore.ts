@@ -21,7 +21,7 @@ export const CAMERA_CONFIG = {
   },
 } as const;
 
-export type CameraMode = 'normal' | 'look-behind' | 'horror-override';
+export type CameraMode = 'normal' | 'look-behind' | 'horror-override' | 'freecam';
 
 export interface HorrorOverrides {
   driftIntensity: number;

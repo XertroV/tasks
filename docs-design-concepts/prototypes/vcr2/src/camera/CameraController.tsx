@@ -31,6 +31,7 @@ export function CameraController() {
 
   useFrame((_, delta) => {
     if (!camera) return;
+    if (mode === 'freecam') return;
 
     if ('isOrthographicCamera' in camera && (camera as OrthographicCamera).isOrthographicCamera) {
       return;
