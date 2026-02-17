@@ -21,7 +21,8 @@ const PHASE_INTENSITY_MAP: Record<HorrorPhase, number> = {
 };
 
 export function useHorrorDebugControls(
-  engineRef?: React.RefObject<TimelineEngine | null>
+  engineRef?: React.RefObject<TimelineEngine | null>,
+  store?: ReturnType<typeof import('leva').useCreateStore>
 ): HorrorDebugConfig {
   const setPhase = useHorrorStore((state) => state.setPhase);
   const reset = useHorrorStore.getState().reset;
@@ -48,45 +49,53 @@ export function useHorrorDebugControls(
     {} as Record<string, ReturnType<typeof button>>
   );
 
-  const config = useControls('Horror', {
-    enabled: { value: true, label: 'Enabled' },
-    forceIntensity: {
-      value: -1,
-      min: -1,
-      max: 1,
-      step: 0.1,
-      label: 'Force Intensity',
+  const config = useControls(
+    'Horror',
+    {
+      enabled: { value: true, label: 'Enabled' },
+      forceIntensity: {
+        value: -1,
+        min: -1,
+        max: 1,
+        step: 0.1,
+        label: 'Force Intensity',
+      },
+      timeScale: {
+        value: 1,
+        min: 0.1,
+        max: 10,
+        step: 0.1,
+        label: 'Time Scale',
+      },
+      showEntityAlways: { value: false, label: 'Show Entity Always' },
     },
-    timeScale: {
-      value: 1,
-      min: 0.1,
-      max: 10,
-      step: 0.1,
-      label: 'Time Scale',
+    { store }
+  );
+
+  useControls('Horror Phases', phaseButtons, { store });
+
+  useControls(
+    'Horror Actions',
+    {
+      Reset: button(() => {
+        reset();
+        if (engineRef?.current) {
+          engineRef.current.reset();
+        }
+      }),
+      Pause: button(() => {
+        if (engineRef?.current) {
+          engineRef.current.pause();
+        }
+      }),
+      Resume: button(() => {
+        if (engineRef?.current) {
+          engineRef.current.resume();
+        }
+      }),
     },
-    showEntityAlways: { value: false, label: 'Show Entity Always' },
-  });
-
-  useControls('Horror Phases', phaseButtons);
-
-  useControls('Horror Actions', {
-    Reset: button(() => {
-      reset();
-      if (engineRef?.current) {
-        engineRef.current.reset();
-      }
-    }),
-    Pause: button(() => {
-      if (engineRef?.current) {
-        engineRef.current.pause();
-      }
-    }),
-    Resume: button(() => {
-      if (engineRef?.current) {
-        engineRef.current.resume();
-      }
-    }),
-  });
+    { store }
+  );
 
   configRef.current = {
     enabled: config.enabled as boolean,

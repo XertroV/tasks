@@ -12,6 +12,7 @@ import {
 } from '@/boot';
 import { CameraController, DebugFreecamController, useCameraStore } from '@/camera';
 import { ScreenContent, ScreenRenderer, useRenderTargetTexture } from '@/crt';
+import { LevaProvider, useSharedLevaStore } from '@/debug/DebugLeva';
 import { createLogger } from '@/debug/logger';
 import { BackroomsHallway } from '@/hallway';
 import { HorrorCameraBridge, PostHorrorScreen, useHorrorStore } from '@/horror';
@@ -71,9 +72,9 @@ function BootAudioPlayer() {
   return null;
 }
 
-function BootDebugPanel() {
+function BootDebugPanel({ levaStore }: { levaStore?: ReturnType<typeof useSharedLevaStore> }) {
   if (import.meta.env.DEV) {
-    useBootDebugControls(true);
+    useBootDebugControls(true, levaStore);
   }
   return null;
 }
@@ -183,8 +184,17 @@ function FreecamHint() {
   );
 }
 
+function CanvasContent({
+  children,
+  levaStore,
+}: { children: React.ReactNode; levaStore?: ReturnType<typeof useSharedLevaStore> }) {
+  if (!levaStore) return <>{children}</>;
+  return <LevaProvider store={levaStore}>{children as React.ReactElement}</LevaProvider>;
+}
+
 function App() {
   const syncWithSystemPreferences = useSettingsStore((state) => state.syncWithSystemPreferences);
+  const levaStore = import.meta.env.DEV ? useSharedLevaStore() : undefined;
 
   useEffect(() => {
     initAudioOnInteraction();
@@ -218,35 +228,37 @@ function App() {
         <PostHorrorFlowHandler />
         <TapeAudio />
         <BootAudioPlayer />
-        <BootDebugPanel />
+        <BootDebugPanel levaStore={levaStore} />
         <Canvas camera={{ position: [0, 1.2, -2], fov: 60 }}>
-          <ScreenRenderer>
-            <BootSequence />
-            <AimingProvider>
-              <SpatialAudioSetup />
-              <KeyboardNavigation />
-              <BootVCRController />
-              <LookBehindYouPostIt position={[-0.5, 1.1, -6.3]} rotation={[0, 0, 0.1]} />
-              <LookAtScreenPostIt position={[0, 1.4, -3]} rotation={[0, Math.PI, 0]} />
-              <SkipBootPostIt position={[0.5, 1.1, -3]} rotation={[0, Math.PI, -0.1]} />
-              {cameraMode !== 'look-behind' && <BackroomsHallway />}
-              <CameraController />
-              <DebugFreecamController />
-              <HorrorCameraBridge />
-              <PostProcessingPipeline />
-              <ZapperWithDebugControls />
-            </AimingProvider>
-            <ScreenContent />
-            {DebugMount ? (
-              <Suspense fallback={null}>
-                <DebugMount />
-              </Suspense>
-            ) : null}
-          </ScreenRenderer>
+          <CanvasContent levaStore={levaStore}>
+            <ScreenRenderer>
+              <BootSequence />
+              <AimingProvider>
+                <SpatialAudioSetup />
+                <KeyboardNavigation />
+                <BootVCRController />
+                <LookBehindYouPostIt position={[-0.5, 1.1, -6.3]} rotation={[0, 0, 0.1]} />
+                <LookAtScreenPostIt position={[0, 1.4, -3]} rotation={[0, Math.PI, 0]} />
+                <SkipBootPostIt position={[0.5, 1.1, -3]} rotation={[0, Math.PI, -0.1]} />
+                {cameraMode !== 'look-behind' && <BackroomsHallway />}
+                <CameraController />
+                <DebugFreecamController />
+                <HorrorCameraBridge />
+                <PostProcessingPipeline />
+                <ZapperWithDebugControls />
+              </AimingProvider>
+              <ScreenContent />
+              {DebugMount ? (
+                <Suspense fallback={null}>
+                  <DebugMount levaStore={levaStore} />
+                </Suspense>
+              ) : null}
+            </ScreenRenderer>
+          </CanvasContent>
         </Canvas>
         {DebugOverlay ? (
           <Suspense fallback={null}>
-            <DebugOverlay />
+            <DebugOverlay levaStore={levaStore} />
           </Suspense>
         ) : null}
         <CrosshairRenderer />
