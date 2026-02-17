@@ -101,14 +101,14 @@ def claim_task(task: Task, agent_id: str, force: bool = False) -> None:
     task.started_at = now
 
 
-def complete_task(task: Task) -> None:
+def complete_task(task: Task, force: bool = False) -> None:
     """
     Mark task as complete.
 
     Raises:
         StatusError: If completion fails
     """
-    if task.status != Status.IN_PROGRESS:
+    if not force and task.status != Status.IN_PROGRESS:
         raise StatusError(
             message=f"Cannot complete task {task.id}: task is {task.status.value}, not in progress",
             error_code="INVALID_STATUS",

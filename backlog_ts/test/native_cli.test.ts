@@ -173,6 +173,32 @@ describe("native cli", () => {
     expect(rootIndex).toContain("next_available:");
   });
 
+  test("done refuses to complete a non-in-progress task", () => {
+    root = setupFixture();
+    const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    let todo = readFileSync(todoPath, "utf8");
+    todo = todo.replace("status: pending", "status: blocked");
+    writeFileSync(todoPath, todo);
+
+    const p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(1);
+    expect(p.stdout.toString()).toContain("INVALID_STATUS");
+    expect(readFileSync(todoPath, "utf8")).toContain("status: blocked");
+  });
+
+  test("done --force marks non-in-progress task as done", () => {
+    root = setupFixture();
+    const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    let todo = readFileSync(todoPath, "utf8");
+    todo = todo.replace("status: pending", "status: blocked");
+    writeFileSync(todoPath, todo);
+
+    const p = run(["done", "--force", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed:");
+    expect(readFileSync(todoPath, "utf8")).toContain("status: done");
+  });
+
   test("undone resets single task to pending", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");

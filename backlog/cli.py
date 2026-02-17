@@ -1938,7 +1938,8 @@ def claim(task_id, agent, force, no_content):
 @cli.command()
 @click.argument("task_id", required=False)
 @click.option("--verify", is_flag=True, help="Confirm epic/milestone review")
-def done(task_id, verify):
+@click.option("--force", is_flag=True, help="Mark task done even if not in progress")
+def done(task_id, verify, force):
     """Mark task as complete.
 
     Shows newly unblocked tasks after completion.
@@ -1977,7 +1978,7 @@ def done(task_id, verify):
             duration = (utc_now() - started).total_seconds() / 60
             task.duration_minutes = duration
 
-        complete_task(task)
+        complete_task(task, force=force)
         loader.save_task(task)
 
         console.print(f"\n[green]✓ Completed:[/] {task.id} - {task.title}\n")

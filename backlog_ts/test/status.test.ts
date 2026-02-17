@@ -43,6 +43,17 @@ describe("status", () => {
     expect(t.completedAt).toBeInstanceOf(Date);
   });
 
+  test("complete task requires in-progress state", () => {
+    const t = mkTask();
+    expect(() => completeTask(t)).toThrow(StatusError);
+  });
+
+  test("complete task with force", () => {
+    const t = mkTask();
+    completeTask(t, true);
+    expect(t.status).toBe(Status.DONE);
+  });
+
   test("update requires reason", () => {
     const t = mkTask(Status.IN_PROGRESS);
     expect(() => updateStatus(t, Status.BLOCKED)).toThrow(StatusError);

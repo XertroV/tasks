@@ -501,6 +501,50 @@ class TestDoneCommand:
 
         assert "duration_minutes:" in content
 
+    def test_done_requires_in_progress_without_force(self, runner, tmp_tasks_dir):
+        """done should require an in-progress task unless --force is used."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task", status="pending")
+
+        result = runner.invoke(cli, ["done", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 1
+        assert "INVALID_STATUS" in result.output
+
+        task_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
+        assert "status: pending" in task_file.read_text()
+
+    def test_done_force_marks_non_progress_task(self, runner, tmp_tasks_dir):
+        """done --force should mark non-in-progress tasks as done."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Test Task",
+            status="pending",
+            claimed_by="test-agent",
+        )
+
+        result = runner.invoke(cli, ["done", "P1.M1.E1.T001", "--force"])
+
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+
+        task_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
+        assert "status: done" in task_file.read_text()
+
     def test_undone_resets_single_task(self, runner, tmp_tasks_dir):
         create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task", status="done")
         result = runner.invoke(cli, ["undone", "P1.M1.E1.T001"])

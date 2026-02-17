@@ -64,8 +64,8 @@ export function claimTask(task: Task, agentId: string, force = false): void {
   task.startedAt = now;
 }
 
-export function completeTask(task: Task): void {
-  if (task.status !== Status.IN_PROGRESS) {
+export function completeTask(task: Task, force = false): void {
+  if (!force && task.status !== Status.IN_PROGRESS) {
     throw new StatusError(
       `Cannot complete task ${task.id}: task is ${task.status}, not in progress`,
       "INVALID_STATUS",

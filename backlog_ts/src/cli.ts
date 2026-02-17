@@ -1130,6 +1130,7 @@ async function cmdGrab(args: string[]): Promise<void> {
 
 async function cmdDone(args: string[]): Promise<void> {
   let taskId = args.find((a) => !a.startsWith("-"));
+  const force = parseFlag(args, "--force");
   if (!taskId) taskId = await getCurrentTaskId();
   if (!taskId) textError("No task ID provided and no current working task set.");
 
@@ -1142,7 +1143,7 @@ async function cmdDone(args: string[]): Promise<void> {
     if (task.startedAt) {
       task.durationMinutes = (utcNow().getTime() - task.startedAt.getTime()) / 60000;
     }
-    completeTask(task);
+    completeTask(task, force);
     await loader.saveTask(task);
     console.log(`Completed: ${task.id}`);
   } catch (e) {
