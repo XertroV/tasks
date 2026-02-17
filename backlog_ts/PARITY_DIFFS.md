@@ -18,6 +18,7 @@ The TypeScript CLI now handles all currently exercised command families natively
 - `agents`
 - `add`, `add-epic`, `add-milestone`, `add-phase`
 - `idea`
+- `log`
 
 ## Fallback Status
 

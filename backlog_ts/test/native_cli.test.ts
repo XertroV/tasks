@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse, stringify } from "yaml";
 
 let oldCwd = process.cwd();
 let root = "";
@@ -62,6 +63,20 @@ function run(args: string[], cwd: string, extraEnv: NodeJS.ProcessEnv = {}) {
 
 function runWithColor(args: string[], cwd: string) {
   return run(args, cwd, { FORCE_COLOR: "1", TERM: "xterm-256color" });
+}
+
+function updateTodoFrontmatter(taskPath: string, mutate: (frontmatter: Record<string, any>) => void): void {
+  const content = readFileSync(taskPath, "utf8");
+  const match = content.match(/^---\n([\s\S]*?)\n---\n/);
+  if (!match) {
+    throw new Error(`Missing frontmatter in ${taskPath}`);
+  }
+
+  const frontmatter = parse(match[1] as string) as Record<string, any>;
+  mutate(frontmatter);
+
+  const body = content.slice(match[0].length);
+  writeFileSync(taskPath, `---\n${stringify(frontmatter)}---\n${body}`);
 }
 
 describe("native cli", () => {
@@ -1056,6 +1071,62 @@ tags: []
 
     expect(listStr).toContain("(0/2 tasks done)");
     expect(treeStr).toContain("(0/2)");
+  });
+
+  test("log command supports json and text output", () => {
+    root = setupFixture();
+    const now = Date.now();
+    const task1Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const task2Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+
+    updateTodoFrontmatter(task1Path, (frontmatter) => {
+      frontmatter.status = "done";
+      frontmatter.title = "Task One";
+      frontmatter.claimed_by = "agent-a";
+      frontmatter.claimed_at = new Date(now - 3 * 60 * 60 * 1000).toISOString();
+      frontmatter.started_at = new Date(now - (2.5 * 60 * 60 * 1000)).toISOString();
+      frontmatter.completed_at = new Date(now - 60 * 60 * 1000).toISOString();
+    });
+    updateTodoFrontmatter(task2Path, (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.title = "Task Two";
+      frontmatter.claimed_by = "agent-b";
+      frontmatter.claimed_at = new Date(now - 90 * 60 * 1000).toISOString();
+      frontmatter.started_at = new Date(now - 45 * 60 * 1000).toISOString();
+    });
+
+    let p = run(["log", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const events = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(events)).toBeTrue();
+    expect(events[0].task_id).toBe("P1.M1.E1.T002");
+    expect(events[0].event).toBe("started");
+    expect(events[0].actor).toBe("agent-b");
+    expect(events[1].task_id).toBe("P1.M1.E1.T001");
+    expect(events[1].event).toBe("completed");
+    expect(events[1].actor).toBe("agent-a");
+    expect(events.some((item: { event: string }) => item.event === "claimed")).toBeTrue();
+
+    p = run(["log", "--limit", "2"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Recent Activity Log");
+    expect(out).toContain("✓");
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("agent-a");
+  });
+
+  test("log command includes added events without timestamps", () => {
+    root = setupFixture();
+    let p = run(["log", "--json"], root);
+    expect(p.exitCode).toBe(0);
+
+    const events = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(events)).toBeTrue();
+    expect(events).toHaveLength(2);
+    expect(events.every((event: { event: string }) => event.event === "added")).toBeTrue();
+    expect(events.every((event: { actor: string | null }) => event.actor === null)).toBeTrue();
+    expect(events.every((event: { timestamp: string }) => typeof event.timestamp === "string")).toBeTrue();
   });
 
   test("show on pending idea displays Instructions section", () => {

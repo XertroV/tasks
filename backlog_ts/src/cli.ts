@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import pc from "picocolors";
 import { dirname, join } from "node:path";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { parse, stringify } from "yaml";
@@ -17,6 +17,8 @@ import { BACKLOG_DIR, getDataDirName } from "./data_dir";
 const AGENTS_SNIPPETS: Record<string, string> = {
   short: `# AGENTS.md (Short)
 
+# Work Loop & Task Backlog
+
 ## Task Workflow
 - Use \`backlog grab\` to claim work, then \`backlog done\` or \`backlog cycle\`.
 - If a command fails to parse args/usage, run exactly one recovery command: \`backlog cycle\`.
@@ -29,6 +31,8 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 `,
   medium: `# AGENTS.md (Medium)
 
+# Work Loop & Task Backlog
+
 ## Defaults
 - Claim with \`backlog grab\` (or \`backlog grab --single\` for focused work).
 - Use \`backlog claim <TASK_ID> [TASK_ID ...]\` when task IDs are provided.
@@ -37,6 +41,8 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 - Use \`backlog work <id>\` when switching context; use \`backlog show\` to review details.
 `,
   long: `# AGENTS.md (Long)
+
+# Work Loop & Task Backlog
 
 ## Operating Model
 - Default command: \`backlog\`. Use local \`.backlog/\` state as source of truth.
@@ -105,6 +111,7 @@ Commands:
   blockers        Show blocking tasks
   skills          Install skill files
   agents          Print AGENTS.md snippets
+  log             Show recent activity log (claims, starts, completions, and added items)
   migrate         Migrate .tasks/ to .backlog/
 
 Quick rules:
@@ -116,6 +123,96 @@ Quick rules:
 // Helper functions for filtering and stats
 function isUnfinished(status: Status): boolean {
   return status !== Status.DONE && status !== Status.CANCELLED && status !== Status.REJECTED;
+}
+
+type LogEventType = "added" | "claimed" | "started" | "completed";
+interface LogEvent {
+  taskId: string;
+  title: string;
+  event: LogEventType;
+  timestamp: Date;
+  actor: string | null;
+}
+
+function formatRelativeTime(value: Date): string {
+  const delta = utcNow().getTime() - value.getTime();
+  const seconds = Math.max(0, Math.floor(delta / 1000));
+  if (seconds < 60) return `${seconds}s ago`;
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days}d ago`;
+  return `${Math.floor(days / 7)}w ago`;
+}
+
+function activityIcon(eventType: LogEventType): string {
+  if (eventType === "completed") return pc.green("✓");
+  if (eventType === "started") return pc.blue("▶");
+  if (eventType === "claimed") return pc.yellow("✎");
+  return pc.magenta("✚");
+}
+
+function collectActivity(tree: TaskTree): LogEvent[] {
+  const events: LogEvent[] = [];
+  const dataDir = getDataDirName();
+  const eventOrder: Record<LogEventType, number> = {
+    added: 0,
+    claimed: 1,
+    started: 2,
+    completed: 3,
+  };
+
+  for (const task of getAllTasks(tree)) {
+    const taskPath = join(dataDir, task.file);
+
+    if (task.completedAt) {
+      events.push({
+        taskId: task.id,
+        title: task.title,
+        event: "completed",
+        timestamp: task.completedAt,
+        actor: task.claimedBy ?? null,
+      });
+    }
+    if (task.startedAt) {
+      events.push({
+        taskId: task.id,
+        title: task.title,
+        event: "started",
+        timestamp: task.startedAt,
+        actor: task.claimedBy ?? null,
+      });
+    }
+    if (task.claimedAt) {
+      events.push({
+        taskId: task.id,
+        title: task.title,
+        event: "claimed",
+        timestamp: task.claimedAt,
+        actor: task.claimedBy ?? null,
+      });
+    }
+    if (!task.claimedAt && !task.startedAt && !task.completedAt && existsSync(taskPath)) {
+      const stats = statSync(taskPath);
+      events.push({
+        taskId: task.id,
+        title: task.title,
+        event: "added",
+        timestamp: stats.mtime,
+        actor: null,
+      });
+    }
+  }
+
+  events.sort((a, b) => {
+    const timeDiff = b.timestamp.getTime() - a.timestamp.getTime();
+    if (timeDiff !== 0) return timeDiff;
+    return eventOrder[b.event] - eventOrder[a.event];
+  });
+
+  return events;
 }
 
 function includeAuxItem(status: Status, unfinished: boolean, showCompletedAux: boolean): boolean {
@@ -582,6 +679,49 @@ async function cmdList(args: string[]): Promise<void> {
       const critMarker = criticalPath.includes(idea.id) ? `${pc.yellow("★")} ` : "";
       console.log(`  ${prefix}${icon} ${critMarker}${idea.id}: ${idea.title} [${idea.priority}]`);
     }
+  }
+}
+
+async function cmdLog(args: string[]): Promise<void> {
+  const limitOpt = parseOpt(args, "--limit");
+  const outputJson = parseFlag(args, "--json");
+  const limit = limitOpt ? Number(limitOpt) : 20;
+  if (!Number.isInteger(limit) || limit <= 0) {
+    textError("--limit must be a positive integer");
+  }
+
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+  const events = collectActivity(tree).slice(0, limit);
+
+  if (outputJson) {
+    jsonOut(
+      events.map((event) => ({
+        task_id: event.taskId,
+        title: event.title,
+        event: event.event,
+        timestamp: event.timestamp.toISOString(),
+        actor: event.actor,
+      })),
+    );
+    return;
+  }
+
+  if (!events.length) {
+    console.log(pc.yellow("No recent activity found."));
+    return;
+  }
+
+  console.log(pc.cyan("Recent Activity Log"));
+  for (const event of events) {
+    const age = formatRelativeTime(event.timestamp);
+    const actor = event.actor ? ` (${event.actor})` : "";
+    console.log(
+      `${activityIcon(event.event)} [${event.event}] ${event.taskId}${actor}`,
+    );
+    console.log(`  ${event.title}`);
+    console.log(`  ${event.timestamp.toISOString()} (${age})`);
+    console.log();
   }
 }
 
@@ -2312,6 +2452,9 @@ async function main(): Promise<void> {
       return;
     case "list":
       await cmdList(rest);
+      return;
+    case "log":
+      await cmdLog(rest);
       return;
     case "tree":
       await cmdTree(rest);

@@ -4,12 +4,16 @@ title: 'Feature: add a command to see recently completed / added / etc items. Ma
   `log` is a good name for it. Show an attractive list of all recent activity (similar
   to git log). Do this for both python and ts codebases, and ensure both are fully
   tested.'
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: high
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T10:39:43.828968+00:00'
+started_at: '2026-02-17T10:39:43.828968+00:00'
+completed_at: '2026-02-17T10:43:33+00:00'
 ---
 
 Feature: add a command to see recently completed / added / etc items. Maybe `log` is a good name for it. Show an attractive list of all recent activity (similar to git log). Do this for both python and ts codebases, and ensure both are fully tested.

@@ -1,4 +1,3 @@
-
 ---
 id: B002
 title: Agents output stars with 'Defaults' that isn't very good. We should add a h1
@@ -8,12 +7,16 @@ title: Agents output stars with 'Defaults' that isn't very good. We should add a
   and auto update agents.md too. We should use the new heading (or '## Defaults' to
   detect older entries) so we can intelligently update where suitable and not ruin
   existing AGENTS.md files.
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: high
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T10:39:43.829964+00:00'
+started_at: '2026-02-17T10:39:43.829964+00:00'
+completed_at: '2026-02-17T10:43:33+00:00'
 ---
 
 Agents output stars with 'Defaults' that isn't very good. We should add a h1 before it (or change theh existing generic one) to say 'Work Loop & Task Backlog'. We can keep the 'Defaults' h2 along with the other h2s. This was for the medium profile but it's good for all of them i think

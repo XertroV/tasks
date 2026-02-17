@@ -1,6 +1,7 @@
 """Tests for tasks CLI commands."""
 
 import pytest
+import json
 import yaml
 import os
 from pathlib import Path
@@ -155,7 +156,14 @@ def tmp_tasks_dir_short_ids(tmp_path, monkeypatch):
 
 
 def create_task_file(
-    tasks_dir, task_id, title, status="pending", claimed_by=None, claimed_at=None
+    tasks_dir,
+    task_id,
+    title,
+    status="pending",
+    claimed_by=None,
+    claimed_at=None,
+    started_at=None,
+    completed_at=None,
 ):
     """Helper to create a .todo task file."""
     # Parse task_id to determine path (e.g., P1.M1.E1.T001)
@@ -194,7 +202,12 @@ def create_task_file(
         frontmatter["claimed_by"] = claimed_by
     if claimed_at:
         frontmatter["claimed_at"] = claimed_at.isoformat()
+    if started_at:
+        frontmatter["started_at"] = started_at.isoformat()
+    elif claimed_at:
         frontmatter["started_at"] = claimed_at.isoformat()
+    if completed_at:
+        frontmatter["completed_at"] = completed_at.isoformat()
 
     content = f"""---
 {yaml.dump(frontmatter, default_flow_style=False)}---
@@ -619,6 +632,89 @@ class TestNextCommand:
         assert result.exit_code == 0
         payload = yaml.safe_load(result.output)
         assert payload["id"] == "B001"
+
+
+class TestLogCommand:
+    """Tests for the log command."""
+
+    def test_log_command_returns_json_activity(self, runner, tmp_tasks_dir):
+        """log --json should return recent activity entries sorted by timestamp."""
+        now = datetime.now(timezone.utc)
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="done",
+            claimed_by="agent-a",
+            claimed_at=now - timedelta(hours=3),
+            started_at=now - timedelta(hours=2, minutes=30),
+            completed_at=now - timedelta(hours=1),
+        )
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T002",
+            "Task Two",
+            status="in_progress",
+            claimed_by="agent-b",
+            claimed_at=now - timedelta(hours=1, minutes=30),
+            started_at=now - timedelta(minutes=45),
+        )
+
+        result = runner.invoke(cli, ["log", "--json", "--limit", "4"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert isinstance(payload, list)
+        assert payload[0]["task_id"] == "P1.M1.E1.T002"
+        assert payload[0]["event"] == "started"
+        assert payload[0]["actor"] == "agent-b"
+        assert payload[1]["task_id"] == "P1.M1.E1.T001"
+        assert payload[1]["event"] == "completed"
+        assert payload[1]["actor"] == "agent-a"
+        assert any(item["event"] == "claimed" for item in payload)
+
+    def test_log_command_pretty_output(self, runner, tmp_tasks_dir):
+        """log should render an attractive text activity stream."""
+        now = datetime.now(timezone.utc)
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="done",
+            claimed_by="agent-a",
+            claimed_at=now - timedelta(minutes=40),
+            started_at=now - timedelta(hours=1),
+            completed_at=now - timedelta(minutes=30),
+        )
+
+        result = runner.invoke(cli, ["log", "--limit", "2"])
+
+        assert result.exit_code == 0
+        assert "Recent Activity Log" in result.output
+        assert "✓" in result.output
+        assert "P1.M1.E1.T001" in result.output
+        assert "agent-a" in result.output
+
+    def test_log_command_includes_added_task_entries(self, runner, tmp_tasks_dir):
+        """log should include added tasks that have no activity timestamps."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="pending",
+        )
+
+        result = runner.invoke(cli, ["log", "--json"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert len(payload) == 1
+        entry = payload[0]
+        assert entry["task_id"] == "P1.M1.E1.T001"
+        assert entry["title"] == "Task One"
+        assert entry["event"] == "added"
+        assert entry["actor"] is None
+        assert "timestamp" in entry
 
 
 class TestCycleCommand:

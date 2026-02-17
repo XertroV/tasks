@@ -5,6 +5,7 @@ import json
 import yaml
 from pathlib import Path
 from builtins import next as builtin_next
+from datetime import datetime, timezone
 from rich.console import Console
 
 from .models import Status, TaskPath, Complexity, Priority
@@ -44,6 +45,8 @@ console = Console()
 AGENTS_SNIPPETS = {
     "short": """# AGENTS.md (Short)
 
+# Work Loop & Task Backlog
+
 ## Task Workflow
 - Use `backlog grab` to claim work, then `backlog done` or `backlog cycle`.
 - If a command fails to parse args/usage, run exactly one recovery command: `backlog cycle`.
@@ -55,6 +58,8 @@ AGENTS_SNIPPETS = {
 - For more see `backlog --help`.
 """,
     "medium": """# AGENTS.md (Medium)
+
+# Work Loop & Task Backlog
 
 ## Defaults
 - Claim with `backlog grab` (or `backlog grab --single` for focused work).
@@ -75,6 +80,8 @@ AGENTS_SNIPPETS = {
 - Run `backlog dash` and `backlog report progress` for health checks.
 """,
     "long": """# AGENTS.md (Long)
+
+# Work Loop & Task Backlog
 
 ## Operating Model
 - Default command: `backlog`. Use local `.backlog/` state as source of truth.
@@ -197,6 +204,99 @@ def _warn_missing_task_files(tree, limit: int = 5) -> int:
     return len(missing_tasks)
 
 
+def _format_relative_age(timestamp) -> str:
+    """Format a timestamp as a short relative age string."""
+    delta = utc_now() - to_utc(timestamp)
+    seconds = int(delta.total_seconds())
+    if seconds < 60:
+        return f"{seconds}s ago"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"{minutes}m ago"
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours}h ago"
+    days = hours // 24
+    if days < 7:
+        return f"{days}d ago"
+    return f"{days // 7}w ago"
+
+
+def _activity_events(tree):
+    """Build a timeline of activity events from task metadata."""
+    from pathlib import Path
+
+    events = []
+    data_dir = Path(get_data_dir_name())
+
+    for task in get_all_tasks(tree):
+        task_file = data_dir / task.file
+
+        if task.completed_at:
+            events.append(
+                {
+                    "task_id": task.id,
+                    "title": task.title,
+                    "event": "completed",
+                    "timestamp": task.completed_at,
+                    "actor": task.claimed_by,
+                }
+            )
+        if task.started_at:
+            events.append(
+                {
+                    "task_id": task.id,
+                    "title": task.title,
+                    "event": "started",
+                    "timestamp": task.started_at,
+                    "actor": task.claimed_by,
+                }
+            )
+        if task.claimed_at:
+            events.append(
+                {
+                    "task_id": task.id,
+                    "title": task.title,
+                    "event": "claimed",
+                    "timestamp": task.claimed_at,
+                    "actor": task.claimed_by,
+                }
+            )
+        if (
+            not task.claimed_at
+            and not task.started_at
+            and not task.completed_at
+            and task_file.exists()
+        ):
+            events.append(
+                {
+                    "task_id": task.id,
+                    "title": task.title,
+                    "event": "added",
+                    "timestamp": datetime.fromtimestamp(task_file.stat().st_mtime, tz=timezone.utc),
+                    "actor": None,
+                }
+            )
+
+    event_order = {"added": 0, "claimed": 1, "started": 2, "completed": 3}
+    events.sort(
+        key=lambda item: (to_utc(item["timestamp"]), event_order[item["event"]]),
+        reverse=True,
+    )
+    return events
+
+
+def _activity_icon(event_name: str) -> str:
+    """Return a rich icon for activity entries."""
+    if event_name == "completed":
+        return "[green]✓[/]"
+    if event_name == "started":
+        return "[blue]▶[/]"
+    if event_name == "claimed":
+        return "[yellow]✎[/]"
+    return "[magenta]✚[/]"
+
+
 @click.group(invoke_without_command=True)
 @click.version_option(version="0.1.0")
 @click.pass_context
@@ -248,6 +348,60 @@ def init(project, description, timeline_weeks):
     with open(index_path, "w") as f:
         yaml.dump(data, f, default_flow_style=False)
     click.echo(f'Initialized project "{project}" in .backlog/')
+
+
+# ============================================================================
+# Log Command
+# ============================================================================
+
+
+@cli.command()
+@click.option(
+    "--limit",
+    default=20,
+    type=click.IntRange(min=1),
+    help="Maximum number of log entries to show",
+)
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+def log(limit, output_json):
+    """Show recent activity for tasks in a git-log style list."""
+    try:
+        loader = TaskLoader()
+        tree = loader.load()
+        events = _activity_events(tree)[:limit]
+
+        if output_json:
+            json_out = []
+            for event in events:
+                ts = event["timestamp"]
+                json_out.append(
+                    {
+                        "task_id": event["task_id"],
+                        "title": event["title"],
+                        "event": event["event"],
+                        "timestamp": ts.isoformat(),
+                        "actor": event["actor"],
+                    }
+                )
+            click.echo(json.dumps(json_out, indent=2))
+            return
+
+        if not events:
+            console.print("[yellow]No recent activity found.[/]")
+            return
+
+        console.print("\n[bold cyan]Recent Activity Log[/]\n")
+        for event in events:
+            age = _format_relative_age(event["timestamp"])
+            actor = f" ({event['actor']})" if event["actor"] else ""
+            console.print(
+                f"{_activity_icon(event['event'])} [{event['event']}] {event['task_id']}{actor}"
+            )
+            console.print(f"  {event['title']}")
+            console.print(f"  {event['timestamp'].isoformat()} ({age})\n")
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
 
 
 # ============================================================================
