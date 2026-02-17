@@ -1803,6 +1803,174 @@ def _show_idea_instructions(idea):
 
 
 # ============================================================================
+# Ls Command
+# ============================================================================
+
+
+@cli.command()
+@click.argument("scope", required=False)
+def ls(scope):
+    """List tasks by hierarchy scope.
+
+    Without SCOPE, lists all phases.
+    - P1: list milestones under phase
+    - P1.M1: list epics under milestone
+    - P1.M1.E1: list tasks under epic
+    - P1.M1.E1.T001: show a compact task summary
+    """
+    try:
+        loader = TaskLoader()
+        tree = loader.load()
+
+        if scope is None:
+            if not tree.phases:
+                console.print("No phases found.")
+                return
+            for phase in tree.phases:
+                stats = phase.stats
+                console.print(
+                    f"{phase.id}: {phase.name} "
+                    f"[{phase.status.value}] "
+                    f"{stats['done']}/{stats['total_tasks']} tasks done "
+                    f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
+                )
+            return
+
+        if is_bug_id(scope) or is_idea_id(scope):
+            console.print(f"[red]Error:[/] ls does not support bug/idea IDs. Use: backlog show {scope}")
+            raise click.Abort()
+
+        parsed = TaskPath.parse(scope)
+        # Normalize IDs that may include redundant parent prefixes (e.g. "P1.P1.M1").
+        # Existing fixtures write mixed ID formats in indexes, so we support suffix matching.
+        def _match_scoped_item(items, scope_id):
+            for item in items:
+                if item.id == scope_id:
+                    return item
+
+            scoped = scope_id if scope_id.startswith(".") else f".{scope_id}"
+            matches = [item for item in items if item.id.endswith(scoped)]
+            if len(matches) == 1:
+                return matches[0]
+            if len(matches) > 1:
+                return matches[0]
+            return None
+
+        if parsed.is_phase:
+            phase = tree.find_phase(scope)
+            if not phase:
+                console.print(f"[red]Error:[/] Phase not found: {scope}")
+                raise click.Abort()
+
+            if not phase.milestones:
+                console.print(f"Phase {scope} has no milestones.")
+                return
+
+            for milestone in phase.milestones:
+                stats = milestone.stats
+                console.print(
+                    f"{milestone.id}: {milestone.name} "
+                    f"[{milestone.status.value}] "
+                    f"{stats['done']}/{stats['total_tasks']} tasks done "
+                    f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
+                )
+            return
+
+        if parsed.is_milestone:
+            milestone = _match_scoped_item(
+                [m for p in tree.phases for m in p.milestones], scope
+            )
+            if not milestone:
+                console.print(f"[red]Error:[/] Milestone not found: {scope}")
+                raise click.Abort()
+
+            if not milestone.epics:
+                console.print(f"Milestone {scope} has no epics.")
+                return
+
+            for epic in milestone.epics:
+                stats = epic.stats
+                console.print(
+                    f"{epic.id}: {epic.name} "
+                    f"[{epic.status.value}] "
+                    f"{stats['done']}/{stats['total']} tasks done "
+                    f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
+                )
+            return
+
+        if parsed.is_task:
+            # Accept both full and non-full task IDs.
+            task = tree.find_task(scope)
+            if not task:
+                console.print(f"[red]Error:[/] Task not found: {scope}")
+                raise click.Abort()
+            _show_ls_task_summary(task)
+            return
+
+        if parsed.is_epic:
+            epic = _match_scoped_item(
+                [
+                    e
+                    for p in tree.phases
+                    for m in p.milestones
+                    for e in m.epics
+                ],
+                scope,
+            )
+            if not epic:
+                console.print(f"[red]Error:[/] Epic not found: {scope}")
+                raise click.Abort()
+            if not epic.tasks:
+                console.print(f"Epic {scope} has no tasks.")
+                return
+
+            for task in epic.tasks:
+                console.print(
+                    f"{task.id}: {task.title} "
+                    f"[{task.status.value}] "
+                    f"{task.estimate_hours}h"
+                    ,
+                    markup=False,
+                )
+
+    except ValueError as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
+def _show_ls_task_summary(task):
+    task_file = task_file_path(task)
+    if not task_file.exists():
+        console.print(f"[yellow]Task file missing for {task.id}[/]")
+        console.print(f"Task: {task.id} - {task.title}")
+        console.print("[yellow]Cannot load frontmatter for missing task file.[/]")
+        console.print(f"Run 'backlog show {task.id}' for full details.")
+        return
+
+    with open(task_file) as f:
+        content = f.read()
+
+    frontmatter = {}
+    body = content
+    try:
+        parts = content.split("---\n", 2)
+        if len(parts) >= 3:
+            frontmatter = yaml.safe_load(parts[1]) or {}
+            body = parts[2]
+    except Exception:
+        pass
+
+    console.print(f"Task: {task.id} - {task.title}")
+    console.print("Frontmatter:")
+    if frontmatter:
+        console.print(yaml.dump(frontmatter, sort_keys=False).strip())
+    else:
+        console.print("  (unavailable)")
+    console.print(f"Body length: {len(body)}")
+    console.print(f"Run 'backlog show {task.id}' for full details.")
+
+
+# ============================================================================
 # Next Command
 # ============================================================================
 
@@ -1878,52 +2046,62 @@ def _show_blocking_tasks(tree):
 
 
 @cli.command()
-@click.argument("task_id")
+@click.argument("task_ids", nargs=-1, required=False)
 @click.option("--agent", help="Agent session ID (uses config default if not set)")
 @click.option("--force", is_flag=True, help="Override existing claim")
 @click.option("--no-content", is_flag=True, help="Suppress .todo file contents")
-def claim(task_id, agent, force, no_content):
+def claim(task_ids, agent, force, no_content):
     """Claim a task and mark as in-progress."""
     try:
+        if not task_ids:
+            console.print("[red]Error:[/] claim requires at least one TASK_ID")
+            raise click.Abort()
+
         # Use config default if agent not specified
         if not agent:
             agent = get_default_agent()
         loader = TaskLoader()
         tree = loader.load()
-        task = tree.find_task(task_id)
+        show_details = len(task_ids) == 1
+        for task_id in task_ids:
+            task = tree.find_task(task_id)
 
-        if not task:
-            console.print(f"[red]Error:[/] Task not found: {task_id}")
-            raise click.Abort()
+            if not task:
+                console.print(f"[red]Error:[/] Task not found: {task_id}")
+                raise click.Abort()
 
-        if _warn_missing_task_file(task):
-            console.print(
-                f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."
-            )
-            raise click.Abort()
+            if _warn_missing_task_file(task):
+                console.print(
+                    f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."
+                )
+                raise click.Abort()
 
-        claim_task(task, agent, force)
-        loader.save_task(task)
+            claim_task(task, agent, force)
+            loader.save_task(task)
 
-        console.print(f"\n[green]✓ Claimed:[/] {task.id} - {task.title}\n")
-        console.print(f"  Agent:      {agent}")
-        console.print(f"  Claimed at: {task.claimed_at.isoformat()}")
-        console.print(f"  Estimate:   {task.estimate_hours} hours\n")
+            console.print(f"\n[green]✓ Claimed:[/] {task.id} - {task.title}")
 
-        console.print(f"[bold]File:[/] .tasks/{task.file}\n")
+            if not show_details:
+                continue
 
-        if not no_content:
-            task_file = task_file_path(task)
-            if task_file.exists():
-                with open(task_file) as f:
-                    content = f.read()
-                console.print("─" * 50)
-                console.print(content)
-                console.print("─" * 50 + "\n")
-            else:
-                _warn_missing_task_file(task)
+            console.print(f"  Agent:      {agent}")
+            console.print(f"  Claimed at: {task.claimed_at.isoformat()}")
+            console.print(f"  Estimate:   {task.estimate_hours} hours\n")
 
-        console.print(f"[dim]Mark done:[/] 'backlog done {task.id}'\n")
+            console.print(f"[bold]File:[/] .tasks/{task.file}\n")
+
+            if not no_content:
+                task_file = task_file_path(task)
+                if task_file.exists():
+                    with open(task_file) as f:
+                        content = f.read()
+                    console.print("─" * 50)
+                    console.print(content)
+                    console.print("─" * 50 + "\n")
+                else:
+                    _warn_missing_task_file(task)
+
+            console.print(f"[dim]Mark done:[/] 'backlog done {task.id}'\n")
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))

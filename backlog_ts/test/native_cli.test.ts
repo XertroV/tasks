@@ -173,6 +173,33 @@ describe("native cli", () => {
     expect(rootIndex).toContain("next_available:");
   });
 
+  test("claim accepts multiple task ids", () => {
+    root = setupFixture();
+    const p = run([
+      "claim",
+      "P1.M1.E1.T001",
+      "P1.M1.E1.T002",
+      "--agent",
+      "agent-z",
+    ], root);
+
+    expect(p.exitCode).toBe(0);
+    const output = p.stdout.toString();
+    expect(output).toContain("Claimed: P1.M1.E1.T001");
+    expect(output).toContain("✓ Claimed: P1.M1.E1.T002 - B");
+
+    const taskOne = readFileSync(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"),
+      "utf8",
+    );
+    const taskTwo = readFileSync(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"),
+      "utf8",
+    );
+    expect(taskOne).toContain("status: in_progress");
+    expect(taskTwo).toContain("status: in_progress");
+  });
+
   test("done refuses to complete a non-in-progress task", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
@@ -418,6 +445,64 @@ describe("native cli", () => {
     expect(p.stdout.toString()).toContain("zero_estimate_hours");
     p = run(["check", "--strict"], root);
     expect(p.exitCode).toBe(1);
+  });
+
+  test("check accepts task dependencies on existing epic", () => {
+    root = setupFixture();
+    const milestoneIndex = join(root, ".tasks", "01-phase", "01-ms", "index.yaml");
+    const milestoneData = parse(readFileSync(milestoneIndex, "utf8")) as { epics: Array<{ id: string; name: string; path: string }> };
+    milestoneData.epics.push({ id: "E2", name: "Epic 2", path: "02-epic" });
+    writeFileSync(milestoneIndex, `${stringify(milestoneData)}\n`);
+
+    const epicDir = join(root, ".tasks", "01-phase", "01-ms", "02-epic");
+    mkdirSync(epicDir, { recursive: true });
+    const epicTask = join(epicDir, "T003-blocker.task");
+    writeFileSync(
+      join(epicDir, "index.yaml"),
+      `tasks:
+  - id: T001
+    title: Blocker
+    file: T003-blocker.task
+    status: pending
+    estimate_hours: 1
+    complexity: low
+    priority: medium
+`,
+    );
+    writeFileSync(
+      epicTask,
+      `---
+id: P1.M1.E2.T001
+title: Blocker
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---`,
+    );
+
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.depends_on = ["E2"];
+    });
+
+    const p = run(["check"], root);
+    expect(p.exitCode).toBe(0);
+  });
+
+  test("check fails when task dependency references missing epic", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.depends_on = ["E2"];
+    });
+
+    const p = run(["check", "--json"], root);
+    expect(p.exitCode).toBe(1);
+    expect(p.stdout.toString()).toContain("missing_task_dependency");
+    expect(p.stdout.toString()).toContain("E2");
   });
 
   test("check command warns on uninitialized todo files", () => {
@@ -1196,5 +1281,48 @@ tags: []
     p = run(["show", "I001"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).not.toContain("Instructions:");
+  });
+
+  test("ls lists all phases", () => {
+    root = setupFixture();
+    const out = run(["ls"], root).stdout.toString();
+
+    expect(out).toContain("P1: Phase");
+    expect(out).toContain("0/2 tasks done");
+  });
+
+  test("ls lists milestones for a phase", () => {
+    root = setupFixture();
+    const out = run(["ls", "P1"], root).stdout.toString();
+
+    expect(out).toContain("P1.M1: M");
+    expect(out).toContain("0/2 tasks done");
+  });
+
+  test("ls lists epics for a milestone", () => {
+    root = setupFixture();
+    const out = run(["ls", "P1.M1"], root).stdout.toString();
+
+    expect(out).toContain("P1.M1.E1: E");
+    expect(out).toContain("0/2 tasks done");
+  });
+
+  test("ls lists tasks for an epic", () => {
+    root = setupFixture();
+    const out = run(["ls", "P1.M1.E1"], root).stdout.toString();
+
+    expect(out).toContain("P1.M1.E1.T001: A [pending] 1h");
+    expect(out).toContain("P1.M1.E1.T002: B [pending] 2h");
+  });
+
+  test("ls task alias prints frontmatter summary and show hint", () => {
+    root = setupFixture();
+    const out = run(["ls", "P1.M1.E1.T001"], root).stdout.toString();
+
+    expect(out).toContain("Task: P1.M1.E1.T001 - A");
+    expect(out).toContain("id: P1.M1.E1.T001");
+    expect(out).toContain("title: A");
+    expect(out).toContain("Body length:");
+    expect(out).toContain("Run 'backlog show P1.M1.E1.T001' for full details.");
   });
 });

@@ -5,6 +5,7 @@ import yaml
 from pathlib import Path
 from backlog.loader import TaskLoader
 from backlog.critical_path import CriticalPathCalculator
+from backlog.models import Status
 
 
 @pytest.fixture
@@ -229,6 +230,150 @@ Test task description.
             yaml.dump(epic_index, f)
 
     return tmp_path
+
+
+def _create_epic_dependency_tree(tmp_path: Path) -> Path:
+    tasks_dir = tmp_path / ".tasks"
+    tasks_dir.mkdir()
+
+    def write_yaml(path: Path, data: dict) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w") as f:
+            yaml.dump(data, f, default_flow_style=False)
+
+    write_yaml(
+        tasks_dir / "index.yaml",
+        {
+            "project": "Epic Dependency Project",
+            "description": "critical path task-to-epic dependency",
+            "timeline_weeks": 1,
+            "phases": [
+                {
+                    "id": "P1",
+                    "name": "Phase 1",
+                    "path": "01-phase",
+                    "status": "in_progress",
+                }
+            ],
+        },
+    )
+
+    write_yaml(
+        tasks_dir / "01-phase" / "index.yaml",
+        {
+            "milestones": [
+                {
+                    "id": "M1",
+                    "name": "Milestone 1",
+                    "path": "01-milestone",
+                    "status": "in_progress",
+                }
+            ]
+        },
+    )
+
+    write_yaml(
+        tasks_dir / "01-phase" / "01-milestone" / "index.yaml",
+        {
+            "epics": [
+                {
+                    "id": "E1",
+                    "name": "Epic 1",
+                    "path": "01-epic-1",
+                    "status": "in_progress",
+                },
+                {
+                    "id": "E2",
+                    "name": "Epic 2",
+                    "path": "01-epic-2",
+                    "status": "in_progress",
+                },
+            ]
+        },
+    )
+
+    write_yaml(
+        tasks_dir / "01-phase" / "01-milestone" / "01-epic-1" / "index.yaml",
+        {
+            "tasks": [
+                {
+                    "id": "T001",
+                    "title": "Source",
+                    "file": "source.task",
+                    "status": "pending",
+                    "estimate_hours": 1.0,
+                    "complexity": "low",
+                    "priority": "medium",
+                }
+            ]
+        },
+    )
+
+    write_yaml(
+        tasks_dir / "01-phase" / "01-milestone" / "01-epic-2" / "index.yaml",
+        {
+            "tasks": [
+                {
+                    "id": "T001",
+                    "title": "Dependent",
+                    "file": "dependent.task",
+                    "status": "pending",
+                    "estimate_hours": 1.0,
+                    "complexity": "medium",
+                    "priority": "high",
+                    "depends_on": ["E1"],
+                }
+            ]
+        },
+    )
+
+    source = tasks_dir / "01-phase" / "01-milestone" / "01-epic-1" / "source.task"
+    dependent = tasks_dir / "01-phase" / "01-milestone" / "01-epic-2" / "dependent.task"
+
+    source.write_text(
+        "---\n"
+        "id: P1.M1.E1.T001\n"
+        "title: Source\n"
+        "status: pending\n"
+        "estimate_hours: 1.0\n"
+        "complexity: low\n"
+        "priority: medium\n"
+        "depends_on: []\n"
+        "tags: []\n"
+        "---\n# Source\n"
+    )
+    dependent.write_text(
+        "---\n"
+        "id: P1.M1.E2.T001\n"
+        "title: Dependent\n"
+        "status: pending\n"
+        "estimate_hours: 1.0\n"
+        "complexity: medium\n"
+        "priority: high\n"
+        "depends_on:\n  - E1\n"
+        "tags: []\n"
+        "---\n# Dependent\n"
+    )
+    return tmp_path
+
+
+def test_critical_path_respects_epic_dependencies(tmp_path):
+    _create_epic_dependency_tree(tmp_path)
+    loader = TaskLoader(tmp_path / ".tasks")
+    tree = loader.load()
+    calculator = CriticalPathCalculator(
+        tree, {"low": 1.0, "medium": 1.25, "high": 1.5, "critical": 2.0}
+    )
+
+    dependent = tree.find_task("P1.M1.E2.T001")
+    source = tree.find_task("P1.M1.E1.T001")
+    assert dependent is not None
+    assert source is not None
+
+    assert dependent.id not in calculator.find_all_available()
+
+    source.status = Status.DONE
+    assert dependent.id in calculator.find_all_available()
 
 
 class TestDiversitySelection:

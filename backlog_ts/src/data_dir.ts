@@ -8,7 +8,7 @@ export const TASKS_DIR = ".tasks";
 export const MIGRATION_COMMENT = "<!-- CLI migrated: 'tasks' → 'backlog' (alias 'bl' also works). -->\n";
 
 export const KNOWN_COMMANDS = [
-  "list", "show", "next", "claim", "grab", "done", "cycle", "work", "update", "sync", "check",
+  "list", "ls", "show", "next", "claim", "grab", "done", "cycle", "work", "update", "sync", "check",
   "unclaim-stale", "add", "add-epic", "add-milestone", "add-phase", "move", "idea", "bug",
   "blocked", "skip", "unclaim", "handoff", "why", "dash", "search", "blockers",
   "timeline", "tl", "session", "report", "data", "schema", "skills", "migrate",

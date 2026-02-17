@@ -79,8 +79,11 @@ class CriticalPathCalculator:
         """Add dependency edges for bugs."""
         for aux_task in self._iter_aux_tasks():
             for dep_id in aux_task.depends_on:
-                if self.graph.has_node(dep_id):
-                    self.graph.add_edge(dep_id, aux_task.id)
+                for dep_task in self._resolve_dependency_targets(
+                    dep_id, aux_task.milestone_id
+                ) or []:
+                    if self.graph.has_node(dep_task.id):
+                        self.graph.add_edge(dep_task.id, aux_task.id)
 
     def _add_phase_nodes(self, phase: Phase) -> None:
         """Add nodes for all tasks in a phase."""
@@ -113,8 +116,11 @@ class CriticalPathCalculator:
                 for i, task in enumerate(epic.tasks):
                     # Explicit dependencies
                     for dep_id in task.depends_on:
-                        if self.graph.has_node(dep_id):
-                            self.graph.add_edge(dep_id, task.id)
+                        for dep_task in self._resolve_dependency_targets(
+                            dep_id, milestone.id
+                        ) or []:
+                            if self.graph.has_node(dep_task.id):
+                                self.graph.add_edge(dep_task.id, task.id)
 
                     # Implicit dependency on previous task (if no explicit deps)
                     if not task.depends_on and i > 0:
@@ -336,16 +342,35 @@ class CriticalPathCalculator:
 
         return None
 
+    def _resolve_dependency_targets(
+        self, dep_id: str, current_milestone_id: Optional[str]
+    ) -> Optional[List[Task]]:
+        """Resolve explicit dependency IDs to concrete prerequisite tasks.
+
+        Supports both task IDs and epic IDs (absolute or milestone-relative).
+        Returns:
+            List of prerequisite tasks, or None when the dependency ID is invalid/missing.
+        """
+        dep_task = self.tree.find_task(dep_id)
+        if dep_task:
+            return [dep_task]
+
+        dep_epic = self._resolve_epic_dependency(dep_id, current_milestone_id)
+        if dep_epic:
+            return list(dep_epic.tasks)
+
+        return None
+
     def _check_dependencies(self, task: Task) -> bool:
         """Check if all task dependencies are satisfied."""
         # Check explicit task dependencies
         for dep_id in task.depends_on:
-            dep_task = self.tree.find_task(dep_id)
-            if not dep_task:
+            dep_tasks = self._resolve_dependency_targets(dep_id, task.milestone_id)
+            if dep_tasks is None:
                 # Dependency not found - assume not satisfied
                 return False
 
-            if dep_task.status != Status.DONE:
+            if any(dep_task.status != Status.DONE for dep_task in dep_tasks):
                 return False
 
         # Check implicit dependencies (previous task in epic)
@@ -505,10 +530,13 @@ class CriticalPathCalculator:
         """
         # Check explicit dependencies
         for dep_id in task.depends_on:
-            dep_task = self.tree.find_task(dep_id)
-            if not dep_task:
+            dep_tasks = self._resolve_dependency_targets(dep_id, task.milestone_id)
+            if dep_tasks is None:
                 return False
-            if dep_task.status != Status.DONE and dep_id not in batch_task_ids:
+            if any(
+                dep_task.status != Status.DONE and dep_task.id not in batch_task_ids
+                for dep_task in dep_tasks
+            ):
                 return False
 
         # Check implicit dependency (previous task in epic)
@@ -695,9 +723,12 @@ class CriticalPathCalculator:
         for dep_id in task.depends_on:
             if dep_id == target_id:
                 return True
-            dep_task = self.tree.find_task(dep_id)
-            if dep_task and self._is_in_dependency_chain(dep_task, target_id, visited):
-                return True
+            dep_tasks = self._resolve_dependency_targets(dep_id, task.milestone_id)
+            for dep_task in dep_tasks or []:
+                if dep_task.id == target_id:
+                    return True
+                if self._is_in_dependency_chain(dep_task, target_id, visited):
+                    return True
 
         # Check implicit dependencies (previous task in epic)
         epic = self.tree.find_epic(task.epic_id)

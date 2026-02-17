@@ -165,6 +165,66 @@ def test_check_fails_when_dependency_task_missing(tmp_path, monkeypatch):
     assert '"missing_task_dependency"' in result.output
 
 
+def test_check_allows_task_dependency_on_existing_epic(tmp_path, monkeypatch):
+    _create_minimal_tree(tmp_path, t2_depends=["E2"])
+
+    milestone_index = (
+        tmp_path / ".tasks" / "01-phase" / "01-milestone" / "index.yaml"
+    )
+    milestone_data = yaml.safe_load(milestone_index.read_text())
+    milestone_data["epics"].append(
+        {
+            "id": "E2",
+            "name": "Epic 2",
+            "path": "02-epic",
+            "status": "in_progress",
+        }
+    )
+    _write_yaml(milestone_index, milestone_data)
+
+    epic2_dir = tmp_path / ".tasks" / "01-phase" / "01-milestone" / "02-epic"
+    _write_yaml(
+        epic2_dir / "index.yaml",
+        {
+            "tasks": [
+                {
+                    "id": "T001",
+                    "title": "Task 3",
+                    "file": "T003-task-3.todo",
+                    "status": "pending",
+                    "estimate_hours": 1.0,
+                    "complexity": "low",
+                    "priority": "medium",
+                    "depends_on": [],
+                },
+            ]
+        },
+    )
+    _write_task_file(
+        epic2_dir / "T003-task-3.todo",
+        "P1.M1.E2.T001",
+        "Task 3",
+        [],
+    )
+
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(cli, ["check"])
+    assert result.exit_code == 0
+    assert "Consistency check passed" in result.output
+
+
+def test_check_fails_when_dependency_epic_missing(tmp_path, monkeypatch):
+    _create_minimal_tree(tmp_path, t2_depends=["E2"])
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["check", "--json"])
+    assert result.exit_code == 1
+    assert "missing_task_dependency" in result.output
+    assert "E2" in result.output
+
+
 def test_check_detects_task_dependency_cycle(tmp_path, monkeypatch):
     _create_minimal_tree(
         tmp_path,

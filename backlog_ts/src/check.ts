@@ -186,7 +186,13 @@ function validateIdsAndDependencies(tree: TaskTree, findings: Finding[]): void {
 
           for (const dep of task.dependsOn) {
             if (dep === task.id) addFinding(findings, { level: "error", code: "self_dependency_task", message: `Task depends on itself: ${task.id}`, location: task.id });
-            else if (!allTasks.some((t) => t.id === dep)) addFinding(findings, { level: "error", code: "missing_task_dependency", message: `Task dependency not found: ${dep}`, location: task.id });
+            else if (!allTasks.some((t) => t.id === dep)) {
+              const resolvedEpic = resolveEpicDepId(dep, milestone.id);
+              if (resolvedEpic && findEpic(tree, resolvedEpic)) {
+                continue;
+              }
+              addFinding(findings, { level: "error", code: "missing_task_dependency", message: `Task dependency not found: ${dep}`, location: task.id });
+            }
           }
         }
       }
@@ -236,7 +242,16 @@ function validateCycles(tree: TaskTree, findings: Finding[]): void {
       for (const epic of milestone.epics) {
         epic.tasks.forEach((task, idx) => {
           for (const dep of task.dependsOn) {
-            if (taskNodes.includes(dep)) taskEdges.push([dep, task.id]);
+            if (taskNodes.includes(dep)) {
+              taskEdges.push([dep, task.id]);
+            } else {
+              const depEpic = findEpic(tree, resolveEpicDepId(dep, milestone.id));
+              if (depEpic) {
+                for (const depTask of depEpic.tasks) {
+                  taskEdges.push([depTask.id, task.id]);
+                }
+              }
+            }
           }
           if (task.dependsOn.length === 0 && idx > 0) taskEdges.push([epic.tasks[idx - 1]!.id, task.id]);
         });

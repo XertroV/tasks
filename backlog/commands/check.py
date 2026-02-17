@@ -112,8 +112,25 @@ def _resolve_epic_dep_id(dep_id: str, milestone_id: str | None) -> str | None:
     return dep
 
 
+def _is_task_or_epic_dependency(
+    dep_id: str, task_ids: set[str], epic_ids: set[str], milestone_id: str | None
+) -> tuple[str | None, str]:
+    dep = dep_id.strip()
+    if not dep:
+        return None, "missing"
+    if dep in task_ids:
+        return dep, "task"
+
+    dep_epic = _resolve_epic_dep_id(dep, milestone_id)
+    if dep_epic and dep_epic in epic_ids:
+        return dep_epic, "epic"
+
+    return None, "missing"
+
+
 def _validate_ids_and_dependencies(tree, findings):
     all_tasks = get_all_tasks(tree)
+    all_task_ids = {t.id for t in all_tasks}
 
     phase_ids = set()
     milestone_ids = set()
@@ -350,14 +367,18 @@ def _validate_ids_and_dependencies(tree, findings):
                     f"Task depends on itself: {task.id}",
                     task.id,
                 )
-            elif dep not in task_ids:
-                _add_finding(
-                    findings,
-                    "error",
-                    "missing_task_dependency",
-                    f"Task dependency not found: {dep}",
-                    task.id,
+            else:
+                _, dep_type = _is_task_or_epic_dependency(
+                    dep, all_task_ids, epic_ids, task.milestone_id
                 )
+                if dep_type == "missing":
+                    _add_finding(
+                        findings,
+                        "error",
+                        "missing_task_dependency",
+                        f"Task dependency not found: {dep}",
+                        task.id,
+                    )
 
 
 def _validate_bugs(tree, findings):
@@ -448,6 +469,13 @@ def _validate_cycles(tree, findings):
                     for dep in task.depends_on:
                         if task_graph.has_node(dep):
                             task_graph.add_edge(dep, task.id)
+                        else:
+                            dep_epic = _resolve_epic_dep_id(dep, milestone.id)
+                            if dep_epic:
+                                target_epic = tree.find_epic(dep_epic)
+                                if target_epic and target_epic.tasks:
+                                    for dep_task in target_epic.tasks:
+                                        task_graph.add_edge(dep_task.id, task.id)
                     if not task.depends_on and idx > 0:
                         task_graph.add_edge(epic.tasks[idx - 1].id, task.id)
     # Include bugs in cycle detection

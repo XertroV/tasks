@@ -1,6 +1,6 @@
 import type { Task, TaskTree } from "./models";
 import { Status } from "./models";
-import { getAllTasks } from "./helpers";
+import { findEpic, getAllTasks } from "./helpers";
 
 export class CriticalPathCalculator {
   constructor(
@@ -69,8 +69,10 @@ export class CriticalPathCalculator {
     if (task.status !== Status.PENDING) return false;
     const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
     for (const dep of task.dependsOn) {
-      const dt = byId.get(dep);
-      if (dt && dt.status !== Status.DONE) return false;
+      const depTasks = this.resolveDependencyTargets(dep, task.milestoneId, byId);
+      if (!depTasks || depTasks.some((depTask) => depTask.status !== Status.DONE)) {
+        return false;
+      }
     }
     return true;
   }
@@ -97,12 +99,38 @@ export class CriticalPathCalculator {
   private isInDependencyChain(task: Task, targetId: string, visited: Set<string>): boolean {
     if (visited.has(task.id)) return false;
     visited.add(task.id);
+
+    const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
     for (const depId of task.dependsOn) {
       if (depId === targetId) return true;
-      const depTask = getAllTasks(this.tree).find((t) => t.id === depId);
-      if (depTask && this.isInDependencyChain(depTask, targetId, visited)) return true;
+      const depTasks = this.resolveDependencyTargets(depId, task.milestoneId, byId);
+      if (!depTasks) {
+        continue;
+      }
+      for (const depTask of depTasks) {
+        if (depTask.id === targetId || this.isInDependencyChain(depTask, targetId, visited)) {
+          return true;
+        }
+      }
     }
     return false;
+  }
+
+  private resolveDependencyTargets(
+    depId: string,
+    milestoneId: string | undefined,
+    byId: Map<string, Task>,
+  ): Task[] | null {
+    const direct = byId.get(depId);
+    if (direct) return [direct];
+
+    const resolvedEpicId = depId.includes(".") ? depId : milestoneId ? `${milestoneId}.${depId}` : depId;
+    if (!resolvedEpicId) return null;
+
+    const depEpic = findEpic(this.tree, resolvedEpicId);
+    if (depEpic) return depEpic.tasks;
+
+    return null;
   }
 
   findAdditionalBugs(primaryTask: Task, count = 2): string[] {

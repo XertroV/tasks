@@ -15,6 +15,7 @@ MIGRATION_COMMENT = (
 
 KNOWN_COMMANDS = [
     "list",
+    "ls",
     "show",
     "next",
     "claim",

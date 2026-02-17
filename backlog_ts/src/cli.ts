@@ -6,7 +6,7 @@ import { mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isIdeaId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, updateSessionHeartbeat } from "./helpers";
+import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isIdeaId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, taskFilePath, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
 import { Complexity, Priority, Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
@@ -76,6 +76,7 @@ function usage(): void {
   console.log(`Usage: backlog <command> [options]
 
 Commands:
+  ls              List by scope or show task summary by full ID
   list            List tasks with filtering options
   tree            Display full hierarchical tree
   show            Show detailed info for a task/phase/milestone/epic
@@ -1008,6 +1009,150 @@ async function cmdShow(args: string[]): Promise<void> {
   }
 }
 
+function taskCount(tasks: Array<{ status: Status }>): {
+  done: number;
+  inProgress: number;
+  pending: number;
+  blocked: number;
+  total: number;
+} {
+  return tasks.reduce(
+    (acc, t) => {
+      acc.total += 1;
+      if (t.status === Status.DONE) acc.done += 1;
+      else if (t.status === Status.IN_PROGRESS) acc.inProgress += 1;
+      else if (t.status === Status.BLOCKED) acc.blocked += 1;
+      else acc.pending += 1;
+      return acc;
+    },
+    { done: 0, inProgress: 0, pending: 0, blocked: 0, total: 0 },
+  );
+}
+
+function findMilestoneByScope(tree: TaskTree, scopeId: string): Milestone | undefined {
+  const direct = findMilestone(tree, scopeId);
+  if (direct) return direct;
+  const suffixed = scopeId.startsWith(".") ? scopeId : `.${scopeId}`;
+  return tree.phases.flatMap((p) => p.milestones).find((m) => m.id.endsWith(suffixed));
+}
+
+function findEpicByScope(tree: TaskTree, scopeId: string): Epic | undefined {
+  const direct = findEpic(tree, scopeId);
+  if (direct) return direct;
+  const suffixed = scopeId.startsWith(".") ? scopeId : `.${scopeId}`;
+  return tree.phases
+    .flatMap((p) => p.milestones.flatMap((m) => m.epics))
+    .find((e) => e.id.endsWith(suffixed));
+}
+
+function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; body: string } {
+  const taskPath = taskFilePath(task);
+  if (isTaskFileMissing(task)) {
+    return { frontmatter: {}, body: "" };
+  }
+  const content = readFileSync(taskPath, "utf8");
+  const parts = content.split("---\n");
+  if (parts.length >= 3) {
+    return {
+      frontmatter: (parse(parts[1] ?? "") as Record<string, unknown>) ?? {},
+      body: parts.slice(2).join("---\n"),
+    };
+  }
+  return { frontmatter: {}, body: content };
+}
+
+async function cmdLs(args: string[]): Promise<void> {
+  const scope = args.find((a) => !a.startsWith("-"));
+  const loader = new TaskLoader();
+  const tree = await loader.load();
+
+  if (!scope) {
+    if (!tree.phases.length) {
+      console.log("No phases found.");
+      return;
+    }
+    for (const phase of tree.phases) {
+      const phaseTasks = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
+      const stats = taskCount(phaseTasks);
+      console.log(
+        `${phase.id}: ${phase.name} [${phase.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
+      );
+    }
+    return;
+  }
+
+  if (isBugId(scope) || isIdeaId(scope)) {
+    textError(`ls does not support bug/idea IDs. Use: backlog show ${scope}`);
+  }
+
+  try {
+    const parsed = TaskPath.parse(scope);
+    if (parsed.isPhase) {
+      const phase = findPhase(tree, scope);
+      if (!phase) textError(`Phase not found: ${scope}`);
+      if (!phase.milestones.length) {
+        console.log(`Phase ${scope} has no milestones.`);
+        return;
+      }
+      for (const milestone of phase.milestones) {
+        const milestoneTasks = milestone.epics.flatMap((e) => e.tasks);
+        const stats = taskCount(milestoneTasks);
+        console.log(
+          `${milestone.id}: ${milestone.name} [${milestone.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
+        );
+      }
+      return;
+    }
+
+    if (parsed.isMilestone) {
+      const milestone = findMilestoneByScope(tree, scope);
+      if (!milestone) textError(`Milestone not found: ${scope}`);
+      if (!milestone.epics.length) {
+        console.log(`Milestone ${scope} has no epics.`);
+        return;
+      }
+      for (const epic of milestone.epics) {
+        const stats = taskCount(epic.tasks);
+        console.log(
+          `${epic.id}: ${epic.name} [${epic.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
+        );
+      }
+      return;
+    }
+
+    if (parsed.isEpic) {
+      const epic = findEpicByScope(tree, scope);
+      if (!epic) textError(`Epic not found: ${scope}`);
+      if (!epic.tasks.length) {
+        console.log(`Epic ${scope} has no tasks.`);
+        return;
+      }
+      for (const task of epic.tasks) {
+        console.log(`${task.id}: ${task.title} [${task.status}] ${task.estimateHours}h`);
+      }
+      return;
+    }
+
+    if (parsed.isTask) {
+      const task = findTask(tree, scope);
+      if (!task) textError(`Task not found: ${scope}`);
+      const { frontmatter, body } = parseTodoForLs(task);
+      console.log(`Task: ${task.id} - ${task.title}`);
+      console.log("Frontmatter:");
+      if (Object.keys(frontmatter).length > 0) {
+        console.log(stringify(frontmatter).trim());
+      } else {
+        console.log("  (unavailable)");
+      }
+      console.log(`Body length: ${body.length}`);
+      console.log(`Run 'backlog show ${task.id}' for full details.`);
+      return;
+    }
+  } catch (e) {
+    textError(`Invalid path format: ${scope}`);
+  }
+}
+
 function showIdeaInstructions(idea: Task): void {
   const dataDir = getDataDirName();
   console.log(`\nInstructions:`);
@@ -1024,27 +1169,48 @@ function showIdeaInstructions(idea: Task): void {
 }
 
 async function cmdClaim(args: string[]): Promise<void> {
-  const taskId = args.find((a) => !a.startsWith("-"));
-  if (!taskId) textError("claim requires TASK_ID");
+  const taskIds: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i]!;
+    if (arg === "--agent") {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("--agent=")) continue;
+    if (arg.startsWith("-")) continue;
+    taskIds.push(arg);
+  }
+  if (taskIds.length === 0) textError("claim requires at least one TASK_ID");
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
   const force = parseFlag(args, "--force");
   const loader = new TaskLoader();
   const tree = await loader.load();
-  const task = findTask(tree, taskId);
-  if (!task) textError(`Task not found: ${taskId}`);
-  if (isTaskFileMissing(task)) textError(`Cannot claim ${task.id} because the task file is missing.`);
+  const showDetails = taskIds.length === 1;
+  let hasSetCurrent = false;
+  for (const taskId of taskIds) {
+    const task = findTask(tree, taskId);
+    if (!task) textError(`Task not found: ${taskId}`);
+    if (isTaskFileMissing(task)) textError(`Cannot claim ${task.id} because the task file is missing.`);
 
-  try {
-    claimTask(task, agent, force);
-    await loader.saveTask(task);
-    await setCurrentTask(task.id, agent);
-    console.log(`Claimed: ${task.id}`);
-  } catch (e) {
-    if (e instanceof StatusError) {
-      jsonOut(e.toJSON());
-      process.exit(1);
+    try {
+      claimTask(task, agent, force);
+      await loader.saveTask(task);
+      if (!hasSetCurrent) {
+        await setCurrentTask(task.id, agent);
+        hasSetCurrent = true;
+      }
+      if (showDetails) {
+        console.log(`Claimed: ${task.id}`);
+      } else {
+        console.log(`${pc.green("✓ Claimed:")} ${task.id} - ${task.title}`);
+      }
+    } catch (e) {
+      if (e instanceof StatusError) {
+        jsonOut(e.toJSON());
+        process.exit(1);
+      }
+      throw e;
     }
-    throw e;
   }
 }
 
@@ -2460,6 +2626,9 @@ async function main(): Promise<void> {
       return;
     case "list":
       await cmdList(rest);
+      return;
+    case "ls":
+      await cmdLs(rest);
       return;
     case "log":
       await cmdLog(rest);

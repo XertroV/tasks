@@ -362,6 +362,27 @@ class TestClaimCommand:
         assert "Estimate:" in result.output
         assert "Agent:" in result.output
 
+    def test_claim_accepts_multiple_task_ids(self, runner, tmp_tasks_dir):
+        """claim should accept one or more TASK_ID arguments."""
+        task_one = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+        task_two = create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task Two")
+
+        result = runner.invoke(
+            cli,
+            [
+                "claim",
+                "P1.M1.E1.T001",
+                "P1.M1.E1.T002",
+                "--agent=test-agent",
+            ],
+        )
+
+        assert result.exit_code == 0
+        assert "✓ Claimed: P1.M1.E1.T001 - Task One" in result.output
+        assert "✓ Claimed: P1.M1.E1.T002 - Task Two" in result.output
+        assert "status: in_progress" in task_one.read_text()
+        assert "status: in_progress" in task_two.read_text()
+
     def test_claim_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
         """claim should warn when a task entry exists but its file is missing."""
         task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
@@ -375,6 +396,60 @@ class TestClaimCommand:
             "Cannot claim P1.M1.E1.T001 because the task file is missing."
             in result.output
         )
+
+
+class TestLsCommand:
+    """Tests for the ls command."""
+
+    def test_ls_lists_all_phases(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+
+        result = runner.invoke(cli, ["ls"])
+
+        assert result.exit_code == 0
+        assert "P1: Test Phase" in result.output
+        assert "0/1 tasks done" in result.output
+
+    def test_ls_phase_lists_milestones(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+
+        result = runner.invoke(cli, ["ls", "P1"])
+
+        assert result.exit_code == 0
+        assert "P1.M1: Test Milestone" in result.output
+        assert "0/1 tasks done" in result.output
+
+    def test_ls_milestone_lists_epics(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+
+        result = runner.invoke(cli, ["ls", "P1.M1"])
+
+        assert result.exit_code == 0
+        assert "P1.M1.E1: Test Epic" in result.output
+        assert "0/1 tasks done" in result.output
+
+    def test_ls_epic_lists_tasks(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task Two")
+
+        result = runner.invoke(cli, ["ls", "P1.M1.E1"])
+
+        assert result.exit_code == 0
+        assert "P1.M1.E1.T001: Task One" in result.output
+        assert "Task Two" in result.output
+        assert "[pending]" in result.output
+
+    def test_ls_task_alias_prints_frontmatter_and_show_hint(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+
+        result = runner.invoke(cli, ["ls", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Task: P1.M1.E1.T001 - Task One" in result.output
+        assert "id: P1.M1.E1.T001" in result.output
+        assert "title: Task One" in result.output
+        assert "Body length:" in result.output
+        assert "Run 'backlog show P1.M1.E1.T001' for full details." in result.output
 
 
 class TestListCommand:
