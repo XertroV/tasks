@@ -154,6 +154,11 @@ function activityIcon(eventType: LogEventType): string {
   return pc.magenta("✚");
 }
 
+function activityKind(eventType: LogEventType): string {
+  if (eventType === "added") return "created";
+  return "updated";
+}
+
 function collectActivity(tree: TaskTree): LogEvent[] {
   const events: LogEvent[] = [];
   const dataDir = getDataDirName();
@@ -700,6 +705,7 @@ async function cmdLog(args: string[]): Promise<void> {
         task_id: event.taskId,
         title: event.title,
         event: event.event,
+        kind: activityKind(event.event),
         timestamp: event.timestamp.toISOString(),
         actor: event.actor,
       })),
@@ -716,8 +722,9 @@ async function cmdLog(args: string[]): Promise<void> {
   for (const event of events) {
     const age = formatRelativeTime(event.timestamp);
     const actor = event.actor ? ` (${event.actor})` : "";
+    const kind = activityKind(event.event);
     console.log(
-      `${activityIcon(event.event)} [${event.event}] ${event.taskId}${actor}`,
+      `${activityIcon(event.event)} [${kind}] [${event.event}] ${event.taskId}${actor}`,
     );
     console.log(`  ${event.title}`);
     console.log(`  ${event.timestamp.toISOString()} (${age})`);

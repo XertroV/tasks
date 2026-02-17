@@ -297,6 +297,13 @@ def _activity_icon(event_name: str) -> str:
     return "[magenta]✚[/]"
 
 
+def _activity_kind(event_name: str) -> str:
+    """Classify an event for user-facing readability."""
+    if event_name == "added":
+        return "created"
+    return "updated"
+
+
 @click.group(invoke_without_command=True)
 @click.version_option(version="0.1.0")
 @click.pass_context
@@ -379,6 +386,7 @@ def log(limit, output_json):
                         "task_id": event["task_id"],
                         "title": event["title"],
                         "event": event["event"],
+                        "kind": _activity_kind(event["event"]),
                         "timestamp": ts.isoformat(),
                         "actor": event["actor"],
                     }
@@ -394,8 +402,9 @@ def log(limit, output_json):
         for event in events:
             age = _format_relative_age(event["timestamp"])
             actor = f" ({event['actor']})" if event["actor"] else ""
+            kind = _activity_kind(event["event"])
             console.print(
-                f"{_activity_icon(event['event'])} [{event['event']}] {event['task_id']}{actor}"
+                f"{_activity_icon(event['event'])} [{kind}] [{event['event']}] {event['task_id']}{actor}"
             )
             console.print(f"  {event['title']}")
             console.print(f"  {event['timestamp'].isoformat()} ({age})\n")
