@@ -18,3 +18,25 @@
 - Keep Python and TypeScript implementations behaviorally in sync:
   - Python: `backlog/`
   - TypeScript: `backlog_ts/`
+
+
+
+
+## Defaults
+- Claim with `backlog grab` (or `backlog grab --single` for focused work).
+- Use `backlog claim <TASK_ID> [TASK_ID ...]` when task IDs are provided.
+- If command argument parsing fails, run `backlog cycle` once to recover.
+- CLI selection order is: critical-path first, then task priority.
+- Use `backlog work <id>` when switching context; use `backlog show` to review details.
+
+## Execution Loop
+1. `backlog grab` and read the task file.
+2. Implement in small commits and keep diff narrow.
+3. Run focused tests early, then broader tests before completion.
+4. Finish with `backlog done` (or `backlog cycle` to continue immediately).
+
+## Coordination
+- Use `backlog handoff --to <agent> --notes "<context>"` for ownership transfer.
+- Use `backlog blockers --suggest` and `backlog why <task-id>` when sequencing is unclear.
+- Run `backlog dash` and `backlog report progress` for health checks.
+
