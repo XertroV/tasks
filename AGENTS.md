@@ -5,8 +5,12 @@
 - Keep files under 1000 LoC ideally; hard limit at 2000.
 - Proactively exploit refactor opportunities towards a cleaner, more maintainable codebase. Always remove code duplication where practical.
  - When implementing features, implement them for both the python `backlog/` and typescript `backlog_ts/`.
- - Ensure `backlog/` and `backlog_ts/` are kept in sync (especially behaviorally)
+ - Ensure `backlog/` and `backlog_ts/` are kept in sync (especially behaviorally); we aim for parity.
 - For JavaScript/TypeScript tooling and scripts, prefer `bun` over `npm` in all commands and docs.
+- When adding new features, ALWASY write accompanying tests (for both python and typescript).
+- When fixing bugs, ALWAYS check & fix both codebases.
+- When adding commands, flags, etc, ALWAYS add to both codebases (and implement the base feature in typescript if it's missing).
+- When designing, remember that this is meant to be useful and discoverable for agents! Keep to predictable patterns, ensure error messages are detailed, and generally ensure the tool is as helpful as possible.
 
 ## Task CLI quick rules (agent-facing)
 
@@ -19,8 +23,9 @@
   - Python: `backlog/`
   - TypeScript: `backlog_ts/`
 
+# Work Loop & Task Backlog
 
-
+We are dogfooding!
 
 ## Defaults
 - Claim with `backlog grab` (or `backlog grab --single` for focused work).
