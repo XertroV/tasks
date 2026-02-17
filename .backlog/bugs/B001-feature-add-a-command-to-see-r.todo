@@ -1,0 +1,15 @@
+---
+id: B001
+title: 'Feature: add a command to see recently completed / added / etc items. Maybe
+  `log` is a good name for it. Show an attractive list of all recent activity (similar
+  to git log). Do this for both python and ts codebases, and ensure both are fully
+  tested.'
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+---
+
+Feature: add a command to see recently completed / added / etc items. Maybe `log` is a good name for it. Show an attractive list of all recent activity (similar to git log). Do this for both python and ts codebases, and ensure both are fully tested.
