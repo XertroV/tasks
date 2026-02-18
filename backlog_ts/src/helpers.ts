@@ -26,16 +26,22 @@ export function findTask(tree: TaskTree, id: string): Task | undefined {
   return getAllTasks(tree).find((t) => t.id === id);
 }
 
+function idsMatch(candidate: string, target: string): boolean {
+  if (!candidate || !target) return false;
+  if (candidate === target) return true;
+  return candidate.endsWith(`.${target}`) || target.endsWith(`.${candidate}`);
+}
+
 export function findPhase(tree: TaskTree, id: string): Phase | undefined {
-  return tree.phases.find((p) => p.id === id);
+  return tree.phases.find((p) => idsMatch(p.id, id));
 }
 
 export function findMilestone(tree: TaskTree, id: string): Milestone | undefined {
-  return tree.phases.flatMap((p) => p.milestones).find((m) => m.id === id);
+  return tree.phases.flatMap((p) => p.milestones).find((m) => idsMatch(m.id, id));
 }
 
 export function findEpic(tree: TaskTree, id: string): Epic | undefined {
-  return tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => e.id === id);
+  return tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => idsMatch(e.id, id));
 }
 
 export function taskFilePath(task: Task, tasksDir?: string): string {

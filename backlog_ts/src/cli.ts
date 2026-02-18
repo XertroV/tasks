@@ -8,7 +8,17 @@ import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
 import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isIdeaId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, taskFilePath, updateSessionHeartbeat } from "./helpers";
 import { TaskLoader } from "./loader";
-import { Complexity, Priority, Status, TaskPath, type Epic, type Milestone, type Phase, type Task } from "./models";
+import {
+  Complexity,
+  Priority,
+  Status,
+  TaskPath,
+  type Epic,
+  type Milestone,
+  type Phase,
+  type Task,
+  type TaskTree,
+} from "./models";
 import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
 import { runChecks } from "./check";
@@ -1045,6 +1055,55 @@ function findEpicByScope(tree: TaskTree, scopeId: string): Epic | undefined {
     .find((e) => e.id.endsWith(suffixed));
 }
 
+type CompletionNoticeStatus = {
+  epic_completed: boolean;
+  milestone_completed: boolean;
+  phase_completed: boolean;
+};
+
+function printCompletionNotices(
+  tree: TaskTree,
+  task: Task,
+  completion: CompletionNoticeStatus,
+): void {
+  if (!completion.epic_completed && !completion.milestone_completed && !completion.phase_completed) {
+    return;
+  }
+
+  if (completion.epic_completed) {
+    const epic = task.epicId ? findEpic(tree, task.epicId) : undefined;
+    if (epic) {
+      console.log("═".repeat(60));
+      console.log(`${pc.yellow("🔍 EPIC COMPLETE:")} ${epic.name} (${epic.id})`);
+      console.log("=".repeat(60));
+      console.log("Review the completed epic before moving on.");
+      console.log();
+    }
+  }
+
+  if (completion.milestone_completed) {
+    const milestone = task.milestoneId ? findMilestone(tree, task.milestoneId) : undefined;
+    if (milestone) {
+      console.log("═".repeat(60));
+      console.log(`${pc.green("🎯 MILESTONE COMPLETE:")} ${milestone.name} (${milestone.id})`);
+      console.log("=".repeat(60));
+      console.log("Review the completed milestone before moving on.");
+      console.log();
+    }
+  }
+
+  if (completion.phase_completed) {
+    const phase = task.phaseId ? findPhase(tree, task.phaseId) : undefined;
+    if (phase) {
+      console.log("═".repeat(60));
+      console.log(`${pc.magenta("🏁 PHASE COMPLETE:")} ${phase.name} (${phase.id})`);
+      console.log("=".repeat(60));
+      console.log("Review the completed phase before moving on.");
+      console.log();
+    }
+  }
+}
+
 function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; body: string } {
   const taskPath = taskFilePath(task);
   if (isTaskFileMissing(task)) {
@@ -1316,6 +1375,10 @@ async function cmdDone(args: string[]): Promise<void> {
       completeTask(task, force);
       await loader.saveTask(task);
       console.log(`Completed: ${task.id}`);
+
+      const completionStatus = await loader.setItemDone(task.id);
+      const refreshed = await loader.load();
+      printCompletionNotices(refreshed, task, completionStatus);
     }
   } catch (e) {
     if (e instanceof StatusError) {
@@ -1362,16 +1425,31 @@ async function cmdCycle(args: string[]): Promise<void> {
     throw e;
   }
 
-  const refreshed = await loader.load();
+  const completionStatus = await loader.setItemDone(task.id);
+  const completionTree = await loader.load();
+  printCompletionNotices(completionTree, task, completionStatus);
+
+  if (
+    completionStatus.epic_completed ||
+    completionStatus.milestone_completed ||
+    completionStatus.phase_completed
+  ) {
+    await clearContext();
+    console.log("Review Required");
+    console.log("Please review the completed work before continuing.");
+    console.log("Run backlog grab once review is complete.");
+    return;
+  }
+
   const cfg = loadConfig();
-  const calc = new CriticalPathCalculator(refreshed, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const calc = new CriticalPathCalculator(completionTree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { nextAvailable } = calc.calculate();
   if (!nextAvailable) {
     await clearContext();
     console.log("No more available tasks.");
     return;
   }
-  const nextTask = findTask(refreshed, nextAvailable);
+  const nextTask = findTask(completionTree, nextAvailable);
   if (!nextTask) {
     await clearContext();
     console.log("No more available tasks.");
@@ -1386,7 +1464,7 @@ async function cmdCycle(args: string[]): Promise<void> {
     const additionalBugIds = calc.findAdditionalBugs(nextTask, 2);
     const additionalBugs: Task[] = [];
     for (const id of additionalBugIds) {
-      const bug = findTask(refreshed, id);
+      const bug = findTask(completionTree, id);
       if (!bug) continue;
       if (isTaskFileMissing(bug)) continue;
       claimTask(bug, agent, false);
@@ -1893,10 +1971,10 @@ async function cmdAdd(args: string[]): Promise<void> {
   const milestone = findMilestone(tree, epic.milestoneId ?? "");
   if (!phase || !milestone) textError(`Could not resolve parent paths for epic: ${epicId}`);
   if (phase.locked) {
-    textError(`Phase ${phase.id} has been closed and cannot accept new milestones. Create a new phase.`);
+    textError(`Phase ${phase.id} has been closed and cannot accept new tasks. The agent should create a new epic.`);
   }
   if (milestone.locked) {
-    textError(`Milestone ${milestone.id} has been closed and cannot accept new epics. The agent should create a new epic.`);
+    textError(`Milestone ${milestone.id} has been closed and cannot accept new tasks. The agent should create a new epic.`);
   }
   if (epic.locked) {
     textError(`Epic ${epic.id} has been closed and cannot accept new tasks. The agent should create a new epic.`);

@@ -417,20 +417,12 @@ def find_newly_unblocked(tree, calc, completed_task_id: str) -> List[Task]:
 
 
 def print_completion_notices(console, tree, task) -> Dict[str, bool]:
-    """Print epic/milestone completion notices with NEXT_STEPS.
-
-    Call this after completing a task to check if the epic or milestone
-    is now complete and display appropriate review instructions.
-
-    Args:
-        console: Rich Console instance for output
-        tree: TaskTree instance
-        task: The completed Task instance
-
-    Returns:
-        Dict with keys 'epic_completed' and 'milestone_completed' (both bool)
-    """
-    result = {"epic_completed": False, "milestone_completed": False}
+    """Print completion notices for newly complete hierarchy items."""
+    result = {
+        "epic_completed": False,
+        "milestone_completed": False,
+        "phase_completed": False,
+    }
 
     epic = tree.find_epic(task.epic_id)
     if epic and epic.is_complete:
@@ -468,5 +460,19 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
             console.print("  3. Run full test suite")
             console.print("  4. Run linter (if available) and fix any warnings")
             console.print()
+
+    phase = tree.find_phase(task.phase_id)
+    if phase and phase.is_complete:
+        result["phase_completed"] = True
+        console.print("═" * 60)
+        console.print(f"  [bold magenta]🏁 PHASE COMPLETE:[/] {phase.name}")
+        console.print(f"  [bold]Phase ID:[/] {phase.id}")
+        console.print(f"  [bold]Path:[/] {format_phase_path(phase)}")
+        console.print("═" * 60)
+        console.print()
+        console.print("[bold cyan]NEXT_STEPS:[/] Review the completed phase")
+        console.print("  1. Run project-level verification checks")
+        console.print("  2. Confirm phase lock and mark follow-up items")
+        console.print()
 
     return result

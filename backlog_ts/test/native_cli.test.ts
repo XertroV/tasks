@@ -263,6 +263,60 @@ describe("native cli", () => {
     expect(readFileSync(join(root, ".tasks", "bugs", "B001-critical-bug.todo"), "utf8")).toContain("status: done");
   });
 
+  test("done marks completed hierarchy levels and locks phase", () => {
+    root = setupFixture();
+
+    updateTodoFrontmatter(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), (frontmatter) => {
+      frontmatter.status = "done";
+    });
+    updateTodoFrontmatter(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-c";
+    });
+
+    const p = run(["done", "P1.M1.E1.T002"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed: P1.M1.E1.T002");
+    expect(p.stdout.toString()).toContain("EPIC COMPLETE");
+    expect(p.stdout.toString()).toContain("MILESTONE COMPLETE");
+    expect(p.stdout.toString()).toContain("PHASE COMPLETE");
+
+    const rootIndex = parse(readFileSync(join(root, ".tasks", "index.yaml"), "utf8")) as {
+      phases: Array<{ id: string; status: string; locked?: boolean }>;
+    };
+    const phaseEntry = rootIndex.phases.find((p) => p.id === "P1");
+    expect(phaseEntry?.status).toBe("done");
+    expect(phaseEntry?.locked).toBeTrue();
+
+    const phaseIndex = parse(readFileSync(join(root, ".tasks", "01-phase", "index.yaml"), "utf8")) as {
+      status?: string;
+      locked?: boolean;
+    };
+    expect(phaseIndex.status).toBe("done");
+    expect(phaseIndex.locked).toBeTrue();
+
+    const milestoneIndex = parse(readFileSync(join(root, ".tasks", "01-phase", "01-ms", "index.yaml"), "utf8")) as {
+      status?: string;
+      epics: Array<{ id: string; status?: string }>;
+    };
+    expect(milestoneIndex.status).toBe("done");
+    const epicEntry = milestoneIndex.epics.find((e) => e.id === "E1");
+    expect(epicEntry?.status).toBe("done");
+
+    const addErr = run(["add", "P1.M1.E1", "--title", "Blocked"], root);
+    const addOutput = `${addErr.stdout.toString()}${addErr.stderr.toString()}`;
+    expect(addErr.exitCode).not.toBe(0);
+    expect(addOutput).toContain("has been closed and cannot accept new tasks");
+
+    const unlock = run(["unlock", "P1"], root);
+    expect(unlock.exitCode).toBe(0);
+    expect(unlock.stdout.toString()).toContain("Unlocked: P1");
+
+    const allowedAdd = run(["add", "P1.M1.E1", "--title", "Allowed"], root);
+    expect(allowedAdd.exitCode).toBe(0);
+    expect(allowedAdd.stdout.toString()).toContain("Created task:");
+  });
+
   test("undone resets single task to pending", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
@@ -416,6 +470,24 @@ describe("native cli", () => {
     const todo2 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), "utf8");
     expect(todo1).toContain("status: done");
     expect(todo2).toContain("status: in_progress");
+  });
+
+  test("cycle stops auto-grab when phase is completed", () => {
+    root = setupFixture();
+    updateTodoFrontmatter(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), (frontmatter) => {
+      frontmatter.status = "done";
+    });
+    updateTodoFrontmatter(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-c";
+    });
+
+    const p = run(["cycle", "P1.M1.E1.T002", "--agent", "agent-c"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed: P1.M1.E1.T002");
+    expect(p.stdout.toString()).toContain("Review Required");
+    expect(p.stdout.toString()).toContain("PHASE COMPLETE");
+    expect(p.stdout.toString()).not.toContain("Grabbed:");
   });
 
   test("cycle auto-selected bug fans out to additional bugs", () => {

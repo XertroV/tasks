@@ -921,4 +921,135 @@ ${data.title}
 
     throw new Error("undone supports only task, phase, milestone, or epic IDs");
   }
+
+  async setItemDone(itemId: string): Promise<{
+    item_id: string;
+    epic_completed: boolean;
+    milestone_completed: boolean;
+    phase_completed: boolean;
+    phase_locked: boolean;
+  }> {
+    const tree = await this.load();
+
+    const task = [
+      ...tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks))),
+      ...(tree.bugs ?? []),
+      ...(tree.ideas ?? []),
+    ].find((t) => t.id === itemId);
+
+    if (!task) {
+      throw new Error(`Task not found: ${itemId}`);
+    }
+
+    if (!task.epicId || !task.milestoneId || !task.phaseId) {
+      return {
+        item_id: task.id,
+        epic_completed: false,
+        milestone_completed: false,
+        phase_completed: false,
+        phase_locked: false,
+      };
+    }
+
+    const epic = tree.phases
+      .flatMap((p) => p.milestones.flatMap((m) => m.epics))
+      .find((e) => e.id === task.epicId);
+    const milestone = tree.phases
+      .flatMap((p) => p.milestones)
+      .find((m) => m.id === task.milestoneId);
+    const phase = tree.phases.find((p) => p.id === task.phaseId);
+
+    if (!epic || !milestone || !phase) {
+      throw new Error(`Could not resolve parent hierarchy for task: ${itemId}`);
+    }
+
+    const isEpicComplete = (e: Epic): boolean => {
+      return e.tasks.every((t) => t.status === Status.DONE);
+    };
+    const isMilestoneComplete = (m: Milestone): boolean => {
+      return m.epics.every(isEpicComplete);
+    };
+    const isPhaseComplete = (p: Phase): boolean => {
+      return p.milestones.every(isMilestoneComplete);
+    };
+
+    const epicCompleted = isEpicComplete(epic);
+    const milestoneCompleted = isMilestoneComplete(milestone);
+    const phaseCompleted = isPhaseComplete(phase);
+
+    const result = {
+      item_id: task.id,
+      epic_completed: epicCompleted,
+      milestone_completed: milestoneCompleted,
+      phase_completed: phaseCompleted,
+      phase_locked: false,
+    };
+
+    const leafId = (id: string): string => id.split(".").at(-1) ?? id;
+    const idsMatch = (entryId: unknown, targetId: string): boolean => {
+      const left = String(entryId ?? "");
+      const right = targetId;
+      return left === right || leafId(left) === leafId(right);
+    };
+
+    const rootPath = join(this.tasksDir, "index.yaml");
+    const root = this.mustYaml(rootPath);
+    for (const entry of ((root.phases as AnyRec[]) ?? [])) {
+      if (idsMatch(entry.id, phase.id)) {
+        if (phaseCompleted) {
+          entry.status = Status.DONE;
+          entry.locked = true;
+          result.phase_locked = true;
+        }
+        break;
+      }
+    }
+    await this.writeYaml(rootPath, root);
+
+    const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
+    if (existsSync(phaseIndexPath)) {
+      const phaseIndex = this.mustYaml(phaseIndexPath);
+      if (phaseCompleted) {
+        phaseIndex.status = Status.DONE;
+        phaseIndex.locked = true;
+      }
+      if (milestoneCompleted) {
+        for (const entry of ((phaseIndex.milestones as AnyRec[]) ?? [])) {
+          if (idsMatch(entry.id, milestone.id)) {
+            entry.status = Status.DONE;
+            break;
+          }
+        }
+      }
+      await this.writeYaml(phaseIndexPath, phaseIndex);
+    }
+
+    const msIndexPath = join(this.tasksDir, phase.path, milestone.path, "index.yaml");
+    if (existsSync(msIndexPath)) {
+      const milestoneIndex = this.mustYaml(msIndexPath);
+      if (milestoneCompleted) {
+        milestoneIndex.status = Status.DONE;
+      }
+      if (epicCompleted) {
+        for (const entry of ((milestoneIndex.epics as AnyRec[]) ?? [])) {
+          if (idsMatch(entry.id, epic.id)) {
+            entry.status = Status.DONE;
+            break;
+          }
+        }
+      }
+      await this.writeYaml(msIndexPath, milestoneIndex);
+    }
+
+    const epicIndexPath = join(this.tasksDir, phase.path, milestone.path, epic.path, "index.yaml");
+    if (existsSync(epicIndexPath)) {
+      const epicIndex = this.mustYaml(epicIndexPath);
+      if (epicCompleted) {
+        epicIndex.status = Status.DONE;
+      }
+      await this.writeYaml(epicIndexPath, epicIndex);
+    }
+
+    return result;
+  }
 }

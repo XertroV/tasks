@@ -395,6 +395,14 @@ class TaskTree:
             "total_estimate_hours": total_estimate_hours,
         }
 
+    @staticmethod
+    def _ids_match(candidate: str, target: str) -> bool:
+        if not candidate or not target:
+            return False
+        if candidate == target:
+            return True
+        return candidate.endswith(f".{target}") or target.endswith(f".{candidate}")
+
     def find_task(self, task_id: str) -> Optional[Task]:
         """Find a task by ID."""
         for phase in self.phases:
@@ -416,7 +424,7 @@ class TaskTree:
         for phase in self.phases:
             for milestone in phase.milestones:
                 for epic in milestone.epics:
-                    if epic.id == epic_id:
+                    if self._ids_match(epic.id, epic_id):
                         return epic
         return None
 
@@ -424,13 +432,13 @@ class TaskTree:
         """Find a milestone by ID."""
         for phase in self.phases:
             for milestone in phase.milestones:
-                if milestone.id == milestone_id:
+                if self._ids_match(milestone.id, milestone_id):
                     return milestone
         return None
 
     def find_phase(self, phase_id: str) -> Optional[Phase]:
         """Find a phase by ID."""
         for phase in self.phases:
-            if phase.id == phase_id:
+            if self._ids_match(phase.id, phase_id):
                 return phase
         return None

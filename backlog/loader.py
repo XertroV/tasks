@@ -822,11 +822,11 @@ TODO: Describe actual behavior
         phase = tree.find_phase(epic.phase_id or "")
         if phase and phase.locked:
             raise ValueError(
-                f"Phase {phase.id} has been closed and cannot accept new milestones. Create a new phase."
+                f"Phase {phase.id} has been closed and cannot accept new tasks. The agent should create a new epic."
             )
         if milestone and milestone.locked:
             raise ValueError(
-                f"Milestone {milestone.id} has been closed and cannot accept new epics. The agent should create a new epic."
+                f"Milestone {milestone.id} has been closed and cannot accept new tasks. The agent should create a new epic."
             )
         if epic.locked:
             raise ValueError(
@@ -1993,3 +1993,88 @@ TODO: Describe actual behavior
             return {"item_id": epic.id, "updated_tasks": updated}
 
         raise ValueError("undone supports only task, phase, milestone, or epic IDs")
+
+    def set_item_done(self, item_id: str) -> dict:
+        """Mark a task as done and propagate done status to completed parents."""
+        tree = self.load()
+
+        task = tree.find_task(item_id)
+        if not task:
+            raise ValueError(f"Task not found: {item_id}")
+
+        if not task.epic_id or not task.milestone_id or not task.phase_id:
+            return {
+                "epic_completed": False,
+                "milestone_completed": False,
+                "phase_completed": False,
+                "phase_locked": False,
+            }
+
+        epic = tree.find_epic(task.epic_id)
+        milestone = tree.find_milestone(task.milestone_id)
+        phase = tree.find_phase(task.phase_id)
+        if not epic or not milestone or not phase:
+            raise ValueError(f"Could not resolve parent hierarchy for: {item_id}")
+
+        epic_completed = epic.is_complete
+        milestone_completed = milestone.is_complete
+        phase_completed = phase.is_complete
+        result = {
+            "epic_completed": bool(epic_completed),
+            "milestone_completed": bool(milestone_completed),
+            "phase_completed": bool(phase_completed),
+            "phase_locked": False,
+        }
+
+        def _matches_index_id(entry_id: object, target_id: str) -> bool:
+            entry_id_str = str(entry_id)
+            return (
+                entry_id_str == target_id
+                or self._leaf_id(entry_id_str) == self._leaf_id(target_id)
+            )
+
+        root_path = self.tasks_dir / "index.yaml"
+        root_index = self._load_yaml(root_path)
+        for entry in root_index.get("phases", []):
+            if _matches_index_id(entry.get("id"), phase.id):
+                if phase_completed:
+                    entry["status"] = Status.DONE.value
+                    entry["locked"] = True
+                    result["phase_locked"] = True
+                break
+
+        self._write_yaml(root_path, root_index)
+
+        phase_index_path = self.tasks_dir / phase.path / "index.yaml"
+        if phase_index_path.exists():
+            phase_index = self._load_yaml(phase_index_path)
+            if phase_completed:
+                phase_index["status"] = Status.DONE.value
+                phase_index["locked"] = True
+            if milestone_completed:
+                for entry in phase_index.get("milestones", []):
+                    if _matches_index_id(entry.get("id"), milestone.id):
+                        entry["status"] = Status.DONE.value
+                        break
+            self._write_yaml(phase_index_path, phase_index)
+
+        ms_index_path = self.tasks_dir / phase.path / milestone.path / "index.yaml"
+        if ms_index_path.exists():
+            milestone_index = self._load_yaml(ms_index_path)
+            if milestone_completed:
+                milestone_index["status"] = Status.DONE.value
+            if epic_completed:
+                for entry in milestone_index.get("epics", []):
+                    if _matches_index_id(entry.get("id"), epic.id):
+                        entry["status"] = Status.DONE.value
+                        break
+            self._write_yaml(ms_index_path, milestone_index)
+
+        epic_index_path = self.tasks_dir / phase.path / milestone.path / epic.path / "index.yaml"
+        if epic_index_path.exists():
+            epic_index = self._load_yaml(epic_index_path)
+            if epic_completed:
+                epic_index["status"] = Status.DONE.value
+            self._write_yaml(epic_index_path, epic_index)
+
+        return result

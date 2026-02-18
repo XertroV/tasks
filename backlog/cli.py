@@ -2184,7 +2184,17 @@ def done(task_ids, verify, force):
                         f"\n[dim]Claim next:[/] 'backlog grab' or 'backlog cycle'\n"
                     )
 
-            # Check epic/milestone completion and print review instructions
+            if task.epic_id:
+                completion_status = loader.set_item_done(task.id)
+            else:
+                completion_status = {
+                    "epic_completed": False,
+                    "milestone_completed": False,
+                    "phase_completed": False,
+                    "phase_locked": False,
+                }
+
+            # Check epic/milestone/phase completion and print review instructions
             _completion_status = print_completion_notices(console, tree, task)
 
             # Handle multi-task context

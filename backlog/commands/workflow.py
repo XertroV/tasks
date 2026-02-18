@@ -705,6 +705,12 @@ def cycle(task_id, agent, no_content):
             if duration:
                 console.print(f"  Duration: {int(duration)} minutes")
 
+        completion_status = {"epic_completed": False, "milestone_completed": False, "phase_completed": False}
+        if task.epic_id:
+            completion_status = loader.set_item_done(task.id)
+            if completion_status.get("phase_completed"):
+                console.print("[yellow]Phase completed; locking phase automatically.[/]")
+
         # Show what was unblocked
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
         unblocked = find_newly_unblocked(tree, calc, task_id)
@@ -722,6 +728,7 @@ def cycle(task_id, agent, no_content):
         if (
             completion_status["epic_completed"]
             or completion_status["milestone_completed"]
+            or completion_status.get("phase_completed")
         ):
             console.print("─" * 50)
             console.print()

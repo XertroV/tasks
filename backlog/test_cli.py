@@ -1122,6 +1122,94 @@ class TestCycleCommand:
             assert "EPIC COMPLETE" in result.output
         # Should not crash or error
 
+    def test_done_marks_epic_milestone_and_phase_done(self, runner, tmp_tasks_dir):
+        """done should mark complete ancestors and lock phase when all tasks are done."""
+        # Create 2 tasks in an epic
+        task_ids = create_multi_task_epic(tmp_tasks_dir, 2)
+
+        # Mark first task done already
+        task1_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T001-test-task.todo"
+        )
+        with open(task1_file, "r") as f:
+            content = f.read()
+        content = content.replace("status: pending", "status: done")
+        with open(task1_file, "w") as f:
+            f.write(content)
+
+        # Mark second task in_progress and claim
+        task2_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "01-test-epic"
+            / "T002-test-task.todo"
+        )
+        with open(task2_file, "r") as f:
+            content = f.read()
+        content = content.replace("status: pending", "status: in_progress")
+        content = content.replace("tags:", "claimed_by: test-agent\ntags:")
+        with open(task2_file, "w") as f:
+            f.write(content)
+
+        result = runner.invoke(cli, ["done", task_ids[1]])
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert "EPIC COMPLETE" in result.output
+        assert "MILESTONE COMPLETE" in result.output
+        assert "PHASE COMPLETE" in result.output
+
+        root_index = yaml.safe_load((tmp_tasks_dir / ".tasks" / "index.yaml").read_text())
+        phase_entry = next(
+            entry for entry in root_index["phases"] if entry["id"] == "P1"
+        )
+        assert phase_entry["status"] == "done"
+        assert phase_entry["locked"] is True
+
+        phase_index = yaml.safe_load((tmp_tasks_dir / ".tasks" / "01-test-phase" / "index.yaml").read_text())
+        assert phase_index["status"] == "done"
+        assert phase_index["locked"] is True
+
+        milestone_index = yaml.safe_load(
+            (tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "index.yaml").read_text()
+        )
+        assert milestone_index["status"] == "done"
+        assert any(
+            entry["id"] == "P1.M1.E1" and entry["status"] == "done"
+            for entry in milestone_index["epics"]
+        )
+
+        epic_index = yaml.safe_load(
+            (
+                tmp_tasks_dir
+                / ".tasks"
+                / "01-test-phase"
+                / "01-test-milestone"
+                / "01-test-epic"
+                / "index.yaml"
+            ).read_text()
+        )
+        assert epic_index["status"] == "done"
+
+        blocked_add = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Blocked"])
+        assert blocked_add.exit_code != 0
+        assert "has been closed and cannot accept new tasks" in blocked_add.output
+        assert "create a new epic" in blocked_add.output.lower()
+
+        unlock = runner.invoke(cli, ["unlock", "P1"])
+        assert unlock.exit_code == 0
+        assert "Unlocked: P1" in unlock.output
+
+        allowed_add = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Allowed"])
+        assert allowed_add.exit_code == 0
+        assert "Created task:" in allowed_add.output
+
 
 def test_list_enhanced_shows_milestones(runner, tmp_tasks_dir):
     """Test enhanced list command shows milestones with task counts."""
