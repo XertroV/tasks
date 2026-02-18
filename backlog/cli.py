@@ -2114,10 +2114,10 @@ def claim(task_ids, agent, force, no_content):
 
 
 @cli.command()
-@click.argument("task_id", required=False)
+@click.argument("task_ids", nargs=-1, required=False)
 @click.option("--verify", is_flag=True, help="Confirm epic/milestone review")
 @click.option("--force", is_flag=True, help="Mark task done even if not in progress")
-def done(task_id, verify, force):
+def done(task_ids, verify, force):
     """Mark task as complete.
 
     Shows newly unblocked tasks after completion.
@@ -2125,7 +2125,7 @@ def done(task_id, verify, force):
     """
     try:
         # Use current task from context if not provided
-        if not task_id:
+        if not task_ids:
             task_id = get_current_task_id()
             if not task_id:
                 console.print(
@@ -2135,80 +2135,83 @@ def done(task_id, verify, force):
                     "[dim]Use 'backlog work <task-id>' to set a working task.[/]"
                 )
                 raise click.Abort()
+            task_ids = (task_id,)
 
         loader = TaskLoader()
         tree = loader.load()
         config = load_config()
-        task = tree.find_task(task_id)
 
-        if not task:
-            console.print(f"[red]Error:[/] Task not found: {task_id}")
-            raise click.Abort()
+        for task_id in task_ids:
+            task = tree.find_task(task_id)
 
-        if task.status == Status.DONE:
-            console.print(f"[yellow]⚠ Already done:[/] {task.id} - {task.title}")
-            return
+            if not task:
+                console.print(f"[red]Error:[/] Task not found: {task_id}")
+                raise click.Abort()
 
-        # Calculate duration
-        duration = None
-        if task.started_at:
-            started = to_utc(task.started_at)
-            duration = (utc_now() - started).total_seconds() / 60
-            task.duration_minutes = duration
+            if task.status == Status.DONE:
+                console.print(f"[yellow]⚠ Already done:[/] {task.id} - {task.title}")
+                continue
 
-        complete_task(task, force=force)
-        loader.save_task(task)
+            # Calculate duration
+            duration = None
+            if task.started_at:
+                started = to_utc(task.started_at)
+                duration = (utc_now() - started).total_seconds() / 60
+                task.duration_minutes = duration
 
-        console.print(f"\n[green]✓ Completed:[/] {task.id} - {task.title}\n")
-        if duration:
-            console.print(f"  Duration: {int(duration)} minutes\n")
+            complete_task(task, force=force)
+            loader.save_task(task)
 
-        # Show unblocked tasks
-        calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-        critical_path, _ = calc.calculate()
-        unblocked = find_newly_unblocked(tree, calc, task_id)
+            console.print(f"\n[green]✓ Completed:[/] {task.id} - {task.title}\n")
+            if duration:
+                console.print(f"  Duration: {int(duration)} minutes\n")
 
-        if unblocked:
-            console.print(f"[cyan]Unblocked {len(unblocked)} task(s):[/]")
-            for t in unblocked:
-                crit = " [yellow]★[/]" if t.id in critical_path else ""
-                console.print(f"  → {t.id}: {t.title}{crit}")
+            # Show unblocked tasks
+            calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
+            critical_path, _ = calc.calculate()
+            unblocked = find_newly_unblocked(tree, calc, task_id)
 
-            # Suggest next task
-            on_crit = [t for t in unblocked if t.id in critical_path]
-            if on_crit:
+            if unblocked:
+                console.print(f"[cyan]Unblocked {len(unblocked)} task(s):[/]")
+                for t in unblocked:
+                    crit = " [yellow]★[/]" if t.id in critical_path else ""
+                    console.print(f"  → {t.id}: {t.title}{crit}")
+
+                # Suggest next task
+                on_crit = [t for t in unblocked if t.id in critical_path]
+                if on_crit:
+                    console.print(
+                        f"\n[dim]Claim next:[/] 'backlog grab' or 'backlog cycle'\n"
+                    )
+
+            # Check epic/milestone completion and print review instructions
+            _completion_status = print_completion_notices(console, tree, task)
+
+            # Handle multi-task context
+            agent = get_default_agent()
+            primary, additional = get_all_current_tasks(agent)
+
+            if primary == task_id and additional:
+                # Primary completed, promote first additional to primary
                 console.print(
-                    f"\n[dim]Claim next:[/] 'backlog grab' or 'backlog cycle'\n"
+                    "\n[yellow]Primary task completed. Additional tasks still active.[/]"
                 )
+                new_primary = additional[0]
+                new_additional = additional[1:]
 
-        # Check epic/milestone completion and print review instructions
-        _completion_status = print_completion_notices(console, tree, task)
+                if new_additional:
+                    set_multi_task_context(agent, new_primary, new_additional)
+                else:
+                    set_current_task(new_primary, agent)
 
-        # Handle multi-task context
-        agent = get_default_agent()
-        primary, additional = get_all_current_tasks(agent)
-
-        if primary == task_id and additional:
-            # Primary completed, promote first additional to primary
-            console.print(
-                "\n[yellow]Primary task completed. Additional tasks still active.[/]"
-            )
-            new_primary = additional[0]
-            new_additional = additional[1:]
-
-            if new_additional:
-                set_multi_task_context(agent, new_primary, new_additional)
-            else:
-                set_current_task(new_primary, agent)
-
-            console.print(f"[bold]New primary task:[/] {new_primary}\n")
-        elif task_id in additional:
-            # Additional task completed, remove from list
-            new_additional = [t for t in additional if t != task_id]
-            if new_additional:
-                set_multi_task_context(agent, primary, new_additional)
-            else:
-                set_current_task(primary, agent)
+                console.print(f"[bold]New primary task:[/] {new_primary}\n")
+            elif task_id in additional:
+                # Additional task completed, remove from list
+                new_additional = [t for t in additional if t != task_id]
+                if new_additional:
+                    set_multi_task_context(agent, primary, new_additional)
+                else:
+                    set_current_task(primary, agent)
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))

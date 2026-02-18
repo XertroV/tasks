@@ -226,6 +226,43 @@ describe("native cli", () => {
     expect(readFileSync(todoPath, "utf8")).toContain("status: done");
   });
 
+  test("done supports multiple task ids", () => {
+    root = setupFixture(true);
+
+    updateTodoFrontmatter(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"),
+      (frontmatter) => {
+        frontmatter.status = "in_progress";
+      },
+    );
+    updateTodoFrontmatter(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"),
+      (frontmatter) => {
+        frontmatter.status = "in_progress";
+      },
+    );
+    updateTodoFrontmatter(
+      join(root, ".tasks", "bugs", "B001-critical-bug.todo"),
+      (frontmatter) => {
+        frontmatter.status = "in_progress";
+      },
+    );
+
+    const p = run(
+      ["done", "P1.M1.E1.T001", "P1.M1.E1.T002", "B001"],
+      root,
+    );
+
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed:");
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T002");
+
+    expect(readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8")).toContain("status: done");
+    expect(readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), "utf8")).toContain("status: done");
+    expect(readFileSync(join(root, ".tasks", "bugs", "B001-critical-bug.todo"), "utf8")).toContain("status: done");
+  });
+
   test("undone resets single task to pending", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");

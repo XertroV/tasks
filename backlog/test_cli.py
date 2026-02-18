@@ -620,6 +620,42 @@ class TestDoneCommand:
         )
         assert "status: done" in task_file.read_text()
 
+    def test_done_supports_multiple_task_ids(self, runner, tmp_tasks_dir):
+        """done should complete multiple task IDs in one invocation."""
+        bug_file = create_bug_file(
+            tmp_tasks_dir,
+            "B001",
+            "Critical Bug",
+            status="in_progress",
+        )
+        t001 = create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="in_progress",
+            claimed_by="test-agent",
+        )
+        t002 = create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T002",
+            "Task Two",
+            status="in_progress",
+            claimed_by="test-agent",
+        )
+
+        result = runner.invoke(
+            cli, ["done", "P1.M1.E1.T001", "P1.M1.E1.T002", "B001"]
+        )
+
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert "P1.M1.E1.T001" in result.output
+        assert "P1.M1.E1.T002" in result.output
+
+        assert "status: done" in t001.read_text()
+        assert "status: done" in t002.read_text()
+        assert "status: done" in bug_file.read_text()
+
     def test_undone_resets_single_task(self, runner, tmp_tasks_dir):
         create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task", status="done")
         result = runner.invoke(cli, ["undone", "P1.M1.E1.T001"])

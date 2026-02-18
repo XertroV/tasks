@@ -1295,23 +1295,28 @@ async function cmdGrab(args: string[]): Promise<void> {
 }
 
 async function cmdDone(args: string[]): Promise<void> {
-  let taskId = args.find((a) => !a.startsWith("-"));
+  const taskIds = args.filter((a) => !a.startsWith("-"));
   const force = parseFlag(args, "--force");
-  if (!taskId) taskId = await getCurrentTaskId();
-  if (!taskId) textError("No task ID provided and no current working task set.");
+  if (taskIds.length === 0) {
+    const currentTaskId = await getCurrentTaskId();
+    if (!currentTaskId) textError("No task ID provided and no current working task set.");
+    taskIds.push(currentTaskId);
+  }
 
   const loader = new TaskLoader();
   const tree = await loader.load();
-  const task = findTask(tree, taskId);
-  if (!task) textError(`Task not found: ${taskId}`);
 
   try {
-    if (task.startedAt) {
-      task.durationMinutes = (utcNow().getTime() - task.startedAt.getTime()) / 60000;
+    for (const taskId of taskIds) {
+      const task = findTask(tree, taskId);
+      if (!task) textError(`Task not found: ${taskId}`);
+      if (task.startedAt) {
+        task.durationMinutes = (utcNow().getTime() - task.startedAt.getTime()) / 60000;
+      }
+      completeTask(task, force);
+      await loader.saveTask(task);
+      console.log(`Completed: ${task.id}`);
     }
-    completeTask(task, force);
-    await loader.saveTask(task);
-    console.log(`Completed: ${task.id}`);
   } catch (e) {
     if (e instanceof StatusError) {
       jsonOut(e.toJSON());
