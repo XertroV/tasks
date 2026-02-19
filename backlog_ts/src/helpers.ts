@@ -3,7 +3,7 @@ import { unlink } from "node:fs/promises";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
-import type { Epic, Milestone, Phase, Task, TaskTree } from "./models";
+import type { Epic, Milestone, PathQuery, Phase, Task, TaskTree } from "./models";
 import { getDataDir, getDataDirName } from "./data_dir";
 
 export function getAllTasks(tree: TaskTree): Task[] {
@@ -42,6 +42,62 @@ export function findMilestone(tree: TaskTree, id: string): Milestone | undefined
 
 export function findEpic(tree: TaskTree, id: string): Epic | undefined {
   return tree.phases.flatMap((p) => p.milestones.flatMap((m) => m.epics)).find((e) => idsMatch(e.id, id));
+}
+
+function filterEpicByPathQuery(epic: Epic, pathQuery: PathQuery): Epic | undefined {
+  const tasks = pathQuery.matches(epic.id)
+    ? epic.tasks
+    : epic.tasks.filter((task) => pathQuery.matches(task.id));
+  if (!pathQuery.matches(epic.id) && tasks.length === 0) {
+    return undefined;
+  }
+
+  return {
+    ...epic,
+    tasks,
+  };
+}
+
+function filterMilestoneByPathQuery(
+  milestone: Milestone,
+  pathQuery: PathQuery,
+): Milestone | undefined {
+  const epics = milestone.epics
+    .map((epic) => filterEpicByPathQuery(epic, pathQuery))
+    .filter((epic): epic is Epic => epic !== undefined);
+
+  if (!pathQuery.matches(milestone.id) && epics.length === 0) {
+    return undefined;
+  }
+
+  return {
+    ...milestone,
+    epics,
+  };
+}
+
+function filterPhaseByPathQuery(
+  phase: Phase,
+  pathQuery: PathQuery,
+): Phase | undefined {
+  const milestones = phase.milestones
+    .map((milestone) => filterMilestoneByPathQuery(milestone, pathQuery))
+    .filter((milestone): milestone is Milestone => milestone !== undefined);
+
+  if (!pathQuery.matches(phase.id) && milestones.length === 0) {
+    return undefined;
+  }
+
+  return {
+    ...phase,
+    milestones,
+  };
+}
+
+export function filterTreeByPathQuery(treePhases: Phase[], pathQuery: PathQuery): Phase[] {
+  return treePhases
+    .map((phase) => filterPhaseByPathQuery(phase, pathQuery))
+    .filter((phase): phase is Phase => phase !== undefined);
 }
 
 export function taskFilePath(task: Task, tasksDir?: string): string {

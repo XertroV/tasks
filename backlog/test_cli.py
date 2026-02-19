@@ -1469,6 +1469,53 @@ def test_tree_json_outputs_complete_hierarchy(runner, tmp_tasks_dir):
     assert len(data["phases"][0]["milestones"][0]["epics"][0]["tasks"]) == 2
 
 
+def test_tree_path_query_filters_to_matching_nodes(runner, tmp_tasks_dir):
+    """Tree path query should keep ancestors and matching descendants."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["tree", "P1.M1.E1.T002"])
+    assert result.exit_code == 0
+    assert "Test Phase" in result.output
+    assert "Test Milestone" in result.output
+    assert "Test Epic" in result.output
+    assert "P1.M1.E1.T002" in result.output
+    assert "P1.M1.E1.T001" not in result.output
+
+
+def test_tree_path_query_with_wildcard_includes_descendants(runner, tmp_tasks_dir):
+    """Tree path query should include wildcard descendants."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["tree", "P1.*"])
+    assert result.exit_code == 0
+    assert "P1.M1.E1.T001" in result.output
+    assert "P1.M1.E1.T002" in result.output
+
+
+def test_tree_path_query_no_match_shows_message(runner, tmp_tasks_dir):
+    """Tree path query should report no matching nodes when query doesn't match."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+
+    result = runner.invoke(cli, ["tree", "P9"])
+    assert result.exit_code == 0
+    assert "No tree nodes found for path query: P9" in result.output
+
+
+def test_tree_path_query_no_match_json_returns_empty_phases(runner, tmp_tasks_dir):
+    """JSON output for a missing path query should return an empty phase list."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+
+    result = runner.invoke(cli, ["tree", "P9", "--json"])
+    assert result.exit_code == 0
+
+    import json
+
+    payload = json.loads(result.output)
+    assert payload["phases"] == []
+
+
 def test_list_and_tree_consistent_task_counts(runner, tmp_tasks_dir):
     """Test list and tree show consistent task counts."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="done")

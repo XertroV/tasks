@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-from .models import Task, Status
+from .models import Epic, Milestone, Phase, PathQuery, Status, Task, TaskTree
 from .time_utils import utc_now, utc_now_iso, to_utc
 from .data_dir import BACKLOG_DIR, get_data_dir_name
 
@@ -409,6 +409,93 @@ def find_newly_unblocked(tree, calc, completed_task_id: str) -> List[Task]:
                 newly_unblocked.append(task)
 
     return newly_unblocked
+
+
+def _filter_epic_by_path_query(epic: Epic, path_query: PathQuery) -> Optional[Epic]:
+    tasks = [t for t in epic.tasks if path_query.matches(t.id)]
+
+    if not path_query.matches(epic.id) and not tasks:
+        return None
+
+    return Epic(
+        id=epic.id,
+        name=epic.name,
+        path=epic.path,
+        status=epic.status,
+        estimate_hours=epic.estimate_hours,
+        complexity=epic.complexity,
+        depends_on=list(epic.depends_on),
+        tasks=tasks,
+        description=epic.description,
+        locked=epic.locked,
+        milestone_id=epic.milestone_id,
+        phase_id=epic.phase_id,
+    )
+
+
+def _filter_milestone_by_path_query(
+    milestone: Milestone, path_query: PathQuery
+) -> Optional[Milestone]:
+    epics = []
+    for epic in milestone.epics:
+        filtered_epic = _filter_epic_by_path_query(epic, path_query)
+        if filtered_epic:
+            epics.append(filtered_epic)
+
+    if not path_query.matches(milestone.id) and not epics:
+        return None
+
+    return Milestone(
+        id=milestone.id,
+        name=milestone.name,
+        path=milestone.path,
+        status=milestone.status,
+        estimate_hours=milestone.estimate_hours,
+        complexity=milestone.complexity,
+        depends_on=list(milestone.depends_on),
+        epics=epics,
+        description=milestone.description,
+        locked=milestone.locked,
+        phase_id=milestone.phase_id,
+    )
+
+
+def _filter_phase_by_path_query(phase: Phase, path_query: PathQuery) -> Optional[Phase]:
+    milestones = []
+    for milestone in phase.milestones:
+        filtered_milestone = _filter_milestone_by_path_query(
+            milestone, path_query
+        )
+        if filtered_milestone:
+            milestones.append(filtered_milestone)
+
+    if not path_query.matches(phase.id) and not milestones:
+        return None
+
+    return Phase(
+        id=phase.id,
+        name=phase.name,
+        path=phase.path,
+        status=phase.status,
+        weeks=phase.weeks,
+        estimate_hours=phase.estimate_hours,
+        priority=phase.priority,
+        depends_on=list(phase.depends_on),
+        milestones=milestones,
+        description=phase.description,
+        locked=phase.locked,
+    )
+
+
+def filter_tree_by_path_query(tree: TaskTree, path_query: PathQuery) -> List[Phase]:
+    """Filter task tree phases by path query, keeping matching ancestors/descendants."""
+    phases = []
+    for phase in tree.phases:
+        filtered_phase = _filter_phase_by_path_query(phase, path_query)
+        if filtered_phase:
+            phases.append(filtered_phase)
+
+    return phases
 
 
 # ============================================================================

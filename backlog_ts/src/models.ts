@@ -121,6 +121,63 @@ export class TaskPath {
   }
 }
 
+export class PathQuery {
+  constructor(
+    public readonly raw: string,
+    public readonly segments: string[],
+  ) {}
+
+  static parse(query: string): PathQuery {
+    if (!query) {
+      throw new Error("Path query is required");
+    }
+
+    const raw = query.trim();
+    if (!raw) {
+      throw new Error("Path query cannot be empty");
+    }
+
+    const segments = raw.split(".");
+    if (segments.length < 1 || segments.length > 4) {
+      throw new Error(
+        `Invalid path query format: ${query} (must be 1-4 dot-separated segments)`,
+      );
+    }
+
+    for (const segment of segments) {
+      if (!segment) {
+        throw new Error(`Invalid path query format: ${query}`);
+      }
+      if (segment.includes("*") && segment !== "*" && segment.indexOf("*") !== segment.length - 1) {
+        throw new Error(
+          `Invalid wildcard in path query segment '${segment}': ${query}`,
+        );
+      }
+      if ((segment.match(/\*/g) || []).length > 1) {
+        throw new Error(`Invalid wildcard in path query: ${query}`);
+      }
+    }
+
+    return new PathQuery(raw, segments);
+  }
+
+  private matchesSegment(pattern: string, segment: string): boolean {
+    if (pattern === "*") return true;
+    if (pattern.endsWith("*")) {
+      return segment.startsWith(pattern.slice(0, -1));
+    }
+    return pattern === segment;
+  }
+
+  matches(candidate: string): boolean {
+    const candidateParts = candidate.split(".");
+    if (candidateParts.length < this.segments.length) return false;
+    return this.segments.every((pattern, index) =>
+      this.matchesSegment(pattern, candidateParts[index]),
+    );
+  }
+}
+
 export interface Task {
   id: string;
   title: string;

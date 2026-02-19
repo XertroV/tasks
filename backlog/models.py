@@ -172,6 +172,66 @@ class TaskPath:
         return f"TaskPath({self.full_id!r})"
 
 
+class PathQuery:
+    """Parse and match hierarchical path queries with optional trailing wildcards.
+
+    Supported forms:
+      - P1
+      - P1.M1
+      - P1.M1.E1
+      - P1.M1.E1.T001
+      - P1.*
+      - P1.M*
+    Wildcards are optional and must only appear at the end of a segment.
+    """
+
+    def __init__(self, raw: str, segments: list[str]):
+        self.raw = raw
+        self.segments = tuple(segments)
+
+    @classmethod
+    def parse(cls, query: str) -> "PathQuery":
+        if query is None:
+            raise ValueError("Path query is required")
+
+        raw = query.strip()
+        if not raw:
+            raise ValueError("Path query cannot be empty")
+
+        parts = raw.split(".")
+        if len(parts) < 1 or len(parts) > 4:
+            raise ValueError(
+                f"Invalid path query format: {query} (must be 1-4 dot-separated segments)"
+            )
+
+        for part in parts:
+            if not part:
+                raise ValueError(f"Invalid path query format: {query}")
+            if part.count("*") > 1:
+                raise ValueError(f"Invalid wildcard in path query: {query}")
+            if "*" in part and not part.endswith("*"):
+                raise ValueError(
+                    f"Invalid wildcard in path query segment '{part}': {query}"
+                )
+
+        return cls(raw=raw, segments=list(parts))
+
+    def _matches_segment(self, pattern: str, segment: str) -> bool:
+        if pattern == "*":
+            return True
+        if pattern.endswith("*"):
+            return segment.startswith(pattern[:-1])
+        return pattern == segment
+
+    def matches(self, candidate: str) -> bool:
+        """Return True when candidate matches this query."""
+        parts = candidate.split(".")
+        if len(parts) < len(self.segments):
+            return False
+        return all(
+            self._matches_segment(pattern, candidate_part)
+            for pattern, candidate_part in zip(self.segments, parts)
+        )
 class Status(str, Enum):
     """Task status values."""
 

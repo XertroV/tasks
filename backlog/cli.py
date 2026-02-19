@@ -8,7 +8,7 @@ from builtins import next as builtin_next
 from datetime import datetime, timezone
 from rich.console import Console
 
-from .models import Status, TaskPath, Complexity, Priority
+from .models import PathQuery, Status, TaskPath, Complexity, Priority
 from .loader import TaskLoader
 from .critical_path import CriticalPathCalculator
 from .time_utils import utc_now, to_utc
@@ -37,6 +37,7 @@ from .helpers import (
     format_phase_path,
     format_milestone_path,
     format_epic_path,
+    filter_tree_by_path_query,
 )
 
 
@@ -1599,11 +1600,13 @@ def _render_phase(
     default=4,
     help="Limit tree expansion depth (1=phases, 2=milestones, 3=epics, 4=tasks)",
 )
-def tree(output_json, unfinished, show_completed_aux, details, depth):
+@click.argument("path_query", required=False)
+def tree(output_json, unfinished, show_completed_aux, details, depth, path_query):
     """Display full hierarchical tree of phases, milestones, epics, and tasks."""
     try:
         loader = TaskLoader()
         tree_data = loader.load("metadata")
+        parsed_query = PathQuery.parse(path_query) if path_query else None
         config = load_config()
 
         calc = CriticalPathCalculator(tree_data, config["complexity_multipliers"])
@@ -1611,11 +1614,16 @@ def tree(output_json, unfinished, show_completed_aux, details, depth):
         tree_data.critical_path = critical_path
         tree_data.next_available = next_available
 
+        phases_to_show = (
+            filter_tree_by_path_query(tree_data, parsed_query)
+            if parsed_query
+            else tree_data.phases
+        )
+
         if output_json:
-            phases_to_show = tree_data.phases
             if unfinished:
                 phases_to_show = [
-                    p for p in tree_data.phases if _has_unfinished_milestones(p)
+                    p for p in phases_to_show if _has_unfinished_milestones(p)
                 ]
 
             output = {
@@ -1675,10 +1683,9 @@ def tree(output_json, unfinished, show_completed_aux, details, depth):
             return
 
         # Text output
-        phases_to_show = tree_data.phases
         if unfinished:
             phases_to_show = [
-                p for p in tree_data.phases if _has_unfinished_milestones(p)
+                p for p in phases_to_show if _has_unfinished_milestones(p)
             ]
 
         bugs_to_show = [
@@ -1702,6 +1709,9 @@ def tree(output_json, unfinished, show_completed_aux, details, depth):
             )
             for line in lines:
                 console.print(line)
+
+        if path_query and not phases_to_show and not has_aux:
+            console.print(f"No tree nodes found for path query: {path_query}")
 
         # Render auxiliary sections
         if has_bugs:

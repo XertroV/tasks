@@ -6,13 +6,37 @@ import { mkdir } from "node:fs/promises";
 import { createInterface } from "node:readline/promises";
 import { parse, stringify } from "yaml";
 import { CriticalPathCalculator } from "./critical_path";
-import { clearContext, endSession, findEpic, findMilestone, findPhase, findTask, getActiveSessions, getAllTasks, getCurrentTaskId, getStaleSessions, isBugId, isIdeaId, isTaskFileMissing, loadConfig, loadContext, loadSessions, saveSessions, setCurrentTask, startSession, taskFilePath, updateSessionHeartbeat } from "./helpers";
+import {
+  clearContext,
+  endSession,
+  findEpic,
+  findMilestone,
+  findPhase,
+  findTask,
+  filterTreeByPathQuery,
+  getActiveSessions,
+  getAllTasks,
+  getCurrentTaskId,
+  getStaleSessions,
+  isBugId,
+  isIdeaId,
+  isTaskFileMissing,
+  loadConfig,
+  loadContext,
+  loadSessions,
+  saveSessions,
+  setCurrentTask,
+  startSession,
+  taskFilePath,
+  updateSessionHeartbeat,
+} from "./helpers";
 import { TaskLoader } from "./loader";
 import {
   Complexity,
   Priority,
   Status,
   TaskPath,
+  PathQuery,
   type Epic,
   type Milestone,
   type Phase,
@@ -974,6 +998,24 @@ async function cmdTree(args: string[]): Promise<void> {
   const showDetails = parseFlag(args, "--details");
   const depthStr = parseOpt(args, "--depth");
   const maxDepth = depthStr ? Number(depthStr) : 4;
+  const depthValueIndex = args.findIndex((arg) => arg === "--depth");
+  const pathQueryText = args.find(
+    (arg, index) => {
+      if (arg.startsWith("-")) return false;
+      if (depthValueIndex >= 0 && (index === depthValueIndex || index === depthValueIndex + 1)) {
+        return false;
+      }
+      return true;
+    },
+  );
+  let pathQuery: PathQuery | undefined;
+  if (pathQueryText) {
+    try {
+      pathQuery = PathQuery.parse(pathQueryText);
+    } catch (error) {
+      textError((error as Error).message);
+    }
+  }
 
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
@@ -982,9 +1024,14 @@ async function cmdTree(args: string[]): Promise<void> {
   const { criticalPath, nextAvailable } = calc.calculate();
   tree.criticalPath = criticalPath;
   tree.nextAvailable = nextAvailable;
+  let phasesToShow = pathQuery ? filterTreeByPathQuery(tree.phases, pathQuery) : tree.phases;
 
   if (outputJson) {
-    const filteredPhases = tree.phases
+    if (unfinished) {
+      phasesToShow = phasesToShow.filter((p) => hasUnfinishedMilestones(p));
+    }
+
+    const filteredPhases = phasesToShow
       .map((p) => ({
         ...p,
         milestones: p.milestones
@@ -1012,7 +1059,9 @@ async function cmdTree(args: string[]): Promise<void> {
     return;
   }
 
-  const phasesToShow = unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases;
+  if (unfinished) {
+    phasesToShow = phasesToShow.filter((p) => hasUnfinishedMilestones(p));
+  }
   const bugsToShow = (tree.bugs ?? []).filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
   const ideasToShow = (tree.ideas ?? []).filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
   const hasBugs = bugsToShow.length > 0;
@@ -1050,6 +1099,12 @@ async function cmdTree(args: string[]): Promise<void> {
       const icon = getStatusIcon(idea.status);
       console.log(renderTask(idea, isLastIdea, continuation, criticalPath, showDetails));
     }
+  }
+
+  if (pathQuery && phasesToShow.length === 0 && !hasAux) {
+    console.log(
+      pc.yellow(`No tree nodes found for path query: ${pathQueryText ?? ""}`),
+    );
   }
 }
 

@@ -1295,6 +1295,52 @@ tags: []
     expect(data.phases[0].milestones[0].epics[0].tasks.length).toBe(2);
   });
 
+  test("tree path query filters to matching task and ancestors", () => {
+    root = setupFixture();
+    let p = run(["tree", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Phase");
+    expect(out).toContain("M (0/1)");
+    expect(out).toContain("E (0/1)");
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).not.toContain("P1.M1.E1.T002");
+  });
+
+  test("tree path query wildcard keeps descendants", () => {
+    root = setupFixture();
+    let p = run(["tree", "P1.*"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("P1.M1.E1.T002");
+  });
+
+  test("tree parses path query before --depth option", () => {
+    root = setupFixture();
+    let p = run(["tree", "P1.*", "--depth", "1"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Phase");
+    expect(out).not.toContain("P1.M1.E1.T001");
+  });
+
+  test("tree path query with no match prints helpful message", () => {
+    root = setupFixture();
+    let p = run(["tree", "P9"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("No tree nodes found for path query: P9");
+  });
+
+  test("tree path query with no match returns empty json phases", () => {
+    root = setupFixture();
+    let p = run(["tree", "P9", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const data = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(data.phases)).toBeTrue();
+    expect(data.phases.length).toBe(0);
+  });
+
   test("tree handles empty epics gracefully", () => {
     root = setupFixture();
     const t = join(root, ".tasks");
