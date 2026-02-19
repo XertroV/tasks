@@ -77,6 +77,10 @@ export function jsonOut(obj: unknown): void {
   console.log(JSON.stringify(obj, null, 2));
 }
 
+function formatMs(ms: number): string {
+  return `${ms.toFixed(2)}ms`;
+}
+
 export function textError(message: string): never {
   console.error(pc.red(`Error: ${message}`));
   process.exit(1);
@@ -124,6 +128,7 @@ Commands:
   agents          Print AGENTS.md snippets
   log             Show recent activity log (claims, starts, completions, and added items)
   migrate         Migrate .tasks/ to .backlog/
+  benchmark       Show load-time benchmark for the full task tree
 
 Quick rules:
   - Prefer 'backlog claim <TASK_ID> [TASK_ID ...]' for explicit IDs.
@@ -740,6 +745,97 @@ async function cmdLog(args: string[]): Promise<void> {
     console.log(`  ${event.title}`);
     console.log(`  ${event.timestamp.toISOString()} (${age})`);
     console.log();
+  }
+}
+
+async function cmdBenchmark(args: string[]): Promise<void> {
+  const outputJson = parseFlag(args, "--json");
+  const topArg = parseOpt(args, "--top");
+  const top = Number(topArg ?? 10);
+  const topN = Number.isFinite(top) && top > 0 ? Math.floor(top) : 10;
+
+  const loader = new TaskLoader();
+  const { benchmark } = await loader.loadWithBenchmark();
+  const taskTotal = benchmark.counts.tasks;
+  const missing = benchmark.missing_task_files;
+  const found = taskTotal - missing;
+
+  const slowestPhases = [...benchmark.phase_timings]
+    .sort((a, b) => b.ms - a.ms)
+    .slice(0, topN);
+  const slowestMilestones = [...benchmark.milestone_timings]
+    .sort((a, b) => b.ms - a.ms)
+    .slice(0, topN);
+  const slowestEpics = [...benchmark.epic_timings]
+    .sort((a, b) => b.ms - a.ms)
+    .slice(0, topN);
+
+  if (outputJson) {
+    jsonOut({
+      ...benchmark,
+      summary: {
+        overall_ms: benchmark.overall_ms,
+        files_parsed: benchmark.files.total,
+        task_files_total: taskTotal,
+        task_files_found: found,
+        task_files_missing: missing,
+        node_counts: {
+          phases: benchmark.counts.phases,
+          milestones: benchmark.counts.milestones,
+          epics: benchmark.counts.epics,
+        },
+      },
+      slowest: {
+        phases: slowestPhases,
+        milestones: slowestMilestones,
+        epics: slowestEpics,
+      },
+    });
+    return;
+  }
+
+  console.log("\nTask Tree Benchmark");
+  console.log(`Overall parse time: ${formatMs(benchmark.overall_ms)}`);
+  console.log(`Total files parsed: ${benchmark.files.total}`);
+  console.log(
+    `Task files (leaves): ${taskTotal} (${found} found, ${missing} missing)`,
+  );
+  console.log(`Phases parsed: ${benchmark.counts.phases}`);
+  console.log(`Milestones parsed: ${benchmark.counts.milestones}`);
+  console.log(`Epics parsed: ${benchmark.counts.epics}`);
+  console.log("");
+
+  const fileTypes = Object.keys(benchmark.files.by_type).sort();
+  if (fileTypes.length) {
+    console.log("Files by type:");
+    for (const fileType of fileTypes) {
+      const count = benchmark.files.by_type[fileType];
+      const msTotal = benchmark.files.by_type_ms[fileType];
+      if (count > 0) {
+        console.log(`  ${fileType}: ${count} files (${formatMs(msTotal)})`);
+      }
+    }
+  }
+
+  if (slowestPhases.length) {
+    console.log("\nSlowest phases:");
+    for (const item of slowestPhases) {
+      console.log(`  ${item.id} (${item.path}): ${formatMs(item.ms)}`);
+    }
+  }
+
+  if (slowestMilestones.length) {
+    console.log("\nSlowest milestones:");
+    for (const item of slowestMilestones) {
+      console.log(`  ${item.id} (${item.path}): ${formatMs(item.ms)}`);
+    }
+  }
+
+  if (slowestEpics.length) {
+    console.log("\nSlowest epics:");
+    for (const item of slowestEpics) {
+      console.log(`  ${item.id} (${item.path}): ${formatMs(item.ms)}`);
+    }
   }
 }
 
@@ -2826,6 +2922,9 @@ async function main(): Promise<void> {
       return;
     case "migrate":
       await cmdMigrate(rest);
+      return;
+    case "benchmark":
+      await cmdBenchmark(rest);
       return;
     default:
       textError(`Unknown command: ${cmd}`);

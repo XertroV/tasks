@@ -436,3 +436,76 @@ def test_move_epic_to_another_milestone_remaps_descendant_task_ids(
     assert moved_epic_dir.exists()
     moved_task_text = (moved_epic_dir / "T001-child.todo").read_text()
     assert "id: P1.M2.E1.T001" in moved_task_text
+
+
+def test_load_with_benchmark_counts_tree_and_missing_files(tmp_path, monkeypatch):
+    """load_with_benchmark should return timing and file counts for normal loading."""
+    tasks_dir = tmp_path / ".tasks"
+    tasks_dir.mkdir()
+    phase_dir = tasks_dir / "01-phase"
+    milestone_dir = phase_dir / "01-ms"
+    epic_dir = milestone_dir / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Benchmark
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (phase_dir / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-ms
+""",
+        encoding="utf-8",
+    )
+    (milestone_dir / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    file: T001-existing.todo
+  - id: T002
+    file: T002-missing.todo
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-existing.todo").write_text(
+        """
+---
+id: P1.M1.E1.T001
+title: Existing
+status: pending
+---
+
+Existing task body
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    tree, benchmark = TaskLoader(tasks_dir=str(tasks_dir)).load_with_benchmark()
+
+    assert len(tree.phases) == 1
+    assert benchmark["counts"]["phases"] == 1
+    assert benchmark["counts"]["milestones"] == 1
+    assert benchmark["counts"]["epics"] == 1
+    assert benchmark["counts"]["tasks"] == 2
+    assert benchmark["missing_task_files"] == 1
+    assert benchmark["files"]["by_type"]["root_index"] == 1
+    assert benchmark["files"]["by_type"]["todo_file"] == 1

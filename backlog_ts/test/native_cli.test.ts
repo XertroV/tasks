@@ -1434,4 +1434,27 @@ tags: []
     expect(out).toContain("Body length:");
     expect(out).toContain("Run 'backlog show P1.M1.E1.T001' for full details.");
   });
+
+  test("benchmark command returns timing summary and text report", () => {
+    root = setupFixture();
+    rmSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"));
+
+    const jsonOut = run(["benchmark", "--json"], root);
+    expect(jsonOut.exitCode).toBe(0);
+    const payload = JSON.parse(jsonOut.stdout.toString());
+
+    expect(payload.summary.node_counts.phases).toBe(1);
+    expect(payload.summary.node_counts.milestones).toBe(1);
+    expect(payload.summary.node_counts.epics).toBe(1);
+    expect(payload.summary.task_files_total).toBe(2);
+    expect(payload.summary.task_files_found).toBe(1);
+    expect(payload.summary.task_files_missing).toBe(1);
+
+    const textOut = run(["benchmark"], root);
+    expect(textOut.exitCode).toBe(0);
+    const output = textOut.stdout.toString();
+    expect(output).toContain("Task Tree Benchmark");
+    expect(output).toContain("Slowest phases");
+    expect(output).toContain("Files by type");
+  });
 });

@@ -6,6 +6,7 @@ import shutil
 import yaml
 from pathlib import Path
 from datetime import datetime
+from time import perf_counter
 from typing import Dict, Any, Optional
 from .models import (
     TaskTree,
@@ -32,12 +33,86 @@ class TaskLoader:
             if not self.tasks_dir.exists():
                 raise FileNotFoundError(f"Data directory not found: {tasks_dir}")
 
+    def _new_benchmark(self) -> Dict[str, Any]:
+        return {
+            "overall_ms": 0.0,
+            "files": {
+                "total": 0,
+                "by_type": {
+                    "root_index": 0,
+                    "phase_index": 0,
+                    "milestone_index": 0,
+                    "epic_index": 0,
+                    "todo_file": 0,
+                    "bug_index": 0,
+                    "idea_index": 0,
+                    "bug_file": 0,
+                    "idea_file": 0,
+                },
+                "by_type_ms": {
+                    "root_index": 0.0,
+                    "phase_index": 0.0,
+                    "milestone_index": 0.0,
+                    "epic_index": 0.0,
+                    "todo_file": 0.0,
+                    "bug_index": 0.0,
+                    "idea_index": 0.0,
+                    "bug_file": 0.0,
+                    "idea_file": 0.0,
+                },
+            },
+            "counts": {
+                "phases": 0,
+                "milestones": 0,
+                "epics": 0,
+                "tasks": 0,
+            },
+            "missing_task_files": 0,
+            "phase_timings": [],
+            "milestone_timings": [],
+            "epic_timings": [],
+            "task_timings": [],
+        }
+
+    def _record_file(
+        self,
+        benchmark: Dict[str, Any],
+        file_type: str,
+        path: Path,
+        elapsed_ms: float,
+    ) -> None:
+        benchmark["files"]["total"] += 1
+        benchmark["files"]["by_type"][file_type] = (
+            benchmark["files"]["by_type"].get(file_type, 0) + 1
+        )
+        benchmark["files"]["by_type_ms"][file_type] = (
+            benchmark["files"]["by_type_ms"].get(file_type, 0.0) + elapsed_ms
+        )
+
+    def _record_timing(self, collection: list, timing: Dict[str, Any], elapsed_ms: float) -> None:
+        timing["ms"] = elapsed_ms
+        collection.append(timing)
+
     def load(self) -> TaskTree:
+        """Load complete task tree."""
+        return self._load_tree()
+
+    def load_with_benchmark(self) -> tuple[TaskTree, Dict[str, Any]]:
+        """Load complete task tree and return parse timing metrics."""
+        benchmark = self._new_benchmark()
+        start = perf_counter()
+        tree = self._load_tree(benchmark=benchmark)
+        benchmark["overall_ms"] = (perf_counter() - start) * 1000
+        return tree, benchmark
+
+    def _load_tree(self, benchmark: Optional[Dict[str, Any]] = None) -> TaskTree:
         """Load complete task tree."""
         root_index_path = self.tasks_dir / "index.yaml"
         try:
             # Load root index
-            root_index = self._load_yaml(root_index_path)
+            root_index = self._load_yaml(
+                root_index_path, benchmark=benchmark, file_type="root_index"
+            )
 
             # Create task tree
             tree = TaskTree(
@@ -51,7 +126,7 @@ class TaskLoader:
             # Load phases
             for phase_data in root_index.get("phases", []):
                 try:
-                    phase = self._load_phase(phase_data)
+                    phase = self._load_phase(phase_data, benchmark=benchmark)
                     tree.phases.append(phase)
                 except Exception as e:
                     phase_id = phase_data.get("id", "UNKNOWN")
@@ -61,8 +136,8 @@ class TaskLoader:
                     ) from e
 
             # Load bugs
-            tree.bugs = self._load_bugs()
-            tree.ideas = self._load_ideas()
+            tree.bugs = self._load_bugs(benchmark=benchmark)
+            tree.ideas = self._load_ideas(benchmark=benchmark)
 
             return tree
         except KeyError as e:
@@ -94,15 +169,20 @@ class TaskLoader:
 
         return Status(str(value))
 
-    def _load_phase(self, phase_data: Dict[str, Any]) -> Phase:
+    def _load_phase(
+        self, phase_data: Dict[str, Any], benchmark: Optional[Dict[str, Any]] = None
+    ) -> Phase:
         """Load a phase and its milestones."""
+        start = perf_counter()
         try:
             phase_path = self.tasks_dir / phase_data["path"]
+            if benchmark is not None:
+                benchmark["counts"]["phases"] += 1
 
             # Load phase index (skip if not exists)
             if not (phase_path / "index.yaml").exists():
                 # Phase not yet populated, return minimal phase
-                return Phase(
+                phase = Phase(
                     id=phase_data["id"],
                     name=phase_data["name"],
                     path=phase_data["path"],
@@ -114,9 +194,20 @@ class TaskLoader:
                     description=phase_data.get("description"),
                     locked=bool(phase_data.get("locked", False)),
                 )
+                if benchmark is not None:
+                    self._record_timing(
+                        benchmark["phase_timings"],
+                        {"id": phase.id, "path": phase.path},
+                        (perf_counter() - start) * 1000,
+                    )
+                return phase
 
             phase_index_path = phase_path / "index.yaml"
-            phase_index = self._load_yaml(phase_index_path)
+            phase_index = self._load_yaml(
+                phase_index_path,
+                benchmark=benchmark,
+                file_type="phase_index",
+            )
 
             phase = Phase(
                 id=phase_data["id"],
@@ -135,7 +226,7 @@ class TaskLoader:
             for milestone_data in phase_index.get("milestones", []):
                 try:
                     milestone = self._load_milestone(
-                        phase_path, milestone_data, phase.id
+                        phase_path, milestone_data, phase.id, benchmark=benchmark
                     )
                     phase.milestones.append(milestone)
                 except Exception as e:
@@ -146,6 +237,13 @@ class TaskLoader:
                         f"(path: {phase.path}/{milestone_path}): {str(e)}"
                     ) from e
 
+            if benchmark is not None:
+                self._record_timing(
+                    benchmark["phase_timings"],
+                    {"id": phase.id, "path": phase.path},
+                    (perf_counter() - start) * 1000,
+                )
+
             return phase
         except KeyError as e:
             raise RuntimeError(
@@ -153,9 +251,11 @@ class TaskLoader:
             ) from e
 
     def _load_milestone(
-        self, phase_path: Path, milestone_data: Dict[str, Any], phase_id: str
+        self, phase_path: Path, milestone_data: Dict[str, Any], phase_id: str,
+        benchmark: Optional[Dict[str, Any]] = None,
     ) -> Milestone:
         """Load a milestone and its epics."""
+        start = perf_counter()
         try:
             milestone_path = phase_path / milestone_data["path"]
 
@@ -163,10 +263,17 @@ class TaskLoader:
             milestone_short_id = milestone_data["id"]
             ms_path = TaskPath.for_milestone(phase_id, milestone_short_id)
 
+            if benchmark is not None:
+                benchmark["counts"]["milestones"] += 1
+
             # Load milestone index (may not exist if not yet populated)
             if (milestone_path / "index.yaml").exists():
                 milestone_index_path = milestone_path / "index.yaml"
-                milestone_index = self._load_yaml(milestone_index_path)
+                milestone_index = self._load_yaml(
+                    milestone_index_path,
+                    benchmark=benchmark,
+                    file_type="milestone_index",
+                )
             else:
                 milestone_index = {"epics": []}
 
@@ -188,7 +295,7 @@ class TaskLoader:
             # Load epics
             for epic_data in milestone_index.get("epics", []):
                 try:
-                    epic = self._load_epic(milestone_path, epic_data, ms_path)
+                    epic = self._load_epic(milestone_path, epic_data, ms_path, benchmark=benchmark)
                     milestone.epics.append(epic)
                 except Exception as e:
                     epic_id = (
@@ -210,6 +317,13 @@ class TaskLoader:
                         f"Epic data type: {type(epic_data)}, value: {epic_data}"
                     ) from e
 
+            if benchmark is not None:
+                self._record_timing(
+                    benchmark["milestone_timings"],
+                    {"id": ms_path.full_id, "path": milestone_data.get("path", "")},
+                    (perf_counter() - start) * 1000,
+                )
+
             return milestone
         except KeyError as e:
             raise RuntimeError(
@@ -221,16 +335,25 @@ class TaskLoader:
         milestone_path: Path,
         epic_data: Dict[str, Any],
         ms_path: TaskPath,
+        benchmark: Optional[Dict[str, Any]] = None,
     ) -> Epic:
         """Load an epic and its tasks."""
         epic_file_path = milestone_path / epic_data["path"]
+        start = perf_counter()
+
+        if benchmark is not None:
+            benchmark["counts"]["epics"] += 1
 
         # Build fully qualified epic ID using TaskPath
         epic_path = ms_path.with_epic(epic_data["id"])
 
         # Load epic index (may not exist if not yet populated)
         if (epic_file_path / "index.yaml").exists():
-            epic_index = self._load_yaml(epic_file_path / "index.yaml")
+            epic_index = self._load_yaml(
+                epic_file_path / "index.yaml",
+                benchmark=benchmark,
+                file_type="epic_index",
+            )
         else:
             epic_index = {"tasks": []}
 
@@ -250,8 +373,17 @@ class TaskLoader:
 
         # Load tasks
         for task_data in epic_index.get("tasks", []):
-            task = self._load_task(epic_file_path, task_data, epic_path)
+            task = self._load_task(
+                epic_file_path, task_data, epic_path, benchmark=benchmark
+            )
             epic.tasks.append(task)
+
+        if benchmark is not None:
+            self._record_timing(
+                benchmark["epic_timings"],
+                {"id": epic_path.full_id, "path": epic_data.get("path", "")},
+                (perf_counter() - start) * 1000,
+            )
 
         return epic
 
@@ -260,6 +392,7 @@ class TaskLoader:
         epic_file_path: Path,
         task_data: Dict[str, Any] | str,
         epic_path: TaskPath,
+        benchmark: Optional[Dict[str, Any]] = None,
     ) -> Task:
         """Load a task from its .todo file."""
         # Handle both formats: dict with metadata or simple string filename
@@ -284,12 +417,20 @@ class TaskLoader:
             )
 
         task_file = epic_file_path / filename
+        parse_ms = 0.0
+        parse_start = perf_counter() if benchmark is not None else None
 
         # Parse .todo file (YAML frontmatter + Markdown)
         if task_file.exists():
-            frontmatter, _ = self._parse_todo_file(task_file)
+            frontmatter, _ = self._parse_todo_file(
+                task_file, benchmark=benchmark, file_type="todo_file"
+            )
+            if parse_start is not None:
+                parse_ms = (perf_counter() - parse_start) * 1000
         else:
             # Task file doesn't exist yet, use data from index
+            if benchmark is not None:
+                benchmark["missing_task_files"] += 1
             frontmatter = {}
 
         # Merge frontmatter with task_data (frontmatter takes precedence)
@@ -329,6 +470,14 @@ class TaskLoader:
         if duration_minutes is not None:
             duration_minutes = float(duration_minutes)
 
+        if benchmark is not None:
+            benchmark["counts"]["tasks"] += 1
+            self._record_timing(
+                benchmark["task_timings"],
+                {"id": task_id, "path": task_file.as_posix(), "epic_id": epic_path.full_id},
+                parse_ms,
+            )
+
         task = Task(
             id=task_id,
             title=title,
@@ -351,8 +500,14 @@ class TaskLoader:
 
         return task
 
-    def _load_yaml(self, filepath: Path) -> Dict[str, Any]:
+    def _load_yaml(
+        self,
+        filepath: Path,
+        benchmark: Optional[Dict[str, Any]] = None,
+        file_type: str = "yaml",
+    ) -> Dict[str, Any]:
         """Load YAML file."""
+        start = perf_counter()
         try:
             with open(filepath, "r") as f:
                 data = yaml.safe_load(f)
@@ -370,9 +525,18 @@ class TaskLoader:
             raise FileNotFoundError(f"YAML file not found: {filepath}")
         except Exception as e:
             raise RuntimeError(f"Error reading {filepath}: {str(e)}") from e
+        finally:
+            if benchmark is not None:
+                self._record_file(benchmark, file_type, filepath, (perf_counter() - start) * 1000)
 
-    def _parse_todo_file(self, filepath: Path) -> tuple[Dict[str, Any], str]:
+    def _parse_todo_file(
+        self,
+        filepath: Path,
+        benchmark: Optional[Dict[str, Any]] = None,
+        file_type: str = "todo_file",
+    ) -> tuple[Dict[str, Any], str]:
         """Parse .todo file with YAML frontmatter."""
+        start = perf_counter()
         with open(filepath, "r") as f:
             content = f.read()
 
@@ -381,10 +545,14 @@ class TaskLoader:
         if len(parts) >= 3:
             frontmatter_str = parts[1]
             body = parts[2]
-            frontmatter = yaml.safe_load(frontmatter_str)
-            return frontmatter, body
+            frontmatter = yaml.safe_load(frontmatter_str) or {}
+            result = (frontmatter, body)
         else:
-            return {}, content
+            result = ({}, content)
+
+        if benchmark is not None:
+            self._record_file(benchmark, file_type, filepath, (perf_counter() - start) * 1000)
+        return result
 
     def _parse_datetime(self, dt_str: Optional[str]) -> Optional[datetime]:
         """Parse datetime string."""
@@ -499,23 +667,29 @@ class TaskLoader:
                             sort_keys=False,
                         )
 
-    def _load_bugs(self):
+    def _load_bugs(self, benchmark: Optional[Dict[str, Any]] = None):
         """Load bugs from .tasks/bugs/ directory."""
         bugs_dir = self.tasks_dir / "bugs"
         index_path = bugs_dir / "index.yaml"
         if not index_path.exists():
             return []
 
-        idx = self._load_yaml(index_path)
+        idx = self._load_yaml(index_path, benchmark=benchmark, file_type="bug_index")
         bugs = []
         for entry in idx.get("bugs", []):
             filename = entry.get("file", "")
             if not filename:
                 continue
             file_path = bugs_dir / filename
+            if benchmark is not None:
+                benchmark["counts"]["tasks"] += 1
             if not file_path.exists():
+                if benchmark is not None:
+                    benchmark["missing_task_files"] += 1
                 continue
-            frontmatter, _ = self._parse_todo_file(file_path)
+            frontmatter, _ = self._parse_todo_file(
+                file_path, benchmark=benchmark, file_type="bug_file"
+            )
             bugs.append(
                 Task(
                     id=str(frontmatter.get("id", "")),
@@ -545,23 +719,29 @@ class TaskLoader:
             )
         return bugs
 
-    def _load_ideas(self):
+    def _load_ideas(self, benchmark: Optional[Dict[str, Any]] = None):
         """Load ideas from .tasks/ideas/ directory."""
         ideas_dir = self.tasks_dir / "ideas"
         index_path = ideas_dir / "index.yaml"
         if not index_path.exists():
             return []
 
-        idx = self._load_yaml(index_path)
+        idx = self._load_yaml(index_path, benchmark=benchmark, file_type="idea_index")
         ideas = []
         for entry in idx.get("ideas", []):
             filename = entry.get("file", "")
             if not filename:
                 continue
             file_path = ideas_dir / filename
+            if benchmark is not None:
+                benchmark["counts"]["tasks"] += 1
             if not file_path.exists():
+                if benchmark is not None:
+                    benchmark["missing_task_files"] += 1
                 continue
-            frontmatter, _ = self._parse_todo_file(file_path)
+            frontmatter, _ = self._parse_todo_file(
+                file_path, benchmark=benchmark, file_type="idea_file"
+            )
             ideas.append(
                 Task(
                     id=str(frontmatter.get("id", "")),

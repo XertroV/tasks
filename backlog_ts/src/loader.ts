@@ -1,12 +1,43 @@
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
+import { performance } from "node:perf_hooks";
 import { parse, stringify } from "yaml";
 import { Complexity, Priority, Status, TaskPath, type Epic, type Milestone, type Phase, type Task, type TaskTree } from "./models";
 import { getDataDir } from "./data_dir";
 
 interface AnyRec {
   [k: string]: unknown;
+}
+
+interface TimingRecord {
+  id: string;
+  path: string;
+  ms: number;
+}
+
+interface TaskTimingRecord extends TimingRecord {
+  epic_id: string;
+}
+
+interface BenchmarkReport {
+  overall_ms: number;
+  files: {
+    total: number;
+    by_type: Record<string, number>;
+    by_type_ms: Record<string, number>;
+  };
+  counts: {
+    phases: number;
+    milestones: number;
+    epics: number;
+    tasks: number;
+  };
+  missing_task_files: number;
+  phase_timings: Array<{ id: string; path: string; ms: number }>;
+  milestone_timings: Array<{ id: string; path: string; ms: number }>;
+  epic_timings: Array<{ id: string; path: string; ms: number }>;
+  task_timings: Array<{ id: string; epic_id: string; path: string; ms: number }>;
 }
 
 function estimateHoursFrom(data: AnyRec): number {
@@ -51,7 +82,23 @@ export class TaskLoader {
   }
 
   async load(): Promise<TaskTree> {
-    const root = this.mustYaml(join(this.tasksDir, "index.yaml"));
+    return this.loadTree();
+  }
+
+  async loadWithBenchmark(): Promise<{ tree: TaskTree; benchmark: BenchmarkReport }> {
+    const benchmark = this.newBenchmark();
+    const start = performance.now();
+    const tree = await this.loadTree(benchmark);
+    benchmark.overall_ms = performance.now() - start;
+    return { tree, benchmark };
+  }
+
+  private async loadTree(benchmark?: BenchmarkReport): Promise<TaskTree> {
+    const root = this.mustYaml(
+      join(this.tasksDir, "index.yaml"),
+      benchmark,
+      "root_index",
+    );
     const tree: TaskTree = {
       project: String(root.project ?? ""),
       description: String(root.description ?? ""),
@@ -64,14 +111,83 @@ export class TaskLoader {
     };
 
     for (const p of ((root.phases as AnyRec[]) ?? [])) {
-      tree.phases.push(await this.loadPhase(p));
+      tree.phases.push(await this.loadPhase(p, benchmark));
     }
-    tree.bugs = await this.loadBugs();
-    tree.ideas = await this.loadIdeas();
+    tree.bugs = await this.loadBugs(benchmark);
+    tree.ideas = await this.loadIdeas(benchmark);
     return tree;
   }
 
-  private async loadPhase(phaseData: AnyRec): Promise<Phase> {
+  private newBenchmark(): BenchmarkReport {
+    return {
+      overall_ms: 0,
+      files: {
+        total: 0,
+        by_type: {
+          root_index: 0,
+          phase_index: 0,
+          milestone_index: 0,
+          epic_index: 0,
+          todo_file: 0,
+          bug_index: 0,
+          idea_index: 0,
+          bug_file: 0,
+          idea_file: 0,
+        },
+        by_type_ms: {
+          root_index: 0,
+          phase_index: 0,
+          milestone_index: 0,
+          epic_index: 0,
+          todo_file: 0,
+          bug_index: 0,
+          idea_index: 0,
+          bug_file: 0,
+          idea_file: 0,
+        },
+      },
+      counts: {
+        phases: 0,
+        milestones: 0,
+        epics: 0,
+        tasks: 0,
+      },
+      missing_task_files: 0,
+      phase_timings: [],
+      milestone_timings: [],
+      epic_timings: [],
+      task_timings: [],
+    };
+  }
+
+  private recordFile(
+    benchmark: BenchmarkReport,
+    fileType: string,
+    filePath: string,
+    elapsedMs: number,
+  ): void {
+    benchmark.files.total += 1;
+    benchmark.files.by_type[fileType] = (benchmark.files.by_type[fileType] ?? 0) + 1;
+    benchmark.files.by_type_ms[fileType] = (benchmark.files.by_type_ms[fileType] ?? 0) + elapsedMs;
+  }
+
+  private recordTiming(
+    bucket: Array<TimingRecord | TaskTimingRecord>,
+    item: TimingRecord | Omit<TaskTimingRecord, "ms">,
+    elapsedMs: number,
+  ): void {
+    bucket.push({
+      ...item,
+      ms: elapsedMs,
+    } as TimingRecord | TaskTimingRecord);
+  }
+
+  private async loadPhase(phaseData: AnyRec, benchmark?: BenchmarkReport): Promise<Phase> {
+    const start = performance.now();
+    if (benchmark) {
+      benchmark.counts.phases += 1;
+    }
+
     const phase: Phase = {
       id: String(phaseData.id),
       name: String(phaseData.name ?? ""),
@@ -86,15 +202,29 @@ export class TaskLoader {
       description: String(phaseData.description ?? ""),
     };
     const phaseIndexPath = join(this.tasksDir, phase.path, "index.yaml");
-    if (!existsSync(phaseIndexPath)) return phase;
-    const idx = this.mustYaml(phaseIndexPath);
+    if (!existsSync(phaseIndexPath)) {
+      if (benchmark) {
+        this.recordTiming(benchmark.phase_timings, { id: phase.id, path: phase.path }, performance.now() - start);
+      }
+      return phase;
+    }
+    const idx = this.mustYaml(phaseIndexPath, benchmark, "phase_index");
     for (const m of ((idx.milestones as AnyRec[]) ?? [])) {
-      phase.milestones.push(await this.loadMilestone(join(this.tasksDir, phase.path), phase.id, m));
+      phase.milestones.push(await this.loadMilestone(join(this.tasksDir, phase.path), phase.id, m, benchmark));
+    }
+    if (benchmark) {
+      this.recordTiming(benchmark.phase_timings, { id: phase.id, path: phase.path }, performance.now() - start);
     }
     return phase;
   }
 
-  private async loadMilestone(phasePath: string, phaseId: string, milestoneData: AnyRec): Promise<Milestone> {
+  private async loadMilestone(
+    phasePath: string,
+    phaseId: string,
+    milestoneData: AnyRec,
+    benchmark?: BenchmarkReport,
+  ): Promise<Milestone> {
+    const start = performance.now();
     const msPath = TaskPath.forMilestone(phaseId, String(milestoneData.id));
     const m: Milestone = {
       id: msPath.fullId,
@@ -110,15 +240,41 @@ export class TaskLoader {
       phaseId,
     };
     const idxPath = join(phasePath, m.path, "index.yaml");
-    if (!existsSync(idxPath)) return m;
-    const idx = this.mustYaml(idxPath);
+    if (!existsSync(idxPath)) {
+      if (benchmark) {
+        benchmark.counts.milestones += 1;
+        this.recordTiming(
+          benchmark.milestone_timings,
+          { id: msPath.fullId, path: m.path },
+          performance.now() - start,
+        );
+      }
+      return m;
+    }
+    const idx = this.mustYaml(idxPath, benchmark, "milestone_index");
+    if (benchmark) {
+      benchmark.counts.milestones += 1;
+    }
     for (const e of ((idx.epics as AnyRec[]) ?? [])) {
-      m.epics.push(await this.loadEpic(join(phasePath, m.path), msPath, e));
+      m.epics.push(await this.loadEpic(join(phasePath, m.path), msPath, e, benchmark));
+    }
+    if (benchmark) {
+      this.recordTiming(
+        benchmark.milestone_timings,
+        { id: msPath.fullId, path: m.path },
+        performance.now() - start,
+      );
     }
     return m;
   }
 
-  private async loadEpic(milestonePath: string, msPath: TaskPath, epicData: AnyRec): Promise<Epic> {
+  private async loadEpic(
+    milestonePath: string,
+    msPath: TaskPath,
+    epicData: AnyRec,
+    benchmark?: BenchmarkReport,
+  ): Promise<Epic> {
+    const start = performance.now();
     const epicPath = msPath.withEpic(String(epicData.id));
     const e: Epic = {
       id: epicPath.fullId,
@@ -135,15 +291,36 @@ export class TaskLoader {
       phaseId: msPath.phase,
     };
     const idxPath = join(milestonePath, e.path, "index.yaml");
-    if (!existsSync(idxPath)) return e;
-    const idx = this.mustYaml(idxPath);
+    if (!existsSync(idxPath)) {
+      if (benchmark) {
+        benchmark.counts.epics += 1;
+        this.recordTiming(benchmark.epic_timings, { id: epicPath.fullId, path: e.path }, performance.now() - start);
+      }
+      return e;
+    }
+    const idx = this.mustYaml(idxPath, benchmark, "epic_index");
+    if (benchmark) {
+      benchmark.counts.epics += 1;
+    }
     for (const taskData of ((idx.tasks as (AnyRec | string)[]) ?? [])) {
-      e.tasks.push(await this.loadTask(join(milestonePath, e.path), epicPath, taskData));
+      e.tasks.push(await this.loadTask(join(milestonePath, e.path), epicPath, taskData, benchmark));
+    }
+    if (benchmark) {
+      this.recordTiming(
+        benchmark.epic_timings,
+        { id: epicPath.fullId, path: e.path },
+        performance.now() - start,
+      );
     }
     return e;
   }
 
-  private async loadTask(epicPath: string, epPath: TaskPath, taskData: AnyRec | string): Promise<Task> {
+  private async loadTask(
+    epicPath: string,
+    epPath: TaskPath,
+    taskData: AnyRec | string,
+    benchmark?: BenchmarkReport,
+  ): Promise<Task> {
     let normalized: AnyRec;
     if (typeof taskData === "string") {
       const short = taskData.split("-")[0]?.replace(".todo", "") ?? "T001";
@@ -153,13 +330,29 @@ export class TaskLoader {
     }
     const filename = String(normalized.file ?? normalized.path ?? "");
     const taskFile = join(epicPath, filename);
-    const frontmatter: AnyRec = existsSync(taskFile)
-      ? parseTodo(await readFile(taskFile, "utf8")).frontmatter
-      : {};
+    let frontmatter: AnyRec = {};
+    let parseMs = 0;
+    if (benchmark) {
+      benchmark.counts.tasks += 1;
+    }
+    if (existsSync(taskFile)) {
+      const parsed = await this.loadTodoFile(taskFile, benchmark, "todo_file");
+      frontmatter = parsed.frontmatter;
+      parseMs = parsed.elapsedMs;
+    } else if (benchmark) {
+      benchmark.missing_task_files += 1;
+    }
     let id = String(frontmatter.id ?? normalized.id ?? "");
     if (id && !id.startsWith(`${epPath.phase}.`)) {
       const short = id.split(".").at(-1) ?? "T001";
       id = epPath.withTask(short).fullId;
+    }
+    if (benchmark) {
+      this.recordTiming(
+        benchmark.task_timings,
+        { id, path: taskFile, epic_id: epPath.fullId },
+        parseMs,
+      );
     }
     return {
       id,
@@ -182,6 +375,26 @@ export class TaskLoader {
     };
   }
 
+  private async loadTodoFile(
+    todoPath: string,
+    benchmark?: BenchmarkReport,
+    fileType = "todo_file",
+  ): Promise<{ frontmatter: AnyRec; elapsedMs: number }> {
+    const start = benchmark ? performance.now() : 0;
+    let frontmatter: AnyRec = {};
+    let elapsedMs = 0;
+    try {
+      const parsed = parseTodo(await readFile(todoPath, "utf8"));
+      frontmatter = parsed.frontmatter as AnyRec;
+      elapsedMs = benchmark ? performance.now() - start : 0;
+      return { frontmatter, elapsedMs };
+    } finally {
+      if (benchmark) {
+        this.recordFile(benchmark, fileType, todoPath, performance.now() - start);
+      }
+    }
+  }
+
   async saveTask(task: Task): Promise<void> {
     const filePath = join(this.tasksDir, task.file);
     const existing = await readFile(filePath, "utf8");
@@ -201,33 +414,41 @@ export class TaskLoader {
     await writeFile(filePath, `---\n${stringify(frontmatter)}---\n${body}`);
   }
 
-  private async loadBugs(): Promise<import("./models").Task[]> {
+  private async loadBugs(benchmark?: BenchmarkReport): Promise<import("./models").Task[]> {
     const bugsDir = join(this.tasksDir, "bugs");
     const indexPath = join(bugsDir, "index.yaml");
     if (!existsSync(indexPath)) return [];
-    const idx = this.mustYaml(indexPath);
+    const idx = this.mustYaml(indexPath, benchmark, "bug_index");
     const bugs: import("./models").Task[] = [];
     for (const entry of ((idx.bugs as AnyRec[]) ?? [])) {
       const filename = String(entry.file ?? "");
       if (!filename) continue;
       const filePath = join(bugsDir, filename);
-      if (!existsSync(filePath)) continue;
-      const fm = parseTodo(await readFile(filePath, "utf8")).frontmatter;
+      if (benchmark) {
+        benchmark.counts.tasks += 1;
+      }
+      if (!existsSync(filePath)) {
+        if (benchmark) {
+          benchmark.missing_task_files += 1;
+        }
+        continue;
+      }
+      const { frontmatter } = await this.loadTodoFile(filePath, benchmark, "bug_file");
       bugs.push({
-        id: String(fm.id ?? ""),
-        title: String(fm.title ?? ""),
+        id: String(frontmatter.id ?? ""),
+        title: String(frontmatter.title ?? ""),
         file: join("bugs", filename),
-        status: coerceStatus(fm.status, Status.PENDING),
-        estimateHours: estimateHoursFrom(fm),
-        complexity: (fm.complexity as Complexity) ?? Complexity.MEDIUM,
-        priority: (fm.priority as Priority) ?? Priority.MEDIUM,
-        dependsOn: ((fm.depends_on as string[]) ?? []).slice(),
-        claimedBy: fm.claimed_by as string | undefined,
-        claimedAt: fm.claimed_at ? new Date(String(fm.claimed_at)) : undefined,
-        startedAt: fm.started_at ? new Date(String(fm.started_at)) : undefined,
-        completedAt: fm.completed_at ? new Date(String(fm.completed_at)) : undefined,
-        durationMinutes: fm.duration_minutes ? Number(fm.duration_minutes) : undefined,
-        tags: ((fm.tags as string[]) ?? []).slice(),
+        status: coerceStatus(frontmatter.status, Status.PENDING),
+        estimateHours: estimateHoursFrom(frontmatter),
+        complexity: (frontmatter.complexity as Complexity) ?? Complexity.MEDIUM,
+        priority: (frontmatter.priority as Priority) ?? Priority.MEDIUM,
+        dependsOn: ((frontmatter.depends_on as string[]) ?? []).slice(),
+        claimedBy: frontmatter.claimed_by as string | undefined,
+        claimedAt: frontmatter.claimed_at ? new Date(String(frontmatter.claimed_at)) : undefined,
+        startedAt: frontmatter.started_at ? new Date(String(frontmatter.started_at)) : undefined,
+        completedAt: frontmatter.completed_at ? new Date(String(frontmatter.completed_at)) : undefined,
+        durationMinutes: frontmatter.duration_minutes ? Number(frontmatter.duration_minutes) : undefined,
+        tags: ((frontmatter.tags as string[]) ?? []).slice(),
         epicId: undefined,
         milestoneId: undefined,
         phaseId: undefined,
@@ -236,33 +457,41 @@ export class TaskLoader {
     return bugs;
   }
 
-  private async loadIdeas(): Promise<import("./models").Task[]> {
+  private async loadIdeas(benchmark?: BenchmarkReport): Promise<import("./models").Task[]> {
     const ideasDir = join(this.tasksDir, "ideas");
     const indexPath = join(ideasDir, "index.yaml");
     if (!existsSync(indexPath)) return [];
-    const idx = this.mustYaml(indexPath);
+    const idx = this.mustYaml(indexPath, benchmark, "idea_index");
     const ideas: import("./models").Task[] = [];
     for (const entry of ((idx.ideas as AnyRec[]) ?? [])) {
       const filename = String(entry.file ?? "");
       if (!filename) continue;
       const filePath = join(ideasDir, filename);
-      if (!existsSync(filePath)) continue;
-      const fm = parseTodo(await readFile(filePath, "utf8")).frontmatter;
+      if (benchmark) {
+        benchmark.counts.tasks += 1;
+      }
+      if (!existsSync(filePath)) {
+        if (benchmark) {
+          benchmark.missing_task_files += 1;
+        }
+        continue;
+      }
+      const { frontmatter } = await this.loadTodoFile(filePath, benchmark, "idea_file");
       ideas.push({
-        id: String(fm.id ?? ""),
-        title: String(fm.title ?? ""),
+        id: String(frontmatter.id ?? ""),
+        title: String(frontmatter.title ?? ""),
         file: join("ideas", filename),
-        status: coerceStatus(fm.status, Status.PENDING),
-        estimateHours: estimateHoursFrom(fm),
-        complexity: (fm.complexity as Complexity) ?? Complexity.MEDIUM,
-        priority: (fm.priority as Priority) ?? Priority.MEDIUM,
-        dependsOn: ((fm.depends_on as string[]) ?? []).slice(),
-        claimedBy: fm.claimed_by as string | undefined,
-        claimedAt: fm.claimed_at ? new Date(String(fm.claimed_at)) : undefined,
-        startedAt: fm.started_at ? new Date(String(fm.started_at)) : undefined,
-        completedAt: fm.completed_at ? new Date(String(fm.completed_at)) : undefined,
-        durationMinutes: fm.duration_minutes ? Number(fm.duration_minutes) : undefined,
-        tags: ((fm.tags as string[]) ?? []).slice(),
+        status: coerceStatus(frontmatter.status, Status.PENDING),
+        estimateHours: estimateHoursFrom(frontmatter),
+        complexity: (frontmatter.complexity as Complexity) ?? Complexity.MEDIUM,
+        priority: (frontmatter.priority as Priority) ?? Priority.MEDIUM,
+        dependsOn: ((frontmatter.depends_on as string[]) ?? []).slice(),
+        claimedBy: frontmatter.claimed_by as string | undefined,
+        claimedAt: frontmatter.claimed_at ? new Date(String(frontmatter.claimed_at)) : undefined,
+        startedAt: frontmatter.started_at ? new Date(String(frontmatter.started_at)) : undefined,
+        completedAt: frontmatter.completed_at ? new Date(String(frontmatter.completed_at)) : undefined,
+        durationMinutes: frontmatter.duration_minutes ? Number(frontmatter.duration_minutes) : undefined,
+        tags: ((frontmatter.tags as string[]) ?? []).slice(),
         epicId: undefined,
         milestoneId: undefined,
         phaseId: undefined,
@@ -431,13 +660,20 @@ ${data.title}
     await writeFile(path, stringify(value));
   }
 
-  private mustYaml(path: string): AnyRec {
+  private mustYaml(path: string, benchmark?: BenchmarkReport, fileType?: string): AnyRec {
     const text = readFileSync(path, "utf8");
-    const parsed = parse(text);
-    if (!parsed || typeof parsed !== "object") {
-      throw new Error(`YAML file invalid: ${path}`);
+    const start = performance.now();
+    try {
+      const parsed = parse(text);
+      if (!parsed || typeof parsed !== "object") {
+        throw new Error(`YAML file invalid: ${path}`);
+      }
+      return parsed as AnyRec;
+    } finally {
+      if (benchmark && fileType) {
+        this.recordFile(benchmark, fileType, path, performance.now() - start);
+      }
     }
-    return parsed as AnyRec;
   }
 
   private leafId(fullId: string): string {

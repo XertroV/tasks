@@ -304,6 +304,105 @@ def _activity_kind(event_name: str) -> str:
     return "updated"
 
 
+def _format_ms(ms: float) -> str:
+    """Format millisecond durations for CLI output."""
+    return f"{ms:.2f}ms"
+
+
+def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
+    """Render benchmark statistics for the user."""
+    files = benchmark.get("files", {})
+    counts = benchmark.get("counts", {})
+    total_files = files.get("total", 0)
+    by_type = files.get("by_type", {})
+    by_type_ms = files.get("by_type_ms", {})
+    task_total = counts.get("tasks", 0)
+    missing_task_files = benchmark.get("missing_task_files", 0)
+    parsed_task_files = task_total - missing_task_files
+
+    slowest_phases = sorted(
+        benchmark.get("phase_timings", []), key=lambda t: t.get("ms", 0.0), reverse=True
+    )[:top_n]
+    slowest_milestones = sorted(
+        benchmark.get("milestone_timings", []),
+        key=lambda t: t.get("ms", 0.0),
+        reverse=True,
+    )[:top_n]
+    slowest_epics = sorted(
+        benchmark.get("epic_timings", []), key=lambda t: t.get("ms", 0.0), reverse=True
+    )[:top_n]
+
+    if output_json:
+        payload = {
+            **benchmark,
+            "summary": {
+                "overall_ms": benchmark.get("overall_ms", 0.0),
+                "files_parsed": total_files,
+                "task_files_total": task_total,
+                "task_files_found": parsed_task_files,
+                "task_files_missing": missing_task_files,
+                "node_counts": {
+                    "phases": counts.get("phases", 0),
+                    "milestones": counts.get("milestones", 0),
+                    "epics": counts.get("epics", 0),
+                },
+            },
+            "slowest": {
+                "phases": slowest_phases,
+                "milestones": slowest_milestones,
+                "epics": slowest_epics,
+            },
+        }
+        console.print(json.dumps(payload, indent=2))
+        return
+
+    console.print("\n[bold cyan]Task Tree Benchmark[/]\n")
+    console.print(
+        f"Overall parse time: [yellow]{_format_ms(benchmark.get('overall_ms', 0.0))}[/]"
+    )
+    console.print(f"Total files parsed: [yellow]{total_files}[/]")
+    console.print(
+        f"Task files (leaves): [yellow]{task_total}[/] "
+        f"([green]{parsed_task_files}[/] found, [red]{missing_task_files}[/] missing)"
+    )
+    console.print(f"Phases parsed: [yellow]{counts.get('phases', 0)}[/]")
+    console.print(f"Milestones parsed: [yellow]{counts.get('milestones', 0)}[/]")
+    console.print(f"Epics parsed: [yellow]{counts.get('epics', 0)}[/]")
+    console.print()
+
+    console.print("[bold]Files by type[/]")
+    for file_type in sorted(by_type):
+        count = by_type[file_type]
+        ms_total = by_type_ms.get(file_type, 0.0)
+        if count:
+            console.print(
+                f"  {file_type}: [yellow]{count}[/] files ({_format_ms(ms_total)})"
+            )
+
+    if slowest_phases:
+        console.print("\n[bold]Slowest phases[/]")
+        for item in slowest_phases:
+            console.print(
+                f"  {item['id']} ({item['path']}): {_format_ms(item['ms'])}"
+            )
+
+    if slowest_milestones:
+        console.print("\n[bold]Slowest milestones[/]")
+        for item in slowest_milestones:
+            console.print(
+                f"  {item['id']} ({item['path']}): {_format_ms(item['ms'])}"
+            )
+
+    if slowest_epics:
+        console.print("\n[bold]Slowest epics[/]")
+        for item in slowest_epics:
+            console.print(
+                f"  {item['id']} ({item['path']}): {_format_ms(item['ms'])}"
+            )
+
+    console.print()
+
+
 @click.group(invoke_without_command=True)
 @click.version_option(version="0.1.0")
 @click.pass_context
@@ -328,6 +427,25 @@ def cli(ctx):
                 print(line)
             print()
         click.echo(ctx.get_help())
+
+
+@cli.command()
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+@click.option(
+    "--top",
+    default=10,
+    type=click.IntRange(min=1),
+    help="Number of slowest items to show",
+)
+def benchmark(output_json, top):
+    """Show benchmark timings for loading the full task tree."""
+    try:
+        loader = TaskLoader()
+        _, benchmark = loader.load_with_benchmark()
+        _print_benchmark(benchmark, top, output_json)
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
 
 
 # ============================================================================

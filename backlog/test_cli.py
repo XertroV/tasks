@@ -1795,3 +1795,24 @@ def test_move_rejects_invalid_source_destination_pair(runner, tmp_tasks_dir):
     result = runner.invoke(cli, ["move", "P1.M1.E1.T001", "--to", "P1"])
     assert result.exit_code != 0
     assert "Invalid move" in result.output
+
+
+def test_benchmark_command_reports_summary(runner, tmp_tasks_dir):
+    """benchmark should show counts for loaded task tree parsing."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Benchmark Task")
+
+    json_result = runner.invoke(cli, ["benchmark", "--json"])
+    assert json_result.exit_code == 0
+    payload = json.loads(json_result.output)
+    summary = payload["summary"]
+    assert summary["node_counts"]["phases"] == 1
+    assert summary["node_counts"]["milestones"] == 1
+    assert summary["node_counts"]["epics"] == 1
+    assert summary["task_files_total"] == 1
+    assert summary["task_files_found"] == 1
+    assert summary["task_files_missing"] == 0
+
+    text_result = runner.invoke(cli, ["benchmark"])
+    assert text_result.exit_code == 0
+    assert "Task Tree Benchmark" in text_result.output
+    assert "Overall parse time" in text_result.output
