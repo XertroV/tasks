@@ -1313,6 +1313,33 @@ def test_list_can_show_completed_bugs_with_flag(runner, tmp_tasks_dir):
     assert "B001: Done Bug" in result.output
 
 
+def test_list_all_implies_show_completed_aux_for_bugs(runner, tmp_tasks_dir):
+    """list --all --bugs should include completed bugs."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Done Bug", status="done")
+
+    result = runner.invoke(cli, ["list", "--all", "--bugs"])
+    assert result.exit_code == 0
+    assert "B001: Done Bug" in result.output
+
+
+def test_list_all_implies_show_completed_aux_for_ideas(runner, tmp_tasks_dir):
+    """list --all --ideas should include completed ideas."""
+    create_task = runner.invoke(cli, ["idea", "capture a planning intake"])
+    assert create_task.exit_code == 0
+
+    ideas_index_path = tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml"
+    ideas_index = yaml.safe_load(ideas_index_path.read_text())
+    idea_file = ideas_index["ideas"][0]["file"]
+    idea_path = tmp_tasks_dir / ".tasks" / "ideas" / idea_file
+    idea_text = idea_path.read_text().replace("status: pending", "status: done", 1)
+    idea_path.write_text(idea_text)
+
+    result = runner.invoke(cli, ["list", "--all", "--ideas"])
+    assert result.exit_code == 0
+    assert "I001: capture a planning intake" in result.output
+
+
 def test_list_json_hides_completed_bugs_by_default(runner, tmp_tasks_dir):
     """list --json should exclude completed bugs by default."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")

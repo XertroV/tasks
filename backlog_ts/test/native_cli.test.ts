@@ -137,6 +137,39 @@ describe("native cli", () => {
     expect(p.stdout.toString()).toContain("B001: Critical Bug");
   });
 
+  test("list --all --bugs includes completed bugs", () => {
+    root = setupFixture(true);
+    const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
+    let bugText = readFileSync(bugPath, "utf8");
+    bugText = bugText.replace("status: pending", "status: done");
+    writeFileSync(bugPath, bugText);
+
+    const p = run(["list", "--all", "--bugs"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("B001: Critical Bug");
+  });
+
+  test("list --all --ideas includes completed ideas", () => {
+    root = setupFixture();
+
+    const idea = run(["idea", "capture planning backlog"], root);
+    expect(idea.exitCode).toBe(0);
+
+    const ideasIndex = parse(
+      readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8",
+    )) as { ideas: { id: string; file: string }[] };
+    const ideaFile = ideasIndex.ideas[0]?.file;
+    expect(ideaFile).toBeTruthy();
+    const ideaPath = join(root, ".tasks", "ideas", ideaFile!);
+    updateTodoFrontmatter(ideaPath, (frontmatter) => {
+      frontmatter.status = "done";
+    });
+
+    const p = run(["list", "--all", "--ideas"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("I001: capture planning backlog");
+  });
+
   test("list --json hides completed bugs by default", () => {
     root = setupFixture(true);
     const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");

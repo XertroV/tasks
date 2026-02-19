@@ -538,6 +538,7 @@ async function cmdList(args: string[]): Promise<void> {
   const available = parseFlag(args, "--available");
   const showCompletedAux = parseFlag(args, "--show-completed-aux");
   const showProgress = parseFlag(args, "--progress");
+  const effectiveShowCompletedAux = showCompletedAux || (showAll && (bugsOnly || ideasOnly));
   const includeNormal = !bugsOnly && !ideasOnly;
   const includeBugs = bugsOnly || (!bugsOnly && !ideasOnly);
   const includeIdeas = ideasOnly || (!bugsOnly && !ideasOnly);
@@ -550,7 +551,7 @@ async function cmdList(args: string[]): Promise<void> {
   tree.nextAvailable = nextAvailable;
 
   if (showProgress) {
-    listWithProgress(tree, unfinished, showCompletedAux, includeNormal, includeBugs, includeIdeas);
+    listWithProgress(tree, unfinished, effectiveShowCompletedAux, includeNormal, includeBugs, includeIdeas);
     return;
   }
 
@@ -588,10 +589,10 @@ async function cmdList(args: string[]): Promise<void> {
 
     const bugsForJson = (includeBugs ? (tree.bugs ?? []) : [])
       .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
-      .filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
+      .filter((b) => includeAuxItem(b.status, unfinished, effectiveShowCompletedAux));
     const ideasForJson = (includeIdeas ? (tree.ideas ?? []) : [])
       .filter((i) => (statusFilter.length ? statusFilter.includes(i.status) : true))
-      .filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
+      .filter((i) => includeAuxItem(i.status, unfinished, effectiveShowCompletedAux));
     jsonOut({
       critical_path: criticalPath,
       next_available: nextAvailable,
@@ -670,7 +671,7 @@ async function cmdList(args: string[]): Promise<void> {
   // Show bugs section
   const bugsToShow = (includeBugs ? (tree.bugs ?? []) : [])
     .filter((b) => (statusFilter.length ? statusFilter.includes(b.status) : true))
-    .filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
+    .filter((b) => includeAuxItem(b.status, unfinished, effectiveShowCompletedAux));
   if (bugsToShow.length > 0) {
     console.log();
     const bugsDone = bugsToShow.filter((b) => b.status === Status.DONE).length;
@@ -687,7 +688,7 @@ async function cmdList(args: string[]): Promise<void> {
 
   const ideasToShow = (includeIdeas ? (tree.ideas ?? []) : [])
     .filter((i) => (statusFilter.length ? statusFilter.includes(i.status) : true))
-    .filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
+    .filter((i) => includeAuxItem(i.status, unfinished, effectiveShowCompletedAux));
   if (ideasToShow.length > 0) {
     console.log();
     const ideasDone = ideasToShow.filter((i) => i.status === Status.DONE).length;

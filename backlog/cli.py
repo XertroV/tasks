@@ -598,6 +598,8 @@ def list(
         include_bugs = bugs or (not bugs and not ideas)
         include_ideas = ideas or (not bugs and not ideas)
 
+        effective_show_completed_aux = show_completed_aux or (show_all and (bugs or ideas))
+
         # Handle --progress flag
         if show_progress:
             _list_with_progress(
@@ -606,7 +608,7 @@ def list(
                 complexity,
                 priority,
                 unfinished,
-                show_completed_aux,
+                effective_show_completed_aux,
                 include_normal,
                 include_bugs,
                 include_ideas,
@@ -648,7 +650,7 @@ def list(
                 priority,
                 show_all,
                 unfinished,
-                show_completed_aux,
+                effective_show_completed_aux,
                 include_normal,
                 include_bugs,
                 include_ideas,
@@ -661,7 +663,7 @@ def list(
                 priority,
                 show_all,
                 unfinished,
-                show_completed_aux,
+                effective_show_completed_aux,
                 include_normal,
                 include_bugs,
                 include_ideas,
