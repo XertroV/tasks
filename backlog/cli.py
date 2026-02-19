@@ -43,6 +43,11 @@ from .helpers import (
 
 console = Console()
 
+PREVIEW_DISPLAY_LIMIT = 5
+PREVIEW_GRAB_FOLLOW_COUNT = 4
+PREVIEW_AUX_LIMIT = 5
+PREVIEW_BUG_FANOUT_COUNT = 2
+
 AGENTS_SNIPPETS = {
     "short": """# AGENTS.md (Short)
 
@@ -791,6 +796,52 @@ def _find_list_task(tree, task_id):
             if idea.id == task_id:
                 return idea
     return tree.find_task(task_id)
+
+
+def _preview_grab_candidates(tree, calc, primary_task):
+    """Compute what `backlog grab` would claim after this primary task."""
+    if not primary_task:
+        return []
+
+    if is_bug_id(primary_task.id):
+        candidate_ids = calc.find_additional_bugs(
+            primary_task, count=PREVIEW_BUG_FANOUT_COUNT
+        )
+    else:
+        candidate_ids = calc.find_sibling_tasks(
+            primary_task, count=PREVIEW_GRAB_FOLLOW_COUNT
+        )
+
+    candidates = []
+    for task_id in candidate_ids:
+        task = tree.find_task(task_id)
+        if not task or is_task_file_missing(task):
+            continue
+        if task in candidates:
+            continue
+        candidates.append(task)
+
+    return candidates
+
+
+def _preview_task_payload(task, critical_path, calc, tree, output_json=False):
+    """Build output payload for a preview row."""
+    item = {
+        "id": task.id,
+        "title": task.title,
+        "status": task.status.value,
+        "file": task.file,
+        "file_exists": not is_task_file_missing(task),
+        "estimate_hours": task.estimate_hours,
+        "complexity": task.complexity.value,
+        "priority": task.priority.value,
+        "on_critical_path": task.id in critical_path,
+        "grab_additional": [t.id for t in _preview_grab_candidates(tree, calc, task)],
+    }
+    if output_json:
+        return item
+    item["path"] = f".tasks/{task.file}"
+    return item
 
 
 def _include_aux_item(status, unfinished=False, show_completed_aux=False):
@@ -2281,6 +2332,147 @@ def next(output_json):
             console.print(
                 f"[dim]To claim:[/] 'backlog grab' or 'backlog claim {task.id}'\n"
             )
+
+    except Exception as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
+@cli.command()
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+def preview(output_json):
+    """Preview top available work and grab batching details."""
+    try:
+        loader = TaskLoader()
+        tree = loader.load("metadata")
+        config = load_config()
+
+        calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
+        critical_path, next_available = calc.calculate()
+
+        available = calc.find_all_available()
+        if not available:
+            console.print("[yellow]No available tasks found.[/]\n")
+            _show_blocking_tasks(tree)
+            return
+
+        prioritized = calc.prioritize_task_ids(available, critical_path)
+
+        normal_preview = []
+        bug_preview = []
+        idea_preview = []
+
+        for task_id in prioritized:
+            task = tree.find_task(task_id)
+            if not task:
+                continue
+
+            if task.id.startswith("B"):
+                if len(bug_preview) < PREVIEW_AUX_LIMIT:
+                    bug_preview.append(
+                        _preview_task_payload(task, critical_path, calc, tree, output_json=output_json)
+                    )
+            elif task.id.startswith("I"):
+                if len(idea_preview) < PREVIEW_AUX_LIMIT:
+                    idea_preview.append(
+                        _preview_task_payload(task, critical_path, calc, tree, output_json=output_json)
+                    )
+            else:
+                if len(normal_preview) < PREVIEW_DISPLAY_LIMIT:
+                    normal_preview.append(
+                        _preview_task_payload(task, critical_path, calc, tree, output_json=output_json)
+                    )
+
+            if (
+                len(normal_preview) >= PREVIEW_DISPLAY_LIMIT
+                and len(bug_preview) >= PREVIEW_AUX_LIMIT
+                and len(idea_preview) >= PREVIEW_AUX_LIMIT
+            ):
+                break
+
+        if output_json:
+            payload = {
+                "critical_path": critical_path,
+                "next_available": next_available,
+                "normal": normal_preview,
+                "bugs": bug_preview,
+                "ideas": idea_preview,
+            }
+            click.echo(json.dumps(payload, indent=2))
+            return
+
+        console.print("\n[bold green]Preview available work:[/]\n")
+
+        if normal_preview:
+            console.print("[bold cyan]Normal Tasks[/]")
+            for row in normal_preview:
+                task = tree.find_task(row["id"])
+                if not task:
+                    continue
+                crit = "[yellow]★[/] " if row["on_critical_path"] else "  "
+                console.print(f"  {crit}[bold]{task.id}[/]: {task.title}")
+                console.print(
+                    f"    File: {row['path']} | "
+                    f"Estimate: {task.estimate_hours}h | {task.priority.value} / {task.complexity.value}"
+                )
+                grab_additional = row["grab_additional"]
+                if grab_additional:
+                    console.print(
+                        "    [dim]If you run `backlog grab`, you would also get: "
+                        f"{', '.join(grab_additional)}[/]"
+                    )
+                else:
+                    console.print(
+                        "    [dim]If you run `backlog grab`, you get this task only.[/]"
+                    )
+
+        if bug_preview:
+            console.print("\n[bold magenta]Bugs[/]")
+            for row in bug_preview:
+                task = tree.find_task(row["id"])
+                if not task:
+                    continue
+                crit = "[yellow]★[/] " if row["on_critical_path"] else "  "
+                console.print(f"  {crit}[bold]{task.id}[/]: {task.title}")
+                console.print(
+                    f"    File: {row['path']} | "
+                    f"Estimate: {task.estimate_hours}h | {task.priority.value} / {task.complexity.value}"
+                )
+                grab_additional = row["grab_additional"]
+                if grab_additional:
+                    console.print(
+                        "    [dim]If you run `backlog grab`, you would also get: "
+                        f"{', '.join(grab_additional)}[/]"
+                    )
+                else:
+                    console.print(
+                        "    [dim]If you run `backlog grab`, you get this task only.[/]"
+                    )
+
+        if idea_preview:
+            console.print("\n[bold blue]Ideas[/]")
+            for row in idea_preview:
+                task = tree.find_task(row["id"])
+                if not task:
+                    continue
+                crit = "[yellow]★[/] " if row["on_critical_path"] else "  "
+                console.print(f"  {crit}[bold]{task.id}[/]: {task.title}")
+                console.print(
+                    f"    File: {row['path']} | "
+                    f"Estimate: {task.estimate_hours}h | {task.priority.value} / {task.complexity.value}"
+                )
+                grab_additional = row["grab_additional"]
+                if grab_additional:
+                    console.print(
+                        "    [dim]If you run `backlog grab`, you would also get: "
+                        f"{', '.join(grab_additional)}[/]"
+                    )
+                else:
+                    console.print(
+                        "    [dim]If you run `backlog grab`, you get this task only.[/]"
+                    )
+
+        console.print("\n[dim]★ = On critical path[/]\n")
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")

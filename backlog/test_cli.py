@@ -164,6 +164,7 @@ def create_task_file(
     claimed_at=None,
     started_at=None,
     completed_at=None,
+    depends_on=None,
 ):
     """Helper to create a .todo task file."""
     # Parse task_id to determine path (e.g., P1.M1.E1.T001)
@@ -194,7 +195,7 @@ def create_task_file(
         "estimate_hours": 2.0,
         "complexity": "medium",
         "priority": "high",
-        "depends_on": [],
+        "depends_on": depends_on or [],
         "tags": ["test"],
     }
 
@@ -787,6 +788,54 @@ class TestNextCommand:
         assert result.exit_code == 0
         payload = yaml.safe_load(result.output)
         assert payload["id"] == "B001"
+
+
+class TestPreviewCommand:
+    """Tests for the preview command."""
+
+    def test_preview_limits_auxiliary_items_and_includes_grab_suggestions(
+        self, runner, tmp_tasks_dir
+    ):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Primary Task")
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Second Task")
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T003", "Third Task")
+        create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+        create_bug_file(tmp_tasks_dir, "B002", "Secondary Bug")
+
+        for i in range(7):
+            idea_result = runner.invoke(cli, ["idea", f"future planning idea {i}"])
+            assert idea_result.exit_code == 0
+
+        result = runner.invoke(cli, ["preview", "--json"])
+        assert result.exit_code == 0
+        payload = yaml.safe_load(result.output)
+
+        assert payload["next_available"] == "B001"
+        assert len(payload["normal"]) == 1
+        assert len(payload["bugs"]) == 2
+        assert len(payload["ideas"]) == 5
+
+        normal_by_id = {item["id"]: item for item in payload["normal"]}
+        t1 = normal_by_id["P1.M1.E1.T001"]
+        assert t1["grab_additional"] == [
+            "P1.M1.E1.T002",
+            "P1.M1.E1.T003",
+        ]
+
+    def test_preview_shows_top_bugs_and_ideas(self, runner, tmp_tasks_dir):
+        for i in range(1, 7):
+            create_bug_file(tmp_tasks_dir, f"B{i:03d}", f"Bug {i}")
+
+        for i in range(1, 7):
+            idea_result = runner.invoke(cli, ["idea", f"planning idea {i}"])
+            assert idea_result.exit_code == 0
+
+        result = runner.invoke(cli, ["preview", "--json"])
+        assert result.exit_code == 0
+        payload = yaml.safe_load(result.output)
+
+        assert len(payload["bugs"]) == 5
+        assert len(payload["ideas"]) == 5
 
 
 class TestLogCommand:

@@ -108,6 +108,51 @@ describe("native cli", () => {
     expect(list.stdout.toString()).toContain("★ B001: Critical Bug");
   });
 
+  test("preview returns categorized items and grab suggestions", () => {
+    root = setupFixture();
+
+    const add1 = run([
+      "add",
+      "P1.M1.E1",
+      "--title",
+      "Third Normal Task",
+    ], root);
+    expect(add1.exitCode).toBe(0);
+    const add2 = run([
+      "add",
+      "P1.M1.E1",
+      "--title",
+      "Fourth Normal Task",
+    ], root);
+    expect(add2.exitCode).toBe(0);
+
+    for (let i = 1; i <= 6; i++) {
+      const bug = run(["bug", `Preview bug ${i}`], root);
+      expect(bug.exitCode).toBe(0);
+    }
+
+    for (let i = 1; i <= 7; i++) {
+      const idea = run(["idea", `preview idea ${i}`], root);
+      expect(idea.exitCode).toBe(0);
+    }
+
+    const preview = run(["preview", "--json"], root);
+    expect(preview.exitCode).toBe(0);
+    const payload = JSON.parse(preview.stdout.toString());
+
+    expect(payload.next_available).toBe("B001");
+    expect(payload.normal.length).toBe(1);
+    expect(payload.bugs.length).toBe(5);
+    expect(payload.ideas.length).toBe(5);
+
+    const normalById = Object.fromEntries(payload.normal.map((row: { id: string }) => [row.id, row]));
+    expect(normalById["P1.M1.E1.T001"].grab_additional).toEqual([
+      "P1.M1.E1.T002",
+      "P1.M1.E1.T003",
+      "P1.M1.E1.T004",
+    ]);
+  });
+
   test("list --available includes bugs and ideas", () => {
     root = setupFixture(true);
 

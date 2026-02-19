@@ -85,6 +85,11 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 `,
 };
 
+const PREVIEW_DISPLAY_LIMIT = 5;
+const PREVIEW_GRAB_FOLLOW_COUNT = 4;
+const PREVIEW_AUX_LIMIT = 5;
+const PREVIEW_BUG_FANOUT_COUNT = 2;
+
 export function parseFlag(args: string[], name: string): boolean {
   return args.includes(name);
 }
@@ -163,6 +168,7 @@ Commands:
   tree            Display full hierarchical tree
   show            Show detailed info for a task/phase/milestone/epic
   next            Get next available task on critical path
+  preview         Show upcoming work preview with grab suggestions
   claim           Claim specific task ID(s)
   grab            Auto-claim next task (or claim IDs)
   done            Mark task as complete
@@ -216,6 +222,20 @@ interface LogEvent {
   event: LogEventType;
   timestamp: Date;
   actor: string | null;
+}
+
+interface PreviewTaskPayload {
+  id: string;
+  title: string;
+  status: Status;
+  file: string;
+  file_exists: boolean;
+  estimate_hours: number;
+  complexity: Complexity;
+  priority: Priority;
+  on_critical_path: boolean;
+  grab_additional: string[];
+  path?: string;
 }
 
 function formatRelativeTime(value: Date): string {
@@ -308,6 +328,50 @@ function includeAuxItem(status: Status, unfinished: boolean, showCompletedAux: b
   if (unfinished) return isUnfinished(status);
   if (showCompletedAux) return true;
   return isUnfinished(status);
+}
+
+function previewGrabCandidates(tree: TaskTree, calc: CriticalPathCalculator, primaryTask: Task): Task[] {
+  const candidateIds = isBugId(primaryTask.id)
+    ? calc.findAdditionalBugs(primaryTask, PREVIEW_BUG_FANOUT_COUNT)
+    : calc.findSiblingTasks(primaryTask, PREVIEW_GRAB_FOLLOW_COUNT);
+
+  const candidates: Task[] = [];
+  for (const taskId of candidateIds) {
+    const task = findTask(tree, taskId);
+    if (!task || isTaskFileMissing(task)) {
+      continue;
+    }
+    if (candidates.some((candidate) => candidate.id === task.id)) {
+      continue;
+    }
+    candidates.push(task);
+  }
+  return candidates;
+}
+
+function buildPreviewTaskPayload(
+  task: Task,
+  criticalPath: string[],
+  calc: CriticalPathCalculator,
+  tree: TaskTree,
+  includePath = false,
+): PreviewTaskPayload {
+  const payload: PreviewTaskPayload = {
+    id: task.id,
+    title: task.title,
+    status: task.status,
+    file: task.file,
+    file_exists: !isTaskFileMissing(task),
+    estimate_hours: task.estimateHours,
+    complexity: task.complexity,
+    priority: task.priority,
+    on_critical_path: criticalPath.includes(task.id),
+    grab_additional: previewGrabCandidates(tree, calc, task).map((t) => t.id),
+  };
+  if (includePath) {
+    payload.path = `${getDataDirName()}/${task.file}`;
+  }
+  return payload;
 }
 
 function filterUnfinishedTasks(tasks: Task[]): Task[] {
@@ -1288,6 +1352,84 @@ async function cmdNext(args: string[]): Promise<void> {
     return;
   }
   console.log(`${task.id}: ${task.title}`);
+}
+
+async function cmdPreview(args: string[]): Promise<void> {
+  const outputJson = parseFlag(args, "--json");
+  const loader = new TaskLoader();
+  const tree = await loader.load("metadata");
+  const cfg = loadConfig();
+  const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
+  const { criticalPath, nextAvailable } = calc.calculate();
+  const available = calc.findAllAvailable();
+  if (!available.length) {
+    console.log("No available tasks found.");
+    return;
+  }
+
+  const prioritized = calc.prioritizeTaskIds(available, criticalPath);
+  const normal: PreviewTaskPayload[] = [];
+  const bugs: PreviewTaskPayload[] = [];
+  const ideas: PreviewTaskPayload[] = [];
+
+  for (const taskId of prioritized) {
+    const task = findTask(tree, taskId);
+    if (!task) {
+      continue;
+    }
+    if (isBugId(task.id)) {
+      if (bugs.length < PREVIEW_AUX_LIMIT) {
+        bugs.push(buildPreviewTaskPayload(task, criticalPath, calc, tree, !outputJson));
+      }
+    } else if (isIdeaId(task.id)) {
+      if (ideas.length < PREVIEW_AUX_LIMIT) {
+        ideas.push(buildPreviewTaskPayload(task, criticalPath, calc, tree, !outputJson));
+      }
+    } else if (normal.length < PREVIEW_DISPLAY_LIMIT) {
+      normal.push(buildPreviewTaskPayload(task, criticalPath, calc, tree, !outputJson));
+    }
+
+    if (
+      normal.length >= PREVIEW_DISPLAY_LIMIT &&
+      bugs.length >= PREVIEW_AUX_LIMIT &&
+      ideas.length >= PREVIEW_AUX_LIMIT
+    ) {
+      break;
+    }
+  }
+
+  if (outputJson) {
+    jsonOut({
+      critical_path: criticalPath,
+      next_available: nextAvailable,
+      normal,
+      bugs,
+      ideas,
+    });
+    return;
+  }
+
+  const printPreviewItems = (label: string, items: PreviewTaskPayload[]): void => {
+    if (!items.length) return;
+
+    console.log(`\n${pc.bold(label)} (${items.length})`);
+    for (const item of items) {
+      const crit = item.on_critical_path ? `${pc.yellow("★")} ` : "  ";
+      console.log(`  ${crit}${pc.bold(item.id)}: ${item.title}`);
+      console.log(`    File: ${item.path} | Estimate: ${item.estimate_hours}h | ${item.priority} / ${item.complexity}`);
+      if (item.grab_additional.length > 0) {
+        console.log(`    ${pc.dim(`If you run \`backlog grab\`, you would also get: ${item.grab_additional.join(", ")}`)}`);
+      } else {
+        console.log(pc.dim("    If you run `backlog grab`, you get this task only."));
+      }
+    }
+  };
+
+  console.log(`\n${pc.green("Preview available work:")}`);
+  printPreviewItems("Normal Tasks", normal);
+  printPreviewItems("Bugs", bugs);
+  printPreviewItems("Ideas", ideas);
+  console.log(`\n${pc.dim("★ = On critical path")}`);
 }
 
 async function cmdShow(args: string[]): Promise<void> {
@@ -3043,6 +3185,9 @@ async function main(): Promise<void> {
       return;
     case "next":
       await cmdNext(rest);
+      return;
+    case "preview":
+      await cmdPreview(rest);
       return;
     case "show":
       await cmdShow(rest);

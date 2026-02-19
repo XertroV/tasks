@@ -1,6 +1,6 @@
-import type { Task, TaskTree } from "./models";
+import type { Epic, Milestone, Phase, Task, TaskTree } from "./models";
 import { Status } from "./models";
-import { findEpic, getAllTasks } from "./helpers";
+import { findEpic, findMilestone, findPhase, getAllTasks } from "./helpers";
 
 export class CriticalPathCalculator {
   constructor(
@@ -66,7 +66,8 @@ export class CriticalPathCalculator {
   }
 
   isTaskAvailable(task: Task): boolean {
-    if (task.status !== Status.PENDING) return false;
+    if (task.status !== Status.PENDING || task.claimedBy) return false;
+
     const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
     for (const dep of task.dependsOn) {
       const depTasks = this.resolveDependencyTargets(dep, task.milestoneId, byId);
@@ -74,6 +75,50 @@ export class CriticalPathCalculator {
         return false;
       }
     }
+
+    if (!task.dependsOn.length) {
+      const epic = task.epicId ? findEpic(this.tree, task.epicId) : undefined;
+      if (epic) {
+        const taskIndex = epic.tasks.findIndex((t) => t.id === task.id);
+        if (taskIndex > 0) {
+          const prevTask = epic.tasks[taskIndex - 1];
+          if (prevTask.status !== Status.DONE) {
+            return false;
+          }
+        }
+      }
+    }
+
+    const phase = task.phaseId ? findPhase(this.tree, task.phaseId) : undefined;
+    if (phase?.dependsOn.length) {
+      for (const depPhaseId of phase.dependsOn) {
+        const depPhase = findPhase(this.tree, depPhaseId);
+        if (depPhase && !this.isPhaseComplete(depPhase)) {
+          return false;
+        }
+      }
+    }
+
+    const milestone = task.milestoneId ? findMilestone(this.tree, task.milestoneId) : undefined;
+    if (milestone?.dependsOn.length) {
+      for (const depMilestoneId of milestone.dependsOn) {
+        const depMilestone = findMilestone(this.tree, depMilestoneId);
+        if (depMilestone && !this.isMilestoneComplete(depMilestone)) {
+          return false;
+        }
+      }
+    }
+
+    const epic = task.epicId ? findEpic(this.tree, task.epicId) : undefined;
+    if (epic?.dependsOn.length) {
+      for (const depEpicId of epic.dependsOn) {
+        const depEpic = findEpic(this.tree, depEpicId);
+        if (depEpic && !this.isEpicComplete(depEpic)) {
+          return false;
+        }
+      }
+    }
+
     return true;
   }
 
@@ -82,6 +127,110 @@ export class CriticalPathCalculator {
       .filter((t) => this.isTaskAvailable(t))
       .sort((a, b) => this.compareAvailable(a, b))
       .map((t) => t.id);
+  }
+
+  findSiblingTasks(primaryTask: Task, count = 4): string[] {
+    const epic = primaryTask.epicId ? findEpic(this.tree, primaryTask.epicId) : undefined;
+    if (!epic) {
+      return [];
+    }
+
+    const primaryIndex = epic.tasks.findIndex((t) => t.id === primaryTask.id);
+    if (primaryIndex < 0) {
+      return [];
+    }
+
+    const batchTaskIds = [primaryTask.id];
+    const siblingIds: string[] = [];
+
+    for (const task of epic.tasks.slice(primaryIndex + 1)) {
+      if (siblingIds.length >= count) {
+        break;
+      }
+
+      if (task.status !== Status.PENDING || task.claimedBy) {
+        continue;
+      }
+
+      if (!this.checkDependenciesWithinBatch(task, batchTaskIds)) {
+        continue;
+      }
+
+      batchTaskIds.push(task.id);
+      siblingIds.push(task.id);
+    }
+
+    return siblingIds;
+  }
+
+  isPhaseComplete(phase: Phase): boolean {
+    if (!phase.epics.length) return true;
+    return phase.epics.every((epic) => this.isEpicComplete(epic));
+  }
+
+  isMilestoneComplete(milestone: Milestone): boolean {
+    if (!milestone.epics.length) return true;
+    return milestone.epics.every((epic) => this.isEpicComplete(epic));
+  }
+
+  isEpicComplete(epic: Epic): boolean {
+    return epic.tasks.every((task) => task.status === Status.DONE);
+  }
+
+  private checkDependenciesWithinBatch(task: Task, batchTaskIds: string[]): boolean {
+    const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
+
+    for (const depId of task.dependsOn) {
+      const depTasks = this.resolveDependencyTargets(depId, task.milestoneId, byId);
+      if (!depTasks || depTasks.some((depTask) => depTask.status !== Status.DONE && !batchTaskIds.includes(depTask.id))) {
+        return false;
+      }
+    }
+
+    if (!task.dependsOn.length && task.epicId) {
+      const epic = findEpic(this.tree, task.epicId);
+      if (epic) {
+        const taskIndex = epic.tasks.findIndex((t) => t.id === task.id);
+        if (taskIndex > 0) {
+          const prevTask = epic.tasks[taskIndex - 1];
+          if (prevTask.status !== Status.DONE && !batchTaskIds.includes(prevTask.id)) {
+            return false;
+          }
+        }
+      }
+    }
+
+    const phase = task.phaseId ? findPhase(this.tree, task.phaseId) : undefined;
+    if (phase?.dependsOn.length) {
+      for (const depPhaseId of phase.dependsOn) {
+        const depPhase = findPhase(this.tree, depPhaseId);
+        if (depPhase && !this.isPhaseComplete(depPhase)) {
+          return false;
+        }
+      }
+    }
+
+    const milestone = task.milestoneId ? findMilestone(this.tree, task.milestoneId) : undefined;
+    if (milestone?.dependsOn.length) {
+      for (const depMilestoneId of milestone.dependsOn) {
+        const depMilestone = findMilestone(this.tree, depMilestoneId);
+        if (depMilestone && !this.isMilestoneComplete(depMilestone)) {
+          return false;
+        }
+      }
+    }
+
+    const epic = task.epicId ? findEpic(this.tree, task.epicId) : undefined;
+    if (epic?.dependsOn.length) {
+      for (const depEpicId of epic.dependsOn) {
+        const depEpic = findEpic(this.tree, depEpicId);
+        if (depEpic && !this.isEpicComplete(depEpic)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
   }
 
   calculate(): { criticalPath: string[]; nextAvailable?: string } {
