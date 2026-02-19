@@ -581,7 +581,7 @@ def grab(task_ids, agent, scope, no_content, multi, single, siblings, count):
         if not agent:
             agent = get_default_agent()
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         if task_ids:
@@ -666,7 +666,7 @@ def cycle(task_id, agent, no_content):
             agent = get_default_agent()
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         # Get task ID from context if not provided
@@ -807,7 +807,7 @@ def cycle(task_id, agent, no_content):
         console.print("─" * 50)
 
         # Recalculate after completing task
-        tree = loader.load()  # Reload to get fresh state
+        tree = loader.load("metadata")  # Reload to get fresh state
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
         _, next_available = _select_next_available_task_id(
             tree,
@@ -863,7 +863,7 @@ def work(task_id, clear_ctx):
         if task_id:
             # Set working task
             loader = TaskLoader()
-            tree = loader.load()
+            tree = loader.load("metadata")
             task = tree.find_task(task_id)
 
             if not task:
@@ -888,7 +888,7 @@ def work(task_id, clear_ctx):
                 return
 
             loader = TaskLoader()
-            tree = loader.load()
+            tree = loader.load("metadata")
             task = tree.find_task(current)
 
             if not task:
@@ -947,7 +947,7 @@ def blocked(task_id, reason, agent, no_grab):
                 raise click.Abort()
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         task = tree.find_task(task_id)
@@ -973,7 +973,7 @@ def blocked(task_id, reason, agent, no_grab):
         # Grab next task
         console.print("─" * 50)
 
-        tree = loader.load()  # Reload
+        tree = loader.load("metadata")  # Reload
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
         critical_path, next_available = calc.calculate()
 
@@ -1039,7 +1039,7 @@ def skip(task_id, agent, no_grab):
                 raise click.Abort()
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         task = tree.find_task(task_id)
@@ -1066,7 +1066,7 @@ def skip(task_id, agent, no_grab):
         # Grab next task
         console.print("─" * 50)
 
-        tree = loader.load()  # Reload
+        tree = loader.load("metadata")  # Reload
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
         critical_path, next_available = calc.calculate()
 
@@ -1137,7 +1137,7 @@ def unclaim(task_id, agent):
                 raise click.Abort()
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         task = tree.find_task(task_id)
         if not task:
@@ -1191,7 +1191,7 @@ def handoff(task_id, to_agent, notes, force):
                 raise click.Abort()
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         task = tree.find_task(task_id)
         if not task:
@@ -1277,7 +1277,7 @@ def why(task_id):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         task = tree.find_task(task_id)

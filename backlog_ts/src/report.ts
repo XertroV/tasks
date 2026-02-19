@@ -74,7 +74,7 @@ async function cmdReportProgress(args: string[]): Promise<void> {
   const showAll = parseFlag(args, "--all");
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
 
   const stats = computeStats(tree);
   const total = stats.total_tasks;
@@ -306,7 +306,7 @@ async function cmdReportVelocity(args: string[]): Promise<void> {
   const outputFormat = parseOpt(args, "--format") ?? "text";
   const days = Number(parseOpt(args, "--days") ?? "14");
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const tasks = getAllTasks(tree);
   const now = Date.now();
   const completed = tasks.filter((t) => t.status === Status.DONE && t.completedAt);
@@ -358,7 +358,7 @@ async function cmdReportVelocity(args: string[]): Promise<void> {
 async function cmdReportEstimateAccuracy(args: string[]): Promise<void> {
   const outputFormat = parseOpt(args, "--format") ?? "text";
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const tasks = getAllTasks(tree);
   const withDuration = tasks.filter((t) => t.status === Status.DONE && t.durationMinutes !== undefined);
   if (!withDuration.length) {

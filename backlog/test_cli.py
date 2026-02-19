@@ -1838,8 +1838,15 @@ def test_benchmark_command_reports_summary(runner, tmp_tasks_dir):
     assert summary["task_files_total"] == 1
     assert summary["task_files_found"] == 1
     assert summary["task_files_missing"] == 0
+    assert summary["index_parse_ms"] >= 0
+    assert summary["task_frontmatter_parse_ms"] >= 0
+    assert summary["task_body_parse_ms"] >= 0
+    assert summary["task_parse_other_ms"] >= 0
 
     text_result = runner.invoke(cli, ["benchmark"])
     assert text_result.exit_code == 0
     assert "Task Tree Benchmark" in text_result.output
     assert "Overall parse time" in text_result.output
+    assert "Index parse time" in text_result.output
+    assert "Task frontmatter parse time" in text_result.output
+    assert "Task body parse time" in text_result.output

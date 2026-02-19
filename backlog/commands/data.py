@@ -40,7 +40,7 @@ def export_data(output_format, output, scope, include_content, pretty):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         # Build export data
         export = {
@@ -175,7 +175,7 @@ def summary(output_format):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         stats = tree.stats
         total = stats["total_tasks"]

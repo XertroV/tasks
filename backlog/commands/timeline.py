@@ -47,7 +47,7 @@ def timeline(scope, weeks, group_by, show_done, width):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])

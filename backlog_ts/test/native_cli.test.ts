@@ -1482,6 +1482,10 @@ tags: []
     expect(payload.summary.task_files_total).toBe(2);
     expect(payload.summary.task_files_found).toBe(1);
     expect(payload.summary.task_files_missing).toBe(1);
+    expect(payload.summary.index_parse_ms).toBeGreaterThanOrEqual(0);
+    expect(payload.summary.task_frontmatter_parse_ms).toBeGreaterThanOrEqual(0);
+    expect(payload.summary.task_body_parse_ms).toBeGreaterThanOrEqual(0);
+    expect(payload.summary.task_parse_other_ms).toBeGreaterThanOrEqual(0);
 
     const textOut = run(["benchmark"], root);
     expect(textOut.exitCode).toBe(0);
@@ -1489,5 +1493,8 @@ tags: []
     expect(output).toContain("Task Tree Benchmark");
     expect(output).toContain("Slowest phases");
     expect(output).toContain("Files by type");
+    expect(output).toContain("Index parse time");
+    expect(output).toContain("Task frontmatter parse time");
+    expect(output).toContain("Task body parse time");
   });
 });

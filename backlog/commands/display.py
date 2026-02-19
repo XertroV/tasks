@@ -43,7 +43,7 @@ def dash(agent):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         # Calculate critical path

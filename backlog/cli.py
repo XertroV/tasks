@@ -319,6 +319,16 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
     task_total = counts.get("tasks", 0)
     missing_task_files = benchmark.get("missing_task_files", 0)
     parsed_task_files = task_total - missing_task_files
+    index_parse_ms = benchmark.get("index_parse_ms", 0.0)
+    task_frontmatter_parse_ms = benchmark.get("task_frontmatter_parse_ms", 0.0)
+    task_body_parse_ms = benchmark.get("task_body_parse_ms", 0.0)
+    other_ms = max(
+        0.0,
+        benchmark.get("overall_ms", 0.0)
+        - index_parse_ms
+        - task_frontmatter_parse_ms
+        - task_body_parse_ms,
+    )
 
     slowest_phases = sorted(
         benchmark.get("phase_timings", []), key=lambda t: t.get("ms", 0.0), reverse=True
@@ -341,6 +351,10 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
                 "task_files_total": task_total,
                 "task_files_found": parsed_task_files,
                 "task_files_missing": missing_task_files,
+                "index_parse_ms": index_parse_ms,
+                "task_frontmatter_parse_ms": task_frontmatter_parse_ms,
+                "task_body_parse_ms": task_body_parse_ms,
+                "task_parse_other_ms": other_ms,
                 "node_counts": {
                     "phases": counts.get("phases", 0),
                     "milestones": counts.get("milestones", 0),
@@ -360,6 +374,14 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
     console.print(
         f"Overall parse time: [yellow]{_format_ms(benchmark.get('overall_ms', 0.0))}[/]"
     )
+    console.print(
+        f"Index parse time: [yellow]{_format_ms(index_parse_ms)}[/]"
+    )
+    console.print(
+        f"Task frontmatter parse time: [yellow]{_format_ms(task_frontmatter_parse_ms)}[/]"
+    )
+    console.print(f"Task body parse time: [yellow]{_format_ms(task_body_parse_ms)}[/]")
+    console.print(f"Other parse time: [yellow]{_format_ms(other_ms)}[/]")
     console.print(f"Total files parsed: [yellow]{total_files}[/]")
     console.print(
         f"Task files (leaves): [yellow]{task_total}[/] "
@@ -492,7 +514,7 @@ def log(limit, output_json):
     """Show recent activity for tasks in a git-log style list."""
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         events = _activity_events(tree)[:limit]
 
         if output_json:
@@ -584,7 +606,7 @@ def list(
     """List tasks with filtering options."""
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
@@ -1581,7 +1603,7 @@ def tree(output_json, unfinished, show_completed_aux, details, depth):
     """Display full hierarchical tree of phases, milestones, epics, and tasks."""
     try:
         loader = TaskLoader()
-        tree_data = loader.load()
+        tree_data = loader.load("metadata")
         config = load_config()
 
         calc = CriticalPathCalculator(tree_data, config["complexity_multipliers"])
@@ -1738,7 +1760,7 @@ def show(path_ids):
             path_ids = (current,)
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         for i, path_id in enumerate(path_ids):
             if i > 0:
@@ -1940,7 +1962,7 @@ def ls(scope):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         if scope is None:
             if not tree.phases:
@@ -2101,7 +2123,7 @@ def next(output_json):
     """Get next available task on critical path."""
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
@@ -2181,7 +2203,7 @@ def claim(task_ids, agent, force, no_content):
         if not agent:
             agent = get_default_agent()
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         show_details = len(task_ids) == 1
         for task_id in task_ids:
             task = tree.find_task(task_id)
@@ -2258,7 +2280,7 @@ def done(task_ids, verify, force):
             task_ids = (task_id,)
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         for task_id in task_ids:
@@ -2377,7 +2399,7 @@ def update(task_id, new_status, reason):
     """Update task status."""
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         task = tree.find_task(task_id)
 
         if not task:
@@ -2450,7 +2472,7 @@ def set(
             raise click.ClickException("set requires at least one property flag")
 
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         task = tree.find_task(task_id)
 
         if not task:
@@ -2500,7 +2522,7 @@ def sync():
     """Recalculate statistics and critical path."""
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
@@ -2570,7 +2592,7 @@ def unclaim_stale(threshold, dry_run):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         # Use error threshold from config if not specified
@@ -2761,7 +2783,7 @@ def add_epic(milestone_id, title, estimate, complexity, depends_on):
         console.print(f"\n[green]✓ Created epic:[/] {epic.id}\n")
         console.print(f"  Title:    {epic.name}")
         console.print(f"  Estimate: {epic.estimate_hours}h")
-        tree = loader.load()
+        tree = loader.load("metadata")
         display_epic = tree.find_epic(epic.id) or epic
         console.print(f"\n[bold]Path:[/] {format_epic_path(tree, display_epic)}\n")
 
@@ -2807,7 +2829,7 @@ def add_milestone(phase_id, title, estimate, complexity, depends_on, description
         console.print(f"\n[green]✓ Created milestone:[/] {milestone.id}\n")
         console.print(f"  Title:    {milestone.name}")
         console.print(f"  Estimate: {milestone.estimate_hours}h")
-        tree = loader.load()
+        tree = loader.load("metadata")
         display_milestone = tree.find_milestone(milestone.id) or milestone
         console.print(
             f"\n[bold]Path:[/] {format_milestone_path(tree, display_milestone)}\n"

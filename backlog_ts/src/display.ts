@@ -30,7 +30,7 @@ function formatDuration(minutes: number): string {
 
 export async function cmdDash(_args: string[]): Promise<void> {
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();

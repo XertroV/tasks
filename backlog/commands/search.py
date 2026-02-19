@@ -40,7 +40,7 @@ def search(pattern, status, tags, complexity, priority, limit):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         # Calculate critical path for highlighting
@@ -169,7 +169,7 @@ def blockers(deep, suggest):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])

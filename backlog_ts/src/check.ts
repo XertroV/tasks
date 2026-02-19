@@ -353,7 +353,7 @@ async function validateUninitializedTodos(tree: TaskTree, findings: Finding[]): 
 export async function runChecks(tasksDir?: string): Promise<{ ok: boolean; errors: Finding[]; warnings: Finding[]; summary: { errors: number; warnings: number; total: number } }> {
   const findings: Finding[] = [];
   const loader = new TaskLoader(tasksDir);
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   validateTreeFiles(tree, findings);
   validateIdsAndDependencies(tree, findings);
   validateBugs(tree, findings);

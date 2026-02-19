@@ -7,7 +7,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 from time import perf_counter
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Literal, Union
 from .models import (
     TaskTree,
     Phase,
@@ -36,6 +36,9 @@ class TaskLoader:
     def _new_benchmark(self) -> Dict[str, Any]:
         return {
             "overall_ms": 0.0,
+            "index_parse_ms": 0.0,
+            "task_frontmatter_parse_ms": 0.0,
+            "task_body_parse_ms": 0.0,
             "files": {
                 "total": 0,
                 "by_type": {
@@ -88,24 +91,34 @@ class TaskLoader:
         benchmark["files"]["by_type_ms"][file_type] = (
             benchmark["files"]["by_type_ms"].get(file_type, 0.0) + elapsed_ms
         )
+        if file_type.endswith("_index"):
+            benchmark["index_parse_ms"] += elapsed_ms
 
     def _record_timing(self, collection: list, timing: Dict[str, Any], elapsed_ms: float) -> None:
         timing["ms"] = elapsed_ms
         collection.append(timing)
 
-    def load(self) -> TaskTree:
+    def load(
+        self, mode: Literal["full", "metadata"] = "full"
+    ) -> TaskTree:
         """Load complete task tree."""
-        return self._load_tree()
+        return self._load_tree(mode=mode)
 
-    def load_with_benchmark(self) -> tuple[TaskTree, Dict[str, Any]]:
+    def load_with_benchmark(
+        self, mode: Literal["full", "metadata"] = "full"
+    ) -> tuple[TaskTree, Dict[str, Any]]:
         """Load complete task tree and return parse timing metrics."""
         benchmark = self._new_benchmark()
         start = perf_counter()
-        tree = self._load_tree(benchmark=benchmark)
+        tree = self._load_tree(benchmark=benchmark, mode=mode)
         benchmark["overall_ms"] = (perf_counter() - start) * 1000
         return tree, benchmark
 
-    def _load_tree(self, benchmark: Optional[Dict[str, Any]] = None) -> TaskTree:
+    def _load_tree(
+        self,
+        benchmark: Optional[Dict[str, Any]] = None,
+        mode: Literal["full", "metadata"] = "full",
+    ) -> TaskTree:
         """Load complete task tree."""
         root_index_path = self.tasks_dir / "index.yaml"
         try:
@@ -126,7 +139,11 @@ class TaskLoader:
             # Load phases
             for phase_data in root_index.get("phases", []):
                 try:
-                    phase = self._load_phase(phase_data, benchmark=benchmark)
+                    phase = self._load_phase(
+                        phase_data,
+                        benchmark=benchmark,
+                        load_mode=mode,
+                    )
                     tree.phases.append(phase)
                 except Exception as e:
                     phase_id = phase_data.get("id", "UNKNOWN")
@@ -136,8 +153,8 @@ class TaskLoader:
                     ) from e
 
             # Load bugs
-            tree.bugs = self._load_bugs(benchmark=benchmark)
-            tree.ideas = self._load_ideas(benchmark=benchmark)
+            tree.bugs = self._load_bugs(benchmark=benchmark, load_mode=mode)
+            tree.ideas = self._load_ideas(benchmark=benchmark, load_mode=mode)
 
             return tree
         except KeyError as e:
@@ -170,7 +187,10 @@ class TaskLoader:
         return Status(str(value))
 
     def _load_phase(
-        self, phase_data: Dict[str, Any], benchmark: Optional[Dict[str, Any]] = None
+        self,
+        phase_data: Dict[str, Any],
+        benchmark: Optional[Dict[str, Any]] = None,
+        load_mode: Literal["full", "metadata"] = "full",
     ) -> Phase:
         """Load a phase and its milestones."""
         start = perf_counter()
@@ -226,7 +246,11 @@ class TaskLoader:
             for milestone_data in phase_index.get("milestones", []):
                 try:
                     milestone = self._load_milestone(
-                        phase_path, milestone_data, phase.id, benchmark=benchmark
+                        phase_path,
+                        milestone_data,
+                        phase.id,
+                        benchmark=benchmark,
+                        load_mode=load_mode,
                     )
                     phase.milestones.append(milestone)
                 except Exception as e:
@@ -251,8 +275,12 @@ class TaskLoader:
             ) from e
 
     def _load_milestone(
-        self, phase_path: Path, milestone_data: Dict[str, Any], phase_id: str,
+        self,
+        phase_path: Path,
+        milestone_data: Dict[str, Any],
+        phase_id: str,
         benchmark: Optional[Dict[str, Any]] = None,
+        load_mode: Literal["full", "metadata"] = "full",
     ) -> Milestone:
         """Load a milestone and its epics."""
         start = perf_counter()
@@ -295,7 +323,13 @@ class TaskLoader:
             # Load epics
             for epic_data in milestone_index.get("epics", []):
                 try:
-                    epic = self._load_epic(milestone_path, epic_data, ms_path, benchmark=benchmark)
+                    epic = self._load_epic(
+                        milestone_path,
+                        epic_data,
+                        ms_path,
+                        benchmark=benchmark,
+                        load_mode=load_mode,
+                    )
                     milestone.epics.append(epic)
                 except Exception as e:
                     epic_id = (
@@ -336,6 +370,7 @@ class TaskLoader:
         epic_data: Dict[str, Any],
         ms_path: TaskPath,
         benchmark: Optional[Dict[str, Any]] = None,
+        load_mode: Literal["full", "metadata"] = "full",
     ) -> Epic:
         """Load an epic and its tasks."""
         epic_file_path = milestone_path / epic_data["path"]
@@ -374,7 +409,11 @@ class TaskLoader:
         # Load tasks
         for task_data in epic_index.get("tasks", []):
             task = self._load_task(
-                epic_file_path, task_data, epic_path, benchmark=benchmark
+                epic_file_path,
+                task_data,
+                epic_path,
+                benchmark=benchmark,
+                load_mode=load_mode,
             )
             epic.tasks.append(task)
 
@@ -393,6 +432,7 @@ class TaskLoader:
         task_data: Dict[str, Any] | str,
         epic_path: TaskPath,
         benchmark: Optional[Dict[str, Any]] = None,
+        load_mode: Literal["full", "metadata"] = "full",
     ) -> Task:
         """Load a task from its .todo file."""
         # Handle both formats: dict with metadata or simple string filename
@@ -422,9 +462,14 @@ class TaskLoader:
 
         # Parse .todo file (YAML frontmatter + Markdown)
         if task_file.exists():
-            frontmatter, _ = self._parse_todo_file(
-                task_file, benchmark=benchmark, file_type="todo_file"
-            )
+            if load_mode == "full":
+                frontmatter, _ = self._parse_todo_file(
+                    task_file, benchmark=benchmark, file_type="todo_file"
+                )
+            else:
+                frontmatter = self._parse_todo_frontmatter(
+                    task_file, benchmark=benchmark, file_type="todo_file"
+                )
             if parse_start is not None:
                 parse_ms = (perf_counter() - parse_start) * 1000
         else:
@@ -539,20 +584,68 @@ class TaskLoader:
         start = perf_counter()
         with open(filepath, "r") as f:
             content = f.read()
+        frontmatter_parse_ms = 0.0
+        body_parse_ms = 0.0
 
         # Split frontmatter and body
         parts = content.split("---\n", 2)
         if len(parts) >= 3:
             frontmatter_str = parts[1]
-            body = parts[2]
+            frontmatter_parse_start = perf_counter()
             frontmatter = yaml.safe_load(frontmatter_str) or {}
+            frontmatter_parse_ms = (perf_counter() - frontmatter_parse_start) * 1000
+
+            body_start = perf_counter()
+            body = parts[2]
+            body_parse_ms = (perf_counter() - body_start) * 1000
             result = (frontmatter, body)
         else:
             result = ({}, content)
 
         if benchmark is not None:
             self._record_file(benchmark, file_type, filepath, (perf_counter() - start) * 1000)
+            benchmark["task_frontmatter_parse_ms"] += frontmatter_parse_ms
+            benchmark["task_body_parse_ms"] += body_parse_ms
         return result
+
+    def _parse_todo_frontmatter(
+        self,
+        filepath: Path,
+        benchmark: Optional[Dict[str, Any]] = None,
+        file_type: str = "todo_file",
+    ) -> Dict[str, Any]:
+        """Parse only the YAML frontmatter section of a .todo file."""
+        start = perf_counter()
+        frontmatter: Dict[str, Any] = {}
+        frontmatter_parse_ms = 0.0
+
+        try:
+            with open(filepath, "r") as f:
+                first_line = f.readline()
+                if first_line.replace("\ufeff", "").strip() != "---":
+                    return {}
+
+                lines = []
+                for line in f:
+                    if line.strip() == "---":
+                        break
+                    lines.append(line)
+
+                if lines:
+                    parse_start = perf_counter()
+                    frontmatter = yaml.safe_load("".join(lines)) or {}
+                    frontmatter_parse_ms = (perf_counter() - parse_start) * 1000
+        finally:
+            if benchmark is not None:
+                self._record_file(
+                    benchmark,
+                    file_type,
+                    filepath,
+                    (perf_counter() - start) * 1000,
+                )
+                benchmark["task_frontmatter_parse_ms"] += frontmatter_parse_ms
+
+        return frontmatter
 
     def _parse_datetime(self, dt_str: Optional[str]) -> Optional[datetime]:
         """Parse datetime string."""
@@ -667,7 +760,11 @@ class TaskLoader:
                             sort_keys=False,
                         )
 
-    def _load_bugs(self, benchmark: Optional[Dict[str, Any]] = None):
+    def _load_bugs(
+        self,
+        benchmark: Optional[Dict[str, Any]] = None,
+        load_mode: Literal["full", "metadata"] = "full",
+    ):
         """Load bugs from .tasks/bugs/ directory."""
         bugs_dir = self.tasks_dir / "bugs"
         index_path = bugs_dir / "index.yaml"
@@ -687,9 +784,14 @@ class TaskLoader:
                 if benchmark is not None:
                     benchmark["missing_task_files"] += 1
                 continue
-            frontmatter, _ = self._parse_todo_file(
-                file_path, benchmark=benchmark, file_type="bug_file"
-            )
+            if load_mode == "full":
+                frontmatter, _ = self._parse_todo_file(
+                    file_path, benchmark=benchmark, file_type="bug_file"
+                )
+            else:
+                frontmatter = self._parse_todo_frontmatter(
+                    file_path, benchmark=benchmark, file_type="bug_file"
+                )
             bugs.append(
                 Task(
                     id=str(frontmatter.get("id", "")),
@@ -719,7 +821,11 @@ class TaskLoader:
             )
         return bugs
 
-    def _load_ideas(self, benchmark: Optional[Dict[str, Any]] = None):
+    def _load_ideas(
+        self,
+        benchmark: Optional[Dict[str, Any]] = None,
+        load_mode: Literal["full", "metadata"] = "full",
+    ):
         """Load ideas from .tasks/ideas/ directory."""
         ideas_dir = self.tasks_dir / "ideas"
         index_path = ideas_dir / "index.yaml"
@@ -739,9 +845,14 @@ class TaskLoader:
                 if benchmark is not None:
                     benchmark["missing_task_files"] += 1
                 continue
-            frontmatter, _ = self._parse_todo_file(
-                file_path, benchmark=benchmark, file_type="idea_file"
-            )
+            if load_mode == "full":
+                frontmatter, _ = self._parse_todo_file(
+                    file_path, benchmark=benchmark, file_type="idea_file"
+                )
+            else:
+                frontmatter = self._parse_todo_frontmatter(
+                    file_path, benchmark=benchmark, file_type="idea_file"
+                )
             ideas.append(
                 Task(
                     id=str(frontmatter.get("id", "")),
@@ -994,7 +1105,7 @@ TODO: Describe actual behavior
         epic_dir = self._find_epic_dir(epic_path)
         if not epic_dir:
             raise ValueError(f"Epic directory not found for: {epic_id}")
-        tree = self.load()
+        tree = self.load("metadata")
         epic = tree.find_epic(epic_id)
         if not epic:
             raise ValueError(f"Epic not found: {epic_id}")
@@ -1107,7 +1218,7 @@ TODO: Describe actual behavior
         milestone_dir = self._find_milestone_dir(ms_path)
         if not milestone_dir:
             raise ValueError(f"Milestone directory not found for: {milestone_id}")
-        tree = self.load()
+        tree = self.load("metadata")
         milestone = tree.find_milestone(milestone_id)
         if not milestone:
             raise ValueError(f"Milestone not found: {milestone_id}")
@@ -1209,7 +1320,7 @@ TODO: Describe actual behavior
         phase_dir = self._find_phase_dir(phase_path)
         if not phase_dir:
             raise ValueError(f"Phase directory not found for: {phase_id}")
-        tree = self.load()
+        tree = self.load("metadata")
         phase = tree.find_phase(phase_id)
         if not phase:
             raise ValueError(f"Phase not found: {phase_id}")
@@ -1363,7 +1474,7 @@ TODO: Describe actual behavior
     def _find_epic_dir(self, epic_path: TaskPath) -> Optional[Path]:
         """Find the directory for an epic given its TaskPath."""
         # First find the phase directory
-        tree = self.load()
+        tree = self.load("metadata")
         phase = tree.find_phase(epic_path.phase)
         if not phase:
             return None
@@ -1386,7 +1497,7 @@ TODO: Describe actual behavior
 
     def _find_milestone_dir(self, ms_path: TaskPath) -> Optional[Path]:
         """Find the directory for a milestone given its TaskPath."""
-        tree = self.load()
+        tree = self.load("metadata")
         phase = tree.find_phase(ms_path.phase)
         if not phase:
             return None
@@ -1438,7 +1549,7 @@ TODO: Describe actual behavior
 
     def _find_phase_dir(self, phase_path: TaskPath) -> Optional[Path]:
         """Find the directory for a phase given its TaskPath."""
-        tree = self.load()
+        tree = self.load("metadata")
         phase = tree.find_phase(phase_path.phase)
         if not phase:
             return None
@@ -1709,7 +1820,7 @@ TODO: Describe actual behavior
         """Move task->epic, epic->milestone, or milestone->phase with renumbering."""
         src_path = TaskPath.parse(source_id)
         dst_path = TaskPath.parse(dest_id)
-        tree = self.load()
+        tree = self.load("metadata")
 
         remap: Dict[str, str] = {}
 
@@ -1970,7 +2081,7 @@ TODO: Describe actual behavior
     def set_item_locked(self, item_id: str, locked: bool) -> str:
         """Set lock state for phase/milestone/epic in both list and local index files."""
         path = TaskPath.parse(item_id)
-        tree = self.load()
+        tree = self.load("metadata")
         desired = bool(locked)
 
         if path.is_phase:
@@ -2040,7 +2151,7 @@ TODO: Describe actual behavior
 
     def set_item_not_done(self, item_id: str) -> dict:
         """Mark a task or hierarchy item as not done (pending)."""
-        tree = self.load()
+        tree = self.load("metadata")
 
         def reset_task(task: Task) -> None:
             task.status = Status.PENDING
@@ -2176,7 +2287,7 @@ TODO: Describe actual behavior
 
     def set_item_done(self, item_id: str) -> dict:
         """Mark a task as done and propagate done status to completed parents."""
-        tree = self.load()
+        tree = self.load("metadata")
 
         task = tree.find_task(item_id)
         if not task:

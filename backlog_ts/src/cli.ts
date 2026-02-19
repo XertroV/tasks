@@ -543,7 +543,7 @@ async function cmdList(args: string[]): Promise<void> {
   const includeBugs = bugsOnly || (!bugsOnly && !ideasOnly);
   const includeIdeas = ideasOnly || (!bugsOnly && !ideasOnly);
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();
@@ -713,7 +713,7 @@ async function cmdLog(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const events = collectActivity(tree).slice(0, limit);
 
   if (outputJson) {
@@ -760,6 +760,13 @@ async function cmdBenchmark(args: string[]): Promise<void> {
   const taskTotal = benchmark.counts.tasks;
   const missing = benchmark.missing_task_files;
   const found = taskTotal - missing;
+  const indexParseMs = benchmark.index_parse_ms;
+  const taskFrontmatterParseMs = benchmark.task_frontmatter_parse_ms;
+  const taskBodyParseMs = benchmark.task_body_parse_ms;
+  const otherParseMs = Math.max(
+    0,
+    benchmark.overall_ms - indexParseMs - taskFrontmatterParseMs - taskBodyParseMs,
+  );
 
   const slowestPhases = [...benchmark.phase_timings]
     .sort((a, b) => b.ms - a.ms)
@@ -780,6 +787,10 @@ async function cmdBenchmark(args: string[]): Promise<void> {
         task_files_total: taskTotal,
         task_files_found: found,
         task_files_missing: missing,
+        index_parse_ms: indexParseMs,
+        task_frontmatter_parse_ms: taskFrontmatterParseMs,
+        task_body_parse_ms: taskBodyParseMs,
+        task_parse_other_ms: otherParseMs,
         node_counts: {
           phases: benchmark.counts.phases,
           milestones: benchmark.counts.milestones,
@@ -797,6 +808,10 @@ async function cmdBenchmark(args: string[]): Promise<void> {
 
   console.log("\nTask Tree Benchmark");
   console.log(`Overall parse time: ${formatMs(benchmark.overall_ms)}`);
+  console.log(`Index parse time: ${formatMs(indexParseMs)}`);
+  console.log(`Task frontmatter parse time: ${formatMs(taskFrontmatterParseMs)}`);
+  console.log(`Task body parse time: ${formatMs(taskBodyParseMs)}`);
+  console.log(`Other parse time: ${formatMs(otherParseMs)}`);
   console.log(`Total files parsed: ${benchmark.files.total}`);
   console.log(
     `Task files (leaves): ${taskTotal} (${found} found, ${missing} missing)`,
@@ -961,7 +976,7 @@ async function cmdTree(args: string[]): Promise<void> {
   const maxDepth = depthStr ? Number(depthStr) : 4;
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();
@@ -1041,7 +1056,7 @@ async function cmdTree(args: string[]): Promise<void> {
 async function cmdNext(args: string[]): Promise<void> {
   const outputJson = parseFlag(args, "--json");
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { nextAvailable } = calc.calculate();
@@ -1069,7 +1084,7 @@ async function cmdNext(args: string[]): Promise<void> {
 
 async function cmdShow(args: string[]): Promise<void> {
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   let ids = args.filter((a) => !a.startsWith("-"));
   if (!ids.length) {
     const current = await getCurrentTaskId();
@@ -1220,7 +1235,7 @@ function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; bod
 async function cmdLs(args: string[]): Promise<void> {
   const scope = args.find((a) => !a.startsWith("-"));
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
 
   if (!scope) {
     if (!tree.phases.length) {
@@ -1340,7 +1355,7 @@ async function cmdClaim(args: string[]): Promise<void> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
   const force = parseFlag(args, "--force");
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const showDetails = taskIds.length === 1;
   let hasSetCurrent = false;
   for (const taskId of taskIds) {
@@ -1373,7 +1388,7 @@ async function cmdClaim(args: string[]): Promise<void> {
 async function cmdGrab(args: string[]): Promise<void> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
 
   // Check for positional task IDs (excluding option values)
   const taskIds: string[] = [];
@@ -1460,7 +1475,7 @@ async function cmdDone(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
 
   try {
     for (const taskId of taskIds) {
@@ -1474,7 +1489,7 @@ async function cmdDone(args: string[]): Promise<void> {
       console.log(`Completed: ${task.id}`);
 
       const completionStatus = await loader.setItemDone(task.id);
-      const refreshed = await loader.load();
+      const refreshed = await loader.load("metadata");
       printCompletionNotices(refreshed, task, completionStatus);
     }
   } catch (e) {
@@ -1503,7 +1518,7 @@ async function cmdCycle(args: string[]): Promise<void> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const task = findTask(tree, taskId);
   if (!task) textError(`Task not found: ${taskId}`);
 
@@ -1523,7 +1538,7 @@ async function cmdCycle(args: string[]): Promise<void> {
   }
 
   const completionStatus = await loader.setItemDone(task.id);
-  const completionTree = await loader.load();
+  const completionTree = await loader.load("metadata");
   printCompletionNotices(completionTree, task, completionStatus);
 
   if (
@@ -1583,7 +1598,7 @@ async function cmdUpdate(args: string[]): Promise<void> {
   if (!taskId || !newStatus) textError("update requires TASK_ID STATUS");
   const reason = parseOpt(args, "--reason");
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const task = findTask(tree, taskId);
   if (!task) textError(`Task not found: ${taskId}`);
 
@@ -1639,7 +1654,7 @@ async function cmdSet(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const task = findTask(tree, taskId);
   if (!task) textError(`Task not found: ${taskId}`);
 
@@ -1675,7 +1690,7 @@ async function cmdWork(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
 
   if (taskId) {
     const task = findTask(tree, taskId);
@@ -1710,7 +1725,7 @@ async function cmdUnclaim(args: string[]): Promise<void> {
   if (!taskId) textError("No task ID provided and no current working task set.");
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const task = findTask(tree, taskId);
   if (!task) textError(`Task not found: ${taskId}`);
   if (task.status !== Status.IN_PROGRESS) {
@@ -1733,7 +1748,7 @@ async function cmdBlocked(args: string[]): Promise<void> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const task = findTask(tree, taskId);
   if (!task) textError(`Task not found: ${taskId}`);
   updateStatus(task, Status.BLOCKED, reason);
@@ -1743,7 +1758,7 @@ async function cmdBlocked(args: string[]): Promise<void> {
 
   if (noGrab) return;
 
-  const refreshed = await loader.load();
+  const refreshed = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(refreshed, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { nextAvailable } = calc.calculate();
@@ -1768,7 +1783,7 @@ async function cmdBlocked(args: string[]): Promise<void> {
 
 async function cmdSync(): Promise<void> {
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();
@@ -1816,7 +1831,7 @@ async function cmdData(args: string[]): Promise<void> {
   const sub = args[0];
   const rest = args.slice(1);
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const scope = parseOpt(rest, "--scope");
 
   if (!sub || sub === "--help") {
@@ -1956,7 +1971,7 @@ async function cmdTimeline(args: string[]): Promise<void> {
   const groupBy = parseOpt(args, "--group-by") ?? "milestone";
   const showDone = parseFlag(args, "--show-done");
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath } = calc.calculate();
@@ -2061,7 +2076,7 @@ async function cmdAdd(args: string[]): Promise<void> {
   const bodyOpt = parseOpt(args, "--body") ?? parseOpt(args, "-b");
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const epic = findEpic(tree, epicId);
   if (!epic) textError(`Epic not found: ${epicId}`);
   const phase = findPhase(tree, epic.phaseId ?? "");
@@ -2133,7 +2148,7 @@ async function cmdAddEpic(args: string[]): Promise<void> {
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const milestone = findMilestone(tree, milestoneId);
   if (!milestone) textError(`Milestone not found: ${milestoneId}`);
   const phase = findPhase(tree, milestone.phaseId ?? "");
@@ -2195,7 +2210,7 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const phase = findPhase(tree, phaseId);
   if (!phase) textError(`Phase not found: ${phaseId}`);
   if (phase.locked) {
@@ -2475,7 +2490,7 @@ async function cmdSearch(args: string[]): Promise<void> {
   const regex = new RegExp(pattern, "i");
 
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath } = calc.calculate();
@@ -2509,7 +2524,7 @@ async function cmdBlockers(args: string[]): Promise<void> {
   const deep = parseFlag(args, "--deep");
   const suggest = parseFlag(args, "--suggest");
   const loader = new TaskLoader();
-  const tree = await loader.load();
+  const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath } = calc.calculate();

@@ -509,3 +509,97 @@ Existing task body
     assert benchmark["missing_task_files"] == 1
     assert benchmark["files"]["by_type"]["root_index"] == 1
     assert benchmark["files"]["by_type"]["todo_file"] == 1
+    assert benchmark["index_parse_ms"] >= 0
+    assert benchmark["task_frontmatter_parse_ms"] >= 0
+    assert benchmark["task_body_parse_ms"] >= 0
+
+
+def test_load_metadata_uses_frontmatter_only(tmp_path, monkeypatch):
+    """Metadata mode should avoid full .todo parsing."""
+    tasks_dir = tmp_path / ".tasks"
+    phase_dir = tasks_dir / "01-phase"
+    milestone_dir = phase_dir / "01-ms"
+    epic_dir = milestone_dir / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Metadata Load
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (phase_dir / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-ms
+""",
+        encoding="utf-8",
+    )
+    (milestone_dir / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    file: T001-metadata.todo
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-metadata.todo").write_text(
+        "\n".join(
+            [
+                "---",
+                "id: P1.M1.E1.T001",
+                "title: Fast Load Task",
+                "status: pending",
+                "estimate_hours: 2",
+                "complexity: low",
+                "priority: medium",
+                "depends_on: []",
+                "tags: []",
+                "---",
+                "",
+                "Long body content that should not be eagerly parsed.",
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader()
+
+    calls = {"todo_file": 0, "todo_frontmatter": 0}
+    original_parse_todo_file = loader._parse_todo_file
+    original_parse_todo_frontmatter = loader._parse_todo_frontmatter
+
+    def parse_todo_file(*args, **kwargs):
+        calls["todo_file"] += 1
+        return original_parse_todo_file(*args, **kwargs)
+
+    def parse_todo_frontmatter(*args, **kwargs):
+        calls["todo_frontmatter"] += 1
+        return original_parse_todo_frontmatter(*args, **kwargs)
+
+    monkeypatch.setattr(loader, "_parse_todo_file", parse_todo_file)
+    monkeypatch.setattr(loader, "_parse_todo_frontmatter", parse_todo_frontmatter)
+
+    tree = loader.load("metadata")
+
+    task = tree.find_task("P1.M1.E1.T001")
+    assert task is not None
+    assert task.title == "Fast Load Task"
+    assert calls["todo_file"] == 0
+    assert calls["todo_frontmatter"] == 1

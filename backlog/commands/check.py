@@ -653,7 +653,7 @@ def run_checks(tasks_dir: str = ".tasks") -> dict:
     findings = []
 
     loader = TaskLoader(tasks_dir)
-    tree = loader.load()
+    tree = loader.load("metadata")
 
     _validate_tree_files(tree, findings)
     _validate_ids_and_dependencies(tree, findings)

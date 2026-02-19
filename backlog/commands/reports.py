@@ -121,7 +121,7 @@ def progress(output_format, by_phase, by_milestone, by_epic, show_all):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         stats = tree.stats
         total = stats["total_tasks"]
@@ -616,7 +616,7 @@ def velocity(days, output_format):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         all_tasks = get_all_tasks(tree)
 
@@ -1136,7 +1136,7 @@ def estimate_accuracy(output_format):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load()
+        tree = loader.load("metadata")
 
         all_tasks = get_all_tasks(tree)
 
