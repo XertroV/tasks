@@ -348,7 +348,6 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Completed: P1.M1.E1.T002");
     expect(p.stdout.toString()).toContain("EPIC COMPLETE");
-    expect(p.stdout.toString()).toContain("MILESTONE COMPLETE");
     expect(p.stdout.toString()).toContain("PHASE COMPLETE");
 
     const rootIndex = parse(readFileSync(join(root, ".tasks", "index.yaml"), "utf8")) as {
@@ -385,6 +384,57 @@ describe("native cli", () => {
     const allowedAdd = run(["add", "P1.M1.E1", "--title", "Allowed"], root);
     expect(allowedAdd.exitCode).toBe(0);
     expect(allowedAdd.stdout.toString()).toContain("Created task:");
+  });
+
+  test("done shows milestone complete for multi-epic milestone", () => {
+    root = setupFixture();
+
+    const milestoneIndex = join(root, ".tasks", "01-phase", "01-ms", "index.yaml");
+    const milestoneData = parse(readFileSync(milestoneIndex, "utf8")) as {
+      epics: Array<{ id: string; name: string; path: string; status?: string }>;
+    };
+    milestoneData.epics.push({
+      id: "E2",
+      name: "Epic 2",
+      path: "02-epic",
+      status: "in_progress",
+    });
+    writeFileSync(milestoneIndex, `${stringify(milestoneData)}\n`);
+
+    const secondEpicDir = join(root, ".tasks", "01-phase", "01-ms", "02-epic");
+    mkdirSync(secondEpicDir, { recursive: true });
+    const secondEpicTodo = join(secondEpicDir, "T001-c.todo");
+    writeFileSync(
+      join(secondEpicDir, "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-c.todo\n    status: pending\n    estimate_hours: 1\n    complexity: low\n    priority: medium\n`,
+    );
+    writeFileSync(
+      secondEpicTodo,
+      `---\nid: P1.M1.E2.T001\ntitle: C\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# C\n`,
+    );
+
+    updateTodoFrontmatter(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"),
+      (frontmatter) => {
+        frontmatter.status = "done";
+      },
+    );
+    updateTodoFrontmatter(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"),
+      (frontmatter) => {
+        frontmatter.status = "done";
+      },
+    );
+    updateTodoFrontmatter(secondEpicTodo, (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-c";
+    });
+
+    const p = run(["done", "P1.M1.E2.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed: P1.M1.E2.T001");
+    expect(p.stdout.toString()).toContain("EPIC COMPLETE");
+    expect(p.stdout.toString()).toContain("MILESTONE COMPLETE");
   });
 
   test("undone resets single task to pending", () => {

@@ -533,20 +533,21 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
         milestone = tree.find_milestone(task.milestone_id)
         if milestone and milestone.is_complete:
             result["milestone_completed"] = True
-            console.print("═" * 60)
-            console.print(f"  [bold green]🎯 MILESTONE COMPLETE:[/] {milestone.name}")
-            console.print(f"  [bold]Milestone ID:[/] {milestone.id}")
-            console.print(f"  [bold]Path:[/] {format_milestone_path(tree, milestone)}")
-            console.print("═" * 60)
-            console.print()
-            console.print("[bold cyan]NEXT_STEPS:[/] Review the completed milestone")
-            console.print(
-                "  1. Spawn a comprehensive review subagent (in addition to the epic review agent)"
-            )
-            console.print("  2. Verify all epics integrate correctly together")
-            console.print("  3. Run full test suite")
-            console.print("  4. Run linter (if available) and fix any warnings")
-            console.print()
+            if len(milestone.epics) > 1:
+                console.print("═" * 60)
+                console.print(f"  [bold green]🎯 MILESTONE COMPLETE:[/] {milestone.name}")
+                console.print(f"  [bold]Milestone ID:[/] {milestone.id}")
+                console.print(f"  [bold]Path:[/] {format_milestone_path(tree, milestone)}")
+                console.print("═" * 60)
+                console.print()
+                console.print("[bold cyan]NEXT_STEPS:[/] Review the completed milestone")
+                console.print(
+                    "  1. Spawn a comprehensive review subagent (in addition to the epic review agent)"
+                )
+                console.print("  2. Verify all epics integrate correctly together")
+                console.print("  3. Run full test suite")
+                console.print("  4. Run linter (if available) and fix any warnings")
+                console.print()
 
     phase = tree.find_phase(task.phase_id)
     if phase and phase.is_complete:

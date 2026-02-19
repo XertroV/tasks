@@ -1404,11 +1404,13 @@ function printCompletionNotices(
   if (completion.milestone_completed) {
     const milestone = task.milestoneId ? findMilestone(tree, task.milestoneId) : undefined;
     if (milestone) {
-      console.log("═".repeat(60));
-      console.log(`${pc.green("🎯 MILESTONE COMPLETE:")} ${milestone.name} (${milestone.id})`);
-      console.log("=".repeat(60));
-      console.log("Review the completed milestone before moving on.");
-      console.log();
+      if (milestone.epics.length > 1) {
+        console.log("═".repeat(60));
+        console.log(`${pc.green("🎯 MILESTONE COMPLETE:")} ${milestone.name} (${milestone.id})`);
+        console.log("=".repeat(60));
+        console.log("Review the completed milestone before moving on.");
+        console.log();
+      }
     }
   }
 

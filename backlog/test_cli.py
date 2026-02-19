@@ -1068,7 +1068,7 @@ class TestCycleCommand:
         assert "Completed" in result.output
         assert task_ids[0] in result.output
         assert "EPIC COMPLETE" in result.output
-        assert "MILESTONE COMPLETE" in result.output
+        assert "MILESTONE COMPLETE" not in result.output
         assert "Review Required" in result.output
         assert "Grabbed" not in result.output  # Should NOT auto-grab
 
@@ -1162,7 +1162,7 @@ class TestCycleCommand:
         assert result.exit_code == 0
         assert "Completed" in result.output
         assert "EPIC COMPLETE" in result.output
-        assert "MILESTONE COMPLETE" in result.output
+        assert "MILESTONE COMPLETE" not in result.output
         assert "PHASE COMPLETE" in result.output
 
         root_index = yaml.safe_load((tmp_tasks_dir / ".tasks" / "index.yaml").read_text())
@@ -1209,6 +1209,53 @@ class TestCycleCommand:
         allowed_add = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Allowed"])
         assert allowed_add.exit_code == 0
         assert "Created task:" in allowed_add.output
+
+
+    def test_done_shows_milestone_complete_when_multiple_epics(self, runner, tmp_tasks_dir):
+        """done should show milestone review prompt when milestone has more than one epic."""
+        tasks_root = tmp_tasks_dir / ".tasks"
+        milestone_index_path = tasks_root / "01-test-phase" / "01-test-milestone" / "index.yaml"
+        milestone_index = yaml.safe_load(milestone_index_path.read_text())
+        milestone_index.setdefault("epics", []).append(
+            {
+                "id": "P1.M1.E2",
+                "name": "Second Epic",
+                "path": "02-test-epic",
+                "status": "in_progress",
+            }
+        )
+        milestone_index_path.write_text(yaml.dump(milestone_index))
+
+        (tasks_root / "01-test-phase" / "01-test-milestone" / "02-test-epic").mkdir(
+            parents=True, exist_ok=True
+        )
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E2.T001",
+            "Second Epic Task",
+            status="pending",
+        )
+
+        task2_file = (
+            tmp_tasks_dir
+            / ".tasks"
+            / "01-test-phase"
+            / "01-test-milestone"
+            / "02-test-epic"
+            / "T001-test-task.todo"
+        )
+        with open(task2_file, "r") as f:
+            content = f.read()
+        content = content.replace("status: pending", "status: in_progress")
+        content = content.replace("tags:", "claimed_by: test-agent\ntags:")
+        with open(task2_file, "w") as f:
+            f.write(content)
+
+        result = runner.invoke(cli, ["done", "P1.M1.E2.T001"])
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert "EPIC COMPLETE" in result.output
+        assert "MILESTONE COMPLETE" in result.output
 
 
 def test_list_enhanced_shows_milestones(runner, tmp_tasks_dir):
