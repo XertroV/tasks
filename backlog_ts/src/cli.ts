@@ -97,6 +97,50 @@ export function parseOpt(args: string[], name: string): string | undefined {
   return undefined;
 }
 
+function listScopeArg(args: string[]): string | undefined {
+  const optionValues = new Set<number>();
+  const optionValueNames = new Set([
+    "--status",
+    "--complexity",
+    "--priority",
+    "--phase",
+    "--milestone",
+    "--epic",
+  ]);
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (!arg) continue;
+    if (optionValueNames.has(arg) && i + 1 < args.length) {
+      optionValues.add(i + 1);
+    }
+  }
+
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (!arg) continue;
+    if (arg.startsWith("-")) continue;
+    if (optionValues.has(i)) continue;
+    return arg;
+  }
+
+  return undefined;
+}
+
+function collectTaskIdsFromPhases(phases: Phase[]): Set<string> {
+  const ids = new Set<string>();
+  for (const phase of phases) {
+    for (const milestone of phase.milestones) {
+      for (const epic of milestone.epics) {
+        for (const task of epic.tasks) {
+          ids.add(task.id);
+        }
+      }
+    }
+  }
+  return ids;
+}
+
 export function jsonOut(obj: unknown): void {
   console.log(JSON.stringify(obj, null, 2));
 }
@@ -339,13 +383,16 @@ function listWithProgress(
   includeNormal: boolean,
   includeBugs: boolean,
   includeIdeas: boolean,
+  scopedPhases?: Phase[],
 ): void {
   console.log();
   console.log(pc.bold(pc.cyan("Project Progress")));
   console.log();
 
-  const phasesToShow = includeNormal
-    ? (unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases)
+  const phasesToShow = scopedPhases
+    ? scopedPhases
+    : includeNormal
+      ? (unfinished ? tree.phases.filter((p) => hasUnfinishedMilestones(p)) : tree.phases)
     : [];
   const completedPhases: Array<{ id: string; name: string; total: number }> = [];
 
@@ -465,6 +512,7 @@ function listAvailable(
   includeNormal: boolean,
   includeBugs: boolean,
   includeIdeas: boolean,
+  scopedTaskIds?: Set<string>,
 ): void {
   const availableTasks = availableIds
     .map((taskId) => findTask(tree, taskId))
@@ -472,6 +520,9 @@ function listAvailable(
     .filter((task) => {
       const isBug = /^B\d+$/.test(task.id);
       const isIdea = /^I\d+$/.test(task.id);
+      if (scopedTaskIds && !scopedTaskIds.has(task.id)) {
+        return false;
+      }
       if (isBug) return includeBugs;
       if (isIdea) return includeIdeas;
       return includeNormal;
@@ -562,10 +613,29 @@ async function cmdList(args: string[]): Promise<void> {
   const available = parseFlag(args, "--available");
   const showCompletedAux = parseFlag(args, "--show-completed-aux");
   const showProgress = parseFlag(args, "--progress");
-  const effectiveShowCompletedAux = showCompletedAux || (showAll && (bugsOnly || ideasOnly));
-  const includeNormal = !bugsOnly && !ideasOnly;
-  const includeBugs = bugsOnly || (!bugsOnly && !ideasOnly);
-  const includeIdeas = ideasOnly || (!bugsOnly && !ideasOnly);
+  const phase = parseOpt(args, "--phase");
+  const milestone = parseOpt(args, "--milestone");
+  const epic = parseOpt(args, "--epic");
+  const positionalScope = listScopeArg(args);
+  const scope = positionalScope ?? phase ?? milestone ?? epic;
+  let scopedPhases: Phase[] | undefined;
+  let scopedTaskIds: Set<string> | undefined;
+  let scopeMaxDepth: number | undefined;
+  let scopeLabel = scope;
+  let scopeQuery: PathQuery | undefined;
+
+  let effectiveShowCompletedAux = showCompletedAux || (showAll && (bugsOnly || ideasOnly));
+
+  let includeNormal = !bugsOnly && !ideasOnly;
+  let includeBugs = bugsOnly || (!bugsOnly && !ideasOnly);
+  let includeIdeas = ideasOnly || (!bugsOnly && !ideasOnly);
+  if (scope) {
+    effectiveShowCompletedAux = false;
+    includeNormal = true;
+    includeBugs = false;
+    includeIdeas = false;
+  }
+
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
   const cfg = loadConfig();
@@ -574,17 +644,80 @@ async function cmdList(args: string[]): Promise<void> {
   tree.criticalPath = criticalPath;
   tree.nextAvailable = nextAvailable;
 
+  if (scope) {
+    let scopeId = scope;
+    if (phase) {
+      const phaseMatch = findPhase(tree, phase);
+      if (!phaseMatch) textError(`Phase not found: ${phase}`);
+      scopeId = phaseMatch.id;
+    } else if (milestone) {
+      const milestoneMatch = findMilestone(tree, milestone);
+      if (!milestoneMatch) textError(`Milestone not found: ${milestone}`);
+      scopeId = milestoneMatch.id;
+    } else if (epic) {
+      const epicMatch = findEpic(tree, epic);
+      if (!epicMatch) textError(`Epic not found: ${epic}`);
+      scopeId = epicMatch.id;
+    }
+
+    try {
+      scopeQuery = PathQuery.parse(scopeId);
+    } catch (error) {
+      textError(error instanceof Error ? error.message : `Invalid scope: ${scopeId}`);
+    }
+
+    if (!scopeQuery) {
+      scopeQuery = PathQuery.parse(String(scopeId));
+    }
+
+    scopedPhases = filterTreeByPathQuery(tree.phases, scopeQuery);
+
+    if ((!scopedPhases || scopedPhases.length === 0) && !phase && !milestone && !epic) {
+      const fallback =
+        findPhase(tree, scopeId) ?? findMilestone(tree, scopeId) ?? findEpic(tree, scopeId);
+      if (fallback) {
+        scopeId = fallback.id;
+        const fallbackQuery = PathQuery.parse(scopeId);
+        scopedPhases = filterTreeByPathQuery(tree.phases, fallbackQuery);
+        scopeQuery = fallbackQuery;
+      }
+    }
+
+    scopedTaskIds = collectTaskIdsFromPhases(scopedPhases ?? []);
+    try {
+      scopeMaxDepth = Math.min(4, TaskPath.parse(scopeId).depth + 2);
+    } catch {
+      scopeMaxDepth = Math.min(4, PathQuery.parse(scopeId).segments.length + 2);
+    }
+    scopeLabel = scopeId;
+  }
+
   if (showProgress) {
-    listWithProgress(tree, unfinished, effectiveShowCompletedAux, includeNormal, includeBugs, includeIdeas);
+    listWithProgress(tree, unfinished, effectiveShowCompletedAux, includeNormal, includeBugs, includeIdeas, scopedPhases);
     return;
   }
 
   if (available) {
-    listAvailable(tree, calc.findAllAvailable(), criticalPath, statusFilter, outputJson, includeNormal, includeBugs, includeIdeas);
+    let allAvailable = calc.findAllAvailable();
+    if (scopedTaskIds) {
+      allAvailable = allAvailable.filter((taskId) => scopedTaskIds.has(taskId));
+    }
+    listAvailable(
+      tree,
+      allAvailable,
+      criticalPath,
+      statusFilter,
+      outputJson,
+      includeNormal,
+      includeBugs,
+      includeIdeas,
+      scopedTaskIds,
+    );
     return;
   }
 
-  const tasks = getAllTasks(tree)
+  const baseTasks = getAllTasks(tree).filter((t) => !scopedTaskIds || scopedTaskIds.has(t.id));
+  const tasks = baseTasks
     .filter((t) => (statusFilter.length ? statusFilter.includes(t.status) : true))
     .filter((t) => {
       const isBug = /^B\d+$/.test(t.id);
@@ -594,7 +727,8 @@ async function cmdList(args: string[]): Promise<void> {
       return includeNormal;
     });
   if (outputJson) {
-    const filteredPhases = (includeNormal ? tree.phases : [])
+    const phasesSource = scopedPhases ?? (includeNormal ? tree.phases : []);
+    const filteredPhases = phasesSource
       .map((p) => ({
         ...p,
         milestones: p.milestones
@@ -660,6 +794,25 @@ async function cmdList(args: string[]): Promise<void> {
         on_critical_path: criticalPath.includes(i.id),
       })),
     });
+    return;
+  }
+
+  if (scope) {
+    if (!scopedPhases || !scopedPhases.length) {
+      if (scopeQuery) {
+        console.log(pc.yellow(`No list nodes found for path query: ${scopeQuery.raw}`));
+      } else {
+        console.log(pc.yellow(`No list nodes found for scope: ${scopeLabel}`));
+      }
+      return;
+    }
+    const maxDepth = scopeMaxDepth ?? 4;
+    for (let i = 0; i < scopedPhases.length; i++) {
+      const p = scopedPhases[i]!;
+      const isLast = i === scopedPhases.length - 1;
+      const lines = renderPhase(p, isLast, "", criticalPath, unfinished, false, maxDepth, 1);
+      console.log(lines.join("\n"));
+    }
     return;
   }
 

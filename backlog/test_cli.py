@@ -1357,6 +1357,45 @@ def test_list_json_hides_completed_bugs_by_default(runner, tmp_tasks_dir):
     assert "B001" not in bug_ids
 
 
+def test_list_positional_scope_shows_deeper_levels_and_hides_aux(runner, tmp_tasks_dir):
+    """list with positional scope should show deeper levels and hide bugs/ideas."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Urgent Bug", status="pending")
+
+    result = runner.invoke(cli, ["list", "P1.M1"])
+    assert result.exit_code == 0
+    assert "Test Epic" in result.output
+    assert "P1.M1.E1.T001" in result.output
+    assert "B001" not in result.output
+    assert "Ideas" not in result.output
+
+
+def test_list_positional_scope_json_excludes_aux_sections(runner, tmp_tasks_dir):
+    """list --json with scope should not include bugs/ideas payload."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Urgent Bug", status="pending")
+
+    result = runner.invoke(cli, ["list", "P1", "--json"])
+    assert result.exit_code == 0
+
+    payload = json.loads(result.output)
+    assert payload["phases"]
+    assert payload["phases"][0]["id"] == "P1"
+    assert payload["bugs"] == []
+    assert payload["ideas"] == []
+    assert payload["phases"][0]["milestones"][0]["id"].endswith(".M1")
+
+
+def test_list_missing_scope_query_reports_no_match(runner, tmp_tasks_dir):
+    """list with missing scope should report no matching list nodes."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+
+    result = runner.invoke(cli, ["list", "P9"])
+    assert result.exit_code == 0
+    assert "No list nodes found for path query: P9" in result.output
+
+
 def test_tree_command_shows_full_hierarchy(runner, tmp_tasks_dir):
     """Test tree command shows full 4-level hierarchy."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")

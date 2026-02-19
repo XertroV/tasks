@@ -587,6 +587,7 @@ def log(limit, output_json):
     is_flag=True,
     help="Include completed/cancelled/rejected bugs and ideas",
 )
+@click.argument("scope", required=False)
 def list(
     status,
     phase,
@@ -603,6 +604,7 @@ def list(
     bugs,
     ideas,
     show_completed_aux,
+    scope,
 ):
     """List tasks with filtering options."""
     try:
@@ -617,11 +619,71 @@ def list(
         if not output_json:
             _warn_missing_task_files(tree)
 
+        scope_query = None
+        scoped_phases = None
+        scoped_depth = None
+        scope_task_ids = None
+        scoped = bool(scope or phase or milestone or epic)
+
+        if scoped:
+            scope_input = scope or phase or milestone or epic
+            if phase:
+                phase_obj = tree.find_phase(scope_input)
+                if not phase_obj:
+                    console.print(f"[red]Error:[/] Phase not found: {scope_input}")
+                    raise click.Abort()
+                scope_input = phase_obj.id
+            elif milestone:
+                milestone_obj = tree.find_milestone(scope_input)
+                if not milestone_obj:
+                    console.print(f"[red]Error:[/] Milestone not found: {scope_input}")
+                    raise click.Abort()
+                scope_input = milestone_obj.id
+            elif epic:
+                epic_obj = tree.find_epic(scope_input)
+                if not epic_obj:
+                    console.print(f"[red]Error:[/] Epic not found: {scope_input}")
+                    raise click.Abort()
+                scope_input = epic_obj.id
+
+            scope_query = PathQuery.parse(scope_input)
+            scoped_phases = filter_tree_by_path_query(tree, scope_query)
+
+            if not scoped_phases and not (phase or milestone or epic) and scope_input:
+                fallback = (
+                    tree.find_phase(scope_input)
+                    or tree.find_milestone(scope_input)
+                    or tree.find_epic(scope_input)
+                )
+                if fallback:
+                    scope_query = PathQuery.parse(fallback.id)
+                    scoped_phases = filter_tree_by_path_query(tree, scope_query)
+                    scope_input = fallback.id
+
+            if scope_query is not None:
+                try:
+                    scoped_depth = TaskPath.parse(scope_input).depth
+                except ValueError:
+                    scoped_depth = len(scope_query.segments)
+            scope_task_ids = {
+                t.id
+                for p in (scoped_phases or [])
+                for m in p.milestones
+                for e in m.epics
+                for t in e.tasks
+            }
+
         include_normal = not bugs and not ideas
         include_bugs = bugs or (not bugs and not ideas)
         include_ideas = ideas or (not bugs and not ideas)
+        if scoped:
+            include_normal = True
+            include_bugs = False
+            include_ideas = False
 
         effective_show_completed_aux = show_completed_aux or (show_all and (bugs or ideas))
+        if scoped:
+            effective_show_completed_aux = False
 
         # Handle --progress flag
         if show_progress:
@@ -635,21 +697,15 @@ def list(
                 include_normal,
                 include_bugs,
                 include_ideas,
+                scoped_phases,
             )
-            return
-
-        # Handle --milestone filter
-        if milestone:
-            m = tree.find_milestone(milestone)
-            if not m:
-                console.print(f"[red]Error:[/] Milestone not found: {milestone}")
-                raise click.Abort()
-            _show_milestone_detail(tree, m, critical_path, complexity, priority)
             return
 
         # Handle --available flag
         if available:
             all_available = calc.find_all_available()
+            if scope_task_ids is not None:
+                all_available = [t for t in all_available if t in scope_task_ids]
             _list_available(
                 tree,
                 all_available,
@@ -660,6 +716,7 @@ def list(
                 include_normal,
                 include_bugs,
                 include_ideas,
+                scoped_phases,
             )
             return
 
@@ -677,6 +734,8 @@ def list(
                 include_normal,
                 include_bugs,
                 include_ideas,
+                scoped_phases=scoped_phases,
+                scope_query=scope_query,
             )
         else:
             _list_text(
@@ -690,6 +749,11 @@ def list(
                 include_normal,
                 include_bugs,
                 include_ideas,
+                scoped_phases=scoped_phases,
+                scope_query=scope_query,
+                scoped_depth=(
+                    min(4, scoped_depth + 2) if scoped and scoped_depth else None
+                ),
             )
 
     except Exception as e:
@@ -837,12 +901,17 @@ def _list_with_progress(
     include_normal=True,
     include_bugs=True,
     include_ideas=True,
+    scoped_phases=None,
 ):
     """Show list with progress bars."""
     console.print("\n[bold cyan]Project Progress[/]\n")
     _show_filter_banner(complexity, priority)
 
-    phases_to_show = tree.phases if include_normal else []
+    phases_to_show = (
+        scoped_phases
+        if scoped_phases is not None
+        else tree.phases if include_normal else []
+    )
     if unfinished:
         phases_to_show = [p for p in phases_to_show if _has_unfinished_milestones(p)]
 
@@ -1065,8 +1134,12 @@ def _list_available(
     include_normal=True,
     include_bugs=True,
     include_ideas=True,
+    scoped_phases=None,
 ):
     """List available tasks with optional complexity/priority filtering."""
+    scope_phases = (
+        {p.id for p in scoped_phases} if scoped_phases is not None else None
+    )
     resolved_available = []
     for task_id in all_available:
         task = _find_list_task(tree, task_id)
@@ -1074,6 +1147,13 @@ def _list_available(
             continue
         if not _task_matches_filters(task, complexity, priority):
             continue
+        if scope_phases is not None:
+            try:
+                task_phase = TaskPath.parse(task_id).phase
+            except ValueError:
+                continue
+            if task_phase not in scope_phases:
+                continue
         if (
             (task_id.startswith("B") and include_bugs)
             or (task_id.startswith("I") and include_ideas)
@@ -1166,9 +1246,15 @@ def _list_json(
     include_normal=True,
     include_bugs=True,
     include_ideas=True,
+    scoped_phases=None,
+    scope_query=None,
 ):
     """Output list as JSON."""
-    phases_to_show = tree.phases if include_normal else []
+    phases_to_show = (
+        scoped_phases
+        if scoped_phases is not None
+        else tree.phases if include_normal else []
+    )
     if unfinished:
         phases_to_show = [p for p in phases_to_show if _has_unfinished_milestones(p)]
 
@@ -1246,7 +1332,7 @@ def _list_json(
             "pending": 0,
         }
 
-        for p in tree.phases:
+        for p in phases_to_show:
             for m in p.milestones:
                 for e in m.epics:
                     for t in e.tasks:
@@ -1284,6 +1370,9 @@ def _list_text(
     include_normal=True,
     include_bugs=True,
     include_ideas=True,
+    scoped_phases=None,
+    scope_query=None,
+    scoped_depth=None,
 ):
     """Output list as text."""
     console.print(
@@ -1293,7 +1382,33 @@ def _list_text(
 
     _show_filter_banner(complexity, priority)
 
-    phases_to_show = tree.phases if include_normal else []
+    phases_to_show = (
+        scoped_phases
+        if scoped_phases is not None
+        else tree.phases if include_normal else []
+    )
+    if scoped_phases is not None and not phases_to_show:
+        if scope_query:
+            console.print(f"No list nodes found for path query: {scope_query.raw}")
+        return
+
+    if scoped_phases is not None and scoped_depth:
+        for i, p in enumerate(phases_to_show):
+            is_last = i == len(phases_to_show) - 1
+            lines = _render_phase(
+                p,
+                is_last,
+                "",
+                critical_path,
+                unfinished,
+                False,
+                scoped_depth,
+                1,
+            )
+            for line in lines:
+                console.print(line)
+        return
+
     if unfinished:
         phases_to_show = [p for p in phases_to_show if _has_unfinished_milestones(p)]
 

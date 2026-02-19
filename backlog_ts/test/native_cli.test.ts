@@ -184,6 +184,43 @@ describe("native cli", () => {
     expect(payload.bugs.length).toBe(0);
   });
 
+  test("list positional scope shows deeper tree and hides bugs/ideas", () => {
+    root = setupFixture(true);
+
+    const p = run(["list", "P1.M1", "--all"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("E");
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("P1.M1.E1.T002");
+    expect(out).not.toContain("Bugs");
+    expect(out).not.toContain("Ideas");
+    expect(out).not.toContain("B001");
+  });
+
+  test("list positional scope supports json without bugs/ideas", () => {
+    root = setupFixture(true);
+
+    const p = run(["list", "P1.M1", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const payload = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(payload.phases)).toBeTrue();
+    expect(payload.phases.length).toBeGreaterThan(0);
+    expect(payload.bugs.length).toBe(0);
+    expect(payload.ideas.length).toBe(0);
+    const taskIds = payload.tasks.map((task: any) => task.id);
+    expect(taskIds).toContain("P1.M1.E1.T001");
+    expect(taskIds).toContain("P1.M1.E1.T002");
+  });
+
+  test("list positional scope with no match reports path query", () => {
+    root = setupFixture();
+
+    const p = run(["list", "P9"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("No list nodes found for path query: P9");
+  });
+
   test("claim done update sync mutate files", () => {
     root = setupFixture();
     let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-z"], root);
