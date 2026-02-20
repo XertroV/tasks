@@ -286,6 +286,7 @@ class Task:
     epic_id: Optional[str] = None
     milestone_id: Optional[str] = None
     phase_id: Optional[str] = None
+    reason: Optional[str] = None
 
     @property
     def task_path(self) -> TaskPath:

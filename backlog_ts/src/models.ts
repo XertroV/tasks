@@ -193,6 +193,7 @@ export interface Task {
   completedAt?: Date;
   durationMinutes?: number;
   tags: string[];
+  reason?: string;
   epicId?: string;
   milestoneId?: string;
   phaseId?: string;

@@ -59,6 +59,12 @@ describe("status", () => {
     expect(() => updateStatus(t, Status.BLOCKED)).toThrow(StatusError);
   });
 
+  test("update stores reason for blocked status", () => {
+    const t = mkTask(Status.IN_PROGRESS);
+    updateStatus(t, Status.BLOCKED, "blocked by dependencies");
+    expect(t.reason).toBe("blocked by dependencies");
+  });
+
   test("update clears claim when pending", () => {
     const t = mkTask(Status.IN_PROGRESS);
     t.claimedBy = "a";

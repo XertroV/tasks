@@ -102,6 +102,12 @@ export function updateStatus(task: Task, next: Status, reason?: string): void {
     );
   }
 
+  if ([Status.BLOCKED, Status.REJECTED, Status.CANCELLED].includes(next)) {
+    task.reason = reason;
+  } else {
+    task.reason = undefined;
+  }
+
   task.status = next;
   if (next === Status.PENDING) {
     task.claimedBy = undefined;

@@ -713,6 +713,7 @@ class TaskLoader:
             completed_at=completed_at,
             duration_minutes=duration_minutes,
             tags=frontmatter.get("tags", []),
+            reason=frontmatter.get("reason"),
             epic_id=epic_path.full_id,  # Fully qualified: "P1.M1.E1"
             milestone_id=epic_path.milestone_id,  # Fully qualified: "P1.M1"
             phase_id=epic_path.phase,
@@ -902,6 +903,10 @@ class TaskLoader:
         frontmatter["completed_at"] = (
             task.completed_at.isoformat() if task.completed_at else None
         )
+        if task.reason is not None:
+            frontmatter["reason"] = task.reason
+        elif "reason" in frontmatter:
+            del frontmatter["reason"]
         if task.duration_minutes is not None:
             frontmatter["duration_minutes"] = task.duration_minutes
 
@@ -1022,6 +1027,7 @@ class TaskLoader:
                     tags=frontmatter.get("tags", [])
                     if isinstance(frontmatter.get("tags"), list)
                     else [],
+                    reason=frontmatter.get("reason"),
                     epic_id=None,
                     milestone_id=None,
                     phase_id=None,
@@ -1096,6 +1102,7 @@ class TaskLoader:
                     tags=frontmatter.get("tags", [])
                     if isinstance(frontmatter.get("tags"), list)
                     else [],
+                    reason=frontmatter.get("reason"),
                     epic_id=None,
                     milestone_id=None,
                     phase_id=None,

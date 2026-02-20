@@ -601,6 +601,7 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(0);
     let todo = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
     expect(todo).toContain("status: blocked");
+    expect(todo).toContain("reason: waiting");
 
     p = run(["update", "P1.M1.E1.T001", "pending", "--reason", "retry"], root);
     expect(p.exitCode).toBe(0);
@@ -623,6 +624,7 @@ describe("native cli", () => {
     const todo1 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"), "utf8");
     const todo2 = readFileSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"), "utf8");
     expect(todo1).toContain("status: blocked");
+    expect(todo1).toContain("reason: waiting");
     expect(todo2).toContain("status: pending");
   });
 

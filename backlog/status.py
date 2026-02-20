@@ -160,6 +160,11 @@ def update_status(task: Task, new_status: Status, reason: Optional[str] = None) 
                 suggestion=f'Add --reason="explanation" when changing to {new_status.value}',
             )
 
+    if new_status in [Status.BLOCKED, Status.REJECTED, Status.CANCELLED]:
+        task.reason = reason
+    else:
+        task.reason = None
+
     # Update status
     task.status = new_status
 

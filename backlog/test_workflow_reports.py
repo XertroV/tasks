@@ -249,6 +249,9 @@ def test_blocked_no_grab_uses_context_and_marks_blocked(
 
     task = _load_task("P1.M1.E1.T002")
     assert task.status == Status.BLOCKED
+    todo_text = (Path(".tasks") / task.file).read_text()
+    assert "reason: waiting on dependency" in todo_text
+    assert task.reason == "waiting on dependency"
     assert get_current_task_id() is None
 
 

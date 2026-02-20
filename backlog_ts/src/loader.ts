@@ -548,6 +548,7 @@ export class TaskLoader {
       completedAt: frontmatter.completed_at ? new Date(String(frontmatter.completed_at)) : undefined,
       durationMinutes: frontmatter.duration_minutes ? Number(frontmatter.duration_minutes) : undefined,
       tags: ((frontmatter.tags as string[]) ?? []).slice(),
+      reason: frontmatter.reason as string | undefined,
       epicId: epPath.fullId,
       milestoneId: epPath.milestoneId,
       phaseId: epPath.phase,
@@ -647,6 +648,11 @@ export class TaskLoader {
     frontmatter.claimed_at = task.claimedAt?.toISOString() ?? null;
     frontmatter.started_at = task.startedAt?.toISOString() ?? null;
     frontmatter.completed_at = task.completedAt?.toISOString() ?? null;
+    if (task.reason !== undefined) {
+      frontmatter.reason = task.reason;
+    } else {
+      delete frontmatter.reason;
+    }
     if (task.durationMinutes !== undefined) frontmatter.duration_minutes = task.durationMinutes;
     await writeFile(filePath, `---\n${stringify(frontmatter)}---\n${body}`);
   }
@@ -745,6 +751,7 @@ export class TaskLoader {
         completedAt: frontmatter.completed_at ? new Date(String(frontmatter.completed_at)) : undefined,
         durationMinutes: frontmatter.duration_minutes ? Number(frontmatter.duration_minutes) : undefined,
         tags: ((frontmatter.tags as string[]) ?? []).slice(),
+        reason: frontmatter.reason as string | undefined,
         epicId: undefined,
         milestoneId: undefined,
         phaseId: undefined,
@@ -804,6 +811,7 @@ export class TaskLoader {
         completedAt: frontmatter.completed_at ? new Date(String(frontmatter.completed_at)) : undefined,
         durationMinutes: frontmatter.duration_minutes ? Number(frontmatter.duration_minutes) : undefined,
         tags: ((frontmatter.tags as string[]) ?? []).slice(),
+        reason: frontmatter.reason as string | undefined,
         epicId: undefined,
         milestoneId: undefined,
         phaseId: undefined,
