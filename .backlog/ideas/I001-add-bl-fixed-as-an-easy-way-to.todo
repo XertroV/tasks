@@ -1,0 +1,41 @@
+---
+id: I001
+title: add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-MM/Fxyz-title-slug.md'
+  (or .todo if easier for consistency)
+status: pending
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-MM/Fxyz-title-slug.md' (or .todo if easier for consistency)
+
+## Original Idea
+
+add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-MM/Fxyz-title-slug.md' (or .todo if easier for consistency)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-MM/Fxyz-title-slug.md' (or .todo if easier for consistency)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.
