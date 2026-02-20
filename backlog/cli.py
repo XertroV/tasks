@@ -540,7 +540,7 @@ def log(limit, output_json):
     """Show recent activity for tasks in a git-log style list."""
     try:
         loader = TaskLoader()
-        tree = loader.load("metadata")
+        tree = loader.load("metadata", include_bugs=False, include_ideas=False)
         events = _activity_events(tree)[:limit]
 
         if output_json:
@@ -634,7 +634,19 @@ def list(
     """List tasks with filtering options."""
     try:
         loader = TaskLoader()
-        tree = loader.load("metadata")
+        include_normal = not bugs and not ideas
+        include_bugs = bugs or (not bugs and not ideas)
+        include_ideas = ideas or (not bugs and not ideas)
+        scoped = bool(scope or phase or milestone or epic)
+        if scoped:
+            include_normal = True
+            include_bugs = False
+            include_ideas = False
+        tree = loader.load(
+            "metadata",
+            include_bugs=include_bugs,
+            include_ideas=include_ideas,
+        )
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
@@ -648,7 +660,6 @@ def list(
         scoped_phases = None
         scoped_depth = None
         scope_task_ids = None
-        scoped = bool(scope or phase or milestone or epic)
 
         if scoped:
             scope_input = scope or phase or milestone or epic
@@ -697,14 +708,6 @@ def list(
                 for e in m.epics
                 for t in e.tasks
             }
-
-        include_normal = not bugs and not ideas
-        include_bugs = bugs or (not bugs and not ideas)
-        include_ideas = ideas or (not bugs and not ideas)
-        if scoped:
-            include_normal = True
-            include_bugs = False
-            include_ideas = False
 
         effective_show_completed_aux = show_completed_aux or (show_all and (bugs or ideas))
         if scoped:
@@ -1791,7 +1794,7 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
     """Display full hierarchical tree of phases, milestones, epics, and tasks."""
     try:
         loader = TaskLoader()
-        tree_data = loader.load("metadata")
+        tree_data = loader.load("metadata", include_bugs=True, include_ideas=True)
         parsed_query = PathQuery.parse(path_query) if path_query else None
         config = load_config()
 
@@ -1996,7 +1999,12 @@ def show(path_ids):
                 continue
 
             task_path = TaskPath.parse(path_id)
-            scope_tree = loader.load_scope(task_path, mode="metadata")
+            scope_tree = loader.load_scope(
+                task_path,
+                mode="metadata",
+                include_bugs=False,
+                include_ideas=False,
+            )
             parent_path = task_path.parent()
             parent = parent_path.full_id if parent_path else None
 
@@ -2185,7 +2193,7 @@ def ls(scope):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load("metadata")
+        tree = loader.load("metadata", include_bugs=False, include_ideas=False)
 
         if scope is None:
             if not tree.phases:

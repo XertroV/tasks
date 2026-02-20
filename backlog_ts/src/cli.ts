@@ -710,7 +710,7 @@ async function cmdList(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata");
+  const tree = await loader.load("metadata", includeBugs, includeIdeas);
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();
@@ -963,7 +963,7 @@ async function cmdLog(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata");
+  const tree = await loader.load("metadata", false, false);
   const events = collectActivity(tree).slice(0, limit);
 
   if (outputJson) {
@@ -1487,7 +1487,7 @@ async function cmdShow(args: string[]): Promise<void> {
     }
     if (!parsedScope) textError(`Invalid path format: ${id}`);
     const path = parsedScope as TaskPath;
-    const scopeTree = await loader.loadScope(id, "metadata");
+    const scopeTree = await loader.loadScope(id, "metadata", false, false, false);
 
     if (path.isPhase) {
       const phase = findPhase(scopeTree, id);
@@ -1629,7 +1629,7 @@ function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; bod
 async function cmdLs(args: string[]): Promise<void> {
   const scope = args.find((a) => !a.startsWith("-"));
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata");
+  const tree = await loader.load("metadata", false, false);
 
   if (!scope) {
     if (!tree.phases.length) {

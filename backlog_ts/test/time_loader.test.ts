@@ -330,6 +330,97 @@ describe("loader", () => {
     frontmatterSpy.mockRestore();
   });
 
+  test("load metadata can skip aux parsing when disabled", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-metadata-no-aux-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(tasksDir, { recursive: true });
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    mkdirSync(join(tasksDir, "bugs"), { recursive: true });
+    mkdirSync(join(tasksDir, "ideas"), { recursive: true });
+
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Demo\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic\n    path: 01-epic\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-normal.todo\n    title: Normal\n    status: pending\n    estimate_hours: 1\n    complexity: low\n    priority: medium\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-normal.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: Normal\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Normal\n`,
+      "utf8",
+    );
+
+    writeFileSync(
+      join(tasksDir, "bugs", "index.yaml"),
+      `bugs:\n  - id: B001\n    file: B001-slow.todo\n    title: Slow Bug\n    status: pending\n    estimate_hours: 1\n    complexity: low\n    priority: low\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "bugs", "B001-slow.todo"),
+      `---\nid: B001\ntitle: Slow Bug\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: low\ndepends_on: []\ntags: []\n---\n# Slow Bug\n`,
+      "utf8",
+    );
+
+    writeFileSync(
+      join(tasksDir, "ideas", "index.yaml"),
+      `ideas:\n  - id: I001\n    file: I001-slow.todo\n    title: Slow Idea\n    status: pending\n    estimate_hours: 1\n    complexity: low\n    priority: low\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "ideas", "I001-slow.todo"),
+      `---\nid: I001\ntitle: Slow Idea\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: low\ndepends_on: []\ntags: []\n---\n# Slow Idea\n`,
+      "utf8",
+    );
+
+    const loader = new TaskLoader(tasksDir);
+    const todoFileSpy = vi
+      .spyOn(loader as unknown as TaskLoader, "loadTodoFile")
+      .mockResolvedValue({ frontmatter: {}, body: "", elapsedMs: 0 });
+    const frontmatterSpy = vi
+      .spyOn(loader as unknown as TaskLoader, "loadTodoFrontmatter")
+      .mockResolvedValue({
+        frontmatter: {
+          id: "P1.M1.E1.T001",
+          title: "Normal",
+          status: "pending",
+          estimate_hours: 1,
+          complexity: "low",
+          priority: "medium",
+          depends_on: [],
+          tags: [],
+        },
+        body: "",
+        elapsedMs: 0,
+      });
+
+    const tree = await loader.load("metadata", false, false);
+
+    expect(frontmatterSpy).toHaveBeenCalledTimes(1);
+    expect(todoFileSpy).not.toHaveBeenCalled();
+    expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe(
+      "P1.M1.E1.T001",
+    );
+    expect(tree.bugs).toHaveLength(0);
+    expect(tree.ideas).toHaveLength(0);
+
+    todoFileSpy.mockRestore();
+    frontmatterSpy.mockRestore();
+  });
+
   test("load with index mode skips todo file parsing", async () => {
     const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-index-"));
     const tasksDir = join(root, ".tasks");

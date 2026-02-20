@@ -88,14 +88,20 @@ export class TaskLoader {
     }
   }
 
-  async load(mode: LoadMode = "full"): Promise<TaskTree> {
-    return this.loadTree(undefined, mode);
+  async load(
+    mode: LoadMode = "full",
+    includeBugs = true,
+    includeIdeas = true,
+  ): Promise<TaskTree> {
+    return this.loadTree(undefined, mode, true, includeBugs, includeIdeas);
   }
 
   async loadScope(
     scope: string | TaskPath,
     mode: LoadMode = "full",
     parseTaskBody = false,
+    includeBugs = true,
+    includeIdeas = true,
   ): Promise<TaskTree> {
     const path = typeof scope === "string" ? TaskPath.parse(scope) : scope;
     const effectiveParseTaskBody = parseTaskBody && mode === "full";
@@ -131,21 +137,29 @@ export class TaskLoader {
         ),
       );
     }
-    tree.bugs = await this.loadBugs(undefined, mode, effectiveParseTaskBody);
-    tree.ideas = await this.loadIdeas(undefined, mode, effectiveParseTaskBody);
+    tree.bugs = await this.loadBugs(undefined, mode, effectiveParseTaskBody, includeBugs);
+    tree.ideas = await this.loadIdeas(undefined, mode, effectiveParseTaskBody, includeIdeas);
     return tree;
   }
 
   async loadWithBenchmark(
     mode: LoadMode = "full",
     parseTaskBody = true,
+    includeBugs = true,
+    includeIdeas = true,
   ): Promise<{ tree: TaskTree; benchmark: BenchmarkReport }> {
     const effectiveParseTaskBody = mode === "full" && parseTaskBody;
     const benchmark = this.newBenchmark();
     benchmark.parse_mode = mode;
     benchmark.parse_task_body = effectiveParseTaskBody;
     const start = performance.now();
-    const tree = await this.loadTree(benchmark, mode, effectiveParseTaskBody);
+    const tree = await this.loadTree(
+      benchmark,
+      mode,
+      effectiveParseTaskBody,
+      includeBugs,
+      includeIdeas,
+    );
     benchmark.overall_ms = performance.now() - start;
     return { tree, benchmark };
   }
@@ -154,6 +168,8 @@ export class TaskLoader {
     benchmark?: BenchmarkReport,
     mode: LoadMode = "full",
     parseTaskBody = true,
+    includeBugs = true,
+    includeIdeas = true,
   ): Promise<TaskTree> {
     const root = this.mustYaml(
       join(this.tasksDir, "index.yaml"),
@@ -174,8 +190,8 @@ export class TaskLoader {
     for (const p of ((root.phases as AnyRec[]) ?? [])) {
       tree.phases.push(await this.loadPhase(p, benchmark, mode, parseTaskBody));
     }
-    tree.bugs = await this.loadBugs(benchmark, mode, parseTaskBody);
-    tree.ideas = await this.loadIdeas(benchmark, mode, parseTaskBody);
+    tree.bugs = await this.loadBugs(benchmark, mode, parseTaskBody, includeBugs);
+    tree.ideas = await this.loadIdeas(benchmark, mode, parseTaskBody, includeIdeas);
     return tree;
   }
 
@@ -682,7 +698,10 @@ export class TaskLoader {
     benchmark?: BenchmarkReport,
     loadMode: LoadMode = "full",
     parseTaskBody = true,
+    includeBugs = true,
   ): Promise<import("./models").Task[]> {
+    if (!includeBugs) return [];
+
     const bugsDir = join(this.tasksDir, "bugs");
     const indexPath = join(bugsDir, "index.yaml");
     if (!existsSync(indexPath)) return [];
@@ -738,7 +757,10 @@ export class TaskLoader {
     benchmark?: BenchmarkReport,
     loadMode: LoadMode = "full",
     parseTaskBody = true,
+    includeIdeas = true,
   ): Promise<import("./models").Task[]> {
+    if (!includeIdeas) return [];
+
     const ideasDir = join(this.tasksDir, "ideas");
     const indexPath = join(ideasDir, "index.yaml");
     if (!existsSync(indexPath)) return [];

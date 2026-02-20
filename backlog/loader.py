@@ -100,14 +100,25 @@ class TaskLoader:
 
     LoadMode = Literal["full", "metadata", "index"]
 
-    def load(self, mode: "TaskLoader.LoadMode" = "full") -> TaskTree:
+    def load(
+        self,
+        mode: "TaskLoader.LoadMode" = "full",
+        include_bugs: bool = True,
+        include_ideas: bool = True,
+    ) -> TaskTree:
         """Load complete task tree."""
-        return self._load_tree(mode=mode)
+        return self._load_tree(
+            mode=mode,
+            include_bugs=include_bugs,
+            include_ideas=include_ideas,
+        )
 
     def load_with_benchmark(
         self,
         mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        include_bugs: bool = True,
+        include_ideas: bool = True,
     ) -> tuple[TaskTree, Dict[str, Any]]:
         """Load complete task tree and return parse timing metrics."""
         effective_parse_task_body = parse_task_body and mode == "full"
@@ -116,7 +127,11 @@ class TaskLoader:
         benchmark["parse_task_body"] = effective_parse_task_body
         start = perf_counter()
         tree = self._load_tree(
-            benchmark=benchmark, mode=mode, parse_task_body=effective_parse_task_body
+            benchmark=benchmark,
+            mode=mode,
+            parse_task_body=effective_parse_task_body,
+            include_bugs=include_bugs,
+            include_ideas=include_ideas,
         )
         benchmark["overall_ms"] = (perf_counter() - start) * 1000
         return tree, benchmark
@@ -126,6 +141,8 @@ class TaskLoader:
         scope: str | TaskPath,
         mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = False,
+        include_bugs: bool = True,
+        include_ideas: bool = True,
     ) -> TaskTree:
         """Load a focused subtree for a specific scope without traversing the full tree."""
         path = scope if isinstance(scope, TaskPath) else TaskPath.parse(scope)
@@ -175,10 +192,12 @@ class TaskLoader:
         tree.bugs = self._load_bugs(
             load_mode=mode,
             parse_task_body=effective_parse_task_body,
+            include_bugs=include_bugs,
         )
         tree.ideas = self._load_ideas(
             load_mode=mode,
             parse_task_body=effective_parse_task_body,
+            include_ideas=include_ideas,
         )
         return tree
 
@@ -187,6 +206,8 @@ class TaskLoader:
         benchmark: Optional[Dict[str, Any]] = None,
         mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        include_bugs: bool = True,
+        include_ideas: bool = True,
     ) -> TaskTree:
         """Load complete task tree."""
         root_index_path = self.tasks_dir / "index.yaml"
@@ -224,10 +245,16 @@ class TaskLoader:
 
             # Load bugs
             tree.bugs = self._load_bugs(
-                benchmark=benchmark, load_mode=mode, parse_task_body=parse_task_body
+                benchmark=benchmark,
+                load_mode=mode,
+                parse_task_body=parse_task_body,
+                include_bugs=include_bugs,
             )
             tree.ideas = self._load_ideas(
-                benchmark=benchmark, load_mode=mode, parse_task_body=parse_task_body
+                benchmark=benchmark,
+                load_mode=mode,
+                parse_task_body=parse_task_body,
+                include_ideas=include_ideas,
             )
 
             return tree
@@ -933,8 +960,12 @@ class TaskLoader:
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        include_bugs: bool = True,
     ):
         """Load bugs from .tasks/bugs/ directory."""
+        if not include_bugs:
+            return []
+
         bugs_dir = self.tasks_dir / "bugs"
         index_path = bugs_dir / "index.yaml"
         if not index_path.exists():
@@ -1003,8 +1034,12 @@ class TaskLoader:
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        include_ideas: bool = True,
     ):
         """Load ideas from .tasks/ideas/ directory."""
+        if not include_ideas:
+            return []
+
         ideas_dir = self.tasks_dir / "ideas"
         index_path = ideas_dir / "index.yaml"
         if not index_path.exists():

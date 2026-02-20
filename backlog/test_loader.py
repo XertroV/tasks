@@ -605,6 +605,160 @@ tasks:
     assert calls["todo_frontmatter"] == 1
 
 
+def test_load_metadata_can_disable_aux_loading(tmp_path, monkeypatch):
+    """Metadata mode can skip bugs and ideas when aux parsing is disabled."""
+    tasks_dir = tmp_path / ".tasks"
+    phase_dir = tasks_dir / "01-phase"
+    milestone_dir = phase_dir / "01-ms"
+    epic_dir = milestone_dir / "01-epic"
+    bugs_dir = tasks_dir / "bugs"
+    ideas_dir = tasks_dir / "ideas"
+    for path in (epic_dir, bugs_dir, ideas_dir):
+        path.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Metadata Aux Filter
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (phase_dir / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-ms
+""",
+        encoding="utf-8",
+    )
+    (milestone_dir / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    file: T001-normal.todo
+    title: Normal Task
+    status: pending
+    estimate_hours: 1
+    complexity: low
+    priority: medium
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-normal.todo").write_text(
+        """
+---
+id: P1.M1.E1.T001
+title: Normal Task
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---
+""",
+        encoding="utf-8",
+    )
+
+    (bugs_dir / "index.yaml").write_text(
+        """
+bugs:
+  - id: B001
+    file: B001-slow-bug.todo
+    title: Slow Bug
+    status: pending
+    estimate_hours: 1
+    priority: low
+    complexity: low
+""",
+        encoding="utf-8",
+    )
+    (bugs_dir / "B001-slow-bug.todo").write_text(
+        """
+---
+id: B001
+title: Slow Bug
+status: pending
+estimate_hours: 1
+complexity: low
+priority: low
+depends_on: []
+tags: []
+---
+""",
+        encoding="utf-8",
+    )
+
+    (ideas_dir / "index.yaml").write_text(
+        """
+ideas:
+  - id: I001
+    file: I001-slow-idea.todo
+    title: Slow Idea
+    status: pending
+    estimate_hours: 1
+    priority: low
+    complexity: low
+""",
+        encoding="utf-8",
+    )
+    (ideas_dir / "I001-slow-idea.todo").write_text(
+        """
+---
+id: I001
+title: Slow Idea
+status: pending
+estimate_hours: 1
+complexity: low
+priority: low
+depends_on: []
+tags: []
+---
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader()
+    calls = {"todo_file": 0, "todo_frontmatter": 0}
+    original_parse_todo_file = loader._parse_todo_file
+    original_parse_todo_frontmatter = loader._parse_todo_frontmatter
+
+    def parse_todo_file(*args, **kwargs):
+        calls["todo_file"] += 1
+        return original_parse_todo_file(*args, **kwargs)
+
+    def parse_todo_frontmatter(*args, **kwargs):
+        calls["todo_frontmatter"] += 1
+        return original_parse_todo_frontmatter(*args, **kwargs)
+
+    monkeypatch.setattr(loader, "_parse_todo_file", parse_todo_file)
+    monkeypatch.setattr(loader, "_parse_todo_frontmatter", parse_todo_frontmatter)
+
+    tree = loader.load("metadata", include_bugs=False, include_ideas=False)
+
+    task = tree.find_task("P1.M1.E1.T001")
+    assert task is not None
+    assert task.title == "Normal Task"
+    assert tree.bugs == []
+    assert tree.ideas == []
+    assert calls["todo_file"] == 0
+    assert calls["todo_frontmatter"] == 1
+
+
 def test_load_index_mode_skips_task_file_reads(tmp_path, monkeypatch):
     """Index mode should load task metadata directly from index entries."""
     tasks_dir = tmp_path / ".tasks"
