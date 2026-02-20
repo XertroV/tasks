@@ -15,8 +15,16 @@ tags: []
 
 ## Requirements
 
-- TODO: Add requirements
+- Implement "Handle missing files and legacy key compatibility" in backlog_go with behavior matching existing Python/TypeScript parity expectations for that feature.
+- Validate inputs, defaults, and failure modes relevant to this task, including malformed IDs, missing files, and incompatible status transitions.
+- Keep file format and path handling consistent with the current backlog data model and migration assumptions in this repository.
+- Ensure any generated/updated command or loader code is scoped to this task and does not introduce hidden side-effects on unrelated commands.
 
 ## Acceptance Criteria
 
-- TODO: Add acceptance criteria
+- This task can be verified through deterministic output or test assertions tied to "Handle missing files and legacy key compatibility" and the task id P1.M2.E2.T003.
+- Edge-case and error-path behavior is covered by at least one unit test or fixture assertion.
+- Parity checks against backlog.py/backlog_ts are updated or explicitly documented as equivalent for this scope.
+- No placeholder TODO/acceptance/default content remains in this task file and `bl check` remains clean.
+
+
