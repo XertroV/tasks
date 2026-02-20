@@ -249,6 +249,57 @@ def test_bug_accepts_positional_description_as_simple_title(
     assert "## Steps to Reproduce" not in bug_content
 
 
+def test_fixed_command_captures_metadata(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(
+        cli,
+        [
+            "fixed",
+            "--title",
+            "restore stale auth token",
+            "--description",
+            "Restore token handling to avoid forced logouts",
+            "--at",
+            "2026-02-20T12:00:00Z",
+            "--tags",
+            "auth,hotfix",
+            "--body",
+            "Added regression guard for token refresh.",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Created fixed:" in result.output
+
+    fixes_index_path = tmp_feature_tasks_dir / ".tasks" / "fixes" / "index.yaml"
+    assert fixes_index_path.exists()
+
+    fixes_index = yaml.safe_load(fixes_index_path.read_text())
+    assert "fixes" in fixes_index
+    assert len(fixes_index["fixes"]) == 1
+    assert fixes_index["fixes"][0]["id"] == "F001"
+
+    fix_file = (
+        tmp_feature_tasks_dir
+        / ".tasks"
+        / "fixes"
+        / fixes_index["fixes"][0]["file"]
+    )
+    assert fix_file.exists()
+    content = fix_file.read_text()
+    fm_text = content.split("---", 2)[1]
+    fm = yaml.safe_load(fm_text)
+    assert fm["id"] == "F001"
+    assert fm["type"] == "fixed"
+    assert fm["title"] == "restore stale auth token"
+    assert fm["description"] == "Restore token handling to avoid forced logouts"
+    assert fm["status"] == "done"
+    assert fm["created_at"] == "2026-02-20T12:00:00+00:00"
+    assert fm["completed_at"] == "2026-02-20T12:00:00+00:00"
+    assert fm["tags"] == ["auth", "hotfix"]
+    assert "Added regression guard for token refresh." in content
+    assert fixes_index["fixes"][0]["file"] == "2026-02/F001-restore-stale-auth-token.todo"
+
+
 def test_grab_prioritizes_normal_tasks_over_ideas(runner, tmp_feature_tasks_dir):
     idea_result = runner.invoke(cli, ["idea", "collect future refactor idea"])
     assert idea_result.exit_code == 0

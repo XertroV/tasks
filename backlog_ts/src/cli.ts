@@ -191,6 +191,7 @@ Commands:
   blocked         Mark task as blocked and optionally grab next
   bug             Create a new bug report
   idea            Capture an idea as planning intake
+  fixed           Capture an ad-hoc completed fix note
   search          Search tasks by pattern
   check           Check task tree consistency
   init            Initialize a new .backlog project
@@ -3173,6 +3174,55 @@ async function cmdBug(args: string[]): Promise<void> {
   }
 }
 
+async function cmdFixed(args: string[]): Promise<void> {
+  let title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
+  const optionNamesWithValue = new Set([
+    "--title",
+    "-T",
+    "--description",
+    "--desc",
+    "--at",
+    "--tags",
+    "--body",
+    "-b",
+  ]);
+  const fixedWords: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i]!;
+    if (optionNamesWithValue.has(arg)) {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("-")) continue;
+    fixedWords.push(arg);
+  }
+  const positionalTitle = fixedWords.join(" ").trim();
+
+  const description = parseOpt(args, "--description") ?? parseOpt(args, "--desc") ?? title;
+  const at = parseOpt(args, "--at");
+  const tags = parseCsv(parseOpt(args, "--tags"));
+  const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
+
+  if (!title && positionalTitle) {
+    title = positionalTitle;
+  }
+  if (!title) textError("fixed requires --title or FIX_TEXT");
+
+  const loader = new TaskLoader();
+  const fixed = await loader.createFixed({
+    title,
+    description: description ?? title,
+    at,
+    tags,
+    body,
+  });
+  console.log(`Created fixed: ${fixed.id}`);
+  console.log(`File: ${getDataDirName()}/${fixed.file}`);
+  if (tags.length) {
+    console.log(`Tags: ${tags.join(", ")}`);
+  }
+}
+
 async function cmdIdea(args: string[]): Promise<void> {
   const title = args.join(" ").trim();
   if (!title) textError("idea requires IDEA_TEXT");
@@ -3332,6 +3382,9 @@ async function main(): Promise<void> {
       return;
     case "bug":
       await cmdBug(rest);
+      return;
+    case "fixed":
+      await cmdFixed(rest);
       return;
     case "idea":
       await cmdIdea(rest);

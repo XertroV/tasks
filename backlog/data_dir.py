@@ -34,6 +34,7 @@ KNOWN_COMMANDS = [
     "move",
     "idea",
     "bug",
+    "fixed",
     "blocked",
     "skip",
     "unclaim",

@@ -5,7 +5,7 @@ import re
 import shutil
 import yaml
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 from time import perf_counter
 from typing import Dict, Any, Optional, Literal, Union
 from .models import (
@@ -1102,6 +1102,99 @@ class TaskLoader:
                 )
             )
         return ideas
+
+    def create_fixed(self, fixed_data: dict) -> Task:
+        """Create a completed ad-hoc fix note."""
+        fixes_dir = self.tasks_dir / "fixes"
+        fixes_dir.mkdir(parents=True, exist_ok=True)
+        index_path = fixes_dir / "index.yaml"
+
+        raw_at = fixed_data.get("at")
+        if raw_at:
+            created_at = self._parse_datetime(str(raw_at))
+            if created_at is None:
+                raise ValueError("fixed --at must be an ISO 8601 timestamp")
+            if created_at.tzinfo is None:
+                created_at = created_at.replace(tzinfo=timezone.utc)
+        else:
+            created_at = datetime.now(timezone.utc)
+
+        month_dir_name = created_at.strftime("%Y-%m")
+        month_dir = fixes_dir / month_dir_name
+        month_dir.mkdir(parents=True, exist_ok=True)
+
+        next_num = 1
+        if index_path.exists():
+            idx = self._load_yaml(index_path)
+            existing = idx.get("fixes", [])
+            nums = []
+            for entry in existing:
+                if not isinstance(entry, dict):
+                    continue
+                entry_id = str(entry.get("id", ""))
+                match = re.match(r"F(\d+)", entry_id)
+                if match:
+                    nums.append(int(match.group(1)))
+                else:
+                    file = str(entry.get("file", ""))
+                    file_match = re.match(r".*/?F(\d+)-", file)
+                    if file_match:
+                        nums.append(int(file_match.group(1)))
+            if nums:
+                next_num = max(nums) + 1
+
+        fixed_id = f"F{next_num:03d}"
+        slug = self._slugify(fixed_data["title"])
+        filename = f"{fixed_id}-{slug}.todo"
+        file_path = month_dir / filename
+
+        body = fixed_data.get("body") or ""
+        frontmatter = {
+            "id": fixed_id,
+            "type": "fixed",
+            "title": fixed_data["title"],
+            "description": fixed_data.get("description", fixed_data["title"]),
+            "status": "done",
+            "estimate_hours": 0.0,
+            "complexity": "low",
+            "priority": "low",
+            "depends_on": [],
+            "tags": fixed_data.get("tags", []),
+            "created_at": created_at.isoformat(),
+            "completed_at": created_at.isoformat(),
+        }
+
+        with open(file_path, "w") as f:
+            f.write("---\n")
+            yaml.dump(frontmatter, f, default_flow_style=False, sort_keys=False)
+            f.write("---\n")
+            f.write(body)
+
+        if index_path.exists():
+            idx = self._load_yaml(index_path)
+        else:
+            idx = {"fixes": []}
+
+        fixes_list = idx.get("fixes", [])
+        fixes_list.append({"id": fixed_id, "file": f"{month_dir_name}/{filename}"})
+        idx["fixes"] = fixes_list
+        with open(index_path, "w") as f:
+            yaml.dump(idx, f, default_flow_style=False, sort_keys=False)
+
+        return Task(
+            id=fixed_id,
+            title=fixed_data["title"],
+            file=str(Path("fixes") / month_dir_name / filename),
+            status=Status.DONE,
+            estimate_hours=0.0,
+            complexity=Complexity.LOW,
+            priority=Priority.LOW,
+            depends_on=[],
+            tags=fixed_data.get("tags", []),
+            epic_id=None,
+            milestone_id=None,
+            phase_id=None,
+        )
 
     def create_bug(self, bug_data: dict) -> Task:
         """

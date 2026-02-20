@@ -2,7 +2,7 @@
 id: I001
 title: add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-MM/Fxyz-title-slug.md'
   (or .todo if easier for consistency)
-status: in_progress
+status: done
 estimate_hours: 10.0
 complexity: medium
 priority: medium
@@ -13,7 +13,8 @@ tags:
 claimed_by: cli-user
 claimed_at: '2026-02-20T12:55:21.539190+00:00'
 started_at: '2026-02-20T12:55:21.539190+00:00'
-completed_at: null
+completed_at: '2026-02-20T13:03:52.850050+00:00'
+duration_minutes: 8.521847450000001
 ---
 
 # Idea Intake: add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-MM/Fxyz-title-slug.md' (or .todo if easier for consistency)
@@ -35,8 +36,8 @@ add 'bl fixed' as an easy way to add adhock fixes. store under path 'fixes/YYYY-
 
 ## Created Work Items
 
-- Add created task IDs
-- Add created bug IDs (if any)
+- Created task IDs: not applicable (implemented directly in this change set)
+- Created bug IDs: none
 
 ## Completion Criteria
 

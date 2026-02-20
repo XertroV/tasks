@@ -877,6 +877,86 @@ export class TaskLoader {
     };
   }
 
+  async createFixed(data: { title: string; description?: string; at?: string; tags?: string[]; body?: string }): Promise<import("./models").Task> {
+    const fixesDir = join(this.tasksDir, "fixes");
+    await mkdir(fixesDir, { recursive: true });
+    const indexPath = join(fixesDir, "index.yaml");
+
+    let createdAt = new Date();
+    if (data.at) {
+      const normalizedAt = /[zZ]|[+-]\d{2}:\d{2}$/.test(data.at) ? data.at : `${data.at}Z`;
+      const parsed = new Date(normalizedAt);
+      if (Number.isNaN(parsed.getTime())) {
+        throw new Error("fixed --at must be an ISO 8601 timestamp");
+      }
+      createdAt = parsed;
+    }
+
+    const monthDirName = createdAt.toISOString().slice(0, 7);
+    const monthDir = join(fixesDir, monthDirName);
+    await mkdir(monthDir, { recursive: true });
+
+    let nextNum = 1;
+    if (existsSync(indexPath)) {
+      const idx = this.mustYaml(indexPath);
+      const existing = ((idx.fixes as AnyRec[]) ?? [])
+        .filter((e) => e && typeof e === "object")
+        .map((entry) => {
+          const e = entry as AnyRec;
+          const id = String(e.id ?? "");
+          const idMatch = id.match(/^F(\d+)$/);
+          if (idMatch?.[1]) return Number(idMatch[1]);
+          const file = String(e.file ?? "");
+          const fileMatch = file.match(/(?:^|\/)F(\d+)-/);
+          return fileMatch?.[1] ? Number(fileMatch[1]) : 0;
+        })
+        .filter((n) => Number.isFinite(n) && n > 0);
+      if (existing.length) nextNum = Math.max(...existing) + 1;
+    }
+
+    const fixedId = `F${String(nextNum).padStart(3, "0")}`;
+    const filename = `${fixedId}-${slugify(data.title)}.todo`;
+    const filePath = join(monthDir, filename);
+
+    const fm: AnyRec = {
+      id: fixedId,
+      type: "fixed",
+      title: data.title,
+      description: data.description ?? data.title,
+      status: "done",
+      estimate_hours: 0.0,
+      complexity: "low",
+      priority: "low",
+      depends_on: [],
+      tags: data.tags ?? [],
+      created_at: createdAt.toISOString(),
+      completed_at: createdAt.toISOString(),
+    };
+    await writeFile(filePath, `---\n${stringify(fm)}---\n${data.body ?? ""}`);
+
+    const idxData: AnyRec = existsSync(indexPath) ? this.mustYaml(indexPath) : { fixes: [] };
+    const fixesList = ((idxData.fixes as AnyRec[]) ?? []).slice();
+    fixesList.push({ id: fixedId, file: `${monthDirName}/${filename}` });
+    idxData.fixes = fixesList;
+    await mkdir(dirname(indexPath), { recursive: true });
+    await writeFile(indexPath, stringify(idxData));
+
+    return {
+      id: fixedId,
+      title: data.title,
+      file: join("fixes", monthDirName, filename),
+      status: Status.DONE,
+      estimateHours: 0.0,
+      complexity: Complexity.LOW,
+      priority: Priority.LOW,
+      dependsOn: [],
+      tags: data.tags ?? [],
+      epicId: undefined,
+      milestoneId: undefined,
+      phaseId: undefined,
+    };
+  }
+
   async createIdea(data: { title: string; estimate?: number; complexity?: string; priority?: string; dependsOn?: string[]; tags?: string[] }): Promise<import("./models").Task> {
     const ideasDir = join(this.tasksDir, "ideas");
     await mkdir(ideasDir, { recursive: true });

@@ -1714,6 +1714,54 @@ tags: []
     expect(out).toContain("Run 'backlog show P1.M1.E1.T001' for full details.");
   });
 
+  test("fixed command captures metadata in todo and index", () => {
+    root = setupFixture();
+    const result = run(
+      [
+        "fixed",
+        "--title",
+        "restore stale auth token",
+        "--description",
+        "Restore token handling to avoid forced logouts",
+        "--at",
+        "2026-02-20T12:00:00Z",
+        "--tags",
+        "auth,hotfix",
+        "--body",
+        "Added regression guard for token refresh.",
+      ],
+      root,
+    );
+
+    expect(result.exitCode).toBe(0);
+    const output = `${result.stdout.toString()}${result.stderr.toString()}`;
+    expect(output).toContain("Created fixed:");
+    expect(output).toContain("F001");
+
+    const indexPath = join(root, ".tasks", "fixes", "index.yaml");
+    const index = parse(readFileSync(indexPath, "utf8")) as {
+      fixes: { id: string; file: string }[];
+    };
+    expect(Array.isArray(index.fixes)).toBeTrue();
+    expect(index.fixes.length).toBe(1);
+    expect(index.fixes[0]).toMatchObject({
+      id: "F001",
+      file: "2026-02/F001-restore-stale-auth-token.todo",
+    });
+
+    const fixPath = join(root, ".tasks", "fixes", index.fixes[0].file);
+    const fixText = readFileSync(fixPath, "utf8");
+    expect(fixText).toContain("type: fixed");
+    expect(fixText).toContain("title: restore stale auth token");
+    expect(fixText).toContain("description: Restore token handling to avoid forced logouts");
+    expect(fixText).toContain("status: done");
+    expect(fixText).toContain("created_at: 2026-02-20T12:00:00.000Z");
+    expect(fixText).toContain("completed_at: 2026-02-20T12:00:00.000Z");
+    expect(fixText).toContain("- auth");
+    expect(fixText).toContain("- hotfix");
+    expect(fixText).toContain("Added regression guard for token refresh.");
+  });
+
   test("benchmark command returns timing summary and text report", () => {
     root = setupFixture();
     rmSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"));
