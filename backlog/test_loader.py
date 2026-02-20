@@ -603,3 +603,86 @@ tasks:
     assert task.title == "Fast Load Task"
     assert calls["todo_file"] == 0
     assert calls["todo_frontmatter"] == 1
+
+
+def test_load_with_benchmark_full_mode_can_skip_task_body_parsing(tmp_path, monkeypatch):
+    """Benchmark full mode can skip task body parsing when requested."""
+    tasks_dir = tmp_path / ".tasks"
+    epic_dir = tasks_dir / "01-phase" / "01-ms" / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Benchmark Fast
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (tasks_dir / "01-phase" / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-ms
+""",
+        encoding="utf-8",
+    )
+    (tasks_dir / "01-phase" / "01-ms" / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    file: T001-body-heavy.todo
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-body-heavy.todo").write_text(
+        "\n".join(
+            [
+                "---",
+                "id: P1.M1.E1.T001",
+                "title: Body Heavy Task",
+                "status: pending",
+                "estimate_hours: 1",
+                "complexity: low",
+                "priority: medium",
+                "depends_on: []",
+                "tags: []",
+                "---",
+                "A",
+                "A",
+                "A",
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader(tasks_dir=str(tasks_dir))
+    include_body_calls = []
+    original_parse_todo_file = loader._parse_todo_file
+
+    def parse_todo_file(*args, **kwargs):
+        include_body = kwargs.get("include_body")
+        if include_body is None and len(args) > 3:
+            include_body = args[3]
+        include_body_calls.append(include_body)
+        return original_parse_todo_file(*args, **kwargs)
+
+    monkeypatch.setattr(loader, "_parse_todo_file", parse_todo_file)
+
+    _, benchmark = loader.load_with_benchmark(mode="full", parse_task_body=False)
+
+    assert include_body_calls == [False]
+    assert benchmark["task_body_parse_ms"] == 0

@@ -174,6 +174,44 @@ describe("loader", () => {
     expect(benchmark.phase_timings.length).toBe(1);
   });
 
+  test("loadWithBenchmark full mode can skip task body parsing", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-benchmark-nobody-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(tasksDir, { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Demo\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n`,
+      "utf8",
+    );
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic\n    path: 01-epic\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-heavy.todo\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-heavy.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: Heavy Body Task\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Body\n` +
+        "x".repeat(2048),
+      "utf8",
+    );
+
+    const { tree, benchmark } = await new TaskLoader(tasksDir).loadWithBenchmark("full", false);
+
+    expect(benchmark.task_body_parse_ms).toBe(0);
+    expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe("P1.M1.E1.T001");
+  });
+
   test("load with metadata mode uses frontmatter loader", async () => {
     const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-metadata-"));
     const tasksDir = join(root, ".tasks");
@@ -210,6 +248,7 @@ describe("loader", () => {
       .spyOn(loader as unknown as TaskLoader, "loadTodoFile")
       .mockResolvedValue({
         frontmatter: {},
+        body: "",
         elapsedMs: 0,
       });
     const frontmatterSpy = vi
@@ -225,6 +264,7 @@ describe("loader", () => {
           depends_on: [],
           tags: [],
         },
+        body: "",
         elapsedMs: 0,
       });
 

@@ -325,6 +325,8 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
     task_total = counts.get("tasks", 0)
     missing_task_files = benchmark.get("missing_task_files", 0)
     parsed_task_files = task_total - missing_task_files
+    parse_mode = benchmark.get("parse_mode", "full")
+    parse_body = benchmark.get("parse_task_body", True)
     index_parse_ms = benchmark.get("index_parse_ms", 0.0)
     task_frontmatter_parse_ms = benchmark.get("task_frontmatter_parse_ms", 0.0)
     task_body_parse_ms = benchmark.get("task_body_parse_ms", 0.0)
@@ -361,6 +363,8 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
                 "task_frontmatter_parse_ms": task_frontmatter_parse_ms,
                 "task_body_parse_ms": task_body_parse_ms,
                 "task_parse_other_ms": other_ms,
+                "parse_mode": parse_mode,
+                "parse_task_body": parse_body,
                 "node_counts": {
                     "phases": counts.get("phases", 0),
                     "milestones": counts.get("milestones", 0),
@@ -380,6 +384,8 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
     console.print(
         f"Overall parse time: [yellow]{_format_ms(benchmark.get('overall_ms', 0.0))}[/]"
     )
+    console.print(f"Parse mode: [yellow]{parse_mode}[/]")
+    console.print(f"Task body parsing: [yellow]{'enabled' if parse_body else 'disabled'}[/]")
     console.print(
         f"Index parse time: [yellow]{_format_ms(index_parse_ms)}[/]"
     )
@@ -465,11 +471,25 @@ def cli(ctx):
     type=click.IntRange(min=1),
     help="Number of slowest items to show",
 )
-def benchmark(output_json, top):
+@click.option(
+    "--mode",
+    type=click.Choice(["full", "metadata"]),
+    default="full",
+    help="Load mode used for leaf task parsing",
+)
+@click.option(
+    "--parse-body/--no-parse-body",
+    "parse_task_body",
+    default=True,
+    help="Parse task body content (full mode).",
+)
+def benchmark(output_json, top, mode, parse_task_body):
     """Show benchmark timings for loading the full task tree."""
     try:
         loader = TaskLoader()
-        _, benchmark = loader.load_with_benchmark()
+        _, benchmark = loader.load_with_benchmark(
+            mode=mode, parse_task_body=parse_task_body
+        )
         _print_benchmark(benchmark, top, output_json)
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")

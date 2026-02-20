@@ -2020,10 +2020,29 @@ def test_benchmark_command_reports_summary(runner, tmp_tasks_dir):
     assert summary["task_files_total"] == 1
     assert summary["task_files_found"] == 1
     assert summary["task_files_missing"] == 0
+    assert summary["parse_mode"] == "full"
+    assert summary["parse_task_body"] is True
     assert summary["index_parse_ms"] >= 0
     assert summary["task_frontmatter_parse_ms"] >= 0
     assert summary["task_body_parse_ms"] >= 0
     assert summary["task_parse_other_ms"] >= 0
+
+    json_no_body = runner.invoke(
+        cli,
+        ["benchmark", "--mode", "full", "--no-parse-body", "--json"],
+    )
+    assert json_no_body.exit_code == 0
+    payload_no_body = json.loads(json_no_body.output)
+    summary_no_body = payload_no_body["summary"]
+    assert summary_no_body["parse_mode"] == "full"
+    assert summary_no_body["parse_task_body"] is False
+    assert summary_no_body["task_body_parse_ms"] == 0
+
+    json_meta = runner.invoke(cli, ["benchmark", "--mode", "metadata", "--json"])
+    assert json_meta.exit_code == 0
+    metadata_summary = json.loads(json_meta.output)["summary"]
+    assert metadata_summary["parse_mode"] == "metadata"
+    assert metadata_summary["parse_task_body"] is False
 
     text_result = runner.invoke(cli, ["benchmark"])
     assert text_result.exit_code == 0
@@ -2032,3 +2051,4 @@ def test_benchmark_command_reports_summary(runner, tmp_tasks_dir):
     assert "Index parse time" in text_result.output
     assert "Task frontmatter parse time" in text_result.output
     assert "Task body parse time" in text_result.output
+    assert "Parse mode" in text_result.output

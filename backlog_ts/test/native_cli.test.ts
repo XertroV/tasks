@@ -1660,10 +1660,25 @@ tags: []
     expect(payload.summary.task_files_total).toBe(2);
     expect(payload.summary.task_files_found).toBe(1);
     expect(payload.summary.task_files_missing).toBe(1);
+    expect(payload.summary.parse_mode).toBe("full");
+    expect(payload.summary.parse_task_body).toBeTrue();
     expect(payload.summary.index_parse_ms).toBeGreaterThanOrEqual(0);
     expect(payload.summary.task_frontmatter_parse_ms).toBeGreaterThanOrEqual(0);
     expect(payload.summary.task_body_parse_ms).toBeGreaterThanOrEqual(0);
     expect(payload.summary.task_parse_other_ms).toBeGreaterThanOrEqual(0);
+
+    const jsonNoBody = run(["benchmark", "--mode", "full", "--no-parse-body", "--json"], root);
+    expect(jsonNoBody.exitCode).toBe(0);
+    const noBodyPayload = JSON.parse(jsonNoBody.stdout.toString());
+    expect(noBodyPayload.summary.parse_mode).toBe("full");
+    expect(noBodyPayload.summary.parse_task_body).toBeFalse();
+    expect(noBodyPayload.summary.task_body_parse_ms).toBe(0);
+
+    const jsonMetadata = run(["benchmark", "--mode", "metadata", "--json"], root);
+    expect(jsonMetadata.exitCode).toBe(0);
+    const metadataPayload = JSON.parse(jsonMetadata.stdout.toString());
+    expect(metadataPayload.summary.parse_mode).toBe("metadata");
+    expect(metadataPayload.summary.parse_task_body).toBeFalse();
 
     const textOut = run(["benchmark"], root);
     expect(textOut.exitCode).toBe(0);
@@ -1674,5 +1689,6 @@ tags: []
     expect(output).toContain("Index parse time");
     expect(output).toContain("Task frontmatter parse time");
     expect(output).toContain("Task body parse time");
+    expect(output).toContain("Parse mode");
   });
 });

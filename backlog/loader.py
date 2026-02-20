@@ -105,12 +105,19 @@ class TaskLoader:
         return self._load_tree(mode=mode)
 
     def load_with_benchmark(
-        self, mode: Literal["full", "metadata"] = "full"
+        self,
+        mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ) -> tuple[TaskTree, Dict[str, Any]]:
         """Load complete task tree and return parse timing metrics."""
+        effective_parse_task_body = parse_task_body and mode == "full"
         benchmark = self._new_benchmark()
+        benchmark["parse_mode"] = mode
+        benchmark["parse_task_body"] = effective_parse_task_body
         start = perf_counter()
-        tree = self._load_tree(benchmark=benchmark, mode=mode)
+        tree = self._load_tree(
+            benchmark=benchmark, mode=mode, parse_task_body=effective_parse_task_body
+        )
         benchmark["overall_ms"] = (perf_counter() - start) * 1000
         return tree, benchmark
 
@@ -118,6 +125,7 @@ class TaskLoader:
         self,
         benchmark: Optional[Dict[str, Any]] = None,
         mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ) -> TaskTree:
         """Load complete task tree."""
         root_index_path = self.tasks_dir / "index.yaml"
@@ -143,6 +151,7 @@ class TaskLoader:
                         phase_data,
                         benchmark=benchmark,
                         load_mode=mode,
+                        parse_task_body=parse_task_body,
                     )
                     tree.phases.append(phase)
                 except Exception as e:
@@ -153,8 +162,12 @@ class TaskLoader:
                     ) from e
 
             # Load bugs
-            tree.bugs = self._load_bugs(benchmark=benchmark, load_mode=mode)
-            tree.ideas = self._load_ideas(benchmark=benchmark, load_mode=mode)
+            tree.bugs = self._load_bugs(
+                benchmark=benchmark, load_mode=mode, parse_task_body=parse_task_body
+            )
+            tree.ideas = self._load_ideas(
+                benchmark=benchmark, load_mode=mode, parse_task_body=parse_task_body
+            )
 
             return tree
         except KeyError as e:
@@ -191,6 +204,7 @@ class TaskLoader:
         phase_data: Dict[str, Any],
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ) -> Phase:
         """Load a phase and its milestones."""
         start = perf_counter()
@@ -251,6 +265,7 @@ class TaskLoader:
                         phase.id,
                         benchmark=benchmark,
                         load_mode=load_mode,
+                        parse_task_body=parse_task_body,
                     )
                     phase.milestones.append(milestone)
                 except Exception as e:
@@ -281,6 +296,7 @@ class TaskLoader:
         phase_id: str,
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ) -> Milestone:
         """Load a milestone and its epics."""
         start = perf_counter()
@@ -329,6 +345,7 @@ class TaskLoader:
                         ms_path,
                         benchmark=benchmark,
                         load_mode=load_mode,
+                        parse_task_body=parse_task_body,
                     )
                     milestone.epics.append(epic)
                 except Exception as e:
@@ -371,6 +388,7 @@ class TaskLoader:
         ms_path: TaskPath,
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ) -> Epic:
         """Load an epic and its tasks."""
         epic_file_path = milestone_path / epic_data["path"]
@@ -414,6 +432,7 @@ class TaskLoader:
                 epic_path,
                 benchmark=benchmark,
                 load_mode=load_mode,
+                parse_task_body=parse_task_body,
             )
             epic.tasks.append(task)
 
@@ -433,6 +452,7 @@ class TaskLoader:
         epic_path: TaskPath,
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ) -> Task:
         """Load a task from its .todo file."""
         # Handle both formats: dict with metadata or simple string filename
@@ -464,7 +484,10 @@ class TaskLoader:
         if task_file.exists():
             if load_mode == "full":
                 frontmatter, _ = self._parse_todo_file(
-                    task_file, benchmark=benchmark, file_type="todo_file"
+                    task_file,
+                    benchmark=benchmark,
+                    file_type="todo_file",
+                    include_body=parse_task_body,
                 )
             else:
                 frontmatter = self._parse_todo_frontmatter(
@@ -579,28 +602,48 @@ class TaskLoader:
         filepath: Path,
         benchmark: Optional[Dict[str, Any]] = None,
         file_type: str = "todo_file",
+        include_body: bool = True,
     ) -> tuple[Dict[str, Any], str]:
         """Parse .todo file with YAML frontmatter."""
         start = perf_counter()
-        with open(filepath, "r") as f:
-            content = f.read()
+        frontmatter: Dict[str, Any] = {}
         frontmatter_parse_ms = 0.0
         body_parse_ms = 0.0
 
-        # Split frontmatter and body
-        parts = content.split("---\n", 2)
-        if len(parts) >= 3:
-            frontmatter_str = parts[1]
-            frontmatter_parse_start = perf_counter()
-            frontmatter = yaml.safe_load(frontmatter_str) or {}
-            frontmatter_parse_ms = (perf_counter() - frontmatter_parse_start) * 1000
+        if include_body:
+            with open(filepath, "r") as f:
+                content = f.read()
 
-            body_start = perf_counter()
-            body = parts[2]
-            body_parse_ms = (perf_counter() - body_start) * 1000
-            result = (frontmatter, body)
+            # Split frontmatter and body
+            parts = content.split("---\n", 2)
+            if len(parts) >= 3:
+                frontmatter_str = parts[1]
+                frontmatter_parse_start = perf_counter()
+                frontmatter = yaml.safe_load(frontmatter_str) or {}
+                frontmatter_parse_ms = (perf_counter() - frontmatter_parse_start) * 1000
+
+                body_start = perf_counter()
+                body = parts[2]
+                body_parse_ms = (perf_counter() - body_start) * 1000
+                result = (frontmatter, body)
+            else:
+                result = ({}, content)
         else:
-            result = ({}, content)
+            with open(filepath, "r") as f:
+                first_line = f.readline()
+                if first_line.replace("\ufeff", "").strip() != "---":
+                    result = ({}, "")
+                else:
+                    lines = []
+                    for line in f:
+                        if line.strip() == "---":
+                            break
+                        lines.append(line)
+                    if lines:
+                        frontmatter_parse_start = perf_counter()
+                        frontmatter = yaml.safe_load("".join(lines)) or {}
+                        frontmatter_parse_ms = (perf_counter() - frontmatter_parse_start) * 1000
+                    result = (frontmatter, "")
 
         if benchmark is not None:
             self._record_file(benchmark, file_type, filepath, (perf_counter() - start) * 1000)
@@ -764,6 +807,7 @@ class TaskLoader:
         self,
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ):
         """Load bugs from .tasks/bugs/ directory."""
         bugs_dir = self.tasks_dir / "bugs"
@@ -786,7 +830,10 @@ class TaskLoader:
                 continue
             if load_mode == "full":
                 frontmatter, _ = self._parse_todo_file(
-                    file_path, benchmark=benchmark, file_type="bug_file"
+                    file_path,
+                    benchmark=benchmark,
+                    file_type="bug_file",
+                    include_body=parse_task_body,
                 )
             else:
                 frontmatter = self._parse_todo_frontmatter(
@@ -825,6 +872,7 @@ class TaskLoader:
         self,
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: Literal["full", "metadata"] = "full",
+        parse_task_body: bool = True,
     ):
         """Load ideas from .tasks/ideas/ directory."""
         ideas_dir = self.tasks_dir / "ideas"
@@ -847,7 +895,10 @@ class TaskLoader:
                 continue
             if load_mode == "full":
                 frontmatter, _ = self._parse_todo_file(
-                    file_path, benchmark=benchmark, file_type="idea_file"
+                    file_path,
+                    benchmark=benchmark,
+                    file_type="idea_file",
+                    include_body=parse_task_body,
                 )
             else:
                 frontmatter = self._parse_todo_frontmatter(

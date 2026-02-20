@@ -102,6 +102,15 @@ export function parseOpt(args: string[], name: string): string | undefined {
   return undefined;
 }
 
+function parseNegatedFlag(args: string[], name: string, defaultValue: boolean): boolean {
+  const yesIndex = args.indexOf(`--${name}`);
+  const noIndex = args.indexOf(`--no-${name}`);
+  if (yesIndex === -1 && noIndex === -1) return defaultValue;
+  if (yesIndex === -1) return false;
+  if (noIndex === -1) return true;
+  return yesIndex > noIndex;
+}
+
 function listScopeArg(args: string[]): string | undefined {
   const optionValues = new Set<number>();
   const optionValueNames = new Set([
@@ -993,11 +1002,17 @@ async function cmdLog(args: string[]): Promise<void> {
 async function cmdBenchmark(args: string[]): Promise<void> {
   const outputJson = parseFlag(args, "--json");
   const topArg = parseOpt(args, "--top");
+  const mode = parseOpt(args, "--mode") ?? "full";
+  if (mode !== "full" && mode !== "metadata") {
+    textError("--mode must be either full or metadata");
+  }
+  const parseTaskBody = parseNegatedFlag(args, "parse-body", true);
+  const effectiveParseTaskBody = mode === "full" ? parseTaskBody : false;
   const top = Number(topArg ?? 10);
   const topN = Number.isFinite(top) && top > 0 ? Math.floor(top) : 10;
 
   const loader = new TaskLoader();
-  const { benchmark } = await loader.loadWithBenchmark();
+  const { benchmark } = await loader.loadWithBenchmark(mode, effectiveParseTaskBody);
   const taskTotal = benchmark.counts.tasks;
   const missing = benchmark.missing_task_files;
   const found = taskTotal - missing;
@@ -1032,6 +1047,8 @@ async function cmdBenchmark(args: string[]): Promise<void> {
         task_frontmatter_parse_ms: taskFrontmatterParseMs,
         task_body_parse_ms: taskBodyParseMs,
         task_parse_other_ms: otherParseMs,
+        parse_mode: mode,
+        parse_task_body: effectiveParseTaskBody,
         node_counts: {
           phases: benchmark.counts.phases,
           milestones: benchmark.counts.milestones,
@@ -1049,6 +1066,8 @@ async function cmdBenchmark(args: string[]): Promise<void> {
 
   console.log("\nTask Tree Benchmark");
   console.log(`Overall parse time: ${formatMs(benchmark.overall_ms)}`);
+  console.log(`Parse mode: ${mode}`);
+  console.log(`Task body parsing: ${effectiveParseTaskBody ? "enabled" : "disabled"}`);
   console.log(`Index parse time: ${formatMs(indexParseMs)}`);
   console.log(`Task frontmatter parse time: ${formatMs(taskFrontmatterParseMs)}`);
   console.log(`Task body parse time: ${formatMs(taskBodyParseMs)}`);
