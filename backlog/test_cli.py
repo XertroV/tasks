@@ -1854,6 +1854,46 @@ def test_lock_milestone_and_phase_blocks_higher_level_adds(runner, tmp_tasks_dir
     assert "has been closed and cannot accept new milestones" in blocked_milestone_add.output
 
 
+def test_add_commands_accept_optional_descriptions(runner, tmp_tasks_dir):
+    """add-phase, add-milestone, and add-epic should persist --description text."""
+    phase_description = "Stage rollout and release prep"
+    milestone_description = "Prepare release docs and tests"
+    epic_description = "Ship user documentation"
+
+    phase_result = runner.invoke(
+        cli,
+        ["add-phase", "--title", "Second Phase", "--description", phase_description],
+    )
+    assert phase_result.exit_code == 0
+    root_index = yaml.safe_load((tmp_tasks_dir / ".tasks" / "index.yaml").read_text())
+    phase_entry = next(entry for entry in root_index["phases"] if entry["id"] == "P2")
+    assert phase_entry["description"] == phase_description
+
+    milestone_result = runner.invoke(
+        cli,
+        ["add-milestone", "P1", "--title", "Second Milestone", "--description", milestone_description],
+    )
+    assert milestone_result.exit_code == 0
+    milestone_index = yaml.safe_load(
+        (tmp_tasks_dir / ".tasks" / "01-test-phase" / "index.yaml").read_text()
+    )
+    milestone_entry = next(
+        entry for entry in milestone_index["milestones"] if entry["id"] == "M1"
+    )
+    assert milestone_entry["description"] == milestone_description
+
+    epic_result = runner.invoke(
+        cli,
+        ["add-epic", "P1.M1", "--title", "Second Epic", "--description", epic_description],
+    )
+    assert epic_result.exit_code == 0
+    epic_index = yaml.safe_load(
+        (tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "index.yaml").read_text()
+    )
+    epic_entry = next(entry for entry in epic_index["epics"] if entry["id"] == "E1")
+    assert epic_entry["description"] == epic_description
+
+
 def test_show_idea_pending_displays_instructions(runner, tmp_tasks_dir):
     """show on a pending idea should display an Instructions section."""
     create = runner.invoke(cli, ["idea", "refactor auth module"])

@@ -963,21 +963,71 @@ tags: []
 
   test("add/add-epic/add-milestone/add-phase commands", () => {
     root = setupFixture();
+    const phaseDescription = "Ship planning and prep";
+    const milestoneDescription = "Add docs, tests, and tracking";
+    const epicDescription = "Capture edge-case tasks";
+
     let p = run(["add", "P1.M1.E1", "--title", "New Task"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created task:");
 
-    p = run(["add-epic", "P1.M1", "--title", "New Epic"], root);
+    p = run(
+      ["add-epic", "P1.M1", "--title", "New Epic", "--description", epicDescription],
+      root,
+    );
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created epic:");
+    const epicIndex = parse(
+      readFileSync(
+        join(root, ".tasks", "01-phase", "01-ms", "index.yaml"),
+        "utf8",
+      ),
+    ) as {
+      epics: {
+        id: string;
+        description?: string;
+      }[];
+    };
+    const addedEpic = epicIndex.epics.find((entry) => entry.id === "E2");
+    expect(addedEpic?.description).toBe(epicDescription);
 
-    p = run(["add-milestone", "P1", "--title", "New Milestone"], root);
+    p = run(
+      [
+        "add-milestone",
+        "P1",
+        "--title",
+        "New Milestone",
+        "--description",
+        milestoneDescription,
+      ],
+      root,
+    );
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created milestone:");
+    const milestoneIndex = parse(
+      readFileSync(join(root, ".tasks", "01-phase", "index.yaml"), "utf8"),
+    ) as {
+      milestones: {
+        id: string;
+        description?: string;
+      }[];
+    };
+    const addedMilestone = milestoneIndex.milestones.find((entry) => entry.id === "M2");
+    expect(addedMilestone?.description).toBe(milestoneDescription);
 
-    p = run(["add-phase", "--title", "New Phase"], root);
+    p = run(
+      ["add-phase", "--title", "New Phase", "--description", phaseDescription],
+      root,
+    );
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created phase:");
+    const rootIndex = parse(
+      readFileSync(join(root, ".tasks", "index.yaml"), "utf8"),
+    ) as {
+      phases: { id: string; description?: string }[];
+    };
+    const addedPhase = rootIndex.phases.find((entry) => entry.id === "P2");
+    expect(addedPhase?.description).toBe(phaseDescription);
   });
 
   test("lock/unlock gates add commands for epic, milestone, and phase", () => {

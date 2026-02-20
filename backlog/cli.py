@@ -3121,6 +3121,7 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
 @click.argument("milestone_id")
 @click.option("--title", "-T", "--name", "-n", required=True, help="Epic title")
 @click.option("--estimate", "-e", default=4.0, type=float, help="Hours estimate")
+@click.option("--description", help="Epic description")
 @click.option(
     "--complexity",
     "-c",
@@ -3128,7 +3129,7 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
     type=click.Choice(["low", "medium", "high", "critical"]),
 )
 @click.option("--depends-on", "-d", default="", help="Comma-separated epic IDs")
-def add_epic(milestone_id, title, estimate, complexity, depends_on):
+def add_epic(milestone_id, title, estimate, description, complexity, depends_on):
     """Add a new epic to a milestone."""
     try:
         loader = TaskLoader()
@@ -3138,6 +3139,7 @@ def add_epic(milestone_id, title, estimate, complexity, depends_on):
         epic_data = {
             "name": title,
             "estimate_hours": estimate,
+            "description": description,
             "complexity": complexity,
             "depends_on": depends_list,
         }

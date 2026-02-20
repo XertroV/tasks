@@ -2540,6 +2540,7 @@ async function cmdAddEpic(args: string[]): Promise<void> {
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "4");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const description = parseOpt(args, "--description") ?? "";
 
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
@@ -2587,7 +2588,7 @@ async function cmdAddEpic(args: string[]): Promise<void> {
     estimate_hours: estimate,
     complexity,
     depends_on: dependsOn,
-    description: "",
+    description,
   });
   msIndex.epics = epics;
   await writeYamlObj(msIndexPath, msIndex);
@@ -2602,6 +2603,7 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "8");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const description = parseOpt(args, "--description") ?? "";
 
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
@@ -2644,7 +2646,7 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
     estimate_hours: estimate,
     complexity,
     depends_on: dependsOn,
-    description: "",
+    description,
   });
   phaseIndex.milestones = milestones;
   await writeYamlObj(phaseIndexPath, phaseIndex);
@@ -2658,6 +2660,7 @@ async function cmdAddPhase(args: string[]): Promise<void> {
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "40");
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const description = parseOpt(args, "--description") ?? "";
 
   const rootIndexPath = join(getDataDirName(), "index.yaml");
   const root = await readYamlObj(rootIndexPath);
@@ -2692,7 +2695,7 @@ async function cmdAddPhase(args: string[]): Promise<void> {
     estimate_hours: estimate,
     priority,
     depends_on: dependsOn,
-    description: "",
+    description,
   });
   root.phases = phases;
   await writeYamlObj(rootIndexPath, root);
