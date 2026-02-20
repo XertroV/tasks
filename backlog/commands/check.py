@@ -19,6 +19,7 @@ from ..helpers import (
 )
 from ..loader import TaskLoader
 from ..data_dir import get_data_dir_name
+from ..models import Status
 
 console = Console()
 
@@ -654,6 +655,18 @@ def _validate_uninitialized_todos(tree, findings, tasks_root: Path):
             pass
 
 
+def _validate_pending_tasks_without_claims(tree, findings, tasks_root: Path):
+    for task in get_all_tasks(tree):
+        if task.status == Status.PENDING and (task.claimed_by or task.claimed_at):
+            _add_finding(
+                findings,
+                "error",
+                "pending_task_with_claim",
+                f"Task {task.id} is pending but still has claim metadata.",
+                str(tasks_root / task.file),
+            )
+
+
 def run_checks(tasks_dir: str | None = None) -> dict:
     """Run consistency checks and return normalized findings."""
     findings = []
@@ -666,6 +679,7 @@ def run_checks(tasks_dir: str | None = None) -> dict:
     _validate_ids_and_dependencies(tree, findings, resolved_tasks_dir)
     _validate_bugs(tree, findings, resolved_tasks_dir)
     _validate_cycles(tree, findings)
+    _validate_pending_tasks_without_claims(tree, findings, resolved_tasks_dir)
     _validate_runtime_files(tree, findings)
     _validate_uninitialized_todos(tree, findings, resolved_tasks_dir)
 

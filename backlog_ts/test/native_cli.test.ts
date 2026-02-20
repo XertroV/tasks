@@ -613,6 +613,20 @@ describe("native cli", () => {
     expect(todo).toContain("status: pending");
   });
 
+  test("unclaim recovers pending claimed tasks", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    let todo = readFileSync(taskPath, "utf8");
+    todo = todo.replace("status: pending", "status: pending\nclaimed_by: agent-z\nclaimed_at: 2026-01-01T00:00:00.000Z");
+    writeFileSync(taskPath, todo);
+
+    const p = run(["unclaim", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    todo = readFileSync(taskPath, "utf8");
+    expect(todo).toContain("status: pending");
+    expect(todo).not.toContain("claimed_by: agent-z");
+  });
+
   test("blocked auto-grab next task", () => {
     root = setupFixture();
     let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-b"], root);
@@ -729,6 +743,20 @@ describe("native cli", () => {
     expect(p.stdout.toString()).toContain("zero_estimate_hours");
     p = run(["check", "--strict"], root);
     expect(p.exitCode).toBe(1);
+  });
+
+  test("check fails for pending task with claim metadata", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const todo = readFileSync(taskPath, "utf8").replace(
+      "status: pending",
+      "status: pending\nclaimed_by: agent-z\nclaimed_at: 2026-01-01T00:00:00.000Z",
+    );
+    writeFileSync(taskPath, todo);
+
+    const p = run(["check"], root);
+    expect(p.exitCode).toBe(1);
+    expect(p.stdout.toString()).toContain("pending_task_with_claim");
   });
 
   test("check command works with .backlog directory", () => {

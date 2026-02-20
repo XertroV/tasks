@@ -2123,11 +2123,19 @@ async function cmdUnclaim(args: string[]): Promise<void> {
   const tree = await loader.load("metadata");
   const task = findTask(tree, taskId);
   if (!task) textError(`Task not found: ${taskId}`);
-  if (task.status !== Status.IN_PROGRESS) {
+  if (task.status !== Status.IN_PROGRESS && task.status !== Status.PENDING) {
     console.log(`Task is not in progress: ${task.status}`);
     return;
   }
-  updateStatus(task, Status.PENDING, "unclaim");
+  if (task.status === Status.IN_PROGRESS) {
+    updateStatus(task, Status.PENDING, "unclaim");
+  } else if (!task.claimedBy && !task.claimedAt) {
+    console.log(`Task is not in progress: ${task.status}`);
+    return;
+  } else {
+    task.claimedBy = undefined;
+    task.claimedAt = undefined;
+  }
   await loader.saveTask(task);
   await clearContext();
   console.log(`Unclaimed: ${task.id} - ${task.title}`);

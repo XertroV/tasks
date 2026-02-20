@@ -178,6 +178,30 @@ def test_check_fails_when_dependency_task_missing(tmp_path, monkeypatch):
     assert '"missing_task_dependency"' in result.output
 
 
+def test_check_fails_when_pending_task_has_claim_metadata(tmp_path, monkeypatch):
+    _create_minimal_tree(tmp_path)
+    task_file = (
+        tmp_path
+        / ".tasks"
+        / "01-phase"
+        / "01-milestone"
+        / "01-epic"
+        / "T001-task-1.todo"
+    )
+    content = task_file.read_text()
+    content = content.replace(
+        "priority: medium", "priority: medium\nclaimed_by: agent-recover\nclaimed_at: 2026-01-01T00:00:00+00:00"
+    )
+    task_file.write_text(content)
+
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+    result = runner.invoke(cli, ["check"])
+
+    assert result.exit_code == 1
+    assert "pending_task_with_claim" in result.output
+
+
 def test_check_allows_task_dependency_on_existing_epic(tmp_path, monkeypatch):
     _create_minimal_tree(tmp_path, t2_depends=["E2"])
 

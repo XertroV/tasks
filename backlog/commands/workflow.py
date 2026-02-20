@@ -1113,10 +1113,14 @@ def _reset_task_to_pending(task, loader):
 
     if task.status == Status.IN_PROGRESS:
         update_status(task, Status.PENDING)
-        loader.save_task(task)
-        return True
+    elif task.status == Status.PENDING and (task.claimed_by or task.claimed_at):
+        task.claimed_by = None
+        task.claimed_at = None
+    else:
+        return False
 
-    return False
+    loader.save_task(task)
+    return True
 
 
 @click.command()
@@ -1149,7 +1153,7 @@ def unclaim(task_id, agent):
             return
 
         console.print(f"\n[cyan]↩ Unclaimed:[/] {task.id} - {task.title}")
-        console.print(f"  Status: in_progress → pending (unclaimed)\n")
+        console.print(f"  Status: set to pending (unclaimed)\n")
 
         clear_context()
 

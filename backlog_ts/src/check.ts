@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import { parse } from "yaml";
 import { findEpic, findMilestone, findPhase, findTask, getAllTasks, isTaskFileMissing } from "./helpers";
 import { TaskLoader } from "./loader";
-import type { TaskTree } from "./models";
+import { Status, type TaskTree } from "./models";
 import { getDataDirName } from "./data_dir";
 
 type Finding = {
@@ -354,6 +354,19 @@ async function validateUninitializedTodos(
   }
 }
 
+function validatePendingTaskClaims(tree: TaskTree, findings: Finding[], dataDir: string): void {
+  for (const task of getAllTasks(tree)) {
+    if (task.status === Status.PENDING && (task.claimedBy || task.claimedAt)) {
+      addFinding(findings, {
+        level: "error",
+        code: "pending_task_with_claim",
+        message: `Task ${task.id} is pending but still has claim metadata.`,
+        location: `${dataDir}/${task.file}`,
+      });
+    }
+  }
+}
+
 export async function runChecks(tasksDir?: string): Promise<{ ok: boolean; errors: Finding[]; warnings: Finding[]; summary: { errors: number; warnings: number; total: number } }> {
   const findings: Finding[] = [];
   const dataDir = tasksDir ?? getDataDirName();
@@ -363,6 +376,7 @@ export async function runChecks(tasksDir?: string): Promise<{ ok: boolean; error
   validateIdsAndDependencies(tree, findings);
   validateBugs(tree, findings, dataDir);
   validateCycles(tree, findings);
+  validatePendingTaskClaims(tree, findings, dataDir);
   await validateRuntimeFiles(tree, findings, dataDir);
   await validateUninitializedTodos(tree, findings, dataDir);
 

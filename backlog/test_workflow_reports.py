@@ -284,6 +284,26 @@ def test_unclaim_from_context(runner, tmp_workflow_reports_dir):
     assert get_current_task_id() is None
 
 
+def test_unclaim_recovers_pending_claimed_task(runner, tmp_workflow_reports_dir):
+    claimed_at = datetime.now(timezone.utc)
+    _save_task_fields(
+        "P1.M1.E1.T003",
+        status=Status.PENDING,
+        claimed_by="agent-a",
+        claimed_at=claimed_at,
+    )
+
+    result = runner.invoke(cli, ["unclaim", "P1.M1.E1.T003"])
+
+    assert result.exit_code == 0
+    assert "Unclaimed:" in result.output
+
+    task = _load_task("P1.M1.E1.T003")
+    assert task.status == Status.PENDING
+    assert task.claimed_by is None
+    assert task.claimed_at is None
+
+
 def test_handoff_appends_notes_and_transfers_ownership(
     runner, tmp_workflow_reports_dir
 ):
