@@ -2044,6 +2044,15 @@ def test_benchmark_command_reports_summary(runner, tmp_tasks_dir):
     assert metadata_summary["parse_mode"] == "metadata"
     assert metadata_summary["parse_task_body"] is False
 
+    json_index = runner.invoke(cli, ["benchmark", "--mode", "index", "--json"])
+    assert json_index.exit_code == 0
+    index_summary = json.loads(json_index.output)["summary"]
+    assert index_summary["parse_mode"] == "index"
+    assert index_summary["parse_task_body"] is False
+    assert index_summary["task_files_total"] == 1
+    assert index_summary["task_files_found"] == 1
+    assert index_summary["task_files_missing"] == 0
+
     text_result = runner.invoke(cli, ["benchmark"])
     assert text_result.exit_code == 0
     assert "Task Tree Benchmark" in text_result.output

@@ -1003,8 +1003,8 @@ async function cmdBenchmark(args: string[]): Promise<void> {
   const outputJson = parseFlag(args, "--json");
   const topArg = parseOpt(args, "--top");
   const mode = parseOpt(args, "--mode") ?? "full";
-  if (mode !== "full" && mode !== "metadata") {
-    textError("--mode must be either full or metadata");
+  if (mode !== "full" && mode !== "metadata" && mode !== "index") {
+    textError("--mode must be one of: full, metadata, index");
   }
   const parseTaskBody = parseNegatedFlag(args, "parse-body", true);
   const effectiveParseTaskBody = mode === "full" ? parseTaskBody : false;

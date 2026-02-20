@@ -212,6 +212,57 @@ describe("loader", () => {
     expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe("P1.M1.E1.T001");
   });
 
+  test("loadWithBenchmark index mode avoids todo parsing", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-benchmark-index-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(tasksDir, { recursive: true });
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Demo\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic\n    path: 01-epic\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-present.todo\n  - id: T002\n    file: T002-missing.todo\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-present.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: Present\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Present\n`,
+      "utf8",
+    );
+
+    const loader = new TaskLoader(tasksDir);
+    const todoFileSpy = vi
+      .spyOn(loader as unknown as TaskLoader, "loadTodoFile")
+      .mockResolvedValue({ frontmatter: {}, body: "", elapsedMs: 0 });
+    const frontmatterSpy = vi
+      .spyOn(loader as unknown as TaskLoader, "loadTodoFrontmatter")
+      .mockResolvedValue({ frontmatter: {}, elapsedMs: 0 });
+
+    const { benchmark } = await loader.loadWithBenchmark("index");
+
+    expect(todoFileSpy).not.toHaveBeenCalled();
+    expect(frontmatterSpy).not.toHaveBeenCalled();
+    expect(benchmark.counts.tasks).toBe(2);
+    expect(benchmark.missing_task_files).toBe(0);
+    expect(benchmark.files.by_type.todo_file).toBe(0);
+
+    todoFileSpy.mockRestore();
+    frontmatterSpy.mockRestore();
+  });
+
   test("load with metadata mode uses frontmatter loader", async () => {
     const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-metadata-"));
     const tasksDir = join(root, ".tasks");
@@ -274,6 +325,58 @@ describe("loader", () => {
     expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe(
       "P1.M1.E1.T001",
     );
+
+    todoFileSpy.mockRestore();
+    frontmatterSpy.mockRestore();
+  });
+
+  test("load with index mode skips todo file parsing", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-index-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(tasksDir, { recursive: true });
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Demo\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic\n    path: 01-epic\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-index.todo\n    title: Indexed\n    status: pending\n    estimate_hours: 1\n    complexity: low\n    priority: medium\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-index.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: Indexed\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Indexed\n`,
+      "utf8",
+    );
+
+    const loader = new TaskLoader(tasksDir);
+    const todoFileSpy = vi
+      .spyOn(loader as unknown as TaskLoader, "loadTodoFile")
+      .mockResolvedValue({ frontmatter: {}, body: "", elapsedMs: 0 });
+    const frontmatterSpy = vi
+      .spyOn(loader as unknown as TaskLoader, "loadTodoFrontmatter")
+      .mockResolvedValue({ frontmatter: {}, body: "", elapsedMs: 0 });
+
+    const tree = await loader.load("index");
+
+    expect(todoFileSpy).not.toHaveBeenCalled();
+    expect(frontmatterSpy).not.toHaveBeenCalled();
+    expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe(
+      "P1.M1.E1.T001",
+    );
+    expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.title).toBe("Indexed");
 
     todoFileSpy.mockRestore();
     frontmatterSpy.mockRestore();

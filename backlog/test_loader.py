@@ -605,6 +605,104 @@ tasks:
     assert calls["todo_frontmatter"] == 1
 
 
+def test_load_index_mode_skips_task_file_reads(tmp_path, monkeypatch):
+    """Index mode should load task metadata directly from index entries."""
+    tasks_dir = tmp_path / ".tasks"
+    phase_dir = tasks_dir / "01-phase"
+    milestone_dir = phase_dir / "01-ms"
+    epic_dir = milestone_dir / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Index Load
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (phase_dir / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-ms
+""",
+        encoding="utf-8",
+    )
+    (milestone_dir / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    title: Indexed Task
+    status: in_progress
+    estimate_hours: 4
+    complexity: medium
+    priority: high
+    depends_on: []
+    file: T001-indexed.todo
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-indexed.todo").write_text(
+        "\n".join(
+            [
+                "---",
+                "id: P1.M1.E1.T001",
+                "title: Indexed Task",
+                "status: in_progress",
+                "estimate_hours: 4",
+                "complexity: medium",
+                "priority: high",
+                "depends_on: []",
+                "tags: []",
+                "---",
+                "",
+                "Should not be loaded in index mode.",
+            ],
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader()
+
+    calls = {"todo_file": 0, "todo_frontmatter": 0}
+    original_parse_todo_file = loader._parse_todo_file
+    original_parse_todo_frontmatter = loader._parse_todo_frontmatter
+
+    def parse_todo_file(*args, **kwargs):
+        calls["todo_file"] += 1
+        return original_parse_todo_file(*args, **kwargs)
+
+    def parse_todo_frontmatter(*args, **kwargs):
+        calls["todo_frontmatter"] += 1
+        return original_parse_todo_frontmatter(*args, **kwargs)
+
+    monkeypatch.setattr(loader, "_parse_todo_file", parse_todo_file)
+    monkeypatch.setattr(loader, "_parse_todo_frontmatter", parse_todo_frontmatter)
+
+    tree = loader.load("index")
+
+    task = tree.find_task("P1.M1.E1.T001")
+    assert task is not None
+    assert task.title == "Indexed Task"
+    assert task.status.value == "in_progress"
+    assert calls["todo_file"] == 0
+    assert calls["todo_frontmatter"] == 0
+
+
 def test_load_with_benchmark_full_mode_can_skip_task_body_parsing(tmp_path, monkeypatch):
     """Benchmark full mode can skip task body parsing when requested."""
     tasks_dir = tmp_path / ".tasks"
@@ -686,3 +784,82 @@ tasks:
 
     assert include_body_calls == [False]
     assert benchmark["task_body_parse_ms"] == 0
+
+
+def test_load_with_benchmark_index_mode_does_not_read_todo_files(tmp_path, monkeypatch):
+    """Index benchmark mode should still count tasks without reading .todo files."""
+    tasks_dir = tmp_path / ".tasks"
+    epic_dir = tasks_dir / "01-phase" / "01-ms" / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Benchmark Index
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (tasks_dir / "01-phase" / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-ms
+""",
+        encoding="utf-8",
+    )
+    (tasks_dir / "01-phase" / "01-ms" / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    file: T001-present.todo
+  - id: T002
+    file: T002-missing.todo
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-present.todo").write_text(
+        """
+---
+id: P1.M1.E1.T001
+title: Present
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader(tasks_dir=str(tasks_dir))
+    calls = {"todo_file": 0, "todo_frontmatter": 0}
+    monkeypatch.setattr(loader, "_parse_todo_file", lambda *args, **kwargs: calls.__setitem__("todo_file", calls["todo_file"] + 1))
+    monkeypatch.setattr(
+        loader,
+        "_parse_todo_frontmatter",
+        lambda *args, **kwargs: calls.__setitem__("todo_frontmatter", calls["todo_frontmatter"] + 1),
+    )
+
+    _, benchmark = loader.load_with_benchmark(mode="index")
+
+    assert calls["todo_file"] == 0
+    assert calls["todo_frontmatter"] == 0
+    assert benchmark["counts"]["tasks"] == 2
+    assert benchmark["missing_task_files"] == 0
+    assert benchmark["files"]["by_type"]["todo_file"] == 0

@@ -41,9 +41,11 @@ interface BenchmarkReport {
   milestone_timings: Array<{ id: string; path: string; ms: number }>;
   epic_timings: Array<{ id: string; path: string; ms: number }>;
   task_timings: Array<{ id: string; epic_id: string; path: string; ms: number }>;
-  parse_mode?: "full" | "metadata";
+  parse_mode?: "full" | "metadata" | "index";
   parse_task_body?: boolean;
 }
+
+type LoadMode = "full" | "metadata" | "index";
 
 function estimateHoursFrom(data: AnyRec): number {
   return Number(data.estimate_hours ?? data.estimated_hours ?? 0);
@@ -86,12 +88,12 @@ export class TaskLoader {
     }
   }
 
-  async load(mode: "full" | "metadata" = "full"): Promise<TaskTree> {
+  async load(mode: LoadMode = "full"): Promise<TaskTree> {
     return this.loadTree(undefined, mode);
   }
 
   async loadWithBenchmark(
-    mode: "full" | "metadata" = "full",
+    mode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<{ tree: TaskTree; benchmark: BenchmarkReport }> {
     const effectiveParseTaskBody = mode === "full" && parseTaskBody;
@@ -106,7 +108,7 @@ export class TaskLoader {
 
   async loadTree(
     benchmark?: BenchmarkReport,
-    mode: "full" | "metadata" = "full",
+    mode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<TaskTree> {
     const root = this.mustYaml(
@@ -206,7 +208,7 @@ export class TaskLoader {
   private async loadPhase(
     phaseData: AnyRec,
     benchmark?: BenchmarkReport,
-    loadMode: "full" | "metadata" = "full",
+    loadMode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<Phase> {
     const start = performance.now();
@@ -258,7 +260,7 @@ export class TaskLoader {
     phaseId: string,
     milestoneData: AnyRec,
     benchmark?: BenchmarkReport,
-    loadMode: "full" | "metadata" = "full",
+    loadMode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<Milestone> {
     const start = performance.now();
@@ -319,7 +321,7 @@ export class TaskLoader {
     msPath: TaskPath,
     epicData: AnyRec,
     benchmark?: BenchmarkReport,
-    loadMode: "full" | "metadata" = "full",
+    loadMode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<Epic> {
     const start = performance.now();
@@ -377,7 +379,7 @@ export class TaskLoader {
     epPath: TaskPath,
     taskData: AnyRec | string,
     benchmark?: BenchmarkReport,
-    loadMode: "full" | "metadata" = "full",
+    loadMode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<Task> {
     let normalized: AnyRec;
@@ -394,7 +396,9 @@ export class TaskLoader {
     if (benchmark) {
       benchmark.counts.tasks += 1;
     }
-    if (existsSync(taskFile)) {
+    if (loadMode === "index") {
+      frontmatter = { ...normalized };
+    } else if (existsSync(taskFile)) {
       const parsed =
         loadMode === "full"
           ? await this.loadTodoFile(taskFile, benchmark, "todo_file", parseTaskBody)
@@ -579,7 +583,7 @@ export class TaskLoader {
 
   private async loadBugs(
     benchmark?: BenchmarkReport,
-    loadMode: "full" | "metadata" = "full",
+    loadMode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<import("./models").Task[]> {
     const bugsDir = join(this.tasksDir, "bugs");
@@ -588,21 +592,28 @@ export class TaskLoader {
     const idx = this.mustYaml(indexPath, benchmark, "bug_index");
     const bugs: import("./models").Task[] = [];
     for (const entry of ((idx.bugs as AnyRec[]) ?? [])) {
+      if (typeof entry !== "object" || entry === null) continue;
       const filename = String(entry.file ?? "");
       if (!filename) continue;
       const filePath = join(bugsDir, filename);
       if (benchmark) {
         benchmark.counts.tasks += 1;
       }
-      if (!existsSync(filePath)) {
-        if (benchmark) {
-          benchmark.missing_task_files += 1;
+      let frontmatter: AnyRec;
+      if (loadMode === "index") {
+        frontmatter = { ...entry };
+      } else {
+        if (!existsSync(filePath)) {
+          if (benchmark) {
+            benchmark.missing_task_files += 1;
+          }
+          continue;
         }
-        continue;
+        const parsed = loadMode === "full"
+          ? await this.loadTodoFile(filePath, benchmark, "bug_file", parseTaskBody)
+          : await this.loadTodoFrontmatter(filePath, benchmark, "bug_file");
+        frontmatter = parsed.frontmatter;
       }
-      const { frontmatter } = loadMode === "full"
-        ? await this.loadTodoFile(filePath, benchmark, "bug_file", parseTaskBody)
-        : await this.loadTodoFrontmatter(filePath, benchmark, "bug_file");
       bugs.push({
         id: String(frontmatter.id ?? ""),
         title: String(frontmatter.title ?? ""),
@@ -628,7 +639,7 @@ export class TaskLoader {
 
   private async loadIdeas(
     benchmark?: BenchmarkReport,
-    loadMode: "full" | "metadata" = "full",
+    loadMode: LoadMode = "full",
     parseTaskBody = true,
   ): Promise<import("./models").Task[]> {
     const ideasDir = join(this.tasksDir, "ideas");
@@ -637,21 +648,28 @@ export class TaskLoader {
     const idx = this.mustYaml(indexPath, benchmark, "idea_index");
     const ideas: import("./models").Task[] = [];
     for (const entry of ((idx.ideas as AnyRec[]) ?? [])) {
+      if (typeof entry !== "object" || entry === null) continue;
       const filename = String(entry.file ?? "");
       if (!filename) continue;
       const filePath = join(ideasDir, filename);
       if (benchmark) {
         benchmark.counts.tasks += 1;
       }
-      if (!existsSync(filePath)) {
-        if (benchmark) {
-          benchmark.missing_task_files += 1;
+      let frontmatter: AnyRec;
+      if (loadMode === "index") {
+        frontmatter = { ...entry };
+      } else {
+        if (!existsSync(filePath)) {
+          if (benchmark) {
+            benchmark.missing_task_files += 1;
+          }
+          continue;
         }
-        continue;
+        const { frontmatter: fm } = loadMode === "full"
+          ? await this.loadTodoFile(filePath, benchmark, "idea_file", parseTaskBody)
+          : await this.loadTodoFrontmatter(filePath, benchmark, "idea_file");
+        frontmatter = fm;
       }
-      const { frontmatter } = loadMode === "full"
-        ? await this.loadTodoFile(filePath, benchmark, "idea_file", parseTaskBody)
-        : await this.loadTodoFrontmatter(filePath, benchmark, "idea_file");
       ideas.push({
         id: String(frontmatter.id ?? ""),
         title: String(frontmatter.title ?? ""),

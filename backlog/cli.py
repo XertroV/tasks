@@ -473,9 +473,9 @@ def cli(ctx):
 )
 @click.option(
     "--mode",
-    type=click.Choice(["full", "metadata"]),
+    type=click.Choice(["full", "metadata", "index"]),
     default="full",
-    help="Load mode used for leaf task parsing",
+    help="Load mode used for task-level parsing",
 )
 @click.option(
     "--parse-body/--no-parse-body",

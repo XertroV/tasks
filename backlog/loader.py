@@ -98,15 +98,15 @@ class TaskLoader:
         timing["ms"] = elapsed_ms
         collection.append(timing)
 
-    def load(
-        self, mode: Literal["full", "metadata"] = "full"
-    ) -> TaskTree:
+    LoadMode = Literal["full", "metadata", "index"]
+
+    def load(self, mode: "TaskLoader.LoadMode" = "full") -> TaskTree:
         """Load complete task tree."""
         return self._load_tree(mode=mode)
 
     def load_with_benchmark(
         self,
-        mode: Literal["full", "metadata"] = "full",
+        mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ) -> tuple[TaskTree, Dict[str, Any]]:
         """Load complete task tree and return parse timing metrics."""
@@ -124,7 +124,7 @@ class TaskLoader:
     def _load_tree(
         self,
         benchmark: Optional[Dict[str, Any]] = None,
-        mode: Literal["full", "metadata"] = "full",
+        mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ) -> TaskTree:
         """Load complete task tree."""
@@ -203,7 +203,7 @@ class TaskLoader:
         self,
         phase_data: Dict[str, Any],
         benchmark: Optional[Dict[str, Any]] = None,
-        load_mode: Literal["full", "metadata"] = "full",
+        load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ) -> Phase:
         """Load a phase and its milestones."""
@@ -295,7 +295,7 @@ class TaskLoader:
         milestone_data: Dict[str, Any],
         phase_id: str,
         benchmark: Optional[Dict[str, Any]] = None,
-        load_mode: Literal["full", "metadata"] = "full",
+        load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ) -> Milestone:
         """Load a milestone and its epics."""
@@ -387,7 +387,7 @@ class TaskLoader:
         epic_data: Dict[str, Any],
         ms_path: TaskPath,
         benchmark: Optional[Dict[str, Any]] = None,
-        load_mode: Literal["full", "metadata"] = "full",
+        load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ) -> Epic:
         """Load an epic and its tasks."""
@@ -451,7 +451,7 @@ class TaskLoader:
         task_data: Dict[str, Any] | str,
         epic_path: TaskPath,
         benchmark: Optional[Dict[str, Any]] = None,
-        load_mode: Literal["full", "metadata"] = "full",
+        load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ) -> Task:
         """Load a task from its .todo file."""
@@ -481,7 +481,10 @@ class TaskLoader:
         parse_start = perf_counter() if benchmark is not None else None
 
         # Parse .todo file (YAML frontmatter + Markdown)
-        if task_file.exists():
+        if load_mode == "index":
+            if isinstance(task_data, dict):
+                frontmatter = dict(task_data)
+        elif task_file.exists():
             if load_mode == "full":
                 frontmatter, _ = self._parse_todo_file(
                     task_file,
@@ -495,7 +498,7 @@ class TaskLoader:
                 )
             if parse_start is not None:
                 parse_ms = (perf_counter() - parse_start) * 1000
-        else:
+        elif load_mode != "index":
             # Task file doesn't exist yet, use data from index
             if benchmark is not None:
                 benchmark["missing_task_files"] += 1
@@ -806,7 +809,7 @@ class TaskLoader:
     def _load_bugs(
         self,
         benchmark: Optional[Dict[str, Any]] = None,
-        load_mode: Literal["full", "metadata"] = "full",
+        load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ):
         """Load bugs from .tasks/bugs/ directory."""
@@ -818,27 +821,32 @@ class TaskLoader:
         idx = self._load_yaml(index_path, benchmark=benchmark, file_type="bug_index")
         bugs = []
         for entry in idx.get("bugs", []):
+            if not isinstance(entry, dict):
+                continue
             filename = entry.get("file", "")
             if not filename:
                 continue
             file_path = bugs_dir / filename
             if benchmark is not None:
                 benchmark["counts"]["tasks"] += 1
-            if not file_path.exists():
-                if benchmark is not None:
-                    benchmark["missing_task_files"] += 1
-                continue
-            if load_mode == "full":
-                frontmatter, _ = self._parse_todo_file(
-                    file_path,
-                    benchmark=benchmark,
-                    file_type="bug_file",
-                    include_body=parse_task_body,
-                )
+            if load_mode == "index":
+                frontmatter = dict(entry)
             else:
-                frontmatter = self._parse_todo_frontmatter(
-                    file_path, benchmark=benchmark, file_type="bug_file"
-                )
+                if not file_path.exists():
+                    if benchmark is not None:
+                        benchmark["missing_task_files"] += 1
+                    continue
+                if load_mode == "full":
+                    frontmatter, _ = self._parse_todo_file(
+                        file_path,
+                        benchmark=benchmark,
+                        file_type="bug_file",
+                        include_body=parse_task_body,
+                    )
+                else:
+                    frontmatter = self._parse_todo_frontmatter(
+                        file_path, benchmark=benchmark, file_type="bug_file"
+                    )
             bugs.append(
                 Task(
                     id=str(frontmatter.get("id", "")),
@@ -871,7 +879,7 @@ class TaskLoader:
     def _load_ideas(
         self,
         benchmark: Optional[Dict[str, Any]] = None,
-        load_mode: Literal["full", "metadata"] = "full",
+        load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
     ):
         """Load ideas from .tasks/ideas/ directory."""
@@ -883,27 +891,32 @@ class TaskLoader:
         idx = self._load_yaml(index_path, benchmark=benchmark, file_type="idea_index")
         ideas = []
         for entry in idx.get("ideas", []):
+            if not isinstance(entry, dict):
+                continue
             filename = entry.get("file", "")
             if not filename:
                 continue
             file_path = ideas_dir / filename
             if benchmark is not None:
                 benchmark["counts"]["tasks"] += 1
-            if not file_path.exists():
-                if benchmark is not None:
-                    benchmark["missing_task_files"] += 1
-                continue
-            if load_mode == "full":
-                frontmatter, _ = self._parse_todo_file(
-                    file_path,
-                    benchmark=benchmark,
-                    file_type="idea_file",
-                    include_body=parse_task_body,
-                )
+            if load_mode == "index":
+                frontmatter = dict(entry)
             else:
-                frontmatter = self._parse_todo_frontmatter(
-                    file_path, benchmark=benchmark, file_type="idea_file"
-                )
+                if not file_path.exists():
+                    if benchmark is not None:
+                        benchmark["missing_task_files"] += 1
+                    continue
+                if load_mode == "full":
+                    frontmatter, _ = self._parse_todo_file(
+                        file_path,
+                        benchmark=benchmark,
+                        file_type="idea_file",
+                        include_body=parse_task_body,
+                    )
+                else:
+                    frontmatter = self._parse_todo_frontmatter(
+                        file_path, benchmark=benchmark, file_type="idea_file"
+                    )
             ideas.append(
                 Task(
                     id=str(frontmatter.get("id", "")),

@@ -1680,6 +1680,15 @@ tags: []
     expect(metadataPayload.summary.parse_mode).toBe("metadata");
     expect(metadataPayload.summary.parse_task_body).toBeFalse();
 
+    const jsonIndex = run(["benchmark", "--mode", "index", "--json"], root);
+    expect(jsonIndex.exitCode).toBe(0);
+    const indexPayload = JSON.parse(jsonIndex.stdout.toString());
+    expect(indexPayload.summary.parse_mode).toBe("index");
+    expect(indexPayload.summary.parse_task_body).toBeFalse();
+    expect(indexPayload.summary.task_files_total).toBe(2);
+    expect(indexPayload.summary.task_files_found).toBe(2);
+    expect(indexPayload.summary.task_files_missing).toBe(0);
+
     const textOut = run(["benchmark"], root);
     expect(textOut.exitCode).toBe(0);
     const output = textOut.stdout.toString();
