@@ -1,0 +1,22 @@
+---
+id: P1.M1.E1.T001
+title: Create baseline Go module tooling
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Create baseline Go module tooling
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

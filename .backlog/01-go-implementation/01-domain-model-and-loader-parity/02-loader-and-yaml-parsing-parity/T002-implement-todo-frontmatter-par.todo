@@ -1,0 +1,22 @@
+---
+id: P1.M2.E2.T002
+title: Implement todo frontmatter parsing and defaults
+status: pending
+estimate_hours: 4.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Implement todo frontmatter parsing and defaults
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

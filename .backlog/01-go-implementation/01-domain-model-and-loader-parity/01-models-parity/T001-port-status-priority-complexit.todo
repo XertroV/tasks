@@ -1,0 +1,22 @@
+---
+id: P1.M2.E1.T001
+title: Port status/priority/complexity enums
+status: pending
+estimate_hours: 4.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Port status/priority/complexity enums
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

@@ -1,0 +1,22 @@
+---
+id: P1.M4.E2.T001
+title: Create canonical fixture set for go loader parity
+status: pending
+estimate_hours: 5.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Create canonical fixture set for go loader parity
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

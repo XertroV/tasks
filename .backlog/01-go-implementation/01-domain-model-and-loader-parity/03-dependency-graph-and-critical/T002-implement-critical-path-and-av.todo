@@ -1,0 +1,22 @@
+---
+id: P1.M2.E3.T002
+title: Implement critical path and availability filtering
+status: pending
+estimate_hours: 6.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Implement critical path and availability filtering
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

@@ -1,0 +1,22 @@
+---
+id: P1.M1.E3.T001
+title: Implement task-path parser and ID helpers
+status: pending
+estimate_hours: 4.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Implement task-path parser and ID helpers
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

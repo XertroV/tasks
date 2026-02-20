@@ -1,0 +1,22 @@
+---
+id: P1.M4.E3.T002
+title: Set CI gating thresholds and fail conditions
+status: pending
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Set CI gating thresholds and fail conditions
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

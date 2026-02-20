@@ -1,0 +1,22 @@
+---
+id: P1.M3.E4.T002
+title: Align error messages for broken parse/deps/locking
+status: pending
+estimate_hours: 6.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+
+# Align error messages for broken parse/deps/locking
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria
