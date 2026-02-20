@@ -74,8 +74,7 @@ function hasDirectedCycle(nodes: string[], edges: Array<[string, string]>): stri
   return null;
 }
 
-function validateTreeFiles(tree: TaskTree, findings: Finding[]): void {
-  const dataDir = getDataDirName();
+function validateTreeFiles(tree: TaskTree, findings: Finding[], dataDir: string): void {
   if (!existsSync(`${dataDir}/index.yaml`)) {
     addFinding(findings, {
       level: "error",
@@ -200,8 +199,7 @@ function validateIdsAndDependencies(tree: TaskTree, findings: Finding[]): void {
   }
 }
 
-function validateBugs(tree: TaskTree, findings: Finding[]): void {
-  const dataDir = getDataDirName();
+function validateBugs(tree: TaskTree, findings: Finding[], dataDir: string): void {
   const allTasks = getAllTasks(tree);
   const allIds = new Set(allTasks.map((t) => t.id));
   const bugIds = new Set<string>();
@@ -275,8 +273,11 @@ function validateCycles(tree: TaskTree, findings: Finding[]): void {
   }
 }
 
-async function validateRuntimeFiles(tree: TaskTree, findings: Finding[]): Promise<void> {
-  const dataDir = getDataDirName();
+async function validateRuntimeFiles(
+  tree: TaskTree,
+  findings: Finding[],
+  dataDir: string,
+): Promise<void> {
   const contextPath = `${dataDir}/.context.yaml`;
   const sessionsPath = `${dataDir}/.sessions.yaml`;
   if (existsSync(contextPath)) {
@@ -314,8 +315,11 @@ async function validateRuntimeFiles(tree: TaskTree, findings: Finding[]): Promis
   }
 }
 
-async function validateUninitializedTodos(tree: TaskTree, findings: Finding[]): Promise<void> {
-  const dataDir = getDataDirName();
+async function validateUninitializedTodos(
+  tree: TaskTree,
+  findings: Finding[],
+  dataDir: string,
+): Promise<void> {
   const defaultMarkers = [
     "- TODO: Add requirements",
     "- TODO: Add acceptance criteria",
@@ -352,14 +356,15 @@ async function validateUninitializedTodos(tree: TaskTree, findings: Finding[]): 
 
 export async function runChecks(tasksDir?: string): Promise<{ ok: boolean; errors: Finding[]; warnings: Finding[]; summary: { errors: number; warnings: number; total: number } }> {
   const findings: Finding[] = [];
-  const loader = new TaskLoader(tasksDir);
+  const dataDir = tasksDir ?? getDataDirName();
+  const loader = new TaskLoader(dataDir);
   const tree = await loader.load("metadata");
-  validateTreeFiles(tree, findings);
+  validateTreeFiles(tree, findings, dataDir);
   validateIdsAndDependencies(tree, findings);
-  validateBugs(tree, findings);
+  validateBugs(tree, findings, dataDir);
   validateCycles(tree, findings);
-  await validateRuntimeFiles(tree, findings);
-  await validateUninitializedTodos(tree, findings);
+  await validateRuntimeFiles(tree, findings, dataDir);
+  await validateUninitializedTodos(tree, findings, dataDir);
 
   const errors = findings.filter((f) => f.level === "error");
   const warnings = findings.filter((f) => f.level === "warning");

@@ -17,8 +17,16 @@ afterEach(() => {
 });
 
 function setupFixture(includeBug = false): string {
+  return setupFixtureInDir(".tasks", includeBug);
+}
+
+function setupFixtureBacklog(includeBug = false): string {
+  return setupFixtureInDir(".backlog", includeBug);
+}
+
+function setupFixtureInDir(tasksDir: string, includeBug = false): string {
   const r = mkdtempSync(join(tmpdir(), "tasks-ts-native-"));
-  const t = join(r, ".tasks");
+  const t = join(r, tasksDir);
   mkdirSync(join(t, "01-phase", "01-ms", "01-epic"), { recursive: true });
   writeFileSync(
     join(t, "index.yaml"),
@@ -719,6 +727,13 @@ describe("native cli", () => {
     expect(p.stdout.toString()).toContain("zero_estimate_hours");
     p = run(["check", "--strict"], root);
     expect(p.exitCode).toBe(1);
+  });
+
+  test("check command works with .backlog directory", () => {
+    root = setupFixtureBacklog();
+    const p = run(["check"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Consistency check passed");
   });
 
   test("check accepts task dependencies on existing epic", () => {

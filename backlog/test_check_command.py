@@ -43,8 +43,9 @@ def _create_minimal_tree(
     t2_depends=None,
     include_t1=True,
     include_t2=True,
+    tasks_dir: str = ".tasks",
 ) -> Path:
-    tasks_dir = tmp_path / ".tasks"
+    tasks_dir = tmp_path / tasks_dir
     epic_dir = tasks_dir / "01-phase" / "01-milestone" / "01-epic"
 
     _write_yaml(
@@ -134,6 +135,18 @@ def _create_minimal_tree(
 
 def test_check_passes_on_valid_tree(tmp_path, monkeypatch):
     _create_minimal_tree(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    runner = CliRunner()
+
+    result = runner.invoke(cli, ["check"])
+
+    assert result.exit_code == 0
+    assert "Consistency check passed" in result.output
+
+
+def test_check_passes_on_backlog_directory(tmp_path, monkeypatch):
+    _create_minimal_tree(tmp_path, tasks_dir=".backlog")
+
     monkeypatch.chdir(tmp_path)
     runner = CliRunner()
 

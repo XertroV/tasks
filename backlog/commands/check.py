@@ -18,6 +18,7 @@ from ..helpers import (
     is_task_file_missing,
 )
 from ..loader import TaskLoader
+from ..data_dir import get_data_dir_name
 
 console = Console()
 
@@ -37,12 +38,14 @@ def _add_finding(
     findings.append(finding)
 
 
-def _validate_tree_files(tree, findings):
-    tasks_root = Path(".tasks")
+def _validate_tree_files(tree, findings, tasks_root: Path):
     root_index = tasks_root / "index.yaml"
     if not root_index.exists():
         _add_finding(
-            findings, "error", "missing_root_index", "Missing .tasks/index.yaml"
+            findings,
+            "error",
+            "missing_root_index",
+            f"Missing {tasks_root}/index.yaml",
         )
 
     for phase in tree.phases:
@@ -80,13 +83,13 @@ def _validate_tree_files(tree, findings):
                         str(epic_index),
                     )
 
-    for task in find_missing_task_files(tree):
+    for task in find_missing_task_files(tree, tasks_root):
         _add_finding(
             findings,
             "error",
             "missing_task_file",
             f"Task file missing for {task.id}",
-            f".tasks/{task.file}",
+            str(tasks_root / task.file),
         )
 
 
@@ -128,7 +131,7 @@ def _is_task_or_epic_dependency(
     return None, "missing"
 
 
-def _validate_ids_and_dependencies(tree, findings):
+def _validate_ids_and_dependencies(tree, findings, tasks_root: Path):
     all_tasks = get_all_tasks(tree)
     all_task_ids = {t.id for t in all_tasks}
 
@@ -276,86 +279,89 @@ def _validate_ids_and_dependencies(tree, findings):
                             epic.id,
                         )
 
-                expected_prefix = f".tasks/{phase.path}/{milestone.path}/{epic.path}/"
-                for task in epic.tasks:
-                    if not TASK_ID_RE.match(task.id):
-                        _add_finding(
-                            findings,
-                            "error",
-                            "invalid_task_id",
-                            f"Invalid task ID format: {task.id}",
-                            task.id,
-                        )
-                    if task.id in task_ids:
-                        _add_finding(
-                            findings,
-                            "error",
-                            "duplicate_task_id",
-                            f"Duplicate task ID: {task.id}",
-                            task.id,
-                        )
-                    task_ids.add(task.id)
+            expected_prefix = f"{tasks_root}/{phase.path}/{milestone.path}/{epic.path}/"
+            for task in epic.tasks:
+                if not TASK_ID_RE.match(task.id):
+                    _add_finding(
+                        findings,
+                        "error",
+                        "invalid_task_id",
+                        f"Invalid task ID format: {task.id}",
+                        task.id,
+                    )
+                if task.id in task_ids:
+                    _add_finding(
+                        findings,
+                        "error",
+                        "duplicate_task_id",
+                        f"Duplicate task ID: {task.id}",
+                        task.id,
+                    )
+                task_ids.add(task.id)
 
-                    if task.epic_id != epic.id:
-                        _add_finding(
-                            findings,
-                            "error",
-                            "task_epic_mismatch",
-                            f"Task {task.id} has epic_id={task.epic_id}, expected {epic.id}",
-                            task.id,
-                        )
-                    if task.milestone_id != milestone.id:
-                        _add_finding(
-                            findings,
-                            "error",
-                            "task_milestone_mismatch",
-                            f"Task {task.id} has milestone_id={task.milestone_id}, expected {milestone.id}",
-                            task.id,
-                        )
-                    if task.phase_id != phase.id:
-                        _add_finding(
-                            findings,
-                            "error",
-                            "task_phase_mismatch",
-                            f"Task {task.id} has phase_id={task.phase_id}, expected {phase.id}",
-                            task.id,
-                        )
+                if task.epic_id != epic.id:
+                    _add_finding(
+                        findings,
+                        "error",
+                        "task_epic_mismatch",
+                        f"Task {task.id} has epic_id={task.epic_id}, expected {epic.id}",
+                        task.id,
+                    )
+                if task.milestone_id != milestone.id:
+                    _add_finding(
+                        findings,
+                        "error",
+                        "task_milestone_mismatch",
+                        f"Task {task.id} has milestone_id={task.milestone_id}, expected {milestone.id}",
+                        task.id,
+                    )
+                if task.phase_id != phase.id:
+                    _add_finding(
+                        findings,
+                        "error",
+                        "task_phase_mismatch",
+                        f"Task {task.id} has phase_id={task.phase_id}, expected {phase.id}",
+                        task.id,
+                    )
 
-                    if not task.id.startswith(f"{epic.id}."):
-                        _add_finding(
-                            findings,
-                            "error",
-                            "task_parent_path_mismatch",
-                            f"Task {task.id} does not belong to parent epic {epic.id}",
-                            task.id,
-                        )
+                if not task.id.startswith(f"{epic.id}."):
+                    _add_finding(
+                        findings,
+                        "error",
+                        "task_parent_path_mismatch",
+                        f"Task {task.id} does not belong to parent epic {epic.id}",
+                        task.id,
+                    )
 
-                    if not task.file.endswith(".todo"):
-                        _add_finding(
-                            findings,
-                            "error",
-                            "invalid_task_file_extension",
-                            f"Task file must end with .todo: {task.file}",
-                            task.id,
-                        )
+                if not task.file.endswith(".todo"):
+                    _add_finding(
+                        findings,
+                        "error",
+                        "invalid_task_file_extension",
+                        f"Task file must end with .todo: {task.file}",
+                        task.id,
+                    )
 
-                    if not f".tasks/{task.file}".startswith(expected_prefix):
-                        _add_finding(
-                            findings,
-                            "error",
-                            "task_file_path_mismatch",
-                            f"Task file path does not match parent hierarchy: .tasks/{task.file}",
-                            task.id,
-                        )
+                if not f"{tasks_root}/{task.file}".startswith(expected_prefix):
+                    _add_finding(
+                        findings,
+                        "error",
+                        "task_file_path_mismatch",
+                        (
+                            f"Task file path does not match parent hierarchy: "
+                            f"{tasks_root}/{task.file}"
+                        ),
+                        task.id,
+                    )
 
-                    if task.estimate_hours == 0:
-                        _add_finding(
-                            findings,
-                            "warning",
-                            "zero_estimate_hours",
-                            f"Task estimate must be positive, got 0: {task.id}",
-                            task.id,
-                        )
+                if task.estimate_hours == 0:
+                    _add_finding(
+                        findings,
+                        "warning",
+                        "zero_estimate_hours",
+                        f"Task estimate must be positive, got 0: {task.id}",
+                        task.id,
+                    )
 
     for task in all_tasks:
         for dep in task.depends_on:
@@ -381,7 +387,7 @@ def _validate_ids_and_dependencies(tree, findings):
                     )
 
 
-def _validate_bugs(tree, findings):
+def _validate_bugs(tree, findings, tasks_root: Path):
     """Validate bug IDs, files, and dependencies."""
     all_tasks = get_all_tasks(tree)
     all_ids = {t.id for t in all_tasks}
@@ -406,13 +412,13 @@ def _validate_bugs(tree, findings):
             )
         bug_ids.add(bug.id)
 
-        if is_task_file_missing(bug):
+        if is_task_file_missing(bug, tasks_root):
             _add_finding(
                 findings,
                 "error",
                 "missing_bug_file",
                 f"Bug file missing for {bug.id}",
-                f".tasks/{bug.file}",
+                str(tasks_root / bug.file),
             )
 
         if bug.estimate_hours == 0:
@@ -614,7 +620,7 @@ def _validate_runtime_files(tree, findings):
             )
 
 
-def _validate_uninitialized_todos(tree, findings):
+def _validate_uninitialized_todos(tree, findings, tasks_root: Path):
     """Check for task/bug files that still have default/placeholder content."""
     default_markers = [
         "- TODO: Add requirements",
@@ -626,7 +632,7 @@ def _validate_uninitialized_todos(tree, findings):
 
     all_tasks = get_all_tasks(tree)
     for task in all_tasks:
-        task_file = Path(f".tasks/{task.file}")
+        task_file = tasks_root / task.file
         if not task_file.exists():
             # Skip missing files - already reported by _validate_tree_files
             continue
@@ -648,19 +654,20 @@ def _validate_uninitialized_todos(tree, findings):
             pass
 
 
-def run_checks(tasks_dir: str = ".tasks") -> dict:
+def run_checks(tasks_dir: str | None = None) -> dict:
     """Run consistency checks and return normalized findings."""
     findings = []
+    resolved_tasks_dir = Path(tasks_dir or get_data_dir_name())
 
-    loader = TaskLoader(tasks_dir)
+    loader = TaskLoader(str(resolved_tasks_dir))
     tree = loader.load("metadata")
 
-    _validate_tree_files(tree, findings)
-    _validate_ids_and_dependencies(tree, findings)
-    _validate_bugs(tree, findings)
+    _validate_tree_files(tree, findings, resolved_tasks_dir)
+    _validate_ids_and_dependencies(tree, findings, resolved_tasks_dir)
+    _validate_bugs(tree, findings, resolved_tasks_dir)
     _validate_cycles(tree, findings)
     _validate_runtime_files(tree, findings)
-    _validate_uninitialized_todos(tree, findings)
+    _validate_uninitialized_todos(tree, findings, resolved_tasks_dir)
 
     errors = [f for f in findings if f["level"] == "error"]
     warnings = [f for f in findings if f["level"] == "warning"]
