@@ -863,3 +863,193 @@ tags: []
     assert benchmark["counts"]["tasks"] == 2
     assert benchmark["missing_task_files"] == 0
     assert benchmark["files"]["by_type"]["todo_file"] == 0
+
+
+def test_load_scope_filters_to_requested_phase(tmp_path, monkeypatch):
+    """load_scope should load only the requested phase subtree."""
+    tasks_dir = tmp_path / ".tasks"
+    tasks_dir.mkdir()
+
+    phase_one_dir = tasks_dir / "01-phase-one"
+    phase_two_dir = tasks_dir / "02-phase-two"
+    (phase_one_dir / "01-m1").mkdir(parents=True)
+    (phase_two_dir / "01-m1").mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Scope Filter
+phases:
+  - id: P1
+    name: Phase One
+    path: 01-phase-one
+  - id: P2
+    name: Phase Two
+    path: 02-phase-two
+""",
+        encoding="utf-8",
+    )
+    (phase_one_dir / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone One
+    path: 01-m1
+""",
+        encoding="utf-8",
+    )
+    (phase_two_dir / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone Two
+    path: 01-m1
+""",
+        encoding="utf-8",
+    )
+    (phase_one_dir / "01-m1" / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic One
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+    (phase_two_dir / "01-m1" / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic Two
+    path: 01-epic
+""",
+        encoding="utf-8",
+    )
+
+    for phase_id in ("P1", "P2"):
+        epic_dir = tasks_dir / ("01-phase-one" if phase_id == "P1" else "02-phase-two") / "01-m1" / "01-epic"
+        epic_dir.mkdir(parents=True, exist_ok=True)
+        (epic_dir / "index.yaml").write_text(
+            """
+tasks:
+  - id: T001
+    file: T001-task.todo
+""",
+            encoding="utf-8",
+        )
+        (epic_dir / "T001-task.todo").write_text(
+            f"""
+---
+id: {phase_id}.M1.E1.T001
+title: {phase_id} task
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---
+""",
+            encoding="utf-8",
+        )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader(tasks_dir=str(tasks_dir))
+    tree = loader.load_scope("P2")
+
+    assert len(tree.phases) == 1
+    assert tree.phases[0].id == "P2"
+    assert tree.phases[0].milestones[0].id == "P2.M1"
+    assert tree.phases[0].milestones[0].epics[0].tasks[0].id == "P2.M1.E1.T001"
+
+
+def test_load_scope_filters_to_epic_and_task(tmp_path, monkeypatch):
+    """load_scope should filter to a single epic and optionally a specific task."""
+    tasks_dir = tmp_path / ".tasks"
+    tasks_dir.mkdir()
+    epic_dir = tasks_dir / "01-phase" / "01-m1" / "01-epic"
+    epic_dir.mkdir(parents=True)
+
+    (tasks_dir / "index.yaml").write_text(
+        """
+project: Scope Filter
+phases:
+  - id: P1
+    name: Phase One
+    path: 01-phase
+""",
+        encoding="utf-8",
+    )
+    (tasks_dir / "01-phase" / "index.yaml").write_text(
+        """
+milestones:
+  - id: M1
+    name: Milestone
+    path: 01-m1
+""",
+        encoding="utf-8",
+    )
+    (tasks_dir / "01-phase" / "01-m1" / "index.yaml").write_text(
+        """
+epics:
+  - id: E1
+    name: Epic One
+    path: 01-epic
+  - id: E2
+    name: Epic Two
+    path: 02-epic
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "index.yaml").write_text(
+        """
+tasks:
+  - id: T001
+    file: T001-one.todo
+  - id: T002
+    file: T002-two.todo
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T001-one.todo").write_text(
+        """
+---
+id: T001
+title: First
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---
+""",
+        encoding="utf-8",
+    )
+    (epic_dir / "T002-two.todo").write_text(
+        """
+---
+id: T002
+title: Second
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+---
+""",
+        encoding="utf-8",
+    )
+
+    monkeypatch.chdir(tmp_path)
+    loader = TaskLoader(tasks_dir=str(tasks_dir))
+
+    epic_tree = loader.load_scope("P1.M1.E1")
+    assert len(epic_tree.phases) == 1
+    assert len(epic_tree.phases[0].milestones[0].epics) == 1
+    assert epic_tree.phases[0].milestones[0].epics[0].id == "P1.M1.E1"
+
+    task_tree = loader.load_scope("P1.M1.E1.T002")
+    tasks = task_tree.phases[0].milestones[0].epics[0].tasks
+    assert len(tasks) == 1
+    assert tasks[0].id == "P1.M1.E1.T002"

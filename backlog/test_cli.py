@@ -1887,6 +1887,28 @@ def test_show_idea_non_pending_hides_instructions(runner, tmp_tasks_dir):
     assert "Instructions:" not in result.output
 
 
+def test_show_phase_not_found_shows_tree_hint(runner, tmp_tasks_dir):
+    """show should show a tree hint when a phase is not found."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+    result = runner.invoke(cli, ["show", "P9"])
+
+    assert result.exit_code != 0
+    assert "Phase not found: P9" in result.output
+    assert "Tip: Use 'backlog tree' to list available IDs." in result.output
+
+
+def test_show_task_not_found_in_epic_shows_tree_hint(runner, tmp_tasks_dir):
+    """show should show a scoped tree hint for a missing task."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+    result = runner.invoke(cli, ["show", "P1.M1.E1.T999"])
+
+    assert result.exit_code != 0
+    assert "Task not found: P1.M1.E1.T999" in result.output
+    assert "Tip: Use 'backlog tree P1.M1.E1' to verify available IDs." in result.output
+
+
 def test_move_task_to_different_epic_renumbers_id(runner, tmp_tasks_dir_short_ids):
     """move should relocate a task to destination epic with renumbered ID."""
     tasks_root = tmp_tasks_dir_short_ids / ".tasks"

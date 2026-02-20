@@ -1941,6 +1941,16 @@ def show(path_ids):
         backlog show P1.M2 P4.M1.E2
         backlog show              # Shows current working task
     """
+    def show_not_found(item_type: str, item_id: str, scope_hint: str | None = None) -> None:
+        console.print(f"[red]Error:[/] {item_type} not found: {item_id}")
+        if scope_hint:
+            console.print(
+                f"[yellow]Tip:[/] Use 'backlog tree {scope_hint}' to verify available IDs."
+            )
+        else:
+            console.print("[yellow]Tip:[/] Use 'backlog tree' to list available IDs.")
+        raise click.Abort()
+
     try:
         # Use current task from context if no path_ids provided
         if not path_ids:
@@ -1956,7 +1966,7 @@ def show(path_ids):
             path_ids = (current,)
 
         loader = TaskLoader()
-        tree = loader.load("metadata")
+        tree = None
 
         for i, path_id in enumerate(path_ids):
             if i > 0:
@@ -1964,6 +1974,8 @@ def show(path_ids):
 
             # Check for auxiliary IDs before TaskPath.parse.
             if is_bug_id(path_id) or is_idea_id(path_id):
+                if tree is None:
+                    tree = loader.load("metadata")
                 aux_task = builtin_next(
                     (
                         t
@@ -1984,15 +1996,30 @@ def show(path_ids):
                 continue
 
             task_path = TaskPath.parse(path_id)
+            scope_tree = loader.load_scope(task_path, mode="metadata")
+            parent_path = task_path.parent()
+            parent = parent_path.full_id if parent_path else None
 
             if task_path.is_phase:
-                _show_phase(tree, path_id)
+                phase = scope_tree.find_phase(path_id)
+                if not phase:
+                    show_not_found("Phase", path_id, None)
+                _show_phase(scope_tree, path_id)
             elif task_path.is_milestone:
-                _show_milestone(tree, path_id)
+                milestone = scope_tree.find_milestone(path_id)
+                if not milestone:
+                    show_not_found("Milestone", path_id, parent)
+                _show_milestone(scope_tree, path_id)
             elif task_path.is_epic:
-                _show_epic(tree, path_id)
+                epic = scope_tree.find_epic(path_id)
+                if not epic:
+                    show_not_found("Epic", path_id, parent)
+                _show_epic(scope_tree, path_id)
             else:
-                _show_task(tree, path_id)
+                task = scope_tree.find_task(path_id)
+                if not task:
+                    show_not_found("Task", path_id, parent)
+                _show_task(scope_tree, path_id)
 
     except ValueError as e:
         console.print(f"[red]Error:[/] {str(e)}")

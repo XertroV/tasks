@@ -1453,7 +1453,7 @@ async function cmdPreview(args: string[]): Promise<void> {
 
 async function cmdShow(args: string[]): Promise<void> {
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata");
+  let tree: TaskTree | undefined = undefined;
   let ids = args.filter((a) => !a.startsWith("-"));
   if (!ids.length) {
     const current = await getCurrentTaskId();
@@ -1465,9 +1465,19 @@ async function cmdShow(args: string[]): Promise<void> {
   }
 
   for (const id of ids) {
+    const parsedScope = (() => {
+      try {
+        return TaskPath.parse(id);
+      } catch (_error) {
+        return null;
+      }
+    })();
+    const scopeHint = parsedScope ? parsedScope.parent()?.fullId : undefined;
+
     // Check auxiliary IDs before TaskPath.parse.
     if (isBugId(id) || isIdeaId(id)) {
-      const aux = [...(tree.bugs ?? []), ...(tree.ideas ?? [])].find((t) => t.id === id);
+      const auxTree = tree ?? (tree = await loader.load("metadata"));
+      const aux = [...(auxTree.bugs ?? []), ...(auxTree.ideas ?? [])].find((t) => t.id === id);
       if (!aux) textError(`Task not found: ${id}`);
       console.log(`${aux.id}: ${aux.title}\nstatus=${aux.status} estimate=${aux.estimateHours}`);
       if (isIdeaId(id) && aux.status === Status.PENDING) {
@@ -1475,29 +1485,42 @@ async function cmdShow(args: string[]): Promise<void> {
       }
       continue;
     }
-    const path = TaskPath.parse(id);
+    if (!parsedScope) textError(`Invalid path format: ${id}`);
+    const path = parsedScope as TaskPath;
+    const scopeTree = await loader.loadScope(id, "metadata");
+
     if (path.isPhase) {
-      const phase = findPhase(tree, id);
-      if (!phase) textError(`Phase not found: ${id}`);
+      const phase = findPhase(scopeTree, id);
+      if (!phase) showNotFound("Phase", id, scopeHint);
       console.log(`${phase.id} ${phase.name}`);
       continue;
     }
     if (path.isMilestone) {
-      const m = findMilestone(tree, id);
-      if (!m) textError(`Milestone not found: ${id}`);
+      const m = findMilestone(scopeTree, id);
+      if (!m) showNotFound("Milestone", id, scopeHint);
       console.log(`${m.id} ${m.name}`);
       continue;
     }
     if (path.isEpic) {
-      const e = findEpic(tree, id);
-      if (!e) textError(`Epic not found: ${id}`);
+      const e = findEpic(scopeTree, id);
+      if (!e) showNotFound("Epic", id, scopeHint);
       console.log(`${e.id} ${e.name}`);
       continue;
     }
-    const t = findTask(tree, id);
-    if (!t) textError(`Task not found: ${id}`);
+    const t = findTask(scopeTree, id);
+    if (!t) showNotFound("Task", id, scopeHint);
     console.log(`${t.id}: ${t.title}\nstatus=${t.status} estimate=${t.estimateHours}`);
   }
+}
+
+function showNotFound(itemType: string, itemId: string, scopeHint?: string): never {
+  console.error(pc.red(`Error: ${itemType} not found: ${itemId}`));
+  if (scopeHint) {
+    console.error(pc.yellow(`Tip: Use 'backlog tree ${scopeHint}' to verify available IDs.`));
+  } else {
+    console.error(pc.yellow("Tip: Use 'backlog tree' to list available IDs."));
+  }
+  process.exit(1);
 }
 
 function taskCount(tasks: Array<{ status: Status }>): {

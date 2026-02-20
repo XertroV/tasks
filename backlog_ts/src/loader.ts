@@ -92,6 +92,50 @@ export class TaskLoader {
     return this.loadTree(undefined, mode);
   }
 
+  async loadScope(
+    scope: string | TaskPath,
+    mode: LoadMode = "full",
+    parseTaskBody = false,
+  ): Promise<TaskTree> {
+    const path = typeof scope === "string" ? TaskPath.parse(scope) : scope;
+    const effectiveParseTaskBody = parseTaskBody && mode === "full";
+    const root = this.mustYaml(join(this.tasksDir, "index.yaml"), undefined, "root_index");
+    const tree: TaskTree = {
+      project: String(root.project ?? ""),
+      description: String(root.description ?? ""),
+      timelineWeeks: Number(root.timeline_weeks ?? 0),
+      criticalPath: (root.critical_path as string[] | undefined) ?? [],
+      nextAvailable: root.next_available as string | undefined,
+      phases: [],
+      bugs: [],
+      ideas: [],
+    };
+
+    const milestoneFilter = path.milestone;
+    const epicFilter = path.epic;
+    const taskFilter = path.taskId;
+
+    for (const p of ((root.phases as AnyRec[]) ?? [])) {
+      if (p.id !== path.phase) {
+        continue;
+      }
+      tree.phases.push(
+        await this.loadPhase(
+          p,
+          undefined,
+          mode,
+          effectiveParseTaskBody,
+          milestoneFilter,
+          epicFilter,
+          taskFilter,
+        ),
+      );
+    }
+    tree.bugs = await this.loadBugs(undefined, mode, effectiveParseTaskBody);
+    tree.ideas = await this.loadIdeas(undefined, mode, effectiveParseTaskBody);
+    return tree;
+  }
+
   async loadWithBenchmark(
     mode: LoadMode = "full",
     parseTaskBody = true,
@@ -210,6 +254,9 @@ export class TaskLoader {
     benchmark?: BenchmarkReport,
     loadMode: LoadMode = "full",
     parseTaskBody = true,
+    milestoneFilter?: string,
+    epicFilter?: string,
+    taskFilter?: string,
   ): Promise<Phase> {
     const start = performance.now();
     if (benchmark) {
@@ -238,16 +285,23 @@ export class TaskLoader {
     }
     const idx = this.mustYaml(phaseIndexPath, benchmark, "phase_index");
     for (const m of ((idx.milestones as AnyRec[]) ?? [])) {
-      phase.milestones.push(
-        await this.loadMilestone(
-          join(this.tasksDir, phase.path),
-          phase.id,
-          m,
-          benchmark,
-          loadMode,
-          parseTaskBody,
-        ),
+      if (milestoneFilter && String(m.id) !== milestoneFilter) {
+        continue;
+      }
+      const milestone = await this.loadMilestone(
+        join(this.tasksDir, phase.path),
+        phase.id,
+        m,
+        benchmark,
+        loadMode,
+        parseTaskBody,
+        epicFilter,
+        taskFilter,
       );
+      if (epicFilter && milestone.epics.length === 0) {
+        continue;
+      }
+      phase.milestones.push(milestone);
     }
     if (benchmark) {
       this.recordTiming(benchmark.phase_timings, { id: phase.id, path: phase.path }, performance.now() - start);
@@ -262,6 +316,8 @@ export class TaskLoader {
     benchmark?: BenchmarkReport,
     loadMode: LoadMode = "full",
     parseTaskBody = true,
+    epicFilter?: string,
+    taskFilter?: string,
   ): Promise<Milestone> {
     const start = performance.now();
     const msPath = TaskPath.forMilestone(phaseId, String(milestoneData.id));
@@ -295,16 +351,22 @@ export class TaskLoader {
       benchmark.counts.milestones += 1;
     }
     for (const e of ((idx.epics as AnyRec[]) ?? [])) {
-      m.epics.push(
-        await this.loadEpic(
-          join(phasePath, m.path),
-          msPath,
-          e,
-          benchmark,
-          loadMode,
-          parseTaskBody,
-        ),
+      if (epicFilter && String(e.id) !== epicFilter) {
+        continue;
+      }
+      const epic = await this.loadEpic(
+        join(phasePath, m.path),
+        msPath,
+        e,
+        benchmark,
+        loadMode,
+        parseTaskBody,
+        taskFilter,
       );
+      if (taskFilter && !epic.tasks.length) {
+        continue;
+      }
+      m.epics.push(epic);
     }
     if (benchmark) {
       this.recordTiming(
@@ -323,6 +385,7 @@ export class TaskLoader {
     benchmark?: BenchmarkReport,
     loadMode: LoadMode = "full",
     parseTaskBody = true,
+    taskFilter?: string,
   ): Promise<Epic> {
     const start = performance.now();
     const epicPath = msPath.withEpic(String(epicData.id));
@@ -353,6 +416,9 @@ export class TaskLoader {
       benchmark.counts.epics += 1;
     }
     for (const taskData of ((idx.tasks as (AnyRec | string)[]) ?? [])) {
+      if (taskFilter && !this.taskMatchesFilter(taskData, epicPath, taskFilter)) {
+        continue;
+      }
       e.tasks.push(
         await this.loadTask(
           join(milestonePath, e.path),
@@ -363,6 +429,9 @@ export class TaskLoader {
           parseTaskBody,
         ),
       );
+      if (taskFilter && this.idsMatch(e.tasks[e.tasks.length - 1]!.id, taskFilter)) {
+        break;
+      }
     }
     if (benchmark) {
       this.recordTiming(
@@ -372,6 +441,34 @@ export class TaskLoader {
       );
     }
     return e;
+  }
+
+  private idsMatch(candidate: string, target: string): boolean {
+    if (!candidate || !target) return false;
+    if (candidate === target) return true;
+    return candidate.endsWith(`.${target}`) || target.endsWith(`.${candidate}`);
+  }
+
+  private taskMatchesFilter(taskData: AnyRec | string, epicPath: TaskPath, taskFilter: string): boolean {
+    let taskId: string | undefined;
+    if (typeof taskData === "string") {
+      const shortId = taskData.split("-")[0]?.replace(".todo", "");
+      taskId = epicPath.withTask(shortId).fullId;
+    } else {
+      const rawId = (taskData as AnyRec).id;
+      if (typeof rawId === "string") {
+        taskId = rawId.includes(".") ? rawId : epicPath.withTask(rawId).fullId;
+      } else {
+        const filename = String((taskData.file as string) ?? (taskData.path as string) ?? "");
+        if (filename) {
+          const shortId = filename.split("-")[0]?.replace(".todo", "") ?? "";
+          if (shortId) {
+            taskId = epicPath.withTask(shortId).fullId;
+          }
+        }
+      }
+    }
+    return typeof taskId === "string" ? this.idsMatch(taskId, taskFilter) : false;
   }
 
   private async loadTask(

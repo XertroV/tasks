@@ -121,6 +121,67 @@ class TaskLoader:
         benchmark["overall_ms"] = (perf_counter() - start) * 1000
         return tree, benchmark
 
+    def load_scope(
+        self,
+        scope: str | TaskPath,
+        mode: "TaskLoader.LoadMode" = "full",
+        parse_task_body: bool = False,
+    ) -> TaskTree:
+        """Load a focused subtree for a specific scope without traversing the full tree."""
+        path = scope if isinstance(scope, TaskPath) else TaskPath.parse(scope)
+        effective_parse_task_body = parse_task_body and mode == "full"
+        root_index_path = self.tasks_dir / "index.yaml"
+        root_index = self._load_yaml(
+            root_index_path, file_type="root_index", benchmark=None
+        )
+
+        tree = TaskTree(
+            project=root_index["project"],
+            description=root_index.get("description", ""),
+            timeline_weeks=root_index.get("timeline_weeks", 0),
+            critical_path=root_index.get("critical_path", []),
+            next_available=root_index.get("next_available"),
+        )
+
+        for phase_data in root_index.get("phases", []):
+            if phase_data.get("id") != path.phase:
+                continue
+
+            try:
+                milestone_filter = (
+                    path.milestone
+                    if path.depth >= 2 and path.milestone
+                    else None
+                )
+                epic_filter = path.epic if path.depth >= 3 and path.epic else None
+                task_filter = path.task_id if path.depth >= 4 else None
+                phase = self._load_phase(
+                    phase_data,
+                    load_mode=mode,
+                    parse_task_body=effective_parse_task_body,
+                    milestone_filter=milestone_filter,
+                    epic_filter=epic_filter,
+                    task_filter=task_filter,
+                )
+                if phase:
+                    tree.phases.append(phase)
+            except Exception as e:
+                phase_id = phase_data.get("id", "UNKNOWN")
+                phase_path = phase_data.get("path", "UNKNOWN")
+                raise RuntimeError(
+                    f"Error loading phase {phase_id} (path: {phase_path}): {str(e)}"
+                ) from e
+
+        tree.bugs = self._load_bugs(
+            load_mode=mode,
+            parse_task_body=effective_parse_task_body,
+        )
+        tree.ideas = self._load_ideas(
+            load_mode=mode,
+            parse_task_body=effective_parse_task_body,
+        )
+        return tree
+
     def _load_tree(
         self,
         benchmark: Optional[Dict[str, Any]] = None,
@@ -205,6 +266,9 @@ class TaskLoader:
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        milestone_filter: Optional[str] = None,
+        epic_filter: Optional[str] = None,
+        task_filter: Optional[str] = None,
     ) -> Phase:
         """Load a phase and its milestones."""
         start = perf_counter()
@@ -258,6 +322,9 @@ class TaskLoader:
 
             # Load milestones
             for milestone_data in phase_index.get("milestones", []):
+                milestone_id = milestone_data.get("id")
+                if milestone_filter and milestone_id != milestone_filter:
+                    continue
                 try:
                     milestone = self._load_milestone(
                         phase_path,
@@ -266,7 +333,11 @@ class TaskLoader:
                         benchmark=benchmark,
                         load_mode=load_mode,
                         parse_task_body=parse_task_body,
+                        epic_filter=epic_filter,
+                        task_filter=task_filter,
                     )
+                    if epic_filter and not milestone.epics:
+                        continue
                     phase.milestones.append(milestone)
                 except Exception as e:
                     milestone_id = milestone_data.get("id", "UNKNOWN")
@@ -297,6 +368,8 @@ class TaskLoader:
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        epic_filter: Optional[str] = None,
+        task_filter: Optional[str] = None,
     ) -> Milestone:
         """Load a milestone and its epics."""
         start = perf_counter()
@@ -338,6 +411,11 @@ class TaskLoader:
 
             # Load epics
             for epic_data in milestone_index.get("epics", []):
+                if isinstance(epic_data, dict):
+                    epic_id = epic_data.get("id")
+                    if epic_filter and epic_id != epic_filter:
+                        continue
+
                 try:
                     epic = self._load_epic(
                         milestone_path,
@@ -346,7 +424,10 @@ class TaskLoader:
                         benchmark=benchmark,
                         load_mode=load_mode,
                         parse_task_body=parse_task_body,
+                        task_filter=task_filter,
                     )
+                    if task_filter and not epic.tasks:
+                        continue
                     milestone.epics.append(epic)
                 except Exception as e:
                     epic_id = (
@@ -389,6 +470,7 @@ class TaskLoader:
         benchmark: Optional[Dict[str, Any]] = None,
         load_mode: "TaskLoader.LoadMode" = "full",
         parse_task_body: bool = True,
+        task_filter: Optional[str] = None,
     ) -> Epic:
         """Load an epic and its tasks."""
         epic_file_path = milestone_path / epic_data["path"]
@@ -426,6 +508,8 @@ class TaskLoader:
 
         # Load tasks
         for task_data in epic_index.get("tasks", []):
+            if task_filter and not self._task_matches_filter(task_data, epic_path, task_filter):
+                continue
             task = self._load_task(
                 epic_file_path,
                 task_data,
@@ -435,6 +519,8 @@ class TaskLoader:
                 parse_task_body=parse_task_body,
             )
             epic.tasks.append(task)
+            if task_filter and self._ids_match(task.id, task_filter):
+                break
 
         if benchmark is not None:
             self._record_timing(
@@ -444,6 +530,42 @@ class TaskLoader:
             )
 
         return epic
+
+    @staticmethod
+    def _ids_match(candidate: str, target: str) -> bool:
+        if not candidate or not target:
+            return False
+        if candidate == target:
+            return True
+        return candidate.endswith(f".{target}") or target.endswith(f".{candidate}")
+
+    @staticmethod
+    def _task_matches_filter(
+        task_data: Dict[str, Any] | str, epic_path: TaskPath, task_filter: str
+    ) -> bool:
+        if isinstance(task_data, str):
+            task_short_id = task_data.split("-")[0].replace(".todo", "")
+            task_id = epic_path.with_task(task_short_id).full_id
+            return TaskLoader._ids_match(task_id, task_filter)
+
+        if not isinstance(task_data, dict):
+            return False
+
+        raw_id = task_data.get("id")
+        if isinstance(raw_id, str):
+            candidate = (
+                raw_id
+                if raw_id.startswith(epic_path.full_id)
+                else epic_path.with_task(raw_id).full_id
+            )
+            return TaskLoader._ids_match(candidate, task_filter)
+
+        filename = task_data.get("file") or task_data.get("path") or ""
+        if not isinstance(filename, str):
+            return False
+        short_id = filename.split("-")[0].replace(".todo", "")
+        task_id = epic_path.with_task(short_id).full_id
+        return TaskLoader._ids_match(task_id, task_filter)
 
     def _load_task(
         self,

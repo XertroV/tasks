@@ -1582,6 +1582,24 @@ tags: []
     expect(out).toContain("Mark this idea as done");
   });
 
+  test("show missing phase includes tree hint", () => {
+    root = setupFixture();
+    const p = run(["show", "P9"], root);
+    const output = `${p.stdout.toString()}${p.stderr.toString()}`;
+    expect(p.exitCode).not.toBe(0);
+    expect(output).toContain("Phase not found: P9");
+    expect(output).toContain("Tip: Use 'backlog tree' to list available IDs.");
+  });
+
+  test("show missing task includes scoped tree hint", () => {
+    root = setupFixture();
+    const p = run(["show", "P1.M1.E1.T999"], root);
+    const output = `${p.stdout.toString()}${p.stderr.toString()}`;
+    expect(p.exitCode).not.toBe(0);
+    expect(output).toContain("Task not found: P1.M1.E1.T999");
+    expect(output).toContain("Tip: Use 'backlog tree P1.M1.E1' to verify available IDs.");
+  });
+
   test("show on non-pending idea hides Instructions section", () => {
     root = setupFixture();
     // Complete all normal tasks so grab picks the idea

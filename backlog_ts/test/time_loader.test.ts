@@ -381,4 +381,123 @@ describe("loader", () => {
     todoFileSpy.mockRestore();
     frontmatterSpy.mockRestore();
   });
+
+  test("loadScope loads only the requested phase", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-scope-phase-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(tasksDir, { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Scoped\nphases:\n  - id: P1\n    name: Phase One\n    path: 01-phase-one\n  - id: P2\n    name: Phase Two\n    path: 02-phase-two\n`,
+      "utf8",
+    );
+    mkdirSync(join(tasksDir, "01-phase-one", "01-ms"), { recursive: true });
+    mkdirSync(join(tasksDir, "02-phase-two", "01-ms"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "01-phase-one", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone One\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "02-phase-two", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone Two\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase-one", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic One\n    path: 01-epic\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "02-phase-two", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic Two\n    path: 01-epic\n`,
+      "utf8",
+    );
+    mkdirSync(join(tasksDir, "01-phase-one", "01-ms", "01-epic"), { recursive: true });
+    mkdirSync(join(tasksDir, "02-phase-two", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "01-phase-one", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-one.todo\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "02-phase-two", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-two.todo\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase-one", "01-ms", "01-epic", "T001-one.todo"),
+      `---\nid: P1.M1.E1.T001\ntitle: One\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# One\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "02-phase-two", "01-ms", "01-epic", "T001-two.todo"),
+      `---\nid: P2.M1.E1.T001\ntitle: Two\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Two\n`,
+      "utf8",
+    );
+
+    const loader = new TaskLoader(tasksDir);
+    const tree = await loader.loadScope("P2", "metadata");
+
+    expect(tree.phases).toHaveLength(1);
+    expect(tree.phases[0]?.id).toBe("P2");
+    expect(tree.phases[0]?.milestones[0]?.id).toBe("P2.M1");
+    expect(tree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe(
+      "P2.M1.E1.T001",
+    );
+  });
+
+  test("loadScope filters by epic and task id", async () => {
+    const root = mkdtempSync(join(tmpdir(), "tasks-ts-loader-scope-task-"));
+    const tasksDir = join(root, ".tasks");
+    mkdirSync(tasksDir, { recursive: true });
+    writeFileSync(
+      join(tasksDir, "index.yaml"),
+      `project: Scoped\nphases:\n  - id: P1\n    name: Phase\n    path: 01-phase\n`,
+      "utf8",
+    );
+    mkdirSync(join(tasksDir, "01-phase", "01-ms"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "01-phase", "index.yaml"),
+      `milestones:\n  - id: M1\n    name: Milestone\n    path: 01-ms\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: Epic One\n    path: 01-epic\n  - id: E2\n    name: Epic Two\n    path: 02-epic\n`,
+      "utf8",
+    );
+    mkdirSync(join(tasksDir, "01-phase", "01-ms", "01-epic"), { recursive: true });
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-a.todo\n  - id: T002\n    file: T002-b.todo\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T001-a.todo"),
+      `---\nid: T001\ntitle: First\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# First\n`,
+      "utf8",
+    );
+    writeFileSync(
+      join(tasksDir, "01-phase", "01-ms", "01-epic", "T002-b.todo"),
+      `---\nid: T002\ntitle: Second\nstatus: pending\nestimate_hours: 1\ncomplexity: low\npriority: medium\ndepends_on: []\ntags: []\n---\n# Second\n`,
+      "utf8",
+    );
+
+    const loader = new TaskLoader(tasksDir);
+    const epicTree = await loader.loadScope("P1.M1.E1", "metadata");
+    expect(epicTree.phases).toHaveLength(1);
+    expect(epicTree.phases[0]?.milestones).toHaveLength(1);
+    expect(epicTree.phases[0]?.milestones[0]?.epics).toHaveLength(1);
+    expect(epicTree.phases[0]?.milestones[0]?.epics[0]?.id).toBe("P1.M1.E1");
+
+    const taskTree = await loader.loadScope("P1.M1.E1.T002", "metadata");
+    expect(taskTree.phases).toHaveLength(1);
+    expect(taskTree.phases[0]?.milestones).toHaveLength(1);
+    expect(taskTree.phases[0]?.milestones[0]?.epics).toHaveLength(1);
+    expect(taskTree.phases[0]?.milestones[0]?.epics[0]?.tasks).toHaveLength(1);
+    expect(taskTree.phases[0]?.milestones[0]?.epics[0]?.tasks[0]?.id).toBe(
+      "P1.M1.E1.T002",
+    );
+  });
 });
