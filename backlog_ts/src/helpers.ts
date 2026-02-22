@@ -22,6 +22,10 @@ export function isIdeaId(id: string): boolean {
   return /^I\d+$/.test(id);
 }
 
+export function isFixedId(id: string): boolean {
+  return /^F\d+$/.test(id);
+}
+
 export function findTask(tree: TaskTree, id: string): Task | undefined {
   return getAllTasks(tree).find((t) => t.id === id);
 }

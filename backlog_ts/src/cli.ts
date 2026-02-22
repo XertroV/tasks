@@ -20,6 +20,7 @@ import {
   getStaleSessions,
   isBugId,
   isIdeaId,
+  isFixedId,
   isTaskFileMissing,
   loadConfig,
   loadContext,
@@ -1476,13 +1477,19 @@ async function cmdShow(args: string[]): Promise<void> {
     const scopeHint = parsedScope ? parsedScope.parent()?.fullId : undefined;
 
     // Check auxiliary IDs before TaskPath.parse.
-    if (isBugId(id) || isIdeaId(id)) {
-      const auxTree = tree ?? (tree = await loader.load("metadata"));
-      const aux = [...(auxTree.bugs ?? []), ...(auxTree.ideas ?? [])].find((t) => t.id === id);
-      if (!aux) textError(`Task not found: ${id}`);
-      console.log(`${aux.id}: ${aux.title}\nstatus=${aux.status} estimate=${aux.estimateHours}`);
-      if (isIdeaId(id) && aux.status === Status.PENDING) {
-        showIdeaInstructions(aux);
+    if (isBugId(id) || isIdeaId(id) || isFixedId(id)) {
+      if (isFixedId(id)) {
+        const fixed = await loader.findFixedTask(id);
+        if (!fixed) textError(`Task not found: ${id}`);
+        console.log(`${fixed.id}: ${fixed.title}\nstatus=${fixed.status} estimate=${fixed.estimateHours}`);
+      } else {
+        const auxTree = tree ?? (tree = await loader.load("metadata"));
+        const aux = [...(auxTree.bugs ?? []), ...(auxTree.ideas ?? [])].find((t) => t.id === id);
+        if (!aux) textError(`Task not found: ${id}`);
+        console.log(`${aux.id}: ${aux.title}\nstatus=${aux.status} estimate=${aux.estimateHours}`);
+        if (isIdeaId(id) && aux.status === Status.PENDING) {
+          showIdeaInstructions(aux);
+        }
       }
       continue;
     }

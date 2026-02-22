@@ -1927,6 +1927,33 @@ def test_show_idea_non_pending_hides_instructions(runner, tmp_tasks_dir):
     assert "Instructions:" not in result.output
 
 
+def test_show_fixed_task(runner, tmp_tasks_dir):
+    """show should display fixed task details when given an F*** ID."""
+    fixed = runner.invoke(
+        cli,
+        [
+            "fixed",
+            "--title",
+            "restore stale auth token",
+            "--at",
+            "2026-02-20T12:00:00Z",
+            "--tags",
+            "auth,hotfix",
+            "--body",
+            "Added regression guard for token refresh.",
+        ],
+    )
+    assert fixed.exit_code == 0
+    assert "Created fixed:" in fixed.output
+    assert "F001" in fixed.output
+
+    result = runner.invoke(cli, ["show", "F001"])
+    assert result.exit_code == 0
+    assert "F001" in result.output
+    assert "restore stale auth token" in result.output
+    assert "status=done" in result.output
+
+
 def test_show_phase_not_found_shows_tree_hint(runner, tmp_tasks_dir):
     """show should show a tree hint when a phase is not found."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")

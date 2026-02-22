@@ -201,6 +201,61 @@ class TaskLoader:
         )
         return tree
 
+    def find_fixed_task(self, fixed_id: str) -> Optional[Task]:
+        """Load a fixed task by its fixed ID."""
+        fixes_dir = self.tasks_dir / "fixes"
+        index_path = fixes_dir / "index.yaml"
+        if not index_path.exists():
+            return None
+
+        idx = self._load_yaml(index_path)
+        for entry in idx.get("fixes", []):
+            if not isinstance(entry, dict):
+                continue
+            entry_id = str(entry.get("id", ""))
+            if entry_id != fixed_id:
+                continue
+
+            filename = str(entry.get("file", ""))
+            if not filename:
+                return None
+
+            fix_file = fixes_dir / filename
+            if not fix_file.exists():
+                return None
+
+            frontmatter = self._parse_todo_frontmatter(
+                fix_file,
+                file_type="todo_file",
+            )
+
+            return Task(
+                id=str(frontmatter.get("id", fixed_id)),
+                title=str(frontmatter.get("title", "")),
+                file=str(Path("fixes") / filename),
+                status=self._coerce_status(frontmatter.get("status", "done")),
+                estimate_hours=float(self._get_estimate_hours(frontmatter, 0.0)),
+                complexity=Complexity(frontmatter.get("complexity", "low")),
+                priority=Priority(frontmatter.get("priority", "low")),
+                depends_on=(
+                    frontmatter["depends_on"] if isinstance(frontmatter.get("depends_on"), list) else []
+                ),
+                claimed_by=frontmatter.get("claimed_by"),
+                claimed_at=self._parse_datetime(frontmatter.get("claimed_at")),
+                started_at=self._parse_datetime(frontmatter.get("started_at")),
+                completed_at=self._parse_datetime(frontmatter.get("completed_at")),
+                duration_minutes=float(frontmatter["duration_minutes"])
+                if frontmatter.get("duration_minutes") is not None
+                else None,
+                tags=frontmatter.get("tags", []) if isinstance(frontmatter.get("tags"), list) else [],
+                reason=frontmatter.get("reason"),
+                epic_id=None,
+                milestone_id=None,
+                phase_id=None,
+            )
+
+        return None
+
     def _load_tree(
         self,
         benchmark: Optional[Dict[str, Any]] = None,

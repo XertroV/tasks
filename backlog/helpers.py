@@ -333,6 +333,13 @@ def is_idea_id(task_id: str) -> bool:
     return bool(re.match(r"^I\d+$", task_id))
 
 
+def is_fixed_id(task_id: str) -> bool:
+    """Check if an ID matches the fixed ID format (F001, F002, etc.)."""
+    import re
+
+    return bool(re.match(r"^F\d+$", task_id))
+
+
 def get_all_tasks(tree) -> List[Task]:
     """Get all tasks from tree as a flat list."""
     tasks = []

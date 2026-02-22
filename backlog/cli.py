@@ -28,6 +28,7 @@ from .helpers import (
     get_all_tasks,
     is_bug_id,
     is_idea_id,
+    is_fixed_id,
     task_file_path,
     is_task_file_missing,
     find_missing_task_files,
@@ -1976,26 +1977,33 @@ def show(path_ids):
                 console.print("\n" + "═" * 60 + "\n")
 
             # Check for auxiliary IDs before TaskPath.parse.
-            if is_bug_id(path_id) or is_idea_id(path_id):
+            if is_bug_id(path_id) or is_idea_id(path_id) or is_fixed_id(path_id):
                 if tree is None:
                     tree = loader.load("metadata")
-                aux_task = builtin_next(
-                    (
-                        t
-                        for t in [
-                            *getattr(tree, "bugs", []),
-                            *getattr(tree, "ideas", []),
-                        ]
-                        if t.id == path_id
-                    ),
-                    None,
-                )
-                if not aux_task:
-                    console.print(f"[red]Error:[/] Task not found: {path_id}")
-                    raise click.Abort()
-                _show_task(tree, path_id)
-                if is_idea_id(path_id) and aux_task.status == Status.PENDING:
-                    _show_idea_instructions(aux_task)
+                if is_fixed_id(path_id):
+                    fixed_task = loader.find_fixed_task(path_id)
+                    if not fixed_task:
+                        console.print(f"[red]Error:[/] Task not found: {path_id}")
+                        raise click.Abort()
+                    _show_fixed_task(fixed_task)
+                else:
+                    aux_task = builtin_next(
+                        (
+                            t
+                            for t in [
+                                *getattr(tree, "bugs", []),
+                                *getattr(tree, "ideas", []),
+                            ]
+                            if t.id == path_id
+                        ),
+                        None,
+                    )
+                    if not aux_task:
+                        console.print(f"[red]Error:[/] Task not found: {path_id}")
+                        raise click.Abort()
+                    _show_task(tree, path_id)
+                    if is_idea_id(path_id) and aux_task.status == Status.PENDING:
+                        _show_idea_instructions(aux_task)
                 continue
 
             task_path = TaskPath.parse(path_id)
@@ -2173,6 +2181,11 @@ def _show_idea_instructions(idea):
         '  5. Update this idea\'s "Created Work Items" section with the new IDs'
     )
     console.print("  6. Mark this idea as done when planning is complete")
+
+
+def _show_fixed_task(task):
+    """Display fixed task summary."""
+    console.print(f"{task.id}: {task.title}\nstatus={task.status.value} estimate={task.estimate_hours}")
 
 
 # ============================================================================

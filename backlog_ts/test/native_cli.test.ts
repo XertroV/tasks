@@ -1807,6 +1807,34 @@ tags: []
     expect(fixText).toContain("Added regression guard for token refresh.");
   });
 
+  test("show displays fixed task details", () => {
+    root = setupFixture();
+    const fixed = run(
+      [
+        "fixed",
+        "--title",
+        "restore stale auth token",
+        "--description",
+        "Restore token handling to avoid forced logouts",
+        "--at",
+        "2026-02-20T12:00:00Z",
+        "--tags",
+        "auth,hotfix",
+        "--body",
+        "Added regression guard for token refresh.",
+      ],
+      root,
+    );
+    expect(fixed.exitCode).toBe(0);
+
+    const show = run(["show", "F001"], root);
+    expect(show.exitCode).toBe(0);
+    const output = show.stdout.toString();
+    expect(output).toContain("F001");
+    expect(output).toContain("restore stale auth token");
+    expect(output).toContain("status=done");
+  });
+
   test("benchmark command returns timing summary and text report", () => {
     root = setupFixture();
     rmSync(join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"));

@@ -142,6 +142,44 @@ export class TaskLoader {
     return tree;
   }
 
+  async findFixedTask(fixedTaskId: string): Promise<import("./models").Task | undefined> {
+    const fixesDir = join(this.tasksDir, "fixes");
+    const indexPath = join(fixesDir, "index.yaml");
+    if (!existsSync(indexPath)) return undefined;
+
+    const index = this.mustYaml(indexPath);
+    const entry = ((index.fixes as AnyRec[]) ?? []).find(
+      (item) => typeof item === "object" && item !== null && String((item as AnyRec).id) === fixedTaskId,
+    );
+    if (!entry || !entry.file) return undefined;
+
+    const filename = String(entry.file);
+    const fixPath = join(fixesDir, filename);
+    if (!existsSync(fixPath)) return undefined;
+
+    const { frontmatter } = await this.loadTodoFrontmatter(fixPath);
+    return {
+      id: String(frontmatter.id ?? fixedTaskId),
+      title: String(frontmatter.title ?? ""),
+      file: join("fixes", filename),
+      status: coerceStatus(frontmatter.status),
+      estimateHours: estimateHoursFrom(frontmatter),
+      complexity: (frontmatter.complexity as Complexity) ?? Complexity.LOW,
+      priority: (frontmatter.priority as Priority) ?? Priority.LOW,
+      dependsOn: ((frontmatter.depends_on as string[]) ?? []).slice(),
+      claimedBy: frontmatter.claimed_by as string | undefined,
+      claimedAt: frontmatter.claimed_at ? new Date(String(frontmatter.claimed_at)) : undefined,
+      startedAt: frontmatter.started_at ? new Date(String(frontmatter.started_at)) : undefined,
+      completedAt: frontmatter.completed_at ? new Date(String(frontmatter.completed_at)) : undefined,
+      durationMinutes: frontmatter.duration_minutes ? Number(frontmatter.duration_minutes) : undefined,
+      tags: ((frontmatter.tags as string[]) ?? []).slice(),
+      reason: frontmatter.reason as string | undefined,
+      epicId: undefined,
+      milestoneId: undefined,
+      phaseId: undefined,
+    };
+  }
+
   async loadWithBenchmark(
     mode: LoadMode = "full",
     parseTaskBody = true,
