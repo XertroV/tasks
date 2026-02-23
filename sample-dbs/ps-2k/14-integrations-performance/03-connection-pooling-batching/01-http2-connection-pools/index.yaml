@@ -1,0 +1,45 @@
+id: P14.M3.E1
+name: HTTP/2 Connection Pools
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-connection-pool-for-llm-.todo
+  title: Design connection pool for LLM providers
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-http2-pool-using-mintf.todo
+  title: Implement HTTP/2 pool using Mint/Finch
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-pool-configuration-per-prov.todo
+  title: Add pool configuration per provider
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-pool-metrics-and-telemetry.todo
+  title: Add pool metrics and telemetry
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

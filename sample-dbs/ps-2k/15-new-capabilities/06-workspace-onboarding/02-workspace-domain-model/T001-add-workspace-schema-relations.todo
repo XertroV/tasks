@@ -1,0 +1,38 @@
+---
+id: P15.M6.E2.T001
+title: Add workspace schema and relational model
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M6.E1.T002
+tags:
+- backend
+- schema
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:32:11.781384+00:00'
+started_at: '2026-02-17T17:32:11.781384+00:00'
+completed_at: '2026-02-17T17:36:53.129145+00:00'
+duration_minutes: 4.689129166666667
+---
+
+# Add workspace schema and relational model
+
+## Owner Outcome
+- I can organize agents, sessions, and channels under a single workspace boundary.
+
+## Acceptance Criteria
+- [x] Add workspace schema + migration and define associations for agents/sessions (including backfill strategy for existing data).
+  - Schema at `lib/pag_server/schema/workspace.ex` with `has_many` for agents, sessions, integration_credentials, integration_settings, platform_configs.
+  - Migration at `priv/repo/migrations/20260213100000_create_workspaces.exs`.
+  - Linkage migration at `priv/repo/migrations/20260216110000_add_workspace_linkages.exs` adds `workspace_id` FK to agents, sessions, integration_credentials, integration_settings, platform_config tables.
+- [x] Model workspace ownership metadata and onboarding status fields needed by quicklaunch.
+  - `owner_id` and `onboarding_status` are present on `Workspace`, and `workspace_dir` now tracks per-workspace filesystem directory association for sandbox/workspace operations.
+- [x] Add constraints/indexes for workspace lookup by slug/name and deterministic main-agent pointer.
+  - Unique constraint on `slug` in schema. Unique index on `[:workspace_id, :name]` for agents. Indexes on `workspace_id` for all linked tables.
+- [x] Add tests for workspace creation and relation integrity.
+  - Coverage exists in `test/pag_server/workspaces_onboarding_test.exs` and `test/pag_server_web/controllers/workspaces_controller_test.exs` for workspace creation, onboarding status validation, and workspace directory provisioning/linkage.
+- [x] Confirm schema supports onboarding goal: one workspace that can be created and made chat-ready in <10 minutes.
+  - Workspace creation via API or setup wizard, main agent instantiation from template, and Telegram connection are all wired end-to-end. The `docs/guides/workspace-onboarding.md` documents the full path with a time budget under 10 minutes. The schema supports all required fields: `owner_id`, `onboarding_status`, `workspace_dir`, `slug`, and associations to agents/sessions/integrations.

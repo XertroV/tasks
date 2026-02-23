@@ -1,0 +1,36 @@
+---
+id: B179
+title: Event timeline route is not discoverable from Event Browser
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- webui
+- navigation
+- event-browser
+claimed_by: cli-user
+claimed_at: '2026-02-21T08:26:15.725117+00:00'
+started_at: '2026-02-21T08:26:15.725117+00:00'
+completed_at: '2026-02-21T08:27:37.774178+00:00'
+duration_minutes: 1.3674841333333334
+---
+
+# Event timeline route is not discoverable from Event Browser
+
+## Steps to Reproduce
+
+1. Open `/dashboard/events` and browse event rows.
+2. Open an event detail modal and look for any route action to the session timeline.
+3. Check dashboard cards/navigation for a path to `/dashboard/sessions/:session_id/timeline`.
+
+## Expected Behavior
+
+- Event Browser should provide a direct, discoverable way to open the timeline view for the event's session.
+- Timeline route should be reachable from normal dashboard workflows.
+
+## Actual Behavior
+
+- Timeline route exists (`/dashboard/sessions/:session_id/timeline`) but there is no direct link in Event Browser rows or event detail.
+- Users must manually craft the URL to reach timeline pages.

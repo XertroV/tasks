@@ -1,0 +1,43 @@
+---
+id: P26.M1.E1.T002
+title: Add size field to agent spawn requests
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on:
+- P26.M1.E1.T001
+tags:
+- agents
+- schema
+- size-pool
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:57:44.194516+00:00'
+started_at: '2026-02-18T17:57:44.194516+00:00'
+completed_at: '2026-02-18T18:05:44.569197+00:00'
+duration_minutes: 8.006244533333334
+---
+
+# Add size field to agent spawn requests
+
+Add a `size` field (enum: small/medium/large) to agent spawn request structs/params.
+When `size` is provided and `model` is not, the system resolves the model from the
+workspace pool. `size` and `model` are mutually exclusive.
+
+## Requirements
+
+- Add `size` field to agent spawn params/struct with values: `:small`, `:medium`, `:large`
+- `size` and `model` are mutually exclusive: validation error if both are set
+- If neither `size` nor `model` is set, fall back to workspace default model
+- Update agent creation API (REST and internal) to accept the `size` parameter
+- Update `AgentParams` or equivalent struct with the new field and validation
+- Update API documentation / OpenAPI spec if present
+
+## Acceptance Criteria
+
+- [ ] `size` field added to agent spawn request struct with Ecto.Enum or atom validation
+- [ ] Changeset rejects requests with both `size` and `model` set
+- [ ] Changeset allows `size` alone, `model` alone, or neither (falls back to default)
+- [ ] Agent creation REST endpoint accepts `size` in request body
+- [ ] Unit tests cover all combinations: size only, model only, both (error), neither
+- [ ] API spec updated if OpenAPI/Swagger is used

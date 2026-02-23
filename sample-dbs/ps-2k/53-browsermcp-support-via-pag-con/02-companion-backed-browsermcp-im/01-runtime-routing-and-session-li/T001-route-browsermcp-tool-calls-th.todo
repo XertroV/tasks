@@ -1,0 +1,53 @@
+---
+id: P53.M2.E1.T001
+title: Route browsermcp tool calls through companion transport
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P53.M1.E1.T003
+tags:
+- browsermcp
+- routing
+- pag-connect
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:32:53.367353+00:00'
+started_at: '2026-02-21T05:32:53.367353+00:00'
+completed_at: '2026-02-21T05:35:39.765301+00:00'
+duration_minutes: 2.7732989333333333
+---
+
+# Route browsermcp tool calls through companion transport
+
+
+
+## Requirements
+
+- Add routing path that sends browsermcp tool actions to pag-connect companion transport.
+- Preserve request IDs and tool invocation context through the transport boundary.
+- Ensure non-browser tools remain unaffected by the new routing branch.
+
+## Acceptance Criteria
+
+- Browser MCP actions are dispatched to companion endpoint in integration tests.
+- Correlation/request IDs are preserved end-to-end in logs/events.
+- Existing non-browser tool execution tests continue to pass unchanged.
+
+## Execution Notes (2026-02-21)
+
+- Companion proxy now forwards original tool request id in `context_extras`
+  (`request_id`) alongside `agent_id` and `session_id`.
+- Companion channel now includes `request_id` in pushed `tool_call` payload so
+  browsermcp executions can correlate MCP call ids end-to-end.
+- Added routing-focused tests for browsermcp dispatch and context propagation,
+  plus regression checks that non-browser routing remains registry-driven.
+
+## Evidence Artifacts
+
+- `lib/pag_server/companions/companion_proxy_executor.ex`
+- `lib/pag_server_web/channels/companion_channel.ex`
+- `test/pag_server/companions/companion_proxy_executor_test.exs`
+- `test/pag_server_web/channels/companion_channel_test.exs`
+- `test/pag_server/agents/tool_runner_companion_routing_test.exs`
+- `recent-mix-tests.log`

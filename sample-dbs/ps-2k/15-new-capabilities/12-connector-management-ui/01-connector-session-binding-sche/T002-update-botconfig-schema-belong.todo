@@ -1,0 +1,17 @@
+---
+id: P15.M12.E1.T002
+title: 'Update BotConfig schema: belongs_to :session and changesets'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P15.M12.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:40:43.047472+00:00'
+started_at: '2026-02-18T06:40:43.047472+00:00'
+completed_at: '2026-02-18T06:45:03.717079+00:00'
+duration_minutes: 4.344493233333334
+---
+In lib/pag_server/schema/bot_config.ex: add belongs_to :session, PagServer.Schema.Session. Add :session_id to create_changeset and update_changeset casts. Add assoc_constraint(:session). Keep session_id optional (not required). The session_id replaces the indirect workspace→main_agent lookup — if set, all connector messages route into this specific session.

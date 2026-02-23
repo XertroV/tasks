@@ -1,0 +1,30 @@
+id: P43.M1.E3
+name: Registry Integration
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-integrate-callrecorder-into-re.todo
+  title: Integrate CallRecorder into Registry.call_provider/5 for non-streaming calls
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-integrate-callrecorder-into-re.todo
+  title: Integrate CallRecorder into Registry streaming path; capture TTFT from TokenProcessor
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

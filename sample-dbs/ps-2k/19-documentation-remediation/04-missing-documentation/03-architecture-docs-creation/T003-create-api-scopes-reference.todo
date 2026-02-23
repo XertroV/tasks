@@ -1,0 +1,19 @@
+---
+id: P19.M4.E3.T003
+title: Create API scopes reference
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- api
+- auth
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:06:45.885413+00:00'
+started_at: '2026-02-18T03:06:45.885413+00:00'
+completed_at: '2026-02-18T03:16:04.224551+00:00'
+duration_minutes: 9.3056521
+---
+Create docs/api-scopes.md listing all available scopes and their meanings: agents:read, messages:write, sessions:read, etc.

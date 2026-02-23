@@ -1,0 +1,296 @@
+---
+title: Implement Backpressure and Flow Control
+epic: P3.M1.E3-token-streaming
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimate_hours: 1
+depends_on:
+- P3.M1.E3.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:38:07.153822'
+started_at: '2026-02-06T15:38:07.153822'
+completed_at: '2026-02-06T15:59:58.834417'
+duration_minutes: 21.861343066666667
+id: P3.M1.E3.T002
+---
+
+# Task: Implement Backpressure and Flow Control
+
+## Context
+When streaming tokens at high speed, we need backpressure to prevent overwhelming the channel, network, or client. Without backpressure, we risk memory bloat, dropped messages, and poor user experience. Phoenix Channels have built-in backpressure, but we need to handle it properly.
+
+## Goal
+Implement flow control and backpressure mechanisms to gracefully handle high-speed token streams without overwhelming clients or server memory.
+
+## Requirements
+- Monitor channel send buffer
+- Slow down token emission when buffer grows
+- Buffer tokens in agent GenServer if needed
+- Detect slow clients and warn/disconnect
+- Configurable buffer limits
+
+## Implementation
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+Add backpressure monitoring:
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  alias PagServer.Agents
+  alias PagServer.PubSub
+  
+  # Max pending push messages before applying backpressure
+  @max_pending_pushes 100
+  
+  # ... existing join code ...
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :token} = event}, socket) do
+    # Check backpressure before pushing
+    case check_backpressure(socket) do
+      :ok ->
+        push(socket, "token", %{
+          message_id: event.message_id,
+          token: event.token,
+          index: event.index
+        })
+        
+        {:noreply, socket}
+      
+      {:error, :overloaded} ->
+        Logger.warning("Channel backpressure triggered for agent #{socket.assigns.agent_id}")
+        
+        # Option 1: Drop token (lossy)
+        # {:noreply, socket}
+        
+        # Option 2: Buffer token in socket assigns
+        socket = buffer_token(socket, event)
+        {:noreply, socket}
+    end
+  end
+  
+  # Periodically flush buffered tokens
+  @impl true
+  def handle_info(:flush_buffer, socket) do
+    case socket.assigns[:token_buffer] do
+      tokens when is_list(tokens) and length(tokens) > 0 ->
+        # Push batched tokens
+        push(socket, "tokens_batch", %{tokens: Enum.reverse(tokens)})
+        socket = assign(socket, :token_buffer, [])
+        
+        # Schedule next flush
+        Process.send_after(self(), :flush_buffer, 50)
+        {:noreply, socket}
+      
+      _ ->
+        {:noreply, socket}
+    end
+  end
+  
+  defp check_backpressure(socket) do
+    # Phoenix tracks pending push count internally
+    # We can approximate by checking process message queue
+    {:message_queue_len, queue_len} = Process.info(self(), :message_queue_len)
+    
+    if queue_len > @max_pending_pushes do
+      {:error, :overloaded}
+    else
+      :ok
+    end
+  end
+  
+  defp buffer_token(socket, event) do
+    buffer = socket.assigns[:token_buffer] || []
+    
+    token_data = %{
+      message_id: event.message_id,
+      token: event.token,
+      index: event.index
+    }
+    
+    socket
+    |> assign(:token_buffer, [token_data | buffer])
+    |> schedule_flush_if_needed()
+  end
+  
+  defp schedule_flush_if_needed(socket) do
+    unless socket.assigns[:flush_scheduled] do
+      Process.send_after(self(), :flush_buffer, 50)
+      assign(socket, :flush_scheduled, true)
+    else
+      socket
+    end
+  end
+end
+```
+
+### File: `lib/pag_server/agents/stream_controller.ex`
+
+Create a GenStage-based stream controller for advanced backpressure:
+
+```elixir
+defmodule PagServer.Agents.StreamController do
+  @moduledoc """
+  Controls token stream flow with backpressure.
+  
+  Uses GenStage to buffer tokens and emit at controlled rate.
+  Consumers (channels) pull tokens as they're ready.
+  """
+  use GenStage
+  
+  def start_link(agent_id) do
+    GenStage.start_link(__MODULE__, agent_id, name: via_tuple(agent_id))
+  end
+  
+  def emit_token(agent_id, token_event) do
+    GenStage.cast(via_tuple(agent_id), {:emit, token_event})
+  end
+  
+  @impl true
+  def init(agent_id) do
+    {:producer, %{agent_id: agent_id, buffer: :queue.new()}, buffer_size: 1000}
+  end
+  
+  @impl true
+  def handle_cast({:emit, token_event}, state) do
+    buffer = :queue.in(token_event, state.buffer)
+    {:noreply, [], %{state | buffer: buffer}}
+  end
+  
+  @impl true
+  def handle_demand(demand, state) when demand > 0 do
+    {events, buffer} = take_from_buffer(state.buffer, demand, [])
+    {:noreply, Enum.reverse(events), %{state | buffer: buffer}}
+  end
+  
+  defp take_from_buffer(buffer, 0, acc), do: {acc, buffer}
+  
+  defp take_from_buffer(buffer, n, acc) do
+    case :queue.out(buffer) do
+      {{:value, event}, buffer} ->
+        take_from_buffer(buffer, n - 1, [event | acc])
+      
+      {:empty, buffer} ->
+        {acc, buffer}
+    end
+  end
+  
+  defp via_tuple(agent_id) do
+    {:via, Registry, {PagServer.Registry, {:stream_controller, agent_id}}}
+  end
+end
+```
+
+### File: `config/config.exs`
+
+Add configuration for backpressure:
+
+```elixir
+config :pag_server, PagServerWeb.AgentChannel,
+  max_pending_pushes: 100,
+  token_batch_interval_ms: 50,
+  slow_client_threshold_ms: 5000,
+  disconnect_stalled_clients: false
+```
+
+## Acceptance Criteria
+- [ ] Backpressure detected when queue exceeds threshold
+- [ ] Tokens buffered when backpressure active
+- [ ] Buffered tokens flushed periodically
+- [ ] Slow clients detected and logged
+- [ ] Memory usage stable under high load
+- [ ] No message loss in normal conditions
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/backpressure_test.exs
+defmodule PagServerWeb.AgentChannelBackpressureTest do
+  use PagServerWeb.ChannelCase
+  
+  import PagServer.Factories
+  
+  alias PagServer.Agents
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      user_id: "test-user"
+    })
+    
+    {:ok, agent: agent}
+  end
+  
+  test "handles high-speed token stream without memory bloat", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Simulate high-speed token stream
+    for i <- 1..1000 do
+      send(socket.channel_pid, {:agent_event, %{
+        type: :token,
+        agent_id: agent.id,
+        message_id: "test-msg",
+        token: "token#{i}",
+        index: i,
+        timestamp: System.system_time(:millisecond)
+      }})
+    end
+    
+    # Give channel time to process
+    :timer.sleep(100)
+    
+    # Channel should still be alive
+    assert Process.alive?(socket.channel_pid)
+    
+    # Memory should be reasonable
+    {:memory, memory} = Process.info(socket.channel_pid, :memory)
+    assert memory < 5_000_000  # < 5MB
+  end
+  
+  test "buffers tokens when backpressure active", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Flood with tokens to trigger backpressure
+    for i <- 1..200 do
+      send(socket.channel_pid, {:agent_event, %{
+        type: :token,
+        agent_id: agent.id,
+        message_id: "test-msg",
+        token: "t#{i}",
+        index: i,
+        timestamp: System.system_time(:millisecond)
+      }})
+    end
+    
+    # Should see batched tokens event
+    assert_push "tokens_batch", %{tokens: tokens}
+    assert is_list(tokens)
+  end
+end
+```
+
+## References
+- Phoenix Channel backpressure: https://hexdocs.pm/phoenix/Phoenix.Channel.html#module-pushing-messages
+- GenStage: https://hexdocs.pm/gen_stage/GenStage.html
+- Erlang process memory monitoring
+
+## Notes
+- Default Phoenix backpressure is usually sufficient
+- GenStage approach is optional for advanced scenarios
+- Consider token batching (e.g., every 50ms) to reduce message count
+- Monitor production for slow clients causing backpressure

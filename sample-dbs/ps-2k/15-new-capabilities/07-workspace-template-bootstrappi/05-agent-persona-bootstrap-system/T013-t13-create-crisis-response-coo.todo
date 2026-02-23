@@ -1,0 +1,27 @@
+---
+id: P15.M7.E5.T013
+title: 'T13: Create Crisis Response Coordinator Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:28:11.333062+00:00'
+started_at: '2026-02-18T10:28:11.333062+00:00'
+completed_at: '2026-02-18T10:29:28.860084+00:00'
+duration_minutes: 1.2921168333333335
+---
+
+# T13: Create Crisis Response Coordinator Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

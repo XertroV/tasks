@@ -1,0 +1,132 @@
+---
+id: P6.M1.E1.T001
+title: Create Stats.Tracker GenServer
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- stats
+- genserver
+- foundation
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:32:02.595770'
+started_at: '2026-02-06T13:32:02.595770'
+completed_at: '2026-02-06T13:37:05.178259'
+duration_minutes: 5.043041283333333
+---
+
+# Create Stats.Tracker GenServer
+
+Implement a GenServer that tracks real-time token usage and costs per agent/session.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/stats/tracker.ex` GenServer module
+- [ ] Implement state struct with:
+  - [ ] `agents` - Map of agent_id → stats
+  - [ ] `sessions` - Map of session_id → stats
+  - [ ] `models` - Map of model_name → stats
+  - [ ] `global` - Aggregated global stats
+- [ ] Add GenServer callbacks:
+  - [ ] `start_link/1` - Initialize tracker
+  - [ ] `init/1` - Set up empty state
+  - [ ] `handle_call/3` for `get_stats/1`
+  - [ ] `handle_cast/2` for `record_token_usage/2`
+  - [ ] `handle_info/2` for telemetry events
+- [ ] Implement public API:
+  - [ ] `record_usage(agent_id, session_id, model, tokens_in, tokens_out, cost)`
+  - [ ] `get_agent_stats(agent_id)` → current stats
+  - [ ] `get_session_stats(session_id)` → session stats
+  - [ ] `get_model_stats(model)` → model stats
+  - [ ] `get_global_stats()` → aggregated stats
+- [ ] Add to supervision tree in `lib/pag_server/application.ex`
+
+## Acceptance Criteria
+
+- [x] `Stats.Tracker` GenServer starts successfully
+- [x] Recording usage updates state correctly
+- [x] Stats queries return accurate data
+- [x] State structure uses efficient maps (not lists)
+- [x] Memory bounded (no unbounded growth)
+- [x] Added to supervision tree
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.7 (Stats Domain)
+- Architecture memory limits (target <4GB total, <512MB per session)
+
+**Key Points**:
+- Use ETS or Cachex if in-memory stats exceed 256MB
+- Stats struct should track:
+  - Token counts (input/output)
+  - Cost (USD)
+  - Request counts
+  - Timestamp of first/last activity
+- Memory efficient: Use maps, not lists of events
+
+## Notes
+
+**State Structure**:
+```elixir
+defmodule PagServer.Stats.Tracker do
+  use GenServer
+
+  defmodule Stats do
+    @moduledoc "Per-entity statistics"
+    defstruct [
+      :id,
+      tokens_in: 0,
+      tokens_out: 0,
+      total_cost: 0.0,
+      request_count: 0,
+      first_activity: nil,
+      last_activity: nil
+    ]
+  end
+
+  defstruct [
+    agents: %{},    # agent_id => Stats
+    sessions: %{},  # session_id => Stats
+    models: %{},    # model_name => Stats
+    global: %Stats{id: :global}
+  ]
+end
+```
+
+**Telemetry Integration**:
+Will receive events like:
+```elixir
+:telemetry.execute(
+  [:pag, :llm, :response],
+  %{tokens_in: 1200, tokens_out: 450, cost: 0.015},
+  %{agent_id: "abc", session_id: "xyz", model: "claude-3-5-sonnet"}
+)
+```
+
+Track stats in real-time, persist separately (next epic).
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-07 00:32 UTC
+**Primary task**: P3.M1.E1.T001 - Create UserSocket module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P6.M1.E1 vs P3.M1.E1)
+- No dependency chain: ✓ (verified at claim time)

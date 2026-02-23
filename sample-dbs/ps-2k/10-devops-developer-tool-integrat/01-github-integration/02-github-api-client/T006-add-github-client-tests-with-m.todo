@@ -1,0 +1,46 @@
+---
+id: P10.M1.E2.T006
+title: Add GitHub client tests with mocks
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:32:41.666808+00:00'
+started_at: '2026-02-11T20:32:41.666808+00:00'
+completed_at: '2026-02-12T00:12:19.155174+00:00'
+duration_minutes: 219.62480585
+---
+
+# Add GitHub client tests with mocks
+
+
+
+## Requirements
+
+- [ ] Create comprehensive test suite for GitHub client and related modules
+- [ ] Mock GitHub API responses using pattern from Slack/Telegram tests
+- [ ] Test PAT and GitHub Apps authentication flows
+- [ ] Test webhook signature verification: valid, invalid, expired timestamps
+- [ ] Test controller: signature validation, async processing, error handling
+- [ ] Test event parser with real GitHub webhook payloads for all event types
+- [ ] Test rate limiting: cache behavior, backoff timing, retry logic
+- [ ] Mock HTTP requests using `bypass` or similar to avoid hitting real API
+- [ ] Test edge cases: malformed payloads, missing headers, timestamp drift
+- [ ] Add test contamination prevention (async: true, unique names, cleanup)
+- [ ] Aim for >90% code coverage
+
+## Acceptance Criteria
+
+- [ ] All modules have corresponding test files in `test/pag_server/integrations/github/`
+- [ ] Controller tests cover signature validation, async dispatch, error responses
+- [ ] Client tests mock HTTP requests, verify request format/headers
+- [ ] EventParser tests use real GitHub webhook JSON samples
+- [ ] Rate limiter tests verify backoff timing, cache behavior, header parsing
+- [ ] Tests use async: true with proper cleanup (on_exit)
+- [ ] No flaky tests (ProcessName uniqueness, mocked delays)
+- [ ] All tests pass consistently: `mix test test/pag_server/integrations/github/`
+- [ ] Mock patterns follow existing Slack/Telegram test code
+- [ ] Test helpers extracted to `test/support/github_helpers.ex`

@@ -1,0 +1,17 @@
+---
+id: P22.M3.E4.T002
+title: 'Integration tests: end-to-end compaction replaces messages with summary'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M3.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:44.516339+00:00'
+started_at: '2026-02-18T17:04:44.516339+00:00'
+completed_at: '2026-02-18T17:17:41.787772+00:00'
+duration_minutes: 12.954523733333334
+---
+Write integration tests for full compaction flow: - Create session with 100 messages, set threshold to trigger - Verify CompactionMonitor compacts messages and replaces with summary message - Verify session continues to work after compaction (new messages can be added) - Verify token count decreases after compaction - Manual trigger via CompactionMonitor.compact_now/1 works Acceptance criteria: - Uses DataCase with unique session per test - No Process.sleep - Tests complete in <10s

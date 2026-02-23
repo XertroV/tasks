@@ -1,0 +1,125 @@
+id: P2.M7.E4
+name: Dynamic Pricing Feeds
+status: pending
+estimate_hours: 16.5
+complexity: medium
+depends_on:
+- E2
+tasks:
+- id: T001
+  file: T001-create-pricing-database-schema.todo
+  title: Create pricing database schema and context
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P2.M7.E2.T001
+- id: T002
+  file: T002-implement-pricingfetcher-behav.todo
+  title: Implement PricingFetcher behavior and registry
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P2.M7.E2.T001
+- id: T003
+  file: T003-build-openrouter-pricing-fetch.todo
+  title: Build OpenRouter pricing fetcher
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T002
+- id: T004
+  file: T004-add-anthropic-static-pricing-w.todo
+  title: Add Anthropic static pricing with future API hook
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T002
+- id: T005
+  file: T005-add-openai-static-pricing-with.todo
+  title: Add OpenAI static pricing with future API hook
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T002
+- id: T006
+  file: T006-implement-pricing-cache-layer.todo
+  title: Implement pricing cache layer with staleness detection
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+  - T002
+  - T003
+  - T004
+  - T005
+- id: T007
+  file: T007-add-startup-pricing-fetch-to-a.todo
+  title: Add startup pricing fetch to Application supervision
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T006
+- id: T008
+  file: T008-create-oban-worker-for-schedul.todo
+  title: Create Oban worker for scheduled pricing updates
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T006
+- id: T009
+  file: T009-add-admin-api-endpoint-for-man.todo
+  title: Add admin API endpoint for manual pricing refresh
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T006
+- id: T010
+  file: T010-add-pricing-telemetry-events.todo
+  title: Add pricing telemetry events
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T011
+  file: T011-write-integration-tests-for-pr.todo
+  title: Write integration tests for pricing lifecycle
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - T001
+  - T002
+  - T003
+  - T004
+  - T005
+  - T006
+  - T007
+  - T008
+  - T009
+  - T010
+stats:
+  total: 11
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 11

@@ -1,0 +1,434 @@
+---
+id: P2.M8.E2.T003
+title: Implement auto-truncation fallback
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- context
+- truncation
+- fallback
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:54:22.822671'
+started_at: '2026-02-06T02:54:22.822671'
+completed_at: '2026-02-06T03:02:34.097527'
+duration_minutes: 8.1879141
+---
+
+# Implement auto-truncation fallback
+
+
+
+## Requirements
+
+- [ ] Implement reactive auto-truncation when LLM returns context overflow error
+- [ ] Detect overflow errors from LLM provider responses (multiple error formats)
+- [ ] Automatically retry request with truncated context (configurable max retries)
+- [ ] Use exponential reduction strategy (reduce by factor on each retry)
+- [ ] Apply sliding window pruning to remove oldest messages first
+- [ ] Preserve system message and most recent user/assistant exchanges
+- [ ] Calculate token budget for retry based on reduction factor
+- [ ] Emit telemetry event when truncation is triggered
+- [ ] Return error if truncation cannot reduce context further
+- [ ] Support configurable reduction factor (default: 0.8 = 20% reduction)
+- [ ] Support configurable max retry attempts (default: 3)
+- [ ] Wrap LLM provider calls with truncation fallback
+- [ ] Handle multiple overflow error formats from different providers
+
+## Acceptance Criteria
+
+- [ ] Module `PagServer.Context.Pruning.AutoTruncation` exists
+- [ ] Function `with_auto_truncation/3` wraps LLM calls:
+  ```elixir
+  @spec with_auto_truncation(list(), keyword(), (list() -> term())) :: 
+    {:ok, term()} | {:error, term()}
+  def with_auto_truncation(messages, opts, call_fn)
+  ```
+- [ ] Detects overflow errors via pattern matching:
+  - [ ] Error maps: `%{type: "invalid_request_error", message: msg}` (OpenAI/Anthropic)
+  - [ ] Atoms: `:context_overflow`, `:context_length_exceeded`, `:token_limit_exceeded`
+  - [ ] Strings containing: "too long", "too many tokens", "context length", "maximum context", "token limit", "exceeds the model"
+- [ ] Retry loop with configurable max attempts (default: 3):
+  ```elixir
+  defp do_with_truncation(messages, opts, call_fn, attempt, max_retries)
+  ```
+- [ ] Budget calculation uses reduction factor:
+  ```elixir
+  budget = compute_budget(messages, opts, attempt, reduction_factor)
+  # First retry: budget = original * 0.8
+  # Second retry: budget = original * 0.8 * 0.8
+  # Third retry: budget = original * 0.8^3
+  ```
+- [ ] Truncation uses `SlidingWindow` strategy by default
+- [ ] Configurable truncation strategy via opts: `:truncation_strategy`
+- [ ] Preserves system message (never truncated)
+- [ ] Returns original result if no overflow error
+- [ ] Returns `{:error, :context_overflow}` if cannot reduce further
+- [ ] Returns `{:error, :max_retries_exceeded}` if max attempts reached
+- [ ] Emits telemetry on each truncation attempt:
+  ```elixir
+  :telemetry.execute(
+    [:pag_server, :context, :auto_truncation],
+    %{attempt: attempt, original_count: original, truncated_count: truncated},
+    %{strategy: strategy, reduction_factor: factor}
+  )
+  ```
+- [ ] Logs warning on overflow detection (before truncation)
+- [ ] Logs error if truncation fails after max retries
+- [ ] Tests verify overflow detection for all error formats
+- [ ] Tests verify retry logic (1, 2, 3 attempts)
+- [ ] Tests verify budget calculation (exponential reduction)
+- [ ] Tests verify truncation preserves system message
+- [ ] Tests verify early termination if cannot reduce
+- [ ] Tests verify telemetry emission
+- [ ] Tests verify success on first retry
+- [ ] Tests verify failure after max retries
+- [ ] Tests mock LLM provider responses
+- [ ] Integration test with actual sliding window truncation
+- [ ] No compilation warnings after `mix lint`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md:596-630` (Context building)
+- Existing implementation: `lib/pag_server/context/pruning/auto_truncation.ex`
+
+**Key Points**:
+- **Reactive** fallback (after LLM error), complements proactive detection (T001)
+- Uses exponential backoff strategy for token budget (0.8, 0.64, 0.512 of original)
+- Sliding window removes oldest messages first (preserves recent context)
+- System message always preserved (critical for agent behavior)
+- Multiple providers have different overflow error formats
+- Telemetry enables monitoring of truncation frequency and effectiveness
+
+**Why Reactive Truncation is Needed**:
+1. Proactive detection may miss edge cases (tool calls, special tokens)
+2. Provider limits may be more restrictive than documented
+3. Provides graceful degradation instead of hard failure
+4. Enables automatic recovery without user intervention
+
+## Implementation Notes
+
+### Core Auto-Truncation Wrapper
+
+```elixir
+defmodule PagServer.Context.Pruning.AutoTruncation do
+  @moduledoc """
+  Automatic context truncation fallback for LLM overflow errors.
+  
+  Wraps LLM provider calls with retry logic that automatically truncates
+  the context window when overflow errors are detected.
+  """
+  
+  require Logger
+  alias PagServer.Context.Pruning.SlidingWindow
+  
+  @default_reduction_factor 0.8
+  @default_max_retries 3
+  
+  @doc """
+  Wrap LLM provider call with auto-truncation fallback.
+  
+  ## Options
+  - `:reduction_factor` - Factor to reduce by on each retry (default: 0.8)
+  - `:max_retries` - Maximum retry attempts (default: 3)
+  - `:truncation_strategy` - Module to use for truncation (default: SlidingWindow)
+  - `:max_tokens` - Initial token budget (required for budget calculation)
+  
+  ## Examples
+  
+      iex> AutoTruncation.with_auto_truncation(messages, [max_tokens: 4096], fn msgs ->
+      ...>   LLMProvider.chat(msgs, model, opts)
+      ...> end)
+      {:ok, response}
+  """
+  @spec with_auto_truncation(list(), keyword(), (list() -> term())) :: 
+    {:ok, term()} | {:error, term()}
+  def with_auto_truncation(messages, opts, call_fn) 
+      when is_list(messages) and is_function(call_fn, 1) do
+    max_retries = Keyword.get(opts, :max_retries, @default_max_retries)
+    do_with_truncation(messages, opts, call_fn, 0, max_retries)
+  end
+  
+  # Recursive retry with truncation
+  defp do_with_truncation(messages, opts, call_fn, attempt, max_retries) do
+    result = call_fn.(messages)
+    
+    case result do
+      {:ok, _} = success -> 
+        success
+      
+      {:error, _} = error ->
+        if context_overflow_error?(error) and attempt < max_retries do
+          Logger.warning("Context overflow detected (attempt #{attempt + 1}/#{max_retries}), truncating...")
+          
+          reduction_factor = Keyword.get(opts, :reduction_factor, @default_reduction_factor)
+          budget = compute_budget(messages, opts, attempt, reduction_factor)
+          
+          truncated = truncate(messages, Keyword.put(opts, :max_tokens, budget))
+          
+          if truncated == messages do
+            # Cannot reduce further
+            Logger.error("Cannot reduce context further, failing")
+            {:error, :context_overflow}
+          else
+            emit_truncation_telemetry(messages, truncated, opts, attempt)
+            do_with_truncation(truncated, opts, call_fn, attempt + 1, max_retries)
+          end
+        else
+          if attempt >= max_retries do
+            Logger.error("Max truncation retries (#{max_retries}) exceeded")
+            {:error, :max_retries_exceeded}
+          else
+            result  # Not an overflow error, return as-is
+          end
+        end
+    end
+  end
+  
+  # Compute token budget for retry
+  defp compute_budget(messages, opts, attempt, reduction_factor) do
+    original_budget = Keyword.get(opts, :max_tokens)
+    
+    if original_budget do
+      # Exponential reduction: budget * (factor ^ attempt)
+      round(original_budget * :math.pow(reduction_factor, attempt + 1))
+    else
+      # Estimate from current message count
+      estimated_tokens = estimate_token_count(messages)
+      round(estimated_tokens * :math.pow(reduction_factor, attempt + 1))
+    end
+  end
+  
+  # Truncate messages using configured strategy
+  defp truncate(messages, opts) do
+    strategy = Keyword.get(opts, :truncation_strategy, SlidingWindow)
+    strategy.truncate(messages, opts)
+  end
+  
+  # Detect overflow errors from multiple providers
+  defp context_overflow_error?({:error, error}), do: is_overflow_error?(error)
+  defp context_overflow_error?(_), do: false
+  
+  defp is_overflow_error?(%{type: type, message: msg}) 
+       when type in ["invalid_request_error", :invalid_request_error] do
+    is_overflow_error?(msg)
+  end
+  
+  defp is_overflow_error?(error) when is_atom(error) do
+    error in [:context_overflow, :context_length_exceeded, :token_limit_exceeded]
+  end
+  
+  defp is_overflow_error?(error) when is_binary(error) do
+    error_lower = String.downcase(error)
+    
+    String.contains?(error_lower, "too long") or
+    String.contains?(error_lower, "too many tokens") or
+    String.contains?(error_lower, "context length") or
+    String.contains?(error_lower, "maximum context") or
+    String.contains?(error_lower, "token limit") or
+    String.contains?(error_lower, "exceeds the model")
+  end
+  
+  defp is_overflow_error?(_), do: false
+  
+  # Estimate token count (4 chars ≈ 1 token)
+  defp estimate_token_count(messages) do
+    messages
+    |> Enum.map(fn msg ->
+      content = Map.get(msg, :content, "") || Map.get(msg, "content", "")
+      String.length(content)
+    end)
+    |> Enum.sum()
+    |> div(4)
+  end
+  
+  # Emit telemetry event
+  defp emit_truncation_telemetry(original, truncated, opts, attempt) do
+    strategy = Keyword.get(opts, :truncation_strategy, SlidingWindow)
+    reduction_factor = Keyword.get(opts, :reduction_factor, @default_reduction_factor)
+    
+    :telemetry.execute(
+      [:pag_server, :context, :auto_truncation],
+      %{
+        attempt: attempt + 1,
+        original_count: length(original),
+        truncated_count: length(truncated),
+        reduction_count: length(original) - length(truncated)
+      },
+      %{
+        strategy: strategy,
+        reduction_factor: reduction_factor
+      }
+    )
+  end
+end
+```
+
+### Integration with AgentServer
+
+```elixir
+# In AgentServer, wrap LLM calls with auto-truncation
+defp call_llm_with_truncation(messages, state) do
+  opts = [
+    max_tokens: state.config[:max_tokens] || 4096,
+    reduction_factor: state.config[:truncation_reduction_factor] || 0.8,
+    max_retries: state.config[:truncation_max_retries] || 3,
+    truncation_strategy: state.config[:truncation_strategy] || SlidingWindow
+  ]
+  
+  AutoTruncation.with_auto_truncation(messages, opts, fn msgs ->
+    LLMRegistry.chat(build_model_spec(state.config), msgs, opts)
+  end)
+end
+```
+
+### Sliding Window Truncation (Reference)
+
+```elixir
+defmodule PagServer.Context.Pruning.SlidingWindow do
+  @doc """
+  Truncate messages to fit within token budget using sliding window.
+  
+  Preserves:
+  - System message (always kept)
+  - Most recent messages (up to token budget)
+  
+  Removes oldest messages first until within budget.
+  """
+  def truncate(messages, opts) do
+    max_tokens = Keyword.fetch!(opts, :max_tokens)
+    
+    # Separate system message from history
+    {system_msgs, history} = Enum.split_with(messages, &is_system_message?/1)
+    
+    # Truncate history (oldest first)
+    truncated_history = truncate_to_budget(history, max_tokens)
+    
+    # Recombine system + truncated history
+    system_msgs ++ truncated_history
+  end
+  
+  defp truncate_to_budget(messages, max_tokens) do
+    # Walk backwards (most recent first), accumulate until budget
+    messages
+    |> Enum.reverse()
+    |> Enum.reduce_while({[], 0}, fn msg, {acc, token_count} ->
+      msg_tokens = estimate_message_tokens(msg)
+      new_count = token_count + msg_tokens
+      
+      if new_count <= max_tokens do
+        {:cont, {[msg | acc], new_count}}
+      else
+        {:halt, {acc, token_count}}
+      end
+    end)
+    |> elem(0)
+    |> Enum.reverse()
+  end
+end
+```
+
+### Error Format Examples
+
+**OpenAI**:
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "message": "This model's maximum context length is 128000 tokens. However, your messages resulted in 150000 tokens."
+  }
+}
+```
+
+**Anthropic**:
+```json
+{
+  "error": {
+    "type": "invalid_request_error",
+    "message": "messages: total text content too long"
+  }
+}
+```
+
+**Ollama**:
+```
+"context length exceeded: 8192/4096"
+```
+
+### Testing Strategy
+
+```elixir
+defmodule PagServer.Context.Pruning.AutoTruncationTest do
+  use ExUnit.Case, async: true
+  
+  describe "with_auto_truncation/3" do
+    test "returns success if no overflow error" do
+      result = AutoTruncation.with_auto_truncation(
+        [%{role: "user", content: "hello"}],
+        [max_tokens: 100],
+        fn msgs -> {:ok, "response"} end
+      )
+      
+      assert {:ok, "response"} = result
+    end
+    
+    test "retries with truncation on overflow error" do
+      call_count = :counters.new(1, [:atomics])
+      
+      result = AutoTruncation.with_auto_truncation(
+        build_long_messages(100),
+        [max_tokens: 4096, max_retries: 3],
+        fn msgs ->
+          :counters.add(call_count, 1, 1)
+          count = :counters.get(call_count, 1)
+          
+          if count == 1 and length(msgs) > 50 do
+            {:error, %{type: "invalid_request_error", message: "context too long"}}
+          else
+            {:ok, "response"}
+          end
+        end
+      )
+      
+      assert {:ok, "response"} = result
+      assert :counters.get(call_count, 1) == 2  # Original + 1 retry
+    end
+    
+    test "fails after max retries" do
+      result = AutoTruncation.with_auto_truncation(
+        [%{role: "system", content: "test"}],  # Cannot truncate system message
+        [max_tokens: 10, max_retries: 3],
+        fn _msgs -> {:error, %{message: "context too long"}} end
+      )
+      
+      assert {:error, :max_retries_exceeded} = result
+    end
+    
+    test "detects various overflow error formats" do
+      errors = [
+        {:error, :context_overflow},
+        {:error, %{type: "invalid_request_error", message: "too many tokens"}},
+        {:error, "context length exceeded"},
+        {:error, "This model's maximum context length is 100 tokens"}
+      ]
+      
+      for error <- errors do
+        assert AutoTruncation.context_overflow_error?(error)
+      end
+    end
+  end
+end
+```
+
+## Notes
+
+- This task appears to already be implemented (status: done). Requirements document expected functionality.
+- Auto-truncation is a **reactive** strategy that complements proactive detection (T001)
+- Exponential reduction strategy balances effectiveness with retry efficiency
+- Sliding window is simplest strategy (remove oldest), but other strategies can be plugged in
+- System message preservation is critical (defines agent behavior)
+- Telemetry enables monitoring: how often truncation is needed, how effective each strategy is
+- Future enhancement: Adaptive strategy selection based on message types (preserve tool calls over old text)

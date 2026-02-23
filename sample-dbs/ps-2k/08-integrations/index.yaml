@@ -1,0 +1,68 @@
+id: P8
+name: Platform Integrations
+status: pending
+weeks: 2
+estimate_hours: 54
+complexity: high
+depends_on:
+- P7
+milestones:
+- id: M1
+  name: Unified Gateway
+  path: 01-unified-gateway
+  status: pending
+  estimate_hours: 10
+  complexity: high
+  depends_on: []
+  description: Common message format, routing logic, and platform-specific formatters
+- id: M2
+  name: Telegram Integration
+  path: 02-telegram
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - M1
+  description: Telegram bot setup, message handlers, session mapping
+- id: M3
+  name: Slack Integration
+  path: 03-slack
+  status: pending
+  estimate_hours: 10
+  complexity: high
+  depends_on:
+  - M1
+  description: Slack app setup, event handlers, slash commands
+- id: M4
+  name: Discord Integration
+  path: 04-discord
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - M1
+  description: Discord bot setup and message handlers
+- id: M5
+  name: WhatsApp Integration
+  path: 05-whatsapp
+  status: pending
+  estimate_hours: 10
+  complexity: high
+  depends_on:
+  - M1
+  description: WhatsApp Cloud API integration and webhook handler
+- id: M6
+  name: Matrix Integration
+  path: 06-matrix
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - M1
+  description: Matrix/Element client setup and event handlers
+stats:
+  total_tasks: 44
+  done: 44
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,29 @@
+id: P10.M5.E3
+name: Generic Git Platform Adapter
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-generic-git-platform-ad.todo
+  title: Design generic Git platform adapter
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-implement-common-git-operation.todo
+  title: Implement common Git operations interface
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

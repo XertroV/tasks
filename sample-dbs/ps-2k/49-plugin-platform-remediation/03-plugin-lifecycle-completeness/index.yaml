@@ -1,0 +1,24 @@
+id: P49.M3
+name: Plugin Lifecycle Completeness
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on:
+- P49.M2
+locked: false
+epics:
+- id: E1
+  name: Implement first-class plugin update and reload lifecycle
+  path: 01-implement-first-class-plugin-u
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

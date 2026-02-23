@@ -1,0 +1,42 @@
+---
+id: P18.M4.E1.T001
+title: Add archived_at and archived_by columns to workspaces
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- workspace
+- migration
+- soft-delete
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.929967+00:00'
+started_at: '2026-02-17T18:30:42.929967+00:00'
+completed_at: '2026-02-17T20:47:52.495547+00:00'
+duration_minutes: 137.15942618333332
+---
+
+# Add archived_at and archived_by columns to workspaces
+
+## Description
+
+Create a migration adding soft-delete columns to the workspaces table.
+
+## Requirements
+
+- [ ] Add `archived_at` column: `utc_datetime_usec`, nullable, default nil
+- [ ] Add `archived_by` column: `binary_id`, nullable, references users (on_delete: nilify_all)
+- [ ] Add index on `archived_at` (for filtering active workspaces)
+- [ ] Add partial index on `slug` where `archived_at IS NULL` (archived workspaces should not block slug reuse)
+
+## Acceptance Criteria
+
+- [ ] Migration runs and rolls back cleanly
+- [ ] Existing workspaces have nil archived_at (active)
+- [ ] Index supports efficient filtering of active workspaces
+
+## Context
+
+**Files affected**: `priv/repo/migrations/`
+**Note**: Consider whether the existing unique index on slug needs to be replaced with the partial index

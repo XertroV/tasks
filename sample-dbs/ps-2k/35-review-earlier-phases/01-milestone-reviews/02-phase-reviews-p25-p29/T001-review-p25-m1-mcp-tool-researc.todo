@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T001
+title: 'Review P25.M1: MCP Tool Research & Audit'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:32:14.802250+00:00'
+started_at: '2026-02-19T00:32:14.802250+00:00'
+completed_at: '2026-02-19T00:37:22.685623+00:00'
+duration_minutes: 5.131389316666667
+---
+Load the review-and-fix skill. Review all epics and tasks under P25.M1 (MCP Tool Interface - Research & Audit). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: audit findings from opencode/codex/crush MCP tool interfaces and the documented best-practice patterns. Verify findings were actually used to inform P25.M2 improvements.

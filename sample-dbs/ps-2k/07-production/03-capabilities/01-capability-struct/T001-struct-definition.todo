@@ -1,0 +1,90 @@
+---
+id: P7.M3.E1.T001
+title: Define Capabilities struct
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:27:20.388188'
+started_at: '2026-02-06T13:27:20.388188'
+completed_at: '2026-02-06T13:29:10.445517'
+tags:
+- security
+- capabilities
+- structure
+duration_minutes: 1.8342886666666667
+---
+
+# Define Capabilities struct
+
+Create the Capabilities struct for capability-based security model.
+
+## Requirements
+
+- [x] Create `lib/pag_server/security/capabilities.ex`
+- [x] Define struct with fields:
+  - [x] :allowed_tools (tool access control)
+  - [x] :file_access (filesystem permissions)
+  - [x] :network_access (network permissions)
+  - [x] :can_spawn_subagents (agent spawning)
+  - [x] :resource_limits (memory, tokens, cost, time)
+- [x] Define type specs for each field
+- [x] Add @type definitions for access patterns
+- [x] Implement `default/0` function
+- [x] Add module documentation
+
+## Acceptance Criteria
+
+- [x] Struct defined with all required fields
+- [x] Type specs properly document constraints
+- [x] default/0 returns safe default configuration
+- [x] Code compiles without warnings
+- [x] Module documentation includes examples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1387-1465 (Security Model)
+- Task breakdown P7.M3 (Capabilities)
+
+**Key Points**:
+- Capability-based security (not ACLs)
+- Deny by default, allow explicitly
+- Composable permissions
+- Resource limits prevent abuse
+
+## Notes
+
+From architecture documentation:
+```elixir
+defmodule PagServer.Security.Capabilities do
+  defstruct [
+    :allowed_tools,
+    :file_access,
+    :network_access,
+    :can_spawn_subagents,
+    :resource_limits
+  ]
+
+  @type tool_access :: :all | {:allow, [String.t()]} | {:deny, [String.t()]} | :none
+  @type file_access :: :full | {:paths, [Path.t()]} | :read_only | :none
+  @type network_access :: :full | {:allow, [String.t()]} | {:deny, [String.t()]} | :none
+
+  def default() do
+    %__MODULE__{
+      allowed_tools: :all,
+      file_access: {:paths, [System.get_env("WORKSPACE_DIR", "/workspace")]},
+      network_access: :full,
+      can_spawn_subagents: true,
+      resource_limits: %{
+        max_tokens: 1_000_000,
+        max_cost_millicents: 1000_00,
+        max_tool_calls: 100,
+        max_execution_time_ms: 300_000
+      }
+    }
+  end
+end
+```

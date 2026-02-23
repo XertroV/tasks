@@ -1,0 +1,49 @@
+---
+id: B171
+title: Skill Hub search returns :not_found instead of filtered results
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- browser-testing
+- skill-hub
+- search
+claimed_by: cli-user
+claimed_at: '2026-02-21T03:42:17.462268+00:00'
+started_at: '2026-02-21T03:42:17.462268+00:00'
+completed_at: '2026-02-21T03:44:16.251658+00:00'
+duration_minutes: 1.9798229833333332
+---
+## Repro
+1. Navigate to /dashboard/skills/hub
+2. Enter any search term (e.g., near, moltoffer)
+3. Observe the result area
+
+## Expected
+Search should return filtered skills or an empty-state message.
+
+## Actual
+UI shows error: `Failed to load skills: :not_found No skills found.`
+
+## Notes
+Discovered during P51.M2.E2.T001 plugin UI exploration campaign.
+
+## Resolution
+- Updated Skill Hub LiveView fetch normalization to treat ClawHub `{:error, :not_found}` search responses as an empty result set instead of a hard error.
+
+## Verification
+- Added regression test: `test/pag_server_web/live/skill_hub_live_test.exs` (`search not_found is treated as empty results, not fetch error`).
+- Ran `mix test test/pag_server_web/live/skill_hub_live_test.exs` with all tests passing.
+
+## Playwright Scenario Notes
+- Test name: `skill hub search empty result does not show fetch error`
+- Preconditions: logged in as admin; `/dashboard/skills/hub` loads with registry access.
+- Steps:
+  1. `await page.goto('/dashboard/skills/hub')`
+  2. `await page.fill('input[placeholder="Search skills..."]', 'zzzxxyynonexist')`
+  3. `await page.waitForTimeout(500)`
+- Assertions:
+  - Empty-state text `No skills found.` is visible.
+  - Error text like `Failed to load skills` is not visible.

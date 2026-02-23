@@ -1,0 +1,22 @@
+---
+id: P36.M1.E4.T003
+title: Tests for BootManager
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P36.M1.E4.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:08:51.038938+00:00'
+started_at: '2026-02-19T03:08:51.038938+00:00'
+completed_at: '2026-02-19T03:08:53.232488+00:00'
+duration_minutes: 0.036558883333333334
+---
+## Acceptance Criteria
+- Tests for all 4 boot phases using mock/stub sessions
+- Verify telemetry events are emitted: [:pag_server, :boot, :agent_started] and [:pag_server, :boot, :complete]
+- Verify failed sessions don't halt other starts
+- Use sleep_fn option pattern for timing-sensitive code
+- Tests are async: true using start_supervised!

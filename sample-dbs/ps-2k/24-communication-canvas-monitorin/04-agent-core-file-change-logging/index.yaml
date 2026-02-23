@@ -1,0 +1,23 @@
+id: P24.M4
+name: Agent Core File Change Logging
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Automatic File Change Logging Infrastructure
+  path: 01-automatic-file-change-logging
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

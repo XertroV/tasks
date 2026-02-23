@@ -1,0 +1,18 @@
+---
+id: P38.M1.E2.T003
+title: Tests for ConnectorRegistry, ConnectorDispatcher, and MCP tools
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P38.M1.E2.T001
+- P38.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:47:59.758454+00:00'
+started_at: '2026-02-19T04:47:59.758454+00:00'
+completed_at: '2026-02-19T04:53:48.198785+00:00'
+duration_minutes: 5.807338633333333
+---
+Test file: test/pag_server/connector_messaging/. Tests: (1) ConnectorRegistry: list returns only active connectors for workspace, get_connector/2 enforces workspace isolation. (2) ConnectorDispatcher: inject mock platform client via test double or Mox — verify correct platform client called with correct args, :missing_config returned when BotConfig lacks required keys. (3) MCP tools: list_connectors returns expected JSON, send_connector_message calls dispatcher. All tests async: true, use factory/fixtures not raw Repo.insert.

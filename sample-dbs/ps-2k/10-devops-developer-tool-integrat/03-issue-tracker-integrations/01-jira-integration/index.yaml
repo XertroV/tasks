@@ -1,0 +1,45 @@
+id: P10.M3.E1
+name: Jira Integration
+status: pending
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-jira-api-client-with-oa.todo
+  title: Create Jira API client with OAuth support
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-jira-webhook-handler-wit.todo
+  title: Build Jira webhook handler with verification
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-jira-issue-crud-oper.todo
+  title: Implement Jira issue CRUD operations
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-add-jql-query-support-and-issu.todo
+  title: Add JQL query support and issue search
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

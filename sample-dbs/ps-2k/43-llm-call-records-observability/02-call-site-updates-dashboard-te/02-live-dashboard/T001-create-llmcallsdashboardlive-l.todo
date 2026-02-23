@@ -1,0 +1,59 @@
+---
+id: P43.M2.E2.T001
+title: Create LlmCallsDashboardLive LiveView with in-flight section and recent history
+  table
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:03:37.135984+00:00'
+started_at: '2026-02-20T00:03:37.135984+00:00'
+completed_at: '2026-02-20T00:08:18.418955+00:00'
+duration_minutes: 4.688049316666667
+---
+
+# Create LlmCallsDashboardLive LiveView with in-flight section and recent history table
+
+
+
+## Requirements
+
+- Provide a real-time LiveView dashboard that operators can use to monitor in-flight LLM calls and inspect recent call history, following the visual and structural conventions already established by `AgentDashboard`.
+
+## Acceptance Criteria
+
+- A new file `lib/pag_server_web/live/llm_calls_dashboard_live.ex` exists and defines the module `PagServerWeb.LlmCallsDashboardLive`.
+- The module uses `on_mount {PagServerWeb.LiveHooks, :ensure_authenticated}` (matching the pattern in `agent_dashboard.ex`) so that unauthenticated requests are redirected to login.
+- `mount/3` assigns at minimum: `:in_flight` (list), `:recent` (list), `:time_window` (string, default `"1h"`), `:stats` (map).
+- `mount/3` schedules a 2-second polling timer via `Process.send_after(self(), :refresh, 2_000)`.
+- `handle_info(:refresh, socket)` re-queries `in_flight/0` and `recent/1` (from `LlmCallRecord`), updates the relevant assigns, and reschedules the timer for another 2 seconds.
+- The rendered template contains a labelled "In-Flight" section that lists all records with status `:pending` or `:streaming`.
+- Each in-flight row displays: a truncated `agent_id`, the `model_spec` string, a status indicator (e.g. a coloured badge), and elapsed time computed as `DateTime.diff(DateTime.utc_now(), record.started_at, :second)` (in seconds, formatted as e.g. `"42s"`).
+- In-flight records are ordered by `started_at` ascending (oldest first).
+- The rendered template contains a labelled "Recent Calls" section showing a table of the last N completed/failed records.
+- Recent history table columns: relative timestamp (e.g. "3m ago"), truncated `agent_id`, `model`, status icon/badge, `input_tokens`, `output_tokens`, `duration_ms`, and `total_cost_millicents` formatted as USD (e.g. `$0.0012`).
+- When no records exist, both sections render a non-crashing empty-state message (e.g. "No in-flight calls" / "No recent calls").
+- The module compiles without warnings and the application starts successfully with the new file present.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P43.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-20 00:03 UTC
+**Sibling tasks**: P43.M2.E2.T002, P43.M2.E2.T003, P43.M2.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P43.M2.E2.T001 → P43.M2.E2.T002 → P43.M2.E2.T003 → P43.M2.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P43.M2.E2.T001: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/02-live-dashboard/T001-create-llmcallsdashboardlive-l.todo
+- P43.M2.E2.T002: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/02-live-dashboard/T002-add-time-window-selector-1h-6h.todo
+- P43.M2.E2.T003: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/02-live-dashboard/T003-register-dashboard-llm-calls-r.todo
+- P43.M2.E2.T004: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/02-live-dashboard/T004-add-llmcallrecord-query-functi.todo

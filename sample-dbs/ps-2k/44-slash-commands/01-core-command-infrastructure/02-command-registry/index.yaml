@@ -1,0 +1,30 @@
+id: P44.M1.E2
+name: Command Registry
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-command-registry-gen.todo
+  title: Implement Command Registry GenServer with ETS
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-register-built-in-commands-at.todo
+  title: Register built-in commands at application startup
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

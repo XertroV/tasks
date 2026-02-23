@@ -1,0 +1,26 @@
+# Epic: License Compliance
+# Phase 4, Milestone 0, Epic 5 (P4.M0.E5)
+
+id: P4.M0.E5
+name: License Compliance
+status: pending
+estimate_hours: 1
+complexity: low
+depends_on: []
+
+tasks:
+  - id: T007
+    file: T007-license-compliance.todo
+    title: Apache 2.0 compliance for Jido attribution
+    status: pending
+    estimate_hours: 1
+    complexity: low
+    priority: critical
+    depends_on: []
+
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

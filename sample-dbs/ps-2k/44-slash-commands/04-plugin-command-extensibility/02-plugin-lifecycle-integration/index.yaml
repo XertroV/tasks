@@ -1,0 +1,22 @@
+id: P44.M4.E2
+name: Plugin Lifecycle Integration
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-call-commandregistrar-on-plugi.todo
+  title: Call CommandRegistrar on plugin enable/disable
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

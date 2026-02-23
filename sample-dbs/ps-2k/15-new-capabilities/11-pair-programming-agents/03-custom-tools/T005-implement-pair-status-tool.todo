@@ -1,0 +1,30 @@
+---
+id: P15.M11.E3.T005
+title: Implement pair_status tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.221740+00:00'
+started_at: '2026-02-17T18:46:51.221740+00:00'
+completed_at: '2026-02-17T19:21:56.183288+00:00'
+duration_minutes: 35.082692316666666
+---
+## Description
+Query current pair session state — phase, role assignments, note count, approval status.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/tools/pair_status.ex`
+
+## Acceptance Criteria
+- [ ] Implements `@behaviour PagServer.Tools.Tool`
+- [ ] Returns current phase from Blackboard key `pair:<session_id>:phase`
+- [ ] Returns role assignments (who is coder, who is observer)
+- [ ] Returns note count (query `pair:<session_id>:note:*` prefix)
+- [ ] Returns approval status for both agents
+- [ ] Loads session config from Blackboard (Gotcha #1)
+- [ ] Tests pass
+- [ ] Lint passes

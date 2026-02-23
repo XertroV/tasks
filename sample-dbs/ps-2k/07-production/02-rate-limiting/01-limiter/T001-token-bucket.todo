@@ -1,0 +1,114 @@
+---
+id: P7.M2.E1.T001
+title: Token bucket algorithm
+status: done
+estimate_hours: 2
+complexity: medium
+priority: medium
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:06:04.016718+00:00'
+started_at: '2026-02-07T06:06:04.016718+00:00'
+completed_at: '2026-02-07T06:21:49.228770+00:00'
+tags:
+- rate-limiting
+- algorithm
+- concurrency
+duration_minutes: 15.75353395
+---
+
+# Token bucket algorithm
+
+Implement token bucket algorithm for rate limiting LLM requests.
+
+## Requirements
+
+- [x] Create `lib/pag_server/rate_limiter/token_bucket.ex`
+- [x] Implement bucket state struct with:
+  - [x] Capacity (max tokens)
+  - [x] Current tokens
+  - [x] Refill rate (tokens/second)
+  - [x] Last refill timestamp
+- [x] Implement `take/2` function (consume tokens)
+- [x] Implement `refill/1` function (add tokens based on time)
+- [x] Add `available?/2` check function
+- [x] Handle concurrent access safely
+
+## Acceptance Criteria
+
+- [x] Token bucket accurately tracks available tokens
+- [x] Refill happens based on elapsed time
+- [x] take/2 returns :ok or {:error, :rate_limited}
+- [x] Concurrent calls don't corrupt state
+- [x] Algorithm passes property-based tests
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M2 (Rate Limiting)
+- Common pattern for API rate limiting
+
+**Key Points**:
+- Token bucket allows burst traffic up to capacity
+- Smooth refill rate prevents thundering herd
+- Per-provider buckets (Anthropic: 50 req/min, OpenAI: 60 req/min)
+- Separate buckets for input/output tokens
+
+## Notes
+
+Algorithm implementation:
+```elixir
+defmodule PagServer.RateLimiter.TokenBucket do
+  defstruct [:capacity, :tokens, :refill_rate, :last_refill]
+  
+  def new(capacity, refill_per_second) do
+    %__MODULE__{
+      capacity: capacity,
+      tokens: capacity,
+      refill_rate: refill_per_second,
+      last_refill: System.monotonic_time(:millisecond)
+    }
+  end
+  
+  def take(bucket, amount) do
+    bucket = refill(bucket)
+    if bucket.tokens >= amount do
+      {:ok, %{bucket | tokens: bucket.tokens - amount}}
+    else
+      {:error, :rate_limited, bucket}
+    end
+  end
+  
+  def refill(bucket) do
+    now = System.monotonic_time(:millisecond)
+    elapsed_seconds = (now - bucket.last_refill) / 1000
+    new_tokens = elapsed_seconds * bucket.refill_rate
+    
+    %{bucket |
+      tokens: min(bucket.capacity, bucket.tokens + new_tokens),
+      last_refill: now
+    }
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:26 UTC
+**Sibling tasks**: P7.M2.E1.T002, P7.M2.E1.T003, P7.M2.E1.T004, P7.M2.E1.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M2.E1.T001 → P7.M2.E1.T002 → P7.M2.E1.T003 → P7.M2.E1.T004 → P7.M2.E1.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M2.E1.T001: .tasks/07-production/02-rate-limiting/01-limiter/T001-token-bucket.todo
+- P7.M2.E1.T002: .tasks/07-production/02-rate-limiting/01-limiter/T002-genserver.todo
+- P7.M2.E1.T003: .tasks/07-production/02-rate-limiting/01-limiter/T003-integration.todo
+- P7.M2.E1.T004: .tasks/07-production/02-rate-limiting/01-limiter/T004-tests.todo
+- P7.M2.E1.T005: .tasks/07-production/02-rate-limiting/01-limiter/T005-track-provider-rate-limit-resp.todo

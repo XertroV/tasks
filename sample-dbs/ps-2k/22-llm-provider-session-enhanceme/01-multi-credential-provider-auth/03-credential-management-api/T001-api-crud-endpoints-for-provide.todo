@@ -1,0 +1,17 @@
+---
+id: P22.M1.E3.T001
+title: 'API: CRUD endpoints for provider credentials (POST/GET/PATCH/DELETE /api/v1/providers/:id/credentials)'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:20:31.737723+00:00'
+started_at: '2026-02-18T15:20:31.737723+00:00'
+completed_at: '2026-02-18T17:03:57.035931+00:00'
+duration_minutes: 103.42163663333334
+---
+Add REST endpoints under /api/v1/providers/:provider_id/credentials: - POST: create credential (label, api_key, priority) - GET /: list credentials (returns id, label, priority, status, cooldown_until; never returns api_key) - PATCH /:cred_id: update label or priority - DELETE /:cred_id: delete credential (prevent deletion of last active credential) Acceptance criteria: - api_key never returned in responses (write-only) - At least 1 active credential must remain per provider (enforced in controller) - Endpoints require authentication - OpenAPI/Swagger annotations added

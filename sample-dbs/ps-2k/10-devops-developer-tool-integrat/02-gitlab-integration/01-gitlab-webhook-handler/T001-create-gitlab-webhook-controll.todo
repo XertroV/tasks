@@ -1,0 +1,72 @@
+---
+id: P10.M2.E1.T001
+title: Create GitLab webhook controller with token verification
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T01:17:00.923671+00:00'
+started_at: '2026-02-12T01:17:00.923671+00:00'
+completed_at: '2026-02-12T01:36:16.012122+00:00'
+duration_minutes: 19.25147395
+---
+
+# Create GitLab webhook controller with token verification
+
+## Requirements
+
+- [ ] Create a Phoenix controller module to receive GitLab webhook events
+- [ ] Implement GitLab X-Gitlab-Token header verification using HMAC-SHA256
+- [ ] Handle webhook secret configuration from integration settings
+- [ ] Support both system-level and project-specific webhook tokens
+- [ ] Return 200 OK immediately to GitLab and queue events for async processing
+
+## Acceptance Criteria
+
+- [ ] Controller created at `lib/pag_server_web/controllers/gitlab_webhook_controller.ex`
+- [ ] `webhook/2` action receives POST requests from GitLab
+- [ ] Token verification implementation:
+  - [ ] Extract `X-Gitlab-Token` header from request
+  - [ ] Verify signature using HMAC-SHA256 against stored webhook secret
+  - [ ] Return 401 Unauthorized if token missing or invalid
+  - [ ] Support multiple webhook secrets (multiple GitLab instances)
+- [ ] Request handling:
+  - [ ] Parse JSON payload from GitLab webhook
+  - [ ] Extract webhook event type from request body
+  - [ ] Queue event to Oban for async processing
+  - [ ] Return 200 OK immediately
+- [ ] Error handling:
+  - [ ] Handle malformed JSON gracefully
+  - [ ] Handle missing required headers
+  - [ ] Return appropriate HTTP status codes
+  - [ ] Log validation failures for debugging
+- [ ] Route added to `lib/pag_server_web/router.ex`:
+  - [ ] `POST /webhooks/gitlab` routes to controller
+- [ ] Tests cover:
+  - [ ] Valid webhook with correct token
+  - [ ] Invalid token rejection
+  - [ ] Missing token handling
+  - [ ] Malformed payload handling
+  - [ ] Event queuing to Oban
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-12 01:17 UTC
+**Sibling tasks**: P10.M2.E1.T002, P10.M2.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M2.E1.T001 → P10.M2.E1.T002 → P10.M2.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M2.E1.T001: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/01-gitlab-webhook-handler/T001-create-gitlab-webhook-controll.todo
+- P10.M2.E1.T002: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/01-gitlab-webhook-handler/T002-implement-gitlab-event-parser.todo
+- P10.M2.E1.T003: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/01-gitlab-webhook-handler/T003-add-gitlab-webhook-event-routi.todo

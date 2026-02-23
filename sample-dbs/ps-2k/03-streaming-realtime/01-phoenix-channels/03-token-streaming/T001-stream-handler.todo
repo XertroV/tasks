@@ -1,0 +1,373 @@
+---
+title: Handle LLM Token Events in Channel
+epic: P3.M1.E3-token-streaming
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimate_hours: 1.5
+depends_on:
+- P3.M1.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:38:07.152518'
+started_at: '2026-02-06T15:38:07.152518'
+completed_at: '2026-02-06T15:59:54.050400'
+duration_minutes: 21.781631100000002
+id: P3.M1.E3.T001
+---
+
+# Task: Handle LLM Token Events in Channel
+
+## Context
+When an agent processes a message, the LLM provider streams tokens back. We need to capture these token events from the agent GenServer and forward them through the Phoenix Channel to connected clients in real-time.
+
+## Goal
+Implement streaming token delivery from agent to channel, subscribing to agent token events and pushing them to clients.
+
+## Requirements
+- Subscribe to agent token events on channel join
+- Forward tokens to channel as "token" events
+- Track message_id for multi-turn conversations
+- Handle stream completion
+- Clean unsubscribe on leave
+
+## Implementation
+
+### File: `lib/pag_server/agents/events.ex`
+
+Define event types for agent GenServer:
+
+```elixir
+defmodule PagServer.Agents.Events do
+  @moduledoc """
+  Event types emitted by agent processes.
+  
+  Events are broadcast via PubSub for consumption by channels,
+  event store, and other listeners.
+  """
+  
+  @type token_event :: %{
+    type: :token,
+    agent_id: String.t(),
+    message_id: String.t(),
+    token: String.t(),
+    index: non_neg_integer(),
+    timestamp: integer()
+  }
+  
+  @type stream_complete_event :: %{
+    type: :stream_complete,
+    agent_id: String.t(),
+    message_id: String.t(),
+    total_tokens: non_neg_integer(),
+    finish_reason: String.t(),
+    timestamp: integer()
+  }
+  
+  @type stream_error_event :: %{
+    type: :stream_error,
+    agent_id: String.t(),
+    message_id: String.t(),
+    error: term(),
+    timestamp: integer()
+  }
+  
+  @type event :: token_event() | stream_complete_event() | stream_error_event()
+end
+```
+
+### File: `lib/pag_server/agents/agent.ex`
+
+Update Agent GenServer to emit streaming events:
+
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  require Logger
+  
+  alias PagServer.LLM
+  alias PagServer.PubSub
+  
+  # ... existing code ...
+  
+  @impl true
+  def handle_cast({:send_message, message_params, opts}, state) do
+    # Create message in session
+    message = create_user_message(message_params, state)
+    
+    # Start LLM streaming
+    stream_response(message, state)
+    
+    {:noreply, %{state | status: :processing}}
+  end
+  
+  defp stream_response(message, state) do
+    agent_id = state.agent_id
+    message_id = message.id
+    
+    # Build context for LLM
+    context = build_context(state)
+    
+    # Start streaming (async)
+    Task.start(fn ->
+      token_index = 0
+      
+      LLM.stream(context, state.model, fn event ->
+        case event do
+          {:token, token} ->
+            broadcast_event(agent_id, %{
+              type: :token,
+              agent_id: agent_id,
+              message_id: message_id,
+              token: token,
+              index: token_index,
+              timestamp: System.system_time(:millisecond)
+            })
+            
+            token_index = token_index + 1
+          
+          {:complete, metadata} ->
+            broadcast_event(agent_id, %{
+              type: :stream_complete,
+              agent_id: agent_id,
+              message_id: message_id,
+              total_tokens: metadata.total_tokens,
+              finish_reason: metadata.finish_reason,
+              timestamp: System.system_time(:millisecond)
+            })
+            
+            # Update agent state
+            GenServer.cast(self(), {:stream_complete, message_id, metadata})
+          
+          {:error, reason} ->
+            broadcast_event(agent_id, %{
+              type: :stream_error,
+              agent_id: agent_id,
+              message_id: message_id,
+              error: reason,
+              timestamp: System.system_time(:millisecond)
+            })
+        end
+      end)
+    end)
+  end
+  
+  defp broadcast_event(agent_id, event) do
+    Phoenix.PubSub.broadcast(
+      PubSub,
+      "agent:#{agent_id}",
+      {:agent_event, event}
+    )
+  end
+end
+```
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+Update AgentChannel to handle streaming events:
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  alias PagServer.Agents
+  alias PagServer.PubSub
+  
+  # ... existing join/after_join code ...
+  
+  @impl true
+  def handle_info(:after_join, socket) do
+    agent_id = socket.assigns.agent_id
+    
+    # Subscribe to agent events
+    Phoenix.PubSub.subscribe(PubSub, "agent:#{agent_id}")
+    
+    # Track presence and push initial state...
+    # (existing code)
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :token} = event}, socket) do
+    # Forward token to client
+    push(socket, "token", %{
+      message_id: event.message_id,
+      token: event.token,
+      index: event.index
+    })
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :stream_complete} = event}, socket) do
+    # Notify client that stream is complete
+    push(socket, "stream_complete", %{
+      message_id: event.message_id,
+      total_tokens: event.total_tokens,
+      finish_reason: event.finish_reason
+    })
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :stream_error} = event}, socket) do
+    # Forward error to client
+    push(socket, "stream_error", %{
+      message_id: event.message_id,
+      error: inspect(event.error)
+    })
+    
+    {:noreply, socket}
+  end
+  
+  # ... rest of existing code ...
+  
+  @impl true
+  def terminate(reason, socket) do
+    agent_id = socket.assigns[:agent_id]
+    
+    # Unsubscribe from events
+    if agent_id do
+      Phoenix.PubSub.unsubscribe(PubSub, "agent:#{agent_id}")
+    end
+    
+    Logger.info("Client left agent channel: #{agent_id}, reason: #{inspect(reason)}")
+    :ok
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] Agent emits token events during streaming
+- [ ] Channel subscribes to agent events on join
+- [ ] Tokens forwarded to client in real-time
+- [ ] Stream completion notified
+- [ ] Errors handled gracefully
+- [ ] Unsubscribe on channel termination
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/agent_channel_streaming_test.exs
+defmodule PagServerWeb.AgentChannelStreamingTest do
+  use PagServerWeb.ChannelCase
+  
+  import PagServer.Factories
+  
+  alias PagServer.Agents
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      system_prompt: "Test agent",
+      user_id: "test-user"
+    })
+    
+    {:ok, agent: agent}
+  end
+  
+  test "receives token events when message sent", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Send message
+    ref = push(socket, "message:send", %{"content" => "Hello"})
+    assert_reply ref, :ok, %{message_id: message_id}
+    
+    # Should receive token events
+    assert_push "token", %{message_id: ^message_id, token: token}
+    assert is_binary(token)
+  end
+  
+  test "receives stream_complete after tokens", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    ref = push(socket, "message:send", %{"content" => "Test"})
+    assert_reply ref, :ok, %{message_id: message_id}
+    
+    # Collect tokens
+    tokens = collect_tokens_until_complete(message_id, socket)
+    
+    assert length(tokens) > 0
+    
+    # Should receive completion
+    assert_push "stream_complete", %{
+      message_id: ^message_id,
+      total_tokens: count
+    }
+    
+    assert count > 0
+  end
+  
+  test "handles stream errors", %{agent: agent} do
+    # Simulate LLM error by sending invalid request
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Mock error condition
+    # (implementation depends on how you mock LLM errors)
+    
+    assert_push "stream_error", %{error: _reason}
+  end
+  
+  defp collect_tokens_until_complete(message_id, _socket, tokens \\ [], timeout \\ 5000) do
+    receive do
+      %Phoenix.Socket.Broadcast{event: "token", payload: %{message_id: ^message_id, token: token}} ->
+        collect_tokens_until_complete(message_id, nil, [token | tokens], timeout)
+      
+      %Phoenix.Socket.Broadcast{event: "stream_complete", payload: %{message_id: ^message_id}} ->
+        Enum.reverse(tokens)
+    after
+      timeout ->
+        Enum.reverse(tokens)
+    end
+  end
+end
+```
+
+## References
+- Phoenix PubSub: https://hexdocs.pm/phoenix_pubsub/Phoenix.PubSub.html
+- Phoenix.Channel push/3: https://hexdocs.pm/phoenix/Phoenix.Channel.html#push/3
+- GenServer async operations
+
+## Notes
+- Token events are ephemeral (not persisted by default)
+- Consider rate limiting tokens (e.g., batch every 50ms) if too chatty
+- Future: Add token buffering for high-frequency updates
+- Event store may capture tokens separately for replay
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-07 02:38 UTC
+**Sibling tasks**: P3.M1.E3.T002, P3.M1.E3.T003, P3.M1.E3.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M1.E3.T001 → P3.M1.E3.T002 → P3.M1.E3.T003 → P3.M1.E3.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M1.E3.T001: .tasks/03-streaming-realtime/01-phoenix-channels/03-token-streaming/T001-stream-handler.todo
+- P3.M1.E3.T002: .tasks/03-streaming-realtime/01-phoenix-channels/03-token-streaming/T002-backpressure.todo
+- P3.M1.E3.T003: .tasks/03-streaming-realtime/01-phoenix-channels/03-token-streaming/T003-iolist-optimization.todo
+- P3.M1.E3.T004: .tasks/03-streaming-realtime/01-phoenix-channels/03-token-streaming/T004-streaming-tests.todo

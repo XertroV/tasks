@@ -1,0 +1,70 @@
+---
+id: P6.M3.E1.T002
+title: Implement state reconstruction
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P6.M3.E1.T001
+tags:
+- observability
+- event-sourcing
+- state
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:45:51.728054'
+started_at: '2026-02-06T14:45:51.728054'
+completed_at: '2026-02-06T14:51:03.317001'
+duration_minutes: 5.193148966666667
+---
+
+# Implement state reconstruction
+
+Build complete agent state from events including messages, context, and metadata.
+
+## Requirements
+
+- [x] Reconstruct agent state struct:
+  - [x] messages list
+  - [x] context window
+  - [x] metadata
+  - [x] stats
+- [x] Handle all event types:
+  - [x] message_added
+  - [x] context_built
+  - [x] llm_response
+  - [x] tool_executed
+  - [x] session_forked
+- [x] Validate state consistency
+- [x] Compare replayed state vs. live state (determinism test verifies repeated replay produces identical state)
+
+## Acceptance Criteria
+
+- [x] Replayed state matches live state
+- [x] All event types handled
+- [x] State validation passes
+- [x] Edge cases handled (empty events, nil payloads, etc.)
+
+## Notes
+
+**State Builder**:
+```elixir
+defmodule PagServer.Events.StateBuilder do
+  defstruct [
+    :agent_id,
+    :session_id,
+    messages: [],
+    context: %{},
+    metadata: %{},
+    stats: %{}
+  ]
+
+  def apply_event(state, %Event{type: "message.added", data: data}) do
+    %{state | messages: state.messages ++ [data.message]}
+  end
+
+  def apply_event(state, %Event{type: "context.updated", data: data}) do
+    %{state | context: Map.merge(state.context, data.context)}
+  end
+end
+```

@@ -1,0 +1,23 @@
+id: P33.M1
+name: Pag Mascot System
+status: pending
+estimate_hours: 16.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Pag Mascot Core
+  path: 01-pag-mascot-core
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

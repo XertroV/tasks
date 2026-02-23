@@ -1,0 +1,99 @@
+---
+id: P2.M6.E2.T003
+title: Add token aggregation logic
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P2.M6.E2.T002
+tags:
+- streaming
+- aggregation
+- token-processing
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:17:52.287759'
+started_at: '2026-02-05T17:17:52.287759'
+completed_at: '2026-02-05T17:40:35.273043'
+duration_minutes: 22.7164212
+---
+
+# Add token aggregation logic
+
+Implement logic to aggregate tokens into complete messages and track statistics.
+
+## Requirements
+
+- [ ] Add `aggregate_token/2` function to TokenProcessor
+- [ ] Accumulate tokens into message buffer
+- [ ] Track statistics:
+  - [ ] Total tokens received
+  - [ ] Tokens per second (throughput)
+  - [ ] Time to first token (TTFT)
+  - [ ] Total streaming duration
+- [ ] Detect message completion:
+  - [ ] On `message_stop` event
+  - [ ] Return complete message struct
+  - [ ] Reset buffer for next message
+- [ ] Handle multiple content blocks (Anthropic thinking + response)
+- [ ] Emit aggregated stats on completion
+
+## Acceptance Criteria
+
+- [ ] Tokens correctly accumulated in order
+- [ ] Statistics tracked accurately
+- [ ] Message completion detected and emitted
+- [ ] Buffer cleared after completion
+- [ ] Supports multiple content blocks per message
+- [ ] Throughput calculated correctly (tokens/sec)
+- [ ] Module compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` Line 1121-1124 (P2.M6 Stream Processing)
+
+**Key Points**:
+- Need to distinguish thinking blocks from response blocks
+- TTFT is critical metric for user experience
+- Statistics used for cost tracking and monitoring
+- Complete message includes all content blocks
+
+## Notes
+
+**Aggregated Message Structure**:
+```elixir
+%{
+  id: "msg_123",
+  role: "assistant",
+  content: [
+    %{type: "thinking", text: "<thinking>Analysis...</thinking>"},
+    %{type: "text", text: "The answer is..."}
+  ],
+  stats: %{
+    total_tokens: 150,
+    ttft_ms: 234,
+    duration_ms: 1500,
+    tokens_per_second: 100.0
+  }
+}
+```
+
+**Token Aggregation Algorithm**:
+```elixir
+def aggregate_token(token, state) do
+  state = %{state | 
+    buffer: state.buffer <> token,
+    token_count: state.token_count + 1,
+    last_token_at: DateTime.utc_now()
+  }
+  
+  # Calculate throughput
+  duration_ms = DateTime.diff(state.last_token_at, state.started_at, :millisecond)
+  tokens_per_second = state.token_count / (duration_ms / 1000)
+  
+  %{state | tokens_per_second: tokens_per_second}
+end
+```
+
+Future: Consider streaming partial aggregates for long responses (e.g., every 100 tokens).

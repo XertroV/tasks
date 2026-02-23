@@ -1,0 +1,412 @@
+---
+title: Comprehensive Test Suite for AgentChannel
+epic: P3.M1.E2-agent-channel
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimated_hours: 1
+depends_on:
+- P3.M1.E2.T001
+- P3.M1.E2.T002
+- P3.M1.E2.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:29:26.734660'
+started_at: '2026-02-06T15:29:26.734660'
+completed_at: '2026-02-06T15:37:41.041175'
+duration_minutes: 8.23844175
+id: P3.M1.E2.T004
+---
+
+# Task: Comprehensive Test Suite for AgentChannel
+
+## Context
+We need comprehensive test coverage for AgentChannel to ensure reliability and catch regressions. Tests should cover join/leave, authentication, message handling, presence, error cases, and concurrent connections.
+
+## Goal
+Create a complete test suite with >90% coverage for AgentChannel and related functionality.
+
+## Requirements
+- Test all join scenarios (success, failure, auth)
+- Test message handling (send, receive, errors)
+- Test presence tracking
+- Test concurrent connections
+- Test error handling and edge cases
+- Test channel termination scenarios
+- Use factories for test data
+
+## Implementation
+
+### File: `test/support/channel_case.ex`
+
+Ensure ChannelCase is properly configured:
+
+```elixir
+defmodule PagServerWeb.ChannelCase do
+  use ExUnit.CaseTemplate
+  
+  using do
+    quote do
+      # Import conveniences for testing with channels
+      import Phoenix.ChannelTest
+      import PagServerWeb.ChannelCase
+      
+      # The default endpoint for testing
+      @endpoint PagServerWeb.Endpoint
+      
+      # Helpers
+      alias PagServer.Repo
+      alias PagServerWeb.UserSocket
+    end
+  end
+  
+  setup tags do
+    PagServer.DataCase.setup_sandbox(tags)
+    :ok
+  end
+end
+```
+
+### File: `test/support/factories.ex`
+
+Add channel-related factories:
+
+```elixir
+defmodule PagServer.Factories do
+  # ... existing factories ...
+  
+  def socket_factory(user_id \\ "test-user") do
+    Phoenix.ChannelTest.socket(PagServerWeb.UserSocket, user_id, %{
+      user_id: user_id
+    })
+  end
+  
+  def channel_params_factory(attrs \\ %{}) do
+    %{
+      "client_type" => "test",
+      "client_version" => "1.0.0",
+      "session_id" => nil
+    }
+    |> Map.merge(Enum.into(attrs, %{}))
+  end
+end
+```
+
+### File: `test/pag_server_web/channels/agent_channel_test.exs`
+
+Comprehensive test suite:
+
+```elixir
+defmodule PagServerWeb.AgentChannelTest do
+  use PagServerWeb.ChannelCase
+  
+  import PagServer.Factories
+  
+  alias PagServer.Agents
+  alias PagServer.Sessions
+  alias PagServerWeb.Presence
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      system_prompt: "Test agent",
+      user_id: "test-user"
+    })
+    
+    {:ok, session} = Sessions.create_session(agent.id)
+    
+    {:ok, agent: agent, session: session}
+  end
+  
+  describe "join/3" do
+    test "succeeds with valid agent ID", %{agent: agent} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      assert socket.assigns.agent_id == agent.id
+      assert socket.assigns.user_id == "test-user"
+    end
+    
+    test "fails with invalid agent ID" do
+      assert {:error, %{reason: "agent not found"}} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:invalid-id",
+        channel_params_factory()
+      )
+    end
+    
+    test "fails when user lacks permission", %{agent: agent} do
+      # Agent owned by test-user, try to join as other-user
+      assert {:error, %{reason: "unauthorized"}} = subscribe_and_join(
+        socket_factory("other-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+    end
+    
+    test "accepts optional session_id parameter", %{agent: agent, session: session} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory(%{"session_id" => session.id})
+      )
+      
+      assert socket.assigns.session_id == session.id
+    end
+    
+    test "stores client metadata", %{agent: agent} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory(%{
+          "client_type" => "mobile",
+          "client_version" => "2.0.0"
+        })
+      )
+      
+      assert socket.assigns.client_type == "mobile"
+      assert socket.assigns.client_version == "2.0.0"
+    end
+  end
+  
+  describe "after_join" do
+    test "pushes current agent state", %{agent: agent} do
+      {:ok, _reply, _socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      assert_push "state", %{status: status}
+      assert status in [:idle, :processing, :error]
+    end
+    
+    test "pushes presence state", %{agent: agent} do
+      {:ok, _reply, _socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      assert_push "presence_state", presences
+      assert is_map(presences)
+    end
+    
+    test "tracks presence with metadata", %{agent: agent} do
+      {:ok, _reply, _socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory(%{"client_type" => "web"})
+      )
+      
+      clients = Agents.list_connected_clients(agent.id)
+      assert length(clients) == 1
+      
+      [client] = clients
+      assert client.user_id == "test-user"
+      assert client.client_type == "web"
+    end
+  end
+  
+  describe "handle_in/3 - message:send" do
+    test "sends message to agent", %{agent: agent} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      ref = push(socket, "message:send", %{"content" => "Hello agent"})
+      assert_reply ref, :ok, %{message_id: message_id}
+      assert is_binary(message_id)
+    end
+    
+    test "includes metadata if provided", %{agent: agent} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      ref = push(socket, "message:send", %{
+        "content" => "Hello",
+        "metadata" => %{"source" => "test"}
+      })
+      
+      assert_reply ref, :ok, %{message_id: _id}
+    end
+    
+    test "returns error for invalid message", %{agent: agent} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      ref = push(socket, "message:send", %{"content" => ""})
+      assert_reply ref, :error, %{reason: _reason}
+    end
+  end
+  
+  describe "handle_in/3 - ping" do
+    test "responds with timestamp", %{agent: agent} do
+      {:ok, _reply, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      ref = push(socket, "ping", %{})
+      assert_reply ref, :ok, %{timestamp: ts}
+      assert is_integer(ts)
+    end
+  end
+  
+  describe "presence" do
+    test "handles multiple connections from same user", %{agent: agent} do
+      # First connection
+      {:ok, _, socket1} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory(%{"client_type" => "web"})
+      )
+      
+      # Second connection
+      {:ok, _, socket2} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory(%{"client_type" => "mobile"})
+      )
+      
+      clients = Agents.list_connected_clients(agent.id)
+      assert length(clients) == 2
+    end
+    
+    test "broadcasts presence_diff on join", %{agent: agent} do
+      # First client joins
+      {:ok, _, socket1} = subscribe_and_join(
+        socket_factory("user1"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      # Second client joins - first client should receive diff
+      {:ok, _, socket2} = subscribe_and_join(
+        socket_factory("user2"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      # socket1 should receive presence_diff
+      assert_push "presence_diff", %{joins: joins}
+      assert Map.has_key?(joins, "user2")
+    end
+    
+    test "removes presence on disconnect", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      assert Agents.count_connected_clients(agent.id) == 1
+      
+      # Disconnect
+      Process.unlink(socket.channel_pid)
+      close(socket)
+      
+      # Wait for presence to sync
+      :timer.sleep(100)
+      
+      assert Agents.count_connected_clients(agent.id) == 0
+    end
+  end
+  
+  describe "terminate/2" do
+    test "logs termination", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        channel_params_factory()
+      )
+      
+      # Close socket gracefully
+      close(socket)
+      
+      # Termination is logged (check logs in real scenario)
+      # For now, just verify socket closes without error
+      refute Process.alive?(socket.channel_pid)
+    end
+  end
+  
+  describe "concurrent connections" do
+    test "handles multiple agents and clients", %{agent: agent1} do
+      {:ok, agent2} = Agents.create_agent(%{
+        model: "claude-sonnet-4",
+        system_prompt: "Second agent",
+        user_id: "test-user"
+      })
+      
+      # Connect to agent1 twice
+      {:ok, _, s1a} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent1.id}",
+        channel_params_factory()
+      )
+      
+      {:ok, _, s1b} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent1.id}",
+        channel_params_factory()
+      )
+      
+      # Connect to agent2
+      {:ok, _, s2} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent2.id}",
+        channel_params_factory()
+      )
+      
+      assert Agents.count_connected_clients(agent1.id) == 2
+      assert Agents.count_connected_clients(agent2.id) == 1
+    end
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] All join scenarios tested
+- [ ] Message handling covered
+- [ ] Presence tracking tested
+- [ ] Concurrent connections tested
+- [ ] Error cases handled
+- [ ] Test coverage >90%
+- [ ] All tests pass
+
+## Testing
+
+Run tests:
+```bash
+# Run all channel tests
+mix test test/pag_server_web/channels/
+
+# Run with coverage
+mix test --cover test/pag_server_web/channels/agent_channel_test.exs
+
+# Run specific test
+mix test test/pag_server_web/channels/agent_channel_test.exs:42
+```
+
+## References
+- Phoenix.ChannelTest: https://hexdocs.pm/phoenix/Phoenix.ChannelTest.html
+- ExUnit best practices
+- Test coverage with mix test --cover
+
+## Notes
+- Use factories for consistent test data
+- Test both success and failure paths
+- Consider property-based testing for message validation
+- Add integration tests for end-to-end flows later

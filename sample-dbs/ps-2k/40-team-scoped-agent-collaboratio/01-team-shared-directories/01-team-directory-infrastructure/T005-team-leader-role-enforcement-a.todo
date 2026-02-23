@@ -1,0 +1,36 @@
+---
+id: P40.M1.E1.T005
+title: Team leader role enforcement and subteam creation authorization
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P40.M1.E1.T001
+tags:
+- multi-agent
+- teams
+- authorization
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:32:16.090782+00:00'
+started_at: '2026-02-19T14:32:16.090782+00:00'
+completed_at: '2026-02-19T15:35:31.286313+00:00'
+duration_minutes: 63.253258566666666
+---
+## Description
+Implement the team leader role enforcement layer. Each team has exactly one leader. Only the leader of a team may create subteams under it. When creating a subteam, the leader must appoint a leader for the new subteam.
+
+## Requirements
+- Enforce that only the team leader can call create_subteam for their team
+- When creating a subteam, the parent leader must specify the new subteam's leader agent
+- Validate that the appointed subteam leader is a valid agent in the workspace
+- The main agent is always the leader of the root team (enforced, not configurable)
+- Provide a mechanism for leader transfer (optional, lower priority)
+- Return clear error messages when non-leaders attempt subteam creation
+
+## Acceptance Criteria
+- Non-leader agents receive an authorization error when attempting to create subteams
+- Subteam creation requires specifying a leader for the new subteam
+- Root team leader is always the main agent (cannot be reassigned)
+- Leader identity is queryable: given a team, return its leader
+- Integration tests cover leader enforcement for nested hierarchies (root → subteam → sub-subteam)

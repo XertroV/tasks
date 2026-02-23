@@ -1,0 +1,42 @@
+id: P15.M6.E3
+name: Telegram Quicklaunch Wizard
+status: in_progress
+estimate_hours: 8.0
+complexity: high
+depends_on:
+- P15.M6.E2
+tasks:
+- id: T001
+  file: T001-build-telegram-quicklaunch-service.todo
+  title: Build Telegram quicklaunch service and token verification
+  status: in_progress
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M6.E2.T002
+- id: T002
+  file: T002-add-liveview-telegram-wizard-steps.todo
+  title: Add LiveView Telegram wizard steps and connection checks
+  status: in_progress
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M6.E3.T001
+  - P15.M6.E2.T003
+- id: T003
+  file: T003-wire-telegram-to-main-agent-chat.todo
+  title: Wire Telegram updates to workspace main agent chat path
+  status: in_progress
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M6.E3.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 3
+  blocked: 0
+  pending: 0

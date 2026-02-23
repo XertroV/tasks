@@ -1,0 +1,24 @@
+---
+id: P42.M4.E3.T001
+title: Write docs/MAILMAN_PLUGIN.md
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:37:12.860282+00:00'
+started_at: '2026-02-19T17:37:12.860282+00:00'
+completed_at: '2026-02-19T18:20:14.405339+00:00'
+duration_minutes: 43.02575075
+---
+## Acceptance Criteria
+- [ ] Architecture overview with ASCII diagram matching the plan
+- [ ] Address format reference: workspace:<slug>, workspace:<slug>:agent:<name>, pag://<host>/<slug>
+- [ ] Fork-and-question pattern explained with sequence diagram (ASCII)
+- [ ] MCP tool reference: all 9 actions with argument tables and examples
+- [ ] Routing rule lifecycle: how rules are learned, stored, matched, cleared
+- [ ] Plugin enable/disable behavior and wizard integration
+- [ ] Remote server future roadmap section
+- [ ] Configuration reference (model pool, default_recipient_agent)

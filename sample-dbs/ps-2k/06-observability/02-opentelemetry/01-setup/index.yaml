@@ -1,0 +1,44 @@
+# Epic: OTel Setup
+# Phase 6, Milestone 2, Epic 1 (P6.M2.E1)
+
+id: P6.M2.E1
+name: OTel Setup
+status: pending
+estimate_hours: 2
+complexity: low
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-dependencies.todo
+    title: Add OpenTelemetry dependencies
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-configuration.todo
+    title: Configure OTel with runtime config
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-exporter.todo
+    title: Set up OTLP exporter
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

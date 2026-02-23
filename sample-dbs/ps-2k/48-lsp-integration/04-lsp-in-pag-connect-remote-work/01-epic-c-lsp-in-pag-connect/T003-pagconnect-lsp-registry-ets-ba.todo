@@ -1,0 +1,16 @@
+---
+id: P48.M4.E1.T003
+title: 'PagConnect.Lsp.Registry: ETS-backed (language, root_path) -> client pid'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:26.202856+00:00'
+started_at: '2026-02-20T08:37:26.202856+00:00'
+completed_at: '2026-02-20T08:50:59.957399+00:00'
+duration_minutes: 13.562575533333334
+---
+Same pattern as PagConnect.Containers.ContainerRegistry. Keyed by {language_id, root_path} (not workspace_id - pag-connect is single-workspace). Process monitoring, auto-unregister on crash.

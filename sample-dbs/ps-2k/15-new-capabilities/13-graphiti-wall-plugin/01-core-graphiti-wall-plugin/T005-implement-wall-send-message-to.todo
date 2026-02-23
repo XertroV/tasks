@@ -1,0 +1,29 @@
+---
+id: P15.M13.E1.T005
+title: Implement wall_send_message tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tool
+- messaging
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:11:05.449127+00:00'
+started_at: '2026-02-18T22:11:05.449127+00:00'
+completed_at: '2026-02-18T22:22:42.158871+00:00'
+duration_minutes: 11.611828866666666
+---
+
+# Implement wall_send_message tool
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

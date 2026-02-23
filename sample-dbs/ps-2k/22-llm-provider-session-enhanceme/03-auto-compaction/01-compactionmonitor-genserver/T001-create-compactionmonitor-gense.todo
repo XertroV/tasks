@@ -1,0 +1,16 @@
+---
+id: P22.M3.E1.T001
+title: Create CompactionMonitor GenServer that tracks session token usage
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:53:14.493775+00:00'
+started_at: '2026-02-18T14:53:14.493775+00:00'
+completed_at: '2026-02-18T14:58:48.253733+00:00'
+duration_minutes: 5.56266575
+---
+Create lib/pag_server/context/compaction_monitor.ex as a GenServer. One process per session (started under SessionSupervisor). State: session_id, current_tokens, max_tokens, threshold_pct (default 80%), last_compaction_at, compactions_count. Subscribes to PubSub session token updates or polls AutoTruncation periodically. Logic: when current_tokens / max_tokens >= threshold_pct, trigger background compaction using Summarization strategy. Acceptance criteria: - Starts under session supervisor when session is created - Monitors token usage without blocking message processing - Threshold configurable per-session (stored in session config) - Triggers compaction at most once per minute (debounce) - GenServer name includes session_id for uniqueness

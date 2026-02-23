@@ -1,0 +1,44 @@
+---
+id: P10.M1.E2.T004
+title: Build GitHub event parser and normalizer
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:32:41.664515+00:00'
+started_at: '2026-02-11T20:32:41.664515+00:00'
+completed_at: '2026-02-12T00:12:15.490207+00:00'
+duration_minutes: 219.56376046666668
+---
+
+# Build GitHub event parser and normalizer
+
+
+
+## Requirements
+
+- [ ] Create `PagServer.Integrations.GitHub.EventParser` module to parse/normalize webhook events
+- [ ] Handle key GitHub events: `push`, `pull_request`, `issues`, `issue_comment`, `repository`
+- [ ] Extract repository info: owner, name, full_name, url
+- [ ] Extract actor/user info: login, id, avatar_url
+- [ ] Normalize event payload to consistent internal format (action, timestamp, etc.)
+- [ ] Convert GitHub timestamps to standardized format
+- [ ] Extract commit info for push events (sha, message, author, branch)
+- [ ] Extract PR info: number, title, body, head/base branches, draft status
+- [ ] Create normalized event struct `%EventParser.Event{}` for downstream processing
+- [ ] Log parsing errors but don't fail on unexpected event formats
+
+## Acceptance Criteria
+
+- [ ] `EventParser.parse/2` accepts (event_type, webhook_payload)
+- [ ] Returns `{:ok, %EventParser.Event{}}` with normalized fields
+- [ ] Supports push, pull_request, issues, issue_comment, repository events
+- [ ] Repository, actor, timestamp fields populated correctly
+- [ ] Unknown event types return descriptive error tuples
+- [ ] All required fields present in normalized event struct
+- [ ] Handles nested JSON paths correctly (use `get_in/2`)
+- [ ] <1000 LoC, functions <40 lines
+- [ ] Comprehensive tests with real GitHub webhook payloads

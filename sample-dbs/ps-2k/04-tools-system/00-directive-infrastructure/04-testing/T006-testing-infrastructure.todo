@@ -1,0 +1,286 @@
+---
+id: P4.M0.E4.T006
+title: Create DirectiveCase test helpers
+status: done
+estimate_hours: 2
+complexity: low
+priority: medium
+depends_on:
+- P4.M0.E1.T001
+- P4.M0.E3.T004
+tags:
+- testing
+- test-helpers
+- infrastructure
+claimed_by: cli-user
+claimed_at: '2026-02-06T01:46:56.613609'
+started_at: '2026-02-06T00:52:09.765110'
+completed_at: '2026-02-06T01:52:09.765110'
+duration_minutes: 317.3969876666667
+---
+
+# Create DirectiveCase test helpers
+
+Build test infrastructure for pure function directive testing.
+
+## Requirements
+
+- [ ] Create `test/support/directive_case.ex` (~100 LoC)
+- [ ] Implement assertion helpers:
+  - [ ] `assert_directive/2` - Find directive in result
+  - [ ] `directive_fields/2` - Match directive fields
+  - [ ] `assert_no_directives/1` - Verify no directives returned
+- [ ] Create example tests demonstrating pattern:
+  - [ ] `test/pag_server/tools/builtin/spawn_agent_test.exs`
+  - [ ] `test/pag_server/tools/builtin/send_message_test.exs`
+- [ ] Add documentation for writing directive tests
+
+## Acceptance Criteria
+
+- [ ] DirectiveCase can be `use`d in test modules
+- [ ] assert_directive/2 finds directive by type in {:ok, directives} or {:ok, result, directives}
+- [ ] directive_fields/2 matches multiple fields at once
+- [ ] Example tests run async without processes
+- [ ] Documentation explains pure function testing philosophy
+- [ ] No GenServer setup required in tests
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md` (Section 2, Component 6)
+
+**Key Philosophy**: Test tools as pure data transformations, not execution effects
+
+## Notes
+
+### DirectiveCase module
+
+```elixir
+# test/support/directive_case.ex
+
+defmodule PagServer.DirectiveCase do
+  @moduledoc """
+  Test case template for directive-based tools.
+  
+  Provides helpers for testing pure directive-returning functions without
+  needing to spawn processes or wait for side effects.
+  
+  ## Usage
+  
+      defmodule PagServer.Tools.Builtin.SpawnAgentTest do
+        use PagServer.DirectiveCase, async: true
+        alias PagServer.Tools.Builtin.SpawnAgent
+        
+        test "returns SpawnAgent directive" do
+          result = SpawnAgent.execute(%{"role" => "worker"}, %{agent_id: "parent"})
+          
+          directive = assert_directive(result, Directive.SpawnAgent)
+          assert directive.role == "worker"
+        end
+      end
+  """
+  
+  use ExUnit.CaseTemplate
+  
+  using do
+    quote do
+      import PagServer.DirectiveCase
+      alias PagServer.Agents.Directive
+    end
+  end
+  
+  @doc """
+  Assert that result contains a directive of given type.
+  
+  Returns the matched directive.
+  
+  ## Examples
+  
+      iex> result = {:ok, [%Directive.SpawnAgent{role: "worker"}]}
+      iex> directive = assert_directive(result, Directive.SpawnAgent)
+      iex> directive.role
+      "worker"
+  """
+  def assert_directive(result, directive_type) do
+    directives =
+      case result do
+        {:ok, directives} when is_list(directives) ->
+          directives
+        {:ok, _result, directives} when is_list(directives) ->
+          directives
+        other ->
+          flunk("Expected {:ok, directives} or {:ok, result, directives}, got: #{inspect(other)}")
+      end
+    
+    case Enum.find(directives, &match?(%^directive_type{}, &1)) do
+      nil ->
+        types = Enum.map(directives, & &1.__struct__)
+        flunk("Expected #{directive_type} in directives, got: #{inspect(types)}")
+      directive ->
+        directive
+    end
+  end
+  
+  @doc """
+  Assert directive matches given field values.
+  
+  ## Examples
+  
+      iex> directive = %Directive.SpawnAgent{role: "worker", blocking: false}
+      iex> assert directive_fields(directive, role: "worker", blocking: false)
+  """
+  def directive_fields(directive, fields) do
+    Enum.all?(fields, fn {key, value} ->
+      Map.get(directive, key) == value
+    end)
+  end
+  
+  @doc """
+  Assert result contains no directives.
+  
+  ## Examples
+  
+      iex> result = {:ok, "done"}
+      iex> assert_no_directives(result)
+      :ok
+  """
+  def assert_no_directives(result) do
+    case result do
+      {:ok, directives} when is_list(directives) and directives == [] ->
+        :ok
+      {:ok, _result, directives} when is_list(directives) and directives == [] ->
+        :ok
+      {:ok, _result} ->
+        # No directives key at all
+        :ok
+      other ->
+        flunk("Expected no directives, got: #{inspect(other)}")
+    end
+  end
+end
+```
+
+### Example test
+
+```elixir
+# test/pag_server/tools/builtin/spawn_agent_test.exs
+
+defmodule PagServer.Tools.Builtin.SpawnAgentTest do
+  use PagServer.DirectiveCase, async: true
+  alias PagServer.Tools.Builtin.SpawnAgent
+  
+  describe "execute/2" do
+    test "returns SpawnAgent directive with correct fields" do
+      args = %{
+        "role" => "researcher",
+        "system_prompt" => "You are a research assistant"
+      }
+      context = %{agent_id: "parent-123"}
+      
+      result = SpawnAgent.execute(args, context)
+      
+      directive = assert_directive(result, Directive.SpawnAgent)
+      assert directive.role == "researcher"
+      assert directive.system_prompt == "You are a research assistant"
+      assert directive.blocking == false
+      assert directive.timeout == 30_000
+    end
+    
+    test "supports blocking mode" do
+      args = %{
+        "role" => "worker",
+        "system_prompt" => "Do work",
+        "blocking" => true,
+        "timeout" => 60
+      }
+      context = %{agent_id: "parent-123"}
+      
+      result = SpawnAgent.execute(args, context)
+      
+      directive = assert_directive(result, Directive.SpawnAgent)
+      assert directive.blocking == true
+      assert directive.timeout == 60_000  # Converted to ms
+    end
+    
+    test "supports custom tools" do
+      args = %{
+        "role" => "specialist",
+        "system_prompt" => "Specialize",
+        "tools" => ["read_file", "write_file"]
+      }
+      context = %{agent_id: "parent-123"}
+      
+      result = SpawnAgent.execute(args, context)
+      
+      directive = assert_directive(result, Directive.SpawnAgent)
+      assert directive.tools == ["read_file", "write_file"]
+    end
+  end
+end
+```
+
+### Documentation section
+
+Add to test/support/directive_case.ex module @moduledoc:
+
+```markdown
+## Philosophy: Pure Function Testing
+
+Directive-based tools are pure functions that return data describing
+effects rather than executing them. This makes testing trivial:
+
+**Good** (directive pattern):
+```elixir
+test "tool returns correct directive" do
+  result = Tool.execute(args, context)
+  directive = assert_directive(result, Directive.SpawnAgent)
+  assert directive.role == "worker"
+end
+```
+
+**Bad** (direct execution):
+```elixir
+test "tool spawns agent" do
+  {:ok, parent} = start_supervised(AgentServer)
+  Tool.execute(args, %{agent_id: parent})
+  Process.sleep(100)  # Wait for side effect
+  assert child_exists?()
+end
+```
+
+The directive pattern eliminates process setup, timing issues,
+and async complexity from tool tests.
+```
+
+Ensure async tests work, no process dependencies.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 07:34 UTC
+**Primary task**: P2.M8.E4.T001 - Define primary/fallback provider config
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E4 vs P2.M8.E4)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Handoff Notes
+
+**From:** cli-user
+**To:** cli-user
+**Date:** 2026-02-06 01:46 UTC
+
+Taking over stale task (no active session).

@@ -1,0 +1,40 @@
+id: P38.M1.E1
+name: Plugin scaffold and connector registry
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugin-scaffold-plugin.todo
+  title: Create plugin scaffold (plugin.json, ConnectorPlugin module, supervisor entry)
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-connectorregistry-li.todo
+  title: 'Implement ConnectorRegistry: list_workspace_connectors/1 and get_connector/2'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P38.M1.E1.T001
+- id: T003
+  file: T003-implement-list-connectors-mcp.todo
+  title: Implement list_connectors MCP tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P38.M1.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

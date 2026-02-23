@@ -1,0 +1,16 @@
+---
+id: P15.M12.E3.T001
+title: Promote upsert_default_telegram_connector to BotConfigs context
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.286745+00:00'
+started_at: '2026-02-18T06:45:12.286745+00:00'
+completed_at: '2026-02-18T07:51:57.686743+00:00'
+duration_minutes: 66.75666643333334
+---
+Move the private defp upsert_default_telegram_connector/2 from lib/pag_server_web/live/setup_wizard.ex into lib/pag_server/bot_configs.ex as a public function upsert_connector/3 (workspace_id, platform, config_map). Signature: (workspace_id, platform, attrs) :: :ok | {:error, String.t()}. The setup wizard and the new connections LiveView both call this. Add @doc and @spec. Update setup_wizard.ex to call BotConfigs.upsert_connector/3 instead.

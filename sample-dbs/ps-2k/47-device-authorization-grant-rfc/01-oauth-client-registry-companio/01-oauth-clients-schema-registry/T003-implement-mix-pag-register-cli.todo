@@ -1,0 +1,17 @@
+---
+id: P47.M1.E1.T003
+title: Implement mix pag.register_client task
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P47.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:11:08.652258+00:00'
+started_at: '2026-02-19T21:11:08.652258+00:00'
+completed_at: '2026-02-19T21:15:24.543689+00:00'
+duration_minutes: 4.264857
+---
+Create lib/mix/tasks/pag.register_client.ex. Accepts --client-id, --name, --grant-types, --scopes flags. Validates inputs, inserts into oauth_clients, prints confirmation. Used for production client registration without requiring a seed re-run. Include --deactivate flag to soft-disable a client.

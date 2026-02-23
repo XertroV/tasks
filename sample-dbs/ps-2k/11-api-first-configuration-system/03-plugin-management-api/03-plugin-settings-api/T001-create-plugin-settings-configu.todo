@@ -1,0 +1,83 @@
+---
+id: P11.M3.E3.T001
+title: Create plugin settings configuration API
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:05:41.456412+00:00'
+started_at: '2026-02-12T11:05:41.456412+00:00'
+completed_at: '2026-02-12T11:33:51.426584+00:00'
+duration_minutes: 28.166169383333333
+---
+
+# Create plugin settings configuration API
+
+Build API for managing global plugin settings and configuration based on plugin manifests.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/plugin_setting.ex` Ecto schema:
+  - [ ] `plugin_id` (references plugins)
+  - [ ] `key` (string, setting name from manifest)
+  - [ ] `value` (jsonb, setting value)
+  - [ ] `global` (boolean, false = session-scoped)
+  - [ ] `created_at`, `updated_at`
+  - [ ] Unique constraint on (plugin_id, key, global, session_id)
+
+- [ ] Create settings retrieval module `lib/pag_server/plugins/settings.ex`:
+  - [ ] `get_setting(plugin_id, key, scope: :global|session, session_id: nil)` -> value
+  - [ ] `list_settings(plugin_id, scope: :global|session)` -> settings map
+  - [ ] `get_setting_schema(plugin_id)` -> configuration schema from manifest
+
+- [ ] Create settings update module:
+  - [ ] `put_setting(plugin_id, key, value, scope: :global|session)` -> {:ok, value}
+  - [ ] `delete_setting(plugin_id, key, scope: :global|session)` -> :ok
+  - [ ] Validate value against schema type before saving
+  - [ ] Emit telemetry event on settings change
+
+- [ ] Build configuration API endpoints:
+  - [ ] `GET /api/plugins/:id/settings` - list all settings for plugin
+  - [ ] `GET /api/plugins/:id/settings/:key` - get single setting
+  - [ ] `PUT /api/plugins/:id/settings/:key` - update setting
+  - [ ] `DELETE /api/plugins/:id/settings/:key` - delete setting
+  - [ ] `GET /api/plugins/:id/settings/schema` - get configuration schema
+
+- [ ] Create settings caching:
+  - [ ] Cache plugin settings in Cachex by (plugin_id, scope)
+  - [ ] Invalidate cache on setting update
+  - [ ] TTL: 5 minutes for global settings
+
+## Acceptance Criteria
+
+- [ ] Settings schema stores typed values (string, number, boolean, object, array)
+- [ ] Global and session-scoped settings both supported
+- [ ] GET /api/plugins/:id/settings returns all settings with values
+- [ ] PUT /api/plugins/:id/settings/:key updates setting
+- [ ] DELETE removes setting (or restores to default)
+- [ ] 404 returned for non-existent settings
+- [ ] 400 returned for invalid values (type mismatch)
+- [ ] Settings cached with <50ms retrieval time
+- [ ] Tests verify all CRUD operations for settings
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-12 11:05 UTC
+**Sibling tasks**: P11.M3.E3.T002, P11.M3.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M3.E3.T001 → P11.M3.E3.T002 → P11.M3.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M3.E3.T001: .tasks/11-api-first-configuration-system/03-plugin-management-api/03-plugin-settings-api/T001-create-plugin-settings-configu.todo
+- P11.M3.E3.T002: .tasks/11-api-first-configuration-system/03-plugin-management-api/03-plugin-settings-api/T002-add-settings-validation-and-sc.todo
+- P11.M3.E3.T003: .tasks/11-api-first-configuration-system/03-plugin-management-api/03-plugin-settings-api/T003-implement-per-session-plugin-o.todo

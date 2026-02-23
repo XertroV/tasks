@@ -1,0 +1,29 @@
+---
+id: P15.M13.E1.T002
+title: Create database schema for wall registrations
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- database
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:11:05.445615+00:00'
+started_at: '2026-02-18T22:11:05.445615+00:00'
+completed_at: '2026-02-18T22:22:31.193953+00:00'
+duration_minutes: 11.429138766666666
+---
+
+# Create database schema for wall registrations
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

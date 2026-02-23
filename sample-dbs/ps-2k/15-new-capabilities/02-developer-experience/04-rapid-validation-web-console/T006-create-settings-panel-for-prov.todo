@@ -1,0 +1,55 @@
+---
+id: P15.M2.E4.T006
+title: Create settings panel for provider, model, and runtime options
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E4.T003
+tags:
+- settings
+- llm
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:37:33.074081+00:00'
+started_at: '2026-02-14T12:37:33.074081+00:00'
+completed_at: '2026-02-14T12:45:50.692729+00:00'
+duration_minutes: 8.29364395
+---
+
+# Create settings panel for provider, model, and runtime options
+
+
+
+## Requirements
+
+- Create a settings panel for runtime options: provider, model, temperature, max tokens, and streaming toggle.
+- Bind settings to the active session context so chat and quick actions use consistent parameters.
+- Validate user input ranges and provide sensible defaults aligned with existing server behavior.
+- Persist settings at least for the current browser session to reduce repetitive setup.
+
+## Acceptance Criteria
+
+- Users can update provider/model/runtime options from the UI and see current effective values.
+- Invalid values are blocked with inline validation feedback before requests are sent.
+- New prompts from the chat composer use the configured settings payload.
+- Refreshing within a browser session retains chosen values unless reset.
+
+## Implementation Notes
+
+- Settings form implemented in utility pane with fields:
+  - provider
+  - model
+  - temperature
+  - max_tokens
+  - streaming toggle
+- Settings choices sourced from `PagServer.LLM.ModelCatalog` for centralized model/provider strings.
+- Validation enforces:
+  - provider in known providers
+  - non-empty model (max length guard)
+  - temperature range `0.0..2.0`
+  - max tokens range `1..200000`
+- Inline errors rendered per field (`settings_errors`).
+- Persistence strategy: settings encoded into URL query params via `push_patch`, then restored in `mount/handle_params` so browser refresh retains values.
+- Chat send/assistant generation path reads current settings and stores model metadata on assistant messages.

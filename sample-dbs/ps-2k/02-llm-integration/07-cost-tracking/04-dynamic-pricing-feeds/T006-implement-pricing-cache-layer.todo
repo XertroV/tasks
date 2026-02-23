@@ -1,0 +1,154 @@
+---
+id: P2.M7.E4.T006
+title: Implement pricing cache layer with staleness detection
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M7.E4.T001
+- P2.M7.E4.T002
+tags:
+- cache
+- ets
+- cachex
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:06:21.250617'
+started_at: '2026-02-06T15:06:21.250617'
+completed_at: '2026-02-06T15:13:05.899068'
+duration_minutes: 6.744140616666667
+---
+
+# Implement pricing cache layer with staleness detection
+
+Add a caching layer between the PricingFetcher registry and individual fetcher
+implementations. Fetched pricing data should be cached with a configurable TTL
+(default: 1 hour) to avoid excessive external API calls, with staleness detection
+and fallback to static pricing when cached data expires and refresh fails.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/pricing_cache.ex` GenServer or Cachex-based cache
+- [ ] Cache pricing results keyed by model identifier
+- [ ] Support configurable TTL (default: 1 hour / 3600 seconds)
+- [ ] Implement staleness detection: track when each entry was last refreshed
+- [ ] Serve stale data while attempting background refresh (stale-while-revalidate pattern)
+- [ ] Fall back to static pricing from `PagServer.LLM.Pricing` when cache miss + fetch fails
+- [ ] Integrate cache into `PricingFetcher.get_pricing/1` call path
+- [ ] Add `invalidate/1` to force refresh a specific model's pricing
+- [ ] Add `invalidate_all/0` to clear entire cache
+- [ ] Add `stats/0` function returning hit/miss/stale counts
+- [ ] Emit telemetry events: cache hit, cache miss, cache stale, refresh success, refresh failure
+- [ ] Start cache as part of the application supervision tree
+- [ ] Handle cache startup gracefully (no cached data available yet)
+
+## Acceptance Criteria
+
+- [ ] First call for a model fetches from PricingFetcher and caches result
+- [ ] Subsequent calls within TTL return cached result without external API call
+- [ ] After TTL expiry, stale data is served while background refresh runs
+- [ ] If refresh fails, stale data continues to be served with warning telemetry
+- [ ] `invalidate/1` forces next call to refresh from external source
+- [ ] `stats/0` reports accurate hit/miss/stale counts
+- [ ] Cache operates correctly under concurrent access
+- [ ] Application starts cleanly with empty cache
+
+## Implementation Details
+
+Using Cachex for TTL management:
+
+```elixir
+defmodule PagServer.LLM.PricingCache do
+  @moduledoc """
+  Caching layer for dynamically fetched LLM pricing data.
+
+  Uses Cachex with TTL-based expiry and stale-while-revalidate pattern.
+  """
+
+  use GenServer
+
+  @cache_name :pricing_cache
+  @default_ttl :timer.hours(1)
+  @stale_ttl :timer.hours(24)  # Serve stale data for up to 24h
+
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  def get_pricing(model) do
+    case Cachex.get(@cache_name, model) do
+      {:ok, nil} ->
+        # Cache miss -- fetch and cache
+        fetch_and_cache(model)
+
+      {:ok, {pricing, fetched_at}} ->
+        if stale?(fetched_at) do
+          # Stale -- serve stale, refresh in background
+          emit_telemetry(:stale, model)
+          schedule_refresh(model)
+          pricing
+        else
+          emit_telemetry(:hit, model)
+          pricing
+        end
+    end
+  end
+
+  def invalidate(model) do
+    Cachex.del(@cache_name, model)
+    :ok
+  end
+
+  def invalidate_all do
+    Cachex.clear(@cache_name)
+    :ok
+  end
+
+  defp fetch_and_cache(model) do
+    emit_telemetry(:miss, model)
+
+    case PricingFetcher.fetch_from_registered(model) do
+      {:ok, pricing} ->
+        Cachex.put(@cache_name, model, {pricing, System.monotonic_time(:millisecond)},
+          ttl: @stale_ttl
+        )
+        emit_telemetry(:refresh_success, model)
+        pricing
+
+      :not_found ->
+        # Fall back to static pricing
+        Pricing.get_pricing(model)
+    end
+  end
+
+  defp stale?(fetched_at) do
+    System.monotonic_time(:millisecond) - fetched_at > @default_ttl
+  end
+end
+```
+
+Alternative: ETS-based cache without Cachex dependency (simpler, no TTL management built-in).
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Depends On**:
+- P2.M7.E4.T001 (done): Pricing database schema
+- P2.M7.E4.T002 (done): PricingFetcher behaviour and registry
+
+**Note**: The cache works with ANY fetcher implementation through the PricingFetcher behaviour. It does not depend on specific fetcher implementations (T003, T004, T005).
+
+**Reference Files**:
+- `lib/pag_server/llm/pricing_fetcher.ex` - PricingFetcher behaviour with `get_pricing/1`
+- `config/config.exs` - Application config (Cachex may already be configured)
+- `lib/pag_server/application.ex` - Supervision tree for adding cache child
+
+## Notes
+
+- The project already uses Cachex in other areas; reusing it here is consistent
+- The stale-while-revalidate pattern is important: pricing doesn't change frequently (weekly at most), so serving slightly stale data is far better than failing
+- Consider using `Cachex.fetch/3` which provides built-in "fetch on miss" semantics
+- Background refresh can use `Task.start/1` for fire-and-forget refresh
+- The 1-hour TTL is a good default; OpenRouter pricing changes infrequently but should be current within a day

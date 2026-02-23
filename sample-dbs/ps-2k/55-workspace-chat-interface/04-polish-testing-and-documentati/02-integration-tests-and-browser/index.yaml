@@ -1,0 +1,46 @@
+id: P55.M4.E2
+name: Integration Tests and Browser Testing Docs
+status: done
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-mount-navigation-and-auth-redi.todo
+  title: Mount, navigation, and auth redirect tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-message-rendering-and-streamin.todo
+  title: Message rendering and streaming PubSub event tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-composer-approval-workflow-and.todo
+  title: Composer, approval workflow, and fork tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-browser-testing-guide-for-work.todo
+  title: Browser testing guide for workspace chat
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

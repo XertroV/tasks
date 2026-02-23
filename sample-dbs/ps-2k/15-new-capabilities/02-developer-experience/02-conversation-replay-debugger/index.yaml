@@ -1,0 +1,37 @@
+id: P15.M2.E2
+name: Conversation Replay Debugger
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-event-store-browser.todo
+  title: Design event store browser
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-step-through-debuggi.todo
+  title: Implement step-through debugging
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-event-replay-visualization.todo
+  title: Add event replay visualization
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

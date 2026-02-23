@@ -1,0 +1,35 @@
+---
+id: B152
+title: "tool_runner.ex omits model_provider/model_name from tool context \u2014 size=same\
+  \ always falls back"
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- threads
+- spawn_subagent
+- tool_runner
+- size-same
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.840941+00:00'
+started_at: '2026-02-19T04:21:05.840941+00:00'
+completed_at: '2026-02-19T04:43:06.146437+00:00'
+duration_minutes: 22.005091383333333
+---
+B149 added size=same to inherit parent model, but tool_runner.ex never puts model_provider or model_name into the tool execution context map.
+
+tool_runner.ex lines 62–76 builds the context passed to all tool execute/2 calls:
+  %{agent_id, session_id, workspace, workspace_id, permissions, capabilities, plugin_config}
+
+context[:model_provider] and context[:model_name] are always nil at runtime, so size=same ALWAYS silently falls back to {anthropic, claude-sonnet} regardless of what model the parent agent is actually using.
+
+The values ARE available: state.config[:model_provider] and state.config[:model_name] exist in the AgentServer state at the time ToolRunner runs.
+
+The B149 happy-path test passes only because it manually injects :model_provider/:model_name into the context map — fabricating a state the real server never produces.
+
+Fix required:
+- tool_runner.ex lines 62–78: add model_provider: state.config[:model_provider] and model_name: state.config[:model_name] (or equivalent resolved model) to the context map
+- Update B149 test to remove the manual injection — it should pass with the real context shape
+- Also fixes context[:tools] fallback in spawn_subagent.ex which is similarly absent (consider adding tools: to the context map too)

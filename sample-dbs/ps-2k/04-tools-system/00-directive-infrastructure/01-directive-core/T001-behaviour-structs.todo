@@ -1,0 +1,254 @@
+---
+id: P4.M0.E1.T001
+title: Define Directive behaviour and core structs
+status: done
+estimate_hours: 4
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- directives
+- architecture
+- jido-inspired
+- apache-2.0
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:41:00.946975'
+started_at: '2026-02-05T17:41:00.946975'
+completed_at: '2026-02-05T17:47:08.873943'
+duration_minutes: 6.1321159666666665
+---
+
+# Define Directive behaviour and core structs
+
+Create the foundational Directive module and all core directive struct definitions.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/directive.ex` (~200 LoC)
+- [ ] Define Directive type union for all directive types
+- [ ] Create individual directive struct modules:
+  - [ ] `lib/pag_server/agents/directive/spawn_agent.ex`
+  - [ ] `lib/pag_server/agents/directive/send_message.ex`
+  - [ ] `lib/pag_server/agents/directive/delegate.ex`
+  - [ ] `lib/pag_server/agents/directive/stop_child.ex`
+  - [ ] `lib/pag_server/agents/directive/emit_to_parent.ex`
+- [ ] Add Apache 2.0 attribution headers to all files
+- [ ] Complete typespecs with @type and @enforce_keys
+- [ ] Add @moduledoc and field documentation
+
+## Acceptance Criteria
+
+- [ ] All directive structs defined with enforced keys
+- [ ] Directive.t() type union includes all 5 directive types
+- [ ] SpawnAgent supports both async (default) and blocking modes
+- [ ] Delegate includes timeout field (default 30_000ms)
+- [ ] SendMessage supports sync/async via wait_for_reply field
+- [ ] File headers include Jido attribution and Apache 2.0 notice
+- [ ] Dialyzer passes (mix dialyzer)
+- [ ] Documentation complete (@moduledoc explains pattern)
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md`
+- `docs/brainstorms/2026-02-06-multi-agent-coordination-tools-brainstorm.md`
+
+**Jido Reference**:
+- Repository: https://github.com/agentjido/jido
+- Pattern source: `lib/jido/agent/directive.ex`
+- License: Apache 2.0 (Copyright 2019 Parker Selbert)
+
+**Key Points**:
+- Directives describe effects, don't execute them
+- Tools are pure functions returning directives
+- AgentServer runtime interprets directives via protocol
+- Event sourcing: directives persisted as events
+
+## Notes
+
+### Directive.SpawnAgent struct
+
+```elixir
+# lib/pag_server/agents/directive/spawn_agent.ex
+# Directive pattern adapted from Jido (https://github.com/agentjido/jido)
+# Copyright 2019 Parker Selbert - Apache License 2.0
+# Modified for PAG-Server event-sourced architecture
+
+defmodule PagServer.Agents.Directive.SpawnAgent do
+  @moduledoc """
+  Directive to spawn a child agent under DynamicSupervisor.
+  
+  ## Fields
+  
+  - `:role` - Agent role/name (required)
+  - `:system_prompt` - System prompt for child (required)
+  - `:tools` - Tool permissions, nil means inherit from parent
+  - `:blocking` - Wait for result? (default false)
+  - `:timeout` - Timeout in ms for blocking mode (default 30_000)
+  - `:metadata` - Additional context map
+  """
+  
+  @enforce_keys [:role, :system_prompt]
+  defstruct [
+    :role,
+    :system_prompt,
+    tools: nil,
+    blocking: false,
+    timeout: 30_000,
+    metadata: %{}
+  ]
+
+  @type t :: %__MODULE__{
+          role: String.t(),
+          system_prompt: String.t(),
+          tools: [String.t()] | nil,
+          blocking: boolean(),
+          timeout: pos_integer(),
+          metadata: map()
+        }
+end
+```
+
+### Main Directive module
+
+```elixir
+# lib/pag_server/agents/directive.ex
+# Directive pattern adapted from Jido (https://github.com/agentjido/jido)
+# Copyright 2019 Parker Selbert - Apache License 2.0
+# Modified for PAG-Server event-sourced architecture
+
+defmodule PagServer.Agents.Directive do
+  @moduledoc """
+  Directives describe external effects that tools request.
+  
+  Tools are pure functions that return directives; the AgentServer
+  runtime executes them via the Directive.Executor protocol.
+  
+  ## Inspiration
+  
+  This pattern is adapted from Jido by Parker Selbert (Apache 2.0).
+  PAG-Server adds event sourcing for directive persistence and replay.
+  
+  ## Available Directives
+  
+  - `SpawnAgent` - Spawn child agent
+  - `SendMessage` - Send message to another agent
+  - `Delegate` - Delegate task to child with result
+  - `StopChild` - Stop a child agent
+  - `EmitToParent` - Send event to parent agent
+  """
+
+  alias PagServer.Agents.Directive
+
+  @type t ::
+          Directive.SpawnAgent.t()
+          | Directive.SendMessage.t()
+          | Directive.Delegate.t()
+          | Directive.StopChild.t()
+          | Directive.EmitToParent.t()
+end
+```
+
+### Directive.SendMessage
+
+```elixir
+defmodule PagServer.Agents.Directive.SendMessage do
+  @moduledoc "Send message to another agent by ID"
+  
+  @enforce_keys [:to, :message]
+  defstruct [
+    :to,               # Target agent ID
+    :message,          # Message content
+    wait_for_reply: false,
+    timeout: 30_000
+  ]
+
+  @type t :: %__MODULE__{
+          to: String.t(),
+          message: term(),
+          wait_for_reply: boolean(),
+          timeout: pos_integer()
+        }
+end
+```
+
+### Directive.Delegate
+
+```elixir
+defmodule PagServer.Agents.Directive.Delegate do
+  @moduledoc "Delegate task to child agent and wait for result"
+  
+  @enforce_keys [:task, :to]
+  defstruct [
+    :task,         # Task description
+    :to,           # Child agent ID (or :new to spawn)
+    timeout: 60_000,
+    metadata: %{}
+  ]
+
+  @type t :: %__MODULE__{
+          task: String.t(),
+          to: String.t() | :new,
+          timeout: pos_integer(),
+          metadata: map()
+        }
+end
+```
+
+### Directive.StopChild
+
+```elixir
+defmodule PagServer.Agents.Directive.StopChild do
+  @moduledoc "Stop a child agent gracefully"
+  
+  @enforce_keys [:child_id]
+  defstruct [
+    :child_id,
+    reason: :normal
+  ]
+
+  @type t :: %__MODULE__{
+          child_id: String.t(),
+          reason: term()
+        }
+end
+```
+
+### Directive.EmitToParent
+
+```elixir
+defmodule PagServer.Agents.Directive.EmitToParent do
+  @moduledoc "Emit event to parent agent"
+  
+  @enforce_keys [:event]
+  defstruct [:event, metadata: %{}]
+
+  @type t :: %__MODULE__{
+          event: term(),
+          metadata: map()
+        }
+end
+```
+
+### Testing approach
+
+```elixir
+test "SpawnAgent struct with required fields" do
+  directive = %Directive.SpawnAgent{
+    role: "researcher",
+    system_prompt: "You are a research assistant"
+  }
+  
+  assert directive.role == "researcher"
+  assert directive.blocking == false
+  assert directive.timeout == 30_000
+end
+
+test "SpawnAgent enforces required keys" do
+  assert_raise ArgumentError, fn ->
+    %Directive.SpawnAgent{role: "test"}
+  end
+end
+```
+
+Register structs, ensure proper module organization.

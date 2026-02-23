@@ -1,0 +1,26 @@
+---
+id: P46.M3.E1.T003
+title: Bridge current_user into existing API capability system
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P46.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:33:00.989197+00:00'
+started_at: '2026-02-19T22:33:00.989197+00:00'
+completed_at: '2026-02-19T22:46:01.785505+00:00'
+duration_minutes: 13.013271616666666
+---
+The existing API auth system puts user_id into conn.assigns.capabilities["user_id"] via RequireAuth plug. Web sessions put conn.assigns.current_user (a User struct). These two paths must coexist and downstream code (ResourcePolicy, WorkspaceAuthorization, RequireWorkspaceMembership) must work with both.
+
+Audit all places that read conn.assigns.capabilities["user_id"] and conn.assigns.api_key.
+Create a helper CurrentUser module or add to RequireLogin:
+- current_user_id/1 — reads from either current_user.id (web session) or capabilities["user_id"] (API key)
+- Update WorkspaceAuthorization, RequireWorkspaceMembership to use this helper instead of directly reading capabilities
+
+Alternatively, make RequireLogin also populate a minimal capabilities map in assigns so existing plugs work unmodified. Evaluate and choose the less disruptive approach.
+Document the two-path auth model clearly in a module doc comment.
+Acceptance: Existing workspace membership checks work for both API key and web session authenticated requests. mix test.auth and mix test.web pass.

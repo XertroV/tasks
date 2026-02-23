@@ -1,0 +1,18 @@
+---
+id: B235
+title: Presence list not filtered by authorization
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- security
+- web
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.679415+00:00'
+started_at: '2026-02-23T05:59:32.679415+00:00'
+completed_at: '2026-02-23T05:59:43.880540+00:00'
+duration_minutes: 0.18668506666666668
+---
+agent_channel.ex:140 - Presence.list returns all connected users regardless of workspace access

@@ -1,0 +1,39 @@
+---
+id: P15.M11.E4.T001
+title: Build observation subscriber GenServer
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.222916+00:00'
+started_at: '2026-02-17T18:46:51.222916+00:00'
+completed_at: '2026-02-17T19:21:57.493229+00:00'
+duration_minutes: 35.104505016666664
+---
+## Description
+A GenServer that subscribes to the coder's PubSub events, buffers tool calls, triggers rolling summarization via a cheap LLM, and injects summaries into the observer's context.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/observation_subscriber.ex`
+
+## Acceptance Criteria
+- [ ] Subscribes to coder's PubSub topic `agents:<coder_id>`
+- [ ] Buffers `:tool_complete` events
+- [ ] Triggers rolling summarization every N events (configurable `summary_interval`, default 5)
+- [ ] Calls cheap LLM (haiku) to produce rolling summary from buffer + previous summary
+- [ ] Injects summary into observer's context via `Api.inject_context/5`
+- [ ] Falls back to raw event injection if summarization fails
+- [ ] Injects individual events as immediate context between summaries
+- [ ] Started as linked process from SessionManager (Gotcha #4 — Option A)
+- [ ] Non-blocking: EventBridge callback just forwards events via send/2 (Gotcha #8)
+- [ ] Uses `sleep_fn` pattern for any timing-dependent tests
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+- See plan: .plan/pair-programming-agents.md, Epic 3, Task 3.1 for full GenServer code
+- Summarization is async (Task.start) to avoid blocking the GenServer
+- Format tool events with truncation for large results (max 2000 bytes)

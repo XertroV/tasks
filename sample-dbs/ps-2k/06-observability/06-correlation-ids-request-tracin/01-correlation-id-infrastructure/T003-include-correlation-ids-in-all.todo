@@ -1,0 +1,97 @@
+---
+id: P6.M6.E1.T003
+title: Include correlation IDs in all telemetry events as metadata
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P6.M6.E1.T002
+tags:
+- observability
+- tracing
+- correlation-id
+- telemetry
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:34:00.807336+00:00'
+started_at: '2026-02-06T20:34:00.807336+00:00'
+completed_at: '2026-02-06T20:46:46.082518+00:00'
+duration_minutes: 12.754586166666666
+---
+
+# Include correlation IDs in all telemetry events as metadata
+
+Update all `:telemetry.execute/3` call sites in the codebase to include `correlation_id` in
+their metadata maps. This enables telemetry handlers (P6.M1.E4) to correlate metrics and logs
+with specific requests, completing the end-to-end tracing story.
+
+## Requirements
+
+- [ ] Audit all ~20 `:telemetry.execute/3` call sites in the codebase
+- [ ] Add `correlation_id` to metadata in each call site by reading from Logger.metadata:
+  - [ ] `lib/pag_server/agents/agent.ex` (lifecycle_hook, memory_bounds)
+  - [ ] `lib/pag_server/agents/agent_server.ex` (shutdown, crash_recovery, invalid_transition, context_overflow)
+  - [ ] `lib/pag_server/llm/registry.ex` (provider_registered, failover, routing, routing_error)
+  - [ ] `lib/pag_server/llm/openai/error.ex` (error)
+  - [ ] `lib/pag_server/llm/openai/retry.ex` (retry)
+  - [ ] `lib/pag_server/llm/providers/anthropic/error.ex` (error)
+  - [ ] `lib/pag_server/llm/providers/anthropic/retry.ex` (retry)
+  - [ ] `lib/pag_server/llm/providers/anthropic/cache_metrics.ex` (cache usage, cache savings)
+  - [ ] `lib/pag_server/llm/providers/openrouter/tool_executor.ex` (tool_results_submitted)
+  - [ ] `lib/pag_server/cache.ex` (cache events)
+  - [ ] `lib/pag_server/events/compression.ex` (compressed)
+  - [ ] `lib/pag_server/stats/recorder.ex` (stats recorded)
+- [ ] Create helper function to build metadata with correlation_id:
+  ```elixir
+  defp telemetry_metadata(extra \\ %{}) do
+    Map.merge(extra, %{
+      correlation_id: Logger.metadata()[:correlation_id]
+    })
+  end
+  ```
+- [ ] Ensure correlation_id is nil-safe (don't crash if not set, e.g., for background processes)
+- [ ] Add tests verifying telemetry events include correlation_id when set
+
+## Acceptance Criteria
+
+- [ ] All `:telemetry.execute/3` calls include `correlation_id` in metadata
+- [ ] Telemetry handlers can filter/group events by correlation_id
+- [ ] No crashes when correlation_id is not set (background processes, startup)
+- [ ] Test demonstrates round-trip: set correlation_id -> fire telemetry -> handler receives it
+- [ ] Grep for `:telemetry.execute` confirms no call sites are missing correlation_id
+
+## Context
+
+**Source**: Architecture audit identified that telemetry events carry no request context,
+making it impossible to correlate metrics with specific user requests.
+
+**Depends on**: T002 (correlation ID propagation) ensures Logger.metadata has the
+correlation_id available when telemetry events are emitted.
+
+## Notes
+
+**Centralized Helper** (consider adding to a shared module):
+```elixir
+defmodule PagServer.Observability.TelemetryHelper do
+  require Logger
+
+  @doc "Execute telemetry event with automatic correlation_id injection"
+  def execute(event, measurements, metadata) do
+    enriched = Map.merge(metadata, %{
+      correlation_id: Logger.metadata()[:correlation_id],
+      timestamp: System.system_time(:microsecond)
+    })
+    :telemetry.execute(event, measurements, enriched)
+  end
+end
+```
+
+This helper can be used as a drop-in replacement:
+```elixir
+# Before:
+:telemetry.execute([:pag_server, :llm, :error], %{count: 1}, %{provider: provider})
+
+# After:
+TelemetryHelper.execute([:pag_server, :llm, :error], %{count: 1}, %{provider: provider})
+```

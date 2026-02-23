@@ -1,0 +1,56 @@
+---
+id: P13.M3.E3.T001
+title: Define LLMError and ToolError structs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T12:00:10.156564+00:00'
+started_at: '2026-02-13T12:00:10.156564+00:00'
+completed_at: '2026-02-13T12:28:56.901181+00:00'
+duration_minutes: 28.77907671666667
+---
+
+# Define LLMError and ToolError structs
+
+## Description
+
+Define structured error types for LLM operations and tool execution to replace tuple-based error returns. Structured errors provide consistent error handling, better logging, and recovery hints.
+
+## Acceptance Criteria
+- [ ] Create `lib/pag_server/errors/llm_error.ex` with defstruct
+- [ ] Create `lib/pag_server/errors/tool_error.ex` with defstruct
+- [ ] LLMError fields: `:type`, `:message`, `:provider`, `:model`, `:retryable?`, `:recovery_hint`
+- [ ] ToolError fields: `:type`, `:message`, `:tool_name`, `:arguments`, `:recovery_hint`
+- [ ] Error types include: `:rate_limited`, `:context_too_long`, `:invalid_response`, `:timeout`, `:provider_error`
+- [ ] Implement `Exception` behaviour for both structs
+- [ ] Add `from_response/2` helper functions
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/providers/anthropic/error.ex` (existing error types)
+- Related files: `lib/pag_server/llm/openai/error.ex` (existing error types)
+- Part of epic: P13.M3.E3 - Structured Error Types
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P13.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 12:00 UTC
+**Sibling tasks**: P13.M3.E3.T002, P13.M3.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P13.M3.E3.T001 → P13.M3.E3.T002 → P13.M3.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P13.M3.E3.T001: .tasks/13-architecture-refactoring/03-backpressure-error-handling/03-structured-error-types/T001-define-llmerror-and-toolerror.todo
+- P13.M3.E3.T002: .tasks/13-architecture-refactoring/03-backpressure-error-handling/03-structured-error-types/T002-migrate-existing-error-returns.todo
+- P13.M3.E3.T003: .tasks/13-architecture-refactoring/03-backpressure-error-handling/03-structured-error-types/T003-add-recovery-hint-system.todo

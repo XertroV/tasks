@@ -1,0 +1,23 @@
+id: P45.M4
+name: Anti-Exfil Rate Limiting
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Token Bucket Rate Limiter
+  path: 01-token-bucket-rate-limiter
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

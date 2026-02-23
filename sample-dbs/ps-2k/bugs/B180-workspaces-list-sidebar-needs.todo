@@ -1,0 +1,17 @@
+---
+id: B180
+title: Workspaces list sidebar needs a close button
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:10:15.754274+00:00'
+started_at: '2026-02-21T10:10:15.754274+00:00'
+completed_at: '2026-02-21T10:18:04.692539+00:00'
+duration_minutes: 7.8156376000000005
+---
+
+Workspaces list sidebar needs a close button

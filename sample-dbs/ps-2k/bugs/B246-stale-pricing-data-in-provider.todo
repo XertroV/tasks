@@ -1,0 +1,18 @@
+---
+id: B246
+title: Stale pricing data in providers.ex
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- llm
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.106251+00:00'
+started_at: '2026-02-23T07:29:02.106251+00:00'
+completed_at: '2026-02-23T07:43:46.108681+00:00'
+duration_minutes: 14.733373616666666
+---
+providers.ex:46-123 - Missing Claude Opus 4.6, Haiku 4.5, GPT-5.3-codex pricing

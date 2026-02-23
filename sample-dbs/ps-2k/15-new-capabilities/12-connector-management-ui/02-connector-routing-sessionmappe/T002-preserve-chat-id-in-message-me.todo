@@ -1,0 +1,17 @@
+---
+id: P15.M12.E2.T002
+title: Preserve chat_id in message metadata for reply dispatch
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.282198+00:00'
+started_at: '2026-02-18T06:45:12.282198+00:00'
+completed_at: '2026-02-18T07:51:58.528031+00:00'
+duration_minutes: 66.77076371666666
+---
+When routing a message from chat_id X into a shared session, inject the originating chat_id and connector_instance_id into message.metadata (or session message user_info). The Telegram reply path (lib/pag_server/gateway/formatters/telegram.ex and the message handler) must read this metadata to know which chat_id to send the reply to. Document the metadata key names as constants (e.g. 'telegram_reply_chat_id', 'telegram_connector_id'). This ensures the shared session model works correctly: agent replies go back to the correct chat even when many users share one session.

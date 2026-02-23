@@ -1,0 +1,30 @@
+id: P16
+name: LLM Integration Tests
+status: pending
+weeks: 1
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Groq Provider Support
+  path: 01-groq-provider-support
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: Add Groq LLM provider with OpenAI-compatible API for fast inference
+- id: M2
+  name: LLM Integration Tests
+  path: 02-llm-integration-tests
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: End-to-end integration tests with free LLM providers
+stats:
+  total_tasks: 13
+  done: 13
+  in_progress: 0
+  blocked: 0
+  pending: 0

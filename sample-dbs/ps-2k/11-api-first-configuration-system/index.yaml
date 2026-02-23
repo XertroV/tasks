@@ -1,0 +1,59 @@
+id: P11
+name: API-First Configuration System
+status: pending
+weeks: 4
+estimate_hours: 72.0
+complexity: medium
+depends_on:
+- P10
+milestones:
+- id: M1
+  name: Agent Templates & Presets API
+  path: 01-agent-templates-presets-api
+  status: pending
+  estimate_hours: 16.0
+  complexity: medium
+  depends_on: []
+  description: CRUD API for agent templates, template instantiation, template marketplace
+- id: M2
+  name: Tools & Capabilities Management API
+  path: 02-tools-capabilities-management
+  status: pending
+  estimate_hours: 14.0
+  complexity: medium
+  depends_on: []
+  description: List/discover tools, configure tool permissions, sandbox settings,
+    execution quotas
+- id: M3
+  name: Plugin Management API
+  path: 03-plugin-management-api
+  status: pending
+  estimate_hours: 18.0
+  complexity: high
+  depends_on: []
+  description: List/install/enable/disable plugins, plugin settings, plugin registry
+    integration
+- id: M4
+  name: Platform Integration Configuration API
+  path: 04-platform-integration-configura
+  status: pending
+  estimate_hours: 16.0
+  complexity: high
+  depends_on: []
+  description: Configure Telegram/Slack/Discord/etc via API, OAuth flows, workspace
+    management
+- id: M5
+  name: System Configuration API
+  path: 05-system-configuration-api
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: LLM provider config, rate limits, CORS, observability settings via
+    API
+stats:
+  total_tasks: 43
+  done: 43
+  in_progress: 0
+  blocked: 0
+  pending: 0

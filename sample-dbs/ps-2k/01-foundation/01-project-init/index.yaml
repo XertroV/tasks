@@ -1,0 +1,48 @@
+id: P1.M1
+name: Project Initialization
+status: pending
+estimate_hours: 16
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Phoenix Setup
+  path: 01-phoenix-setup
+  status: pending
+  estimate_hours: 4
+  complexity: low
+  depends_on: []
+  description: Initialize Phoenix project, add dependencies, configure environment
+- id: E2
+  name: Database Setup
+  path: 02-database-setup
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on:
+  - E1
+  description: Configure Ecto with PostgreSQL and SQLite adapters
+- id: E3
+  name: Cache Layer
+  path: 03-cache-layer
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E2
+  description: Set up Cachex with bounded size, TTL, and LRU eviction
+- id: E4
+  name: Test Infrastructure
+  path: 04-test-infra
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E1
+  description: ExMachina factories, Mox mocks, GitHub Actions CI workflow
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

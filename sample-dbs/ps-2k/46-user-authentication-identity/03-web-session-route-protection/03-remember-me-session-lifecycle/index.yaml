@@ -1,0 +1,33 @@
+id: P46.M3.E3
+name: Remember Me & Session Lifecycle
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-remember-me-cookie-w.todo
+  title: Implement remember-me cookie with configurable TTL
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P46.M1.E2.T003
+  - P46.M2.E1.T001
+- id: T002
+  file: T002-add-session-token-cleanup-work.todo
+  title: Add session token cleanup worker for expired tokens
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: low
+  depends_on:
+  - P46.M1.E2.T003
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

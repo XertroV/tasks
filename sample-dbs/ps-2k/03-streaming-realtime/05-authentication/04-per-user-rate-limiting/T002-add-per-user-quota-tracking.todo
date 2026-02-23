@@ -1,0 +1,338 @@
+---
+id: P3.M5.E4.T002
+title: Add per-user quota tracking
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P3.M5.E1.T001
+tags:
+- auth
+- quotas
+- tracking
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:59:07.893904+00:00'
+started_at: '2026-02-06T18:59:07.893904+00:00'
+completed_at: '2026-02-06T19:12:06.824307+00:00'
+duration_minutes: 12.9821732
+---
+
+# Add per-user quota tracking
+
+
+
+## Requirements
+
+- [ ] NOTE: Quota fields already exist in users table from Epic E1.T001
+- [ ] Create `lib/pag_server/auth/quota.ex` module for quota tracking
+- [ ] Implement quota check and consumption functions
+- [ ] Track daily/monthly usage per user in database
+- [ ] Store quota limits per user tier (free, pro, enterprise)
+- [ ] Implement quota reset logic (daily at midnight UTC, monthly on 1st)
+- [ ] Add quota remaining/reset info to rate limit headers
+- [ ] Emit telemetry for quota usage and exhaustion
+- [ ] Add admin functions to view/modify user quotas
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/auth/quota.ex`
+- [ ] Database migration adds quota fields:
+  - [ ] `quota_requests_daily` (integer, default: 1000)
+  - [ ] `quota_requests_monthly` (integer, default: 10000)
+  - [ ] `usage_requests_today` (integer, default: 0)
+  - [ ] `usage_requests_month` (integer, default: 0)
+  - [ ] `quota_reset_daily` (date, tracks last daily reset)
+  - [ ] `quota_reset_monthly` (date, tracks last monthly reset)
+  - [ ] `quota_tier` (string, enum: "free", "pro", "enterprise")
+- [ ] Quota tracking functions work correctly:
+  - [ ] `check_quota/2` - Returns `:ok` or `{:error, :quota_exceeded}`
+  - [ ] `consume_quota/2` - Increments usage counters
+  - [ ] `reset_quota/2` - Resets daily/monthly counters
+  - [ ] `get_quota_status/1` - Returns remaining/limit/reset info
+- [ ] Quota reset logic:
+  - [ ] Daily reset at 00:00 UTC if `quota_reset_daily < today`
+  - [ ] Monthly reset on 1st of month if `quota_reset_monthly < current_month`
+  - [ ] Resets happen automatically on first request after reset time
+- [ ] Quota tiers configured via Application environment:
+  ```elixir
+  config :pag_server, :quota_tiers, %{
+    "free" => %{daily: 1_000, monthly: 10_000},
+    "pro" => %{daily: 10_000, monthly: 100_000},
+    "enterprise" => %{daily: 100_000, monthly: 1_000_000}
+  }
+  ```
+- [ ] HTTP headers include quota info:
+  - [ ] `X-Quota-Limit-Daily` - Daily quota limit
+  - [ ] `X-Quota-Remaining-Daily` - Requests remaining today
+  - [ ] `X-Quota-Reset-Daily` - Timestamp of next daily reset
+  - [ ] `X-Quota-Limit-Monthly` - Monthly quota limit
+  - [ ] `X-Quota-Remaining-Monthly` - Requests remaining this month
+- [ ] Quota exceeded returns HTTP 402 (Payment Required) with body:
+  ```json
+  {
+    "error": "quota_exceeded",
+    "message": "Monthly quota exhausted. Upgrade plan or wait for reset.",
+    "quota_reset_at": "2026-03-01T00:00:00Z"
+  }
+  ```
+- [ ] Telemetry events emitted:
+  - [ ] `[:pag_server, :quota, :check]` - Every quota check
+  - [ ] `[:pag_server, :quota, :consumed]` - When quota consumed
+  - [ ] `[:pag_server, :quota, :exceeded]` - When quota exhausted
+  - [ ] `[:pag_server, :quota, :reset]` - When quota reset
+- [ ] Admin functions available:
+  - [ ] `Quota.get_usage/1` - View current usage
+  - [ ] `Quota.set_tier/2` - Change user tier
+  - [ ] `Quota.add_quota/3` - Grant one-time quota boost
+- [ ] Tests pass with >90% coverage
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Plan References**:
+- Epic P3.M5.E4 (Per-user rate limiting)
+- Related to API key authentication (P3.M5.E1)
+
+**Key Points**:
+- Quotas are longer-term limits (daily/monthly) vs rate limits (per-second)
+- Rate limiting prevents bursts; quotas prevent sustained overuse
+- Quotas stored in database (persistent), rate limits in cache (ephemeral)
+- Use HTTP 402 (Payment Required) to indicate quota exceeded vs 429 (Too Many Requests) for rate limits
+- Quota tracking must be atomic to prevent race conditions
+
+## Implementation Notes
+
+### Migration
+
+### Quota Module
+
+**Note**: No migration needed - quota fields already exist in users table from E1.T001:
+- `quota_tier`, `quota_requests_daily`, `quota_requests_monthly`
+- `usage_requests_daily`, `usage_requests_monthly`
+- `quota_reset_daily`, `quota_reset_monthly`
+
+```elixir
+defmodule PagServer.Auth.Quota do
+  @moduledoc """
+  Per-user quota tracking and enforcement.
+  
+  Tracks daily and monthly request quotas per user tier.
+  Automatically resets quotas at configured intervals.
+  """
+  
+  alias PagServer.Repo
+  alias PagServer.Schema.User
+  import Ecto.Query
+  require Logger
+  
+  @type quota_result :: :ok | {:error, :quota_exceeded, reset_at :: DateTime.t()}
+  
+  @doc """
+  Check if user has remaining quota without consuming.
+  
+  Returns :ok if quota available, {:error, :quota_exceeded, reset_at} otherwise.
+  """
+  @spec check_quota(User.t(), :daily | :monthly) :: quota_result()
+  def check_quota(user, period \\ :daily) do
+    user = maybe_reset_quota(user)
+    
+    {usage, limit} = case period do
+      :daily -> {user.usage_requests_today, user.quota_requests_daily}
+      :monthly -> {user.usage_requests_month, user.quota_requests_monthly}
+    end
+    
+    if usage < limit do
+      :ok
+    else
+      reset_at = next_reset_time(period)
+      emit_telemetry(:exceeded, %{user_id: user.id, period: period})
+      {:error, :quota_exceeded, reset_at}
+    end
+  end
+  
+  @doc """
+  Consume quota (increment usage counter).
+  
+  Atomically increments usage and checks quota in a single transaction.
+  Returns :ok or {:error, :quota_exceeded}.
+  """
+  @spec consume_quota(User.t(), pos_integer()) :: quota_result()
+  def consume_quota(user, amount \\ 1) do
+    Repo.transaction(fn ->
+      user = Repo.get(User, user.id, lock: "FOR UPDATE")
+      user = maybe_reset_quota(user)
+      
+      # Check daily quota
+      case check_quota_without_reset(user, :daily) do
+        :ok ->
+          # Check monthly quota
+          case check_quota_without_reset(user, :monthly) do
+            :ok ->
+              # Update usage
+              user
+              |> Ecto.Changeset.change(%{
+                usage_requests_today: user.usage_requests_today + amount,
+                usage_requests_month: user.usage_requests_month + amount
+              })
+              |> Repo.update!()
+              
+              emit_telemetry(:consumed, %{user_id: user.id, amount: amount})
+              :ok
+              
+            error -> Repo.rollback(error)
+          end
+          
+        error -> Repo.rollback(error)
+      end
+    end)
+  end
+  
+  @doc """
+  Get current quota status for user.
+  
+  Returns map with remaining, limit, and reset info for daily/monthly quotas.
+  """
+  @spec get_quota_status(User.t()) :: map()
+  def get_quota_status(user) do
+    user = maybe_reset_quota(user)
+    
+    %{
+      daily: %{
+        limit: user.quota_requests_daily,
+        used: user.usage_requests_today,
+        remaining: max(0, user.quota_requests_daily - user.usage_requests_today),
+        reset_at: next_midnight_utc()
+      },
+      monthly: %{
+        limit: user.quota_requests_monthly,
+        used: user.usage_requests_month,
+        remaining: max(0, user.quota_requests_monthly - user.usage_requests_month),
+        reset_at: next_month_utc()
+      },
+      tier: user.quota_tier
+    }
+  end
+  
+  # Check if quota needs reset, and reset if needed
+  defp maybe_reset_quota(user) do
+    today = Date.utc_today()
+    
+    user
+    |> maybe_reset_daily(today)
+    |> maybe_reset_monthly(today)
+  end
+  
+  defp maybe_reset_daily(user, today) do
+    if Date.compare(user.quota_reset_daily, today) == :lt do
+      user
+      |> Ecto.Changeset.change(%{
+        usage_requests_today: 0,
+        quota_reset_daily: today
+      })
+      |> Repo.update!()
+      |> tap(fn _ -> emit_telemetry(:reset, %{user_id: user.id, period: :daily}) end)
+    else
+      user
+    end
+  end
+  
+  defp maybe_reset_monthly(user, today) do
+    if today.day == 1 and Date.compare(user.quota_reset_monthly, today) == :lt do
+      user
+      |> Ecto.Changeset.change(%{
+        usage_requests_month: 0,
+        quota_reset_monthly: today
+      })
+      |> Repo.update!()
+      |> tap(fn _ -> emit_telemetry(:reset, %{user_id: user.id, period: :monthly}) end)
+    else
+      user
+    end
+  end
+  
+  defp next_midnight_utc do
+    DateTime.utc_now()
+    |> DateTime.to_date()
+    |> Date.add(1)
+    |> DateTime.new!(~T[00:00:00])
+  end
+  
+  defp next_month_utc do
+    now = DateTime.utc_now()
+    
+    if now.month == 12 do
+      DateTime.new!(Date.new!(now.year + 1, 1, 1), ~T[00:00:00])
+    else
+      DateTime.new!(Date.new!(now.year, now.month + 1, 1), ~T[00:00:00])
+    end
+  end
+  
+  defp emit_telemetry(event, metadata) do
+    :telemetry.execute(
+      [:pag_server, :quota, event],
+      %{count: 1},
+      metadata
+    )
+  end
+end
+```
+
+### Integration with Rate Limiter
+
+The rate limiter plug (T001) should check quotas **after** checking rate limits:
+
+```elixir
+def call(conn, config) do
+  conn
+  |> check_rate_limit(config)
+  |> check_quota()
+end
+```
+
+This ensures:
+1. Burst rate limits are enforced first (fast, cache-based)
+2. Long-term quotas are enforced second (slower, DB-based)
+3. Most requests are rejected by rate limiter (cheaper than DB queries)
+
+### Quota Tiers
+
+Store tier configuration in `config/config.exs`:
+
+```elixir
+config :pag_server, :quota_tiers, %{
+  "free" => %{daily: 1_000, monthly: 10_000},
+  "pro" => %{daily: 10_000, monthly: 100_000},
+  "enterprise" => %{daily: 100_000, monthly: 1_000_000},
+  "unlimited" => %{daily: 999_999_999, monthly: 999_999_999}
+}
+```
+
+When creating users or changing tiers, update `quota_requests_daily` and `quota_requests_monthly` from this config.
+
+### Testing Strategy
+
+Create `test/pag_server/auth/quota_test.exs`:
+- Test quota check allows requests within limit
+- Test quota check blocks requests over limit
+- Test quota consumption increments counters atomically
+- Test daily reset at midnight
+- Test monthly reset on 1st
+- Test concurrent requests don't exceed quota (race conditions)
+- Test different quota tiers
+- Test telemetry events
+- Test quota status reporting
+- Test admin functions (set tier, add quota)
+
+## References
+
+- **Quota patterns**: Similar to `lib/pag_server/llm/registry.ex` (context limits)
+- **Atomic updates**: Use `Repo.transaction` with `FOR UPDATE` lock
+- **Date handling**: Elixir `Date` and `DateTime` modules
+- **Schema**: Follow patterns in `lib/pag_server/schema/`
+
+## Dependencies
+
+- Requires user/API key schema (P3.M5.E1.T001)
+- Database migration depends on which auth strategy is chosen
+- Should be called after rate limiter (T001) but before authorization (P3.M5.E3)

@@ -1,0 +1,31 @@
+complexity: medium
+depends_on:
+- E2
+estimate_hours: 3
+id: P8.M3.E3
+name: Slash Commands
+stats:
+  blocked: 0
+  done: 2
+  in_progress: 0
+  pending: 0
+  total: 2
+status: done
+tasks:
+- complexity: medium
+  depends_on: []
+  estimate_hours: 1.0
+  file: T001-slash-command-parser.todo
+  id: T001
+  priority: high
+  status: done
+  title: Implement slash command parser
+- complexity: medium
+  depends_on:
+  - T001
+  estimate_hours: 2.0
+  file: T002-pag-commands.todo
+  id: T002
+  priority: high
+  status: done
+  title: Add commands (/pag ask, /pag fork, /pag stats)

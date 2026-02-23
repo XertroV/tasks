@@ -1,0 +1,44 @@
+# Epic: Embedding Client Integration
+# Phase 9, Milestone 1, Epic 3 (P9.M1.E3)
+
+id: P9.M1.E3
+name: Embedding Client Integration
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on: [P9.M1.E1]
+
+tasks:
+  - id: T001
+    file: T001-openai-embeddings.todo
+    title: Implement OpenAI embedding client
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-local-embeddings.todo
+    title: Add local model support
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: low
+    depends_on: []
+    
+  - id: T003
+    file: T003-batch-processing.todo
+    title: Implement batch embedding processing
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: low
+    depends_on: [T001, T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

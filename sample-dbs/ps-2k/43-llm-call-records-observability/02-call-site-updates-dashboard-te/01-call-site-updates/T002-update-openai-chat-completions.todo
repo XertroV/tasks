@@ -1,0 +1,34 @@
+---
+id: P43.M2.E1.T002
+title: Update openai_chat_completions_controller.ex to extract and pass x-pag-agent-id
+  / x-pag-session-id headers
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:56:56.677768+00:00'
+started_at: '2026-02-19T23:56:56.677768+00:00'
+completed_at: '2026-02-20T06:39:13.805209+00:00'
+duration_minutes: 402.28545713333335
+---
+
+# Update openai_chat_completions_controller.ex to extract and pass x-pag-agent-id / x-pag-session-id headers
+
+
+
+## Requirements
+
+- When an external client drives an LLM call through the OpenAI-compatible API, the resulting `llm_call_record` should carry the agent/session identity supplied by the caller via request headers, and a `caller_context` indicating the API entry point.
+
+## Acceptance Criteria
+
+- In `lib/pag_server_web/controllers/openai_chat_completions_controller.ex`, both `handle_completion/6` and `stream_completion/5` read the `"x-pag-agent-id"` request header from `conn`.
+- If `"x-pag-agent-id"` is present and non-empty, `:agent_id` is added to the opts keyword list passed to the LLM client; if absent, the key is omitted (or set to `nil` — `CallRecorder` handles either).
+- Both functions read the `"x-pag-session-id"` request header from `conn` and apply the same present/absent logic to `:session_id`.
+- Both functions add `:caller_context` with value `"openai_compat_api"` to the opts list unconditionally.
+- When both headers are provided, the resulting opts list contains `agent_id:`, `session_id:`, and `caller_context:` alongside any existing opts (model, temperature, etc.).
+- When neither header is provided, the function still adds `:caller_context` and the call succeeds without error.
+- All existing controller tests continue to pass; no new compiler warnings are introduced.

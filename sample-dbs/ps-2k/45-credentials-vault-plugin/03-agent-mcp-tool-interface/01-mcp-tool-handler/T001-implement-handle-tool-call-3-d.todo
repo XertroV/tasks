@@ -1,0 +1,17 @@
+---
+id: P45.M3.E1.T001
+title: Implement handle_tool_call/3 dispatcher with action enum
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P45.M2.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.187629+00:00'
+started_at: '2026-02-19T19:17:35.187629+00:00'
+completed_at: '2026-02-19T19:50:45.346525+00:00'
+duration_minutes: 33.16931475
+---
+In CredentialsVault (the plugin module), implement handle_tool_call("credentials_vault", args, context). Extract and validate the 'action' field against the enum. Route to private handler functions. Return structured error for unknown actions including the list of valid actions (recovery aid). Extract agent_id, workspace_id, user_id from context. Actions: store, fetch, list, delete, rotate, history, help.

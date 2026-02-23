@@ -1,0 +1,50 @@
+id: P44.M1
+name: Core Command Infrastructure
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Command Behaviour and Response Types
+  path: 01-command-behaviour-and-response
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Command Registry
+  path: 02-command-registry
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Command Parser
+  path: 03-command-parser
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Command Dispatcher
+  path: 04-command-dispatcher
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

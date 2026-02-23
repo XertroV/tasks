@@ -1,0 +1,41 @@
+---
+id: P18.M2.E2.T001
+title: Add workspace_id scope to Agents context queries
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- security
+- workspace
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:19:06.705212+00:00'
+started_at: '2026-02-17T18:19:06.705212+00:00'
+completed_at: '2026-02-17T18:29:15.428378+00:00'
+duration_minutes: 10.145385916666667
+---
+
+# Add workspace_id scope to Agents context queries
+
+## Description
+
+Extend the `PagServer.Agents` context to support workspace_id-based scoping in list and get operations.
+
+## Requirements
+
+- [ ] Add `{:workspace_id, ws_id}` clause to `apply_scope/2` in Agents context — adds `where(workspace_id: ^ws_id)`
+- [ ] Add `{:workspace_ids, ws_ids}` clause — adds `where(workspace_id in ^ws_ids)` for multi-workspace filtering
+- [ ] Ensure `list_agents/1` and `get_agent/2` correctly apply workspace scoping
+- [ ] Add `workspace_id:` option to `list_agents/1` as a convenience
+
+## Acceptance Criteria
+
+- [ ] `list_agents(scope: {:workspace_id, ws_id})` returns only agents in that workspace
+- [ ] `list_agents(scope: {:workspace_ids, [id1, id2]})` returns agents from both workspaces
+- [ ] Existing scope options (:all, {:project, p}, {:agent_id, id}) continue to work
+
+## Context
+
+**Files affected**: `lib/pag_server/agents.ex` (apply_scope function, ~line 62-71)

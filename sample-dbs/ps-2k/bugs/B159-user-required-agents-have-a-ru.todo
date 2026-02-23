@@ -1,0 +1,20 @@
+---
+id: B159
+title: 'USER_REQUIRED: agents have a run type which we might have called continuous/discrete
+  (used to be persistent/emphereal). had trouble naming them. maybe better to use
+  singleton to describe persistent agents. Anyway rethink the naming of that kind
+  of thing with ''singleton'' as new inspiration.'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T13:10:22.462455+00:00'
+started_at: '2026-02-19T13:10:22.462455+00:00'
+completed_at: '2026-02-19T13:38:58.469840+00:00'
+duration_minutes: 28.6001229
+---
+
+USER_REQUIRED: agents have a run type which we might have called continuous/discrete (used to be persistent/emphereal). had trouble naming them. maybe better to use singleton to describe persistent agents. Anyway rethink the naming of that kind of thing with 'singleton' as new inspiration.

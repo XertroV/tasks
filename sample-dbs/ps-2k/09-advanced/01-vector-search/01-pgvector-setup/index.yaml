@@ -1,0 +1,53 @@
+# Epic: pgvector Setup
+# Phase 9, Milestone 1, Epic 1 (P9.M1.E1)
+
+id: P9.M1.E1
+name: pgvector Setup
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-pgvector-extension.todo
+    title: Install pgvector extension
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-vector-schema.todo
+    title: Create vector storage schema
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-vector-queries.todo
+    title: Implement vector similarity queries
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: low
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-vector-indexing.todo
+    title: Configure HNSW indexing
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: low
+    depends_on: [T002]
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

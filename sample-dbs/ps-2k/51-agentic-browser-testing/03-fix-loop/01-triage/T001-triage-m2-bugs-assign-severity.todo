@@ -1,0 +1,38 @@
+---
+id: P51.M3.E1.T001
+title: 'Triage M2 bugs: assign severity & group by area'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:36:44.321246+00:00'
+started_at: '2026-02-20T18:36:44.321246+00:00'
+completed_at: '2026-02-20T18:37:31.833088+00:00'
+duration_minutes: 0.79186385
+---
+## Purpose
+After M2 testing campaigns are complete, review all filed bugs and prioritize.
+
+## Acceptance Criteria
+- [x] All bugs from M2 campaigns reviewed (run: backlog list --bugs)
+- [x] Each bug assigned severity: P0 (blocks core path), P1 (significant impairment), P2 (nice-to-fix), P3 (cosmetic)
+- [x] Bugs grouped by feature area (validation-console, sessions, auth, plugins, tools, providers)
+- [x] At least top 5 P0/P1 bugs identified for immediate fix sprint
+- [x] Triage summary written to docs/browser-testing/triage-report.md
+
+## Triage Criteria
+- **P0 (critical)**: Core path broken — can't send messages, auth fails, crashes
+- **P1 (high)**: Feature partially broken — some flows fail, data loss risk
+- **P2 (medium)**: Degraded UX — wrong rendering, stale data, missing feedback
+- **P3 (low)**: Cosmetic — styling, copy errors, minor layout issues
+
+## Notes
+Pre-alpha means many P2/P3 bugs are expected and OK to defer. Focus fix energy on P0/P1.
+
+## Execution Notes (2026-02-21)
+- Reviewed M2 campaign bug slice `B163`-`B170` and assigned severity bands.
+- Grouped bugs into validation-console, plugin-settings, openai-compat/providers, and credentials-vault areas.
+- Wrote triage summary and top P0/P1 shortlist in `docs/browser-testing/triage-report.md`.

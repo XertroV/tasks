@@ -1,0 +1,49 @@
+id: P46.M1.E1
+name: Dependencies & Pow Configuration
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-pow-pow-assent-assent-deps.todo
+  title: Add pow, pow_assent, assent deps to mix.exs
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-pagserverweb-powconfig.todo
+  title: Create PagServerWeb.PowConfig module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M1.E1.T001
+- id: T003
+  file: T003-add-oauth-provider-config-to-c.todo
+  title: Add OAuth provider config to config files
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P46.M1.E1.T001
+- id: T004
+  file: T004-add-pow-session-plugs-to-pagse.todo
+  title: Add Pow session plugs to PagServerWeb.Endpoint
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P46.M1.E1.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

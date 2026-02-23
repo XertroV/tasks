@@ -1,0 +1,26 @@
+epic_id: P3.M4.E1
+name: Endpoint
+description: OpenAI-compatible chat completions endpoint
+milestone: 04-openai-compat
+phase: 03-streaming-realtime
+
+estimated_hours: 4
+priority: high
+
+tasks:
+  - T001-chat-completions-endpoint.todo
+  - T002-model-mapping.todo
+  - T003-request-validation.todo
+
+dependencies:
+  - P3.M3
+
+acceptance_criteria:
+  - POST /v1/chat/completions works
+  - Model mapping configured
+  - Request validation
+
+deliverables:
+  - OpenAIController module
+  - Model mapper
+  - Validation logic

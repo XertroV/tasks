@@ -1,0 +1,27 @@
+---
+id: P44.M3.E1.T001
+title: Add command interception to Telegram MessageHandler
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.167101+00:00'
+started_at: '2026-02-19T19:33:54.167101+00:00'
+completed_at: '2026-02-19T19:34:01.325040+00:00'
+duration_minutes: 0.11929870000000001
+---
+## Summary
+Intercept slash commands in the Telegram message pipeline before dispatching to agent.
+
+## Acceptance Criteria
+- [ ] In MessageHandler.process_message/6, after computing clean_text, call Commands.Dispatcher.dispatch_text/2
+- [ ] If dispatch returns {:ok, response}: send response to chat (do NOT forward to agent)
+- [ ] If dispatch returns :not_a_command: continue normal agent dispatch path
+- [ ] If dispatch returns {:error, reason}: send friendly error to user (do NOT forward to agent)
+- [ ] Context map built from: chat_id (-> session lookup for agent_id/session_id), workspace_id, connector_instance_id, platform: :telegram, sender from message["from"]
+- [ ] Telegram /start command handled as a special case: sends welcome/onboarding message, not forwarded to agent
+- [ ] Existing dispatch_to_agent path unchanged for non-command messages
+- [ ] Tests: /model dispatched and response sent, /unknown passes through to agent, plain text passes through

@@ -1,0 +1,23 @@
+---
+id: B110
+title: "Whenever I send a message from the validation console to z.ai glm-4.7, I get\
+  \ check provider credentials error. Oh, I see now. Turns out telegrams errors are\
+  \ better than the validation console! (We should fix that, improve the vlaidaiton\
+  \ console to use the friendly error formatter thing). Anyway, the error from telegram:\
+  \ LLM request failed (provider=zai model=glm-4.7) (failed after 1 attempt):\n  1.\
+  \ [zai/glm-4.7] unknown_provider: :zai"
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:57:26.790831+00:00'
+started_at: '2026-02-17T15:57:26.790831+00:00'
+completed_at: '2026-02-17T17:56:14.983926+00:00'
+duration_minutes: 118.80321798333333
+---
+
+Whenever I send a message from the validation console to z.ai glm-4.7, I get check provider credentials error. Oh, I see now. Turns out telegrams errors are better than the validation console! (We should fix that, improve the vlaidaiton console to use the friendly error formatter thing). Anyway, the error from telegram: LLM request failed (provider=zai model=glm-4.7) (failed after 1 attempt):
+  1. [zai/glm-4.7] unknown_provider: :zai

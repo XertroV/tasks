@@ -1,0 +1,84 @@
+---
+id: P51.M2.E3.T004
+title: 'Level 6: End-to-end integration scenarios'
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:09:58.182731+00:00'
+started_at: '2026-02-20T18:09:58.182731+00:00'
+completed_at: '2026-02-20T18:26:30.071540+00:00'
+duration_minutes: 16.531479983333334
+---
+## Campaign: Multi-system integration flows
+
+The most complex test scenarios — span workspace setup, agent config, messaging integration, and tool execution across multiple subsystems.
+
+## Acceptance Criteria
+- [x] At least 2 full E2E scenarios completed
+- [x] Each scenario documented as a Playwright scenario stub
+- [x] Bugs filed for each failure point with cross-system context
+- [x] Integration gaps between subsystems explicitly noted
+
+## Scenarios (pick the most testable given current state)
+
+### Scenario A: Workspace bootstrap → agent → Telegram bot → message round-trip
+1. Create a fresh workspace via API or UI
+2. Bootstrap it (POST /api/v1/workspaces/bootstrap or wizard)
+3. Create an agent in that workspace
+4. Configure a Telegram bot (POST /api/v1/workspaces/:id/bots with platform: telegram)
+5. Simulate an inbound webhook (POST /webhooks/telegram) with a test message
+6. Verify the message reaches the agent (check events or session messages)
+7. Verify agent response would be routed back (check outbound connector_messaging)
+
+### Scenario B: Multi-provider LLM failover
+1. Configure two LLM providers (provider A as primary, B as fallback)
+2. POST /api/v1/llm/providers/:id/disable — disable primary provider
+3. Send a message via validation console
+4. Verify the fallback provider is used (check LLM calls dashboard for provider B)
+5. Re-enable primary: POST /api/v1/llm/providers/:id/enable
+6. Verify subsequent calls use primary again
+
+### Scenario C: Session fork + compaction + event replay
+1. Create a session and send 20+ messages
+2. Fork the session at message 10
+3. In the fork: trigger context compaction
+4. Verify fork has compacted context
+5. Navigate to /dashboard/events — verify fork event appears
+6. Navigate to /dashboard/sessions/:id/timeline — verify compaction event on timeline
+7. Compare event counts between original and fork
+
+### Scenario D: Plugin install → workspace config → agent tool use
+1. Enable a plugin for a workspace (PUT /api/v1/workspaces/:id/plugins/:plugin_id)
+2. Configure plugin via PATCH /api/v1/workspaces/:id/plugins/:plugin_id/config
+3. Create/use an agent in that workspace
+4. Verify the plugin's tools appear in the agent's tool list (GET /api/v1/tools)
+5. Send a message that triggers the plugin tool
+6. Verify the tool call appears in the approval queue (if approval required)
+
+## Notes
+These scenarios will likely surface cross-subsystem bugs that unit tests miss. Document all failure points even if you can't fix them — the integration gaps are as valuable as the bug reports.
+
+## Execution Notes (2026-02-21)
+- Completed Scenario C end-to-end: created workflow-backed session, forked session, verified `session_forked` event in Event Browser and Session Timeline.
+- Executed Scenario B failover flow with admin API key: disabled and re-enabled Groq provider, then validated chat requests before/after toggle.
+- Scenario B revealed routing mismatch: OpenAI-compat request for `openai/gpt-oss-120b` routed to Anthropic in both states; filed `B170`.
+- Cross-system blockers from adjacent coverage remained active and were linked: `B166`, `B167`, `B168`, `B169`.
+- Integration gaps noted: `/v1/models` route absent in this branch, approvals dashboard route not present (API exists), and provider credentials absent in local env for success-path LLM responses.
+
+## Playwright Scenario Stubs
+### Stub 1: Scenario C session fork and event replay
+1. Go to `/dashboard/validation-console` and launch workflow `Fork Debug Starter`.
+2. Trigger `Fork` from run controls and capture new session id.
+3. Open `/dashboard/events` and assert `session_forked` event contains parent and fork ids.
+4. Open `/dashboard/sessions/:fork_id/timeline` and assert `session_forked` entry exists.
+
+### Stub 2: Scenario B provider failover toggle
+1. Create API key with `admin:* llm:read llm:write` scopes from `/dashboard/api-keys`.
+2. Call `POST /api/v1/llm/providers/:id/disable` for Groq.
+3. Call `POST /v1/chat/completions` with model `openai/gpt-oss-120b` and capture provider in error payload.
+4. Re-enable Groq via `POST /api/v1/llm/providers/:id/enable` and repeat request.
+5. Assert provider selection changes as expected (or file bug if it does not).

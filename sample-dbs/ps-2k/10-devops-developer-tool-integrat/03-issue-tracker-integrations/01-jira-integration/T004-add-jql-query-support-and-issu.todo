@@ -1,0 +1,123 @@
+---
+id: P10.M3.E1.T004
+title: Add JQL query support and issue search
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T02:33:32.513150+00:00'
+started_at: '2026-02-12T02:33:32.513150+00:00'
+completed_at: '2026-02-12T02:59:10.167354+00:00'
+duration_minutes: 25.62756985
+---
+
+# Add JQL query support and issue search
+
+Implement Jira Query Language (JQL) support for flexible issue searching and filtering.
+
+## Requirements
+
+### JQL Query Builder
+- [ ] Create `lib/pag_server/integrations/jira/search.ex` module
+- [ ] Build JQL query strings with proper escaping and validation
+- [ ] Support filter operators: AND, OR, NOT, IN, =, !=, <, >, <=, >=, CONTAINS, ~
+- [ ] Quote string values containing special characters or spaces
+- [ ] Validate JQL before sending (basic syntax check)
+- [ ] Provide helper functions for common filters: by_project, by_assignee, by_status, by_type, by_label
+
+### Search Execution
+- [ ] Execute JQL via GET /rest/api/3/search?jql=<query>&startAt=0&maxResults=50
+- [ ] Support pagination with startAt (offset) and maxResults (page size, max 100)
+- [ ] Return total count, issues, and pagination metadata
+- [ ] Expand issue fields: summary, description, status, assignee, priority, created, updated
+- [ ] Support custom field expansion via configuration
+- [ ] Handle empty result sets gracefully
+
+### Sorting
+- [ ] Support sort orders: by key (issue key), created, updated, priority, assignee, reporter
+- [ ] Implement ASC/DESC ordering
+- [ ] Provide chainable sort methods
+
+### Error Handling
+- [ ] Detect invalid JQL syntax from 400 Bad Request response
+- [ ] Extract error message from Jira API response
+- [ ] Provide helpful error messages (e.g., unknown field, invalid operator)
+- [ ] Handle rate limiting (429)
+
+## Acceptance Criteria
+
+- [ ] JQL queries execute and return paginated results with correct total count
+- [ ] Multi-criteria filters work correctly (e.g., project=ABC AND assignee=X AND status=Open)
+- [ ] Pagination: startAt=50 maxResults=25 correctly returns 2nd page of 25 items
+- [ ] Large result sets (>1000 issues) paginate correctly without timeout
+- [ ] Special characters in strings are escaped (quotes, backslashes, newlines)
+- [ ] Invalid JQL syntax returns clear error messages
+- [ ] Queries complete within 2s for typical filters (single project, 2-3 criteria)
+- [ ] Helper functions reduce boilerplate for common searches
+- [ ] Unit tests cover JQL building, escaping, pagination, error cases
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**JQL Examples**:
+```
+project = PROJ AND status = "In Progress"
+assignee = john@example.com OR assignee = jane@example.com
+type IN (Bug, Enhancement) AND priority >= High
+summary ~ "database" AND created >= -7d
+```
+
+**Helper API** (example):
+```elixir
+Search.new()
+  |> Search.by_project("PROJ")
+  |> Search.by_assignee("john@example.com")
+  |> Search.by_status("In Progress")
+  |> Search.paginate(1, 50)
+  |> Search.sort_by(:updated, :desc)
+  |> Search.execute(client)
+```
+
+**API Endpoint**:
+- GET /rest/api/3/search?jql={jql}&startAt={offset}&maxResults={limit}
+
+**Response Fields**:
+```json
+{
+  "total": 150,
+  "startAt": 0,
+  "maxResults": 50,
+  "issues": [
+    {"key": "PROJ-1", "fields": {...}}
+  ]
+}
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/jira/search_test.exs
+
+# Performance tests
+mix test test/pag_server/integrations/jira/search_test.exs --include perf
+
+# Integration with Jira sandbox
+JIRA_SEARCH_PROJECT=TEST mix test test/pag_server/integrations/jira/search_test.exs --include integration
+```
+
+## Verification
+
+```bash
+# Verify JQL escaping
+mix test test/pag_server/integrations/jira/search_test.exs -k "escape"
+
+# Test pagination
+mix test test/pag_server/integrations/jira/search_test.exs -k "pagina"
+
+# Check file size
+wc -l lib/pag_server/integrations/jira/search.ex
+```

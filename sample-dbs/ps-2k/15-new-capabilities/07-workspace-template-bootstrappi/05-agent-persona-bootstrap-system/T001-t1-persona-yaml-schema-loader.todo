@@ -1,0 +1,37 @@
+---
+id: P15.M7.E5.T001
+title: 'T1: Persona YAML Schema & Loader'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T08:52:43.580220+00:00'
+started_at: '2026-02-18T08:52:43.580220+00:00'
+completed_at: '2026-02-18T09:02:07.751373+00:00'
+duration_minutes: 9.402852366666668
+---
+Define schema for persona configuration, create loader module to parse YAML files, add validation. Files: lib/pag_server/personas/persona.ex, lib/pag_server/personas/loader.ex
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M7.E5)
+**Agent**: cli-user
+**Date**: 2026-02-18 08:52 UTC
+**Sibling tasks**: P15.M7.E5.T002, P15.M7.E5.T003, P15.M7.E5.T004, P15.M7.E5.T005, P15.M7.E5.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M7.E5.T001 → P15.M7.E5.T002 → P15.M7.E5.T003 → P15.M7.E5.T004 → P15.M7.E5.T005 → P15.M7.E5.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M7.E5.T001: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T001-t1-persona-yaml-schema-loader.todo
+- P15.M7.E5.T002: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T002-t2-persona-catalog-structure.todo
+- P15.M7.E5.T003: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T003-t3-base-workspace-template.todo
+- P15.M7.E5.T004: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T004-t4-dynamic-template-generator.todo
+- P15.M7.E5.T005: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T005-t5-create-tech-lead-persona.todo
+- P15.M7.E5.T006: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T006-t6-create-executive-assistant.todo

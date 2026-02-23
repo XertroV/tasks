@@ -1,0 +1,42 @@
+---
+id: P10.M4.E3.T003
+title: Implement Drone pipeline operations
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P10.M4.E3.T001
+- P10.M4.E3.T002
+tags:
+- drone
+- pipeline-ops
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:55:46.196805+00:00'
+started_at: '2026-02-12T04:55:46.196805+00:00'
+completed_at: '2026-02-12T05:07:33.862487+00:00'
+duration_minutes: 11.79442785
+---
+
+# Implement Drone pipeline operations
+
+Integrate Drone pipelines into agent workflow by implementing triggers and status monitoring.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/drone/orchestrator.ex` module
+- [ ] Implement pipeline trigger function with parameters
+- [ ] Implement status polling function
+- [ ] Integrate with agent state updates via Events module
+- [ ] Implement Oban job for background monitoring
+- [ ] Add telemetry tracking
+
+## Acceptance Criteria
+
+- [ ] Trigger function successfully initiates pipeline
+- [ ] Status polling reads build state from API
+- [ ] Polling job runs on configurable interval
+- [ ] Status updates persisted via Events system
+- [ ] Agent receives notifications on completion
+- [ ] `mix test` passes for all integration tests
+- [ ] `mix lint` passes without warnings

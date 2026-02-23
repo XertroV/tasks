@@ -1,0 +1,66 @@
+id: P47
+name: Device Authorization Grant (RFC 8628)
+status: done
+locked: true
+weeks: 2
+estimate_hours: 24.0
+complexity: medium
+depends_on:
+- P46.M3
+milestones:
+- id: M1
+  name: OAuth Client Registry & companion:full Scope
+  path: 01-oauth-client-registry-companio
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: Create oauth_clients DB table, seed pag-connect client, mix pag.register_client
+    task, update companion:full scope in ApiKey, update CompanionSocket to use user-scoped
+    auth.
+  locked: false
+- id: M2
+  name: Device Code State Machine & Polling Endpoints
+  path: 02-device-code-state-machine-poll
+  status: done
+  estimate_hours: 8.0
+  complexity: high
+  depends_on:
+  - P47.M1
+  description: "DeviceCode Ecto schema + migration (device_codes table), device code\
+    \ generation logic, POST /oauth/device/code endpoint, POST /oauth/device/token\
+    \ polling endpoint with full RFC 8628 \xA73.5 error semantics, rate limiting on\
+    \ polling."
+  locked: false
+- id: M3
+  name: Approval LiveView & Cleanup Worker
+  path: 03-approval-liveview-cleanup-work
+  status: done
+  estimate_hours: 7.0
+  complexity: high
+  depends_on:
+  - P47.M2
+  - P46.M3
+  description: LiveView approval page (/device) showing scope summary + Approve/Deny,
+    POST /device/approve action, Oban DeviceCodeCleanup worker (hourly, 24h retention),
+    CSRF protection, phishing-resistant UX (display user_code prominently).
+  locked: false
+- id: M4
+  name: RFC 8414 Discovery & Integration Tests
+  path: 04-rfc-8414-discovery-integration
+  status: done
+  estimate_hours: 4.0
+  complexity: low
+  depends_on:
+  - P47.M3
+  description: GET /.well-known/oauth-authorization-server discovery endpoint (RFC
+    8414), full integration test suite covering the complete device flow, edge cases
+    (slow_down, expired_token, brute-force protection), and mix test.companions alias
+    update.
+  locked: false
+stats:
+  total_tasks: 17
+  done: 17
+  in_progress: 0
+  blocked: 0
+  pending: 0

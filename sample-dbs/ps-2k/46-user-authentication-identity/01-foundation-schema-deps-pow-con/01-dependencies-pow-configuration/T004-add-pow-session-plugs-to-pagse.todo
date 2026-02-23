@@ -1,0 +1,20 @@
+---
+id: P46.M1.E1.T004
+title: Add Pow session plugs to PagServerWeb.Endpoint
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P46.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:33:57.801272+00:00'
+started_at: '2026-02-19T20:33:57.801272+00:00'
+completed_at: '2026-02-19T20:41:14.876775+00:00'
+duration_minutes: 7.2845915
+---
+Add Pow.Plug.Session plug to PagServerWeb.Endpoint after Plug.Session.
+Ensure ordering: Plug.Session → Pow.Plug.Session.
+The Pow session plug needs to come before the router.
+Acceptance: Application compiles and starts; Pow session state is available in conn.assigns.current_user.

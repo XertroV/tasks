@@ -1,0 +1,33 @@
+---
+id: P15.M11.E3.T001
+title: Implement pair_approve tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.217156+00:00'
+started_at: '2026-02-17T18:46:51.217156+00:00'
+completed_at: '2026-02-17T19:21:50.549457+00:00'
+duration_minutes: 34.98887151666667
+---
+## Description
+Both coder and observer use this tool to signal satisfaction during review phase. When both approve, the coordinator is notified to finalize the session.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/tools/pair_approve.ex`
+
+## Acceptance Criteria
+- [ ] Implements `@behaviour PagServer.Tools.Tool` with name/0, schema/0, execute/2
+- [ ] Writes approval status to Blackboard at `pair:<session_id>:approval:<role>`
+- [ ] Checks if both agents approved; if so, sends `PAIR_SESSION_BOTH_APPROVED` to coordinator
+- [ ] Supports revoking approval with `approved: false`
+- [ ] Loads pair config from Blackboard (Gotcha #1 — no metadata in tool context)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+- Tool context has NO metadata field — must load pair config from Blackboard via `pair:agent:<agent_id>:session_config` key
+- See plan: .plan/pair-programming-agents.md, Epic 2, Task 2.1 for full code

@@ -1,0 +1,54 @@
+---
+id: P12.M1.E1.T001
+title: Fix get_pricing/1 mock in message_injector_test.exs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T18:51:19.532149+00:00'
+started_at: '2026-02-13T18:51:19.532149+00:00'
+completed_at: '2026-02-13T18:51:44.325735+00:00'
+duration_minutes: 0.41322613333333336
+---
+
+# Fix get_pricing/1 mock in message_injector_test.exs
+
+## Description
+
+Fix the Mox expectation failure for `get_pricing/1` in the message_injector_test.exs file. The mock is not properly set up to handle all code paths, causing intermittent test failures.
+
+## Acceptance Criteria
+
+- [ ] Identify the specific `get_pricing/1` call that's missing a mock expectation
+- [ ] Add proper Mox expectation for `get_pricing/1` in affected test(s)
+- [ ] All tests in message_injector_test.exs pass consistently
+- [ ] Tests pass (`mix test test/pag_server/agents/message_injector_test.exs`)
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/agents/message_injector_test.exs`
+- Mock modules: Check for `PagServer.Pricing` or similar mock definitions
+- Part of epic: Fix Mock Expectation Failures
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 06:34 UTC
+**Sibling tasks**: P12.M1.E1.T002, P12.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M1.E1.T001 → P12.M1.E1.T002 → P12.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M1.E1.T001: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/01-fix-mock-expectation-failures/T001-fix-get-pricing-1-mock-in-mess.todo
+- P12.M1.E1.T002: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/01-fix-mock-expectation-failures/T002-audit-all-mox-expectations-for.todo
+- P12.M1.E1.T003: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/01-fix-mock-expectation-failures/T003-add-mock-verification-helpers.todo

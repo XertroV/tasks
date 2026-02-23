@@ -1,0 +1,93 @@
+---
+id: P8.M2.E1.T002
+title: Configure bot webhook/polling
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P8.M2.E1.T001
+tags:
+- integrations
+- telegram
+- configuration
+- webhook
+claimed_by: cli-user
+claimed_at: '2026-02-08T11:19:46.606649+00:00'
+started_at: '2026-02-08T11:19:46.606649+00:00'
+completed_at: '2026-02-08T15:22:00.000000+00:00'
+---
+
+# Configure bot webhook/polling
+
+Set up Telegram bot update handling with support for both polling (dev) and webhook (prod) modes.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/telegram.ex` module (~100 LoC)
+- [ ] Implement `use Telegex.Polling` for polling mode
+- [ ] Implement `on_update/1` callback to handle incoming updates
+- [ ] Add supervisor child spec to main application supervisor
+- [ ] Create webhook endpoint in Phoenix router (for production)
+- [ ] Add runtime configuration for mode switching
+- [ ] Implement graceful shutdown handling
+
+## Acceptance Criteria
+
+- [ ] Bot receives updates in polling mode
+- [ ] `on_update/1` callback dispatches to appropriate handlers
+- [ ] Module starts under supervision tree
+- [ ] Webhook endpoint responds with 200 OK
+- [ ] Configuration supports environment-based mode switching
+- [ ] Bot stops cleanly on application shutdown
+- [ ] Logs include update type and chat ID for debugging
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 185-216 (Telegram architecture)
+
+**Key Points**:
+- Polling mode for local development (simpler, no HTTPS needed)
+- Webhook mode for production (more efficient, instant updates)
+- Updates include messages, callbacks, inline queries, file uploads
+
+## Notes
+
+Module structure:
+```elixir
+defmodule PAGServer.Integrations.Telegram do
+  use Telegex.Polling  # or Telegex.Hook
+
+  require Logger
+
+  @impl true
+  def on_update(update) do
+    Logger.debug("Telegram update: #{inspect(update)}")
+    
+    case update do
+      %{message: msg} -> 
+        PAGServer.Integrations.Telegram.MessageHandler.handle(msg)
+      
+      %{callback_query: query} -> 
+        PAGServer.Integrations.Telegram.CallbackHandler.handle(query)
+      
+      _ -> 
+        :ok
+    end
+  end
+end
+```
+
+Webhook endpoint in router:
+```elixir
+post "/integrations/telegram/webhook", TelegramController, :webhook
+```
+
+Configuration:
+```elixir
+config :pag_server, PAGServer.Integrations.Telegram,
+  bot_token: System.get_env("TELEGRAM_BOT_TOKEN"),
+  mode: System.get_env("TELEGRAM_MODE", "polling"),  # polling | webhook
+  webhook_url: System.get_env("TELEGRAM_WEBHOOK_URL")
+```

@@ -1,0 +1,35 @@
+---
+id: P15.M10.E2.T004
+title: Add provider capability detection and default priority ordering
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M10.E2.T001
+- P15.M10.E2.T002
+- P15.M10.E2.T003
+tags:
+- tools
+- web-search
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:20:47.954040+00:00'
+started_at: '2026-02-17T15:20:47.954040+00:00'
+completed_at: '2026-02-17T15:22:05.913694+00:00'
+duration_minutes: 1.2993273833333334
+---
+
+# Add provider capability detection and default priority ordering
+
+
+
+## Requirements
+
+- Implement runtime capability detection for configured providers (credentials, endpoint presence, and feature flags).
+- Define default provider priority and fallback ordering when multiple providers are enabled.
+
+## Acceptance Criteria
+
+- Enabled provider list is derived from config/env at runtime and exposed to orchestrator.
+- Priority/fallback ordering is documented and validated by configuration-focused tests.

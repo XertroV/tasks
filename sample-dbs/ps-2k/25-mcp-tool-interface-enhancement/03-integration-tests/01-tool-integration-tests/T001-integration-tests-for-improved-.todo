@@ -1,0 +1,43 @@
+---
+id: P25.M3.E1.T001
+title: Integration tests for improved MCP tool interfaces
+status: done
+estimate_hours: 8.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- mcp
+- tools
+- tests
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:45:06.561783+00:00'
+started_at: '2026-02-18T18:45:06.561783+00:00'
+completed_at: '2026-02-18T18:50:50.465673+00:00'
+duration_minutes: 5.731731333333333
+---
+
+# Integration tests for improved MCP tool interfaces
+
+Write integration tests that exercise the improved MCP tool interfaces end-to-end,
+covering all tool types updated in P25.M2.
+
+## Requirements
+
+- Test each improved tool via the MCP protocol (not just unit tests)
+- Cover: bash/execute with workdir and timeout, read with offset/limit,
+  write, edit with old_string/new_string, glob, list, spawn_subagent with size
+- Test error cases: edit with missing old_string, glob with no matches,
+  bash with timeout exceeded, spawn_subagent with both model and size set
+- Tests should run in under 20s (use mocks for slow operations)
+- Follow existing test patterns (async: true, unique names, on_exit cleanup)
+
+## Acceptance Criteria
+
+- [ ] Integration test module created for MCP tool interfaces
+- [ ] All five file tools tested: read (with pagination), write, edit, glob, list
+- [ ] bash/execute_shell tested with workdir, timeout, description params
+- [ ] spawn_subagent tested with size and model params (including mutual-exclusion)
+- [ ] Error cases covered for each tool
+- [ ] All tests pass with `mix test`
+- [ ] Test suite completes in under 20s

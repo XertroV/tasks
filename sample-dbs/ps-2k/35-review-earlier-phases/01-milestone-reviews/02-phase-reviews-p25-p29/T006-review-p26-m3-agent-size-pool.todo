@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T006
+title: 'Review P26.M3: Agent Size Pool Tests'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:49:03.631337+00:00'
+started_at: '2026-02-19T01:49:03.631337+00:00'
+completed_at: '2026-02-19T01:59:42.774343+00:00'
+duration_minutes: 10.652383233333333
+---
+Load the review-and-fix skill. Review all epics and tasks under P26.M3 (Agent Size Pool - Tests). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Verify that tests cover size-based model selection logic, fallback behaviour, and API validation.

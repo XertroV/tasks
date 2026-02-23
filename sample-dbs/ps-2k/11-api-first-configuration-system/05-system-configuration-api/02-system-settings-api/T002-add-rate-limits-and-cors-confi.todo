@@ -1,0 +1,53 @@
+---
+id: P11.M5.E2.T002
+title: Add rate limits and CORS configuration
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- P11.M5.E2.T001
+tags:
+- security
+- rate-limiting
+- cors
+- middleware
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:26:59.865718+00:00'
+started_at: '2026-02-12T23:26:59.865718+00:00'
+completed_at: '2026-02-12T23:49:59.008816+00:00'
+duration_minutes: 22.985717949999998
+---
+
+# Add rate limits and CORS configuration
+
+## Requirements
+
+- [ ] Create database schema or config store for rate limit rules per endpoint
+- [ ] Create `PagServer.Middleware.RateLimiter` middleware using Hammer or similar
+- [ ] Support rate limiting by: API key, IP address, user ID, endpoint
+- [ ] Support multiple rate limit windows: per-second, per-minute, per-hour, per-day
+- [ ] Implement CORS middleware with configurable allowed origins, methods, headers
+- [ ] Add API endpoints for rate limit rules: GET, POST, PUT, DELETE `/api/v1/admin/rate-limits/*`
+- [ ] Support burst allowance for rate limits (e.g., 10 requests per second with 20-request burst)
+- [ ] Return rate limit headers in responses: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset
+- [ ] Return 429 (Too Many Requests) with retry-after header when limit exceeded
+- [ ] Log rate limit violations for security monitoring
+
+## Acceptance Criteria
+
+- [ ] Rate limiter tracks requests accurately per API key/IP
+- [ ] Rate limiter supports multiple granularity levels (second, minute, hour, day)
+- [ ] CORS middleware accepts configurable origin whitelist
+- [ ] CORS middleware adds proper headers: Access-Control-Allow-Origin, Access-Control-Allow-Methods, Access-Control-Allow-Headers
+- [ ] CORS middleware handles preflight OPTIONS requests correctly
+- [ ] GET /admin/rate-limits lists all active rules
+- [ ] POST /admin/rate-limits creates new rule with validation (endpoint, limit, window)
+- [ ] PUT /admin/rate-limits/:id updates rule (only admins)
+- [ ] DELETE /admin/rate-limits/:id removes rule (only admins)
+- [ ] Rate limit rules support dynamic enable/disable without removing
+- [ ] Rate limit headers present in all non-error responses
+- [ ] 429 response includes Retry-After header with seconds to wait
+- [ ] Rate limit violations logged with key, endpoint, timestamp
+- [ ] Tests verify rate limit enforcement, CORS headers, 429 responses, rule management
+- [ ] `mix lint` passes without warnings

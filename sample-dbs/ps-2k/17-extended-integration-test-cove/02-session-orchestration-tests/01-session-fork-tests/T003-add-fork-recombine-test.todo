@@ -1,0 +1,40 @@
+---
+id: P17.M2.E1.T003
+title: Add fork recombine test
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- integration
+- session
+- fork
+- recombine
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:16:51.904861+00:00'
+started_at: '2026-02-14T05:16:51.904861+00:00'
+completed_at: '2026-02-14T05:21:09.885462+00:00'
+duration_minutes: 4.299676483333333
+---
+
+# Add fork recombine test
+
+Add integration test for the fork-recombine workflow: fork session, dispatch
+parallel queries, collect responses, and aggregate results.
+
+## Requirements
+
+- Add test to existing `test/integration/sessions/fork_isolation_test.exs`
+- Test the complete fork → dispatch → collect → recombine workflow
+- Simulate recombining multiple fork responses into a summary
+- Use Groq (free tier) for real LLM calls
+
+## Acceptance Criteria
+
+- [ ] Test creates parent session with context
+- [ ] Test forks for multiple parallel queries
+- [ ] Test simulates collecting responses from each fork
+- [ ] Test verifies aggregation structure
+- [ ] Test uses `@moduletag :integration` for filtering
+- [ ] Test skips gracefully if no API keys available

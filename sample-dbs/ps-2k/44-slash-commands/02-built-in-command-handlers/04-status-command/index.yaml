@@ -1,0 +1,22 @@
+id: P44.M2.E4
+name: Status Command
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-status-command-handl.todo
+  title: Implement /status command handler
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

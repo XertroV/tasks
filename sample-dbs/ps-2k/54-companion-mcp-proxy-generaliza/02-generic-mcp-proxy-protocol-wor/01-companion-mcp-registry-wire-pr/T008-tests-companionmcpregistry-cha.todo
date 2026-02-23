@@ -1,0 +1,31 @@
+---
+id: P54.M2.E1.T008
+title: 'Tests: CompanionMCPRegistry, channel MCP events, proxy, workspace scoping'
+status: done
+estimate_hours: 5.0
+complexity: high
+priority: high
+depends_on:
+- P54.M2.E1.T003
+- P54.M2.E1.T004
+- P54.M2.E1.T005
+- P54.M2.E1.T006
+- P54.M2.E1.T007
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:56:43.828438+00:00'
+started_at: '2026-02-21T10:56:43.828438+00:00'
+completed_at: '2026-02-21T11:02:07.559585+00:00'
+duration_minutes: 5.395518933333333
+---
+## Context
+Comprehensive tests for all M2 infrastructure. Covers the happy path and key failure paths for the generic MCP proxy protocol end-to-end.
+
+## Acceptance Criteria
+- [ ] companion_mcp_registry_test.exs: register/lookup round-trip, list_tool_schemas, unregister_workspace, process monitor auto-cleanup, multiple servers same workspace, multiple workspaces isolated, re-register same server (reconnect)
+- [ ] companion_channel_test.exs (extend): mcp_register valid -> CompanionMCPRegistry populated; mcp_register malformed -> {:error,...}; mcp_tool_result resolves pending; mcp_tool_error rejects pending; unknown call_id -> error; send_mcp_tool_call handle_info -> companion receives mcp_tool_call push; terminate cleans up mcp_registry and mcp_pending_call_ids
+- [ ] companion_mcp_proxy_test.exs: success, error response, timeout, channel crash, invalid tool name (no dot), not connected
+- [ ] pending_calls_test.exs (extend): resolve_mcp, reject_mcp, unknown call_id, MCP and plain tables are isolated (no cross-resolution)
+- [ ] Workspace scoping test: tool from ws-A not visible in list_available_tool_schemas for ws-B; routing: browsermcp.navigate in ws-A context routes to CompanionMCPProxy; same tool in ws-B (no companion) falls through to ToolExecutor
+- [ ] `mix test.companions` passes, output tee'd to recent-mix-tests.log
+- [ ] `mix lint` passes

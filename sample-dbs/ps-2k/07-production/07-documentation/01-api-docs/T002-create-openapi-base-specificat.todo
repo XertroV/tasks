@@ -1,0 +1,145 @@
+---
+id: P7.M7.E1.T002
+title: Create OpenAPI base specification module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P7.M7.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:48:38.501539+00:00'
+started_at: '2026-02-06T21:48:38.501539+00:00'
+completed_at: '2026-02-06T22:11:00.423384+00:00'
+tags:
+- documentation
+- openapi
+- spec
+duration_minutes: 22.365363816666665
+---
+
+# Create OpenAPI base specification module
+
+Create the central OpenAPI specification module that defines API metadata, security schemes, and common schemas.
+
+## Requirements
+
+- [ ] Create `PagServerWeb.ApiSpec` module
+  - [ ] Implement `OpenApiSpex.OpenApi` behaviour
+  - [ ] Define `spec/0` function returning complete spec
+
+- [ ] Define API info section
+  - [ ] Title: "PAG Server API"
+  - [ ] Version: dynamically from mix.exs
+  - [ ] Description: API overview with key features
+  - [ ] Contact information
+  - [ ] License (MIT)
+
+- [ ] Define server URLs
+  - [ ] Development: `http://localhost:4000`
+  - [ ] Production: configurable via env
+
+- [ ] Define security schemes
+  - [ ] `api_key`: API key authentication (X-API-Key header)
+  - [ ] `bearer_auth`: Bearer token authentication
+
+- [ ] Define common response schemas
+  - [ ] `ErrorResponse`: Standard error format
+  - [ ] `PaginatedResponse`: Pagination wrapper
+  - [ ] `SuccessResponse`: Generic success envelope
+
+- [ ] Configure JSON encoder for specs
+
+## Acceptance Criteria
+
+- [ ] `PagServerWeb.ApiSpec.spec()` returns valid OpenAPI 3.0 spec
+- [ ] Spec includes info, servers, components/securitySchemes
+- [ ] Common schemas are defined and reusable
+- [ ] Spec can be serialized to JSON without errors
+- [ ] Module has comprehensive @moduledoc
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on T001 (open_api_spex dependency)
+
+## Implementation Guide
+
+### Module Structure
+
+```elixir
+defmodule PagServerWeb.ApiSpec do
+  @moduledoc """
+  OpenAPI 3.0 specification for PAG Server API.
+  
+  This module provides the base specification including API info,
+  security schemes, and common response schemas.
+  """
+  
+  alias OpenApiSpex.{Info, OpenApi, Server, SecurityScheme, Components}
+  
+  @behaviour OpenApi
+  
+  @impl OpenApi
+  def spec do
+    %OpenApi{
+      info: %Info{
+        title: "PAG Server API",
+        version: Application.spec(:pag_server, :vsn) |> to_string(),
+        description: """
+        Phoenix Agent Gateway Server - Local-first LLM agent orchestration backend.
+        
+        ## Features
+        - Agent lifecycle management
+        - Session handling with forking support
+        - Real-time streaming via WebSocket
+        - OpenAI-compatible endpoint
+        - Multi-provider LLM support
+        """
+      },
+      servers: [
+        %Server{url: "http://localhost:4000", description: "Development"},
+        %Server{url: "{baseUrl}", description: "Production"}
+      ],
+      components: %Components{
+        securitySchemes: %{
+          "api_key" => %SecurityScheme{type: "apiKey", in: "header", name: "X-API-Key"},
+          "bearer_auth" => %SecurityScheme{type: "http", scheme: "bearer"}
+        }
+      },
+      paths: %{}
+    }
+    |> OpenApiSpex.resolve_schema_modules()
+  end
+end
+```
+
+### Common Schemas
+
+```elixir
+defmodule PagServerWeb.Schemas.Common do
+  alias OpenApiSpex.Schema
+  
+  defmodule ErrorResponse do
+    require OpenApiSpex
+    
+    OpenApiSpex.schema(%{
+      title: "ErrorResponse",
+      type: :object,
+      properties: %{
+        error: %Schema{type: :object, properties: %{
+          code: %Schema{type: :string},
+          message: %Schema{type: :string}
+        }}
+      },
+      required: [:error]
+    })
+  end
+end
+```
+
+## Notes
+
+- This module serves as the single source of truth for API metadata
+- All controller schemas will reference this module's components

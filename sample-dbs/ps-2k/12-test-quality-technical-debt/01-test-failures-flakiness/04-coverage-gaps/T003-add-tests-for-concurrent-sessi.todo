@@ -1,0 +1,29 @@
+---
+id: P12.M1.E4.T003
+title: Add tests for concurrent session access race conditions
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:00:17.804785+00:00'
+started_at: '2026-02-13T10:00:17.804785+00:00'
+completed_at: '2026-02-13T10:17:02.525187+00:00'
+duration_minutes: 16.745339866666665
+---
+
+# Add tests for concurrent session access race conditions
+
+## Description
+Add tests to verify session module handles concurrent access correctly, preventing race conditions when multiple processes access or modify the same session.
+
+## Acceptance Criteria
+- [ ] Tests cover concurrent session access scenarios
+- [ ] Tests verify no race conditions occur under concurrent load
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/sessions/session_test.exs`, `test/pag_server/cluster/session_handoff_test.exs`

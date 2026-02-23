@@ -1,0 +1,50 @@
+id: P39.M2.E1
+name: In-Memory State Management
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-pendingcalls-ets-mod.todo
+  title: Implement PendingCalls ETS module
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-companionregistry-ge.todo
+  title: Implement CompanionRegistry GenServer
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-companionsupervisor.todo
+  title: Implement CompanionSupervisor and wire into application.ex
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P39.M2.E1.T001
+  - P39.M2.E1.T002
+- id: T004
+  file: T004-write-pendingcalls-and-compani.todo
+  title: Write PendingCalls and CompanionRegistry tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P39.M2.E1.T001
+  - P39.M2.E1.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

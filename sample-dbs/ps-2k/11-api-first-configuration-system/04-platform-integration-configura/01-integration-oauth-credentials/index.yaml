@@ -1,0 +1,37 @@
+id: P11.M4.E1
+name: Integration OAuth & Credentials
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-encrypted-credentials-s.todo
+  title: Create encrypted credentials storage schema
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-oauth-flow-endpoints.todo
+  title: Implement OAuth flow endpoints
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-credential-rotation-and-re.todo
+  title: Add credential rotation and refresh
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

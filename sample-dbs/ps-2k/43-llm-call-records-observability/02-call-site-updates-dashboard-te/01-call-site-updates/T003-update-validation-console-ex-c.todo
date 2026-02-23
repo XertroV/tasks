@@ -1,0 +1,31 @@
+---
+id: P43.M2.E1.T003
+title: 'Update validation_console.ex call sites to pass caller_context: validation_console'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:56:56.679078+00:00'
+started_at: '2026-02-19T23:56:56.679078+00:00'
+completed_at: '2026-02-20T06:39:18.550291+00:00'
+duration_minutes: 402.36452
+---
+
+# Update validation_console.ex call sites to pass caller_context: validation_console
+
+
+
+## Requirements
+
+- LLM calls made from the validation console should be labelled so that call records can be distinguished from agent-loop calls in the dashboard.
+
+## Acceptance Criteria
+
+- In `lib/pag_server_web/live/validation_console.ex`, the `run_provider_stream/5` function (around line ~1264) adds `:caller_context` with value `"validation_console"` to the llm_opts keyword list it passes to the LLM client.
+- The `request_provider_response/2` function (around line ~1886) likewise adds `:caller_context` with value `"validation_console"` to its llm_opts.
+- If the LiveView socket assigns contain a `:session_id` (for a validation session), that value is also threaded through as `:session_id` in the llm_opts for both call sites.
+- No other functional behaviour of the validation console is changed — all existing validation console tests continue to pass.
+- No compiler warnings are introduced.

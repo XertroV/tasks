@@ -1,0 +1,24 @@
+---
+id: P50.M2.E2.T001
+title: Implement CollabTeams.Lifecycle pure state machine module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:06:27.373294+00:00'
+started_at: '2026-02-23T02:06:27.373294+00:00'
+completed_at: '2026-02-23T02:06:34.068264+00:00'
+duration_minutes: 0.1115826
+---
+## Description
+Pure-functional module CollabTeams.Lifecycle with valid_transition?/2 and transition/3. Transitions: starting->active, active->idle, idle->active (woken up), active->shutting_down, idle->shutting_down, shutting_down->stopped. transition/3 returns {:ok, updated_attrs} or {:error, :invalid_transition}. No DB calls -- accepts and returns plain maps.
+
+## Acceptance Criteria
+- valid_transition?(active, idle) returns true
+- valid_transition?(stopped, active) returns false
+- all 6 valid forward transitions pass
+- invalid transitions return :invalid_transition
+- tests cover all transitions

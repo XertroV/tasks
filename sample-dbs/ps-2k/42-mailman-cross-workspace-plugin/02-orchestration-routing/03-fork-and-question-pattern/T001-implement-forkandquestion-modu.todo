@@ -1,0 +1,30 @@
+---
+id: P42.M2.E3.T001
+title: Implement ForkAndQuestion module
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:19:28.861963+00:00'
+started_at: '2026-02-19T17:19:28.861963+00:00'
+completed_at: '2026-02-19T17:30:01.781644+00:00'
+duration_minutes: 10.548661166666667
+---
+## Context
+plugins/mailman/lib/fork_and_question.ex
+Novel routing pattern: fork the workspace's default recipient agent, inject a routing question, await structured response, clean up fork.
+
+## Acceptance Criteria
+- [ ] ask/2 (mailbox, message) -> {:ok, RoutingDecision.t()} | {:error, :timeout} | {:error, :no_target_agent}
+- [ ] Resolve target agent: mailbox.default_recipient_agent_id, fallback to first active agent in workspace
+- [ ] Fork agent using existing session fork infrastructure (Sessions or Agents API)
+- [ ] Inject routing question as first message to forked session: structured prompt with message metadata (sender, subject, body preview, type)
+- [ ] Await response with 30s timeout (configurable)
+- [ ] Parse response body as JSON -> RoutingDecision.from_map/1
+- [ ] On success with persist_rule: true -> store rule in mailman agent's Memory.Store
+- [ ] On timeout: return {:error, :timeout}, message remains pending for retry
+- [ ] Clean up (terminate) the forked session after response received or timeout
+- [ ] build_question/1 - builds the question string from a message struct (testable)

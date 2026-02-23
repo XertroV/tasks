@@ -1,0 +1,381 @@
+---
+id: P2.M1.E1.T003
+title: Implement model spec parser
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P2.M1.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-05T10:37:56.744931'
+started_at: '2026-02-05T10:37:56.744931'
+completed_at: '2026-02-05T10:40:14.914781'
+tags:
+- llm
+- parsing
+- model-spec
+- validation
+---
+
+# Implement model spec parser
+
+Create a robust parser for model specifications that handles various formats and validates them.
+
+## Requirements
+
+### Parser Module
+- [ ] Create `lib/pag_server/llm/model_spec.ex`
+- [ ] Define `ModelSpec` struct with fields:
+  - `provider` (atom) - `:anthropic`, `:openai`, `:openrouter`, `:ollama`
+  - `model` (string) - Model identifier (e.g., "claude-3-7-sonnet")
+  - `version` (string | nil) - Optional version specifier
+  - `full_spec` (string) - Original spec string
+
+### Parser Functions
+- [ ] `parse/1` - Parse model spec string
+  - Input: `(spec :: String.t()) :: {:ok, ModelSpec.t()} | {:error, term()}`
+  - Handles formats:
+    - `"provider:model"` → `%ModelSpec{provider: :provider, model: "model"}`
+    - `"provider:model@version"` → `%ModelSpec{provider: :provider, model: "model", version: "version"}`
+    - `"openrouter:org/model"` → Special handling for OpenRouter format
+  - Returns `{:error, :invalid_format}` for malformed specs
+- [ ] `parse!/1` - Parse with exception on error
+  - Raises `ArgumentError` with descriptive message
+- [ ] `to_string/1` - Convert ModelSpec back to string
+  - Reconstructs original format
+- [ ] `provider_name/1` - Extract provider name from spec
+  - Input: `(spec :: String.t()) :: {:ok, atom()} | {:error, term()}`
+  - Fast extraction without full parsing
+- [ ] `supports_version?/1` - Check if provider supports versioning
+  - Returns boolean based on provider capabilities
+
+### Validation Functions
+- [ ] `valid_provider?/1` - Check if provider is known
+  - Validates against list of supported providers
+- [ ] `valid_format?/1` - Check if spec format is valid
+  - Regex-based validation before parsing
+- [ ] `normalize/1` - Normalize spec to canonical format
+  - Handles case sensitivity, whitespace, etc.
+
+### Provider-Specific Handling
+- [ ] Handle Anthropic format: `"anthropic:claude-3-7-sonnet-20250219"`
+- [ ] Handle OpenAI format: `"openai:gpt-4o"`
+- [ ] Handle OpenRouter format: `"openrouter:anthropic/claude-3-7-sonnet"`
+  - Parse organization/model path
+- [ ] Handle Ollama format: `"ollama:llama3.2"`
+  - Support local model names
+
+### Error Messages
+- [ ] Provide helpful error messages for:
+  - Missing provider prefix
+  - Unknown provider
+  - Invalid characters in model name
+  - Malformed version specifier
+  - OpenRouter path format errors
+
+### Tests
+- [ ] Create `test/pag_server/llm/model_spec_test.exs`
+- [ ] Test parsing all supported formats:
+  - Basic: `"anthropic:claude-3-7-sonnet"`
+  - With version: `"anthropic:claude-3-7-sonnet-20250219"`
+  - OpenRouter: `"openrouter:anthropic/claude-3-7-sonnet"`
+  - Ollama: `"ollama:llama3.2"`
+- [ ] Test error cases:
+  - No colon separator
+  - Empty provider
+  - Empty model
+  - Invalid characters
+  - Malformed version
+- [ ] Test round-trip: `parse/1` → `to_string/1` → `parse/1`
+- [ ] Test validation functions
+- [ ] Property-based tests for format validation (optional)
+
+### Documentation
+- [ ] Add `@moduledoc` explaining:
+  - Model spec format conventions
+  - Supported providers
+  - Version handling
+  - Examples for each provider
+- [ ] Add `@doc` for all public functions
+- [ ] Include format reference guide
+
+### Commit
+- [ ] Run `mix format`
+- [ ] Run `mix compile --warnings-as-errors`
+- [ ] Run `mix test`
+- [ ] Commit with message "Add model spec parser with validation"
+
+## Acceptance Criteria
+
+- [ ] Parses all documented model spec formats correctly
+- [ ] Returns helpful errors for invalid formats
+- [ ] Round-trip parsing preserves original spec
+- [ ] All tests pass (aim for 100% coverage)
+- [ ] File is under 300 LoC
+- [ ] No compilation warnings
+- [ ] Documentation includes examples for each provider
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- Related to registry.ex `parse_model_spec/1` function
+
+**Design Philosophy**:
+- **Strict parsing**: Fail fast on invalid formats
+- **Provider-agnostic**: Easy to add new providers
+- **Developer-friendly errors**: Clear guidance on fixing invalid specs
+- **Normalization**: Handle minor variations (whitespace, case)
+
+**Model Spec Formats**:
+```
+# Standard format
+provider:model                    → anthropic:claude-3-7-sonnet
+provider:model@version            → anthropic:claude-3-7-sonnet-20250219
+
+# OpenRouter special case
+openrouter:org/model              → openrouter:anthropic/claude-3-7-sonnet
+
+# Ollama local models
+ollama:model-name                 → ollama:llama3.2
+```
+
+## Notes
+
+### Example Implementation
+
+```elixir
+defmodule PagServer.LLM.ModelSpec do
+  @moduledoc """
+  Parser and validator for LLM model specifications.
+
+  Model specs follow the format: `provider:model` or `provider:model@version`
+
+  ## Supported Providers
+
+  - `:anthropic` - Anthropic Claude models
+  - `:openai` - OpenAI GPT models
+  - `:openrouter` - OpenRouter multi-provider routing
+  - `:ollama` - Local Ollama models
+
+  ## Examples
+
+      iex> ModelSpec.parse("anthropic:claude-3-7-sonnet")
+      {:ok, %ModelSpec{provider: :anthropic, model: "claude-3-7-sonnet", version: nil}}
+
+      iex> ModelSpec.parse("anthropic:claude-3-7-sonnet-20250219")
+      {:ok, %ModelSpec{provider: :anthropic, model: "claude-3-7-sonnet", version: "20250219"}}
+
+      iex> ModelSpec.parse("openrouter:anthropic/claude-3-7-sonnet")
+      {:ok, %ModelSpec{provider: :openrouter, model: "anthropic/claude-3-7-sonnet"}}
+
+      iex> ModelSpec.parse("invalid")
+      {:error, :invalid_format}
+  """
+
+  @type t :: %__MODULE__{
+          provider: atom(),
+          model: String.t(),
+          version: String.t() | nil,
+          full_spec: String.t()
+        }
+
+  defstruct [:provider, :model, :version, :full_spec]
+
+  @supported_providers [:anthropic, :openai, :openrouter, :ollama]
+
+  @doc """
+  Parse a model specification string.
+
+  ## Parameters
+
+  - `spec` - Model specification string (e.g., "anthropic:claude-3-7-sonnet")
+
+  ## Returns
+
+  - `{:ok, %ModelSpec{}}` on success
+  - `{:error, reason}` on failure
+  """
+  @spec parse(String.t()) :: {:ok, t()} | {:error, term()}
+  def parse(spec) when is_binary(spec) do
+    with :ok <- validate_format(spec),
+         {:ok, provider, rest} <- extract_provider(spec),
+         :ok <- validate_provider(provider),
+         {:ok, model, version} <- parse_model_and_version(rest, provider) do
+      {:ok,
+       %__MODULE__{
+         provider: provider,
+         model: model,
+         version: version,
+         full_spec: spec
+       }}
+    end
+  end
+
+  @doc """
+  Parse a model specification, raising on error.
+  """
+  @spec parse!(String.t()) :: t()
+  def parse!(spec) do
+    case parse(spec) do
+      {:ok, model_spec} ->
+        model_spec
+
+      {:error, reason} ->
+        raise ArgumentError, """
+        Invalid model specification: #{inspect(spec)}
+        Reason: #{format_error(reason)}
+
+        Valid formats:
+          - provider:model
+          - provider:model@version
+          - openrouter:org/model
+
+        Examples:
+          - anthropic:claude-3-7-sonnet
+          - openai:gpt-4o
+          - openrouter:anthropic/claude-3-7-sonnet
+          - ollama:llama3.2
+        """
+    end
+  end
+
+  @doc """
+  Convert a ModelSpec back to string format.
+  """
+  @spec to_string(t()) :: String.t()
+  def to_string(%__MODULE__{full_spec: full_spec}), do: full_spec
+
+  @doc """
+  Extract provider name from spec without full parsing.
+  """
+  @spec provider_name(String.t()) :: {:ok, atom()} | {:error, term()}
+  def provider_name(spec) when is_binary(spec) do
+    case String.split(spec, ":", parts: 2) do
+      [provider, _] when provider != "" ->
+        provider_atom = String.to_atom(provider)
+        if provider_atom in @supported_providers do
+          {:ok, provider_atom}
+        else
+          {:error, {:unknown_provider, provider}}
+        end
+
+      _ ->
+        {:error, :invalid_format}
+    end
+  end
+
+  # Private functions
+
+  defp validate_format(spec) do
+    if String.contains?(spec, ":") do
+      :ok
+    else
+      {:error, :missing_colon}
+    end
+  end
+
+  defp extract_provider(spec) do
+    case String.split(spec, ":", parts: 2) do
+      [provider, rest] when provider != "" and rest != "" ->
+        {:ok, String.to_atom(provider), rest}
+
+      [_, ""] ->
+        {:error, :empty_model}
+
+      ["", _] ->
+        {:error, :empty_provider}
+    end
+  end
+
+  defp validate_provider(provider) do
+    if provider in @supported_providers do
+      :ok
+    else
+      {:error, {:unknown_provider, provider}}
+    end
+  end
+
+  defp parse_model_and_version(rest, _provider) do
+    # Handle version suffix @version
+    case String.split(rest, "@", parts: 2) do
+      [model, version] -> {:ok, model, version}
+      [model] -> {:ok, model, nil}
+    end
+  end
+
+  defp format_error(:missing_colon), do: "Missing ':' separator"
+  defp format_error(:empty_provider), do: "Provider name is empty"
+  defp format_error(:empty_model), do: "Model name is empty"
+  defp format_error({:unknown_provider, p}), do: "Unknown provider '#{p}'"
+  defp format_error(other), do: inspect(other)
+end
+```
+
+### Test Examples
+
+```elixir
+defmodule PagServer.LLM.ModelSpecTest do
+  use ExUnit.Case, async: true
+
+  alias PagServer.LLM.ModelSpec
+
+  describe "parse/1" do
+    test "parses basic anthropic spec" do
+      assert {:ok, spec} = ModelSpec.parse("anthropic:claude-3-7-sonnet")
+      assert spec.provider == :anthropic
+      assert spec.model == "claude-3-7-sonnet"
+      assert spec.version == nil
+    end
+
+    test "parses versioned spec" do
+      assert {:ok, spec} = ModelSpec.parse("anthropic:claude-3-7-sonnet-20250219")
+      assert spec.provider == :anthropic
+      assert spec.model == "claude-3-7-sonnet"
+      assert spec.version == "20250219"
+    end
+
+    test "parses openrouter path format" do
+      assert {:ok, spec} = ModelSpec.parse("openrouter:anthropic/claude-3-7-sonnet")
+      assert spec.provider == :openrouter
+      assert spec.model == "anthropic/claude-3-7-sonnet"
+    end
+
+    test "returns error for missing colon" do
+      assert {:error, :missing_colon} = ModelSpec.parse("anthropic-claude")
+    end
+
+    test "returns error for unknown provider" do
+      assert {:error, {:unknown_provider, :unknown}} = ModelSpec.parse("unknown:model")
+    end
+  end
+
+  describe "round-trip parsing" do
+    test "preserves original spec" do
+      spec_string = "anthropic:claude-3-7-sonnet-20250219"
+      assert {:ok, spec} = ModelSpec.parse(spec_string)
+      assert ModelSpec.to_string(spec) == spec_string
+    end
+  end
+end
+```
+
+### Verification Commands
+
+```bash
+# Run tests
+mix test test/pag_server/llm/model_spec_test.exs
+
+# Test in IEx
+iex -S mix
+alias PagServer.LLM.ModelSpec
+
+ModelSpec.parse("anthropic:claude-3-7-sonnet")
+ModelSpec.parse!("invalid")  # Should raise with helpful message
+ModelSpec.provider_name("anthropic:claude-3-7-sonnet")
+
+# Check coverage
+mix test --cover
+open cover/excoveralls.html
+```

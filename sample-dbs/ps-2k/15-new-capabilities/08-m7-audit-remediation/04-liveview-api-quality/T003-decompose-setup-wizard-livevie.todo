@@ -1,0 +1,40 @@
+---
+id: P15.M8.E4.T003
+title: Decompose setup wizard LiveView into LiveComponents
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P15.M8.E4.T001
+- P15.M8.E4.T002
+tags:
+- liveview
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:09:19.043178+00:00'
+started_at: '2026-02-17T16:09:19.043178+00:00'
+completed_at: '2026-02-17T16:47:44.582549+00:00'
+duration_minutes: 38.42565593333334
+---
+setup_wizard.ex at 1101 LoC exceeds the 1000 LoC soft limit. The workspace template step (step 7) with bootstrap chat UI is a natural extraction point.
+
+Extract into LiveComponents:
+- SetupWizard.BootstrapStep — chat, progress panel, file viewer
+- SetupWizard.TemplateSelection — template card grid
+
+Also fix minor template issues:
+- Chat input missing phx-debounce (E4 M3)
+- Message list uses phx-update=replace instead of streams (E4 M4)
+- Chat messages use list concat O(n) instead of prepend (E4 M5)
+- Missing ARIA attributes on interactive elements (E4 M1)
+
+Source: E4 Audit I1, M1, M3, M4, M5
+
+## Acceptance Criteria
+- [ ] setup_wizard.ex under 1000 LoC
+- [ ] At least one LiveComponent extracted
+- [ ] Chat input has phx-debounce
+- [ ] Interactive elements have ARIA attributes
+- [ ] Message list uses efficient data structure
+- [ ] All existing tests pass

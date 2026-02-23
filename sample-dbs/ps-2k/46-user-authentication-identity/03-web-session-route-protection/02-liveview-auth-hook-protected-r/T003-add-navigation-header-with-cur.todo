@@ -1,0 +1,24 @@
+---
+id: P46.M3.E2.T003
+title: Add navigation header with current user info and logout link
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- P46.M3.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:56:49.103478+00:00'
+started_at: '2026-02-19T22:56:49.103478+00:00'
+completed_at: '2026-02-19T23:17:00.002920+00:00'
+duration_minutes: 20.18165713333333
+---
+Update the shared LiveView layout (lib/pag_server_web/components/layouts/app.html.heex or equivalent) to show:
+- Current user's username and avatar (initial letter fallback if no avatar)
+- Link to /settings/profile
+- Logout button (DELETE /logout or JS-triggered form post)
+- Admin indicator badge if current_user.is_admin
+
+In unauthenticated layout (root.html.heex), show a 'Sign In' link pointing to /login.
+Acceptance: All authenticated LiveView pages show the nav bar with user info. Logout link works. Admin badge visible for admin users.

@@ -1,0 +1,64 @@
+---
+id: P11.M3.E3.T003
+title: Implement per-session plugin overrides
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:05:41.458692+00:00'
+started_at: '2026-02-12T11:05:41.458692+00:00'
+completed_at: '2026-02-12T11:33:53.336540+00:00'
+duration_minutes: 28.19796395
+---
+
+# Implement per-session plugin overrides
+
+Support session-specific plugin settings and configurations that override global defaults.
+
+## Requirements
+
+- [ ] Create session plugin settings module `lib/pag_server/plugins/session_settings.ex`:
+  - [ ] `get_setting(plugin_id, key, session_id)` - get session-scoped value or fall back to global
+  - [ ] `put_setting(plugin_id, key, value, session_id)` - set session-scoped value
+  - [ ] `delete_setting(plugin_id, key, session_id)` - remove session override
+  - [ ] `list_session_overrides(session_id)` -> map of all session-scoped settings
+
+- [ ] Extend PluginSetting schema:
+  - [ ] Add `session_id` foreign key (nullable for global settings)
+  - [ ] Support partial overrides (some settings global, some session-scoped)
+
+- [ ] Build session settings endpoints:
+  - [ ] `GET /api/sessions/:session_id/plugin-settings/:plugin_id` - list session overrides
+  - [ ] `GET /api/sessions/:session_id/plugin-settings/:plugin_id/:key` - get setting
+  - [ ] `PUT /api/sessions/:session_id/plugin-settings/:plugin_id/:key` - override setting
+  - [ ] `DELETE /api/sessions/:session_id/plugin-settings/:plugin_id/:key` - clear override
+
+- [ ] Implement fallback resolution:
+  - [ ] Check session-scoped setting first
+  - [ ] Fall back to global setting if session override not found
+  - [ ] Fall back to default from manifest if neither exists
+  - [ ] Return effective value with info about which level it came from
+
+- [ ] Add settings inheritance info:
+  - [ ] Include `source: "global"|"session"|"default"` in response
+  - [ ] Show original global value alongside session override
+  - [ ] Enable easy override/reset via UI
+
+- [ ] Create settings reset endpoints:
+  - [ ] `DELETE /api/sessions/:session_id/plugin-settings` - reset all overrides for session
+  - [ ] `DELETE /api/sessions/:session_id/plugin-settings/:plugin_id` - reset plugin overrides
+
+## Acceptance Criteria
+
+- [ ] Session settings override global settings correctly
+- [ ] Missing session setting falls back to global
+- [ ] Missing global setting falls back to manifest default
+- [ ] All session endpoints use proper scoping
+- [ ] 404 returned for non-existent sessions
+- [ ] Settings validated against schema before save
+- [ ] Override/reset operations work correctly
+- [ ] Response includes source information (global/session/default)
+- [ ] Tests cover 15+ fallback scenarios

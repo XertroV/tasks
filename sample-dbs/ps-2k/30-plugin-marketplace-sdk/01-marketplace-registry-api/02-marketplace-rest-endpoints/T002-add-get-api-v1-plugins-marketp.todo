@@ -1,0 +1,16 @@
+---
+id: P30.M1.E2.T002
+title: Add GET /api/v1/plugins/marketplace/:name endpoint
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:18:03.294779+00:00'
+started_at: '2026-02-18T19:18:03.294779+00:00'
+completed_at: '2026-02-18T19:20:00.116368+00:00'
+duration_minutes: 1.9470263166666666
+---
+Controller action marketplace_show/2. Returns detailed metadata for a specific plugin from the registry. Route: GET /api/v1/plugins/marketplace/:name.

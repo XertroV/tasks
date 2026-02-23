@@ -1,0 +1,43 @@
+id: P15.M6.E4
+name: Main-Agent-First Routing
+status: in_progress
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- P15.M6.E2
+- P15.M6.E3
+tasks:
+- id: T001
+  file: T001-define-main-agent-routing-policy.todo
+  title: Define and implement main-agent-first routing policy
+  status: in_progress
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M6.E2.T002
+- id: T002
+  file: T002-apply-routing-across-entrypoints.todo
+  title: Apply routing policy across API and Telegram entrypoints
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M6.E4.T001
+  - P15.M6.E3.T003
+- id: T003
+  file: T003-document-10-minute-onboarding-runbook.todo
+  title: Document 10-minute onboarding runbook and operator checklist
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M6.E4.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 1
+  blocked: 0
+  pending: 2

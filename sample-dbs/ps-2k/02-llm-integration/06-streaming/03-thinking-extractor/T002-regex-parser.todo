@@ -1,0 +1,111 @@
+---
+id: P2.M6.E3.T002
+title: Implement regex-based parser
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P2.M6.E3.T001
+tags:
+- streaming
+- parsing
+- regex
+- thinking
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:41:45.122228'
+started_at: '2026-02-06T02:41:45.122228'
+completed_at: '2026-02-06T02:41:45.776004'
+duration_minutes: 0.010896099999999999
+---
+
+# Implement regex-based parser
+
+Implement robust regex-based parsing for thinking block extraction.
+
+## Requirements
+
+- [x] Add `parse_with_regex/1` private function
+- [x] Use regex: `~r/<thinking>(.*?)<\/thinking>/s`
+  - [x] `/s` flag for multi-line matching (. matches newlines)
+  - [x] Non-greedy `.*?` to match shortest content
+- [x] Handle multiple matches with `Regex.scan/2`
+- [x] Extract capture groups correctly
+- [x] Remove matched thinking blocks from original text
+- [x] Trim whitespace appropriately
+- [x] Handle adjacent thinking blocks (preserve structure)
+
+## Acceptance Criteria
+
+- [x] Regex correctly matches thinking blocks
+- [x] Multiple blocks extracted in order
+- [x] Matched content removed from response text
+- [x] Multi-line thinking blocks handled correctly
+- [x] No regex catastrophic backtracking issues
+- [x] Performance: <1ms for typical message (<10KB)
+- [x] Module compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` Line 1121-1124 (P2.M6 Stream Processing)
+
+**Key Points**:
+- Regex is simpler than state machine for well-formed input
+- Must handle multi-line content (newlines inside thinking)
+- Non-greedy matching prevents capturing multiple blocks as one
+- Need to preserve order of thinking blocks
+
+**Regex Breakdown**:
+```elixir
+~r/<thinking>(.*?)<\/thinking>/s
+#  ^        ^ ^  ^  ^       ^   ^
+#  |        | |  |  |       |   |
+#  |        | |  |  |       |   +-- 's' flag: . matches newline
+#  |        | |  |  |       +------ closing tag
+#  |        | |  |  +-------------- escaped forward slash
+#  |        | |  +----------------- non-greedy: shortest match
+#  |        | +-------------------- capture group (content)
+#  |        +---------------------- opening tag
+#  +------------------------------- start anchor
+```
+
+## Notes
+
+**Implementation Example**:
+```elixir
+def parse_with_regex(text) do
+  # Extract all thinking blocks
+  thinking_blocks = 
+    Regex.scan(~r/<thinking>(.*?)<\/thinking>/s, text)
+    |> Enum.map(fn [_full_match, content] -> String.trim(content) end)
+  
+  # Remove thinking blocks from text
+  response = 
+    Regex.replace(~r/<thinking>.*?<\/thinking>/s, text, "")
+    |> String.trim()
+  
+  %{
+    thinking: thinking_blocks,
+    response: response
+  }
+end
+```
+
+**Edge Cases**:
+```elixir
+# Multiple blocks
+"<thinking>A</thinking> Text <thinking>B</thinking>"
+# => %{thinking: ["A", "B"], response: "Text"}
+
+# Adjacent blocks
+"<thinking>A</thinking><thinking>B</thinking>"
+# => %{thinking: ["A", "B"], response: ""}
+
+# Nested tags (malformed - should not happen)
+"<thinking><thinking>Nested</thinking></thinking>"
+# => %{thinking: ["<thinking>Nested"], response: ""}
+# (Inner tag matched first due to non-greedy)
+```
+
+Consider caching compiled regex for performance.

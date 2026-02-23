@@ -1,0 +1,49 @@
+---
+id: P41.M2.E2.T001
+title: Add mix test.changed alias that runs tests for files touched since last commit
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:34:33.934325+00:00'
+started_at: '2026-02-19T15:34:33.934325+00:00'
+completed_at: '2026-02-19T15:37:38.184724+00:00'
+duration_minutes: 3.0708395333333334
+---
+## Context
+
+When working on a specific subsystem, a developer often wants to run only the tests related to what they just changed, without knowing which `mix test.<dir>` alias to use.
+
+## Approach
+
+Create a `scripts/test_changed.sh` script that:
+1. Runs `git diff --name-only HEAD` (or `git diff --name-only HEAD~1` for last commit)
+2. Maps changed `lib/pag_server/<dir>/` files -> `test/pag_server/<dir>/`
+3. Maps changed `test/pag_server/<dir>/*_test.exs` files directly
+4. Deduplicates and runs `mix test <paths...>`
+
+Then add a mix alias:
+```elixir
+"test.changed" => ["ecto.create --quiet", "ecto.migrate --quiet", &test_changed/1]
+```
+
+Or simpler: just document the one-liner in AGENTS.md:
+```bash
+mix test $(git diff --name-only HEAD | grep '_test.exs' | tr '\n' ' ')
+```
+
+And the lib->test mapping:
+```bash
+mix test $(git diff --name-only HEAD | sed 's|lib/pag_server/\([^/]*\)/.*|test/pag_server/\1/|' | sort -u | tr '\n' ' ')
+```
+
+## Acceptance Criteria
+
+- [ ] `scripts/test_changed.sh` exists and is executable
+- [ ] Script handles: changed test files directly, changed lib files mapped to test dirs, mixed changes
+- [ ] Script exits cleanly when there are no changed files
+- [ ] Script is documented in AGENTS.md under ## Commands
+- [ ] (Optional) `mix test.changed` alias that invokes the script

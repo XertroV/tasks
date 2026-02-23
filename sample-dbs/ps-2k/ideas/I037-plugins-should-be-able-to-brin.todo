@@ -1,0 +1,49 @@
+---
+id: I037
+title: Plugins should be able to bring DB schemas for their own tables (prefixed with
+  'plugin_<id>' or something)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:28:55.774850+00:00'
+started_at: '2026-02-18T09:28:55.774850+00:00'
+completed_at: '2026-02-18T11:04:45.877175+00:00'
+duration_minutes: 95.83503856666667
+---
+
+# Idea Intake: Plugins should be able to bring DB schemas for their own tables (prefixed with 'plugin_<id>' or something)
+
+## Original Idea
+
+Plugins should be able to bring DB schemas for their own tables (prefixed with 'plugin_<id>' or something)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Plugins should be able to bring DB schemas for their own tables (prefixed with 'plugin_<id>' or something)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P20 (Plugin Database Schemas)
+- P20.M1 (Plugin Schema Infrastructure)
+- P20.M1.E1 (Migration Framework — tasks not yet created)
+- P20.M1.E2 (KV Store & API Integration — tasks not yet created)
+- P20.M1.E3 (CryptoId Migration & Validation — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

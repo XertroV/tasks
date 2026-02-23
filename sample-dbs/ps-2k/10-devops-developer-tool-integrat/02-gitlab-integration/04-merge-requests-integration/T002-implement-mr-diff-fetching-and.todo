@@ -1,0 +1,63 @@
+---
+id: P10.M2.E4.T002
+title: Implement MR diff fetching and review submission
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T02:13:44.649818+00:00'
+started_at: '2026-02-12T02:13:44.649818+00:00'
+completed_at: '2026-02-12T02:30:07.471084+00:00'
+duration_minutes: 16.380354266666664
+---
+
+# Implement MR diff fetching and review submission
+
+
+
+## Requirements
+
+- [ ] Fetch unified diff from GitLab merge requests
+- [ ] Parse diff to extract changed files and line-level changes
+- [ ] Handle large diffs with pagination/streaming
+- [ ] Post review comments on specific lines (discussions)
+- [ ] Support approving or requesting changes on MR
+- [ ] Integrate with agent system for code review
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/integrations/gitlab/mr_review.ex`
+- [ ] Diff fetching:
+  - [ ] `fetch_diff(client, project_id, mr_iid)` - Get unified diff
+  - [ ] Parse diff into structured format:
+    - [ ] File path, additions/deletions counts
+    - [ ] Hunks with before/after line numbers
+    - [ ] Support unified diff format (GitLab standard)
+  - [ ] Handle large diffs (>10MB):
+    - [ ] Stream or paginate if available
+    - [ ] Truncate gracefully with warning
+- [ ] Review submission:
+  - [ ] `post_review(client, project_id, mr_iid, review_data)` - Submit full review
+  - [ ] `add_review_comment(client, project_id, mr_iid, path, line, body)` - Post line comment
+    - [ ] Create discussion thread on specific line
+    - [ ] Support drafts and resolving discussions
+  - [ ] `approve_merge_request(client, project_id, mr_iid)` - Approve with optional comment
+  - [ ] `request_changes(client, project_id, mr_iid, comment)` - Request changes
+- [ ] Integration with agents:
+  - [ ] Create agent session for MR review context
+  - [ ] Pass diff as context to agent for analysis
+  - [ ] Map agent outputs to review comments
+- [ ] Error handling:
+  - [ ] Handle binary files in diff
+  - [ ] Handle deleted files gracefully
+  - [ ] Handle rename-only changes
+  - [ ] Rate limit errors from diff API
+- [ ] Tests cover:
+  - [ ] Diff parsing (various file types)
+  - [ ] Large diff handling
+  - [ ] Comment posting on specific lines
+  - [ ] Review submission with status
+  - [ ] Error conditions

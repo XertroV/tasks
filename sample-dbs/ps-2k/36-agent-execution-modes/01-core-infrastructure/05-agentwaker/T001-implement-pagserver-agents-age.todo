@@ -1,0 +1,30 @@
+---
+id: P36.M1.E5.T001
+title: Implement PagServer.Agents.AgentWaker
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P36.M1.E1.T001
+- P36.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:09:02.399925+00:00'
+started_at: '2026-02-19T03:09:02.399925+00:00'
+completed_at: '2026-02-19T03:09:04.553129+00:00'
+duration_minutes: 0.035886466666666665
+---
+## Acceptance Criteria
+- Module at lib/pag_server/agents/agent_waker.ex
+- `ensure_started(session_id, opts \\ []) :: {:ok, pid()} | {:error, reason}`
+- Logic:
+  1. Check Registry via Agents.Registry — if running, return {:ok, pid} immediately
+  2. Load session from DB — return {:error, :not_found} if missing
+  3. Return {:error, :already_archived} if session.status in [:completed, :archived]
+  4. Acquire per-session lock using Registry entry (prevent thundering herd)
+  5. Start AgentServer via DynamicSupervisor
+  6. Await :agent_ready PubSub event with 10s timeout
+  7. Return {:ok, pid} or {:error, :start_timeout | term()}
+- Error reasons: :not_found, :already_archived, :start_timeout, :lock_timeout, other term()
+- @spec annotations on all public functions

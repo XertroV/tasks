@@ -1,0 +1,32 @@
+---
+id: P54.M2.E1.T005
+title: CompanionMCPProxy executor
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P54.M2.E1.T001
+- P54.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:18:57.315777+00:00'
+started_at: '2026-02-21T10:18:57.315777+00:00'
+completed_at: '2026-02-21T10:29:14.321302+00:00'
+duration_minutes: 10.283425249999999
+---
+## Context
+New executor module that routes dotted tool names (e.g. browsermcp.navigate) through the companion channel using the mcp_tool_call wire protocol. Modeled on CompanionProxyExecutor's generic core (execute_via_companion).
+
+## Acceptance Criteria
+- [ ] `PagServer.Companions.CompanionMCPProxy` at `lib/pag_server/companions/companion_mcp_proxy.ex`
+- [ ] `execute(payload, context, opts \\ [])` -> `{:ok, execution_map}` | `{:error, reason}`
+- [ ] Parses payload.name "server.tool" into {server_name, tool_name} via String.split(".", parts: 2); returns {:error, :invalid_tool_name} if no dot separator
+- [ ] Looks up channel_pid via CompanionMCPRegistry.lookup(workspace_id, server_name); returns {:error, :companion_mcp_not_connected} if not found
+- [ ] Generates call_id with "cmcp_" prefix; calls PendingCalls.register_mcp/2
+- [ ] Sends {:send_mcp_tool_call, call_id, server_name, tool_name, arguments} to channel_pid
+- [ ] Monitors channel_pid; receive loop handles {:companion_mcp_result,...}, {:companion_mcp_error,...}, {:DOWN,...}, and timeout
+- [ ] Default timeout 120s; :timeout opt overrides
+- [ ] Returns execution map with provider: :companion_mcp, same shape as CompanionProxyExecutor
+- [ ] Unit tests in test/pag_server/companions/companion_mcp_proxy_test.exs: success, error, timeout, channel crash, invalid tool name, not connected
+- [ ] `mix lint` passes

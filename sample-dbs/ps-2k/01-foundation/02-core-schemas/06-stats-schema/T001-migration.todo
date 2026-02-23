@@ -1,0 +1,134 @@
+---
+id: P1.M2.E6.T001
+title: Create stats table migration
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- migration
+- database
+- stats
+- schema
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:26:08.866079'
+started_at: '2026-02-05T08:26:08.866079'
+completed_at: '2026-02-05T08:27:50.556070'
+---
+
+# Create stats table migration
+
+Create the database migration for the `stats` table to track token usage, costs, and performance metrics.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_stats_table`
+- [ ] Define table with binary_id primary key
+- [ ] Add all required fields with correct types
+- [ ] Create indexes for efficient querying
+- [ ] Add foreign key constraints with cascade behavior
+- [ ] Run migration: `mix ecto.migrate`
+- [ ] Verify migration rollback works: `mix ecto.rollback`
+- [ ] Re-apply migration: `mix ecto.migrate`
+
+## Schema Definition
+
+```elixir
+create table(:stats, primary_key: false) do
+  add :id, :binary_id, primary_key: true
+  
+  # Foreign keys
+  add :agent_id, references(:agents, type: :binary_id, on_delete: :delete_all)
+  add :session_id, references(:sessions, type: :binary_id, on_delete: :delete_all)
+  
+  # Period tracking
+  add :period_start, :utc_datetime_usec, null: false
+  add :period_end, :utc_datetime_usec, null: false
+  add :period_type, :string, null: false  # "request", "session", "hourly", "daily"
+  
+  # Token counts
+  add :prompt_tokens, :integer, default: 0, null: false
+  add :completion_tokens, :integer, default: 0, null: false
+  add :cached_tokens, :integer, default: 0, null: false
+  
+  # Costs in millicents (1/100,000 of a dollar)
+  add :prompt_cost_millicents, :integer, default: 0, null: false
+  add :completion_cost_millicents, :integer, default: 0, null: false
+  add :cached_cost_millicents, :integer, default: 0, null: false
+  add :total_cost_millicents, :integer, default: 0, null: false
+  
+  # Operational metrics
+  add :llm_requests, :integer, default: 0, null: false
+  add :tool_calls, :integer, default: 0, null: false
+  add :total_latency_ms, :integer, default: 0, null: false
+  add :errors, :integer, default: 0, null: false
+  
+  timestamps(type: :utc_datetime_usec)
+end
+
+# Composite index for efficient period queries
+create index(:stats, [:agent_id, :period_type, :period_start])
+
+# Session-based queries
+create index(:stats, [:session_id])
+
+# Period-based queries for aggregation
+create index(:stats, [:period_type, :period_start])
+```
+
+## Acceptance Criteria
+
+- [ ] Migration file created in `priv/repo/migrations/`
+- [ ] All fields defined with correct types and defaults
+- [ ] Foreign keys reference agents and sessions tables
+- [ ] Three indexes created for query optimization
+- [ ] `mix ecto.migrate` runs without errors
+- [ ] `mix ecto.rollback` successfully reverts changes
+- [ ] Stats aggregation queries work efficiently (verified in T003)
+- [ ] Cost tracking uses millicents (integer arithmetic, no floating point)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 269-296 (Stats Schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 3.3 (Stats Tracking)
+
+**Key Points**:
+- **Millicents**: Store costs as integers (1 millicent = $0.00001) to avoid floating-point errors
+- **Period types**: 
+  - `request`: Single LLM API call
+  - `session`: Full conversation session
+  - `hourly`: Aggregated hourly stats
+  - `daily`: Aggregated daily stats
+- **Cascade deletes**: Stats deleted when parent agent/session deleted
+- **Indexes**: Optimized for period-based aggregation queries
+
+## Notes
+
+### Why Millicents?
+
+Using millicents (1/100,000 dollar) as integer storage:
+- Avoids floating-point precision errors in cost calculations
+- Supports pricing down to $0.00001 per token (current LLM pricing)
+- Enables exact arithmetic: `3 millicents + 5 millicents = 8 millicents`
+- Format for display: `millicents / 100_000.0` → dollars
+
+### Period Types
+
+- **request**: One-off stats per LLM API call (most granular)
+- **session**: Cumulative stats for entire conversation session
+- **hourly/daily**: Pre-aggregated rollups for dashboard/reporting
+
+### Index Strategy
+
+```elixir
+# Query: "Show me all hourly stats for agent X in date range"
+[:agent_id, :period_type, :period_start]
+
+# Query: "Total costs for session Y"
+[:session_id]
+
+# Query: "All daily stats across all agents"
+[:period_type, :period_start]
+```

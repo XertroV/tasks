@@ -1,0 +1,343 @@
+---
+id: P2.M7.E4.T009
+title: Add admin API endpoint for manual pricing refresh
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P2.M7.E4.T006
+tags:
+- api
+- admin
+- phoenix
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:13:35.619962'
+started_at: '2026-02-06T15:13:35.619962'
+completed_at: '2026-02-06T15:20:06.591068'
+duration_minutes: 6.516184916666666
+---
+
+# Add admin API endpoint for manual pricing refresh
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/controllers/admin/` directory
+- [ ] Create `lib/pag_server_web/controllers/admin/pricing_controller.ex`
+- [ ] Implement `POST /api/admin/pricing/refresh` endpoint to trigger manual refresh
+- [ ] Implement `GET /api/admin/pricing` endpoint to list current pricing
+- [ ] Implement `GET /api/admin/pricing/:provider/:model` endpoint for specific pricing lookup
+- [ ] Add `:admin` scope to `lib/pag_server_web/router.ex`
+- [ ] Enqueue `PricingRefresh` Oban job on manual refresh request
+- [ ] Return job ID and status in refresh response
+- [ ] Add JSON error handling for invalid requests
+- [ ] Add basic auth or API key validation (use plug)
+- [ ] Log admin actions with user/IP information
+- [ ] Document API endpoints in controller `@moduledoc`
+
+## Acceptance Criteria
+
+- [ ] Controller created at `lib/pag_server_web/controllers/admin/pricing_controller.ex`
+- [ ] `POST /api/admin/pricing/refresh` triggers pricing refresh job
+- [ ] Refresh endpoint returns `{"status": "queued", "job_id": "..."}` JSON response
+- [ ] `GET /api/admin/pricing` returns list of all pricing records
+- [ ] Response includes pagination support (limit/offset query params)
+- [ ] `GET /api/admin/pricing/:provider/:model` returns latest pricing for model
+- [ ] Returns 404 if provider/model not found
+- [ ] Returns 401 if authentication fails
+- [ ] Routes added to `router.ex` under `/api/admin` scope
+- [ ] Admin actions logged with info level
+- [ ] Invalid requests return proper 400/422 responses with error details
+- [ ] No compiler warnings
+- [ ] Controller has comprehensive `@moduledoc` with examples
+
+## Implementation Notes
+
+### Pricing Controller
+
+```elixir
+defmodule PagServerWeb.Admin.PricingController do
+  @moduledoc """
+  Admin API endpoints for pricing management.
+  
+  ## Endpoints
+  
+  - `POST /api/admin/pricing/refresh` - Trigger manual pricing refresh
+  - `GET /api/admin/pricing` - List all pricing records
+  - `GET /api/admin/pricing/:provider/:model` - Get specific model pricing
+  
+  ## Authentication
+  
+  All endpoints require admin authentication via API key header.
+  
+  ## Examples
+  
+      # Trigger manual refresh
+      curl -X POST http://localhost:4000/api/admin/pricing/refresh \\
+        -H "X-Admin-Key: your-admin-key"
+      
+      # List all pricing
+      curl http://localhost:4000/api/admin/pricing?limit=50 \\
+        -H "X-Admin-Key: your-admin-key"
+      
+      # Get specific model pricing
+      curl http://localhost:4000/api/admin/pricing/anthropic/claude-sonnet-4.5 \\
+        -H "X-Admin-Key: your-admin-key"
+  
+  """
+
+  use PagServerWeb, :controller
+
+  require Logger
+
+  alias PagServer.Pricing
+  alias PagServer.Workers.PricingRefresh
+
+  @doc """
+  Trigger manual pricing refresh.
+  
+  Enqueues a PricingRefresh Oban job and returns the job ID.
+  """
+  def refresh(conn, _params) do
+    log_admin_action(conn, "pricing_refresh")
+
+    case PricingRefresh.new(%{}) |> Oban.insert() do
+      {:ok, job} ->
+        json(conn, %{
+          status: "queued",
+          job_id: job.id,
+          message: "Pricing refresh job enqueued successfully"
+        })
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{
+          status: "error",
+          errors: translate_errors(changeset)
+        })
+    end
+  end
+
+  @doc """
+  List all pricing records with optional filters.
+  
+  Query parameters:
+  - `provider` - Filter by provider (optional)
+  - `model` - Filter by model (optional)
+  - `limit` - Max records to return (default: 100, max: 1000)
+  - `offset` - Pagination offset (default: 0)
+  """
+  def index(conn, params) do
+    log_admin_action(conn, "list_pricing")
+
+    opts = build_query_opts(params)
+    pricing_list = Pricing.list_pricing(opts)
+
+    json(conn, %{
+      data: Enum.map(pricing_list, &serialize_pricing/1),
+      count: length(pricing_list),
+      filters: opts
+    })
+  end
+
+  @doc """
+  Get latest pricing for a specific provider/model.
+  """
+  def show(conn, %{"provider" => provider, "model" => model}) do
+    log_admin_action(conn, "get_pricing", %{provider: provider, model: model})
+
+    case Pricing.get_latest_pricing(provider, model) do
+      nil ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{
+          status: "error",
+          message: "Pricing not found for #{provider}/#{model}"
+        })
+
+      pricing ->
+        json(conn, %{data: serialize_pricing(pricing)})
+    end
+  end
+
+  # Private helpers
+
+  defp build_query_opts(params) do
+    []
+    |> maybe_add_filter(:provider, params["provider"])
+    |> maybe_add_filter(:model, params["model"])
+    |> maybe_add_filter(:limit, params["limit"])
+    |> maybe_add_filter(:offset, params["offset"])
+  end
+
+  defp maybe_add_filter(opts, _key, nil), do: opts
+  defp maybe_add_filter(opts, :limit, value) do
+    limit = min(String.to_integer(value), 1000)
+    Keyword.put(opts, :limit, limit)
+  end
+  defp maybe_add_filter(opts, :offset, value) do
+    Keyword.put(opts, :offset, String.to_integer(value))
+  end
+  defp maybe_add_filter(opts, key, value) do
+    Keyword.put(opts, key, value)
+  end
+
+  defp serialize_pricing(pricing) do
+    %{
+      id: pricing.id,
+      provider: pricing.provider,
+      model: pricing.model,
+      prompt_per_million: Decimal.to_float(pricing.prompt_per_million),
+      completion_per_million: Decimal.to_float(pricing.completion_per_million),
+      cached_per_million: pricing.cached_per_million && Decimal.to_float(pricing.cached_per_million),
+      effective_at: pricing.effective_at,
+      expires_at: pricing.expires_at,
+      source: pricing.source,
+      currency: pricing.currency,
+      metadata: pricing.metadata,
+      inserted_at: pricing.inserted_at,
+      updated_at: pricing.updated_at
+    }
+  end
+
+  defp log_admin_action(conn, action, metadata \\ %{}) do
+    ip = get_ip(conn)
+    
+    Logger.info("Admin action: #{action}", 
+      Map.merge(metadata, %{ip: ip, action: action})
+    )
+  end
+
+  defp get_ip(conn) do
+    case Plug.Conn.get_req_header(conn, "x-forwarded-for") do
+      [ip | _] -> ip
+      [] -> to_string(:inet.ntoa(conn.remote_ip))
+    end
+  end
+
+  defp translate_errors(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, _opts} ->
+      msg
+    end)
+  end
+end
+```
+
+### Router Configuration
+
+Add to `lib/pag_server_web/router.ex`:
+
+```elixir
+defmodule PagServerWeb.Router do
+  use PagServerWeb, :router
+
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+
+  pipeline :admin_api do
+    plug :accepts, ["json"]
+    plug PagServerWeb.Plugs.AdminAuth
+  end
+
+  scope "/api/admin", PagServerWeb.Admin do
+    pipe_through :admin_api
+
+    # Pricing management
+    post "/pricing/refresh", PricingController, :refresh
+    get "/pricing", PricingController, :index
+    get "/pricing/:provider/:model", PricingController, :show
+  end
+end
+```
+
+### Admin Auth Plug
+
+Create `lib/pag_server_web/plugs/admin_auth.ex`:
+
+```elixir
+defmodule PagServerWeb.Plugs.AdminAuth do
+  @moduledoc """
+  Plug for authenticating admin API requests.
+  
+  Checks for X-Admin-Key header matching configured admin key.
+  """
+
+  import Plug.Conn
+  import Phoenix.Controller
+
+  require Logger
+
+  def init(opts), do: opts
+
+  def call(conn, _opts) do
+    admin_key = Application.get_env(:pag_server, :admin_api_key)
+
+    case get_req_header(conn, "x-admin-key") do
+      [^admin_key] when not is_nil(admin_key) ->
+        conn
+
+      _ ->
+        Logger.warning("Unauthorized admin API access attempt from #{get_ip(conn)}")
+        
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{status: "error", message: "Unauthorized"})
+        |> halt()
+    end
+  end
+
+  defp get_ip(conn) do
+    case get_req_header(conn, "x-forwarded-for") do
+      [ip | _] -> ip
+      [] -> to_string(:inet.ntoa(conn.remote_ip))
+    end
+  end
+end
+```
+
+### Configuration
+
+Add to `config/config.exs`:
+
+```elixir
+# Admin API key for pricing management endpoints
+# In production, set via environment variable
+config :pag_server,
+  admin_api_key: System.get_env("PAG_ADMIN_API_KEY") || "dev-admin-key-change-in-prod"
+```
+
+## Context
+
+**Dependencies:**
+- T008 (pending): PricingRefresh Oban worker that this endpoint enqueues
+
+**Purpose:**
+Provides admin interface for manually triggering pricing refreshes (useful for:
+- Testing pricing updates
+- Immediately updating pricing when provider announces changes
+- Debugging pricing issues
+- Auditing current pricing state
+
+**Security Considerations:**
+- Admin endpoints require authentication via API key header
+- All admin actions are logged with IP addresses
+- API key should be stored in environment variables in production
+- Consider adding rate limiting for admin endpoints
+
+**Reference Files:**
+- `lib/pag_server_web/router.ex` - Router configuration
+- `lib/pag_server_web/endpoint.ex` - Phoenix endpoint
+- `lib/pag_server/workers/pricing_refresh.ex` - Worker being triggered
+
+## Notes
+
+- Pagination prevents large responses from overwhelming clients
+- 1000 record limit prevents abuse
+- Job ID returned allows tracking refresh progress via Oban dashboard
+- Future enhancement: WebSocket for real-time refresh progress updates
+- Future enhancement: Admin UI (LiveView) for managing pricing

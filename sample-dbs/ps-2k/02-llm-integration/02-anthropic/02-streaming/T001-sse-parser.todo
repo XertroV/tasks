@@ -1,0 +1,106 @@
+---
+id: P2.M2.E2.T001
+title: Implement SSE event parser
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E1.T003
+tags:
+- llm
+- anthropic
+- streaming
+- sse
+claimed_by: claude-1
+claimed_at: '2026-02-05T12:14:55.997973'
+started_at: '2026-02-05T12:14:55.997973'
+completed_at: '2026-02-05T12:20:00.167193'
+duration_minutes: 5.0694868500000005
+---
+
+# Implement SSE event parser
+
+Create a Server-Sent Events (SSE) parser for Anthropic streaming responses.
+
+## Requirements
+
+- [ ] Parse SSE format: `event:`, `data:`, blank line delimiters
+- [ ] Handle event types: message_start, content_block_start, content_block_delta, content_block_stop, message_delta, message_stop
+- [ ] Extract JSON from `data:` lines
+- [ ] Handle ping events (keep-alive)
+- [ ] Handle error events
+- [ ] Add tests with realistic SSE fixtures
+
+## Acceptance Criteria
+
+- [ ] Parses all Anthropic SSE event types
+- [ ] Handles malformed events gracefully
+- [ ] Ignores ping events appropriately
+- [ ] Tests cover all event types
+- [ ] >85% test coverage
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- `ref-projects/anthropix/lib/anthropix.ex` lines 77-95 (streaming example)
+
+**Key Points**:
+- SSE format is line-based protocol
+- Each event is terminated by blank line
+- Data is JSON after `data:` prefix
+
+## Notes
+
+SSE format example:
+```
+event: message_start
+data: {"type":"message_start","message":{"id":"msg_123",...}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Hello"}}
+
+event: message_stop
+data: {"type":"message_stop"}
+
+```
+
+Implementation pattern:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.SSE do
+  def parse_event(lines) do
+    lines
+    |> Enum.reduce(%{event: nil, data: []}, fn line, acc ->
+      cond do
+        String.starts_with?(line, "event:") ->
+          %{acc | event: String.trim_leading(line, "event:")}
+        
+        String.starts_with?(line, "data:") ->
+          data = String.trim_leading(line, "data:")
+          %{acc | data: [data | acc.data]}
+        
+        true -> acc
+      end
+    end)
+    |> build_event()
+  end
+  
+  defp build_event(%{event: "ping"}), do: :ping
+  defp build_event(%{event: event, data: data}) do
+    json = data |> Enum.reverse() |> Enum.join() |> Jason.decode!()
+    {String.to_atom(event), json}
+  end
+end
+```
+
+Event types:
+- `message_start` - Message metadata
+- `content_block_start` - Content block begins
+- `content_block_delta` - Token/text delta
+- `content_block_stop` - Content block ends
+- `message_delta` - Usage/stop reason
+- `message_stop` - Stream complete
+- `ping` - Keep-alive (ignore)
+- `error` - API error

@@ -1,0 +1,38 @@
+id: P48.M3.E1
+name: 'C1: LSP Transport Layer'
+status: done
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-lsptransport-genserver-content.todo
+  title: 'LspTransport GenServer: Content-Length framed JSON-RPC over stdio'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-lspserverlifecycle-genserver-i.todo
+  title: 'LspServerLifecycle GenServer: initialize/shutdown handshake'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-file-synchronization-didopen-d.todo
+  title: 'File synchronization: didOpen, didChange, didClose'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

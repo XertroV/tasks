@@ -1,0 +1,28 @@
+---
+id: P15.M2.E7.T005
+title: Add plugin and skill toggles with dependency guardrails
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M2.E7.T004
+- P11.M3.E3.T002
+tags:
+- plugins
+- skills
+- safety
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:06:20.901377+00:00'
+started_at: '2026-02-18T04:06:20.901377+00:00'
+completed_at: '2026-02-18T04:28:35.691787+00:00'
+duration_minutes: 22.2465065
+---
+## Goal
+Allow operators to enable/disable plugins and skill packs per workspace without causing invalid states.
+
+## Acceptance Criteria
+- Workspace detail view exposes plugin/skill controls with current state and source-of-truth indicators.
+- Toggle actions run dependency and compatibility checks before applying.
+- Risky changes show impact previews (affected agents/sessions) before confirmation.
+- Includes rollback path for failed or partially applied lifecycle actions.

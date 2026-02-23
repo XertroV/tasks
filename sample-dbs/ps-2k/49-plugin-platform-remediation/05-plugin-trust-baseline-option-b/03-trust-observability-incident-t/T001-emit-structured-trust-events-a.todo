@@ -1,0 +1,31 @@
+---
+id: P49.M5.E3.T001
+title: Emit structured trust events and wire telemetry handlers
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T10:09:59.532220+00:00'
+started_at: '2026-02-20T10:09:59.532220+00:00'
+completed_at: '2026-02-20T10:54:45.592264+00:00'
+duration_minutes: 44.76766721666667
+---
+
+# Emit structured trust events and wire telemetry handlers
+
+
+
+## Requirements
+
+- Emit structured trust events for install, verify, enable, execute, update, quarantine, and remove operations.
+- Wire plugin trust telemetry into centralized observability handlers.
+- Include correlation fields for actor, workspace, session, plugin version, and decision reason.
+
+## Acceptance Criteria
+
+- Trust event schema is consistent and documented.
+- Central telemetry handlers receive and process trust events.
+- Tests validate event payload shape and coverage across core trust transitions.

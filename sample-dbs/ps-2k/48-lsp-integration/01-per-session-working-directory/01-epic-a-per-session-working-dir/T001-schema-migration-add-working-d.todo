@@ -1,0 +1,16 @@
+---
+id: P48.M1.E1.T001
+title: 'Schema migration: add working_directory and git_branch to sessions'
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:16.856876+00:00'
+started_at: '2026-02-20T08:37:16.856876+00:00'
+completed_at: '2026-02-20T08:49:55.074163+00:00'
+duration_minutes: 12.636954483333334
+---
+Add working_directory (string, nullable, relative path within workspace) and git_branch (string, nullable) columns to sessions table. nil working_directory means 'use workspace root' (backward-compatible). Validate no '../' traversal. Reversible migration.

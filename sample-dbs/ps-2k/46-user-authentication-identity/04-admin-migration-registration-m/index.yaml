@@ -1,0 +1,42 @@
+id: P46.M4
+name: Admin Migration & Registration Modes
+status: done
+estimate_hours: 12.0
+complexity: medium
+depends_on:
+- P46.M3
+locked: false
+epics:
+- id: E1
+  name: 'Admin Role Migration: Remove x-admin-key'
+  path: 01-admin-role-migration-remove-x
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Registration Mode & Platform Invitations
+  path: 02-registration-mode-platform-inv
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Bootstrap Mix Task
+  path: 03-bootstrap-mix-task
+  status: done
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,64 @@
+---
+id: P11.M3.E2.T003
+title: Build plugin dependency resolution
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T08:13:38.480340+00:00'
+started_at: '2026-02-12T08:13:38.480340+00:00'
+completed_at: '2026-02-12T09:01:32.984181+00:00'
+duration_minutes: 47.90839716666667
+---
+
+# Build plugin dependency resolution
+
+Implement semantic versioning and dependency resolution for plugin compatibility.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/semver.ex` module:
+  - [ ] Parse semantic versions: x.y.z format
+  - [ ] Support version ranges: `^x.y.z` (compatible), `~x.y` (minor), `>=x.y.z`, `*` (any)
+  - [ ] Implement version comparison: `version_satisfies?(target, range)`
+  - [ ] Return list of matching versions from a set
+
+- [ ] Create `lib/pag_server/plugins/dependency_resolver.ex`:
+  - [ ] Build dependency graph from all installed plugins
+  - [ ] Detect circular dependencies and fail with clear message
+  - [ ] `resolve_dependencies(plugin_id, version)` -> `{:ok, deps_tree}` or `{:error, reason}`
+  - [ ] Validate all dependencies are resolvable before installation
+  - [ ] Support optional dependencies (warn if missing, don't fail)
+
+- [ ] Implement conflict detection:
+  - [ ] `check_conflicts(new_deps, existing_plugins)` -> list of conflicts
+  - [ ] Detect version conflicts (A needs B^1.0, but C needs B^2.0)
+  - [ ] Return actionable conflict messages with suggested resolutions
+
+- [ ] Add installation order calculation:
+  - [ ] `installation_order(plugin_id, version)` -> topologically sorted list
+  - [ ] Install dependencies before plugins that depend on them
+  - [ ] Return ordered list of (plugin_id, version) tuples
+
+- [ ] Create dependency checking endpoints:
+  - [ ] `POST /api/plugins/:id/check-dependencies` - validate before install
+  - [ ] Return: `{dependencies: [...], conflicts: [...], resolvable: bool}`
+
+- [ ] Integrate with installer:
+  - [ ] Resolve dependencies during `POST /api/plugins/install`
+  - [ ] Offer to install missing dependencies
+  - [ ] Abort installation if unresolvable conflicts
+
+## Acceptance Criteria
+
+- [ ] Semver parser handles all standard version formats
+- [ ] Version range matching works correctly (caret, tilde, comparison operators)
+- [ ] Dependency resolver builds accurate dependency graphs
+- [ ] Circular dependency detection prevents infinite loops
+- [ ] Conflict detection identifies version incompatibilities
+- [ ] Installation order respects dependency order
+- [ ] Endpoints return clear conflict/resolution messages
+- [ ] Tests cover 20+ dependency scenarios (transitive, circular, conflicts)

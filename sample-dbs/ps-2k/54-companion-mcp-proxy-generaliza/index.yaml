@@ -1,0 +1,78 @@
+id: P54
+name: Companion MCP Proxy Generalization & BrowserMCP Plugin
+status: done
+locked: true
+weeks: 3
+estimate_hours: 50.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Adapter Extraction & Proxy Generalization
+  path: 01-adapter-extraction-proxy-gener
+  status: done
+  estimate_hours: 11.0
+  complexity: high
+  depends_on: []
+  description: Extract CompanionToolAdapter behaviour from CompanionProxyExecutor,
+    move BrowserMCP-specific logic into BrowserMcpAdapter, and parameterize the executor
+    to dispatch by tool name. All existing P53 behavior preserved; future MCP tools
+    plug in via adapters.
+  locked: false
+- id: M2
+  name: Generic MCP Proxy Protocol & Workspace Scoping
+  path: 02-generic-mcp-proxy-protocol-wor
+  status: done
+  estimate_hours: 19.0
+  complexity: high
+  depends_on: []
+  description: Add mcp_register/mcp_tool_call/mcp_tool_result wire protocol to CompanionChannel
+    for dynamic MCP tool discovery from pag-connect. Add CompanionMCPRegistry for
+    workspace-scoped tool schema tracking. Add CompanionMCPProxy executor. Inject
+    companion MCP tools into SchemaBuilder so LLMs can discover them.
+  locked: false
+- id: M3
+  name: BrowserMCP Plugin Migration
+  path: 03-browsermcp-plugin-migration
+  status: done
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on:
+  - P54.M2
+  description: 'Convert BrowserMCP from hardcoded config-flag approach to a proper
+    plugin (plugins/browser_mcp/). Migrate PAG_BROWSERMCP_* env vars to plugin config
+    with backward-compat reading. Local mode: plugin starts bunx @browsermcp/mcp@latest
+    as a stdio MCP server.'
+  locked: false
+- id: M4
+  name: pag-connect MCP Server Infrastructure
+  path: 04-pag-connect-mcp-server-infrast
+  status: done
+  estimate_hours: 13.0
+  complexity: high
+  depends_on:
+  - P54.M2
+  description: Implement MCP server management in pag-connect so it can run bunx @browsermcp/mcp@latest
+    (and other configured MCP servers) locally, discover their tools, and proxy tool
+    calls back to pag-server via the mcp_register/mcp_tool_call/mcp_tool_result wire
+    protocol.
+  locked: false
+- id: M5
+  name: Documentation Updates
+  path: 05-documentation-updates
+  status: done
+  estimate_hours: 4.0
+  complexity: low
+  depends_on:
+  - P54.M3
+  - P54.M4
+  description: Update P53 docs to reflect generic MCP proxy architecture and BrowserMCP
+    plugin. Add plugin user guide. Update PLUGIN_DEVELOPMENT.md with companion MCP
+    proxy pattern.
+  locked: false
+stats:
+  total_tasks: 27
+  done: 27
+  in_progress: 0
+  blocked: 0
+  pending: 0

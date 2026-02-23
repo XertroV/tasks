@@ -1,0 +1,24 @@
+---
+id: P50.M2.E2.T005
+title: Implement CollabTeams.SystemPrompt and wire into plugin.json
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:30:35.305240+00:00'
+started_at: '2026-02-23T02:30:35.305240+00:00'
+completed_at: '2026-02-23T02:30:37.913738+00:00'
+duration_minutes: 0.0434748
+---
+## Description
+Create CollabTeams.SystemPrompt module implementing system_prompt/1 (agent_ctx map). Look up worker row by agent_ctx.agent_id to find team_id, role; look up team row for name, workspace_id. Return formatted string: team name, team ID, workspace ID, role, brief instruction preamble explaining collab_teams.team tool usage. Return empty string if no worker row found (agent not in any team). Declare system_prompt_module: CollabTeams.SystemPrompt and agent_types: [collab_worker] in plugin.json under prompts.
+
+## Acceptance Criteria
+- system_prompt/1 with worker agent_id returns non-empty string containing team_id and role
+- unknown agent_id returns empty string
+- collab_worker agent receives prompt via PromptInjector
+- non-collab_worker agent does NOT receive prompt

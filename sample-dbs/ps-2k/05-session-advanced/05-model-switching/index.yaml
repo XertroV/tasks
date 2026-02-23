@@ -1,0 +1,22 @@
+id: P5.M05
+name: Dynamic Model Switching
+status: pending
+estimate_hours: 6
+complexity: low
+depends_on:
+- M1
+epics:
+- id: E1
+  name: Switch Logic
+  path: 01-switch-logic
+  status: pending
+  estimate_hours: 6
+  complexity: low
+  depends_on: []
+  description: Accept new model_spec mid-session
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

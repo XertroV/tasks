@@ -1,0 +1,16 @@
+id: P7.M1.E2
+name: Container Management
+status: pending
+estimate_hours: 5
+complexity: high
+depends_on: [E1]
+tasks:
+- T001-lifecycle.todo
+- T002-resource-limits.todo
+- T003-tests.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

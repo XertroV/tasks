@@ -1,0 +1,40 @@
+---
+id: P13.M3.E2.T004
+title: Integrate protocol into AgentServer
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E2.T001
+- P13.M3.E2.T002
+- P13.M3.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T11:31:54.234320+00:00'
+started_at: '2026-02-13T11:31:54.234320+00:00'
+completed_at: '2026-02-13T11:47:53.524104+00:00'
+duration_minutes: 15.988162833333332
+---
+
+# Integrate protocol into AgentServer
+
+## Description
+
+Replace the inline thinking phase detection in AgentServer with the new `ThinkingDetector` protocol. Select the appropriate detector implementation based on the model provider.
+
+## Acceptance Criteria
+- [ ] Add detector selection logic based on `state.config[:model_provider]`
+- [ ] Replace `maybe_track_thinking_phase_from_token/2` with protocol calls
+- [ ] Replace `scan_thinking_tags/2` with `ThinkingDetector.detect_start/2` and `detect_end/2`
+- [ ] Store detector state in agent metadata
+- [ ] Reset detector state on new request/stream
+- [ ] All existing thinking phase tests continue to pass
+- [ ] Add integration tests with mock LLM streams
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex` (lines 786-810, 1532-1591)
+- Related files: `lib/pag_server/llm/thinking_detector.ex`
+- Part of epic: P13.M3.E2 - Thinking Phase Protocol

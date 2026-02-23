@@ -1,0 +1,41 @@
+id: P36.M1.E1
+name: Schema & Migrations
+status: pending
+estimate_hours: 2.5
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-execution-mode-and-default.todo
+  title: Add execution_mode and default_auto_start to agents table
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-execution-mode-auto-start.todo
+  title: Add execution_mode, auto_start, last_startup_duration_ms, last_active_at
+    to sessions
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-tests-for-agent-and-session-sc.todo
+  title: Tests for agent and session schema changes
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P36.M1.E1.T001
+  - P36.M1.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

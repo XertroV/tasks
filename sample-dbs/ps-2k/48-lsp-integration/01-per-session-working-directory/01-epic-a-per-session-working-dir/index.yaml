@@ -1,0 +1,62 @@
+id: P48.M1.E1
+name: 'Epic A: Per-Session Working Directory'
+status: done
+estimate_hours: 10.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-schema-migration-add-working-d.todo
+  title: 'Schema migration: add working_directory and git_branch to sessions'
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-toolrunner-resolve-session-wor.todo
+  title: 'ToolRunner: resolve session working directory as effective path'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-containertoolexecutor-respect.todo
+  title: 'ContainerToolExecutor: respect session working directory'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-api-set-get-session-working-di.todo
+  title: 'API: set/get session working_directory and git_branch'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-event-working-directory-change.todo
+  title: 'Event: working_directory_changed in event store'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-tests-for-epic-a-per-session-w.todo
+  title: 'Tests for Epic A: per-session working directory'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

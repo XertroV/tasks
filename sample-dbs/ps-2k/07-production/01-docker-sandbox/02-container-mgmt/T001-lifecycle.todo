@@ -1,0 +1,98 @@
+---
+id: P7.M1.E2.T001
+title: Container lifecycle management
+status: done
+estimate_hours: 2
+complexity: medium
+priority: high
+depends_on:
+- P7.M1.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:46:52.636306+00:00'
+started_at: '2026-02-06T20:46:52.636306+00:00'
+completed_at: '2026-02-06T20:56:40.897246+00:00'
+tags:
+- docker
+- lifecycle
+- cleanup
+duration_minutes: 9.804348716666668
+---
+
+# Container lifecycle management
+
+Implement container start, stop, and cleanup functions with proper error handling.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/sandbox/docker.ex` module
+- [ ] Implement `start_container/2` function
+- [ ] Implement `stop_container/2` function
+- [ ] Implement `cleanup_container/1` function
+- [ ] Add automatic cleanup on process exit
+- [ ] Handle orphaned containers from crashes
+- [ ] Add container naming for tracking
+
+## Acceptance Criteria
+
+- [ ] Containers start with unique IDs
+- [ ] Containers stop gracefully with timeout
+- [ ] Failed containers are cleaned up automatically
+- [ ] Orphaned containers detected and removed on startup
+- [ ] All functions handle Docker errors properly
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/research.md` lines 107-131 (Docker Integration)
+- Task breakdown P7.M1.E2 (Container Management)
+
+**Key Points**:
+- Use container name prefix "pag-sandbox-" for identification
+- Set cleanup hook using Process.exit/2 trap
+- Query running containers on startup to find orphans
+- Use docker inspect to check container state
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PagServer.Sandbox.Docker do
+  def start_container(command, opts) do
+    container_id = generate_container_id()
+    docker_args = build_docker_args(container_id, command, opts)
+    
+    case System.cmd("docker", docker_args) do
+      {output, 0} -> {:ok, container_id, output}
+      {error, code} -> {:error, {:docker_failed, code, error}}
+    end
+  end
+
+  def stop_container(container_id, timeout \\ 10) do
+    System.cmd("docker", ["stop", "-t", "#{timeout}", container_id])
+  end
+
+  def cleanup_orphaned_containers() do
+    # Find containers with "pag-sandbox-" prefix
+    # Stop and remove if not in registry
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-06 20:46 UTC
+**Sibling tasks**: P7.M1.E2.T002, P7.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M1.E2.T001 → P7.M1.E2.T002 → P7.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M1.E2.T001: .tasks/07-production/01-docker-sandbox/02-container-mgmt/T001-lifecycle.todo
+- P7.M1.E2.T002: .tasks/07-production/01-docker-sandbox/02-container-mgmt/T002-resource-limits.todo
+- P7.M1.E2.T003: .tasks/07-production/01-docker-sandbox/02-container-mgmt/T003-tests.todo

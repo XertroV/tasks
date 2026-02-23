@@ -1,0 +1,25 @@
+---
+id: B003
+title: on thhe webui, when i try to send a prompt, it does nothing. even when connected
+  to backend. it also says no active session selected, but i tried creating one with
+  the new session button (also does nothing). no errors in console.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:16:03.312389+00:00'
+started_at: '2026-02-15T16:16:03.312389+00:00'
+completed_at: '2026-02-15T16:43:41.369610+00:00'
+duration_minutes: 27.634286799999998
+---
+
+on thhe webui, when i try to send a prompt, it does nothing. even when connected to backend. it also says no active session selected, but i tried creating one with the new session button (also does nothing). no errors in console.
+
+## Fix Record
+
+- **Fixed in commit**: 37eab364
+- **Summary**: test fix from any dir after subshell fix
+- **Fixed at**: 2026-02-20T15:00:17Z

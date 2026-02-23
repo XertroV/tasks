@@ -1,0 +1,17 @@
+---
+id: P45.M5.E1.T003
+title: Add share/revoke_share MCP tool actions
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P45.M5.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.201121+00:00'
+started_at: '2026-02-19T19:17:35.201121+00:00'
+completed_at: '2026-02-19T19:51:23.975151+00:00'
+duration_minutes: 33.81290031666666
+---
+Add 'share' and 'revoke_share' to the credentials_vault MCP tool's action enum and dispatcher. share args: secret_name, grantee_workspace_id or grantee_user_id (one required). revoke_share args: grant_id. Only the owning workspace/user can share; enforce this in the handler. Update mcp_tools/0 JSON Schema to include these actions.

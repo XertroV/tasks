@@ -1,0 +1,45 @@
+id: P12.M2.E2
+name: Optimize Slow Tests
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-optimize-pricing-controller-te.todo
+  title: Optimize pricing_controller_test.exs (6+ sec tests)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-optimize-anthropic-tool-execut.todo
+  title: Optimize anthropic/tool_executor_test.exs
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-make-integration-tests-async-w.todo
+  title: Make integration tests async where possible
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-optimize-agent-server-tool-loo.todo
+  title: Optimize agent_server_tool_loop_test.exs (3.7s)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,54 @@
+---
+id: P9.M5.E1.T002
+title: Implement Plugin struct and validation
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- core
+- validation
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:53.734042'
+started_at: '2026-02-06T17:07:53.734042'
+completed_at: '2026-02-06T17:07:54.450410'
+duration_minutes: 0.011939300000000002
+---
+
+# Implement Plugin struct and validation
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/plugin.ex` module
+- [ ] Define `PagServer.Plugins.Plugin` struct embedding all manifest fields plus runtime state:
+  - [ ] All fields from `Manifest` (name, version, description, author, type, entry_point, etc.)
+  - [ ] `:status` - Runtime status atom (`:discovered`, `:loaded`, `:enabled`, `:disabled`, `:error`)
+  - [ ] `:pid` - Process PID for running plugin (nil when not running)
+  - [ ] `:loaded_at` - DateTime when plugin was loaded
+  - [ ] `:enabled_at` - DateTime when plugin was last enabled
+  - [ ] `:error` - Error information when status is `:error`
+  - [ ] `:config` - Resolved plugin configuration (from config_schema defaults + overrides)
+- [ ] Implement `new/1` that creates a Plugin from a parsed Manifest
+- [ ] Implement `validate/1` that validates a Plugin struct (delegates to Manifest validation + runtime checks)
+- [ ] Implement `update_status/2` for safe status transitions with validation
+- [ ] Add full typespecs for all struct fields and public functions
+- [ ] Add `@moduledoc` and `@doc` documentation
+
+## Acceptance Criteria
+
+- [ ] Plugin struct contains all manifest fields plus runtime state fields (status, pid, loaded_at, error)
+- [ ] `new/1` correctly constructs a Plugin from a valid Manifest, setting status to `:discovered`
+- [ ] `validate/1` returns `{:ok, plugin}` or `{:error, reasons}` with specific validation failures
+- [ ] Invalid status transitions are rejected (e.g., `:discovered` -> `:enabled` without `:loaded`)
+- [ ] Unit tests cover struct creation, validation, and status transitions
+- [ ] Dialyzer-clean typespecs on all public functions
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/plugin.ex`
+- **Depends on**: `PagServer.Plugins.Manifest` (T001) for field definitions
+- **Used by**: `PagServer.Plugins.Registry` (T004), `PagServer.Plugins.Discovery` (T003)
+- **Pattern reference**: Similar runtime state pattern to `PagServer.Agents.AgentServer` state struct

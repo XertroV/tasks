@@ -1,0 +1,42 @@
+---
+id: P7.M7.E1.T021
+title: Document events query and replay module APIs
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- events
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:37:45.794188+00:00'
+started_at: '2026-02-08T06:37:45.794188+00:00'
+completed_at: '2026-02-08T06:46:57.832883+00:00'
+duration_minutes: 9.200644733333332
+---
+
+# Document events query and replay module APIs
+
+Improve query/replay documentation so event-sourcing workflows are auditable and
+easy to consume from higher-level orchestration code.
+
+
+## Requirements
+
+- [x] Add or improve `@doc/@spec` for public functions in:
+  - [x] `lib/pag_server/events/queries.ex`
+  - [x] `lib/pag_server/events/event_store.ex`
+  - [x] `lib/pag_server/events/replay.ex`
+- [x] Add `@typedoc` for exported query/replay result and filter types
+- [x] Clarify ordering, pagination, and replay determinism expectations in docs
+- [x] Ensure examples and terminology align with current event schema usage
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] Scoped events modules have public `@doc` coverage for exported functions
+- [x] Public `@spec` coverage is complete for scoped events modules
+- [x] Exported public types in scoped modules include `@typedoc`
+- [x] `mix docs` completes without new warnings from scoped modules

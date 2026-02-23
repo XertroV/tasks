@@ -1,0 +1,16 @@
+---
+id: P35.M1.E3.T008
+title: 'Review P34.M2: Skill Format Parser'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:07:09.512645+00:00'
+started_at: '2026-02-19T02:07:09.512645+00:00'
+completed_at: '2026-02-19T02:15:04.088069+00:00'
+duration_minutes: 7.909590266666667
+---
+Load the review-and-fix skill. Review all epics and tasks under P34.M2 (Skill Format Parser). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: SKILL.md YAML frontmatter parser (correctness, edge cases), metadata extraction (name, description, requirements, tags), skill validation logic, and integration with the ClawHub client from P34.M1. Note: tasks were pending at time of phase creation — verify implementation exists and is complete.

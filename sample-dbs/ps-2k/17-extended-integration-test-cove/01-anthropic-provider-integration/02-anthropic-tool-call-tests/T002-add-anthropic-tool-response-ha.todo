@@ -1,0 +1,25 @@
+---
+id: P17.M1.E2.T002
+title: Add Anthropic tool response handling test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:29:32.238205+00:00'
+started_at: '2026-02-14T06:29:32.238205+00:00'
+completed_at: '2026-02-14T06:41:56.032557+00:00'
+duration_minutes: 12.396572333333333
+---
+
+# Add Anthropic tool response handling test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

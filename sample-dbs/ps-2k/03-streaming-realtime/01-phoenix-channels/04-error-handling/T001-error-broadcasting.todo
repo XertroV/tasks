@@ -1,0 +1,380 @@
+---
+title: Broadcast LLM and Tool Errors via Channel
+epic: P3.M1.E4-error-handling
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimate_hours: 0.75
+depends_on:
+- P3.M1.E3.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:00:29.018016'
+started_at: '2026-02-06T16:00:29.018016'
+completed_at: '2026-02-06T16:04:59.562335'
+duration_minutes: 4.50907175
+id: P3.M1.E4.T001
+---
+
+# Task: Broadcast LLM and Tool Errors via Channel
+
+## Context
+When an agent encounters an error during LLM calls or tool execution, connected clients need to be notified immediately so they can display error messages and handle failures gracefully.
+
+## Goal
+Implement error event broadcasting from agent GenServer through PubSub to channel clients.
+
+## Requirements
+- Broadcast LLM provider errors (rate limits, auth failures, network timeouts)
+- Broadcast tool execution errors (permission denied, tool not found, execution failures)
+- Include actionable error messages
+- Preserve error context (message_id, agent_id, error type)
+- Log errors for debugging
+
+## Implementation
+
+### File: `lib/pag_server/agents/events.ex`
+
+Add error event types:
+
+```elixir
+defmodule PagServer.Agents.Events do
+  @moduledoc """
+  Event types emitted by agent processes.
+  """
+  
+  # ... existing token events ...
+  
+  @type llm_error_event :: %{
+    type: :llm_error,
+    agent_id: String.t(),
+    message_id: String.t() | nil,
+    error_type: atom(),  # :rate_limit | :auth_failed | :network | :provider_error
+    error_message: String.t(),
+    provider: String.t(),
+    retry_after: integer() | nil,
+    timestamp: integer()
+  }
+  
+  @type tool_error_event :: %{
+    type: :tool_error,
+    agent_id: String.t(),
+    message_id: String.t(),
+    tool_name: String.t(),
+    error_type: atom(),  # :not_found | :permission_denied | :execution_failed | :timeout
+    error_message: String.t(),
+    timestamp: integer()
+  }
+  
+  @type agent_error_event :: %{
+    type: :agent_error,
+    agent_id: String.t(),
+    error_type: atom(),  # :crashed | :timeout | :invalid_state
+    error_message: String.t(),
+    timestamp: integer()
+  }
+  
+  @type event :: 
+    token_event() 
+    | stream_complete_event() 
+    | llm_error_event() 
+    | tool_error_event()
+    | agent_error_event()
+end
+```
+
+### File: `lib/pag_server/agents/agent.ex`
+
+Update Agent GenServer to broadcast errors:
+
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  require Logger
+  
+  alias PagServer.LLM
+  alias PagServer.Tools
+  alias PagServer.PubSub
+  
+  # ... existing code ...
+  
+  defp stream_response(message, state) do
+    agent_id = state.agent_id
+    message_id = message.id
+    
+    Task.start(fn ->
+      try do
+        context = build_context(state)
+        
+        LLM.stream(context, state.model, fn event ->
+          case event do
+            {:token, token} ->
+              broadcast_token(agent_id, message_id, token)
+            
+            {:error, reason} ->
+              broadcast_llm_error(agent_id, message_id, reason, state.model)
+          end
+        end)
+      rescue
+        e in [LLM.RateLimitError] ->
+          broadcast_event(agent_id, %{
+            type: :llm_error,
+            agent_id: agent_id,
+            message_id: message_id,
+            error_type: :rate_limit,
+            error_message: "Rate limit exceeded. Please try again later.",
+            provider: state.model,
+            retry_after: e.retry_after,
+            timestamp: System.system_time(:millisecond)
+          })
+          
+          Logger.warning("Rate limit hit for agent #{agent_id}: #{inspect(e)}")
+        
+        e in [LLM.AuthenticationError] ->
+          broadcast_event(agent_id, %{
+            type: :llm_error,
+            agent_id: agent_id,
+            message_id: message_id,
+            error_type: :auth_failed,
+            error_message: "Authentication failed. Check API credentials.",
+            provider: state.model,
+            retry_after: nil,
+            timestamp: System.system_time(:millisecond)
+          })
+          
+          Logger.error("Auth failed for agent #{agent_id}: #{inspect(e)}")
+        
+        e ->
+          broadcast_event(agent_id, %{
+            type: :llm_error,
+            agent_id: agent_id,
+            message_id: message_id,
+            error_type: :provider_error,
+            error_message: "LLM request failed: #{Exception.message(e)}",
+            provider: state.model,
+            retry_after: nil,
+            timestamp: System.system_time(:millisecond)
+          })
+          
+          Logger.error("LLM error for agent #{agent_id}: #{inspect(e)}")
+      end
+    end)
+  end
+  
+  defp execute_tool(tool_name, args, state) do
+    agent_id = state.agent_id
+    message_id = state.current_message_id
+    
+    case Tools.execute(tool_name, args, state) do
+      {:ok, result} ->
+        {:ok, result}
+      
+      {:error, :not_found} ->
+        broadcast_event(agent_id, %{
+          type: :tool_error,
+          agent_id: agent_id,
+          message_id: message_id,
+          tool_name: tool_name,
+          error_type: :not_found,
+          error_message: "Tool '#{tool_name}' not found",
+          timestamp: System.system_time(:millisecond)
+        })
+        
+        {:error, :not_found}
+      
+      {:error, :permission_denied} ->
+        broadcast_event(agent_id, %{
+          type: :tool_error,
+          agent_id: agent_id,
+          message_id: message_id,
+          tool_name: tool_name,
+          error_type: :permission_denied,
+          error_message: "Permission denied for tool '#{tool_name}'",
+          timestamp: System.system_time(:millisecond)
+        })
+        
+        {:error, :permission_denied}
+      
+      {:error, reason} ->
+        broadcast_event(agent_id, %{
+          type: :tool_error,
+          agent_id: agent_id,
+          message_id: message_id,
+          tool_name: tool_name,
+          error_type: :execution_failed,
+          error_message: "Tool execution failed: #{inspect(reason)}",
+          timestamp: System.system_time(:millisecond)
+        })
+        
+        {:error, reason}
+    end
+  end
+  
+  defp broadcast_event(agent_id, event) do
+    Phoenix.PubSub.broadcast(
+      PubSub,
+      "agent:#{agent_id}",
+      {:agent_event, event}
+    )
+  end
+end
+```
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+Handle error events in channel:
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  # ... existing code ...
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :llm_error} = event}, socket) do
+    push(socket, "llm_error", %{
+      message_id: event.message_id,
+      error_type: event.error_type,
+      error_message: event.error_message,
+      provider: event.provider,
+      retry_after: event.retry_after
+    })
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :tool_error} = event}, socket) do
+    push(socket, "tool_error", %{
+      message_id: event.message_id,
+      tool_name: event.tool_name,
+      error_type: event.error_type,
+      error_message: event.error_message
+    })
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_info({:agent_event, %{type: :agent_error} = event}, socket) do
+    push(socket, "agent_error", %{
+      error_type: event.error_type,
+      error_message: event.error_message
+    })
+    
+    # For critical errors, may want to force disconnect
+    if event.error_type == :crashed do
+      {:stop, :normal, socket}
+    else
+      {:noreply, socket}
+    end
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] LLM errors broadcast with error_type and actionable message
+- [ ] Tool errors broadcast with tool_name and error details
+- [ ] Rate limit errors include retry_after duration
+- [ ] Errors logged to Logger for debugging
+- [ ] Channel pushes errors to connected clients
+- [ ] Critical errors can trigger disconnect
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/agent_channel_error_test.exs
+defmodule PagServerWeb.AgentChannelErrorTest do
+  use PagServerWeb.ChannelCase
+  
+  import Mock
+  import PagServer.Factories
+  
+  alias PagServer.Agents
+  alias PagServer.LLM
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      system_prompt: "Test agent",
+      user_id: "test-user"
+    })
+    
+    {:ok, agent: agent}
+  end
+  
+  test "broadcasts LLM rate limit errors", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Mock rate limit error
+    with_mock LLM, [stream: fn _, _, _ -> 
+      raise LLM.RateLimitError, retry_after: 60
+    end] do
+      ref = push(socket, "message:send", %{"content" => "Hello"})
+      assert_reply ref, :ok, %{}
+      
+      # Should receive error
+      assert_push "llm_error", %{
+        error_type: :rate_limit,
+        retry_after: 60
+      }
+    end
+  end
+  
+  test "broadcasts tool execution errors", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Simulate tool error by requesting non-existent tool
+    # (implementation depends on how agent receives tool calls)
+    
+    assert_push "tool_error", %{
+      tool_name: "non_existent_tool",
+      error_type: :not_found
+    }
+  end
+  
+  test "broadcasts authentication errors", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    with_mock LLM, [stream: fn _, _, _ ->
+      raise LLM.AuthenticationError, message: "Invalid API key"
+    end] do
+      ref = push(socket, "message:send", %{"content" => "Test"})
+      assert_reply ref, :ok, %{}
+      
+      assert_push "llm_error", %{
+        error_type: :auth_failed,
+        error_message: msg
+      }
+      
+      assert msg =~ "Authentication failed"
+    end
+  end
+end
+```
+
+## References
+- Phoenix.Channel error handling: https://hexdocs.pm/phoenix/Phoenix.Channel.html#module-fault-tolerance
+- Elixir exception handling: https://hexdocs.pm/elixir/Kernel.html#defexception/1
+- Logger: https://hexdocs.pm/logger/Logger.html
+
+## Notes
+- Consider error aggregation if many errors occur rapidly
+- Rate limit errors should be cached to prevent spam
+- Tool errors may need retry logic at agent level
+- Future: Add error recovery strategies (auto-retry, fallback models)

@@ -1,0 +1,44 @@
+# Epic: RAG Retrieval System
+# Phase 9, Milestone 2, Epic 2 (P9.M2.E2)
+
+id: P9.M2.E2
+name: RAG Retrieval System
+status: pending
+estimate_hours: 6
+complexity: high
+depends_on: [P9.M2.E1]
+
+tasks:
+  - id: T001
+    file: T001-rag-pipeline.todo
+    title: Build RAG retrieval pipeline
+    status: pending
+    estimate_hours: 2.5
+    complexity: high
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-doc-indexing.todo
+    title: Add document indexing
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-citation-tracking.todo
+    title: Implement citation tracking
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

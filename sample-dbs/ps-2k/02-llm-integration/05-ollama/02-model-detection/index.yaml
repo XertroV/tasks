@@ -1,0 +1,41 @@
+id: P2.M5.E2
+name: Model Detection
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-list-models.todo
+    title: Implement model listing via /api/tags
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    
+  - id: T002
+    file: T002-model-info.todo
+    title: Add model info via /api/show
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [P2.M5.E2.T001]
+    
+  - id: T003
+    file: T003-tests.todo
+    title: Write model detection tests
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [P2.M5.E2.T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

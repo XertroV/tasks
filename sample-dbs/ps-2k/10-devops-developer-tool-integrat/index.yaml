@@ -1,0 +1,55 @@
+id: P10
+name: DevOps & Developer Tool Integrations
+status: pending
+weeks: 5
+estimate_hours: 96.0
+complexity: medium
+depends_on:
+- P9
+milestones:
+- id: M1
+  name: GitHub Integration
+  path: 01-github-integration
+  status: pending
+  estimate_hours: 24.0
+  complexity: medium
+  depends_on: []
+  description: GitHub webhooks, issues, pull requests, GitHub Actions integration
+- id: M2
+  name: GitLab Integration
+  path: 02-gitlab-integration
+  status: pending
+  estimate_hours: 22.0
+  complexity: medium
+  depends_on: []
+  description: GitLab webhooks, issues, merge requests, GitLab CI/CD pipeline integration
+- id: M3
+  name: Issue Tracker Integrations
+  path: 03-issue-tracker-integrations
+  status: pending
+  estimate_hours: 18.0
+  complexity: medium
+  depends_on: []
+  description: Jira, Linear, and other issue tracking platform integrations
+- id: M4
+  name: CI/CD Platform Integrations
+  path: 04-ci-cd-platform-integrations
+  status: pending
+  estimate_hours: 20.0
+  complexity: medium
+  depends_on: []
+  description: CircleCI, Jenkins, Drone, and other CI/CD platform webhooks and automation
+- id: M5
+  name: Additional Code Hosting
+  path: 05-additional-code-hosting
+  status: pending
+  estimate_hours: 12.0
+  complexity: low
+  depends_on: []
+  description: Bitbucket, Gitea, and self-hosted Git platform integrations
+stats:
+  total_tasks: 71
+  done: 71
+  in_progress: 0
+  blocked: 0
+  pending: 0

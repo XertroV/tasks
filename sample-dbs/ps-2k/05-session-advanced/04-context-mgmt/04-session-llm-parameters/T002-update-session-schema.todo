@@ -1,0 +1,121 @@
+---
+id: P5.M4.E4.T002
+title: Update Session schema
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P5.M4.E4.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T13:59:38.608741+00:00'
+started_at: '2026-02-07T13:59:38.608741+00:00'
+completed_at: '2026-02-07T14:02:18.983690+00:00'
+duration_minutes: 2.6729157
+---
+
+# Update Session schema
+
+Add llm_params field to Session schema, update create_changeset and update_changeset to cast the field, add validation for known parameter keys
+
+## Requirements
+
+- [ ] Add `field :llm_params, :map, default: %{}` to Session schema struct definition
+- [ ] Cast `llm_params` in `create_changeset/1`
+- [ ] Cast `llm_params` in `update_changeset/2`
+- [ ] Cast `llm_params` in `fork_changeset/2` (forked sessions inherit parent's LLM params)
+- [ ] Add validation for known parameter keys (temperature, max_tokens, thinking, top_p, top_k)
+- [ ] Add validation for parameter value types and ranges
+- [ ] Add `@type t` definition to include `llm_params: map()`
+- [ ] Document the `llm_params` field in module documentation
+
+## Acceptance Criteria
+
+- [ ] `llm_params` field added to schema definition with `:map` type and default `%{}`
+- [ ] Field included in `@type t` specification
+- [ ] `create_changeset/1` casts `:llm_params`
+- [ ] `update_changeset/2` casts `:llm_params`
+- [ ] `fork_changeset/2` casts `:llm_params` and can inherit from parent
+- [ ] Custom validation function `validate_llm_params/1` created
+- [ ] Validation checks for known parameter keys:
+  - [ ] `temperature` (float, 0.0-2.0)
+  - [ ] `max_tokens` (positive integer, 1-200000)
+  - [ ] `thinking` (map with `type` and optional `budget`)
+  - [ ] `top_p` (float, 0.0-1.0)
+  - [ ] `top_k` (positive integer)
+  - [ ] Unknown keys logged as warnings but allowed (forward compatibility)
+- [ ] Validation checks parameter value types match expected types
+- [ ] Module documentation updated with `llm_params` field description
+- [ ] Module documentation includes example of valid `llm_params` map
+- [ ] All tests pass
+- [ ] No compilation warnings
+
+## Context
+
+The `llm_params` field stores session-level LLM parameter overrides. These parameters
+are merged with agent defaults when making LLM requests, with session params taking
+precedence. This allows dynamic control of model behavior per session.
+
+**Supported Parameters**:
+- `temperature` - Sampling temperature (0.0-2.0)
+- `max_tokens` - Maximum tokens to generate (1-200000)
+- `thinking` - Extended thinking configuration (map with `type` and optional `budget`)
+- `top_p` - Nucleus sampling threshold (0.0-1.0)
+- `top_k` - Top-k sampling limit (positive integer)
+
+**Design Decisions**:
+- Use flexible validation to allow unknown keys (forward compatibility)
+- Validate known keys strictly to catch configuration errors early
+- Allow empty map (no overrides)
+
+## Implementation Notes
+
+Example validation function:
+
+```elixir
+defp validate_llm_params(changeset) do
+  validate_change(changeset, :llm_params, fn :llm_params, params ->
+    if is_map(params) do
+      validate_llm_param_values(params)
+    else
+      [llm_params: "must be a map"]
+    end
+  end)
+end
+
+defp validate_llm_param_values(params) do
+  []
+  |> validate_temperature(params)
+  |> validate_max_tokens(params)
+  |> validate_thinking(params)
+  |> validate_top_p(params)
+  |> validate_top_k(params)
+end
+
+defp validate_temperature(errors, params) do
+  case Map.get(params, "temperature") do
+    nil -> errors
+    value when is_float(value) and value >= 0.0 and value <= 2.0 -> errors
+    value when is_number(value) and value >= 0.0 and value <= 2.0 -> errors
+    _ -> [{:llm_params, "temperature must be a number between 0.0 and 2.0"} | errors]
+  end
+end
+
+# Similar validators for other params...
+```
+
+Example module documentation:
+
+```elixir
+## LLM Parameters
+
+The `llm_params` field allows per-session overrides of agent LLM settings:
+
+    %{
+      "temperature" => 0.7,
+      "max_tokens" => 4000,
+      "thinking" => %{"type" => "enabled", "budget" => 10000},
+      "top_p" => 0.9
+    }
+```

@@ -1,0 +1,15 @@
+id: P7.M6.E2
+name: Output Truncation
+status: pending
+estimate_hours: 2
+complexity: low
+depends_on: []
+tasks:
+- T001-impl.todo
+- T002-tests.todo
+stats:
+  total_tasks: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

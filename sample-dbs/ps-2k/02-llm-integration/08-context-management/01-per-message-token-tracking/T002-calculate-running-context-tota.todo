@@ -1,0 +1,56 @@
+---
+id: P2.M8.E1.T002
+title: Calculate running context total in session
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tokens
+- context
+- session
+claimed_by: claude-1
+claimed_at: '2026-02-05T19:02:32.529835'
+started_at: '2026-02-05T19:02:32.529835'
+completed_at: '2026-02-05T19:14:23.001266'
+duration_minutes: 11.841190333333333
+---
+
+# Calculate running context total in session
+
+
+
+## Requirements
+
+- [x] Add session-level context_token_total field and migration
+- [x] Increment session total when messages are persisted
+- [x] Load running total into agent metadata on session rehydration
+
+## Acceptance Criteria
+
+- [x] Session.context_token_total increments as messages are persisted
+- [x] Agent metadata includes context_token_total after loading context
+- [x] Tests cover session total increment and rehydration
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 06:02 UTC
+**Primary task**: P2.M7.E3.T001 - Integrate tokenizer and pricing
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E1 vs P2.M7.E3)
+- No dependency chain: ✓ (verified at claim time)

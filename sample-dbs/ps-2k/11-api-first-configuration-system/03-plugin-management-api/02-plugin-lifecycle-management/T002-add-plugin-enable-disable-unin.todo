@@ -1,0 +1,72 @@
+---
+id: P11.M3.E2.T002
+title: Add plugin enable/disable/uninstall endpoints
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T08:13:38.479128+00:00'
+started_at: '2026-02-12T08:13:38.479128+00:00'
+completed_at: '2026-02-12T09:01:31.940873+00:00'
+duration_minutes: 47.89102883333333
+---
+
+# Add plugin enable/disable/uninstall endpoints
+
+Implement plugin state management endpoints for enabling, disabling, and uninstalling plugins.
+
+## Requirements
+
+- [ ] Create plugin state management module `lib/pag_server/plugins/lifecycle.ex`:
+  - [ ] `enable(plugin_id)` - activate plugin globally
+  - [ ] `disable(plugin_id)` - deactivate plugin globally
+  - [ ] `uninstall(plugin_id, opts)` - remove plugin completely
+  - [ ] Handle cascading effects (dependent plugins)
+
+- [ ] Implement enable endpoint:
+  - [ ] `PATCH /api/plugins/:id/enable`
+  - [ ] Check plugin exists and is installed
+  - [ ] Load plugin configuration if present
+  - [ ] Run plugin startup hooks
+  - [ ] Update status in database to "enabled"
+  - [ ] Return 409 if dependencies are missing/disabled
+
+- [ ] Implement disable endpoint:
+  - [ ] `PATCH /api/plugins/:id/disable`
+  - [ ] Check if any other plugins depend on this
+  - [ ] Run plugin shutdown hooks gracefully
+  - [ ] Update status to "disabled"
+  - [ ] Return 409 if other plugins depend on it (unless force=true)
+
+- [ ] Implement uninstall endpoint:
+  - [ ] `DELETE /api/plugins/:id`
+  - [ ] Check if any plugins depend on this (unless force=true)
+  - [ ] Run plugin cleanup hooks
+  - [ ] Delete from `priv/plugins/` directory
+  - [ ] Remove database record
+  - [ ] Clear associated settings/cache
+
+- [ ] Add dependency checking:
+  - [ ] Query database for plugins depending on target
+  - [ ] Return list of dependent plugins in error response
+  - [ ] Support `force=true` to override (with warning)
+
+- [ ] Implement plugin hooks:
+  - [ ] Load and execute `on_enable.js`, `on_disable.js`, `on_uninstall.js` (if present)
+  - [ ] Handle hook errors gracefully (log, don't fail enable/disable)
+  - [ ] Execute hooks with timeout (5s default)
+
+## Acceptance Criteria
+
+- [ ] Enable endpoint activates disabled plugins
+- [ ] Disable endpoint deactivates enabled plugins
+- [ ] Uninstall endpoint removes all plugin files and records
+- [ ] Dependency check prevents disabling plugins that others depend on
+- [ ] Force uninstall works with --force parameter
+- [ ] Plugin hooks execute without blocking main operation
+- [ ] 409 returned when dependencies block operations
+- [ ] 404 returned for non-existent plugins
+- [ ] Tests verify all state transitions and hook execution

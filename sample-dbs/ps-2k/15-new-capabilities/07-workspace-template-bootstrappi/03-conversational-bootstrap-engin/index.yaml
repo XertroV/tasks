@@ -1,0 +1,46 @@
+id: P15.M7.E3
+name: Conversational Bootstrap Engine
+status: pending
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-build-bootstrapsession-genserv.todo
+  title: Build BootstrapSession GenServer for managing bootstrap state
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-bootstrap-system-prompt.todo
+  title: Build bootstrap system prompt compiler
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-build-file-generation-from-boo.todo
+  title: Build file generation from bootstrap answers
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-wire-bootstrap-into-agent-sess.todo
+  title: Wire bootstrap into agent session lifecycle
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,177 @@
+---
+id: P2.M6.E3.T003
+title: Add thinking extractor tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P2.M6.E3.T002
+tags:
+- testing
+- thinking
+- unit-tests
+- regex
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:54:14.228621'
+started_at: '2026-02-06T02:54:14.228621'
+completed_at: '2026-02-06T02:57:04.061146'
+duration_minutes: 2.8305418500000004
+---
+
+# Add thinking extractor tests
+
+Comprehensive test coverage for thinking block extraction.
+
+## Requirements
+
+- [ ] Create `test/pag_server/llm/thinking_extractor_test.exs`
+- [ ] Test basic extraction:
+  - [ ] Single thinking block
+  - [ ] Multiple thinking blocks
+  - [ ] No thinking blocks
+  - [ ] Empty thinking blocks
+- [ ] Test position variations:
+  - [ ] Thinking at start of message
+  - [ ] Thinking in middle of message
+  - [ ] Thinking at end of message
+  - [ ] Multiple thinking blocks scattered
+- [ ] Test edge cases:
+  - [ ] Adjacent thinking blocks (no space)
+  - [ ] Multi-line thinking content
+  - [ ] Thinking with special characters
+  - [ ] Unclosed thinking tag (should not match)
+  - [ ] Partial thinking tag in stream (buffer handling)
+- [ ] Test whitespace handling:
+  - [ ] Leading/trailing whitespace in thinking
+  - [ ] Whitespace preservation in response
+  - [ ] Empty lines in thinking blocks
+
+## Acceptance Criteria
+
+- [ ] All tests pass with `mix test`
+- [ ] Test coverage >90% for ThinkingExtractor module
+- [ ] Edge cases documented with examples
+- [ ] No warnings from ExUnit
+- [ ] Tests run in <1 second
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md` (Testing strategy)
+
+**Key Points**:
+- Test both public API and regex implementation
+- Use real examples from Anthropic responses (fixtures)
+- Verify order preservation for multiple blocks
+- Test performance with large thinking blocks
+
+## Notes
+
+**Example Test Structure**:
+```elixir
+defmodule PAGServer.LLM.ThinkingExtractorTest do
+  use ExUnit.Case, async: true
+
+  alias PAGServer.LLM.ThinkingExtractor
+
+  describe "extract/1" do
+    test "extracts single thinking block" do
+      text = """
+      <thinking>
+      Let me think about this.
+      </thinking>
+      
+      Here is my response.
+      """
+      
+      result = ThinkingExtractor.extract(text)
+      
+      assert result.thinking == ["Let me think about this."]
+      assert result.response == "Here is my response."
+    end
+
+    test "extracts multiple thinking blocks in order" do
+      text = """
+      <thinking>First thought</thinking>
+      Some text
+      <thinking>Second thought</thinking>
+      Final text
+      """
+      
+      result = ThinkingExtractor.extract(text)
+      
+      assert result.thinking == ["First thought", "Second thought"]
+      assert result.response == "Some text\nFinal text"
+    end
+
+    test "handles no thinking blocks" do
+      text = "Just a regular response"
+      
+      result = ThinkingExtractor.extract(text)
+      
+      assert result.thinking == []
+      assert result.response == text
+    end
+
+    test "handles empty thinking block" do
+      text = "<thinking></thinking>Response"
+      
+      result = ThinkingExtractor.extract(text)
+      
+      assert result.thinking == [""]
+      assert result.response == "Response"
+    end
+
+    test "does not match unclosed thinking tag" do
+      text = "<thinking>Incomplete block\nResponse"
+      
+      result = ThinkingExtractor.extract(text)
+      
+      assert result.thinking == []
+      assert result.response == text
+    end
+
+    test "handles multi-line thinking with special chars" do
+      text = """
+      <thinking>
+      Step 1: Analyze input
+      - Point A: foo
+      - Point B: bar
+      
+      Step 2: Synthesize
+      </thinking>
+      
+      Result: Success
+      """
+      
+      result = ThinkingExtractor.extract(text)
+      
+      assert length(result.thinking) == 1
+      assert result.thinking |> hd() |> String.contains?("Step 1")
+      assert result.response == "Result: Success"
+    end
+  end
+
+  describe "performance" do
+    test "handles large thinking blocks efficiently" do
+      # 5KB thinking block
+      large_thinking = String.duplicate("thinking content ", 300)
+      text = "<thinking>#{large_thinking}</thinking>response"
+      
+      {time_us, result} = :timer.tc(fn -> 
+        ThinkingExtractor.extract(text)
+      end)
+      
+      assert time_us < 1_000  # < 1ms
+      assert length(result.thinking) == 1
+    end
+  end
+end
+```
+
+**Fixture Examples** (in `test/fixtures/thinking_examples/`):
+- `single_block.txt`
+- `multiple_blocks.txt`
+- `anthropic_real_response.txt`
+- `no_thinking.txt`

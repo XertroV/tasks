@@ -1,0 +1,30 @@
+---
+id: B091
+title: Test contamination - WORKSPACE_DIR env var mutations in async tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- testing
+- test-contamination
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:45:43.307263+00:00'
+started_at: '2026-02-17T11:45:43.307263+00:00'
+completed_at: '2026-02-17T12:04:00.999196+00:00'
+duration_minutes: 18.2948654
+---
+Multiple integration tests call System.put_env('WORKSPACE_DIR', ...) inside async: true test modules. Env vars are global, so concurrent tests see values from other tests.
+
+Affected: workspace_files_test.exs, file_tracker_test.exs
+
+## Fix
+Pass root path as explicit parameter (dependency injection via opts), consistent with existing :fs adapter pattern. Or mark tests async: false.
+
+## Acceptance Criteria
+- [ ] No System.put_env('WORKSPACE_DIR') in async test files
+- [ ] Tests use dependency injection or async: false
+- [ ] All affected tests still pass
+
+Source: E2 Audit C2

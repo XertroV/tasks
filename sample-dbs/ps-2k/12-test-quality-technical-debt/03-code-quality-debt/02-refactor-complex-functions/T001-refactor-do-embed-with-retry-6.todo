@@ -1,0 +1,57 @@
+---
+id: P12.M3.E2.T001
+title: Refactor do_embed_with_retry/6 (complexity 15)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:37:36.448625+00:00'
+started_at: '2026-02-13T10:37:36.448625+00:00'
+completed_at: '2026-02-13T10:49:47.091361+00:00'
+duration_minutes: 12.177378616666665
+---
+
+# Refactor do_embed_with_retry/6 (complexity 15)
+
+## Description
+
+Reduce the cyclomatic complexity of `do_embed_with_retry/6` in the embeddings client. Current complexity of 15 exceeds the recommended threshold. Break down into smaller, focused functions.
+
+## Acceptance Criteria
+
+- [ ] Analyze current function structure and complexity hotspots
+- [ ] Extract helper functions for retry logic, error handling, response parsing
+- [ ] Maintain same external behavior and API
+- [ ] Target complexity: reduce to <= 10
+- [ ] All existing tests pass
+- [ ] Add unit tests for new helper functions
+- [ ] Lint passes
+
+## Context
+
+- Related files: `lib/pag_server/embeddings/client.ex`
+- Function: `do_embed_with_retry/6` (private function)
+- Consider extracting: retry decision logic, error classification
+- Part of epic: Refactor Complex Functions
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 10:37 UTC
+**Sibling tasks**: P12.M3.E2.T002, P12.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M3.E2.T001 → P12.M3.E2.T002 → P12.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M3.E2.T001: .tasks/12-test-quality-technical-debt/03-code-quality-debt/02-refactor-complex-functions/T001-refactor-do-embed-with-retry-6.todo
+- P12.M3.E2.T002: .tasks/12-test-quality-technical-debt/03-code-quality-debt/02-refactor-complex-functions/T002-refactor-classify-intent-1-com.todo
+- P12.M3.E2.T003: .tasks/12-test-quality-technical-debt/03-code-quality-debt/02-refactor-complex-functions/T003-refactor-validate-config-1-com.todo

@@ -1,0 +1,17 @@
+---
+id: P29.M1.E2.T001
+title: Implement sign_data MCP tool
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P29.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:03:18.389450+00:00'
+started_at: '2026-02-18T19:03:18.389450+00:00'
+completed_at: '2026-02-18T19:03:23.885100+00:00'
+duration_minutes: 0.09159401666666667
+---
+MCP tool: sign_data(data: string, workspace_id: string) -> base64 signature. Uses ed25519 private key from CryptoKeyManager. Structured output with signature and public_key.

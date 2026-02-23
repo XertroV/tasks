@@ -1,0 +1,33 @@
+---
+id: B038
+title: stabilize rapid crash recovery test when supervisor already restarted agent
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- agents
+- tests
+- recovery
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:19:51.886587+00:00'
+started_at: '2026-02-15T18:19:51.886587+00:00'
+completed_at: '2026-02-15T18:20:15.417095+00:00'
+duration_minutes: 0.39217498333333334
+---
+
+# stabilize rapid crash recovery test when supervisor already restarted agent
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe `PagServer.Agents.AgentCrashRecoveryTest` failure in rapid crash loop with `{:error, {:already_started, pid}}`.
+
+## Expected Behavior
+
+Rapid crash recovery test should handle both fresh starts and already-restarted agent cases deterministically.
+
+## Actual Behavior
+
+The test pattern matches only `{:ok, pid}` from `AgentSupervisor.start_agent/2`, but supervisor may have already restarted the agent before the explicit start call.

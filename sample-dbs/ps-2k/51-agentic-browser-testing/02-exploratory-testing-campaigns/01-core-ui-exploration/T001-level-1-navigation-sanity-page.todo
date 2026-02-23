@@ -1,0 +1,65 @@
+---
+id: P51.M2.E1.T001
+title: 'Level 1: Navigation sanity & page load audit'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:20:01.273456+00:00'
+started_at: '2026-02-21T05:20:01.273456+00:00'
+completed_at: '2026-02-21T05:20:16.494791+00:00'
+duration_minutes: 0.2536887333333333
+---
+## Campaign: Can everything load?
+
+The most basic check. Navigate to every dashboard page and verify it renders without 500 errors, JS crashes, or blank screens.
+
+## Acceptance Criteria
+- [x] All pages below visited; bugs filed for any that crash or 500
+- [x] Missing features / blank stubs documented (expected at pre-alpha)
+- [x] Quick fixes applied inline with 'backlog fixed <ID>' where trivial
+
+## Test Sequence (simple → complex)
+
+### Round 1: Unauthenticated pages
+1. GET / — does the root path redirect or render?
+2. GET /login — does the OAuth login page render with provider buttons?
+3. GET /health or /api/v1/status — does a health endpoint respond?
+
+### Round 2: Authenticated dashboard pages (requires login)
+For each page, verify: page loads, no JS console errors, main content renders
+- /dashboard/
+- /dashboard/agents
+- /dashboard/agent-manager
+- /dashboard/validation-console
+- /dashboard/events
+- /dashboard/settings
+- /dashboard/settings/profile
+- /dashboard/platform-config
+- /dashboard/plugin-settings
+- /dashboard/workspaces
+- /dashboard/workflow-templates
+- /dashboard/models-pricing
+- /dashboard/llm-calls
+- /dashboard/skills/hub
+- /dashboard/graphiti-wall
+
+### Round 3: Note which pages are stubs/empty
+- Document every 'Not implemented yet' or blank panel
+- File a low-severity bug for each with area tag
+- Mark fixed immediately if a trivial fix is visible
+
+## Outcome
+A census of which pages work. Required before deeper testing.
+
+## Execution Notes (2026-02-20)
+- Round 1 unauth caveat: in dev/permissive mode the UI auto-logs into admin, so `/login` OAuth button UI cannot be observed in a stable unauth state.
+- Health check validated with `/health` (`{"status":"ok","version":"0.1.0"}`); `/api/v1/status` is not implemented in this branch.
+- Round 2 dashboard routes visited end-to-end; one critical failure found and filed as `B161` (`.tasks/bugs/B161-skill-hub-liveview-crashes-in.todo`).
+- No trivial inline fixes were performed during this task.
+
+## Evidence Artifacts
+- `.tasks/bugs/B161-skill-hub-liveview-crashes-in.todo`

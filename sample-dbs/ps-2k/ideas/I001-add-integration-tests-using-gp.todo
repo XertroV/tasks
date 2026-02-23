@@ -1,0 +1,52 @@
+---
+id: I001
+title: add integration tests using gpt-oss-120 via groq
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-13T18:40:05.825988+00:00'
+started_at: '2026-02-13T18:40:05.825988+00:00'
+completed_at: '2026-02-13T18:46:38.131967+00:00'
+duration_minutes: 6.538432716666667
+---
+
+# Idea Intake: add integration tests using gpt-oss-120 via groq
+
+## Original Idea
+
+add integration tests using gpt-oss-120 via groq
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "add integration tests using gpt-oss-120 via groq"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+### Epic: P12.M1.E5 - LLM Integration Tests
+
+- **P12.M1.E5.T001** - Add Groq provider integration test module
+- **P12.M1.E5.T002** - Add gpt-oss-120 chat integration tests (depends on T001)
+- **P12.M1.E5.T003** - Add gpt-oss-120 streaming integration tests (depends on T001)
+- **P12.M1.E5.T004** - Add gpt-oss-120 tool calling integration tests (depends on T001)
+
+### Bug IDs
+- None
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,58 @@
+id: P54.M1.E1
+name: Adapter extraction and executor parameterization
+status: done
+estimate_hours: 11.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-companiontooladapter-be.todo
+  title: Define CompanionToolAdapter behaviour
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-extract-browsermcpadapter-from.todo
+  title: Extract BrowserMcpAdapter from CompanionProxyExecutor
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M1.E1.T001
+- id: T003
+  file: T003-parameterize-companionproxyexe.todo
+  title: Parameterize CompanionProxyExecutor with adapter dispatch
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M1.E1.T002
+- id: T004
+  file: T004-update-companionchannel-for-dy.todo
+  title: Update CompanionChannel for dynamic tool enablement
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M1.E1.T003
+- id: T005
+  file: T005-tests-verify-p53-behavior-pres.todo
+  title: 'Tests: verify P53 behavior preserved after adapter refactor'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M1.E1.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

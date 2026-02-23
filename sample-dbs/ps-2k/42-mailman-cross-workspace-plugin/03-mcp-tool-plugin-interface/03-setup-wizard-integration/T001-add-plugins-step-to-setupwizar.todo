@@ -1,0 +1,27 @@
+---
+id: P42.M3.E3.T001
+title: Add plugins step to SetupWizard with mailman checkbox
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:30:13.890056+00:00'
+started_at: '2026-02-19T17:30:13.890056+00:00'
+completed_at: '2026-02-19T17:37:03.868532+00:00'
+duration_minutes: 6.83297445
+---
+## Context
+lib/pag_server_web/live/setup_wizard.ex
+Currently wizard steps: workspace -> user_context -> workspace_template -> integrations -> bootstrap_run.
+New step :plugins inserted after :integrations.
+
+## Acceptance Criteria
+- [ ] New :plugins step added to @steps list between :integrations and :bootstrap_run
+- [ ] Step renders a list of opt-in plugins as checkboxes (start with just mailman)
+- [ ] Checking mailman box calls Plugin Registry to enable mailman for the workspace being set up
+- [ ] Step is skippable (no required plugins)
+- [ ] Step state persisted to PlatformConfig like other steps (setup.plugins_step)
+- [ ] UI consistent with existing wizard step style

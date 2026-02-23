@@ -1,0 +1,45 @@
+# Epic: Thinking Extractor
+# Phase 2, Milestone 6, Epic 3 (P2.M6.E3)
+
+id: P2.M6.E3
+name: Thinking Extractor
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on:
+- E2
+
+tasks:
+  - id: T001
+    file: T001-extractor-module.todo
+    title: Create thinking extractor module
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-regex-parser.todo
+    title: Implement regex-based parser
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-tests.todo
+    title: Add thinking extractor tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    # Implicit dependency on T002 by ordering
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

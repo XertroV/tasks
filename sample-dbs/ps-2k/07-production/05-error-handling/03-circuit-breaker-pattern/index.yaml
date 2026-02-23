@@ -1,0 +1,18 @@
+id: P7.M5.E3
+name: Circuit Breaker Pattern
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+tasks:
+- T001-add-fuse-dependency-and-config.todo
+- T002-wrap-provider-calls-with-circu.todo
+- T003-implement-half-open-state-with.todo
+- T004-add-circuit-breaker-telemetry.todo
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4
+  total_tasks: 4

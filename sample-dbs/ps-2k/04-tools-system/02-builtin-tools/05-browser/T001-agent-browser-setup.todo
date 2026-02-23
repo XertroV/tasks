@@ -1,0 +1,79 @@
+---
+id: P4.M2.E5.T001
+title: Setup agent-browser CLI
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tools
+- builtin
+- browser
+- setup
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:57:07.260438'
+started_at: '2026-02-06T02:57:07.260438'
+completed_at: '2026-02-06T03:00:30.658518'
+duration_minutes: 3.3899678166666667
+---
+
+# Setup agent-browser CLI
+
+Install and configure the Vercel agent-browser CLI for browser automation.
+
+## Requirements
+
+- [ ] Add agent-browser as system dependency
+- [ ] Document installation in README
+- [ ] Create wrapper script for browser launch
+- [ ] Configure browser preferences (headless, viewport, etc.)
+- [ ] Test browser can launch and navigate
+
+## Acceptance Criteria
+
+- [ ] `agent-browser` command is available on PATH
+- [ ] Browser launches in headless mode
+- [ ] Can navigate to test URL and capture snapshot
+- [ ] Configuration documented in setup guide
+- [ ] Test verifies browser availability
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` Browser automation section
+
+**Key Points**:
+- agent-browser uses Playwright under the hood
+- Alternative to MCP Playwright server
+- Uses ref-based element selection for LLM-friendly automation
+- Requires Node.js and npx
+
+## Notes
+
+Installation:
+```bash
+npm install -g @vercel/agent-browser
+# or use npx for on-demand execution
+```
+
+Configuration in `config/config.exs`:
+```elixir
+config :pag_server, :browser,
+  command: "npx",
+  args: ["@vercel/agent-browser"],
+  headless: true,
+  viewport: %{width: 1280, height: 720},
+  timeout: 30_000
+```
+
+Test browser availability:
+```bash
+npx @vercel/agent-browser browse "https://example.com" \
+  --snapshot --timeout 10000
+```
+
+Future enhancements:
+- Browser pool for parallel automation
+- Screenshot storage and retrieval
+- Session persistence for login flows

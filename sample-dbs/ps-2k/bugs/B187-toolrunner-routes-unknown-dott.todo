@@ -1,0 +1,16 @@
+---
+id: B187
+title: ToolRunner routes unknown dotted MCP tools when server exists
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:17:50.599153+00:00'
+started_at: '2026-02-21T14:17:50.599153+00:00'
+completed_at: '2026-02-21T14:19:54.403373+00:00'
+duration_minutes: 2.0634034666666667
+---
+ToolRunner should route to companion_mcp only when the exact dotted tool is advertised for workspace. Currently server presence alone can misroute unknown tools. Validate against CompanionMCPRegistry tool schemas and add tests.

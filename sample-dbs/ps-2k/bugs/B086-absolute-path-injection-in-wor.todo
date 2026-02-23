@@ -1,0 +1,29 @@
+---
+id: B086
+title: Absolute path injection in workspace template tracked file validation
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- security
+- templates
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:28:00.834177+00:00'
+started_at: '2026-02-17T11:28:00.834177+00:00'
+completed_at: '2026-02-17T11:37:15.722538+00:00'
+duration_minutes: 9.248138983333332
+---
+validate_single_tracked_file in workspace_template.ex:304-315 rejects '..' but does NOT reject absolute paths. A tracked file with path '/etc/passwd' would pass validation. Since tracked files are written to disk, this could allow writing to arbitrary locations. Defense-in-depth: resolve_path already has containment check, but validation should reject at template load time too.
+
+## Fix
+Add check rejecting paths starting with '/' in both validate_single_tracked_file and validate_single_default_file.
+
+## Acceptance Criteria
+- [ ] validate_single_tracked_file rejects absolute paths
+- [ ] validate_single_default_file rejects absolute paths
+- [ ] Tests for absolute path rejection
+- [ ] Existing tests still pass
+
+Source: E1 Audit C1

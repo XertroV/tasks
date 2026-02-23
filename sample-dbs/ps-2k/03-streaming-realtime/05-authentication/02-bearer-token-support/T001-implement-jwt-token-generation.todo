@@ -1,0 +1,217 @@
+---
+id: P3.M5.E2.T001
+title: Implement JWT token generation
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P3.M5.E1.T001
+tags:
+- auth
+- jwt
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:26:32.232789+00:00'
+started_at: '2026-02-06T18:26:32.232789+00:00'
+completed_at: '2026-02-06T18:41:54.103595+00:00'
+duration_minutes: 15.364513283333334
+---
+
+# Implement JWT token generation
+
+
+
+## Requirements
+
+- [ ] Add Joken JWT library to `mix.exs` dependencies
+- [ ] Create `lib/pag_server/auth/token.ex` module for JWT operations
+- [ ] Implement `generate_token/2` function (api_key_id, opts)
+- [ ] Implement `decode_token/1` function to parse and verify JWT
+- [ ] Configure JWT secret from environment variable (GUARDIAN_SECRET or JWT_SECRET)
+- [ ] Set token expiration time (default: 1 hour, configurable)
+- [ ] Include claims: `sub` (api_key_id), `exp`, `iat`, `jti` (unique token ID)
+- [ ] Add refresh token generation with longer TTL (default: 7 days)
+- [ ] Emit telemetry events for token generation/validation
+- [ ] Add typespecs and documentation
+
+## Acceptance Criteria
+
+- [ ] Joken dependency added to `mix.exs` with version `~> 2.6`
+- [ ] Module created at `lib/pag_server/auth/token.ex`
+- [ ] `generate_token/2` returns `{:ok, token, refresh_token}` with valid JWT strings
+- [ ] Generated tokens include required claims: `sub`, `exp`, `iat`, `jti`
+- [ ] Token expiration defaults to 1 hour, configurable via opts
+- [ ] Refresh token expiration defaults to 7 days
+- [ ] `decode_token/1` returns `{:ok, claims}` for valid tokens
+- [ ] `decode_token/1` returns `{:error, reason}` for expired/invalid tokens
+- [ ] JWT secret loaded from `config/runtime.exs` with fallback to `config :joken, default_signer`
+- [ ] Telemetry events emitted: `[:pag_server, :auth, :token_generated]`, `[:pag_server, :auth, :token_validated]`
+- [ ] All functions have typespecs and `@doc` documentation
+- [ ] Tests cover: valid generation, expiration, invalid signatures, missing claims
+- [ ] `mix dialyzer` passes with no warnings
+- [ ] `mix test` passes with all token tests green
+
+## Context
+
+JWT tokens provide short-lived authentication derived from long-lived API keys (created in Epic P3.M5.E1). This enables:
+- **Secure WebSocket connections**: Include token in Phoenix Channel params
+- **Stateless authentication**: No database lookup on every request
+- **Token refresh**: Long-lived refresh tokens reduce re-authentication friction
+- **Revocability**: Short expiration limits compromise window
+
+The token flow:
+1. Client authenticates with API key → receives JWT + refresh token
+2. Client uses JWT in `Authorization: Bearer <token>` header
+3. When JWT expires, client uses refresh token to get new JWT
+4. API key can be revoked, invalidating all derived tokens
+
+## Implementation Notes
+
+### Module Structure
+
+```elixir
+defmodule PagServer.Auth.Token do
+  @moduledoc """
+  JWT token generation and validation for API authentication.
+  
+  Generates short-lived access tokens and long-lived refresh tokens
+  from API key credentials.
+  """
+
+  use Joken.Config
+
+  require Logger
+
+  @access_token_ttl :timer.hours(1)
+  @refresh_token_ttl :timer.hours(24 * 7)
+
+  @doc """
+  Generate access and refresh tokens for an API key.
+  
+  ## Options
+  - `:access_ttl` - Access token TTL in milliseconds (default: 1 hour)
+  - `:refresh_ttl` - Refresh token TTL in milliseconds (default: 7 days)
+  
+  ## Examples
+  
+      iex> Token.generate_token("api_key_123")
+      {:ok, "eyJhbGc...", "eyJhbGc..."}
+  """
+  @spec generate_token(String.t(), Keyword.t()) :: {:ok, String.t(), String.t()} | {:error, term()}
+  def generate_token(api_key_id, opts \\ []) do
+    access_ttl = Keyword.get(opts, :access_ttl, @access_token_ttl)
+    refresh_ttl = Keyword.get(opts, :refresh_ttl, @refresh_token_ttl)
+
+    with {:ok, access_token} <- generate_access_token(api_key_id, access_ttl),
+         {:ok, refresh_token} <- generate_refresh_token(api_key_id, refresh_ttl) do
+      emit_telemetry(:token_generated, %{api_key_id: api_key_id})
+      {:ok, access_token, refresh_token}
+    end
+  end
+
+  @doc """
+  Decode and verify a JWT token.
+  
+  Returns the claims if valid, error tuple if expired/invalid.
+  """
+  @spec decode_token(String.t()) :: {:ok, map()} | {:error, atom()}
+  def decode_token(token) when is_binary(token) do
+    case verify_and_validate(token) do
+      {:ok, claims} ->
+        emit_telemetry(:token_validated, %{api_key_id: claims["sub"]})
+        {:ok, claims}
+        
+      {:error, reason} = error ->
+        Logger.debug("Token validation failed: #{inspect(reason)}")
+        error
+    end
+  end
+
+  # Private functions
+
+  defp generate_access_token(api_key_id, ttl) do
+    claims = %{
+      "sub" => api_key_id,
+      "exp" => current_time() + div(ttl, 1000),
+      "iat" => current_time(),
+      "jti" => generate_jti(),
+      "type" => "access"
+    }
+    
+    generate_and_sign(claims, get_signer())
+  end
+
+  defp generate_refresh_token(api_key_id, ttl) do
+    claims = %{
+      "sub" => api_key_id,
+      "exp" => current_time() + div(ttl, 1000),
+      "iat" => current_time(),
+      "jti" => generate_jti(),
+      "type" => "refresh"
+    }
+    
+    generate_and_sign(claims, get_signer())
+  end
+
+  defp generate_jti do
+    :crypto.strong_rand_bytes(16) |> Base.url_encode64(padding: false)
+  end
+
+  defp current_time, do: System.system_time(:second)
+
+  defp get_signer do
+    secret = Application.get_env(:pag_server, :jwt_secret) || 
+             raise "JWT_SECRET not configured in runtime.exs"
+    
+    Joken.Signer.create("HS256", secret)
+  end
+
+  defp emit_telemetry(event, metadata) do
+    :telemetry.execute(
+      [:pag_server, :auth, event],
+      %{count: 1},
+      metadata
+    )
+  end
+end
+```
+
+### Configuration (config/runtime.exs)
+
+```elixir
+# JWT Configuration
+config :pag_server, :jwt_secret,
+  System.get_env("JWT_SECRET") || System.get_env("GUARDIAN_SECRET") ||
+    raise "JWT_SECRET environment variable not set"
+```
+
+### Testing Strategy
+
+Create `test/pag_server/auth/token_test.exs`:
+- Test token generation returns valid JWT structure
+- Test tokens contain all required claims
+- Test token expiration (mock time to test expired tokens)
+- Test token validation with valid/invalid/expired tokens
+- Test invalid signatures are rejected
+- Test refresh tokens have longer TTL
+- Test custom TTL options work correctly
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M5.E2)
+**Agent**: cli-user
+**Date**: 2026-02-06 18:26 UTC
+**Sibling tasks**: P3.M5.E2.T002, P3.M5.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M5.E2.T001 → P3.M5.E2.T002 → P3.M5.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M5.E2.T001: .tasks/03-streaming-realtime/05-authentication/02-bearer-token-support/T001-implement-jwt-token-generation.todo
+- P3.M5.E2.T002: .tasks/03-streaming-realtime/05-authentication/02-bearer-token-support/T002-create-bearer-token-validation.todo
+- P3.M5.E2.T003: .tasks/03-streaming-realtime/05-authentication/02-bearer-token-support/T003-add-token-refresh-endpoint.todo

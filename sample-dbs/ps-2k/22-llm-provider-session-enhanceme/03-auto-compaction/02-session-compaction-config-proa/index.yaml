@@ -1,0 +1,33 @@
+id: P22.M3.E2
+name: Session Compaction Config & Proactive Trigger
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on:
+- P22.M3.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-add-session-level-compaction-c.todo
+  title: Add session-level compaction config fields to session schema
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-proactive-compaction.todo
+  title: 'Implement proactive compaction: replace old messages with summary when threshold
+    exceeded'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P22.M3.E1.T002
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

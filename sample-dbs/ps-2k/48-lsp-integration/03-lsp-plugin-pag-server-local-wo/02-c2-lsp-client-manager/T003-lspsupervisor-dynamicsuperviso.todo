@@ -1,0 +1,26 @@
+---
+id: P48.M3.E2.T003
+title: LspSupervisor DynamicSupervisor and lazy spawn logic
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:21.384498+00:00'
+started_at: '2026-02-20T08:51:21.384498+00:00'
+completed_at: '2026-02-20T09:06:13.407410+00:00'
+duration_minutes: 14.867048283333332
+---
+DynamicSupervisor: one_for_one, temporary restart (broken servers stay broken). LspManager.get_or_start_client/3: detect language from extension, determine effective root (walk up for root markers), check LspRegistry, check broken set, spawn deduplication via in-flight map, start LspClient via supervisor.
+
+## Extension Exclusivity Contract
+
+When multiple server definitions claim the same file extension (e.g. `.js` for
+both TypeScript LS and ESLint), the first matching server in priority order wins.
+Define a canonical priority list and document it. Extensions that are exclusive
+to one language (e.g. `.ex` for elixir-ls, `.rs` for rust-analyzer) must not
+appear in any other server's `extensions/0` list. Add a compile-time check
+(or test) asserting no two server modules claim the same extension, unless
+intentionally designed as multi-server (diagnostics from multiple servers merged).

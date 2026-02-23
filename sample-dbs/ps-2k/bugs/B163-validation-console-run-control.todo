@@ -1,0 +1,59 @@
+---
+id: B163
+title: Validation Console run controls timeout under browser automation
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- browser-testing
+- validation-console
+- automation
+claimed_by: cli-user
+claimed_at: '2026-02-20T17:42:13.099091+00:00'
+started_at: '2026-02-20T17:42:13.099091+00:00'
+completed_at: '2026-02-20T17:42:15.138915+00:00'
+duration_minutes: 0.03399688333333333
+---
+## Repro
+1. Open `/dashboard/validation-console` in browser automation.
+2. Ensure an agent is selected and `+ New` is visible/enabled.
+3. Attempt to click `+ New` (or `Launch workflow`, `Smoke prompt`).
+
+## Expected
+Clicks trigger LiveView events and create a session.
+
+## Actual
+Automation repeatedly times out waiting for controls to become clickable (`WebSocket response timeout` / click timeout), despite controls rendering enabled.
+
+## Evidence
+- Reproduced by both browser runners (normal and haiku).
+- Reproduced with direct Browser MCP click call on `+ New` (`ref s1e122`) timing out.
+- Page snapshot shows controls present and not disabled.
+- Related campaign notes that originally observed this blocker: `.tasks/51-agentic-browser-testing/02-exploratory-testing-campaigns/01-core-ui-exploration/T004-level-4-sessions-forking-event.todo`.
+
+## Notes
+Could be UI layering/pointer-events issue or Browser MCP + LiveView clickability heuristic mismatch. Track separately from core app logic to avoid losing the T003 blocker.
+
+## Resolution
+- Set default panel expansion so `workflows` (run controls) and `timeline` are expanded on mount.
+- Added regression coverage asserting run controls are visible in an expanded workflows panel by default.
+
+## Verification
+- Browser runner (`browser-test-runner-haiku`) on `http://localhost:4000/dashboard/validation-console` confirmed run controls visible on first load.
+- Click on `+ New` succeeded and UI showed `Created session 4a4b84e8...`.
+- Event Timeline recorded `control.session_created` with summary `Created a new validation session`.
+- Regression coverage: `test/pag_server_web/live/validation_console_test.exs:130` and `test/pag_server_web/live/validation_console_test.exs:301`.
+
+## Playwright Scenario Notes
+- Test name: `validation console run controls are clickable on first load`
+- Preconditions: logged in as admin; at least one validation agent exists.
+- Steps:
+  1. `await page.goto('/dashboard/validation-console')`
+  2. `await page.click('button:has-text("+ New")')`
+  3. `await page.waitForTimeout(500)`
+- Assertions:
+  - Session creation toast/status appears.
+  - Timeline includes `control.session_created`.
+  - No click timeout or websocket timeout is surfaced in UI.

@@ -1,0 +1,43 @@
+---
+id: P39.M3.E1.T001
+title: Implement CompanionProxyExecutor
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P39.M2.E1.T001
+- P39.M2.E1.T002
+tags:
+- companion
+- tools
+- executor
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.832815+00:00'
+started_at: '2026-02-19T11:40:33.832815+00:00'
+completed_at: '2026-02-19T11:45:05.657592+00:00'
+duration_minutes: 4.530412783333333
+---
+Create the CompanionProxyExecutor that routes tool calls through a connected companion.
+
+## New file
+lib/pag_server/companions/companion_proxy_executor.ex
+
+## Design (from companion-support plan §4)
+- Called by ToolRunner when a companion is connected and the tool is registered
+- execute(payload, context):
+  1. Extract workspace_id from context
+  2. CompanionRegistry.lookup(workspace_id) — return error if not connected
+  3. PendingCalls.register(call_id, self())
+  4. send(channel_pid, {:send_tool_call, call_id, tool_name, arguments})
+  5. Block on receive with timeout (@default_timeout_ms 120_000 + @receive_buffer_ms 5_000)
+  6. On {:companion_tool_result, call_id, result} -> {:ok, execution_map}
+  7. On {:companion_tool_error, call_id, msg} -> {:ok, error_execution_map}
+  8. On timeout -> PendingCalls.reject + return timeout error
+- Returns same shape as ToolExecutor.execute/2: {:ok, execution_map} | {:error, reason}
+
+## Acceptance criteria
+- [ ] When companion connected + tool registered: sends tool_call, receives result
+- [ ] When companion not connected: returns {:error, :companion_not_connected}
+- [ ] Timeout returns error execution with appropriate message
+- [ ] build_execution helper produces correct execution map structure

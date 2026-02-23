@@ -1,0 +1,64 @@
+id: P36.M1
+name: Core Infrastructure
+status: done
+estimate_hours: 11.75
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Schema & Migrations
+  path: 01-schema-migrations
+  status: pending
+  estimate_hours: 2.5
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Pure Logic Modules
+  path: 02-pure-logic-modules
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on:
+  - P36.M1.E1
+  description: ''
+  locked: false
+- id: E3
+  name: SessionStore Query
+  path: 03-sessionstore-query
+  status: done
+  estimate_hours: 1.5
+  complexity: low
+  depends_on:
+  - P36.M1.E1
+  description: ''
+  locked: false
+- id: E4
+  name: BootManager GenServer
+  path: 04-bootmanager-genserver
+  status: done
+  estimate_hours: 3.25
+  complexity: medium
+  depends_on:
+  - P36.M1.E2
+  - P36.M1.E3
+  description: ''
+  locked: false
+- id: E5
+  name: AgentWaker
+  path: 05-agentwaker
+  status: done
+  estimate_hours: 2.5
+  complexity: medium
+  depends_on:
+  - P36.M1.E1
+  description: ''
+  locked: false
+stats:
+  total_tasks: 13
+  done: 13
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,39 @@
+---
+id: P15.M7.E5.T016
+title: 'T16: CLI Persona Selection Wizard'
+status: done
+estimate_hours: 6.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+- P15.M7.E5.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:07:29.555297+00:00'
+started_at: '2026-02-18T09:07:29.555297+00:00'
+completed_at: '2026-02-18T10:37:02.077297+00:00'
+duration_minutes: 89.5420331
+---
+Interactive CLI wizard for persona selection. Progressive disclosure (categories → filtered list → details). Preview mode (test chat before committing). Files: lib/pag_server/personas/cli/wizard.ex
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M7.E5)
+**Agent**: cli-user
+**Date**: 2026-02-18 09:07 UTC
+**Sibling tasks**: P15.M7.E5.T017, P15.M7.E5.T018, P15.M7.E5.T024, P15.M7.E5.T027
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M7.E5.T016 → P15.M7.E5.T017 → P15.M7.E5.T018 → P15.M7.E5.T024 → P15.M7.E5.T027
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M7.E5.T016: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T016-t16-cli-persona-selection-wiza.todo
+- P15.M7.E5.T017: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T017-t17-bootstrap-flow-integration.todo
+- P15.M7.E5.T018: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T018-t18-custom-persona-creation-cl.todo
+- P15.M7.E5.T024: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T024-t24-persona-switching-feature.todo
+- P15.M7.E5.T027: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T027-t27-documentation-testing.todo

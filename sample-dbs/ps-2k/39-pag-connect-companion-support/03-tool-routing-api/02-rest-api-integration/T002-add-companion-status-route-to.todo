@@ -1,0 +1,34 @@
+---
+id: P39.M3.E2.T002
+title: Add companion status route to router
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on:
+- P39.M3.E2.T001
+tags:
+- companion
+- rest
+- router
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.840002+00:00'
+started_at: '2026-02-19T11:40:33.840002+00:00'
+completed_at: '2026-02-19T11:45:12.498495+00:00'
+duration_minutes: 4.64430805
+---
+Add the companion status REST endpoint to the Phoenix router.
+
+## Modified file
+lib/pag_server_web/router.ex
+
+## Route to add
+In the workspace_resources scope (near the existing /ssh and /tailscale routes):
+  get "/companion/status", WorkspaceCompanionController, :status
+
+Use the same auth pipeline as the SSH/Tailscale status endpoints (workspace_member access).
+
+## Acceptance criteria
+- [ ] GET /api/v1/workspaces/:id/companion/status route exists
+- [ ] Route uses workspace_member auth level (any member can check status)
+- [ ] mix phx.routes shows the new route

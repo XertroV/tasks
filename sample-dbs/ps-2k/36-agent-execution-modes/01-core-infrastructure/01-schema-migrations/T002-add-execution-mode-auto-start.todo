@@ -1,0 +1,24 @@
+---
+id: P36.M1.E1.T002
+title: Add execution_mode, auto_start, last_startup_duration_ms, last_active_at to
+  sessions
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:43:11.860044+00:00'
+started_at: '2026-02-19T02:43:11.860044+00:00'
+completed_at: '2026-02-19T02:49:19.716318+00:00'
+duration_minutes: 6.130937666666667
+---
+## Acceptance Criteria
+- Migration adds `execution_mode TEXT NOT NULL DEFAULT 'discrete'` to sessions table
+- Migration adds `auto_start BOOLEAN NOT NULL DEFAULT FALSE` to sessions table
+- Migration adds `last_startup_duration_ms INTEGER` (nullable) to sessions table
+- Migration adds `last_active_at TIMESTAMP WITH TIME ZONE` (nullable) to sessions table
+- `PagServer.Schema.Session` updated with all 4 new fields
+- execution_mode on sessions is treated as immutable after creation (enforced in changeset)
+- Migration is reversible

@@ -1,0 +1,16 @@
+---
+id: P48.M1.E1.T005
+title: 'Event: working_directory_changed in event store'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:16.862475+00:00'
+started_at: '2026-02-20T08:37:16.862475+00:00'
+completed_at: '2026-02-20T08:50:10.585115+00:00'
+duration_minutes: 12.895377183333332
+---
+New event type: working_directory_changed. Fields: session_id, old_path, new_path, git_branch. Enables deterministic replay of working directory changes.

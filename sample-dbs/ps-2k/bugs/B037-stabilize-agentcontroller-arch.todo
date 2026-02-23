@@ -1,0 +1,33 @@
+---
+id: B037
+title: stabilize AgentController archived filter test against shared data
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- api
+- tests
+- isolation
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:18:56.072621+00:00'
+started_at: '2026-02-15T18:18:56.072621+00:00'
+completed_at: '2026-02-15T18:19:17.525326+00:00'
+duration_minutes: 0.3575449333333333
+---
+
+# stabilize AgentController archived filter test against shared data
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe `PagServerWeb.AgentControllerTest` failure in archived filtering assertion expecting only one agent.
+
+## Expected Behavior
+
+Archived-filter tests should validate behavior (active included, archived excluded) without assuming full global dataset size.
+
+## Actual Behavior
+
+The test uses strict equality on returned IDs, which fails in full-suite runs when other active agents exist in shared test context.

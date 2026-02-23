@@ -1,0 +1,80 @@
+---
+id: P2.M3.E1.T004
+title: Add error handling and retries
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- error-handling
+- openai
+- resilience
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:32:17.350937'
+started_at: '2026-02-05T15:32:17.350937'
+completed_at: '2026-02-05T15:36:43.562646'
+duration_minutes: 4.436861666666667
+---
+
+# Add error handling and retries
+
+Implement comprehensive error handling with retries for transient failures.
+
+## Requirements
+
+- [ ] Handle HTTP status codes (400, 401, 429, 500, 503)
+- [ ] Parse OpenAI error responses (error.type, error.message)
+- [ ] Implement exponential backoff for rate limits (429)
+- [ ] Add configurable retry logic for 5xx errors
+- [ ] Raise appropriate exceptions for non-retryable errors
+- [ ] Log errors with request context (sanitized)
+
+## Acceptance Criteria
+
+- [ ] 429 rate limit errors trigger exponential backoff
+- [ ] 5xx errors are retried with backoff
+- [ ] 4xx errors (except 429) raise immediately
+- [ ] Error messages include helpful context
+- [ ] API keys are never logged in errors
+- [ ] Tests verify retry behavior
+- [ ] Configurable max retry attempts
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex/error.ex` (Error handling patterns)
+- Production requirement: Battle-tested reliability
+
+**Key Points**:
+- OpenAI rate limits: Return 429 with `Retry-After` header
+- Transient errors (5xx): Should retry with exponential backoff
+- Client errors (4xx): Should not retry (except 429)
+- Always sanitize API keys from error messages
+
+## Implementation Notes
+
+Error types:
+- `400 Bad Request` - Invalid parameters
+- `401 Unauthorized` - Invalid API key
+- `429 Too Many Requests` - Rate limit hit (retry with backoff)
+- `500 Internal Server Error` - OpenAI service error (retry)
+- `503 Service Unavailable` - Overloaded (retry)
+
+Retry strategy:
+```elixir
+# Exponential backoff: 1s, 2s, 4s, 8s
+max_retries = 3
+delay = :math.pow(2, attempt) * 1000
+```
+
+Parse error response:
+```json
+{
+  "error": {
+    "message": "Invalid API key",
+    "type": "invalid_request_error",
+    "code": "invalid_api_key"
+  }
+}
+```

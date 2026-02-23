@@ -1,0 +1,31 @@
+id: P9.M2
+name: Long-term Memory/RAG
+status: pending
+estimate_hours: 12
+complexity: high
+depends_on:
+- P9.M1
+epics:
+- id: E1
+  name: Memory Store
+  path: 01-memory-store
+  status: pending
+  estimate_hours: 7
+  complexity: high
+  depends_on: []
+  description: Persistent agent memory with embeddings and importance scoring
+- id: E2
+  name: RAG Retrieval System
+  path: 02-retrieval
+  status: pending
+  estimate_hours: 6
+  complexity: high
+  depends_on:
+  - E1
+  description: Retrieval-augmented generation with document indexing and citations
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

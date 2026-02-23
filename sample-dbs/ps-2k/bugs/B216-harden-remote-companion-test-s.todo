@@ -1,0 +1,16 @@
+---
+id: B216
+title: Harden remote companion test script HTTP and payload handling
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T22:44:18.344720+00:00'
+started_at: '2026-02-21T22:44:18.344720+00:00'
+completed_at: '2026-02-21T22:45:35.365952+00:00'
+duration_minutes: 1.2836870166666665
+---
+Strengthen scripts/pag-connect-test-remote.sh so forwarding checks are deterministic and safe for arbitrary commands.\n\nAcceptance criteria:\n- Forward command payload is JSON-escaped robustly\n- Script checks HTTP status code on execute_shell requests (not body-only)\n- Failure output includes status code and response body for diagnosis\n- Script syntax validates with bash -n

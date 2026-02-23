@@ -1,0 +1,23 @@
+---
+id: P50.M1.E3.T001
+title: Implement CollabTeams.Dispatcher with action routing skeleton
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:12:58.989572+00:00'
+started_at: '2026-02-23T02:12:58.989572+00:00'
+completed_at: '2026-02-23T02:13:01.522907+00:00'
+duration_minutes: 0.042221999999999996
+---
+## Description
+Create CollabTeams.Dispatcher module with dispatch/3 (action_string, arguments, context) -> {:ok, map} | {:error, map}. Declare @valid_actions module attribute listing all 17 actions: create_team, get_team, list_teams, add_worker, remove_worker, set_worker_state, create_task, claim_task, complete_task, fail_task, set_task_blocked, send_message, list_messages, request_shutdown, cleanup_team, next_task, help. Each action routes to stub returning {:ok, %{action: action, status: not_implemented}}. Unknown action returns {:error, %{ok: false, error: unknown_action, action: val, message: ..., known_options: @valid_actions}}. Wire CollabTeams.handle_tool_call(team, args, ctx) to Dispatcher.dispatch/3.
+
+## Acceptance Criteria
+- Unknown action returns error map with known_options
+- all 17 valid actions dispatch without raising
+- action strings normalized to lowercase

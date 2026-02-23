@@ -1,0 +1,45 @@
+---
+id: P12.M1.E5.T002
+title: Add gpt-oss-120 chat integration tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P12.M1.E5.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T18:49:24.357016+00:00'
+started_at: '2026-02-13T18:49:24.357016+00:00'
+completed_at: '2026-02-13T18:50:21.564528+00:00'
+duration_minutes: 0.9534583
+---
+
+# Add gpt-oss-120 chat integration tests
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M1.E5)
+**Agent**: cli-user
+**Date**: 2026-02-13 18:49 UTC
+**Sibling tasks**: P12.M1.E5.T003, P12.M1.E5.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M1.E5.T002 → P12.M1.E5.T003 → P12.M1.E5.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M1.E5.T002: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/05-llm-integration-tests/T002-add-gpt-oss-120-chat-integrati.todo
+- P12.M1.E5.T003: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/05-llm-integration-tests/T003-add-gpt-oss-120-streaming-inte.todo
+- P12.M1.E5.T004: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/05-llm-integration-tests/T004-add-gpt-oss-120-tool-calling-i.todo

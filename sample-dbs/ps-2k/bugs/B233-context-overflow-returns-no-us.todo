@@ -1,0 +1,18 @@
+---
+id: B233
+title: Context overflow returns no user feedback
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- agent
+- error-handling
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.099153+00:00'
+started_at: '2026-02-23T07:29:02.099153+00:00'
+completed_at: '2026-02-23T07:43:45.766346+00:00'
+duration_minutes: 14.727786333333334
+---
+agent_server.ex:3767-3834, message_dispatcher.ex:191 - Truncation failure sends :llm_error; synchronous caller times out

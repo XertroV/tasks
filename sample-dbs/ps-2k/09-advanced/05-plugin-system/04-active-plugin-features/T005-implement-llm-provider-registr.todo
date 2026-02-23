@@ -1,0 +1,59 @@
+---
+id: P9.M5.E4.T005
+title: Implement LLM provider registration from plugins
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- llm
+- providers
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:49:08.321316+00:00'
+started_at: '2026-02-11T02:49:08.321316+00:00'
+completed_at: '2026-02-11T03:06:23.001844+00:00'
+duration_minutes: 17.24467533333333
+---
+
+# Implement LLM provider registration from plugins
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/provider_registrar.ex` module
+- [ ] Allow plugins to register custom LLM providers:
+  - [ ] Provider must implement `PagServer.LLM.Provider` behaviour
+  - [ ] `register_provider/3` - (plugin_name, provider_name, provider_module)
+  - [ ] `unregister_provider/2` - (plugin_name, provider_name)
+- [ ] Register via existing `LLM.Registry.register_provider/2`:
+  - [ ] Provider name namespaced: `"<plugin_name>.<provider_name>"`
+  - [ ] Support custom model specifications from the plugin
+- [ ] Implement provider health checks:
+  - [ ] Periodic health check calls to provider's health endpoint (if defined)
+  - [ ] Mark provider as unavailable after consecutive failures
+  - [ ] Configurable health check interval (default 60s)
+- [ ] Handle unregistration gracefully:
+  - [ ] On plugin disable, unregister provider from `LLM.Registry`
+  - [ ] Handle in-flight requests: wait for pending requests to complete (configurable timeout)
+  - [ ] Return `{:error, :provider_unavailable}` for new requests during shutdown
+- [ ] Validate provider implementation at registration time
+
+## Acceptance Criteria
+
+- [ ] Plugins can register LLM providers that appear in `LLM.Registry`
+- [ ] Provider names are namespaced with plugin prefix
+- [ ] Health checks detect unhealthy providers and mark them unavailable
+- [ ] In-flight requests complete before provider is unregistered on plugin disable
+- [ ] New requests to a disabled provider return appropriate error
+- [ ] Unit tests cover: registration, health checks, graceful unregistration, in-flight handling
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/provider_registrar.ex`
+- **Integrates with**: `PagServer.LLM.Registry` for provider registration, `PagServer.LLM.Provider` behaviour
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004)
+- **Used by**: `PagServer.Plugins.API` (E4.T006)
+- **Graceful shutdown**: Critical to avoid dropped LLM requests during plugin lifecycle changes

@@ -1,0 +1,52 @@
+---
+id: P10.M1.E1.T003
+title: Build WebhookSubscription Ecto schema and changesets
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T19:55:09.623539+00:00'
+started_at: '2026-02-11T19:55:09.623539+00:00'
+completed_at: '2026-02-11T20:09:27.120419+00:00'
+duration_minutes: 14.291614466666665
+---
+
+# Build WebhookSubscription Ecto schema and changesets
+
+
+
+## Requirements
+
+Build an Ecto schema and changesets for the `WebhookSubscription` model with validation and changeset logic for CRUD operations.
+
+## Description
+
+The WebhookSubscription schema maps the database table to Elixir with type-safe field access, association to IntegrationSettings, and changesets for validation. This provides the data layer for webhook persistence and filtering.
+
+## Acceptance Criteria
+
+- [ ] Schema module at `lib/pag_server/schema/webhook_subscription.ex` with proper docstring
+- [ ] All fields defined with correct types: UUID primary key, foreign keys, arrays, timestamps
+- [ ] Association to `IntegrationSettings` via `belongs_to :integration_settings`
+- [ ] `create_changeset/1` validates required fields (integration_id, repository, webhook_url, events)
+- [ ] `update_changeset/2` allows updating filters, events, is_active without changing integration_id/repository
+- [ ] `deactivate_changeset/1` sets is_active to false (soft-delete pattern)
+- [ ] Validations include: webhook_url is valid URL, events is non-empty array, filters is valid JSON
+- [ ] Type spec defined for `t()` with all field types
+
+## Implementation Notes
+
+- Use `:binary_id` primary key (consistent with codebase)
+- Location: `lib/pag_server/schema/webhook_subscription.ex`
+- Association: `belongs_to :integration_settings, PagServer.Schema.IntegrationSettings`
+- Validate events array is non-empty using `validate_change` function
+- Validate webhook_url format using regex: `~r/^https?:\/\/.+/`
+- `filters`: defaults to empty map `%{}`
+- `priority`: Integer field, default 100
+- Timestamps: use `:utc_datetime_usec` for consistency
+- Reference existing pattern: `/home/xertrov/src/pag-server/lib/pag_server/schema/api_key.ex` (lines 70-107 for changeset pattern)
+- Include comprehensive @typedoc with all field types
+- Use `put_change` for setting `is_active` in deactivate_changeset

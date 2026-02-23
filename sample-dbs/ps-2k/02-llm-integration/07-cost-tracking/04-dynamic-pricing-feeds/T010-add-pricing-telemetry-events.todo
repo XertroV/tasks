@@ -1,0 +1,343 @@
+---
+id: P2.M7.E4.T010
+title: Add pricing telemetry events
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- telemetry
+- observability
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:13:35.620881'
+started_at: '2026-02-06T15:13:35.620881'
+completed_at: '2026-02-06T15:20:07.341399'
+duration_minutes: 6.5286751333333335
+---
+
+# Add pricing telemetry events
+
+
+
+## Requirements
+
+- [ ] Add telemetry event definitions to pricing-related modules
+- [ ] Emit events for pricing fetch operations (start, stop, exception)
+- [ ] Emit events for pricing cache operations (hit, miss, stale)
+- [ ] Emit events for pricing updates (create, refresh)
+- [ ] Add pricing metrics to `PagServerWeb.Telemetry` module
+- [ ] Define metrics for monitoring:
+  - [ ] Pricing fetch duration (distribution)
+  - [ ] Pricing fetch errors (counter)
+  - [ ] Cache hit rate (last_value ratio)
+  - [ ] Pricing age (gauge - time since last refresh)
+  - [ ] Total pricing records (last_value)
+- [ ] Document telemetry events in `@moduledoc` for each emitting module
+- [ ] Follow existing telemetry pattern: `[:pag_server, :domain, :component, :event]`
+- [ ] Include relevant metadata (provider, model, source)
+
+## Acceptance Criteria
+
+- [ ] Pricing fetcher emits events:
+  - [ ] `[:pag_server, :pricing, :fetch, :start]` - Before fetching pricing
+  - [ ] `[:pag_server, :pricing, :fetch, :stop]` - After successful fetch
+  - [ ] `[:pag_server, :pricing, :fetch, :exception]` - On fetch failure
+- [ ] Pricing cache emits events:
+  - [ ] `[:pag_server, :pricing, :cache, :hit]` - Cache hit
+  - [ ] `[:pag_server, :pricing, :cache, :miss]` - Cache miss
+  - [ ] `[:pag_server, :pricing, :cache, :stale]` - Stale data served
+- [ ] Pricing context emits events:
+  - [ ] `[:pag_server, :pricing, :update, :success]` - Pricing created/updated
+  - [ ] `[:pag_server, :pricing, :update, :error]` - Failed to update
+- [ ] Metrics added to `PagServerWeb.Telemetry.metrics/0`
+- [ ] All events include relevant metadata (provider, model, duration)
+- [ ] Measurements include duration, count, or value as appropriate
+- [ ] Events visible in LiveDashboard metrics page
+- [ ] Events can be consumed by external monitoring (Prometheus, Datadog, etc.)
+- [ ] Documentation includes event name, measurements, and metadata
+
+## Implementation Notes
+
+### Event Naming Convention
+
+Follow the pattern used throughout PAG-Server:
+
+```
+[:pag_server, :domain, :component, :action]
+```
+
+**Domain:** `pricing`
+**Components:** `fetch`, `cache`, `update`, `refresh`
+**Actions:** `start`, `stop`, `exception`, `hit`, `miss`, `stale`, `success`, `error`
+
+### Telemetry in PricingFetcher
+
+Add to `lib/pag_server/llm/pricing_fetcher.ex`:
+
+```elixir
+defmodule PagServer.LLM.PricingFetcher do
+  # ... existing code ...
+
+  @doc """
+  Gets pricing for a model with telemetry instrumentation.
+  
+  ## Telemetry Events
+  
+  - `[:pag_server, :pricing, :fetch, :start]` - Before fetching
+    - Measurements: `%{system_time: integer()}`
+    - Metadata: `%{model: String.t()}`
+  
+  - `[:pag_server, :pricing, :fetch, :stop]` - After successful fetch
+    - Measurements: `%{duration: native_time()}`
+    - Metadata: `%{model: String.t(), provider: atom()}`
+  
+  - `[:pag_server, :pricing, :fetch, :exception]` - On fetch failure
+    - Measurements: `%{duration: native_time()}`
+    - Metadata: `%{model: String.t(), error: term()}`
+  """
+  @spec get_pricing(String.t()) :: pricing()
+  def get_pricing(model) when is_binary(model) do
+    start_time = System.monotonic_time()
+    metadata = %{model: model}
+
+    :telemetry.execute(
+      [:pag_server, :pricing, :fetch, :start],
+      %{system_time: System.system_time()},
+      metadata
+    )
+
+    try do
+      pricing = 
+        case fetch_from_registered(model) do
+          {:ok, pricing} -> pricing
+          :not_found -> Pricing.get_pricing(model)
+        end
+
+      duration = System.monotonic_time() - start_time
+      
+      :telemetry.execute(
+        [:pag_server, :pricing, :fetch, :stop],
+        %{duration: duration},
+        Map.put(metadata, :source, :fetcher)
+      )
+
+      pricing
+    rescue
+      error ->
+        duration = System.monotonic_time() - start_time
+        
+        :telemetry.execute(
+          [:pag_server, :pricing, :fetch, :exception],
+          %{duration: duration},
+          Map.put(metadata, :error, error)
+        )
+
+        reraise error, __STACKTRACE__
+    end
+  end
+end
+```
+
+### Telemetry in Pricing Context
+
+Add to `lib/pag_server/pricing.ex`:
+
+```elixir
+defmodule PagServer.Pricing do
+  # ... existing code ...
+
+  @doc """
+  Creates a pricing record with telemetry.
+  
+  ## Telemetry Events
+  
+  - `[:pag_server, :pricing, :update, :success]`
+    - Measurements: `%{count: 1}`
+    - Metadata: `%{provider: String.t(), model: String.t(), source: String.t()}`
+  
+  - `[:pag_server, :pricing, :update, :error]`
+    - Measurements: `%{count: 1}`
+    - Metadata: `%{provider: String.t(), model: String.t(), error: term()}`
+  """
+  def create_pricing(attrs) do
+    result = 
+      %Schema.Pricing{}
+      |> Schema.Pricing.changeset(attrs)
+      |> Repo.insert()
+
+    case result do
+      {:ok, pricing} ->
+        :telemetry.execute(
+          [:pag_server, :pricing, :update, :success],
+          %{count: 1},
+          %{
+            provider: pricing.provider,
+            model: pricing.model,
+            source: pricing.source
+          }
+        )
+        
+        result
+
+      {:error, changeset} ->
+        :telemetry.execute(
+          [:pag_server, :pricing, :update, :error],
+          %{count: 1},
+          %{
+            provider: attrs[:provider],
+            model: attrs[:model],
+            error: :validation_failed
+          }
+        )
+        
+        result
+    end
+  end
+end
+```
+
+### Metrics Definition
+
+Add to `lib/pag_server_web/telemetry.ex`:
+
+```elixir
+defmodule PagServerWeb.Telemetry do
+  # ... existing code ...
+
+  def metrics do
+    [
+      # ... existing metrics ...
+
+      # Pricing fetch metrics
+      summary("pag_server.pricing.fetch.stop.duration",
+        unit: {:native, :millisecond},
+        description: "Duration of pricing fetch operations",
+        tags: [:model]
+      ),
+
+      counter("pag_server.pricing.fetch.exception",
+        description: "Count of pricing fetch failures",
+        tags: [:model, :error]
+      ),
+
+      # Pricing cache metrics
+      counter("pag_server.pricing.cache.hit",
+        description: "Count of pricing cache hits",
+        tags: [:model]
+      ),
+
+      counter("pag_server.pricing.cache.miss",
+        description: "Count of pricing cache misses",
+        tags: [:model]
+      ),
+
+      counter("pag_server.pricing.cache.stale",
+        description: "Count of stale pricing data served",
+        tags: [:model]
+      ),
+
+      # Pricing update metrics
+      counter("pag_server.pricing.update.success",
+        description: "Count of successful pricing updates",
+        tags: [:provider, :source]
+      ),
+
+      counter("pag_server.pricing.update.error",
+        description: "Count of failed pricing updates",
+        tags: [:provider, :error]
+      ),
+
+      # Pricing refresh metrics (from worker)
+      summary("pag_server.pricing.refresh.stop.duration",
+        unit: {:native, :millisecond},
+        description: "Duration of scheduled pricing refresh jobs"
+      ),
+
+      last_value("pag_server.pricing.refresh.stop.count",
+        description: "Number of pricing records updated in last refresh"
+      ),
+
+      counter("pag_server.pricing.refresh.exception",
+        description: "Count of failed pricing refresh jobs"
+      )
+    ]
+  end
+end
+```
+
+### Cache Layer Telemetry
+
+If implementing T006 (pricing cache), add events:
+
+```elixir
+# Cache hit
+:telemetry.execute(
+  [:pag_server, :pricing, :cache, :hit],
+  %{count: 1},
+  %{model: model}
+)
+
+# Cache miss
+:telemetry.execute(
+  [:pag_server, :pricing, :cache, :miss],
+  %{count: 1},
+  %{model: model}
+)
+
+# Stale data served
+:telemetry.execute(
+  [:pag_server, :pricing, :cache, :stale],
+  %{count: 1},
+  %{model: model, age: age_seconds}
+)
+```
+
+## Context
+
+**Dependencies:**
+- All pricing tasks (T001-T009) - telemetry should be added to their implementations
+
+**Purpose:**
+Telemetry events enable:
+- **Monitoring**: Track pricing fetch performance and errors in production
+- **Alerting**: Detect when pricing updates fail or become stale
+- **Analytics**: Understand cache hit rates and optimize cache strategy
+- **Debugging**: Trace pricing issues with detailed event metadata
+
+**Reference Files:**
+- `lib/pag_server_web/telemetry.ex` - Existing telemetry metrics
+- `lib/pag_server/llm/providers/anthropic/cache_metrics.ex` - Similar telemetry pattern
+
+## Monitoring Examples
+
+### Prometheus Queries
+
+```promql
+# Cache hit rate
+rate(pag_server_pricing_cache_hit[5m]) / 
+  (rate(pag_server_pricing_cache_hit[5m]) + rate(pag_server_pricing_cache_miss[5m]))
+
+# Average fetch duration
+rate(pag_server_pricing_fetch_stop_duration_sum[5m]) / 
+  rate(pag_server_pricing_fetch_stop_duration_count[5m])
+
+# Error rate
+rate(pag_server_pricing_fetch_exception[5m])
+```
+
+### LiveDashboard
+
+Events will appear in LiveDashboard under `/dev/dashboard/metrics` with:
+- Real-time charts for fetch duration
+- Counters for cache hit/miss
+- Error counts by provider
+
+## Notes
+
+- Follow existing telemetry patterns in the codebase
+- Use `:native` time unit for durations (converted to milliseconds in metrics)
+- Include tags for filtering (provider, model, source)
+- Keep metadata minimal to avoid memory bloat
+- Consider sampling high-frequency events if needed

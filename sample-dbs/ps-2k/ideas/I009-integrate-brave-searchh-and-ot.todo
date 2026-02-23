@@ -1,0 +1,75 @@
+---
+id: I009
+title: Integrate brave searchh and other providers, both those with easy APIs and
+  also by taking advantage of existing services one might hahve (eg z.ai/glm mcp search,
+  use claude code via CLI call to run a web search, or codex, etc)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: Integrate brave searchh and other providers, both those with easy APIs and also by taking advantage of existing services one might hahve (eg z.ai/glm mcp search, use claude code via CLI call to run a web search, or codex, etc)
+
+## Original Idea
+
+Integrate brave searchh and other providers, both those with easy APIs and also by taking advantage of existing services one might hahve (eg z.ai/glm mcp search, use claude code via CLI call to run a web search, or codex, etc)
+
+Web search currently supports duckduckgo. We shhould add support for z.ai web search if a ZAI_API_KEY is present. see https://docs.z.ai/guides/tools/web-search. Also brave search i
+f we have an api key for that.
+
+- zai
+- brave
+- use claude code via CLI with json streaming or somethihng like that (may need to research this; claude code has websearch built in)
+- use codex via CLI (will also need to research this; idk if codex has search built in but openai has search so seems reasonable)
+- other providers?
+- when we have multiple providers available, we should cycle them randomly, and if one is failing, put it on a global cooldown.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Integrate brave searchh and other providers, both those with easy APIs and also by taking advantage of existing services one might hahve (eg z.ai/glm mcp search, use claude code via CLI call to run a web search, or codex, etc)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Milestone: P15.M10 (Multi-Provider Web Search)
+- Epics:
+  - P15.M10.E1 Provider Contract and Orchestrator
+  - P15.M10.E2 Native API Providers (Brave, ZAI, DuckDuckGo)
+  - P15.M10.E3 External Service Providers (CLI/MCP)
+  - P15.M10.E4 Reliability, Telemetry, and Docs
+- Tasks:
+  - P15.M10.E1.T001 Define web search provider behaviour and normalized result schema
+  - P15.M10.E1.T002 Refactor builtin web_search tool to delegate through orchestrator
+  - P15.M10.E1.T003 Implement provider selection strategy with health-aware randomization
+  - P15.M10.E1.T004 Implement global provider cooldown and backoff policy
+  - P15.M10.E1.T005 Document reusable multi-provider orchestrator pattern for future tools
+  - P15.M10.E2.T001 Implement Brave Search adapter with API-key config and error mapping
+  - P15.M10.E2.T002 Implement ZAI web search adapter and key-based activation
+  - P15.M10.E2.T003 Extract DuckDuckGo logic into adapter and keep as no-key fallback
+  - P15.M10.E2.T004 Add provider capability detection and default priority ordering
+  - P15.M10.E3.T001 Define plugin-facing external provider contract for CLI and MCP search
+  - P15.M10.E3.T002 Implement CLI provider adapter with strict timeout and output normalization
+  - P15.M10.E3.T003 Implement MCP provider adapter for hosted search tools
+  - P15.M10.E3.T004 Add feature flags and permission gates for external providers
+  - P15.M10.E4.T001 Add orchestration tests for selection, failover, and cooldown behavior
+  - P15.M10.E4.T002 Add provider adapter tests with mocked HTTP and malformed payload coverage
+  - P15.M10.E4.T003 Emit telemetry and structured logs for provider attempts and cooldowns
+  - P15.M10.E4.T004 Document provider configuration, fallback semantics, and troubleshooting
+- Add created bug IDs (if any): none
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

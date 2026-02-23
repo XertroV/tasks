@@ -1,0 +1,40 @@
+---
+id: B021
+title: validation console e2e should fail when liveview is disconnected in connected-mode
+  smoke
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- e2e
+- validation-console
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:29:14.792276+00:00'
+started_at: '2026-02-15T17:29:14.792276+00:00'
+completed_at: '2026-02-15T17:32:53.810016+00:00'
+duration_minutes: 3.6502955333333333
+---
+Current Playwright smoke test has an early-return branch when liveSocket is disconnected, which can mask regressions. Split offline/degraded checks from connected-mode smoke and make connected-mode fail if LiveView socket is unavailable.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:29 UTC
+**Primary task**: B020 - backend status chip should use readiness endpoint alongside liveview connectivity
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

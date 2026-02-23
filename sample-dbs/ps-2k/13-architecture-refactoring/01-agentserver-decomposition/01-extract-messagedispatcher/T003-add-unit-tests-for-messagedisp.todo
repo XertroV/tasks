@@ -1,0 +1,38 @@
+---
+id: P13.M1.E1.T003
+title: Add unit tests for MessageDispatcher
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M1.E1.T001
+- P13.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:14:18.502137+00:00'
+started_at: '2026-02-13T19:14:18.502137+00:00'
+completed_at: '2026-02-13T19:34:29.226023+00:00'
+duration_minutes: 20.178731083333332
+---
+
+# Add unit tests for MessageDispatcher
+
+## Description
+
+Create comprehensive unit tests for the new `AgentServer.MessageDispatcher` module covering all dispatch scenarios including success paths, error handling, and edge cases.
+
+## Acceptance Criteria
+- [ ] Create `test/pag_server/agents/message_dispatcher_test.exs`
+- [ ] Test synchronous message dispatch with various payloads
+- [ ] Test queue message handling with different modes (`:immediate`, `:after_thinking`, `:when_done`)
+- [ ] Test error scenarios (agent busy, limit exceeded, invalid state)
+- [ ] Test correlation ID propagation
+- [ ] Achieve >90% code coverage for MessageDispatcher module
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/message_dispatcher.ex`
+- Reference tests: `test/pag_server/agents/agent_server_test.exs`
+- Part of epic: P13.M1.E1 - Extract MessageDispatcher

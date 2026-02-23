@@ -1,0 +1,19 @@
+---
+id: P32.M1.E1.T002
+title: Implement ConsensusManager GenServer
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- genserver
+- consensus
+- voting
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.285930+00:00'
+started_at: '2026-02-18T20:03:22.285930+00:00'
+completed_at: '2026-02-18T22:09:18.361518+00:00'
+duration_minutes: 125.93459283333333
+---
+Implement PagServer.Consensus.ConsensusManager as a GenServer.\n\nKey functions:\n- start_vote/3(operation, context, requesting_agent_id) - initiates a vote, returns {:ok, vote_id} or {:error, reason}\n- collect_votes/1(vote_id) - waits for votes or timeout\n- cast_vote/3(vote_id, agent_id, decision) - records yes/no from a voter agent\n- get_result/1(vote_id) - returns current tally and status\n\nLogic:\n- Majority (>50%) approval required\n- Auto-approve if no other agents in session\n- Timeout after 30s returns :timeout (treated as rejection by default)\n- Persist vote records via ConsensusVote schema\n\nAcceptance criteria:\n- [ ] GenServer starts under application supervisor\n- [ ] start_vote/3 creates a ConsensusVote record\n- [ ] collect_votes/1 blocks until majority reached or timeout\n- [ ] Majority logic correct for odd and even voter counts\n- [ ] Timeout returns :timeout after 30s

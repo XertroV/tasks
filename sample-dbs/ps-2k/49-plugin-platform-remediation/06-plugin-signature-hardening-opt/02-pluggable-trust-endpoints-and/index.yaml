@@ -1,0 +1,39 @@
+id: P49.M6.E2
+name: Pluggable trust endpoints and local-only verification mode
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P49.M6.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-local-only-verificat.todo
+  title: Implement local-only verification mode with managed trust roots
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-configurable-trust-e.todo
+  title: Implement configurable trust endpoint profiles for public and private Sigstore
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-verifier-backend-selection.todo
+  title: Add verifier backend selection and deterministic fallback chain
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

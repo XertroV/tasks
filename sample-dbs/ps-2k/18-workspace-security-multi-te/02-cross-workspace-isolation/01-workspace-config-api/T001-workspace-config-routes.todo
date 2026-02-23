@@ -1,0 +1,46 @@
+---
+id: P18.M2.E1.T001
+title: Add workspace config routes to router
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- security
+- workspace
+- config
+- routing
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:19:06.703289+00:00'
+started_at: '2026-02-17T18:19:06.703289+00:00'
+completed_at: '2026-02-17T18:29:13.890788+00:00'
+duration_minutes: 10.119791466666667
+---
+
+# Add workspace config routes to router
+
+## Description
+
+Add new routes for workspace-scoped platform config under `/api/v1/workspaces/:workspace_id/config`.
+
+## Requirements
+
+- [ ] Add read routes (GET) piped through workspace membership plug (any member):
+  - `GET /api/v1/workspaces/:workspace_id/config` — list workspace configs
+  - `GET /api/v1/workspaces/:workspace_id/config/:key` — get specific config
+- [ ] Add write routes (PUT/DELETE) piped through workspace admin role plug:
+  - `PUT /api/v1/workspaces/:workspace_id/config/:key` — set config value
+  - `DELETE /api/v1/workspaces/:workspace_id/config/:key` — delete config
+- [ ] Routes should use the `RequireWorkspaceMembership` and `RequireWorkspaceRole` plugs from M1
+
+## Acceptance Criteria
+
+- [ ] Routes compile and are reachable
+- [ ] Read routes require workspace membership
+- [ ] Write routes require admin role
+- [ ] Routes use :workspace_id param consistently
+
+## Context
+
+**Files affected**: `lib/pag_server_web/router.ex`

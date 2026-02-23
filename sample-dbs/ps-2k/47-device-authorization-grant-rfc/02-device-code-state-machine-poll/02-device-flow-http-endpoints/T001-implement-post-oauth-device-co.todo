@@ -1,0 +1,35 @@
+---
+id: P47.M2.E2.T001
+title: Implement POST /oauth/device/code endpoint
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P47.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:16:49.077889+00:00'
+started_at: '2026-02-20T06:16:49.077889+00:00'
+completed_at: '2026-02-20T06:24:49.481948+00:00'
+duration_minutes: 8.006734066666667
+---
+Create lib/pag_server_web/controllers/device_authorization_controller.ex. POST /oauth/device/code: parse application/x-www-form-urlencoded body, validate client_id exists in oauth_clients and is_active=true, validate grant_type support (device_code in allowed_grant_types), validate scope is in allowed_scopes, call DeviceCodes.create/2, return JSON 200 with: device_code, user_code, verification_uri (absolute URL to /device), verification_uri_complete (/device?user_code=XXXX-XXXX), expires_in: 900, interval: 5. Set Cache-Control: no-store header. Return RFC 6749 §5.2 error format on invalid client (400 with error/error_description JSON). Add route in router.ex (no auth pipeline).
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P47.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-20 06:16 UTC
+**Sibling tasks**: P47.M2.E2.T002, P47.M2.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P47.M2.E2.T001 → P47.M2.E2.T002 → P47.M2.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P47.M2.E2.T001: .tasks/47-device-authorization-grant-rfc/02-device-code-state-machine-poll/02-device-flow-http-endpoints/T001-implement-post-oauth-device-co.todo
+- P47.M2.E2.T002: .tasks/47-device-authorization-grant-rfc/02-device-code-state-machine-poll/02-device-flow-http-endpoints/T002-implement-post-oauth-device-to.todo
+- P47.M2.E2.T003: .tasks/47-device-authorization-grant-rfc/02-device-code-state-machine-poll/02-device-flow-http-endpoints/T003-add-rate-limiting-to-device-fl.todo

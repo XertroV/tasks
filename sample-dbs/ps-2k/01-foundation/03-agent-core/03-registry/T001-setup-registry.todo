@@ -1,0 +1,92 @@
+---
+id: P1.M3.E3.T001
+title: Set up Registry for agent processes
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude
+claimed_at: '2026-02-05T09:14:14.772419'
+started_at: '2026-02-05T09:14:14.772419'
+completed_at: '2026-02-05T09:14:57.096289'
+tags:
+- agent
+- registry
+- process-registry
+- foundation
+---
+
+# Set up Registry for agent processes
+
+Create the Registry module using Elixir's built-in Registry to enable agent lookup by ID.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/registry.ex`
+- [ ] Configure Registry in application supervision tree
+  - [ ] Update `lib/pag_server/application.ex` to start Registry
+  - [ ] Use `:unique` keys (one process per agent_id)
+  - [ ] Name the registry `PagServer.AgentRegistry`
+- [ ] Define child spec in Registry module
+- [ ] Add module documentation explaining registry purpose
+
+## Acceptance Criteria
+
+- [ ] File `lib/pag_server/agents/registry.ex` exists
+- [ ] Registry is started in supervision tree before AgentSupervisor
+- [ ] Registry is configured with `:unique` key type
+- [ ] Registry has clear `@moduledoc` documentation
+- [ ] Code compiles without warnings
+- [ ] Registry starts successfully with application
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+  - Registry: ~100 LoC, provides lookup/1, register/2, list_all/0
+
+**Key Points**:
+- Registry enables O(1) lookup of agent processes by agent_id
+- Each agent_id maps to exactly one GenServer process (`:unique`)
+- Registry is supervised by the main Application supervisor
+- Registry must start before AgentSupervisor (dependency order)
+
+## Notes
+
+Example supervision tree setup:
+```elixir
+# lib/pag_server/application.ex
+def start(_type, _args) do
+  children = [
+    PagServer.Repo,
+    PagServerWeb.Telemetry,
+    {Phoenix.PubSub, name: PagServer.PubSub},
+    
+    # Registry must start before AgentSupervisor
+    {Registry, keys: :unique, name: PagServer.AgentRegistry},
+    
+    PagServer.Agents.Supervisor,
+    PagServerWeb.Endpoint
+  ]
+  
+  opts = [strategy: :one_for_one, name: PagServer.Supervisor]
+  Supervisor.start_link(children, opts)
+end
+```
+
+Example registry module:
+```elixir
+defmodule PagServer.Agents.Registry do
+  @moduledoc """
+  Registry for agent process lookup by agent ID.
+  
+  Provides O(1) lookup of agent GenServer processes using Elixir's
+  built-in Registry. Each agent_id maps to exactly one process.
+  """
+  
+  @registry_name PagServer.AgentRegistry
+  
+  # Helper functions will be added in next task
+end
+```

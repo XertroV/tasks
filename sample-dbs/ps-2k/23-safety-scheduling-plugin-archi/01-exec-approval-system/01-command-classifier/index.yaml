@@ -1,0 +1,31 @@
+id: P23.M1.E1
+name: Command Classifier
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-commandclassifier-mo.todo
+  title: Implement CommandClassifier module with dangerous pattern matching
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-integrate-classifier-into-bash.todo
+  title: Integrate classifier into bash/exec tool execution path
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M1.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

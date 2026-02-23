@@ -1,0 +1,17 @@
+---
+id: B054
+title: Use a subagent to fix at least 20 lint issues
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:27:12.964562+00:00'
+started_at: '2026-02-16T04:27:12.964562+00:00'
+completed_at: '2026-02-16T04:54:42.604865+00:00'
+duration_minutes: 27.4940049
+---
+
+Use a subagent to fix at least 20 lint issues

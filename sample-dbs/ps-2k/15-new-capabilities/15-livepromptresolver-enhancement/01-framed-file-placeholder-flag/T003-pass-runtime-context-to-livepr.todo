@@ -1,0 +1,23 @@
+---
+id: P15.M15.E1.T003
+title: Pass runtime context to LivePromptResolver from agent_server.ex
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- persona
+- prompts
+- resolver
+claimed_by: cli-user
+claimed_at: '2026-02-19T13:52:33.347145+00:00'
+started_at: '2026-02-19T13:52:33.347145+00:00'
+completed_at: '2026-02-19T13:54:41.798641+00:00'
+duration_minutes: 2.1408580666666666
+---
+Modify effective_system_prompt in agent_server.ex to pass runtime context (model name, home path, workspace path, capabilities, agent variables) to LivePromptResolver.
+
+Acceptance criteria:
+- Resolver receives runtime context
+- Resolves {{runtime:*}} and {{var:*}} correctly at request time

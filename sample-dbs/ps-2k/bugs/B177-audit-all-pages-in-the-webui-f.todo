@@ -1,0 +1,18 @@
+---
+id: B177
+title: Audit all pages in the webui frontend and ensure they are linked from somewhere.
+  major pages should be linked to from dashboard
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T08:20:22.904885+00:00'
+started_at: '2026-02-21T08:20:22.904885+00:00'
+completed_at: '2026-02-21T08:21:08.483638+00:00'
+duration_minutes: 0.7596457166666667
+---
+
+Audit all pages in the webui frontend and ensure they are linked from somewhere. major pages should be linked to from dashboard

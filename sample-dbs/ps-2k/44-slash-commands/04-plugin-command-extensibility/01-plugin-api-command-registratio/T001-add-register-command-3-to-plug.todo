@@ -1,0 +1,28 @@
+---
+id: P44.M4.E1.T001
+title: Add register_command/3 to Plugins.Api
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:34:25.043042+00:00'
+started_at: '2026-02-19T19:34:25.043042+00:00'
+completed_at: '2026-02-19T19:34:27.079467+00:00'
+duration_minutes: 0.033940116666666666
+---
+## Summary
+Expose command registration to plugins via Plugins.Api.
+
+## Acceptance Criteria
+- [ ] `register_command(plugin_name, params, opts \\ [])` added to Plugins.Api
+- [ ] params: %{name: String.t(), handler: module(), description: String.t(), aliases: [String.t()]}
+- [ ] Validates plugin is enabled before registering
+- [ ] Namespaces command: plugin_name.command_name (but short alias without prefix also registered if no collision)
+- [ ] Calls Commands.Registry.register/2
+- [ ] Telemetry emitted
+- [ ] `unregister_command/2` counterpart added
+- [ ] Rate-limiting: register_command is a sensitive function
+- [ ] Tests: plugin registers command successfully, disabled plugin rejected, duplicate rejected

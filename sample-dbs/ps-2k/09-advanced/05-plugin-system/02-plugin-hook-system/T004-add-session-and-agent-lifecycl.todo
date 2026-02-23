@@ -1,0 +1,55 @@
+---
+id: P9.M5.E2.T004
+title: Add session and agent lifecycle hooks (start, end, spawn, error)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E2.T002
+tags:
+- hooks
+- lifecycle
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:08:28.608769'
+started_at: '2026-02-06T17:08:28.608769'
+completed_at: '2026-02-06T17:13:27.281438'
+duration_minutes: 4.977877633333334
+---
+
+# Add session and agent lifecycle hooks (start, end, spawn, error)
+
+
+
+## Requirements
+
+- [ ] Create helper module `lib/pag_server/plugins/hooks/lifecycle_hooks.ex`
+- [ ] Implement session lifecycle hook dispatchers:
+  - [ ] `fire_session_start/2` - (session_id, config) -> dispatches `:session_start` HookEvent
+  - [ ] `fire_session_end/3` - (session_id, reason, metadata) -> dispatches `:session_end` HookEvent
+- [ ] Implement agent lifecycle hook dispatchers:
+  - [ ] `fire_agent_start/2` - (agent_id, config) -> dispatches `:agent_start` HookEvent
+  - [ ] `fire_agent_stop/2` - (agent_id, reason) -> dispatches `:agent_stop` HookEvent
+  - [ ] `fire_agent_error/3` - (agent_id, error, stacktrace) -> dispatches `:agent_error` HookEvent
+  - [ ] `fire_agent_spawn/3` - (parent_id, child_id, config) -> dispatches `:agent_spawn` HookEvent
+- [ ] Include agent config and session metadata in hook event data
+- [ ] Fire hooks from `AgentServer` GenServer callbacks at appropriate lifecycle points
+- [ ] All lifecycle hooks are async (fire-and-forget) - they observe but don't block lifecycle transitions
+
+## Acceptance Criteria
+
+- [ ] `:session_start` fires when a new session begins with session config data
+- [ ] `:session_end` fires when session terminates, including reason and duration
+- [ ] `:agent_start`/`:agent_stop` fire on agent GenServer init/terminate
+- [ ] `:agent_error` fires on agent errors with error details and stacktrace
+- [ ] `:agent_spawn` fires when a child agent is spawned, including parent/child relationship
+- [ ] Lifecycle hooks don't block agent operations (async dispatch)
+- [ ] Unit tests verify each hook fires with correct data at correct lifecycle point
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/hooks/lifecycle_hooks.ex`
+- **Modifies**: `lib/pag_server/agents/agent_server.ex` to add hook fire points
+- **Depends on**: `PagServer.Plugins.HookDispatcher` (T002), `PagServer.Plugins.HookEvent` (T001)
+- **Relates to**: `PagServer.Agents.Lifecycle` behaviour - hooks complement existing callbacks
+- **Integration**: `AgentServer.init/1`, `AgentServer.terminate/2`, error handling clauses

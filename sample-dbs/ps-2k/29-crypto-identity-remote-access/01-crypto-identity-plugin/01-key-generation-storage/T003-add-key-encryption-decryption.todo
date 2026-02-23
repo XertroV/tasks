@@ -1,0 +1,16 @@
+---
+id: P29.M1.E1.T003
+title: Add key encryption/decryption helpers
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:59:29.562760+00:00'
+started_at: '2026-02-18T18:59:29.562760+00:00'
+completed_at: '2026-02-18T19:03:08.898647+00:00'
+duration_minutes: 3.65559795
+---
+Utility module PagServer.Crypto.KeyCipher with encrypt/decrypt using AES-256-GCM and a workspace-scoped encryption key (derived from app secret). Write unit tests.

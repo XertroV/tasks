@@ -1,0 +1,25 @@
+id: P51.M1
+name: Team Infrastructure
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Team Configuration & Guides
+  path: 01-team-configuration-guides
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: All docs and scripts needed to launch a browser-testing team session.
+    Includes role definitions, bug report format template, browser handoff protocol,
+    and feature coverage map.
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

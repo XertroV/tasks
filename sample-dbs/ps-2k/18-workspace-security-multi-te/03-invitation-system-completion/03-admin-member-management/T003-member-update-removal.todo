@@ -1,0 +1,51 @@
+---
+id: P18.M3.E3.T003
+title: Add member role update and removal endpoints
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P18.M3.E3.T002
+tags:
+- workspace
+- members
+- api
+- rbac
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:45:52.668897+00:00'
+started_at: '2026-02-17T21:45:52.668897+00:00'
+completed_at: '2026-02-17T21:50:37.610119+00:00'
+duration_minutes: 4.7490201333333335
+---
+
+# Add member role update and removal endpoints
+
+## Description
+
+Add endpoints for updating member roles and removing members from a workspace.
+
+## Requirements
+
+- [ ] Add route: `PUT /api/v1/workspaces/:workspace_id/members/:user_id` — update member role
+  - Restricted to owner only (only owners can change roles)
+  - Cannot change own role
+  - Cannot demote the last owner
+- [ ] Add route: `DELETE /api/v1/workspaces/:workspace_id/members/:user_id` — remove member
+  - Restricted to admin+ (admins and owners can remove members)
+  - Admins cannot remove other admins or owners
+  - Owners can remove anyone except themselves (if last owner)
+  - Cannot remove self if last owner
+- [ ] Both endpoints should emit PubSub events
+
+## Acceptance Criteria
+
+- [ ] Role updates work for valid role transitions
+- [ ] Cannot demote last owner
+- [ ] Admins can remove members but not other admins/owners
+- [ ] Owners can remove anyone except last owner (themselves)
+- [ ] PubSub events fire on changes
+
+## Context
+
+**Files affected**: New or existing member controller, `lib/pag_server/workspace_members.ex`

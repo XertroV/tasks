@@ -1,0 +1,16 @@
+---
+id: P42.M1.E1.T002
+title: 'Create Ecto schema: MailmanMessage'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:13:36.043990+00:00'
+started_at: '2026-02-19T17:13:36.043990+00:00'
+completed_at: '2026-02-19T17:15:43.898767+00:00'
+duration_minutes: 2.1309128
+---
+## Context\nCreate Ecto schema for plugin_mailman_messages table.\n\n## Acceptance Criteria\n- [ ] Schema module at plugins/mailman/lib/schema/message.ex\n- [ ] All fields per plan: id, mailbox_id, sender_address, sender_workspace_id, sender_agent_id, recipient_address, recipient_agent_id, subject, body, priority (low/normal/high/urgent), message_type (direct/broadcast/forward/reply), status (pending/processing/delivered/failed/rejected), in_reply_to_id, routing_decision (map), delivery_attempts, delivered_at, metadata, timestamps\n- [ ] Changesets, status transition helpers\n- [ ] Indexes on (mailbox_id, status), (status, inserted_at), sender_workspace_id

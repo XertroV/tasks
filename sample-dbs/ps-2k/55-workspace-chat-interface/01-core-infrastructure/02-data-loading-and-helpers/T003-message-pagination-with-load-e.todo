@@ -1,0 +1,24 @@
+---
+id: P55.M1.E2.T003
+title: Message pagination with load-earlier by sequence_num
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- pagination
+- data
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:22:50.172737+00:00'
+started_at: '2026-02-22T06:22:50.172737+00:00'
+completed_at: '2026-02-22T06:34:13.867075+00:00'
+duration_minutes: 11.394905316666666
+---
+Implement 'load earlier messages' functionality. Initial load: last 100 messages by sequence_num desc, reversed. Pagination: fetch next batch WHERE sequence_num < oldest_loaded LIMIT 50. Add handle_event for 'load_earlier' that prepends older messages to transcript and re-merges entries. Track oldest_loaded_sequence_num in assigns.
+
+## Acceptance Criteria
+- Initial load gets last 100 messages
+- Load earlier button fetches next 50 older messages
+- Messages prepended correctly maintaining order
+- Button hidden when no more messages exist

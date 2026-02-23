@@ -1,0 +1,19 @@
+---
+id: B017
+title: docs endpoint /api/openapi.json returns 500 due missing GenericResponse schema
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- docs
+- api
+- openapi
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:26:00.806491+00:00'
+started_at: '2026-02-15T17:26:00.806491+00:00'
+completed_at: '2026-02-15T17:28:46.976168+00:00'
+duration_minutes: 2.769494416666667
+---
+Fix OpenAPI docs generation failure where /api/openapi.json returns 500 because PagServerWeb.Schemas.Common.GenericResponse.schema/0 is missing or mismatched. Add/adjust schema module usage and controller/docs tests to ensure docs endpoint returns 200.

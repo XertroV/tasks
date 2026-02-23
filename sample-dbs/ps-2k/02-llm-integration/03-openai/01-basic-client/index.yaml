@@ -1,0 +1,51 @@
+# Epic: Basic Client
+# Phase 2, Milestone 3, Epic 1 (P2.M3.E1)
+
+id: P2.M3.E1
+name: Basic Client
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-http-client.todo
+    title: Set up HTTP client with Req
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-auth-config.todo
+    title: Implement authentication and configuration
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-chat-completions.todo
+    title: Implement chat completions endpoint
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    
+  - id: T004
+    file: T004-error-handling.todo
+    title: Add error handling and retries
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

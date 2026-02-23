@@ -1,0 +1,88 @@
+---
+id: I010
+title: 'Slash commands should be usable from telegram (and other connectors: discord,
+  slack, whatsapp, teams, etc). Example: /model should let one change the model.'
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+- blocked
+blocked_reason: Existing work covers platform-specific slash commands (Slack/Discord)
+  but the unified cross-connector slash command system (e.g. /model from Telegram)
+  has not been planned or implemented. Pending user review to scope the gap and decide
+  whether a dedicated phase is needed.
+---
+
+# Idea Intake: slash commands should be usable from telegram (along with other connectors: discord, slack, whatsapp, teams, etc)
+
+## Original Idea
+
+slash commands should be usable from telegram (along with other connectors: discord, slack, whatsapp, teams, etc)
+
+example: `/model` for changing the model of the session.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "slash commands should be usable from telegram (along with other connectors: discord, slack, whatsapp, teams, etc)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+Phase P44: Slash Commands (unified cross-connector system)
+
+### M1: Core Command Infrastructure
+- P44.M1.E1.T001 — Define Command behaviour module with callbacks
+- P44.M1.E1.T002 — Define Command Response struct
+- P44.M1.E1.T003 — Define Command context map and typespecs
+- P44.M1.E2.T001 — Implement Command Registry GenServer with ETS
+- P44.M1.E2.T002 — Register built-in commands at application startup
+- P44.M1.E3.T001 — Implement generic slash command text parser
+- P44.M1.E3.T002 — Write Parser unit tests
+- P44.M1.E4.T001 — Implement Command Dispatcher
+- P44.M1.E4.T002 — Add Commands.Supervisor to application supervision tree
+- P44.M1.E4.T003 — Write Dispatcher integration tests
+
+### M2: Built-in Command Handlers (/model, /help, /stats, /status, /compact)
+- P44.M2.E1.T001 — Implement /model command handler
+- P44.M2.E1.T002 — Platform rendering of /model interactive options
+- P44.M2.E2.T001 — Implement /help command handler
+- P44.M2.E3.T001 — Implement /stats command handler
+- P44.M2.E3.T002 — Write /stats tests
+- P44.M2.E4.T001 — Implement /status command handler
+- P44.M2.E5.T001 — Implement /compact command handler
+
+### M3: Connector Integration (Telegram, Slack, Discord, Web)
+- P44.M3.E1.T001 — Add command interception to Telegram MessageHandler
+- P44.M3.E1.T002 — Telegram inline keyboard for command option responses
+- P44.M3.E2.T001 — Refactor SlackCommandsController to use unified Dispatcher
+- P44.M3.E2.T002 — Format unified command Response for Slack
+- P44.M3.E3.T001 — Refactor Discord interaction handler to use unified Dispatcher
+- P44.M3.E3.T002 — Format unified command Response for Discord
+- P44.M3.E4.T001 — Add command interception to AgentChannel WebSocket handler
+- P44.M3.E4.T002 — Add command interception to REST API message endpoint
+
+### M4: Plugin Command Extensibility
+- P44.M4.E1.T001 — Add register_command/3 to Plugins.Api
+- P44.M4.E1.T002 — Add CommandRegistrar module for plugin command cleanup
+- P44.M4.E2.T001 — Call CommandRegistrar on plugin enable/disable
+- P44.M4.E3.T001 — Add commands capability to plugin manifest schema
+
+Previously created (platform-specific, now superseded by P44):
+- P8.M3.E3 (Slack slash commands)
+- P8.M4.E2 (Discord slash commands)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

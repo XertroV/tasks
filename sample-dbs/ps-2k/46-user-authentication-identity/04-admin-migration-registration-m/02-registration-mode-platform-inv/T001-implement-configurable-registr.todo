@@ -1,0 +1,28 @@
+---
+id: P46.M4.E2.T001
+title: Implement configurable registration_mode enforcement in UserProvisioner
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P46.M2.E2.T001
+- P46.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:34:07.035120+00:00'
+started_at: '2026-02-20T05:34:07.035120+00:00'
+completed_at: '2026-02-20T05:43:20.513501+00:00'
+duration_minutes: 9.2246395
+---
+UserProvisioner already has a registration mode check stub. Wire it fully:
+1. Read mode from Application.get_env(:pag_server, :auth, []) |> Keyword.get(:registration_mode, :invite_only)
+2. :open — allow all new user registrations; skip invitation checks
+3. :invite_only — new user registrations only allowed if:
+   a. Email matches a pending PlatformInvitation (new schema, see T002), OR
+   b. Email matches a pending WorkspaceInvitation (existing schema)
+   If neither matches, return {:error, :registration_closed, 'Registration is currently invite-only. Contact an administrator or ask for an invitation.'}
+
+Config precedence: runtime.exs PAG_REGISTRATION_MODE env var > config file default
+In dev: always :open (hardcoded in dev.exs, cannot be overridden)
+Acceptance: Integration test covers open registration, invite-only with valid invitation, and invite-only rejection.

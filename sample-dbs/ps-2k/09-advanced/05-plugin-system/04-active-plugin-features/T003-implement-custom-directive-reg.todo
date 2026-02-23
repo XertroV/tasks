@@ -1,0 +1,59 @@
+---
+id: P9.M5.E4.T003
+title: Implement custom directive registration from plugins
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- directives
+- protocol
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:42:30.212652+00:00'
+started_at: '2026-02-11T02:42:30.212652+00:00'
+completed_at: '2026-02-11T02:48:58.303397+00:00'
+duration_minutes: 6.4681789499999995
+---
+
+# Implement custom directive registration from plugins
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/directive_adapter.ex` module
+- [ ] Define adapter that wraps plugin directive definitions into `Directive.Executor` protocol:
+  - [ ] Plugin provides: directive name, schema, and execution function
+  - [ ] Adapter implements `Directive.Executor` protocol for the plugin directive struct
+  - [ ] Execution delegates to plugin's handler (Elixir callback or MCP call for external)
+- [ ] Implement registration API:
+  - [ ] `register_directive/3` - (plugin_name, directive_name, directive_def)
+  - [ ] `unregister_directive/2` - (plugin_name, directive_name)
+  - [ ] Namespace directive names: `"<plugin_name>.<directive_name>"`
+- [ ] Validate directive schemas:
+  - [ ] Directive definition must include name, description, and parameter schema
+  - [ ] Parameter schema validated against JSON Schema format
+  - [ ] Reject directives with invalid schemas
+- [ ] Handle directive lifecycle with plugin lifecycle:
+  - [ ] Register directives on plugin enable
+  - [ ] Unregister on plugin disable
+  - [ ] Ensure no in-flight directive executions are interrupted on disable
+
+## Acceptance Criteria
+
+- [ ] Plugins can register custom directive types that work with the Executor protocol
+- [ ] Directive names are namespaced with plugin prefix
+- [ ] Directive schemas are validated on registration (invalid schemas rejected)
+- [ ] Plugin directives execute correctly through the standard Executor protocol
+- [ ] Directives are cleaned up on plugin disable
+- [ ] Unit tests cover: registration, namespace, schema validation, execution, unregistration
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/directive_adapter.ex`
+- **Implements**: `PagServer.Agents.Directive.Executor` protocol for plugin directives
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004)
+- **Used by**: `PagServer.Plugins.API` (E4.T006)
+- **Pattern reference**: Follow `PagServer.Agents.Directive.Executor` protocol implementation pattern

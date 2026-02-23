@@ -1,0 +1,59 @@
+---
+id: I061
+title: Need to support browsermcp -- this will need to be run via pag-connect probably
+  unless the browser is headless
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:24:10.746253+00:00'
+started_at: '2026-02-21T05:24:10.746253+00:00'
+completed_at: '2026-02-21T05:28:06.409480+00:00'
+duration_minutes: 3.927720266666667
+---
+
+# Idea Intake: Need to support browsermcp -- this will need to be run via pag-connect probably unless the browser is headless
+
+## Original Idea
+
+Need to support browsermcp -- this will need to be run via pag-connect probably unless the browser is headless
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Need to support browsermcp -- this will need to be run via pag-connect probably unless the browser is headless"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Created phase: `P53` (BrowserMCP Support via pag-connect)
+- Created milestones: `P53.M1`, `P53.M2` (depends on `P53.M1`), `P53.M3` (depends on `P53.M2`)
+- Created epics: `P53.M1.E1`, `P53.M2.E1`, `P53.M2.E2` (depends on `P53.M2.E1`), `P53.M3.E1`
+- Created tasks:
+  - `P53.M1.E1.T001` Write BrowserMCP support contract and capability matrix
+  - `P53.M1.E1.T002` Decide companion vs headless fallback strategy
+  - `P53.M1.E1.T003` Define config flags and bootstrap wiring for browser backend
+  - `P53.M2.E1.T001` Route browsermcp tool calls through companion transport
+  - `P53.M2.E1.T002` Implement browser session lifecycle mapping and teardown
+  - `P53.M2.E1.T003` Expose browser backend health and capability introspection
+  - `P53.M2.E2.T001` Enforce auth and workspace gating for browsermcp actions
+  - `P53.M2.E2.T002` Normalize browser transport errors and retry guidance
+  - `P53.M3.E1.T001` Add browsermcp integration tests with companion mocks
+  - `P53.M3.E1.T002` Document setup, operational limits, and rollout checklist
+- Created bug IDs: none
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

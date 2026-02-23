@@ -1,0 +1,43 @@
+---
+id: P25.M2.E4.T006
+title: Standardize SSH plugin MCP interface
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- ssh
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:19:05.143147+00:00'
+started_at: '2026-02-19T15:19:05.143147+00:00'
+completed_at: '2026-02-19T15:19:07.470005+00:00'
+duration_minutes: 0.03878076666666667
+---
+
+# Standardize SSH plugin MCP interface
+
+## Scope
+
+- Audit `plugins/ssh_agent/lib/ssh_plugin.ex` and `lib/pag_server/ssh/remote_agent_tool.ex`.
+- Plan conversion from:
+  - `ssh_tunnel_open`
+  - `list_ssh_connections`
+  - `close_ssh_connection`
+- into one SSH domain tool with dispatch.
+
+## Requirements
+
+- Create unified tool schema with operation enum and operation-specific argument requirements.
+- Keep workspace scoping and connection-close behavior unchanged.
+- Include migration compatibility for direct legacy tool calls if required.
+
+## Acceptance Criteria
+
+- [ ] Unified SSH tool defined with `subcommand`/`action` and operation enum.
+- [ ] Legacy operation behavior mapping is documented in full.
+- [ ] Unknown operation returns actionable, deterministic error output.
+- [ ] Compatibility/alias plan for current tool names is explicit.

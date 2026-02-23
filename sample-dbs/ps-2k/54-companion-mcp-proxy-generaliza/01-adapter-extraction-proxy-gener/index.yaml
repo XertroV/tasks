@@ -1,0 +1,25 @@
+id: P54.M1
+name: Adapter Extraction & Proxy Generalization
+status: done
+estimate_hours: 11.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Adapter extraction and executor parameterization
+  path: 01-adapter-extraction-and-executo
+  status: done
+  estimate_hours: 11.0
+  complexity: high
+  depends_on: []
+  description: Define CompanionToolAdapter behaviour, extract BrowserMcpAdapter, refactor
+    CompanionProxyExecutor to dispatch to adapters, update CompanionChannel for dynamic
+    tool enablement.
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

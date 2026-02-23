@@ -1,0 +1,39 @@
+---
+id: P21.M1.E1.T003
+title: Implement ContainerSupervisor (DynamicSupervisor)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T005
+tags:
+- infrastructure
+- supervision
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.548675+00:00'
+started_at: '2026-02-18T12:21:44.548675+00:00'
+completed_at: '2026-02-18T12:44:20.787938+00:00'
+duration_minutes: 22.60398755
+---
+
+# Implement ContainerSupervisor (DynamicSupervisor)
+
+Create a DynamicSupervisor to manage ContainerManager processes.
+
+## Requirements
+
+- DynamicSupervisor for container processes
+- Named registry for lookup
+- Graceful shutdown handling
+- Health check integration
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/container_supervisor.ex` exists
+- [ ] Uses `DynamicSupervisor` behavior
+- [ ] `start_container/1` starts a ContainerManager under supervisor
+- [ ] `stop_container/1` gracefully stops container process
+- [ ] `which_containers/0` lists active container pids
+- [ ] Added to application supervision tree
+- [ ] Unit tests for start/stop operations

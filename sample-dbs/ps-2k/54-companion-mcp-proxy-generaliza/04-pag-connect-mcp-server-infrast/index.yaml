@@ -1,0 +1,25 @@
+id: P54.M4
+name: pag-connect MCP Server Infrastructure
+status: done
+estimate_hours: 13.0
+complexity: high
+depends_on:
+- P54.M2
+locked: false
+epics:
+- id: E1
+  name: MCPServer, MCPRegistry, MCPSupervisor, and Connection integration
+  path: 01-mcpserver-mcpregistry-mcpsuper
+  status: done
+  estimate_hours: 13.0
+  complexity: high
+  depends_on: []
+  description: All pag-connect modules for running local MCP servers and proxying
+    their tools to pag-server.
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

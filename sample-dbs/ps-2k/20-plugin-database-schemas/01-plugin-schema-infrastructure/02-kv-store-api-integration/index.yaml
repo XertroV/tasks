@@ -1,0 +1,49 @@
+id: P20.M1.E2
+name: KV Store & API Integration
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugin-kv-store-table-m.todo
+  title: Create plugin_kv_store table migration
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-plugins-kvstore-cont.todo
+  title: Implement Plugins.KVStore context module
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P20.M1.E2.T001
+- id: T003
+  file: T003-add-kv-store-functions-to-plug.todo
+  title: Add KV store functions to Plugins.Api
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P20.M1.E2.T002
+- id: T004
+  file: T004-tests-for-kv-store.todo
+  title: Tests for KV store
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P20.M1.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

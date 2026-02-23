@@ -1,0 +1,26 @@
+id: P28.M2
+name: Plugin Configuration
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on:
+- P28.M1.E1
+locked: false
+epics:
+- id: E1
+  name: Plugin Config Endpoints
+  path: 01-plugin-config-endpoints
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on:
+  - P28.M1.E1
+  description: Generic GET/PATCH plugin config endpoint and a JSON Schema config schema
+    endpoint so UIs can render self-describing plugin settings forms.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

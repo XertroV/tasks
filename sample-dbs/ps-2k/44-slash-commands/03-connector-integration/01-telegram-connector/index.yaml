@@ -1,0 +1,30 @@
+id: P44.M3.E1
+name: Telegram Connector
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-command-interception-to-te.todo
+  title: Add command interception to Telegram MessageHandler
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-telegram-inline-keyboard-for-c.todo
+  title: Telegram inline keyboard for command option responses
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

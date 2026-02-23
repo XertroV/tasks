@@ -1,0 +1,31 @@
+---
+id: P15.M8.E4.T002
+title: Extract shared workspace authorization plug from controllers
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- refactor
+- dry
+- auth
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:09:19.040572+00:00'
+started_at: '2026-02-17T16:09:19.040572+00:00'
+completed_at: '2026-02-17T16:47:43.040145+00:00'
+duration_minutes: 38.39999271666667
+---
+cast_uuid/1, fetch_workspace/1, authorize_view/2, authorize_edit/2 are copy-pasted across bootstrap_controller.ex and workspace_files_controller.ex.
+
+Create PagServerWeb.WorkspaceAuthorization module with these shared helpers and import/use in both controllers. Also move list_users query out of LiveView (E4 I5) and telegram_connected? duplication (E4 I4).
+
+Source: E4 Audit I3, I4, I5
+
+## Acceptance Criteria
+- [ ] New PagServerWeb.WorkspaceAuthorization module
+- [ ] Both controllers use shared auth helpers
+- [ ] No duplicated auth logic remains
+- [ ] list_users moved to context module
+- [ ] telegram_connected? uses single source of truth
+- [ ] All tests pass

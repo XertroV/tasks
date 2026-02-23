@@ -1,0 +1,45 @@
+id: P22
+name: LLM Provider & Session Enhancements
+status: pending
+locked: false
+weeks: 4
+estimate_hours: 60.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Multi-Credential Provider Auth
+  path: 01-multi-credential-provider-auth
+  status: pending
+  estimate_hours: 20.0
+  complexity: high
+  depends_on: []
+  description: Support multiple API keys per provider with automatic rotation on rate-limit/auth-failure/timeout
+    events and differentiated cooldown tracking
+  locked: false
+- id: M2
+  name: Live Model Discovery
+  path: 02-live-model-discovery
+  status: pending
+  estimate_hours: 20.0
+  complexity: medium
+  depends_on: []
+  description: Dynamically fetch available models from providers via their /models
+    endpoints, cache with TTL, and merge with static model catalog
+  locked: false
+- id: M3
+  name: Auto-Compaction
+  path: 03-auto-compaction
+  status: pending
+  estimate_hours: 20.0
+  complexity: medium
+  depends_on: []
+  description: Proactive context compaction via CompactionMonitor GenServer that summarizes
+    old messages before hitting context limits
+  locked: false
+stats:
+  total_tasks: 30
+  done: 30
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,66 @@
+---
+id: P7.M5.E1.T003
+title: Retry logic tests
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M5.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-07T03:38:22.040472+00:00'
+started_at: '2026-02-07T03:38:22.040472+00:00'
+completed_at: '2026-02-07T03:49:48.450084+00:00'
+tags:
+- error-handling
+- retry
+- testing
+duration_minutes: 11.44016005
+---
+
+# Retry logic tests
+
+Test retry behavior with various failure scenarios.
+
+## Requirements
+
+- [ ] Test successful retry after transient failure
+- [ ] Test max attempts exhausted
+- [ ] Test non-retryable errors fail immediately
+- [ ] Test exponential backoff timing
+- [ ] Test jitter variance
+- [ ] Test concurrent retries don't synchronize
+
+## Acceptance Criteria
+
+- [ ] All retry scenarios tested
+- [ ] Timing verified with assertions
+- [ ] Coverage >85% for Retry module
+- [ ] Tests run reliably (no flakiness)
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M5 (Error Recovery)
+
+## Notes
+
+```elixir
+test "retries transient failures" do
+  attempts = :counters.new(1, [])
+  
+  fun = fn ->
+    count = :counters.get(attempts, 1)
+    :counters.add(attempts, 1, 1)
+    
+    if count < 2 do
+      {:error, :timeout}
+    else
+      {:ok, "success"}
+    end
+  end
+  
+  assert {:ok, "success"} = Retry.with_retry(fun)
+  assert :counters.get(attempts, 1) == 3
+end
+```

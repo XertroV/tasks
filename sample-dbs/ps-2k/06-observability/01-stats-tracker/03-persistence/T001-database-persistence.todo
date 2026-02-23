@@ -1,0 +1,117 @@
+---
+id: P6.M1.E3.T001
+title: Create database persistence module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- stats
+- database
+- persistence
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:33:20.162634+00:00'
+started_at: '2026-02-06T19:33:20.162634+00:00'
+completed_at: '2026-02-06T19:52:57.829170+00:00'
+duration_minutes: 19.62777541666667
+---
+
+# Create database persistence module
+
+Implement database persistence for stats with Ecto schema and migration.
+
+## Requirements
+
+- [ ] Create Ecto schema `lib/pag_server/stats/stat_record.ex`
+  - [ ] Fields: `agent_id`, `session_id`, `model`, `period_start`, `period_end`
+  - [ ] Stats: `tokens_in`, `tokens_out`, `total_cost`, `request_count`
+  - [ ] Timestamps: `inserted_at`, `updated_at`
+  - [ ] Indexes on agent_id, session_id, model, period_start
+- [ ] Create migration `priv/repo/migrations/YYYYMMDDHHMMSS_create_stat_records.exs`
+- [ ] Implement `Stats.Persister` module:
+  - [ ] `save_stats(stats)` - Insert or update stats
+  - [ ] `load_stats(filters)` - Query stats by agent/session/model/time
+  - [ ] `delete_stats(before_date)` - Archive old stats
+- [ ] Batch insert optimization (insert multiple records in one query)
+- [ ] Upsert logic (update if record exists for same period)
+
+## Acceptance Criteria
+
+- [ ] Migration runs successfully
+- [ ] Schema validates data correctly
+- [ ] Stats can be saved and loaded from database
+- [ ] Batch inserts work efficiently (>100 records/sec)
+- [ ] Upsert prevents duplicate period records
+- [ ] Indexes improve query performance
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.7 (Stats Domain)
+- Database design: PostgreSQL with jsonb support
+
+**Key Points**:
+- Use composite unique index on (agent_id, session_id, model, period_start)
+- Store costs as decimal (precision 10, scale 4)
+- Use `jsonb` column for additional metadata if needed
+
+## Notes
+
+**Schema Example**:
+```elixir
+defmodule PagServer.Stats.StatRecord do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "stat_records" do
+    field :agent_id, :string
+    field :session_id, :string
+    field :model, :string
+    field :period_start, :utc_datetime
+    field :period_end, :utc_datetime
+    field :tokens_in, :integer
+    field :tokens_out, :integer
+    field :total_cost, :decimal
+    field :request_count, :integer
+
+    timestamps()
+  end
+
+  def changeset(stat, attrs) do
+    stat
+    |> cast(attrs, [:agent_id, :session_id, :model, :period_start, :period_end,
+                    :tokens_in, :tokens_out, :total_cost, :request_count])
+    |> validate_required([:period_start, :period_end, :tokens_in, :tokens_out])
+    |> unique_constraint([:agent_id, :session_id, :model, :period_start])
+  end
+end
+```
+
+**Batch Insert**:
+```elixir
+Repo.insert_all(StatRecord, stats_list,
+  on_conflict: {:replace, [:tokens_in, :tokens_out, :total_cost, :request_count, :updated_at]},
+  conflict_target: [:agent_id, :session_id, :model, :period_start]
+)
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-06 19:33 UTC
+**Sibling tasks**: P6.M1.E3.T002, P6.M1.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E3.T001 → P6.M1.E3.T002 → P6.M1.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E3.T001: .tasks/06-observability/01-stats-tracker/03-persistence/T001-database-persistence.todo
+- P6.M1.E3.T002: .tasks/06-observability/01-stats-tracker/03-persistence/T002-rollup-archival.todo
+- P6.M1.E3.T003: .tasks/06-observability/01-stats-tracker/03-persistence/T003-tests.todo

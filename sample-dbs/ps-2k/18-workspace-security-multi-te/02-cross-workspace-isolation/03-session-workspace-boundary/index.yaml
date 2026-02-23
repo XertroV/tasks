@@ -1,0 +1,48 @@
+id: P18.M2.E3
+name: Session Workspace Boundary Enforcement
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-session-workspace-scope.todo
+  title: Add workspace_id scope to session queries
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-scope-flat-session-routes.todo
+  title: Scope flat /api/v1/sessions by user workspace memberships
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E3.T001
+- id: T003
+  file: T003-nested-session-routes.todo
+  title: Add workspace-nested session routes and controller delegation
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E3.T001
+- id: T004
+  file: T004-session-isolation-tests.todo
+  title: Add tests for cross-workspace session isolation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

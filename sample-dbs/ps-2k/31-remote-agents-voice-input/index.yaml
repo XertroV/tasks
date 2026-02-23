@@ -1,0 +1,35 @@
+id: P31
+name: Remote Agents & Voice Input
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 25.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: SSH Remote Agent
+  path: 01-ssh-remote-agent
+  status: pending
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: Spawn and control agents on remote machines via SSH. Uses MCP stdio
+    transport over SSH tunnels.
+  locked: false
+- id: M2
+  name: Telegram Whisper STT
+  path: 02-telegram-whisper-stt
+  status: pending
+  estimate_hours: 13.0
+  complexity: medium
+  depends_on: []
+  description: Handle voice messages from Telegram users using local Whisper speech-to-text
+    transcription.
+  locked: false
+stats:
+  total_tasks: 16
+  done: 16
+  in_progress: 0
+  blocked: 0
+  pending: 0

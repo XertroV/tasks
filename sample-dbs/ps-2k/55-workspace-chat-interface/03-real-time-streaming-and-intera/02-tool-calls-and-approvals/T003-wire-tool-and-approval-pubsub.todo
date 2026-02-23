@@ -1,0 +1,25 @@
+---
+id: P55.M3.E2.T003
+title: Wire tool and approval PubSub events to LiveView state
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- pubsub
+- tools
+- approvals
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:03:02.812211+00:00'
+started_at: '2026-02-22T12:03:02.812211+00:00'
+completed_at: '2026-02-22T12:03:09.715845+00:00'
+duration_minutes: 0.11506029999999999
+---
+Add handle_info clauses for: :tool_start - add to live tool_calls display list with pending state. :tool_complete - update matching tool call to completed with result and duration. :tool_error - update matching tool call to failed state. :approval_required - add to pending_approvals list. Add handle_event for approve_command/deny_command that calls ApprovalManager.approve/1 and ApprovalManager.deny/1 respectively, then removes from pending_approvals.
+
+## Acceptance Criteria
+- Tool start/complete/error events update tool_calls assign
+- Approval required events add to pending_approvals
+- Approve/deny buttons call ApprovalManager correctly
+- State cleaned up after approval action

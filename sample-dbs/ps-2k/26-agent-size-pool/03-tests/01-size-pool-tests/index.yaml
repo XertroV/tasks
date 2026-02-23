@@ -1,0 +1,22 @@
+id: P26.M3.E1
+name: Size Pool Tests
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-tests-for-size-based-model-sele.todo
+  title: Tests for size-based model selection (end-to-end)
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

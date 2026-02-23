@@ -1,0 +1,40 @@
+---
+id: P10.M1.E3.T002
+title: Build GitHub issues API methods (create, update, comment)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- github
+- api
+- issues
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:21:22.378917+00:00'
+started_at: '2026-02-12T00:21:22.378917+00:00'
+completed_at: '2026-02-12T00:35:42.065624+00:00'
+duration_minutes: 14.328111633333332
+---
+
+# Build GitHub issues API methods (create, update, comment)
+
+Extend the GitHub API client with issue management operations following the behavior pattern of existing LLM provider clients.
+
+## Requirements
+
+- [ ] Add `create_issue(repo, title, body, labels)` method to GitHub API client
+- [ ] Add `update_issue(repo, number, updates)` method (title, body, state, labels, assignees)
+- [ ] Add `add_issue_comment(repo, number, body)` method for creating comments
+- [ ] Add `update_issue_comment(repo, number, comment_id, body)` method
+- [ ] Add `delete_issue_comment(repo, number, comment_id)` method
+- [ ] Implement request/response handling with proper error messages
+- [ ] All methods return `{:ok, result}` or `{:error, reason}` tuples
+
+## Acceptance Criteria
+
+- [ ] All methods compile and have type specs
+- [ ] Rate limiting respected (API client uses rate limit headers)
+- [ ] GitHub API 200/201 responses return `:ok` with parsed result
+- [ ] API errors (4xx/5xx) return `:error` with message
+- [ ] Each method can be called with minimal required parameters

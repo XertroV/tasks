@@ -1,0 +1,39 @@
+---
+id: P17.M2.E1.T002
+title: Add parallel query execution test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- integration
+- session
+- parallel
+- fork
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:05:56.643184+00:00'
+started_at: '2026-02-14T05:05:56.643184+00:00'
+completed_at: '2026-02-14T05:08:52.217186+00:00'
+duration_minutes: 2.9262332
+---
+
+# Add parallel query execution test
+
+Add integration test for parallel query execution with real LLM calls.
+
+## Requirements
+
+- Add test to existing `test/integration/sessions/fork_isolation_test.exs`
+- Test the full parallel query workflow: fork → dispatch → collect
+- Use Groq (free tier) for real LLM calls
+- Run tests one at a time to avoid wasting credits
+
+## Acceptance Criteria
+
+- [ ] Test creates parent session with initial context
+- [ ] Test uses fork_for_parallel_queries to create multiple forks
+- [ ] Test dispatches different queries to each fork (mocked agent calls for now)
+- [ ] Test verifies query results are independent
+- [ ] Test uses `@moduletag :integration` for filtering
+- [ ] Test skips gracefully if no API keys available

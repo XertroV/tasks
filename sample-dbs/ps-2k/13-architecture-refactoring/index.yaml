@@ -1,0 +1,38 @@
+id: P16
+name: Architecture Refactoring
+status: pending
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: AgentServer Decomposition
+  path: 01-agentserver-decomposition
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M2
+  name: Coordinator & EventStore
+  path: 02-coordinator-eventstore
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M3
+  name: Backpressure & Error Handling
+  path: 03-backpressure-error-handling
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+stats:
+  total_tasks: 26
+  done: 26
+  in_progress: 0
+  blocked: 0
+  pending: 0

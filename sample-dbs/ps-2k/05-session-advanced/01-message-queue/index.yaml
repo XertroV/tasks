@@ -1,0 +1,48 @@
+id: P5.M1
+name: Message Queue
+status: pending
+estimate_hours: 12
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Queue Manager
+  path: 01-queue-manager
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: Core queue data structure with three-mode support
+- id: E2
+  name: Immediate Mode
+  path: 02-immediate-mode
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Interrupt at next safe point (after tool call)
+- id: E3
+  name: After Thinking Mode
+  path: 03-after-thinking-mode
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Wait for thinking to end, then interrupt
+- id: E4
+  name: When Done Mode
+  path: 04-when-done-mode
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E1
+  description: Auto-send after agent completes current turn
+stats:
+  total_tasks: 19
+  done: 19
+  in_progress: 0
+  blocked: 0
+  pending: 0

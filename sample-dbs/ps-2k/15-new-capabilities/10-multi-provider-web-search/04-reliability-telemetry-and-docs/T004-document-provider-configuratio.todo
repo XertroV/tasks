@@ -1,0 +1,35 @@
+---
+id: P15.M10.E4.T004
+title: Document provider configuration, fallback semantics, and troubleshooting
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M10.E2.T004
+- P15.M10.E3.T004
+tags:
+- docs
+- web-search
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:27:01.537846+00:00'
+started_at: '2026-02-17T16:27:01.537846+00:00'
+completed_at: '2026-02-17T16:33:17.850024+00:00'
+duration_minutes: 6.27186935
+---
+
+# Document provider configuration, fallback semantics, and troubleshooting
+
+
+
+## Requirements
+
+- Document all supported provider configuration keys, credential requirements, and enable/disable flags.
+- Document fallback, randomization, cooldown semantics, and operational troubleshooting guidance.
+- Add a dedicated section: "How to onboard another tool to the multi-provider orchestration pattern" with concrete implementation steps.
+
+## Acceptance Criteria
+
+- Documentation includes setup examples for DuckDuckGo, Brave, ZAI, and external provider options.
+- Troubleshooting section covers rate limits, credential errors, provider disablement, and cooldown behavior.
+- Onboarding section includes a reusable checklist covering facade contract, provider behaviour, orchestrator wiring, tests, telemetry, and docs updates.

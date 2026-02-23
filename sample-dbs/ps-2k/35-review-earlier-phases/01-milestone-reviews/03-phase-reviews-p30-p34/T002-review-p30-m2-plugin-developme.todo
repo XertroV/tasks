@@ -1,0 +1,16 @@
+---
+id: P35.M1.E3.T002
+title: 'Review P30.M2: Plugin Development Skill & Docs'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:50:04.976851+00:00'
+started_at: '2026-02-19T00:50:04.976851+00:00'
+completed_at: '2026-02-19T01:11:49.369852+00:00'
+duration_minutes: 21.7398832
+---
+Load the review-and-fix skill. Review all epics and tasks under P30.M2 (Plugin Development Skill). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: the plugin development SKILL.md document, PLUGIN_DEVELOPMENT.md guide accuracy (does it reflect actual plugin system behaviour?), and the mix pag.new_plugin scaffolding task (does it generate correct, working plugin boilerplate?).

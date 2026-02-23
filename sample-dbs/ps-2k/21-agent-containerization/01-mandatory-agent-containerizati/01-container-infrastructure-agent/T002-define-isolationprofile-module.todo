@@ -1,0 +1,39 @@
+---
+id: P21.M1.E1.T002
+title: Define IsolationProfile module with preset profiles
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P21.M1.E1.T001
+tags:
+- foundation
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.546797+00:00'
+started_at: '2026-02-18T12:21:44.546797+00:00'
+completed_at: '2026-02-18T12:36:26.403961+00:00'
+duration_minutes: 14.697619216666668
+---
+
+# Define IsolationProfile module with preset profiles
+
+Define isolation profiles that specify security constraints for containers.
+
+## Requirements
+
+- Define `%IsolationProfile{}` struct
+- Create preset profiles: `:default`, `:strict`, `:network_enabled`, `:minimal`
+- Each profile specifies: network access, read-only paths, resource limits
+- Provide merge/override capabilities
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/isolation_profile.ex` exists
+- [ ] `IsolationProfile` struct with `network`, `read_only_root`, `security_opts`, `capabilities`
+- [ ] `default/0` - network-enabled, standard limits (per user decision)
+- [ ] `strict/0` - no network, read-only root, dropped capabilities
+- [ ] `minimal/0` - minimal restrictions for trusted workspaces
+- [ ] `merge/2` to combine profiles with overrides
+- [ ] `to_docker_opts/1` converts profile to Docker HostConfig options

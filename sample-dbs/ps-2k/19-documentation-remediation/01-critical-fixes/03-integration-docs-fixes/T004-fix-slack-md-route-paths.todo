@@ -1,0 +1,19 @@
+---
+id: P19.M1.E3.T004
+title: Fix slack.md route paths
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- integrations
+- slack
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:35:54.373546+00:00'
+started_at: '2026-02-18T01:35:54.373546+00:00'
+completed_at: '2026-02-18T01:38:25.987378+00:00'
+duration_minutes: 2.5268970333333334
+---
+Change /slack/interactions → /slack/interactive. Remove /slack/options (doesn't exist). Lines 51-56.

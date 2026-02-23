@@ -1,0 +1,92 @@
+---
+id: P8.M5.E1.T001
+title: Create WhatsApp Cloud API client
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- whatsapp
+- cloud-api
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:09:09.578015+00:00'
+started_at: '2026-02-08T10:09:09.578015+00:00'
+completed_at: '2026-02-08T21:18:30+00:00'
+---
+
+# Create WhatsApp Cloud API client
+
+Implement HTTP client for WhatsApp Business Cloud API using Req.
+
+## Requirements
+
+- [x] Create `lib/pag_server/integrations/whatsapp/cloud_api.ex` (~80 LoC)
+- [x] Implement `send_text_message/2` for basic text messages
+- [x] Implement `send_media_message/3` for images/documents
+- [x] Add request/response logging with sanitized headers
+- [x] Configure base URL: `https://graph.facebook.com/v18.0`
+
+## Acceptance Criteria
+
+- [x] Client successfully sends text messages to valid phone numbers
+- [x] Client handles rate limiting (429 responses) with exponential backoff
+- [x] All requests include proper Authorization header
+- [x] Errors are wrapped in `{:error, reason}` tuples
+- [x] Access token is read from config, not hardcoded
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 357-403 (WhatsApp architecture)
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 390-402 (send_whatsapp_message example)
+
+**Key Points**:
+- Uses Meta Graph API for WhatsApp Business
+- Requires phone_number_id and access_token from Meta Business account
+- Messages must include `messaging_product: "whatsapp"`
+- Rate limits: 1000 messages per 24 hours (tier 1), upgradable after verification
+
+## Notes
+
+Configuration example:
+```elixir
+config :pag_server, PAGServer.Integrations.WhatsApp,
+  phone_number_id: System.get_env("WHATSAPP_PHONE_ID"),
+  access_token: System.get_env("WHATSAPP_ACCESS_TOKEN")
+```
+
+Request format:
+```elixir
+%{
+  messaging_product: "whatsapp",
+  to: phone_number,
+  type: "text",
+  text: %{body: message_text}
+}
+```
+
+Error handling priorities:
+1. 401 Unauthorized → Log and alert (token expired)
+2. 429 Rate Limited → Retry with backoff
+3. 400 Bad Request → Log payload for debugging
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 10:09 UTC
+**Sibling tasks**: P8.M5.E1.T002, P8.M5.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M5.E1.T001 → P8.M5.E1.T002 → P8.M5.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M5.E1.T001: .tasks/08-integrations/05-whatsapp/01-cloud-api/T001-cloud-api-client.todo
+- P8.M5.E1.T002: .tasks/08-integrations/05-whatsapp/01-cloud-api/T002-authentication.todo
+- P8.M5.E1.T003: .tasks/08-integrations/05-whatsapp/01-cloud-api/T003-template-support.todo

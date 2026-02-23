@@ -1,0 +1,33 @@
+---
+id: B156
+title: "await_thread missing from Permissions.@tool_permissions \u2014 capability\
+  \ layer not enforced"
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- await_thread
+- permissions
+- capabilities
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.856467+00:00'
+started_at: '2026-02-19T04:21:05.856467+00:00'
+completed_at: '2026-02-19T04:43:15.172362+00:00'
+duration_minutes: 22.155264716666668
+---
+The await_thread tool checks :agent_spawn in context[:permissions] inside execute/2, but is absent from Permissions.@tool_permissions in lib/pag_server/auth/permissions.ex (lines 33–82).
+
+spawn_subagent is correctly listed as: 'spawn_subagent' => [:agent_spawn] (line 68).
+await_thread is missing entirely.
+
+This means:
+- The coarse capability layer (ToolExecutor.validate_tool_access) falls through to :unknown_tool and permits it by default
+- The two permission systems (Capabilities vs context[:permissions]) are inconsistent for await_thread
+
+Fix:
+Add to @tool_permissions in permissions.ex:
+  "await_thread" => [:agent_spawn]
+
+Also add test verifying that an agent without :agent_spawn capability cannot call await_thread.

@@ -1,0 +1,40 @@
+---
+id: P16.M2.E4.T001
+title: Add multi-provider fallback test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on:
+- P16.M1.E1.T004
+- P16.M2.E1.T001
+- P16.M2.E1.T002
+tags:
+- integration
+- multi-provider
+- fallback
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:55:30.202286+00:00'
+started_at: '2026-02-14T02:55:30.202286+00:00'
+completed_at: '2026-02-14T02:59:06.783024+00:00'
+duration_minutes: 3.6096787666666668
+---
+
+# Add multi-provider fallback test
+
+Add integration test for fallback behavior between providers.
+
+## Requirements
+
+- Create test file `test/integration/llm/multi_provider_test.exs`
+- Test OpenRouter fallback feature with multiple models
+- Test graceful degradation when primary provider unavailable
+- Use `@tag :integration` to allow filtering
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists
+- [ ] Test configures multiple model preferences
+- [ ] Test validates response comes from available model
+- [ ] Test verifies fallback routing metadata
+- [ ] Test skips gracefully if API keys not set

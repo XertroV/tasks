@@ -1,0 +1,39 @@
+id: P3.M6.E1
+name: Error Response Consistency
+status: pending
+estimate_hours: 4.5
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-unified-error-response.todo
+  title: Create unified error response helper
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-migrate-all-plugs-and-controll.todo
+  title: Migrate all plugs and controllers to unified error format
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-consolidate-error-codes-and-up.todo
+  title: Consolidate error codes and update error documentation
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

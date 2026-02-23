@@ -1,0 +1,62 @@
+---
+id: I042
+title: 'MCP/tooling/plugin: Agents need to be able to query for connectors they have
+  access to + send arbitrary messages over arbitrary connectors. Like an agent might
+  have a task to check for new tweets on topic Y and send me a list of the top 5 on
+  whatsapp. Ideally we can write this as a plugin.'
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:38:02.808473+00:00'
+started_at: '2026-02-19T04:38:02.808473+00:00'
+completed_at: '2026-02-19T04:42:58.779037+00:00'
+duration_minutes: 4.932842583333334
+---
+
+# Idea Intake: MCP/tooling/plugin: Agents need to be able to query for connectors they have access to + send arbitrary messages over arbitrary connectors. Like an agent might have a task to check for new tweets on topic Y and send me a list of the top 5 on whatsapp. Ideally we can write this as a plugin.
+
+## Original Idea
+
+MCP/tooling/plugin: Agents need to be able to query for connectors they have access to + send arbitrary messages over arbitrary connectors. Like an agent might have a task to check for new tweets on topic Y and send me a list of the top 5 on whatsapp. Ideally we can write this as a plugin.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "MCP/tooling/plugin: Agents need to be able to query for connectors they have access to + send arbitrary messages over arbitrary connectors. Like an agent might have a task to check for new tweets on topic Y and send me a list of the top 5 on whatsapp. Ideally we can write this as a plugin."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+New phase P38 (Connector Messaging Plugin) with 1 milestone and 3 epics:
+
+**P38.M1.E1 — Plugin scaffold and connector registry**
+- P38.M1.E1.T001: Create plugin scaffold (plugin.json, ConnectorPlugin module)
+- P38.M1.E1.T002: Implement ConnectorRegistry: list_workspace_connectors/1 and get_connector/2
+- P38.M1.E1.T003: Implement list_connectors MCP tool
+
+**P38.M1.E2 — Outbound message dispatch and tests**
+- P38.M1.E2.T001: Implement ConnectorDispatcher: dispatch/3 with per-platform routing
+- P38.M1.E2.T002: Implement send_connector_message MCP tool
+- P38.M1.E2.T003: Tests for ConnectorRegistry, ConnectorDispatcher, and MCP tools
+
+**P38.M1.E3 — Security, auth, and integration**
+- P38.M1.E3.T001: Enforce workspace-scoped connector access (security guard in dispatcher)
+- P38.M1.E3.T002: Add rate limiting for outbound connector messages (per workspace)
+- P38.M1.E3.T003: Documentation: PLUGIN_DEVELOPMENT.md update and connector_messaging/README.md
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

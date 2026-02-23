@@ -1,0 +1,128 @@
+---
+id: P5.M4.E7.T001
+title: Add message archival with archived_at timestamp
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- database
+- archival
+- migration
+claimed_by: cli-user
+claimed_at: '2026-02-08T02:18:20.255759+00:00'
+started_at: '2026-02-08T02:18:20.255759+00:00'
+completed_at: '2026-02-08T03:02:34.367575+00:00'
+duration_minutes: 44.235196699999996
+---
+
+# Add message archival with archived_at timestamp
+
+Implement soft-delete (archival) for messages via an `archived_at` timestamp column.
+Currently, messages use cascade hard delete, and the system is append-only by design.
+This task adds the ability to archive (hide) messages from normal queries without
+breaking the hash chain integrity that the message chain system relies on.
+
+Archived messages should be excluded from normal queries by default but still
+accessible when explicitly requested (e.g., for chain verification or auditing).
+
+## Requirements
+
+- [ ] Create Ecto migration adding `archived_at` column to messages table
+  - `ALTER TABLE messages ADD COLUMN archived_at :utc_datetime_usec DEFAULT NULL;`
+  - Add index on `archived_at` for efficient filtering: `CREATE INDEX messages_archived_at_idx ON messages (archived_at) WHERE archived_at IS NOT NULL;`
+- [ ] Update `PagServer.Schema.Message` to include `archived_at` field
+  - Add `field :archived_at, :utc_datetime_usec` to schema
+  - Update `@type t` to include `archived_at: DateTime.t() | nil`
+  - Do NOT add archived_at to create_changeset cast list (it's set separately)
+  - Add `archive_changeset/1` that sets archived_at to `DateTime.utc_now()`
+  - Add `restore_changeset/1` that sets archived_at to nil
+- [ ] Add `archive_message/1` function to `PagServer.Context.Messages`
+  - Signature: `archive_message(message_id)`
+  - Sets `archived_at` to current UTC timestamp
+  - Returns `{:ok, message}` or `{:error, :not_found}`
+  - Emits telemetry event `[:pag_server, :message, :archived]`
+- [ ] Add `restore_message/1` function to `PagServer.Context.Messages`
+  - Signature: `restore_message(message_id)`
+  - Sets `archived_at` to nil
+  - Returns `{:ok, message}` or `{:error, :not_found}`
+  - Emits telemetry event `[:pag_server, :message, :restored]`
+- [ ] Add `archive_session_messages/2` for bulk archival
+  - Signature: `archive_session_messages(session_id, opts \\ [])`
+  - Supports `:before` option to archive messages before a date
+  - Supports `:role` option to archive only specific roles
+  - Returns `{:ok, count}` with number of archived messages
+- [ ] Update `get_session_messages/2` to exclude archived messages by default
+  - Add `WHERE archived_at IS NULL` to the base query
+  - Support `include_archived: true` option to include them
+  - Support `only_archived: true` option to return only archived messages
+- [ ] Update `get_last_message/1` to exclude archived messages by default
+- [ ] Ensure hash chain verification functions still include archived messages
+  - Chain verification in `PagServer.Context.MessageChain` must always see ALL messages
+  - The `verify_chain/1` function should use `include_archived: true`
+
+## Acceptance Criteria
+
+- [ ] Messages can be archived (hidden from normal queries) via `archive_message/1`
+- [ ] Archived messages can be restored via `restore_message/1`
+- [ ] `get_session_messages/2` excludes archived messages by default
+- [ ] `get_session_messages/2` with `include_archived: true` returns all messages
+- [ ] Hash chain integrity verification still works with archived messages present
+- [ ] Bulk archival by session with date/role filters works
+- [ ] Telemetry events emitted for archive/restore actions
+- [ ] Migration is reversible
+
+## Context
+
+This task was identified in an architecture audit as a MINOR priority gap.
+Messages currently use cascade hard delete with no soft-delete mechanism.
+The append-only design means we never want to truly delete messages (which
+would break hash chains), but archival provides a way to hide them from
+normal access patterns.
+
+## Notes
+
+Implementation pattern for filtered queries:
+
+```elixir
+def get_session_messages(session_id, opts \\ []) do
+  include_archived = Keyword.get(opts, :include_archived, false)
+  only_archived = Keyword.get(opts, :only_archived, false)
+
+  query =
+    from m in Message,
+      where: m.session_id == ^session_id,
+      order_by: [asc: m.sequence_num]
+
+  query =
+    cond do
+      include_archived -> query
+      only_archived -> from m in query, where: not is_nil(m.archived_at)
+      true -> from m in query, where: is_nil(m.archived_at)
+    end
+
+  # ... apply limit/offset as before
+end
+```
+
+Archive changeset pattern:
+
+```elixir
+def archive_changeset(%Message{} = message) do
+  message
+  |> change(%{archived_at: DateTime.utc_now()})
+end
+
+def restore_changeset(%Message{} = message) do
+  message
+  |> change(%{archived_at: nil})
+end
+```
+
+## Reference Files
+
+- `lib/pag_server/schema/message.ex` - Message schema (add archived_at field)
+- `lib/pag_server/context/messages.ex` - Messages context (add archive/restore functions)
+- `lib/pag_server/context/message_chain.ex` - Hash chain verification (must still see archived)
+- `priv/repo/migrations/` - Migration directory

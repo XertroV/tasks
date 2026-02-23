@@ -1,0 +1,34 @@
+---
+id: P46.M5.E2.T002
+title: Integration tests for full OAuth login and session lifecycle
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P46.M2.E2.T001
+- P46.M3.E3.T001
+- P46.M4.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:54:58.549074+00:00'
+started_at: '2026-02-20T05:54:58.549074+00:00'
+completed_at: '2026-02-20T06:03:37.464850+00:00'
+duration_minutes: 8.648596066666666
+---
+Write end-to-end integration tests in test/pag_server_web/integration/auth_flow_test.exs using Bypass to mock OAuth provider responses:
+
+Test scenarios:
+1. First-time GitHub login (open mode): OAuth callback → new user created → personal workspace created → session cookie set → redirected to dashboard
+2. Returning GitHub login: existing user + identity → new session token → dashboard
+3. Link Google to existing GitHub account: second OAuth flow while logged in → identity linked
+4. Unlink attempt when last identity: error returned, identity not removed
+5. Remember-me: login → close session → re-request with remember_me cookie → auto-logged-in
+6. Logout: session token deleted, cookie cleared, redirect to /login, subsequent request redirected
+7. Invite-only mode: new user with no invitation → {:error, :registration_closed}
+8. Invite-only mode: new user with valid platform invitation → user created, invitation accepted
+9. Admin access: non-admin visits /admin → redirect; admin visits → 200
+10. Token cleanup: expired remember_me token → redirect to login (token rotation test)
+
+Use PagServer.DataCase with async: false for tests that set registration_mode app env.
+Acceptance: All 10 test scenarios pass. mix test.auth passes.

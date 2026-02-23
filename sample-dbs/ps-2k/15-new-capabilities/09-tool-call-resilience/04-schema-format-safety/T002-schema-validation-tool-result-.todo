@@ -1,0 +1,37 @@
+---
+id: P15.M9.E4.T002
+title: Add conditional schema validation requiring tool_call_id on tool_result messages
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M9.E1.T002
+tags:
+- schema
+- validation
+- message
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:03:32.362116+00:00'
+started_at: '2026-02-17T14:03:32.362116+00:00'
+completed_at: '2026-02-17T14:07:56.704308+00:00'
+duration_minutes: 4.4057029666666665
+---
+The `create_changeset/1` in `lib/pag_server/schema/message.ex` doesn't enforce
+that `tool_result` role messages have a `tool_call_id`. This allows structurally
+invalid messages to be persisted.
+
+Fix: Add conditional validation that requires `tool_call_id` when role is
+"tool_result". The crash handler (fixed in E1.T002) must then always provide
+a non-nil `tool_call_id`.
+
+Source: .plan/tool-call-resilience.md — Gap 8
+
+Files to modify:
+- lib/pag_server/schema/message.ex (create_changeset/1)
+
+## Acceptance Criteria
+- [ ] Changeset validation rejects tool_result messages without tool_call_id
+- [ ] Non-tool_result messages are unaffected
+- [ ] Existing tests pass (all tool_result creation paths provide tool_call_id)
+- [ ] Test: attempt to create tool_result without tool_call_id, verify changeset error

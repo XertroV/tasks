@@ -1,0 +1,23 @@
+id: P15.M14
+name: Response Pipeline Processing
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Hide Tag Parsing
+  path: 01-hide-tag-parsing
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

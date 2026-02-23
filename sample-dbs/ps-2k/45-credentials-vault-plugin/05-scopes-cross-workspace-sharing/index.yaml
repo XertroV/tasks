@@ -1,0 +1,23 @@
+id: P45.M5
+name: Scopes & Cross-Workspace Sharing
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Scope Resolution & Access Grants
+  path: 01-scope-resolution-access-grants
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

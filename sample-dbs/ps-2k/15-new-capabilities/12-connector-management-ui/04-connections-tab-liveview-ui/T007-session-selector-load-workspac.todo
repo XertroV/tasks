@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T007
+title: 'Session selector: load workspace sessions and agents into drawer assigns'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E4.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.185243+00:00'
+started_at: '2026-02-18T07:31:33.185243+00:00'
+completed_at: '2026-02-18T07:51:10.497082+00:00'
+duration_minutes: 19.621863783333332
+---
+When opening the connector drawer, preload workspace sessions and agents for the session binding section. Add private helper load_connector_drawer_data/2 (socket, workspace_id): calls Agents.list_agents(scope: {:workspace_id, workspace_id}, include_archived: false) and a new Sessions.list_sessions_for_workspace/1 query (sessions where workspace_id = ?, status in [active, paused], ordered by last_activity_at desc, limit 50). Assign as drawer_agents: [] and drawer_sessions: []. Group sessions by agent in the template for a better UX (show agent name as optgroup). Guard: if workspace has no agents, show a warning in the drawer with a link to the setup wizard.

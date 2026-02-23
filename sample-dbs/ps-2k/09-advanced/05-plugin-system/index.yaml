@@ -1,0 +1,60 @@
+id: P9.M5
+name: Plugin System
+status: pending
+estimate_hours: 48.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Plugin Foundation
+  path: 01-plugin-foundation
+  status: pending
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Plugin Hook System
+  path: 02-plugin-hook-system
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on:
+  - E1
+  description: ''
+- id: E3
+  name: Plugin Capabilities
+  path: 03-plugin-capabilities
+  status: pending
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on:
+  - E1
+  description: ''
+- id: E4
+  name: Active Plugin Features
+  path: 04-active-plugin-features
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on:
+  - E1
+  - E2
+  - E3
+  description: ''
+- id: E5
+  name: Per-Agent Plugin Access
+  path: 05-per-agent-plugin-access
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - E1
+  - E3
+  description: ''
+stats:
+  total_tasks: 29
+  done: 29
+  in_progress: 0
+  blocked: 0
+  pending: 0

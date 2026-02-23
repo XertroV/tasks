@@ -1,0 +1,21 @@
+---
+id: P20.M1.E1.T003
+title: Implement Plugins.Schema.Validator module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:06:33.799967+00:00'
+started_at: '2026-02-18T10:06:33.799967+00:00'
+completed_at: '2026-02-18T10:10:37.473433+00:00'
+duration_minutes: 4.061224266666667
+---
+## Acceptance Criteria
+- Module at lib/pag_server/plugins/schema/validator.ex
+- validate_table_name/2 checks table starts with plugin_<plugin_name>_
+- Returns {:ok, table_name} or {:error, reason}
+- Checks for collision with core tables (query information_schema or maintain list)
+- Checks for collision with other plugins' tables

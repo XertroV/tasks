@@ -1,0 +1,41 @@
+id: P43.M1
+name: Schema, Recorder & Registry Integration
+status: done
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Schema & Migration
+  path: 01-schema-migration
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: CallRecorder Module
+  path: 02-callrecorder-module
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Registry Integration
+  path: 03-registry-integration
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

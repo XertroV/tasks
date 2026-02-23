@@ -1,0 +1,116 @@
+---
+id: P6.M5.E1.T001
+title: Create Prometheus exporter Plug
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- observability
+- prometheus
+- metrics
+- export
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:11:43.417678+00:00'
+started_at: '2026-02-07T01:11:43.417678+00:00'
+completed_at: '2026-02-07T01:22:50.351507+00:00'
+duration_minutes: 11.115563633333332
+---
+
+# Create Prometheus exporter Plug
+
+Implement HTTP endpoint for Prometheus to scrape metrics.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/plugs/prometheus_exporter.ex`
+- [ ] Expose metrics at `/metrics` endpoint
+- [ ] Return metrics in Prometheus text format
+- [ ] Include HELP and TYPE comments
+- [ ] Add endpoint to router
+- [ ] Optional: basic auth for security
+- [ ] Support gzip compression
+
+## Acceptance Criteria
+
+- [ ] Endpoint returns metrics
+- [ ] Format valid for Prometheus
+- [ ] Response time <100ms
+- [ ] Compression works
+- [ ] Auth optional
+
+## Context
+
+**Key Points**:
+- Prometheus scrapes via HTTP GET /metrics
+- Text-based format (not JSON)
+- Metrics should be aggregated/current values
+
+## Notes
+
+**Plug Implementation**:
+```elixir
+defmodule PagServerWeb.Plugs.PrometheusExporter do
+  import Plug.Conn
+
+  def init(opts), do: opts
+
+  def call(conn, _opts) do
+    metrics = collect_metrics()
+    body = format_prometheus(metrics)
+
+    conn
+    |> put_resp_content_type("text/plain; version=0.0.4")
+    |> send_resp(200, body)
+  end
+
+  defp collect_metrics do
+    %{
+      llm_requests_total: Stats.Tracker.get_global_stats().request_count,
+      agents_active: Registry.count(:agents),
+      sessions_active: Registry.count(:sessions)
+    }
+  end
+
+  defp format_prometheus(metrics) do
+    """
+    # HELP llm_requests_total Total LLM requests
+    # TYPE llm_requests_total counter
+    llm_requests_total #{metrics.llm_requests_total}
+
+    # HELP agents_active Active agents
+    # TYPE agents_active gauge
+    agents_active #{metrics.agents_active}
+    """
+  end
+end
+```
+
+**Router**:
+```elixir
+scope "/" do
+  get "/metrics", PagServerWeb.Plugs.PrometheusExporter, []
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:11 UTC
+**Sibling tasks**: P6.M5.E1.T002, P6.M5.E1.T003, P6.M5.E1.T004, P6.M5.E1.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M5.E1.T001 → P6.M5.E1.T002 → P6.M5.E1.T003 → P6.M5.E1.T004 → P6.M5.E1.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M5.E1.T001: .tasks/06-observability/05-prometheus-export/01-exporter/T001-exporter-plug.todo
+- P6.M5.E1.T002: .tasks/06-observability/05-prometheus-export/01-exporter/T002-metrics-format.todo
+- P6.M5.E1.T003: .tasks/06-observability/05-prometheus-export/01-exporter/T003-tests.todo
+- P6.M5.E1.T004: .tasks/06-observability/05-prometheus-export/01-exporter/T004-add-telemetry-metrics-promethe.todo
+- P6.M5.E1.T005: .tasks/06-observability/05-prometheus-export/01-exporter/T005-define-custom-business-metrics.todo

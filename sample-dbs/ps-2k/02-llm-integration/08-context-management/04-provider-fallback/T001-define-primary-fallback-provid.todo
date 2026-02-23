@@ -1,0 +1,45 @@
+---
+id: P2.M8.E4.T001
+title: Define primary/fallback provider config
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- providers
+- fallback
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-06T01:46:55.860978'
+started_at: '2026-02-06T07:21:57.439251'
+completed_at: '2026-02-06T08:21:57.439251'
+duration_minutes: 707.1916460833332
+---
+
+# Define primary/fallback provider config
+
+
+
+## Requirements
+
+- [x] Add configurable provider routing defaults (`primary`, `fallbacks`, `failover_enabled`)
+- [x] Load and normalize routing config in `PagServer.LLM.Registry`
+- [x] Expose routing config via Registry API for follow-up failover tasks
+- [x] Add tests covering defaults and startup overrides
+
+## Acceptance Criteria
+
+- [x] `config/config.exs` defines primary/fallback provider routing under `:llm`
+- [x] `PagServer.LLM.Registry.get_provider_routing/1` returns normalized routing map
+- [x] Unknown fallback provider names are ignored during normalization
+- [x] Registry tests pass with new provider routing coverage
+
+
+## Handoff Notes
+
+**From:** cli-user
+**To:** cli-user
+**Date:** 2026-02-06 01:46 UTC
+
+Taking over stale task (no active session).

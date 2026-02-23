@@ -1,0 +1,32 @@
+---
+id: P34.M3.E1.T001
+title: Skill List LiveView
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- frontend
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:46:04.394746+00:00'
+started_at: '2026-02-19T00:46:04.394746+00:00'
+completed_at: '2026-02-19T00:46:27.324754+00:00'
+duration_minutes: 0.38216659999999997
+---
+
+# Skill List LiveView
+
+Create `PagServerWeb.SkillHubLive`:
+
+- Display paginated list of skills
+- Search input with debounced query
+- Show skill name, description, tags
+- Link to detail view
+
+## Acceptance Criteria
+
+- [ ] Lists skills from ClawHub API
+- [ ] Search updates list in real-time
+- [ ] Pagination controls work

@@ -1,0 +1,18 @@
+---
+id: B104
+title: The validation console > chat workspace shows TOOL_RESULT but doesn't show
+  the tool call itself. It should show both.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:53:04.289809+00:00'
+started_at: '2026-02-17T13:53:04.289809+00:00'
+completed_at: '2026-02-17T13:56:22.083439+00:00'
+duration_minutes: 3.2965602833333336
+---
+
+The validation console > chat workspace shows TOOL_RESULT but doesn't show the tool call itself. It should show both.

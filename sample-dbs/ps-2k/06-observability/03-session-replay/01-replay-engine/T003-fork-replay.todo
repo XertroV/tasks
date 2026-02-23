@@ -1,0 +1,56 @@
+---
+id: P6.M3.E1.T003
+title: Add fork replay support
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P6.M3.E1.T002
+tags:
+- observability
+- fork
+- replay
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:45:51.728811'
+started_at: '2026-02-06T14:45:51.728811'
+completed_at: '2026-02-06T14:51:07.348211'
+duration_minutes: 5.260323133333333
+---
+
+# Add fork replay support
+
+Support replaying forked sessions from parent session event history.
+
+## Requirements
+
+- [x] Identify fork point in event chain
+- [x] Replay parent events up to fork
+- [x] Apply fork-specific events
+- [x] Handle divergent event chains
+- [x] Preserve fork relationships
+
+## Acceptance Criteria
+
+- [x] Forked sessions replay correctly
+- [x] Fork point identified
+- [x] Parent events included
+- [x] Fork divergence handled
+
+## Notes
+
+**Fork Replay**:
+```elixir
+def replay_forked_session(forked_session_id) do
+  fork_event = EventStore.get_fork_event(forked_session_id)
+  parent_events = EventStore.get_events(
+    session_id: fork_event.parent_session_id,
+    before: fork_event.parent_event_id
+  )
+  fork_events = EventStore.get_events(session_id: forked_session_id)
+  
+  initial_state = Agent.new()
+  state_after_parent = Enum.reduce(parent_events, initial_state, &apply_event/2)
+  Enum.reduce(fork_events, state_after_parent, &apply_event/2)
+end
+```

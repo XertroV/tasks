@@ -1,0 +1,36 @@
+---
+id: P19.M2.E2.T001
+title: Fix web search config keys
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- design
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:23:41.783945+00:00'
+started_at: '2026-02-18T02:23:41.783945+00:00'
+completed_at: '2026-02-18T02:24:33.303029+00:00'
+duration_minutes: 0.8586512333333334
+---
+Change zai_api_key → zai_coding_api_key in docs/design/multi-provider-tool-orchestration.md. Lines 29-57.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 02:23 UTC
+**Sibling tasks**: P19.M2.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M2.E2.T001 → P19.M2.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M2.E2.T001: .tasks/19-documentation-remediation/02-medium-priority-fixes/02-config-keys-fix/T001-fix-web-search-config-keys.todo
+- P19.M2.E2.T002: .tasks/19-documentation-remediation/02-medium-priority-fixes/02-config-keys-fix/T002-fix-workspace-config-endpoint.todo

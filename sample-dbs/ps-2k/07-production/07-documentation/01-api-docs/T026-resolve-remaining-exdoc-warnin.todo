@@ -1,0 +1,42 @@
+---
+id: P7.M7.E1.T026
+title: Resolve remaining ExDoc warning references and baseline moduledocs
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:58:45.757319+00:00'
+started_at: '2026-02-08T06:58:45.757319+00:00'
+completed_at: '2026-02-08T07:01:44.706797+00:00'
+duration_minutes: 2.9824911333333333
+---
+
+# Resolve remaining ExDoc warning references and baseline moduledocs
+
+Clean up remaining documentation warnings from final audit and add baseline
+module docs for public modules lacking `@moduledoc`.
+
+
+## Requirements
+
+- [x] Fix unclosed-backtick warning in:
+  - [x] `lib/pag_server/tools/builtin/regex_replace.ex`
+- [x] Fix invalid function reference warning in:
+  - [x] `lib/pag_server/events/event_handler.ex`
+- [x] Resolve missing docs-link warning for `./THIRD_PARTY_LICENSES.md` from `README.md`
+- [x] Add baseline `@moduledoc` to public modules missing one:
+  - [x] `lib/pag_server/mailer.ex`
+  - [x] `lib/pag_server/repo.ex`
+- [x] Run `mix docs` and verify warning set decreases
+
+## Acceptance Criteria
+
+- [x] Scoped warnings are removed or replaced with valid references
+- [x] `PagServer.Mailer` and `PagServer.Repo` have non-empty `@moduledoc`
+- [x] `mix docs` warning count is reduced compared to pre-task baseline

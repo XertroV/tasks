@@ -1,0 +1,48 @@
+id: P43.M2.E2
+name: Live Dashboard
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-llmcallsdashboardlive-l.todo
+  title: Create LlmCallsDashboardLive LiveView with in-flight section and recent history
+    table
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-time-window-selector-1h-6h.todo
+  title: Add time window selector (1h/6h/24h), provider/model filters, and summary
+    stats row
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-register-dashboard-llm-calls-r.todo
+  title: Register /dashboard/llm-calls route and add card to DashboardIndex
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-llmcallrecord-query-functi.todo
+  title: 'Add LlmCallRecord query functions: recent/1, in_flight/0, summary_stats/2'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

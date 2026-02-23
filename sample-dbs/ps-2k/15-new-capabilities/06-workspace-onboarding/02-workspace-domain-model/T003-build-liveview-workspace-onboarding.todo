@@ -1,0 +1,37 @@
+---
+id: P15.M6.E2.T003
+title: Build LiveView workspace onboarding flow with checklist
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M6.E2.T002
+- P15.M6.E1.T003
+tags:
+- liveview
+- ux
+- onboarding
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:41:26.742667+00:00'
+started_at: '2026-02-17T17:41:26.742667+00:00'
+completed_at: '2026-02-17T17:50:34.955270+00:00'
+duration_minutes: 9.1368765
+---
+
+# Build LiveView workspace onboarding flow with checklist
+
+## Owner Outcome
+- I can complete workspace setup from the dashboard without manual API calls.
+
+## Acceptance Criteria
+- [x] Add onboarding LiveView route and screen that creates workspace, selects template, and sets main agent.
+  - Setup wizard at `lib/pag_server_web/live/setup_wizard.ex` with workspace-aware steps. `WorkspaceState.checklist_state/1` calls `Workspaces.get_workspace_readiness/1`.
+- [x] Render checklist state from workspace readiness API (workspace created, main agent ready, Telegram connected, first chat verified).
+  - Checklist rendered from readiness API with checkmarks. `derive_next_action_prompt/1` provides clear guidance for the next step.
+- [x] Provide clear next-action prompts and blocking error copy for missing prerequisites.
+  - Next-action prompts displayed as indigo-highlighted box below checklist. Per-step prerequisite warnings for missing workspace, bot token, connectivity verification.
+- [x] Add LiveView tests for happy path and interrupted setup recovery.
+  - 44 tests total (10 new): next-action prompts, prerequisite blocking, step persistence, interrupted recovery flow.
+- [x] Validate UX copy explicitly promises and tracks "chatting in <10 minutes" outcome.
+  - Header includes "<10 minutes" promise. Per-step time estimates shown in navigation pills.

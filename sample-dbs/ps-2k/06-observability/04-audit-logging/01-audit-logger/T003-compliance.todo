@@ -1,0 +1,74 @@
+---
+id: P6.M4.E1.T003
+title: Add compliance logging
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P6.M4.E1.T001
+tags:
+- observability
+- audit
+- compliance
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:23:02.158275+00:00'
+started_at: '2026-02-06T20:23:02.158275+00:00'
+completed_at: '2026-02-06T20:33:49.268655+00:00'
+duration_minutes: 10.78517285
+---
+
+# Add compliance logging
+
+Add logging for compliance requirements (GDPR, CCPA, SOC 2).
+
+## Requirements
+
+- [ ] Log data subject requests:
+  - [ ] Data access requests
+  - [ ] Data deletion requests
+  - [ ] Data export requests
+- [ ] Log data processing:
+  - [ ] Purpose of processing
+  - [ ] Legal basis
+  - [ ] Data retention
+- [ ] Log consent management:
+  - [ ] Consent given
+  - [ ] Consent withdrawn
+  - [ ] Consent updated
+- [ ] Generate compliance reports:
+  - [ ] Access history for data subject
+  - [ ] Processing activity log
+  - [ ] Retention policy adherence
+
+## Acceptance Criteria
+
+- [ ] DSR logging implemented
+- [ ] Processing purpose tracked
+- [ ] Consent changes logged
+- [ ] Compliance reports generated
+
+## Notes
+
+**GDPR Article 30 compliance**:
+```elixir
+Audit.log_event("data_processing", actor, "process", resource,
+  metadata: %{
+    purpose: "LLM agent conversation",
+    legal_basis: "consent",
+    data_categories: ["conversation_history", "user_preferences"],
+    retention_period: "90_days"
+  }
+)
+```
+
+**Data Subject Request**:
+```elixir
+Audit.log_event("dsr", actor, "request_deletion", resource,
+  metadata: %{
+    request_type: "deletion",
+    requested_at: DateTime.utc_now(),
+    verified: true
+  }
+)
+```

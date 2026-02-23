@@ -1,0 +1,41 @@
+---
+id: P46.M1.E2.T001
+title: 'Migration: extend users table with username, is_admin, confirmed_at'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:30:06.108988+00:00'
+started_at: '2026-02-19T20:30:06.108988+00:00'
+completed_at: '2026-02-19T20:33:28.066509+00:00'
+duration_minutes: 3.3659585
+---
+Create migration to add columns to the existing users table:
+- username: citext, unique, nullable initially (existing rows get null, set later)
+- is_admin: boolean, not null, default false
+- confirmed_at: timestamp(0), nullable (set when OAuth email is verified)
+Add unique index on username using citext for case-insensitive uniqueness.
+Update lib/pag_server/schema/user.ex to include these fields in the schema and changesets.
+Add a username_changeset/2 for updating username with validation rules (3-39 chars, [a-z0-9-], no consecutive hyphens, no leading/trailing hyphens).
+Acceptance: mix ecto.migrate succeeds, User schema compiles, existing tests still pass.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-19 20:30 UTC
+**Sibling tasks**: P46.M1.E2.T002, P46.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M1.E2.T001 → P46.M1.E2.T002 → P46.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M1.E2.T001: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/02-schema-users-extension-auth-ta/T001-migration-extend-users-table-w.todo
+- P46.M1.E2.T002: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/02-schema-users-extension-auth-ta/T002-migration-create-user-identiti.todo
+- P46.M1.E2.T003: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/02-schema-users-extension-auth-ta/T003-migration-create-user-tokens-t.todo

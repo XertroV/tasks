@@ -1,0 +1,94 @@
+id: P15.M13.E1
+name: Core Graphiti Wall Plugin
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugin-manifest-and-dir.todo
+  title: Create plugin manifest and directory structure
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-database-schema-for-wal.todo
+  title: Create database schema for wall registrations
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-create-database-schema-for-wal.todo
+  title: Create database schema for wall messages
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-implement-wall-register-tool.todo
+  title: Implement wall_register tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-implement-wall-send-message-to.todo
+  title: Implement wall_send_message tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-implement-wall-check-messages.todo
+  title: Implement wall_check_messages tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T007
+  file: T007-implement-4-hour-notification.todo
+  title: Implement 4-hour notification scheduler
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T008
+  file: T008-add-liveview-web-routes-for-wa.todo
+  title: Add LiveView web routes for wall UI
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-write-plugin-tests.todo
+  title: Write plugin tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T010
+  file: T010-add-plugin-documentation.todo
+  title: Add plugin documentation
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 10
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 10

@@ -1,0 +1,49 @@
+---
+id: P10.M5.E3.T002
+title: Implement common Git operations interface
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P10.M5.E3.T001
+tags:
+- implementation
+- git
+- abstraction
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:43:49.898252+00:00'
+started_at: '2026-02-12T04:43:49.898252+00:00'
+completed_at: '2026-02-12T04:55:28.352462+00:00'
+duration_minutes: 11.64090335
+---
+
+# Implement common Git operations interface
+
+Implement unified interface for common Git operations across all platforms.
+
+## Requirements
+
+- [ ] Create `PagServer.Integrations.Git.Orchestrator` behaviour
+- [ ] Define common operations callbacks:
+  - [ ] Create PR/MR
+  - [ ] Update PR/MR status
+  - [ ] Comment on PR/issue
+  - [ ] Create/update issue
+  - [ ] Get repo information
+- [ ] Implement platform detection and routing
+- [ ] Create adapter implementations (GitHub, Bitbucket, Gitea)
+- [ ] Standardize error handling across adapters
+- [ ] Document with examples
+- [ ] Write integration tests
+
+## Acceptance Criteria
+
+- [ ] Behaviour module defined with callbacks
+- [ ] Platform routing works for all platforms
+- [ ] Each adapter implements all callbacks
+- [ ] Error types standardized
+- [ ] Integration tests cover all adapter paths
+- [ ] Documentation includes usage examples
+- [ ] `mix test` passes for all tests
+- [ ] `mix lint` passes without warnings

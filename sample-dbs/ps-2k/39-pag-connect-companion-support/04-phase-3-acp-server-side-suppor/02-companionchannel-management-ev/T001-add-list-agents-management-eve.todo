@@ -1,0 +1,16 @@
+---
+id: P39.M4.E2.T001
+title: Add list_agents management event to CompanionChannel
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:52:01.097162+00:00'
+started_at: '2026-02-19T18:52:01.097162+00:00'
+completed_at: '2026-02-19T18:52:03.100400+00:00'
+duration_minutes: 0.03338711666666667
+---
+Handle 'list_agents' in CompanionChannel. Calls Agents.list_agents(workspace_id: ...) and returns {agents: [...]} with id, name, display_name, status, model_provider, model_name. Scope check: requires agents:read, agents:write, workspace:companion, or admin:*. JWT-connected sockets (no api_key_scopes assign) pass through unconditionally. Tests in companion_channel_test.exs.

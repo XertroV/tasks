@@ -1,0 +1,77 @@
+id: P46
+name: User Authentication & Identity
+status: done
+locked: true
+weeks: 5
+estimate_hours: 68.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: 'Foundation: Schema, Deps & Pow Config'
+  path: 01-foundation-schema-deps-pow-con
+  status: done
+  estimate_hours: 14.0
+  complexity: high
+  depends_on: []
+  description: Add Pow + PowAssent + Assent deps, extend users table with username/is_admin/confirmed_at,
+    create user_identities and user_tokens tables, configure Pow, create Accounts
+    context module, add username validation/derivation utilities, and update seeds
+    for dev auto-login.
+  locked: false
+- id: M2
+  name: OAuth Login Flow
+  path: 02-oauth-login-flow
+  status: done
+  estimate_hours: 16.0
+  complexity: high
+  depends_on:
+  - P46.M1
+  description: Implement OAuth login initiation and callback for GitHub, Google, and
+    GitLab. Auto-provision users and personal workspaces on first login. Handle identity
+    linking for existing users adding a new OAuth provider. Wire workspace invitation
+    acceptance to OAuth login flow.
+  locked: false
+- id: M3
+  name: Web Session & Route Protection
+  path: 03-web-session-route-protection
+  status: done
+  estimate_hours: 16.0
+  complexity: high
+  depends_on:
+  - P46.M2
+  description: Implement cookie-based session management via Pow, create RequireLogin
+    plug and LiveView on_mount hook, protect all workspace-scoped and admin LiveView
+    routes, add logout endpoint, and implement remember-me with configurable TTL.
+  locked: false
+- id: M4
+  name: Admin Migration & Registration Modes
+  path: 04-admin-migration-registration-m
+  status: done
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on:
+  - P46.M3
+  description: Remove x-admin-key static secret and replace with user is_admin role.
+    Add mix pag.create_admin bootstrap task. Implement configurable registration modes
+    (open/invite-only) with env-var control. Wire platform-level user invitations.
+    Add invite-only enforcement in OAuth callback.
+  locked: false
+- id: M5
+  name: User Profile, Settings & Integration Tests
+  path: 05-user-profile-settings-integrat
+  status: done
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on:
+  - P46.M3
+  description: Build user settings LiveView page (username editing, linked OAuth providers,
+    danger zone). Add REST API endpoints for user profile. Write integration tests
+    covering the full OAuth login flow, session lifecycle, and auth edge cases.
+  locked: false
+stats:
+  total_tasks: 36
+  done: 36
+  in_progress: 0
+  blocked: 0
+  pending: 0

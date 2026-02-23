@@ -1,0 +1,40 @@
+id: P7.M5.E4
+name: Oban Error Handling and Dead Letter Queue
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-configure-oban-error-handling.todo
+  title: Configure Oban error handling and max attempts
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-implement-dead-letter-queue-fo.todo
+  title: Implement dead letter queue for permanently failed Oban jobs
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: critical
+  depends_on:
+  - P7.M5.E4.T001
+- id: T003
+  file: T003-tests-for-oban-error-handling.todo
+  title: Tests for Oban error handling and DLQ
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P7.M5.E4.T001
+  - P7.M5.E4.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

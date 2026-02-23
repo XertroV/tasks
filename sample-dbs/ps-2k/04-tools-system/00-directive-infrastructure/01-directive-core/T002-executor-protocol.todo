@@ -1,0 +1,234 @@
+---
+id: P4.M0.E1.T002
+title: Implement Directive.Executor protocol
+status: done
+estimate_hours: 4
+complexity: medium
+priority: critical
+depends_on:
+- P4.M0.E1.T001
+tags:
+- directives
+- protocol
+- execution
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:47:39.243993'
+started_at: '2026-02-05T17:47:39.243993'
+completed_at: '2026-02-05T17:54:00.380427'
+duration_minutes: 6.35227365
+---
+
+# Implement Directive.Executor protocol
+
+Create the Executor protocol and implementations for all directive types.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/directive/executor.ex` (~300 LoC total)
+- [ ] Define Directive.Executor protocol with execute/2 callback
+- [ ] Implement protocol for each directive type:
+  - [ ] `Directive.SpawnAgent` (async and blocking modes)
+  - [ ] `Directive.SendMessage` (async and sync modes)
+  - [ ] `Directive.Delegate` (blocking with timeout)
+  - [ ] `Directive.StopChild` (async)
+  - [ ] `Directive.EmitToParent` (async)
+- [ ] Add file-level Apache 2.0 attribution header
+
+## Acceptance Criteria
+
+- [ ] Protocol defined with execute/2 spec returning {:ok, state} | {:async, ref, state} | {:error, term, state}
+- [ ] SpawnAgent executor creates child via Coordinator
+- [ ] SendMessage executor sends to target agent GenServer
+- [ ] Delegate executor uses Task.async for blocking wait
+- [ ] StopChild executor calls Coordinator.stop_child/3
+- [ ] EmitToParent executor sends message to parent
+- [ ] All implementations handle errors gracefully
+- [ ] Dialyzer passes
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md` (Section 2, Component 2)
+
+**Jido Reference**:
+- Pattern: `lib/jido/agent_server.ex` (DirectiveExec protocol)
+- Our approach uses `{:async, ref, state}` for blocking operations instead of blocking receive
+
+**Key Decision**: Use Task.async for blocking directives to avoid blocking GenServer mailbox
+
+## Notes
+
+### Protocol definition
+
+```elixir
+# lib/pag_server/agents/directive/executor.ex
+# Directive pattern adapted from Jido (https://github.com/agentjido/jido)
+# Copyright 2019 Parker Selbert - Apache License 2.0
+# Modified for PAG-Server event-sourced architecture
+
+defprotocol PagServer.Agents.Directive.Executor do
+  @moduledoc """
+  Protocol for executing directives.
+  
+  Each directive type implements this protocol to define execution semantics.
+  The AgentServer calls execute/2 after tools return directives.
+  
+  ## Return Values
+  
+  - `{:ok, state}` - Directive executed successfully, continue
+  - `{:async, ref, state}` - Async operation started, wait for Task result
+  - `{:error, reason, state}` - Execution failed
+  """
+
+  @doc "Execute directive, return updated AgentServer state"
+  @spec execute(struct(), map()) ::
+          {:ok, map()}
+          | {:async, reference(), map()}
+          | {:error, term(), map()}
+  def execute(directive, state)
+end
+```
+
+### SpawnAgent implementation
+
+```elixir
+defimpl PagServer.Agents.Directive.Executor, for: PagServer.Agents.Directive.SpawnAgent do
+  alias PagServer.Agents.Coordinator
+
+  def execute(%{blocking: false} = directive, state) do
+    # Async spawn - fire and forget
+    case Coordinator.spawn_child(state.agent_id, directive) do
+      {:ok, child_id, child_pid} ->
+        ref = Process.monitor(child_pid)
+        child_info = %{
+          id: child_id,
+          pid: child_pid,
+          ref: ref,
+          role: directive.role
+        }
+        new_children = [child_info | Map.get(state, :children, [])]
+        {:ok, Map.put(state, :children, new_children)}
+
+      {:error, reason} ->
+        {:error, reason, state}
+    end
+  end
+
+  def execute(%{blocking: true} = directive, state) do
+    # Blocking spawn - use Task.async to wait without blocking GenServer
+    task =
+      Task.async(fn ->
+        case Coordinator.spawn_child(state.agent_id, directive) do
+          {:ok, child_id, child_pid} ->
+            # Wait for child to send result
+            receive do
+              {:child_result, ^child_id, result} -> {:ok, child_id, result}
+            after
+              directive.timeout -> {:error, :timeout}
+            end
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+      end)
+
+    ref = task.ref
+    new_state = Map.put(state, :waiting_for, {:spawn, ref, directive})
+    {:async, ref, new_state}
+  end
+end
+```
+
+### SendMessage implementation
+
+```elixir
+defimpl PagServer.Agents.Directive.Executor, for: PagServer.Agents.Directive.SendMessage do
+  alias PagServer.Agents.Registry, as: AgentRegistry
+
+  def execute(%{wait_for_reply: false} = directive, state) do
+    # Async message
+    case AgentRegistry.lookup(directive.to) do
+      {:ok, pid} ->
+        message = build_message(directive, state)
+        GenServer.cast(pid, {:receive_message, message})
+        {:ok, state}
+
+      {:error, :not_found} ->
+        {:error, {:agent_not_found, directive.to}, state}
+    end
+  end
+
+  def execute(%{wait_for_reply: true} = directive, state) do
+    # Sync message - use Task.async
+    task =
+      Task.async(fn ->
+        case AgentRegistry.lookup(directive.to) do
+          {:ok, pid} ->
+            message = build_message(directive, state)
+
+            try do
+              GenServer.call(pid, {:receive_message, message}, directive.timeout)
+            catch
+              :exit, {:timeout, _} -> {:error, :timeout}
+            end
+
+          {:error, :not_found} ->
+            {:error, {:agent_not_found, directive.to}}
+        end
+      end)
+
+    ref = task.ref
+    new_state = Map.put(state, :waiting_for, {:send_message, ref, directive})
+    {:async, ref, new_state}
+  end
+
+  defp build_message(directive, state) do
+    %{
+      from: state.agent_id,
+      content: directive.message,
+      timestamp: DateTime.utc_now()
+    }
+  end
+end
+```
+
+### Delegate implementation (blocking by design)
+
+```elixir
+defimpl PagServer.Agents.Directive.Executor, for: PagServer.Agents.Directive.Delegate do
+  alias PagServer.Agents.{Coordinator, Registry}
+
+  def execute(directive, state) do
+    task =
+      Task.async(fn ->
+        target_pid =
+          case directive.to do
+            :new ->
+              # Spawn new child for this task
+              {:ok, child_id, pid} = Coordinator.spawn_child(state.agent_id, %{
+                role: "delegated_task",
+                system_prompt: directive.task
+              })
+              pid
+
+            child_id when is_binary(child_id) ->
+              {:ok, pid} = Registry.lookup(child_id)
+              pid
+          end
+
+        # Send task and wait for result
+        try do
+          GenServer.call(target_pid, {:execute_task, directive.task}, directive.timeout)
+        catch
+          :exit, {:timeout, _} -> {:error, :timeout}
+        end
+      end)
+
+    ref = task.ref
+    new_state = Map.put(state, :waiting_for, {:delegate, ref, directive})
+    {:async, ref, new_state}
+  end
+end
+```
+
+Test with pure protocol dispatch, verify return values.

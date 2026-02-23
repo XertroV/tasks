@@ -1,0 +1,17 @@
+---
+id: P38.M1.E3.T002
+title: Add rate limiting for outbound connector messages (per workspace)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P38.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:53:57.447127+00:00'
+started_at: '2026-02-19T04:53:57.447127+00:00'
+completed_at: '2026-02-19T04:56:53.828504+00:00'
+duration_minutes: 2.9396894166666665
+---
+Wrap ConnectorDispatcher.dispatch/3 with a rate-limit check using the existing PagServer.RateLimiter infrastructure (or a simple ETS-backed counter). Default limit: 60 messages/minute per workspace (configurable via Application.get_env(:pag_server, :connector_outbound_rate_limit, 60)). Exceeded: {:error, :rate_limited}. This prevents agent loops from spamming external connectors.

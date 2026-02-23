@@ -1,0 +1,31 @@
+id: P39.M5.E1
+name: coding-assistant Workspace Template YAML
+status: done
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-coding-assistant-worksp.todo
+  title: Create coding-assistant workspace template YAML
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-verify-coding-assistant-worksp.todo
+  title: Verify coding-assistant workspace template schema compatibility
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P39.M5.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

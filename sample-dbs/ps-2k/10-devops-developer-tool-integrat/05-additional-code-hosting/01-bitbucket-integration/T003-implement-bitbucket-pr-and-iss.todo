@@ -1,0 +1,50 @@
+---
+id: P10.M5.E1.T003
+title: Implement Bitbucket PR and issue operations
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on:
+- P10.M5.E1.T001
+- P10.M5.E1.T002
+tags:
+- bitbucket
+- pr-operations
+- issue-operations
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:57:40.967431+00:00'
+started_at: '2026-02-12T05:57:40.967431+00:00'
+completed_at: '2026-02-12T06:16:58.517387+00:00'
+duration_minutes: 19.292499033333335
+---
+
+# Implement Bitbucket PR and issue operations
+
+Integrate Bitbucket PR and issue operations into agent workflow.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/bitbucket/orchestrator.ex` module
+- [ ] Implement PR operations:
+  - [ ] Create pull request
+  - [ ] Update PR status
+  - [ ] Add PR comments
+  - [ ] Merge PR
+- [ ] Implement issue operations:
+  - [ ] Create issue
+  - [ ] Update issue
+  - [ ] Add issue comments
+- [ ] Integrate with agent state updates via Events
+- [ ] Add telemetry tracking
+- [ ] Write integration tests
+
+## Acceptance Criteria
+
+- [ ] PR operations work correctly
+- [ ] Issue operations work correctly
+- [ ] Status updates persisted via Events
+- [ ] Telemetry tracks operation timing
+- [ ] Error handling covers API failures
+- [ ] `mix test` passes for all tests
+- [ ] `mix lint` passes without warnings

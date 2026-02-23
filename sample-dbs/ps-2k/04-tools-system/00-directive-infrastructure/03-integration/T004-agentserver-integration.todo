@@ -1,0 +1,265 @@
+---
+id: P4.M0.E3.T004
+title: Integrate directives into AgentServer
+status: done
+estimate_hours: 5
+complexity: high
+priority: critical
+depends_on:
+- P4.M0.E1.T002
+- P4.M0.E2.T003
+tags:
+- agentserver
+- integration
+- tool-execution
+claimed_by: claude-1
+claimed_at: '2026-02-05T20:13:01.429267'
+started_at: '2026-02-05T20:13:01.429267'
+completed_at: '2026-02-05T20:17:54.238090'
+duration_minutes: 4.8801468833333335
+---
+
+# Integrate directives into AgentServer
+
+Integrate directive execution into AgentServer's existing tool execution flow.
+
+## Requirements
+
+- [ ] Modify `lib/pag_server/agents/agent_server.ex` (existing file)
+- [ ] Implement tool execution entry point (line 509-514, currently TODO)
+- [ ] Add `execute_tools/2` function - calls Tool.execute/2, collects directives
+- [ ] Add `interpret_directives/2` function - executes directives via Executor protocol
+- [ ] Add `handle_info` for async Task results (`{ref, result}`)
+- [ ] Preserve hash-chain message linking for directive events
+- [ ] Add `:waiting_for` field to state for blocking directives
+- [ ] Create integration test: `test/pag_server/agents/agent_server_directive_test.exs`
+
+## Acceptance Criteria
+
+- [ ] `handle_info({:llm_complete, ...})` detects tool_calls
+- [ ] Tool.execute/2 called for each tool, directives collected
+- [ ] interpret_directives/2 calls Directive.Executor.execute/2
+- [ ] Blocking directives set state.waiting_for, return {:noreply, state}
+- [ ] Non-blocking directives continue LLM immediately
+- [ ] handle_info({ref, result}) processes async Task completion
+- [ ] Hash-chain linking preserved for tool results and directives
+- [ ] Integration test: LLM → tool_call → directive → execution → child spawned
+- [ ] Existing AgentServer tests still pass
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md` (Section 2, Component 3)
+
+**Existing Code**:
+- AgentServer: `lib/pag_server/agents/agent_server.ex`
+  - Line 509-514: Tool execution TODO (implement here)
+  - Line 440-521: `handle_info({:llm_complete, ...})` - modify
+  - Line 524-548: `handle_info({:tool_result, ...})` - reference pattern
+- Tool registry pattern (when P4.M1 complete)
+
+**Key Integration Points**:
+1. Tool execution: After LLM returns tool_calls
+2. Directive emission: Before directive execution
+3. Async handling: New handle_info for Task results
+4. State management: waiting_for field tracks blocking ops
+
+## Notes
+
+### Tool execution entry (line ~509-514)
+
+```elixir
+# In handle_info({:llm_complete, response}, state)
+def handle_info({:llm_complete, %{tool_calls: tool_calls} = response}, state) when tool_calls != [] do
+  # Execute tools, collect results and directives
+  {results, directives} = execute_tools(tool_calls, state)
+  
+  # Emit directive events
+  for directive <- directives do
+    Events.emit_directive_issued(state.agent_id, directive)
+  end
+  
+  # Interpret directives
+  new_state = interpret_directives(directives, state)
+  
+  # Append tool results to context
+  state_with_results = append_tool_results(results, new_state)
+  
+  # Continue LLM (unless waiting for blocking directive)
+  if state_with_results.waiting_for do
+    {:noreply, state_with_results}
+  else
+    continue_llm(state_with_results)
+  end
+end
+```
+
+### execute_tools/2 function
+
+```elixir
+defp execute_tools(tool_calls, state) do
+  Enum.reduce(tool_calls, {[], []}, fn tool_call, {results_acc, directives_acc} ->
+    %{"name" => tool_name, "arguments" => args} = tool_call
+    
+    context = %{
+      agent_id: state.agent_id,
+      session_id: state.session_id,
+      workspace: state.workspace
+    }
+    
+    case ToolRegistry.get(tool_name) do
+      {:ok, tool_module} ->
+        case tool_module.execute(args, context) do
+          {:ok, result} ->
+            {[{tool_name, result} | results_acc], directives_acc}
+            
+          {:ok, result, directives} when is_list(directives) ->
+            {[{tool_name, result} | results_acc], directives ++ directives_acc}
+            
+          {:error, reason} ->
+            {[{tool_name, {:error, reason}} | results_acc], directives_acc}
+        end
+        
+      {:error, :not_found} ->
+        {[{tool_name, {:error, :tool_not_found}} | results_acc], directives_acc}
+    end
+  end)
+end
+```
+
+### interpret_directives/2 function
+
+```elixir
+defp interpret_directives(directives, state) do
+  Enum.reduce(directives, state, fn directive, acc_state ->
+    case Directive.Executor.execute(directive, acc_state) do
+      {:ok, new_state} ->
+        Events.emit_directive_completed(new_state.agent_id, directive)
+        new_state
+        
+      {:async, ref, new_state} ->
+        # Waiting for async operation (Task.async result)
+        new_state
+        
+      {:error, reason, new_state} ->
+        Events.emit_directive_failed(new_state.agent_id, directive, reason)
+        new_state
+    end
+  end)
+end
+```
+
+### Async result handling
+
+```elixir
+def handle_info({ref, result}, %{waiting_for: {directive_type, ref, directive}} = state) when is_reference(ref) do
+  # Task completed, demonitor
+  Process.demonitor(ref, [:flush])
+  
+  case result do
+    {:ok, _} = success ->
+      Events.emit_directive_completed(state.agent_id, directive, success)
+      new_state = %{state | waiting_for: nil}
+      continue_llm(new_state)
+      
+    {:error, reason} ->
+      Events.emit_directive_failed(state.agent_id, directive, reason)
+      new_state = %{state | waiting_for: nil}
+      continue_llm(new_state)
+  end
+end
+
+# Handle Task :DOWN messages
+def handle_info({:DOWN, ref, :process, _pid, reason}, %{waiting_for: {_, ref, directive}} = state) do
+  # Task crashed
+  Events.emit_directive_failed(state.agent_id, directive, {:task_down, reason})
+  new_state = %{state | waiting_for: nil}
+  {:noreply, new_state}
+end
+```
+
+### Integration test
+
+```elixir
+test "end-to-end directive flow: LLM → tool → directive → execution" do
+  # Setup agent
+  {:ok, agent_id, _pid} = AgentServer.start_agent(%{
+    system_prompt: "You are a coordinator",
+    llm_provider: :mock_llm
+  })
+  
+  # Mock LLM response with tool_call
+  mock_response = %{
+    role: "assistant",
+    content: nil,
+    tool_calls: [
+      %{
+        "name" => "spawn_agent",
+        "arguments" => %{
+          "role" => "researcher",
+          "system_prompt" => "You research topics"
+        }
+      }
+    ]
+  }
+  
+  # Send to agent
+  send_llm_response(agent_id, mock_response)
+  
+  # Verify child was spawned
+  eventually(fn ->
+    {:ok, children} = Coordinator.list_children(agent_id)
+    assert length(children) == 1
+    
+    [child_id] = children
+    {:ok, child_pid} = AgentRegistry.lookup(child_id)
+    assert Process.alive?(child_pid)
+  end)
+end
+```
+
+Ensure existing tests pass, add directive-specific tests.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 06:09 UTC
+**Primary task**: P2.M7.E4.T001 - Create pricing database schema and context
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E3 vs P2.M7.E4)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 07:13 UTC
+**Primary task**: P2.M8.E3.T002 - Add summarization-based compression
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E3 vs P2.M8.E3)
+- No dependency chain: ✓ (verified at claim time)

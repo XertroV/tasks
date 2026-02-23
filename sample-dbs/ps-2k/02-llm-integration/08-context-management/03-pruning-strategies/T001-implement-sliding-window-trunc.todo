@@ -1,0 +1,114 @@
+---
+id: P2.M8.E3.T001
+title: Implement sliding window truncation
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- context
+- pruning
+- sliding-window
+claimed_by: cli-user
+claimed_at: '2026-02-05T20:02:36.069331'
+started_at: '2026-02-05T20:02:36.069331'
+completed_at: '2026-02-05T20:12:19.081964'
+duration_minutes: 9.716877049999999
+---
+
+# Implement sliding window truncation
+
+Implement a sliding window context pruning strategy that keeps the most recent messages
+within a token budget. This is the foundation for context management in long-running
+agent sessions.
+
+## Requirements
+
+### Core Functionality
+
+- [x] Create `PagServer.Context.Pruning` behavior module
+  - [x] Define `prune/2` callback for pruning strategies
+  - [x] Provide helper functions: `total_tokens/1`, `partition_system/1`
+  - [x] Document prune options typespec
+
+- [x] Implement `PagServer.Context.Pruning.SlidingWindow`
+  - [x] Implement sliding window algorithm:
+    1. Extract and preserve system messages (optional via `:preserve_system`)
+    2. Sort remaining messages by `sequence_num` (chronological order)
+    3. Work backwards from newest, accumulating tokens until budget exhausted
+    4. Return system messages + recent messages within budget
+  - [x] Support `:max_tokens` option for explicit token limit
+  - [x] Support `:model_spec` option to lookup context limit from LLM Registry
+  - [x] Support `:limit_percent` option (default 0.9 for 90% of model limit)
+  - [x] Support `:preserve_system` option (default true)
+  - [x] Handle messages with `nil` token_count as 0 tokens
+  - [x] Preserve chronological order in pruned results
+  - [x] Log warnings when system messages exceed budget or no options provided
+
+### Token Budgeting
+
+- [x] Calculate total tokens for system messages
+- [x] Reserve budget for system messages first (when preserve_system: true)
+- [x] Allocate remaining budget to recent messages
+- [x] Handle edge case: system messages exceed budget → return only system messages
+
+### Model Integration
+
+- [x] Query `LLMRegistry.get_context_limit/1` for model-specific limits
+- [x] Apply `limit_percent` to model limit (default 90% to leave safety margin)
+- [x] Fallback to conservative default (4000 tokens) when model limit unknown
+- [x] Log warning when falling back to default limit
+
+### Edge Cases
+
+- [x] Handle empty message list → return []
+- [x] Handle max_tokens <= 0 → return [] with warning
+- [x] Handle single message over limit → return [] (or system if preserve_system)
+- [x] Handle multiple system messages → preserve all
+- [x] Handle messages with nil token_count → treat as 0
+
+## Acceptance Criteria
+
+### Implementation
+
+- [x] `PagServer.Context.Pruning` behavior module exists
+- [x] `PagServer.Context.Pruning.SlidingWindow` implements the behavior
+- [x] Module has comprehensive documentation with examples
+- [x] All functions have proper typespecs
+- [x] Code follows AGENTS.md style guide (functions <40 lines, file <1000 LoC)
+
+### Correctness
+
+- [x] Keeps most recent messages when pruning
+- [x] Always preserves system messages (when preserve_system: true)
+- [x] Respects token budget exactly (doesn't exceed max_tokens)
+- [x] Maintains chronological order in output
+- [x] Handles all edge cases gracefully
+
+### Testing
+
+- [x] Test suite at `test/pag_server/context/pruning/sliding_window_test.exs`
+- [x] Tests cover:
+  - [x] All messages fit within budget
+  - [x] Truncation of oldest messages when over limit
+  - [x] System message preservation
+  - [x] System messages exceeding budget
+  - [x] Messages with nil token_count
+  - [x] Zero and negative max_tokens
+  - [x] preserve_system: false option
+  - [x] model_spec with registry lookup
+  - [x] limit_percent option
+  - [x] Empty message list
+  - [x] Single message under/over limit
+  - [x] Multiple system messages
+  - [x] Chronological order preservation
+- [x] All tests pass: `mix test test/pag_server/context/pruning/`
+- [x] No warnings from test output
+
+### Quality
+
+- [x] `mix format` passes
+- [x] `mix credo` passes with no issues
+- [x] `mix dialyzer` passes with no warnings
+- [x] Code is well-documented with clear examples

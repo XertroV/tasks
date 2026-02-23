@@ -1,0 +1,57 @@
+---
+id: P12.M2.E2.T001
+title: Optimize pricing_controller_test.exs (6+ sec tests)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:19:20.829342+00:00'
+started_at: '2026-02-13T10:19:20.829342+00:00'
+completed_at: '2026-02-13T10:29:14.618680+00:00'
+duration_minutes: 9.896488799999998
+---
+
+# Optimize pricing_controller_test.exs (6+ sec tests)
+
+## Description
+
+Profile and optimize the slowest tests in `pricing_controller_test.exs` which currently take 6+ seconds. Reduce test time while maintaining coverage.
+
+## Acceptance Criteria
+
+- [ ] Profile the test file to identify slowest tests
+- [ ] Identify root causes (unnecessary sleeps, slow setup, etc.)
+- [ ] Optimize setup/teardown with proper fixtures
+- [ ] Reduce or eliminate `Process.sleep` calls
+- [ ] Target: reduce test time by at least 50%
+- [ ] All tests pass
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server_web/controllers/pricing_controller_test.exs`
+- May involve: `test/support/fixtures.ex` for test data
+- Part of epic: Optimize Slow Tests
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 10:19 UTC
+**Sibling tasks**: P12.M2.E2.T002, P12.M2.E2.T003, P12.M2.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M2.E2.T001 → P12.M2.E2.T002 → P12.M2.E2.T003 → P12.M2.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M2.E2.T001: .tasks/12-test-quality-technical-debt/02-test-performance/02-optimize-slow-tests/T001-optimize-pricing-controller-te.todo
+- P12.M2.E2.T002: .tasks/12-test-quality-technical-debt/02-test-performance/02-optimize-slow-tests/T002-optimize-anthropic-tool-execut.todo
+- P12.M2.E2.T003: .tasks/12-test-quality-technical-debt/02-test-performance/02-optimize-slow-tests/T003-make-integration-tests-async-w.todo
+- P12.M2.E2.T004: .tasks/12-test-quality-technical-debt/02-test-performance/02-optimize-slow-tests/T004-optimize-agent-server-tool-loo.todo

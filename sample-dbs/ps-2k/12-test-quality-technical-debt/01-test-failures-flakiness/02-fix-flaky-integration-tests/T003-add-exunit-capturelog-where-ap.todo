@@ -1,0 +1,36 @@
+---
+id: P12.M1.E2.T003
+title: Add ExUnit.CaptureLog where appropriate
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:10:26.939350+00:00'
+started_at: '2026-02-13T19:10:26.939350+00:00'
+completed_at: '2026-02-13T19:10:38.811131+00:00'
+duration_minutes: 0.19786286666666666
+---
+
+# Add ExUnit.CaptureLog where appropriate
+
+## Description
+
+Wrap test code with `ExUnit.CaptureLog` in tests that intentionally trigger error/warning log output. This keeps test output clean while still allowing verification of logged messages when needed.
+
+## Acceptance Criteria
+
+- [ ] Audit tests that produce expected warning/error logs
+- [ ] Add `import ExUnit.CaptureLog` where needed
+- [ ] Wrap log-producing code with `capture_log(fn -> ... end)`
+- [ ] Where log content matters, assert on captured log output
+- [ ] Test suite output is clean (no spurious warnings)
+- [ ] Lint passes
+
+## Context
+
+- Related files: All test files in `test/pag_server/`
+- Focus on: error handling tests, retry tests, failure scenario tests
+- Part of epic: Fix Flaky Integration Tests

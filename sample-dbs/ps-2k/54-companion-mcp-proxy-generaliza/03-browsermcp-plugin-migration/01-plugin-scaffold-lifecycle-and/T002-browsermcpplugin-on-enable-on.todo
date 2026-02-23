@@ -1,0 +1,29 @@
+---
+id: P54.M3.E1.T002
+title: BrowserMcpPlugin on_enable/on_disable with local MCP server support
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P54.M3.E1.T001
+- P54.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T11:12:37.961420+00:00'
+started_at: '2026-02-21T11:12:37.961420+00:00'
+completed_at: '2026-02-21T11:20:11.697594+00:00'
+duration_minutes: 7.5622693666666665
+---
+## Context
+The plugin has two modes: companion mode (pag-connect runs BrowserMCP and registers via mcp_register — handled by M2 infrastructure) and local mode (plugin starts bunx @browsermcp/mcp@latest as a stdio MCP server on the same machine as pag-server, for local deployments).
+
+## Acceptance Criteria
+- [ ] `PagServer.Plugins.BrowserMcp.BrowserMcpPlugin` at `plugins/browser_mcp/lib/browser_mcp_plugin.ex`
+- [ ] `on_enable/1`: check companion mode first (CompanionMCPRegistry has browsermcp tools for workspace -> log and return :ok, companion handles it); then check for bunx via System.find_executable("bunx"); if not found return {:error, :bunx_not_found} with helpful install message; start local MCP server via PagServer.Tools.MCP.ServerLifecycle under a DynamicSupervisor owned by the plugin
+- [ ] `on_disable/1`: stop local MCP server if running (idempotent); unregister any tools prefixed "browsermcp." from Tools.Registry; return :ok
+- [ ] Both on_enable and on_disable are idempotent (safe to call multiple times)
+- [ ] `default_enabled?/1` returns false
+- [ ] `handle_tool_call/3` returns {:error, :unknown_tool} (calls routed via CompanionMCPProxy or local MCP infrastructure, not via plugin dispatch)
+- [ ] Plugin DynamicSupervisor (`BrowserMcpPlugin.ServerSupervisor`) added to application supervision tree
+- [ ] `mix lint` passes

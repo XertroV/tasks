@@ -1,0 +1,16 @@
+---
+id: P48.M3.E5.T002
+title: 'LSP plugin configuration: global flag and per-workspace config'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:06:33.168718+00:00'
+started_at: '2026-02-20T09:06:33.168718+00:00'
+completed_at: '2026-02-20T09:43:12.518105+00:00'
+duration_minutes: 36.6558229
+---
+Global: Application.get_env(:pag_server, :lsp_enabled, true) master switch. Per-workspace: Workspace.lsp_config() returns parsed JSON config. Feature flag pattern consistent with containers_enabled. Document in PLUGIN_DEVELOPMENT.md.

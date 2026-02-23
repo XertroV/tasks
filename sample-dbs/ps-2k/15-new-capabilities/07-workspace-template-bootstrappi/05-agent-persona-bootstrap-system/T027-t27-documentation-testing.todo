@@ -1,0 +1,18 @@
+---
+id: P15.M7.E5.T027
+title: 'T27: Documentation & Testing'
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M7.E5.T005
+- P15.M7.E5.T017
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:07:29.560526+00:00'
+started_at: '2026-02-18T09:07:29.560526+00:00'
+completed_at: '2026-02-18T10:32:44.673105+00:00'
+duration_minutes: 85.25187609999999
+---
+Complete documentation (docs/PERSONAS.md). Full test coverage (>80%). Integration tests for bootstrap flow.

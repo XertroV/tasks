@@ -1,0 +1,31 @@
+---
+id: P34.M1.E1.T002
+title: Search and List Endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- backend
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:31:53.366385+00:00'
+started_at: '2026-02-19T00:31:53.366385+00:00'
+completed_at: '2026-02-19T00:32:05.169095+00:00'
+duration_minutes: 0.19671163333333333
+---
+
+# Search and List Endpoints
+
+Implement search/list API methods:
+
+- `search(query, opts)` - Search skills by query
+- `list(opts)` - List skills with pagination
+- `get(slug, opts)` - Get skill details by slug
+
+## Acceptance Criteria
+
+- [ ] Search returns skill metadata matching ClawHub API format
+- [ ] Pagination parameters work correctly
+- [ ] Error responses handled properly

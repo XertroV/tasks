@@ -1,0 +1,45 @@
+---
+id: I044
+title: 'USER_REQUIRED: we need to plan out how to audit all ideas that have been processed.
+  some were marked done when they should not have been.'
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+---
+
+# Idea Intake: USER_REQUIRED: we need to plan out how to audit all ideas that have been processed. some were marked done when they should not have been.
+
+## Original Idea
+
+USER_REQUIRED: we need to plan out how to audit all ideas that have been processed. some were marked done when they should not have been.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "USER_REQUIRED: we need to plan out how to audit all ideas that have been processed. some were marked done when they should not have been."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

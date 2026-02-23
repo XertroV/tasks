@@ -1,0 +1,34 @@
+id: P22.M2.E2
+name: ModelDiscoveryCache GenServer
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- P22.M2.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-create-modeldiscoverycache-gen.todo
+  title: Create ModelDiscoveryCache GenServer with per-provider TTL and on-demand
+    refresh
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M2.E1.T001
+- id: T002
+  file: T002-add-modeldiscoverycache-to-app.todo
+  title: Add ModelDiscoveryCache to application supervisor tree
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M2.E2.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

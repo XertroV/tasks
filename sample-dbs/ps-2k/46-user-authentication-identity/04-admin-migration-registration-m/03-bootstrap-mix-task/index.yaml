@@ -1,0 +1,32 @@
+id: P46.M4.E3
+name: Bootstrap Mix Task
+status: done
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-mix-pag-create-admin-ta.todo
+  title: Create mix pag.create_admin task
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P46.M1.E3.T001
+- id: T002
+  file: T002-create-mix-pag-list-admins-and.todo
+  title: Create mix pag.list_admins and mix pag.remove_admin tasks
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on:
+  - P46.M4.E3.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

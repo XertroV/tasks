@@ -1,0 +1,33 @@
+---
+id: P15.M10.E2.T001
+title: Implement Brave Search adapter with API-key config and error mapping
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M10.E1.T001
+tags:
+- tools
+- web-search
+- brave
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:14:05.440698+00:00'
+started_at: '2026-02-17T15:14:05.440698+00:00'
+completed_at: '2026-02-17T15:16:05.368716+00:00'
+duration_minutes: 1.9988001166666665
+---
+
+# Implement Brave Search adapter with API-key config and error mapping
+
+
+
+## Requirements
+
+- Implement Brave Search provider adapter using configured API key and endpoint options.
+- Normalize Brave responses and map provider-specific HTTP/rate-limit errors to shared error taxonomy.
+
+## Acceptance Criteria
+
+- Adapter returns normalized results for success responses and bounded result counts.
+- Missing/invalid key and 4xx/5xx handling produce actionable mapped errors with tests.

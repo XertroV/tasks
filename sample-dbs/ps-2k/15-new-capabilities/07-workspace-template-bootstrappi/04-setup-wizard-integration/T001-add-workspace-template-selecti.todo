@@ -1,0 +1,54 @@
+---
+id: P15.M7.E4.T001
+title: Add workspace template selection step to setup wizard
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E3.T004
+- P15.M7.E1.T002
+tags:
+- wizard
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:40:06.400092+00:00'
+started_at: '2026-02-17T09:40:06.400092+00:00'
+completed_at: '2026-02-17T09:53:59.814162+00:00'
+duration_minutes: 13.890234316666666
+---
+## Description
+Add a new step to the setup wizard (step 7, after test_message) for selecting a workspace template and initiating the bootstrap conversation.
+
+## New Wizard Step: :workspace_template
+- Shows available workspace templates with name, description, category, icon
+- Template cards with preview of what files will be generated
+- Select template button stores setup.workspace_template_id in PlatformConfig
+- After selection, shows bootstrap status and options:
+  - Start bootstrap in LiveView (embedded chat)
+  - Start bootstrap in Telegram (if connected)
+  - Skip bootstrap (use defaults)
+
+## State Management
+- Add to @steps list: [...existing steps, :workspace_template]
+- New assigns: selected_workspace_template_id, bootstrap_status, bootstrap_progress
+- PlatformConfig keys: setup.workspace_template_id, setup.bootstrap_status
+
+## Events
+- select_workspace_template - Stores selection
+- start_bootstrap - Initiates BootstrapSession and redirects to chat or shows embedded chat
+- skip_bootstrap - Creates workspace with default files (no questionnaire)
+
+## Template Display
+- List workspace templates from WorkspaceBuiltins
+- Show template description, category, file list, questionnaire section count
+- Preview of what the bootstrap conversation covers
+
+## Acceptance Criteria
+- [ ] New :workspace_template step added to wizard
+- [ ] Template selection UI with descriptions
+- [ ] Bootstrap initiation from wizard
+- [ ] Skip option for users who dont want conversational setup
+- [ ] State persisted to PlatformConfig
+- [ ] Step accessible after existing steps complete
+- [ ] LiveView tests for new step

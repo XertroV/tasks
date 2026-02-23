@@ -1,0 +1,53 @@
+---
+id: I007
+title: 'Workspace template: have a main agent and farmer agents, or like purpose built
+  ones. we use those selectively. idea is you interface with the main agent via telegram
+  and it sends stuff elsewhere. Like it will organize which bots work on what for
+  you. For cron jobs, it doesn''t do it itself, but rather has a dedicated cron agent
+  do it. Can have agent lifecycles -> load up, act, return, review, sleep kinda thing.
+  Each instance we spin it up again fresh. It can also be like waiting, eg send mail
+  to main agent to get user review or to notify or ask for directions or what. need
+  to come up with a good analogy to use to prime agents for correct interactions.
+  Anyway, we should have like workspace templates that create all of this kind of
+  thing. Need to plan this out in detail and come up with lists of features etc. You
+  MUST do thhis with the user, in an interactive plannign session. Otherwise PUT THIS
+  TASK BACK.'
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: Workspace template: have a main agent and farmer agents, or like purpose built ones. we use those selectively. idea is you interface with the main agent via telegram and it sends stuff elsewhere. Like it will organize which bots work on what for you. For cron jobs, it doesn't do it itself, but rather has a dedicated cron agent do it. Can have agent lifecycles -> load up, act, return, review, sleep kinda thing. Each instance we spin it up again fresh. It can also be like waiting, eg send mail to main agent to get user review or to notify or ask for directions or what. need to come up with a good analogy to use to prime agents for correct interactions. Anyway, we should have like workspace templates that create all of this kind of thing. Need to plan this out in detail and come up with lists of features etc. You MUST do thhis with the user, in an interactive plannign session. Otherwise PUT THIS TASK BACK.
+
+## Original Idea
+
+Workspace template: have a main agent and farmer agents, or like purpose built ones. we use those selectively. idea is you interface with the main agent via telegram and it sends stuff elsewhere. Like it will organize which bots work on what for you. For cron jobs, it doesn't do it itself, but rather has a dedicated cron agent do it. Can have agent lifecycles -> load up, act, return, review, sleep kinda thing. Each instance we spin it up again fresh. It can also be like waiting, eg send mail to main agent to get user review or to notify or ask for directions or what. need to come up with a good analogy to use to prime agents for correct interactions. Anyway, we should have like workspace templates that create all of this kind of thing. Need to plan this out in detail and come up with lists of features etc. You MUST do thhis with the user, in an interactive plannign session. Otherwise PUT THIS TASK BACK.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Workspace template: have a main agent and farmer agents, or like purpose built ones. we use those selectively. idea is you interface with the main agent via telegram and it sends stuff elsewhere. Like it will organize which bots work on what for you. For cron jobs, it doesn't do it itself, but rather has a dedicated cron agent do it. Can have agent lifecycles -> load up, act, return, review, sleep kinda thing. Each instance we spin it up again fresh. It can also be like waiting, eg send mail to main agent to get user review or to notify or ask for directions or what. need to come up with a good analogy to use to prime agents for correct interactions. Anyway, we should have like workspace templates that create all of this kind of thing. Need to plan this out in detail and come up with lists of features etc. You MUST do thhis with the user, in an interactive plannign session. Otherwise PUT THIS TASK BACK."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Milestone: `P15.M6` Workspace & Onboarding.
+- Epics: `P15.M6.E2` Workspace Domain Model, `P15.M6.E4` Main-Agent-First Routing.
+- Tasks: `P15.M6.E2.T001` -> `T002` -> `T003`; `P15.M6.E4.T001` -> `T002` -> `T003`.
+- Cross-epic dependencies: `P15.M6.E4` depends on `P15.M6.E2` and Telegram wiring from `P15.M6.E3`.
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

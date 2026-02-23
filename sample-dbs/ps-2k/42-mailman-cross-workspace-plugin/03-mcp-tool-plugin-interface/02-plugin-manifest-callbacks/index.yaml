@@ -1,0 +1,30 @@
+id: P42.M3.E2
+name: Plugin Manifest & Callbacks
+status: done
+estimate_hours: 1.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugin-json-manifest.todo
+  title: Create plugin.json manifest
+  status: pending
+  estimate_hours: 0.3
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-mailmanplugin-module.todo
+  title: Implement MailmanPlugin module callbacks
+  status: pending
+  estimate_hours: 0.7
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,17 @@
+---
+id: P22.M1.E2.T003
+title: 'Differentiated cooldown tracking: rate-limit vs auth-fail vs timeout'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:20:31.734357+00:00'
+started_at: '2026-02-18T15:20:31.734357+00:00'
+completed_at: '2026-02-18T17:37:22.840039+00:00'
+duration_minutes: 136.8517612
+---
+Extract cooldown duration config to application config with defaults: rate_limited_cooldown: 5 minutes, auth_failed_cooldown: 24 hours, timeout_cooldown: 30 seconds. Create lib/pag_server/llm/credential_cooldown.ex module with cooldown_until/1 accepting :rate_limited | :auth_failed | :timeout atom. Acceptance criteria: - Cooldown durations are configurable via application config - Module has clear public API for computing cooldown_until timestamps - Durations match specified defaults when unconfigured

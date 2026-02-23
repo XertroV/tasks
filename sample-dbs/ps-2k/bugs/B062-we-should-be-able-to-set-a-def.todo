@@ -1,0 +1,19 @@
+---
+id: B062
+title: we should be able to set a default model per provider. we cna use that in forms
+  like the agent management new agent form to populate the default model first for
+  that provider.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T14:07:14.297201+00:00'
+started_at: '2026-02-16T14:07:14.297201+00:00'
+completed_at: '2026-02-16T14:32:17.945498+00:00'
+duration_minutes: 25.060804800000003
+---
+
+we should be able to set a default model per provider. we cna use that in forms like the agent management new agent form to populate the default model first for that provider.

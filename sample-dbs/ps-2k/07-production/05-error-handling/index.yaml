@@ -1,0 +1,43 @@
+id: P7.M5
+name: Error Recovery
+status: pending
+estimate_hours: 8
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Retry Logic
+  path: 01-retry-logic
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+- id: E2
+  name: Supervision Strategy
+  path: 02-supervision-strategy
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on: []
+- id: E3
+  name: Circuit Breaker Pattern
+  path: 03-circuit-breaker-pattern
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E4
+  name: Oban Error Handling and Dead Letter Queue
+  path: 04-oban-error-handling-and-dead-l
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 13
+  done: 13
+  in_progress: 0
+  blocked: 0
+  pending: 0

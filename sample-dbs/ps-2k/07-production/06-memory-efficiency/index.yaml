@@ -1,0 +1,34 @@
+id: P7.M6
+name: Memory Patterns
+status: pending
+estimate_hours: 8
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: IOList Streaming
+  path: 01-iolist-streaming
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+- id: E2
+  name: Output Truncation
+  path: 02-output-truncation
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on: []
+- id: E3
+  name: Memory Monitoring
+  path: 03-memory-monitoring
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

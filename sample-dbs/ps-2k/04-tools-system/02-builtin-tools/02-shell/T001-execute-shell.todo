@@ -1,0 +1,145 @@
+---
+id: P4.M2.E2.T001
+title: Implement execute_shell tool
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- tools
+- builtin
+- shell
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:24:47.159962'
+started_at: '2026-02-05T22:24:47.159962'
+completed_at: '2026-02-05T22:24:49.144670'
+duration_minutes: 0.03307828333333333
+---
+
+# Implement execute_shell tool
+
+Create the `execute_shell` builtin tool for executing shell commands.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/execute_shell.ex` (~150 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use Port for process isolation
+- [ ] Capture stdout and stderr separately
+- [ ] Enforce timeout limits (default 30s)
+- [ ] Set working directory to workspace
+
+## Acceptance Criteria
+
+- [ ] Executes shell commands in workspace directory
+- [ ] Captures and returns stdout, stderr, exit code
+- [ ] Enforces timeout (kills process after limit)
+- [ ] Blocks dangerous commands (rm -rf /, etc.) - basic validation
+- [ ] Returns structured output with timing info
+- [ ] Test coverage for success, failure, timeout, signals
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- SECURITY CRITICAL: shell execution is dangerous
+- Use Port isolation (foundation for Docker sandboxing later)
+- This task implements basic Port wrapper
+- Full sandboxing comes in P4.M4 (Sandboxing milestone)
+- Consider resource limits (CPU, memory) in future
+
+## Notes
+
+Implementation using Port:
+```elixir
+defmodule PAGServer.Tools.Builtin.ExecuteShell do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "execute_shell"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "execute_shell",
+      description: "Execute a shell command in the workspace",
+      parameters: %{
+        type: "object",
+        properties: %{
+          command: %{
+            type: "string",
+            description: "Shell command to execute"
+          },
+          timeout: %{
+            type: "number",
+            description: "Timeout in seconds (default 30)",
+            default: 30
+          }
+        },
+        required: ["command"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"command" => command} = args, %{workspace: workspace}) do
+    timeout = Map.get(args, "timeout", 30) * 1000  # Convert to ms
+    
+    port = Port.open({:spawn, command}, [
+      :binary,
+      :exit_status,
+      :stderr_to_stdout,
+      cd: workspace
+    ])
+    
+    case await_port(port, timeout) do
+      {:ok, output, exit_code} ->
+        {:ok, %{
+          stdout: output,
+          exit_code: exit_code,
+          command: command
+        }}
+      {:error, :timeout} ->
+        Port.close(port)
+        {:error, "Command timed out after #{timeout}ms"}
+    end
+  end
+
+  defp await_port(port, timeout) do
+    receive do
+      {^port, {:data, data}} ->
+        await_port(port, timeout, data)
+      {^port, {:exit_status, status}} ->
+        {:ok, "", status}
+    after
+      timeout ->
+        {:error, :timeout}
+    end
+  end
+
+  defp await_port(port, timeout, acc) do
+    receive do
+      {^port, {:data, data}} ->
+        await_port(port, timeout, acc <> data)
+      {^port, {:exit_status, status}} ->
+        {:ok, acc, status}
+    after
+      timeout ->
+        {:error, :timeout}
+    end
+  end
+end
+```
+
+Security considerations:
+- This is a basic implementation for development
+- Full sandboxing (Docker) implemented in P4.M4
+- Consider command validation/blacklisting
+- Environment variable sanitization
+- stdin support for interactive commands (future)
+
+Register in Registry startup.

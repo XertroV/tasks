@@ -1,0 +1,31 @@
+---
+id: P49.M1.E1.T002
+title: Wire plugin restore/load into app startup path with integration tests
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:01.533510+00:00'
+started_at: '2026-02-20T08:51:01.533510+00:00'
+completed_at: '2026-02-20T09:10:34.836693+00:00'
+duration_minutes: 19.55505283333333
+---
+
+# Wire plugin restore/load into app startup path with integration tests
+
+
+
+## Requirements
+
+- Wire plugin restore/load into the production startup path so enabled plugins are restored deterministically on boot.
+- Ensure startup handles missing/broken plugins gracefully with explicit failure reporting instead of silent drift.
+- Add integration coverage around startup restore behavior for enabled and disabled plugins.
+
+## Acceptance Criteria
+
+- App startup runs plugin restore/load without requiring manual API calls.
+- Enabled plugins from persisted state are loaded, while disabled plugins remain unloaded.
+- Integration tests verify restore behavior and failure reporting for broken plugin load cases.

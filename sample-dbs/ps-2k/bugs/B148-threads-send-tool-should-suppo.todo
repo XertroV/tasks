@@ -1,0 +1,30 @@
+---
+id: B148
+title: 'threads: send tool should support resuming an existing thread by session/thread
+  ID'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- threads
+- spawn_subagent
+- session-continuity
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:13:44.224649+00:00'
+started_at: '2026-02-19T01:13:44.224649+00:00'
+completed_at: '2026-02-19T01:24:23.431405+00:00'
+duration_minutes: 10.653445699999999
+---
+Currently there is no mechanism to resume a previously spawned thread. The send tool (or equivalent) should accept an existing thread/session ID to continue a prior conversation rather than always spawning a fresh agent.
+
+This mirrors opencode's session_id parameter on the task tool — pass a prior session_id to resume the same subagent session for multi-turn interactions.
+
+Acceptance criteria:
+- send tool (or spawn tool) accepts an optional thread_id / session_id parameter
+- If provided and the session exists, the new message is appended to the existing thread and execution resumes
+- If provided and the session does not exist, return a clear error (do not silently create a new session)
+- If omitted, behaviour is unchanged (new thread spawned)
+- The thread's output (e.g. from a prior await) should be accessible after resuming
+- Tests covering: resume existing, resume non-existent, resume completed, multi-turn interaction

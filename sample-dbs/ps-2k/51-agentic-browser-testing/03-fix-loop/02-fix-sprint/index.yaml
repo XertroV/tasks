@@ -1,0 +1,30 @@
+id: P51.M3.E2
+name: Fix Sprint
+status: done
+estimate_hours: 3.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fix-p0-and-p1-bugs-from-triage.todo
+  title: Fix P0 and P1 bugs from triage
+  status: done
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-verification-pass-playwright-s.todo
+  title: Verification pass & Playwright scenario notes
+  status: done
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,27 @@
+---
+id: P24.M2.E2.T002
+title: Element CRUD operations in CanvasManager
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:22:23.959300+00:00'
+started_at: '2026-02-18T16:22:23.959300+00:00'
+completed_at: '2026-02-18T16:33:48.100423+00:00'
+duration_minutes: 11.402351833333334
+---
+
+# Element CRUD operations in CanvasManager
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

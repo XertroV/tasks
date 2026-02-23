@@ -1,0 +1,79 @@
+---
+id: P10.M4.E1.T001
+title: Create CircleCI API client
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- api-client
+- circleci
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:46:47.409713+00:00'
+started_at: '2026-02-12T03:46:47.409713+00:00'
+completed_at: '2026-02-12T04:01:58.840915+00:00'
+duration_minutes: 15.190519833333333
+---
+
+# Create CircleCI API client
+
+Implement HTTP client module for CircleCI API v2 integration with authentication, request handling, and error recovery.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/circleci/client.ex` module
+- [ ] Implement CircleCI API v2 authentication using personal API token
+- [ ] Define HTTP request builder functions for common CircleCI operations:
+  - [ ] Trigger pipeline run with parameters
+  - [ ] Get pipeline status
+  - [ ] Retrieve build logs
+  - [ ] Cancel running build
+- [ ] Implement error handling for API rate limits and failures
+- [ ] Add request/response logging and telemetry tracking
+- [ ] Write comprehensive module tests
+
+## Acceptance Criteria
+
+- [ ] Client module compiles with no warnings
+- [ ] Supports CircleCI API v2 endpoints (pipeline triggers, status checks)
+- [ ] Implements retry logic for transient failures (exponential backoff)
+- [ ] Rate limiting handled gracefully with backoff
+- [ ] All HTTP calls include telemetry span tracking
+- [ ] Error responses parsed and wrapped in standardized error tuples
+- [ ] Unit tests cover happy path and error scenarios
+- [ ] `mix test` passes for all client tests
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Integration Pattern**: Follows HTTP provider pattern from `lib/pag_server/integrations/` architecture. Use `Req` for HTTP client and `Telemetry` for observability.
+
+**API Reference**: CircleCI API v2 documentation (https://circleci.com/docs/api/v2/)
+
+## Notes
+
+CircleCI API requires:
+- Personal API token in config (environment variable or secrets)
+- VCS (GitHub/GitLab) context for project identification
+- Pipeline parameter passing via JSON body
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M4.E1)
+**Agent**: cli-user
+**Date**: 2026-02-12 03:46 UTC
+**Sibling tasks**: P10.M4.E1.T002, P10.M4.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M4.E1.T001 → P10.M4.E1.T002 → P10.M4.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M4.E1.T001: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/01-circleci-integration/T001-create-circleci-api-client.todo
+- P10.M4.E1.T002: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/01-circleci-integration/T002-build-circleci-webhook-handler.todo
+- P10.M4.E1.T003: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/01-circleci-integration/T003-implement-circleci-build-trigg.todo

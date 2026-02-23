@@ -1,0 +1,48 @@
+---
+id: P18.M4.E3.T004
+title: Add tests for settings validation
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P18.M4.E3.T003
+tags:
+- workspace
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:15:41.887097+00:00'
+started_at: '2026-02-17T21:15:41.887097+00:00'
+completed_at: '2026-02-17T21:21:37.747471+00:00'
+duration_minutes: 5.931006
+---
+
+# Add tests for settings validation
+
+## Description
+
+Tests for the WorkspaceSettings embedded schema and its integration with the Workspace schema.
+
+## Requirements
+
+- [ ] Test WorkspaceSettings changeset validation:
+  - Valid tracked_files accepted
+  - Invalid tracked_files rejected (non-strings, empty strings)
+  - Unknown keys stored in metadata
+- [ ] Test Workspace schema with embedded settings:
+  - Creating workspace with settings works
+  - Updating settings via cast_embed works
+  - Reading settings.tracked_files returns correct value
+- [ ] Test WorkspaceFiles integration:
+  - configure_tracked_files/2 works with new schema
+  - list_tracked_files/1 reads from embedded schema
+
+## Acceptance Criteria
+
+- [ ] All settings validation tests pass
+- [ ] Integration with WorkspaceFiles verified
+- [ ] Tests pass with async: true
+
+## Context
+
+**Files affected**: `test/pag_server/schema/workspace_settings_test.exs`, `test/pag_server/workspaces_test.exs` (extend)

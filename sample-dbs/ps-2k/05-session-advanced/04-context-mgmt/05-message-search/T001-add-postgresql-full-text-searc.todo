@@ -1,0 +1,99 @@
+---
+id: P5.M4.E5.T001
+title: Add PostgreSQL full-text search for messages
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- database
+- search
+- migration
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:45:07.823063+00:00'
+started_at: '2026-02-07T14:45:07.823063+00:00'
+completed_at: '2026-02-07T14:48:21.546210+00:00'
+duration_minutes: 3.228718966666667
+---
+
+# Add PostgreSQL full-text search for messages
+
+Implement full-text search capability for message content using PostgreSQL's built-in
+tsvector/tsquery system. Currently there is no way to search through message content --
+the only access pattern is loading all messages for a session by sequence number. This
+gap was identified in an architecture audit.
+
+The implementation adds a GIN index on a tsvector column, a search function to the
+Messages context, and supports filtering by role and date range.
+
+## Requirements
+
+- [ ] Create Ecto migration adding a generated tsvector column to the messages table
+  - `ALTER TABLE messages ADD COLUMN search_vector tsvector GENERATED ALWAYS AS (to_tsvector('english', coalesce(content, ''))) STORED;`
+  - Add GIN index: `CREATE INDEX messages_search_vector_idx ON messages USING gin(search_vector);`
+- [ ] Add `search_messages/3` function to `PagServer.Context.Messages`
+  - Signature: `search_messages(session_id, query, opts \\ [])`
+  - Uses `plainto_tsquery('english', query)` for safe user input handling
+  - Returns messages ordered by relevance (ts_rank) by default
+  - Supports `opts`:
+    - `:role` - filter by message role (e.g., "user", "assistant")
+    - `:after` - filter messages after a DateTime
+    - `:before` - filter messages before a DateTime
+    - `:limit` - max results (default 50)
+    - `:order` - `:relevance` (default) or `:chronological`
+- [ ] Add `search_across_sessions/2` function for cross-session search
+  - Signature: `search_across_sessions(query, opts \\ [])`
+  - Supports same filtering opts plus `:session_ids` list
+- [ ] Handle edge cases: empty query returns empty list, special characters sanitized
+- [ ] Add Ecto fragment for ts_rank scoring in query
+
+## Acceptance Criteria
+
+- [ ] Messages are searchable by content keywords within a session
+- [ ] Search results are ordered by relevance score by default
+- [ ] Results can be filtered by role (user/assistant/system/tool_result)
+- [ ] Results can be filtered by date range (before/after)
+- [ ] Empty or whitespace-only queries return empty results gracefully
+- [ ] GIN index is used (verified by EXPLAIN ANALYZE on test query)
+- [ ] Search works across sessions when session_ids filter is provided
+
+## Context
+
+This task was identified in an architecture audit as a MEDIUM priority gap.
+No search capability currently exists on message content.
+
+## Notes
+
+Example implementation pattern for the Ecto query:
+
+```elixir
+def search_messages(session_id, query, opts \\ []) do
+  query_string = String.trim(query)
+  if query_string == "", do: [], else: do_search(session_id, query_string, opts)
+end
+
+defp do_search(session_id, query_string, opts) do
+  limit = Keyword.get(opts, :limit, 50)
+  role = Keyword.get(opts, :role)
+
+  base =
+    from m in Message,
+      where: m.session_id == ^session_id,
+      where: fragment("search_vector @@ plainto_tsquery('english', ?)", ^query_string),
+      select_merge: %{rank: fragment("ts_rank(search_vector, plainto_tsquery('english', ?)) as rank", ^query_string)},
+      order_by: [desc: fragment("rank")],
+      limit: ^limit
+
+  base
+  |> maybe_filter_role(role)
+  |> maybe_filter_date_range(opts)
+  |> Repo.all()
+end
+```
+
+## Reference Files
+
+- `lib/pag_server/context/messages.ex` - Messages context (add search functions here)
+- `lib/pag_server/schema/message.ex` - Message schema (reference for fields)
+- `priv/repo/migrations/` - Migration directory

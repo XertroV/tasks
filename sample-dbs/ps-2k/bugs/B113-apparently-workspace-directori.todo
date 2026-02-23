@@ -1,0 +1,32 @@
+---
+id: B113
+title: "apparently workspace directories are not created automatically? tool_call\n\
+  2026-02-17T18:19:41.532909Z\nexecute_shell (failed)\n\n{\n  command: pwd,\n  timeout:\
+  \ 30\n}\ntool_result\n2026-02-17T18:19:41.549221Z\nError: Workspace directory not\
+  \ found\n\nmodel: groq:openai/gpt-oss-120b"
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:20:55.899071+00:00'
+started_at: '2026-02-17T18:20:55.899071+00:00'
+completed_at: '2026-02-17T18:38:31.928962+00:00'
+duration_minutes: 17.600497866666668
+---
+
+apparently workspace directories are not created automatically? tool_call
+2026-02-17T18:19:41.532909Z
+execute_shell (failed)
+
+{
+  command: pwd,
+  timeout: 30
+}
+tool_result
+2026-02-17T18:19:41.549221Z
+Error: Workspace directory not found
+
+model: groq:openai/gpt-oss-120b

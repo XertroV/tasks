@@ -1,0 +1,49 @@
+---
+id: P18.M2.E2.T003
+title: Add workspace-nested agent routes and controller delegation
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E2.T001
+tags:
+- security
+- workspace
+- agents
+- routing
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:20:39.700552+00:00'
+started_at: '2026-02-17T20:20:39.700552+00:00'
+completed_at: '2026-02-17T20:47:48.296827+00:00'
+duration_minutes: 27.14327108333333
+---
+
+# Add workspace-nested agent routes and controller delegation
+
+## Description
+
+Add routes under `/api/v1/workspaces/:workspace_id/agents` that delegate to the existing AgentController with workspace_id auto-scoped from conn.assigns.
+
+## Requirements
+
+- [ ] Add read routes: `GET /api/v1/workspaces/:workspace_id/agents`, `GET /api/v1/workspaces/:workspace_id/agents/:id`
+- [ ] Add write routes: `POST /api/v1/workspaces/:workspace_id/agents`, `PATCH /api/v1/workspaces/:workspace_id/agents/:id`, `DELETE /api/v1/workspaces/:workspace_id/agents/:id`
+- [ ] Add message routes: `POST /api/v1/workspaces/:workspace_id/agents/:id/messages`
+- [ ] Pipe through workspace membership plug (read: any member, write: admin)
+- [ ] Update AgentController to detect workspace-scoped mode:
+  - If `conn.assigns[:workspace_id]` is set, scope all queries to that workspace
+  - If creating an agent, automatically set workspace_id
+  - If accessing a specific agent, verify it belongs to the workspace (404 if not)
+
+## Acceptance Criteria
+
+- [ ] Workspace-nested agent routes work for CRUD operations
+- [ ] Agent created via nested route automatically gets workspace_id
+- [ ] Cannot access agent from workspace B via workspace A's nested route (404)
+- [ ] Flat and nested routes coexist without conflicts
+- [ ] Role enforcement: member can view, admin can manage
+
+## Context
+
+**Files affected**: `lib/pag_server_web/router.ex`, `lib/pag_server_web/controllers/agent_controller.ex`

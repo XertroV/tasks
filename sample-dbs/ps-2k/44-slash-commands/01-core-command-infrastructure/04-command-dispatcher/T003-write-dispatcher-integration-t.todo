@@ -1,0 +1,22 @@
+---
+id: P44.M1.E4.T003
+title: Write Dispatcher integration tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:43:40.529751+00:00'
+started_at: '2026-02-19T18:43:40.529751+00:00'
+completed_at: '2026-02-19T18:46:30.289432+00:00'
+duration_minutes: 2.82932785
+---
+## Summary
+Integration tests for the full dispatch pipeline.
+
+## Acceptance Criteria
+- [ ] Tests verify: known command dispatched correctly, unknown command returns :not_found, dispatch_text with slash text dispatches, dispatch_text with plain text returns :not_a_command
+- [ ] Telemetry assertions included
+- [ ] Tests run async: true (no global state mutations)

@@ -1,0 +1,24 @@
+---
+id: P50.M2.E1.T004
+title: Implement cleanup_team action and closed transition
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:21:48.230637+00:00'
+started_at: '2026-02-23T02:21:48.230637+00:00'
+completed_at: '2026-02-23T02:21:50.858674+00:00'
+duration_minutes: 0.04380028333333333
+---
+## Description
+Runtime.cleanup_team/2 (team_id, actor_agent_id) transitions team from draining->closed. Guard: reject if any plugin_collab_teams_runtime_workers rows exist for the team with state NOT IN (stopped) excluding the lead -- this will be a forward-compatible stub until M2.E2 creates workers (stub skips check if table absent). Write collab_team_cleaned_up audit event. Active team returns {:error, :invalid_transition} with hint to call request_shutdown first.
+
+## Acceptance Criteria
+- Draining team with no workers transitions to closed
+- active team returns :invalid_transition with guidance
+- audit event written
+- forward-compat worker guard stub present

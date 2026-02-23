@@ -1,0 +1,16 @@
+---
+id: B194
+title: pag-connect should respond to malformed tool_call with call_id
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:35:05.403635+00:00'
+started_at: '2026-02-21T14:35:05.403635+00:00'
+completed_at: '2026-02-21T14:37:48.593731+00:00'
+duration_minutes: 2.7198347666666667
+---
+In Connection, malformed tool_call/mcp_tool_call with present call_id should return tool_error/mcp_tool_error instead of silent drop. Also enforce server/tool type checks in mcp path so async task never crashes.

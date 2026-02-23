@@ -1,0 +1,20 @@
+---
+id: P32.M1.E2.T002
+title: Add consensus configuration to workspace settings
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- config
+- workspace
+- settings
+- consensus
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.291743+00:00'
+started_at: '2026-02-18T20:03:22.291743+00:00'
+completed_at: '2026-02-18T22:09:32.752704+00:00'
+duration_minutes: 126.17434918333333
+---
+Add workspace-level configuration for delete consensus.\n\nSettings to add:\n- enable_delete_consensus (boolean, default: false) - master toggle\n- min_agents_for_consensus (integer, default: 2) - minimum active agents required before consensus is invoked\n\nImplementation:\n- Add fields to Workspace schema / preferences system\n- Document in workspace config reference\n- ConsensusManager and file_delete tool read these settings\n\nAcceptance criteria:\n- [ ] enable_delete_consensus defaults to false\n- [ ] min_agents_for_consensus defaults to 2\n- [ ] Settings respected at runtime without server restart\n- [ ] Settings visible and editable via existing workspace config API

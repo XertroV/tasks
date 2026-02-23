@@ -1,0 +1,27 @@
+id: P36.M3.E1
+name: Rename to Three-Mode System
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on:
+- P36.M1
+- P36.M2
+locked: false
+tasks:
+- id: T001
+  file: T001-rename-continuous-discrete-to-t.todo
+  title: Rename continuous/discrete execution modes to persistent/transient/amnesiac
+    three-mode system
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P36.M1
+  - P36.M2
+stats:
+  total: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

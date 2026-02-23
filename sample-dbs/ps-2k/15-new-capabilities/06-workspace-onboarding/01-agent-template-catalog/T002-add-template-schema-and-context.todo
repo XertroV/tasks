@@ -1,0 +1,31 @@
+---
+id: P15.M6.E1.T002
+title: Add template schema, migrations, and context APIs
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M6.E1.T001
+tags:
+- backend
+- schema
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:30:58.755981+00:00'
+started_at: '2026-02-17T17:30:58.755981+00:00'
+completed_at: '2026-02-17T17:31:05.519147+00:00'
+duration_minutes: 0.11271923333333334
+---
+
+# Add template schema, migrations, and context APIs
+
+## Owner Outcome
+- I can persist and query reusable agent templates that power fast workspace setup.
+
+## Acceptance Criteria
+- [x] Add schema + migration for agent templates (including template slug uniqueness and lifecycle metadata fields). *(Exists at `lib/pag_server/templates/agent_template.ex` (318 LoC) with name, description, category, version, base_config, required_tools, visibility, ratings, parent_id.)*
+- [x] Implement context module APIs for list/get/create-from-template and ensure provenance is attached to created agents. *(Exists at `lib/pag_server/agent_templates.ex` (304 LoC) with full CRUD, `create_agent_from_template/2`, `preview_from_template/2`, variable substitution.)*
+- [x] Add tests covering template validation, seeding idempotency, and create-from-template behavior. *(Tests exist at `test/pag_server/agent_templates_test.exs`.)*
+- [x] Ensure API contracts needed by onboarding UI are documented and versioned. *(Controller at `lib/pag_server_web/controllers/agent_templates_controller.ex` (1333 LoC) with 15+ endpoints including list, search, discover, instantiate, share, rate, version. Routes defined in router.)*
+- [x] Demonstrate data model supports the fast path: start server -> create main agent from template as a first step in <10 minutes. *(The `create_agent_from_template/2` and `/instantiate` endpoint provide this path.)*

@@ -1,0 +1,78 @@
+---
+id: P33.M1.E1.T007
+title: Add state persistence for Pag (localStorage)
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P33.M1.E1.T002
+- P33.M1.E1.T004
+tags:
+- persistence
+- state
+- mascot
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:49:40.291237+00:00'
+started_at: '2026-02-18T22:49:40.291237+00:00'
+completed_at: '2026-02-18T22:49:42.089295+00:00'
+duration_minutes: 0.029967483333333333
+---
+
+# Add state persistence for Pag (localStorage)
+
+Persist Pag mascot state across page loads using browser localStorage.
+
+## Persisted Data
+
+- Position (x coordinate)
+- Metrics (hunger, energy, happiness)
+- Last interaction timestamp
+- Visibility preference
+- Name (if user names their Pag)
+
+## JS Hook Implementation
+
+```javascript
+const PagMascotHook = {
+  mounted() {
+    this.loadState();
+    this.saveInterval = setInterval(() => this.saveState(), 30000);
+  },
+  
+  loadState() {
+    const saved = localStorage.getItem('pag-mascot-state');
+    if (saved) {
+      this.pushEvent('restore_state', JSON.parse(saved));
+    }
+  },
+  
+  saveState() {
+    // Push current state to save
+    this.pushEvent('get_state', {}, ({state}) => {
+      localStorage.setItem('pag-mascot-state', JSON.stringify(state));
+    });
+  },
+  
+  destroyed() {
+    clearInterval(this.saveInterval);
+    this.saveState();
+  }
+}
+```
+
+## Time-Based Calculations
+
+On restore, calculate elapsed time and:
+- Decrease hunger based on time since last save
+- Decrease energy if was working
+- Adjust happiness based on neglect time
+
+## Acceptance Criteria
+
+- [ ] JS hook for PagMascot created
+- [ ] State saved to localStorage every 30s
+- [ ] State restored on page load
+- [ ] Time-based metric decay on restore
+- [ ] Works across browser tabs
+- [ ] Graceful fallback if localStorage unavailable

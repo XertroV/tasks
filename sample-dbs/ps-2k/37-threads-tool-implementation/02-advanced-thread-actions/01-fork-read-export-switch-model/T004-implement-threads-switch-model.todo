@@ -1,0 +1,32 @@
+---
+id: P37.M2.E1.T004
+title: Implement threads switch_model action
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.881552+00:00'
+started_at: '2026-02-19T04:21:05.881552+00:00'
+completed_at: '2026-02-19T04:43:58.211594+00:00'
+duration_minutes: 22.872167016666666
+---
+Implement action_switch_model/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "switch_model", hint: "Switch model implementation pending"}
+
+Required args: thread_id, model_name
+Optional args: model_provider (default "anthropic")
+
+Behaviour:
+- Look up the session and its associated live agent (via AgentRegistry)
+- If agent is running, send it a model-switch message/call (check if AgentServer has a switch_model/2 API — see DynamicModelSwitching implementation from P5.M5)
+- Update the session's model metadata in the DB
+- Return: %{action: "switch_model", thread_id: id, previous_model: ..., new_model: ..., status: "switched" | "pending"}
+
+Note: DynamicModelSwitching was implemented in P5 — check lib/pag_server/agents/ for the existing switch_model functionality and reuse it.
+
+Tests: switch on active agent, switch when no agent running (persists for next run), invalid model_name, unknown thread_id
+File: lib/pag_server/plugins/agent_tools/threads.ex

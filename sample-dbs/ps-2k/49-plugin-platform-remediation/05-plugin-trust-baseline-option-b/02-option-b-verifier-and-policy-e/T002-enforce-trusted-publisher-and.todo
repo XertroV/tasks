@@ -1,0 +1,31 @@
+---
+id: P49.M5.E2.T002
+title: Enforce trusted publisher and source policy with verified-only mode
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:57:43.145715+00:00'
+started_at: '2026-02-20T09:57:43.145715+00:00'
+completed_at: '2026-02-20T10:54:30.220300+00:00'
+duration_minutes: 56.784576216666665
+---
+
+# Enforce trusted publisher and source policy with verified-only mode
+
+
+
+## Requirements
+
+- Enforce trusted publisher and source allowlists during plugin install and update.
+- Support `verified_only` policy mode with structured deny reasons.
+- Provide policy decision traces identifying the matching rule.
+
+## Acceptance Criteria
+
+- Non-allowed publishers/sources are denied before plugin activation.
+- `verified_only` mode blocks unverified plugins deterministically.
+- Responses and logs include actionable rule and reason metadata.

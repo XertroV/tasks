@@ -1,0 +1,78 @@
+id: P49
+name: Plugin Platform Remediation
+status: done
+locked: true
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Critical Plugin Correctness Fixes
+  path: 01-critical-plugin-correctness-fi
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: Resolve blocking plugin-system correctness issues identified in docs/plans/2026-02-20-plugin-platform-remediation-plan.md
+  locked: false
+- id: M2
+  name: Plugin Developer UX Improvements
+  path: 02-plugin-developer-ux-improvemen
+  status: done
+  estimate_hours: 16.0
+  complexity: high
+  depends_on:
+  - P49.M1
+  description: Unify plugin manifest contract, diagnostics, and authoring ergonomics
+    after critical fixes
+  locked: false
+- id: M3
+  name: Plugin Lifecycle Completeness
+  path: 03-plugin-lifecycle-completeness
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on:
+  - P49.M2
+  description: Add first-class update/reload lifecycle semantics with compatibility
+    and recovery behavior
+  locked: false
+- id: M4
+  name: Plugin Security and Trust Strategy Planning
+  path: 04-plugin-security-and-trust-stra
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - P49.M3
+  description: Planning-only milestone to evaluate security/trust options before implementation
+  locked: false
+- id: M5
+  name: Plugin Trust Baseline (Option B)
+  path: 05-plugin-trust-baseline-option-b
+  status: done
+  estimate_hours: 24.0
+  complexity: high
+  depends_on:
+  - P49.M4
+  description: Implement checksum, provenance, policy enforcement, and incident-grade
+    trust observability
+  locked: false
+- id: M6
+  name: Plugin Signature Hardening (Option C)
+  path: 06-plugin-signature-hardening-opt
+  status: done
+  estimate_hours: 20.0
+  complexity: high
+  depends_on:
+  - P49.M5
+  description: Implement Sigstore/Cosign verification with pluggable PKI endpoints
+    and local-only fallback mode
+  locked: false
+stats:
+  total_tasks: 34
+  done: 34
+  in_progress: 0
+  blocked: 0
+  pending: 0

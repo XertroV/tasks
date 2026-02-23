@@ -1,0 +1,39 @@
+id: P6.M6.E1
+name: Correlation ID Infrastructure
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-correlation-id-generation.todo
+  title: Add correlation ID generation plug to Phoenix endpoint
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-propagate-correlation-ids-thro.todo
+  title: Propagate correlation IDs through Agent-LLM-Tools pipeline via Logger.metadata
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-include-correlation-ids-in-all.todo
+  title: Include correlation IDs in all telemetry events as metadata
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

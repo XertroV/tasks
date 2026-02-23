@@ -1,0 +1,18 @@
+---
+id: P19.M4.E1.T008
+title: Create placeholder docs for work-item/chat integrations
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- docs
+- integrations
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:16:53.877072+00:00'
+started_at: '2026-02-18T03:16:53.877072+00:00'
+completed_at: '2026-02-18T03:19:19.364822+00:00'
+duration_minutes: 2.42479555
+---
+Add concise placeholder docs for matrix, jira, linear, notion, issues, git with cross-references to shared integration conventions.

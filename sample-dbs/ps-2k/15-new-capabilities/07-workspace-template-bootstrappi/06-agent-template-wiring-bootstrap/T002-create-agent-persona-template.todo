@@ -1,0 +1,59 @@
+---
+title: Create Agent-Persona Template File
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P15.M7.E6.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:59:28.803661+00:00'
+started_at: '2026-02-18T12:59:28.803661+00:00'
+completed_at: '2026-02-18T13:00:38.933913+00:00'
+duration_minutes: 1.1688373666666665
+---
+# Task: Create Agent-Persona Template File
+
+**ID**: T002  
+**Epic**: P15.M7.E6 - Agent Template Wiring & Bootstrap  
+**Phase**: 2  
+**Estimate**: 1 hour  
+**Priority**: high  
+**Complexity**: low  
+**Status**: pending  
+**Depends on**: [T001]
+
+## Description
+
+Create the agent template file at `priv/templates/agent-persona.yml` defining the main agent for agent-persona workspaces.
+
+## Acceptance Criteria
+
+- [ ] Create file at `priv/templates/agent-persona.yml`
+- [ ] Include `name: agent-persona`
+- [ ] Include `version: "1.0.0"`
+- [ ] Include appropriate description
+- [ ] Set `model_provider: anthropic`, `model_name: claude-sonnet-4-5`
+- [ ] Include system_prompt with persona-driven, file-backed identity instructions
+- [ ] Include all 22 tools: read_file, write_file, list_directory, execute_shell, web_search, http_get, http_post, http_request, json_parse, json_query, json_transform, regex_search, regex_replace, text_format, text_diff, image_info, image_resize, get_time, format_datetime, parse_datetime, browse_web, send_message, spawn_subagent
+- [ ] Include capabilities: streaming, max_tokens: 8192, temperature: 0.7
+- [ ] Include metadata: author, category, tags, lifecycle_hints
+
+## System Prompt Content
+
+The system prompt should:
+- Establish that the agent is a personal AI agent
+- Identity defined in workspace files (user-editable markdown)
+- Workspace files are memory and self, persist across conversations
+- Embody EGO.md, avoid generic assistant behavior
+- Surface tensions if EGO.md conflicts with user request
+
+## Files Changed
+
+- `priv/templates/agent-persona.yml` (NEW)
+
+## Related
+
+- B140: Initial message injection bug
+- `docs/AGENT_PERSONA_SYSTEM.md`

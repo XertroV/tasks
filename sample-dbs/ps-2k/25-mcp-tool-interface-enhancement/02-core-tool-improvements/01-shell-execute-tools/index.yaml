@@ -1,0 +1,22 @@
+id: P25.M2.E1
+name: Shell & Execute Tools
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-improve-bash-execute-shell-inte.todo
+  title: Improve bash_tool/execute_shell MCP interface with richer args and descriptions
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

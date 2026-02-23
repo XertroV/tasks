@@ -1,0 +1,66 @@
+---
+id: P12.M1.E3.T001
+title: Fix dialyzer warnings in deployment_guide_test.exs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T22:33:52.713263+00:00'
+started_at: '2026-02-13T22:33:52.713263+00:00'
+completed_at: '2026-02-13T22:45:57.521185+00:00'
+duration_minutes: 12.080131766666666
+---
+
+# Fix dialyzer warnings in deployment_guide_test.exs
+
+## Description
+Address all dialyzer type warnings in the deployment_guide_test.exs file by adding proper type specifications or fixing type mismatches.
+
+## Acceptance Criteria
+- [ ] No dialyzer warnings in deployment_guide_test.exs
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/cluster/deployment_guide_test.exs`
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 19:12 UTC
+**Sibling tasks**: P12.M1.E3.T002, P12.M1.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M1.E3.T001 → P12.M1.E3.T002 → P12.M1.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M1.E3.T001: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/03-dialyzer-type-warnings-in-test/T001-fix-dialyzer-warnings-in-deplo.todo
+- P12.M1.E3.T002: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/03-dialyzer-type-warnings-in-test/T002-fix-dialyzer-warnings-in-metri.todo
+- P12.M1.E3.T003: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/03-dialyzer-type-warnings-in-test/T003-run-dialyzer-on-test-directory.todo
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 22:33 UTC
+**Sibling tasks**: P12.M1.E3.T002, P12.M1.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M1.E3.T001 → P12.M1.E3.T002 → P12.M1.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M1.E3.T001: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/03-dialyzer-type-warnings-in-test/T001-fix-dialyzer-warnings-in-deplo.todo
+- P12.M1.E3.T002: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/03-dialyzer-type-warnings-in-test/T002-fix-dialyzer-warnings-in-metri.todo
+- P12.M1.E3.T003: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/03-dialyzer-type-warnings-in-test/T003-run-dialyzer-on-test-directory.todo

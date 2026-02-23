@@ -1,0 +1,45 @@
+id: P14.M1
+name: Missing Messaging Integrations
+status: pending
+estimate_hours: 24.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Microsoft Teams Integration
+  path: 01-ms-teams-integration
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Notion Integration
+  path: 02-notion-integration
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Bluesky/AT Protocol
+  path: 03-bluesky-at-protocol
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Email Notifications
+  path: 04-email-notifications
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 13
+  done: 13
+  in_progress: 0
+  blocked: 0
+  pending: 0

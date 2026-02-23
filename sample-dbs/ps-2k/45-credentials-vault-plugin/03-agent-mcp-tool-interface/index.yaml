@@ -1,0 +1,23 @@
+id: P45.M3
+name: Agent MCP Tool Interface
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: MCP Tool Handler
+  path: 01-mcp-tool-handler
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

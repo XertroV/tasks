@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T006
+title: Implement connector status toggle and poller start/stop
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E4.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.184131+00:00'
+started_at: '2026-02-18T07:31:33.184131+00:00'
+completed_at: '2026-02-18T07:51:08.847381+00:00'
+duration_minutes: 19.59438725
+---
+Add handle_event('toggle_connector_status', %{'id' => id}, socket): checks :manage_config permission. If currently active: calls BotConfigs.mark_inactive and Telegram.Poller.stop(connector_id). If currently inactive: calls BotConfigs.mark_active and (if platform=telegram and mode=polling) Telegram.Poller.start(bot_token: ..., workspace_id: ..., connector_instance_id: id). Refresh connectors list on success. Show flash message. Note: webhook mode does not need poller start/stop (always-on via webhook endpoint). Guard: cannot toggle status if session_id is nil (connector unbound) — show error 'Bind a session before activating'.

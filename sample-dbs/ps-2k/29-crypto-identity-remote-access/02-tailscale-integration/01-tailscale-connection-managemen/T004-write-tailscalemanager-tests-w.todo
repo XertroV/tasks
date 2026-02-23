@@ -1,0 +1,17 @@
+---
+id: P29.M2.E1.T004
+title: Write TailscaleManager tests with mock system calls
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P29.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:05:41.066048+00:00'
+started_at: '2026-02-18T19:05:41.066048+00:00'
+completed_at: '2026-02-18T19:08:59.611245+00:00'
+duration_minutes: 3.3090864666666664
+---
+Unit tests using Mox to mock System.cmd/port calls. Test: start/stop lifecycle, status reporting, reconnect on crash, config validation.

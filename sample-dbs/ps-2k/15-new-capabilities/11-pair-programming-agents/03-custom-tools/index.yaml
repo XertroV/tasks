@@ -1,0 +1,55 @@
+id: P15.M11.E3
+name: Custom Tools
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- E2
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-pair-approve-tool.todo
+  title: Implement pair_approve tool
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-pair-write-note-tool.todo
+  title: Implement pair_write_note tool
+  status: done
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-pair-interrupt-tool.todo
+  title: Implement pair_interrupt tool
+  status: done
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-implement-pair-request-swap-to.todo
+  title: Implement pair_request_swap tool
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T005
+  file: T005-implement-pair-status-tool.todo
+  title: Implement pair_status tool
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

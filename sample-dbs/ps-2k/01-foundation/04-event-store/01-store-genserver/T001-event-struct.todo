@@ -1,0 +1,117 @@
+---
+id: P1.M4.E1.T001
+title: Define Event struct and types
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude
+claimed_at: '2026-02-05T09:22:32.489464'
+started_at: '2026-02-05T09:22:32.489464'
+completed_at: '2026-02-05T09:23:12.762999'
+tags:
+- event-store
+- data-model
+- struct
+---
+
+# Define Event struct and types
+
+Create the Event struct and associated types for the event sourcing system.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/events/event.ex` module
+- [ ] Define `Event` struct with required fields:
+  - [ ] `id` (bigserial, auto-generated)
+  - [ ] `event_type` (string, required)
+  - [ ] `agent_id` (binary_id, optional - nilable reference)
+  - [ ] `session_id` (binary_id, optional - nilable reference)
+  - [ ] `payload` (map, required)
+  - [ ] `payload_compressed` (binary, optional - for large payloads)
+  - [ ] `inserted_at` (utc_datetime_usec)
+- [ ] Define type specs for all fields
+- [ ] Add validation function `validate/1` for events
+- [ ] Add helper function `compress_payload?/1` to decide if compression needed
+- [ ] Create module documentation with examples
+
+## Acceptance Criteria
+
+- [ ] Event struct includes all required fields from schema (see index.md:241-250)
+- [ ] Type specifications are clear and accurate
+- [ ] Validation function checks:
+  - [ ] `event_type` is present and non-empty
+  - [ ] `payload` is a valid map
+  - [ ] References (agent_id, session_id) are valid UUIDs if present
+- [ ] Compression decision based on payload size (>1KB threshold)
+- [ ] Module compiles with zero warnings
+- [ ] Dialyzer passes with no type errors
+- [ ] Documentation includes usage examples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Lines 241-250 (events table schema)
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 7.1 (Session Replay)
+
+**Key Requirements**:
+- Events are append-only (immutable)
+- Large payloads (>1KB) should be compressed with zstd
+- Events support both agent-level and session-level events
+- Support for event streaming via Phoenix.PubSub
+
+## Notes
+
+### Example Event Structure
+
+```elixir
+defmodule PagServer.Events.Event do
+  @moduledoc """
+  Event struct for event sourcing.
+  
+  Events are append-only and immutable. Large payloads are automatically
+  compressed using zstd.
+  """
+  
+  use Ecto.Schema
+  import Ecto.Changeset
+  
+  @type t :: %__MODULE__{
+    id: integer() | nil,
+    event_type: String.t(),
+    agent_id: Ecto.UUID.t() | nil,
+    session_id: Ecto.UUID.t() | nil,
+    payload: map(),
+    payload_compressed: binary() | nil,
+    inserted_at: DateTime.t() | nil
+  }
+  
+  schema "events" do
+    field :event_type, :string
+    field :agent_id, Ecto.UUID
+    field :session_id, Ecto.UUID
+    field :payload, :map
+    field :payload_compressed, :binary
+    
+    timestamps(type: :utc_datetime_usec, updated_at: false)
+  end
+  
+  @payload_compression_threshold 1024  # 1KB
+  
+  def changeset(event \\ %__MODULE__{}, attrs) do
+    # Validation logic here
+  end
+  
+  def compress_payload?(payload) when is_map(payload) do
+    # Check if payload size exceeds threshold
+  end
+end
+```
+
+### Compression Strategy
+
+Use zstd compression for payloads >1KB:
+- Add `:ezstd` dependency to mix.exs if not present
+- Compress before persisting
+- Store both compressed and uncompressed based on size

@@ -1,0 +1,55 @@
+---
+id: P52.M2.E1.T001
+title: Implement MCP initialize, health, and list-tools handlers
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- implementation
+- mcp
+- protocol
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:30:20.026211+00:00'
+started_at: '2026-02-21T04:30:20.026211+00:00'
+completed_at: '2026-02-21T04:30:44.703748+00:00'
+duration_minutes: 0.4112920333333333
+---
+
+# Implement MCP initialize, health, and list-tools handlers
+
+## Implementation Notes
+
+- Existing handler module `lib/pag_server/tools/mcp/protocol_handler.ex` now serves as the stdio scaffold protocol core.
+- `initialize`, `tools/list`, and `ping` paths are implemented and exercised through both direct handler tests and stdio loop tests.
+- Capability metadata remains deterministic via:
+  - `PagServer.Tools.MCP.Messages.protocol_version/0`
+  - `PagServer.Tools.MCP.Messages.default_server_capabilities/0`
+  - Stable server identity fields in initialize response.
+- `tools/list` uses `Messages.encode_tool/1` so each exposed tool carries name/inputSchema and optional description.
+
+## Verification Notes
+
+- Tests executed:
+  - `mix test test/pag_server/tools/mcp/protocol_handler_test.exs`
+  - `mix test test/pag_server/mcp/stdio_runtime_config_test.exs test/pag_server/mcp/stdio_server_test.exs`
+- Protocol-specific checks covered:
+  - initialize success and malformed params
+  - ping response shape
+  - tools/list deterministic response structure
+  - malformed batch handling in stdio loop (`-32600` path)
+
+
+
+## Requirements
+
+- Implement MCP protocol handlers for `initialize`, `ping`/health, and `tools/list`.
+- Return deterministic capability metadata and tool schemas consistent with supported actions.
+- Keep response formatting stable so MCP clients can cache capabilities safely.
+
+## Acceptance Criteria
+
+- Handler tests cover success and malformed-request paths for each operation.
+- `tools/list` output includes complete schema docs for each exposed tool.
+- Protocol version negotiation and capability advertisement are explicitly verified in tests.

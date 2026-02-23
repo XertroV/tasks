@@ -1,0 +1,149 @@
+---
+id: P2.M2.E3.T001
+title: Convert tool schemas to Anthropic format
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E2.T002
+tags:
+- llm
+- anthropic
+- tools
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-05T14:01:00.758752'
+started_at: '2026-02-05T14:01:00.758752'
+completed_at: '2026-02-05T14:01:05.447481'
+duration_minutes: 0.07814533333333333
+---
+
+# Convert tool schemas to Anthropic format
+
+Convert internal tool schemas to Anthropic's tool use format.
+
+## Requirements
+
+- [x] Define Anthropic tool schema structure
+- [x] Convert JSON Schema to Anthropic input_schema format
+- [x] Handle required vs optional parameters
+- [x] Support nested objects and arrays
+- [x] Add validation for schema correctness
+- [x] Add tests with example tool schemas
+
+## Acceptance Criteria
+
+- [x] Tool schemas convert correctly to Anthropic format
+- [x] Required/optional parameters are preserved
+- [x] Nested schemas are handled correctly
+- [x] Invalid schemas are rejected with clear errors
+- [x] Tests cover common tool patterns
+- [x] >85% test coverage (25 tests)
+- [x] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.5 (Tools Domain)
+
+**Key Points**:
+- Anthropic uses specific tool schema format
+- Must convert from internal representation
+- Schema validation is critical for API success
+
+## Notes
+
+Anthropic tool format:
+```json
+{
+  "name": "get_weather",
+  "description": "Get weather for a location",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "location": {
+        "type": "string",
+        "description": "City name"
+      },
+      "units": {
+        "type": "string",
+        "enum": ["celsius", "fahrenheit"]
+      }
+    },
+    "required": ["location"]
+  }
+}
+```
+
+Internal tool definition (from P2.M1):
+```elixir
+defmodule PagServer.Tools.GetWeather do
+  @behaviour PagServer.Tools.Tool
+  
+  def name, do: "get_weather"
+  
+  def schema do
+    %{
+      description: "Get weather for a location",
+      parameters: [
+        %{name: "location", type: :string, required: true, description: "City name"},
+        %{name: "units", type: :string, enum: ["celsius", "fahrenheit"], required: false}
+      ]
+    }
+  end
+end
+```
+
+Converter implementation:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.ToolSchema do
+  def convert(tool_module) do
+    schema = tool_module.schema()
+    
+    %{
+      name: tool_module.name(),
+      description: schema.description,
+      input_schema: build_input_schema(schema.parameters)
+    }
+  end
+  
+  defp build_input_schema(parameters) do
+    properties = 
+      parameters
+      |> Enum.map(fn param ->
+        {param.name, build_property(param)}
+      end)
+      |> Map.new()
+    
+    required = 
+      parameters
+      |> Enum.filter(& &1.required)
+      |> Enum.map(& &1.name)
+    
+    %{
+      type: "object",
+      properties: properties,
+      required: required
+    }
+  end
+  
+  defp build_property(param) do
+    base = %{
+      type: to_json_type(param.type),
+      description: param.description
+    }
+    
+    case param do
+      %{enum: values} -> Map.put(base, :enum, values)
+      _ -> base
+    end
+  end
+  
+  defp to_json_type(:string), do: "string"
+  defp to_json_type(:integer), do: "integer"
+  defp to_json_type(:boolean), do: "boolean"
+  defp to_json_type(:object), do: "object"
+  defp to_json_type(:array), do: "array"
+end
+```

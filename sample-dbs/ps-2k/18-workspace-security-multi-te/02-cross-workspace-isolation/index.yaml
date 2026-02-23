@@ -1,0 +1,41 @@
+id: P18.M2
+name: Cross-Workspace Isolation
+status: pending
+estimate_hours: 24.0
+complexity: high
+depends_on:
+- P18.M1
+epics:
+- id: E1
+  name: Workspace-Nested Config API
+  path: 01-workspace-config-api
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: Create workspace-scoped config routes and controller. Restrict flat
+    /api/v1/config endpoint to global-only keys.
+- id: E2
+  name: Agent Workspace Boundary Enforcement
+  path: 02-agent-workspace-boundary
+  status: pending
+  estimate_hours: 9.0
+  complexity: medium
+  depends_on: []
+  description: Add workspace_id scoping to agent queries, scope flat routes by membership,
+    and add workspace-nested agent routes.
+- id: E3
+  name: Session Workspace Boundary Enforcement
+  path: 03-session-workspace-boundary
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Add workspace_id scoping to session queries, scope flat routes by membership,
+    and add workspace-nested session routes.
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

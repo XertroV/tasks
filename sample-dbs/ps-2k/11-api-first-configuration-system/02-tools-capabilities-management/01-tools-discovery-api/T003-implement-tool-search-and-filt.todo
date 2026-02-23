@@ -1,0 +1,40 @@
+---
+id: P11.M2.E1.T003
+title: Implement tool search and filtering
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T07:40:51.784442+00:00'
+started_at: '2026-02-12T07:40:51.784442+00:00'
+completed_at: '2026-02-12T07:51:23.389715+00:00'
+duration_minutes: 10.5267543
+---
+
+# Implement tool search and filtering
+
+
+
+## Requirements
+
+- [ ] Add `GET /api/v1/tools/search` endpoint for flexible tool discovery
+- [ ] Support full-text search on tool names and descriptions
+- [ ] Support filtering by multiple criteria: category, tags, enabled, capability
+- [ ] Support sorting by: name, created_at, updated_at, usage_count
+- [ ] Return ranked results with relevance scores for search queries
+- [ ] Support combining search with filters (e.g., search + category)
+- [ ] Include usage statistics in results (calls, errors, avg duration)
+
+## Acceptance Criteria
+
+- [ ] Search query parameter returns matching tools ranked by relevance
+- [ ] Multi-filter combinations work (e.g., `?category=file&tags=read,write`)
+- [ ] Sorting parameters work on all major fields
+- [ ] Results include usage stats (calls_24h, error_rate, avg_duration_ms)
+- [ ] Returns 400 for invalid filter combinations
+- [ ] Pagination works with search and filters
+- [ ] Performance: searches complete in <500ms for typical queries
+- [ ] Tests cover edge cases: empty search, special characters, multiple filters

@@ -1,0 +1,35 @@
+---
+id: B117
+title: TOOL_CALL is nicely styled in validation console, but TOOL_RESULT is not.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:32:57.098600+00:00'
+started_at: '2026-02-17T21:32:57.098600+00:00'
+completed_at: '2026-02-18T08:40:00.000000+00:00'
+---
+
+TOOL_CALL is nicely styled in validation console, but TOOL_RESULT is not.
+
+## Solution
+
+Added styled display for tool_result and error in the validation console chat timeline:
+
+1. **tool_result styling** (for completed tool calls with results):
+   - Emerald/green color scheme (border-emerald-200, bg-emerald-50)
+   - Shows "TOOL_RESULT" label with duration_ms
+   - Formats result as JSON or truncated string
+
+2. **error styling** (for failed tool calls):
+   - Red color scheme (border-red-200, bg-red-50)
+   - Shows "ERROR" label with error message
+
+3. **Added helper function**: `format_tool_result/1` to format results nicely
+
+## Files Modified
+- `lib/pag_server_web/live/validation_console.html.heex` - Added result/error display
+- `lib/pag_server_web/live/validation_console.ex` - Added format_tool_result/1 helper

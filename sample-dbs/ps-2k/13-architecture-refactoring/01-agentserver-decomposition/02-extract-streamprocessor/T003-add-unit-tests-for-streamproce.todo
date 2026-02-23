@@ -1,0 +1,40 @@
+---
+id: P13.M1.E2.T003
+title: Add unit tests for StreamProcessor
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M1.E2.T001
+- P13.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T21:52:52.644313+00:00'
+started_at: '2026-02-13T21:52:52.644313+00:00'
+completed_at: '2026-02-13T22:17:39.794712+00:00'
+duration_minutes: 24.785839733333333
+---
+
+# Add unit tests for StreamProcessor
+
+## Description
+
+Create comprehensive unit tests for the `AgentServer.StreamProcessor` module covering token processing, thinking phase detection, and stream lifecycle management.
+
+## Acceptance Criteria
+- [ ] Create `test/pag_server/agents/stream_processor_test.exs`
+- [ ] Test token handling with empty, single, and multiple tokens
+- [ ] Test thinking phase detection with `<thinking>` tags
+- [ ] Test thinking phase transitions (entering, exiting, nested tags)
+- [ ] Test trailing tag prefix edge cases
+- [ ] Test stream started/complete lifecycle
+- [ ] Test phase state transitions (`:thinking` <-> `:responding`)
+- [ ] Achieve >90% code coverage for StreamProcessor module
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/stream_processor.ex`
+- Reference tests: `test/pag_server/llm/thinking_extractor_test.exs`
+- Part of epic: P13.M1.E2 - Extract StreamProcessor

@@ -1,0 +1,96 @@
+---
+id: P2.M6.E1.T002
+title: Implement event decoder
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P2.M6.E1.T001
+tags:
+- streaming
+- sse
+- json
+- decoder
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:10:51.444267'
+started_at: '2026-02-05T17:10:51.444267'
+completed_at: '2026-02-05T17:14:52.992913'
+duration_minutes: 4.0258105833333335
+---
+
+# Implement event decoder
+
+Decode SSE event data payloads from JSON to Elixir structs.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/sse_decoder.ex` module
+- [ ] Implement `decode_event/1` that takes SSE event map
+- [ ] Parse JSON from `:data` field using `Jason.decode/1`
+- [ ] Map to appropriate structs based on `:event` field:
+  - [ ] `message_start` → `%PAGServer.LLM.MessageStart{}`
+  - [ ] `content_block_start` → `%PAGServer.LLM.ContentBlockStart{}`
+  - [ ] `content_block_delta` → `%PAGServer.LLM.ContentBlockDelta{}`
+  - [ ] `content_block_stop` → `%PAGServer.LLM.ContentBlockStop{}`
+  - [ ] `message_delta` → `%PAGServer.LLM.MessageDelta{}`
+  - [ ] `message_stop` → `%PAGServer.LLM.MessageStop{}`
+- [ ] Handle provider-specific events (Anthropic vs OpenAI formats)
+- [ ] Return `{:ok, decoded_struct}` or `{:error, reason}`
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] Successfully decodes all Anthropic streaming event types
+- [ ] Successfully decodes all OpenAI streaming event types
+- [ ] Returns appropriate error tuples for invalid JSON
+- [ ] Returns appropriate error tuples for unknown event types
+- [ ] Structs include all relevant fields from provider responses
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` Line 1121-1124 (P2.M6 Stream Processing)
+- See Anthropic streaming docs for event format details
+
+**Key Points**:
+- Anthropic uses `event: <type>` with `data: <json>`
+- OpenAI uses `data: [DONE]` to signal completion
+- Both providers send JSON payloads in the `data:` field
+- Need to handle provider differences transparently
+
+**Anthropic Event Types**:
+```elixir
+# message_start
+%{"type" => "message_start", "message" => %{"id" => "msg_123", ...}}
+
+# content_block_delta
+%{"type" => "content_block_delta", "index" => 0, "delta" => %{"type" => "text_delta", "text" => "Hello"}}
+
+# message_stop
+%{"type" => "message_stop"}
+```
+
+**OpenAI Event Format**:
+```elixir
+# chunk
+%{"id" => "chatcmpl-123", "choices" => [%{"delta" => %{"content" => "Hello"}}]}
+
+# done
+"[DONE]"
+```
+
+## Notes
+
+Define structs in `lib/pag_server/llm/events.ex`:
+```elixir
+defmodule PAGServer.LLM.MessageStart do
+  defstruct [:id, :type, :role, :model]
+end
+
+defmodule PAGServer.LLM.ContentBlockDelta do
+  defstruct [:index, :type, :text]
+end
+```
+
+Consider using protocol-based decoding for extensibility.

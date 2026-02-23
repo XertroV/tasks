@@ -1,0 +1,21 @@
+id: P7.M3.E5
+name: Registration Authorization
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-authorization-checks-to-to.todo
+  title: Add authorization checks to tool registration
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

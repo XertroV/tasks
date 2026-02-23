@@ -1,0 +1,151 @@
+---
+id: P2.M8.E5.T005
+title: Add reverse token-budget user message preservation
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- context
+- ux
+- preservation
+- codex
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:59:40.379311'
+started_at: '2026-02-06T02:59:40.379311'
+completed_at: '2026-02-06T03:01:31.020137'
+duration_minutes: 1.8440136
+---
+
+# Add reverse token-budget user message preservation
+
+Preserve raw recent user messages (up to token budget) before summarization by working backwards from newest. Maintains exact user wording and improves UX.
+
+**Reference**: `ref-projects/codex/codex-rs/core/src/compact.rs:293-346`
+
+## Requirements
+
+### User Message Preservation
+
+1. Before summarizing all messages, extract user messages and preserve recent ones
+2. Work backwards from newest user message:
+   - Accumulate tokens until budget exhausted (default: 20K tokens or 30% of context)
+   - If last message exceeds remaining budget, truncate it to fit
+3. Final history structure:
+   - `[initial_context] + [recent_user_messages] + [summary_of_old_messages]`
+
+### Benefits
+
+- Users see their original messages, not paraphrased summaries
+- Preserves exact wording for recent requests (avoids information loss)
+- LLM has precise understanding of recent user intent
+
+## Implementation Flow
+
+```
+Messages: [M1, M2, U1, M3, M4, U2, M5, U3, M6]
+                        ^^^^^^^^^^^^^^^^
+                        Preserve these (within budget)
+
+1. Extract user messages: [U1, U2, U3]
+2. Iterate in reverse with budget (e.g., 20K tokens):
+   - U3: 5K tokens → select, remaining: 15K
+   - U2: 8K tokens → select, remaining: 7K
+   - U1: 10K tokens → exceeds remaining, truncate to 7K, stop
+3. Result: [U1_truncated, U2, U3] in chronological order
+4. Separate old vs recent messages:
+   - Old: [M1, M2] (before first preserved user message)
+   - Recent: [M3, M4, U2, M5, U3, M6] (after first preserved)
+5. Summarize old messages → summary
+6. Final: [initial_context, U1_truncated, U2, U3, summary]
+```
+
+## Acceptance Criteria
+
+- [ ] User message extraction
+  - [ ] Filter messages to extract only user role messages
+  - [ ] Exclude summary messages (don't re-preserve summaries)
+
+- [ ] Reverse token-budget selection
+  - [ ] Iterate user messages in reverse (newest first)
+  - [ ] Accumulate tokens until budget exhausted
+  - [ ] Truncate last message if it exceeds remaining budget
+  - [ ] Reverse list to restore chronological order
+
+- [ ] History partitioning
+  - [ ] Determine cutoff point (first preserved user message)
+  - [ ] Split all messages into old (summarize) vs recent (keep)
+  - [ ] Preserved user messages appear in chronological position
+
+- [ ] Configuration
+  - [ ] Configurable preservation budget (default: 20_000 tokens or 30% of context)
+  - [ ] Option to disable user message preservation
+  - [ ] Configurable truncation policy for last message
+
+- [ ] Tests
+  - [ ] Unit test: reverse token-budget selection
+  - [ ] Unit test: message truncation when exceeding budget
+  - [ ] Integration test: user messages appear in final context
+  - [ ] Test: no preservation when all user messages exceed budget
+
+## Implementation Notes
+
+### Elixir Implementation
+
+```elixir
+defmodule PagServer.Context.Pruning.UserMessagePreservation do
+  @default_user_message_budget_tokens 20_000
+  
+  def preserve_recent_user_messages(messages, opts \\ []) do
+    budget = Keyword.get(opts, :user_message_budget, @default_user_message_budget_tokens)
+    
+    user_messages = extract_user_messages(messages)
+    
+    {preserved, _remaining} = 
+      user_messages
+      |> Enum.reverse()
+      |> Enum.reduce_while({[], budget}, fn msg, {acc, remaining} ->
+        tokens = msg.token_count || 0
+        
+        cond do
+          tokens <= remaining ->
+            {:cont, {[msg | acc], remaining - tokens}}
+          
+          remaining > 0 ->
+            # Truncate last message to fit
+            truncated = truncate_message(msg, remaining)
+            {:halt, {[truncated | acc], 0}}
+          
+          true ->
+            {:halt, {acc, 0}}
+        end
+      end)
+    
+    # preserved is in chronological order now
+    preserved
+  end
+  
+  defp extract_user_messages(messages) do
+    Enum.filter(messages, fn msg ->
+      msg.role == "user" && !is_summary_message?(msg)
+    end)
+  end
+end
+```
+
+### Integration
+
+In `Summarization.do_prune/3`, before summarizing:
+
+1. Extract and preserve recent user messages
+2. Partition all messages into old (before first preserved) vs recent (after)
+3. Summarize old messages
+4. Combine: `system + preserved_user_msgs + old_summary + recent`
+
+### Truncation
+
+Use token-based truncation with marker:
+```
+"This is a long user mess..." [~7000 tokens truncated]
+```

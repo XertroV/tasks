@@ -1,0 +1,37 @@
+id: P10.M3
+name: Issue Tracker Integrations
+status: pending
+estimate_hours: 18.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Jira Integration
+  path: 01-jira-integration
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Linear Integration
+  path: 02-linear-integration
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Generic Issue Tracker Adapter
+  path: 03-generic-issue-tracker-adapter
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

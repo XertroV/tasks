@@ -1,0 +1,25 @@
+id: P20
+name: Plugin Database Schemas
+status: pending
+locked: false
+weeks: 1
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Plugin Schema Infrastructure
+  path: 01-plugin-schema-infrastructure
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: 'Core infrastructure for plugin-managed database tables: migration
+    framework, KV store, and CryptoId migration.'
+  locked: false
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,56 @@
+---
+id: I005
+title: Add global settings tab/page to web ui (for global settings). We also want
+  settings for sessions and agents as appropriate
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:24:17.542024+00:00'
+started_at: '2026-02-16T10:24:17.542024+00:00'
+completed_at: '2026-02-16T10:30:53.871662+00:00'
+duration_minutes: 6.605493516666667
+---
+
+# Idea Intake: Add global settings tab/page to web ui (for global settings). We also want settings for sessions and agents as appropriate
+
+## Original Idea
+
+Add global settings tab/page to web ui (for global settings). We also want settings for sessions and agents as appropriate
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add global settings tab/page to web ui (for global settings). We also want settings for sessions and agents as appropriate"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Created epics:
+  - `P15.M2.E5` - Global Settings Hub
+  - `P15.M2.E6` - Session and Agent Settings Panels
+- Created tasks:
+  - `P15.M2.E5.T001` Define settings IA and config key map
+  - `P15.M2.E5.T002` Add /dashboard/settings route and top-nav tab
+  - `P15.M2.E5.T003` Implement global settings section with save/reload states
+  - `P15.M2.E5.T004` Add settings UX guardrails (dirty state/reset/error recovery)
+  - `P15.M2.E6.T001` Implement session settings panel (select + edit + persist)
+  - `P15.M2.E6.T002` Implement agent settings panel (select + edit + persist)
+  - `P15.M2.E6.T003` Add test coverage for global/session/agent settings workflows
+- Created bug IDs: none
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

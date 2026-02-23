@@ -1,0 +1,39 @@
+---
+id: P18.M3.E2.T004
+title: Document breaking API changes
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P18.M3.E2.T003
+tags:
+- docs
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:56:19.986162+00:00'
+started_at: '2026-02-17T20:56:19.986162+00:00'
+completed_at: '2026-02-17T21:15:13.577820+00:00'
+duration_minutes: 18.893194133333335
+---
+
+# Document breaking API changes
+
+## Description
+
+Add a note documenting the workspace API parameter changes for developers and API consumers.
+
+## Requirements
+
+- [ ] Add a section to the workspace onboarding guide or API docs noting the `:id` → `:workspace_id` change
+- [ ] List all affected endpoints
+- [ ] Note that this is an alpha-stage change with no deprecation period
+
+## Acceptance Criteria
+
+- [ ] Changes are documented in an appropriate location
+- [ ] All affected endpoints are listed
+
+## Context
+
+**Files affected**: `docs/guides/workspace-onboarding.md` or equivalent

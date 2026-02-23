@@ -1,0 +1,139 @@
+---
+id: P1.M1.E1.T002
+title: Add core dependencies
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M1.E1.T001
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:41:57.282042'
+started_at: '2026-02-05T07:41:57.282042'
+completed_at: '2026-02-05T07:44:05.878669'
+tags:
+- dependencies
+- setup
+- mix
+---
+
+# Add core dependencies
+
+Add all required Elixir dependencies to `mix.exs` based on the research findings.
+
+## Requirements
+
+### Database & Persistence
+- [ ] Add `{:ecto_sql, "~> 3.10"}`
+- [ ] Add `{:postgrex, "~> 0.17"}` (PostgreSQL adapter)
+- [ ] Add `{:ecto_sqlite3, "~> 0.15"}` (SQLite adapter for dev)
+
+### LLM Clients
+- [ ] Add `{:anthropix, "~> 0.6"}` (Anthropic/Claude)
+- [ ] Add `{:openai_ex, "~> 0.9"}` (OpenAI/GPT)
+
+### HTTP Client
+- [ ] Add `{:req, "~> 0.5"}` (High-level HTTP client)
+- [ ] Add `{:finch, "~> 0.18"}` (Connection pooling)
+
+### Caching
+- [ ] Add `{:cachex, "~> 3.6"}` (Bounded cache with TTL/LRU)
+
+### Background Jobs
+- [ ] Add `{:oban, "~> 2.17"}` (Persistent job queue)
+
+### Observability
+- [ ] Add `{:telemetry, "~> 1.2"}`
+- [ ] Add `{:telemetry_metrics, "~> 1.0"}`
+- [ ] Add `{:telemetry_poller, "~> 1.0"}`
+
+### Testing (dev/test only)
+- [ ] Add `{:ex_machina, "~> 2.7", only: :test}` (Test factories)
+- [ ] Add `{:mox, "~> 1.1", only: :test}` (Mocks)
+
+### Code Quality (dev/test only)
+- [ ] Add `{:credo, "~> 1.7", only: [:dev, :test], runtime: false}` (Static analysis)
+- [ ] Add `{:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}` (Type checking)
+
+### Run Commands
+- [ ] Run `mix deps.get` to fetch all dependencies
+- [ ] Run `mix compile` to compile dependencies
+- [ ] Commit changes with message "Add core dependencies"
+
+## Acceptance Criteria
+
+- [ ] All dependencies compile without errors
+- [ ] No dependency conflicts in `mix deps.tree`
+- [ ] `mix.lock` is generated and committed
+- [ ] `mix compile` passes with zero warnings
+- [ ] No security advisories in dependencies (`mix deps.audit` if available)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/research.md` Section 8 (Recommended Stack)
+
+**Dependency Rationale**:
+- **Cachex** instead of raw ETS: Bounded cache with TTL and LRU eviction (critical for memory efficiency)
+- **Req** for LLM API calls: Simpler than raw Finch for most use cases
+- **Finch** for connection pooling: Used by Req internally, but also available for direct use
+- **Oban**: Battle-tested background job system with PostgreSQL persistence
+
+## Notes
+
+### mix.exs Structure
+
+Add to `defp deps do` section:
+
+```elixir
+defp deps do
+  [
+    # Phoenix & Web
+    {:phoenix, "~> 1.7"},
+    {:phoenix_ecto, "~> 4.4"},
+    {:phoenix_live_dashboard, "~> 0.8"},
+    {:telemetry_metrics, "~> 1.0"},
+    {:telemetry_poller, "~> 1.0"},
+    {:jason, "~> 1.4"},
+    {:dns_cluster, "~> 0.1"},
+    {:bandit, "~> 1.0"},
+    
+    # Database
+    {:ecto_sql, "~> 3.10"},
+    {:postgrex, "~> 0.17"},
+    {:ecto_sqlite3, "~> 0.15"},
+    
+    # LLM Clients
+    {:anthropix, "~> 0.6"},
+    {:openai_ex, "~> 0.9"},
+    
+    # HTTP
+    {:req, "~> 0.5"},
+    {:finch, "~> 0.18"},
+    
+    # Caching & Jobs
+    {:cachex, "~> 3.6"},
+    {:oban, "~> 2.17"},
+    
+    # Testing
+    {:ex_machina, "~> 2.7", only: :test},
+    {:mox, "~> 1.1", only: :test},
+    
+    # Code Quality
+    {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+    {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false}
+  ]
+end
+```
+
+### Troubleshooting
+
+If you encounter dependency conflicts:
+1. Check `mix deps.tree` for version conflicts
+2. Update conflicting dependencies to compatible versions
+3. Check hex.pm for latest compatible versions
+
+If compilation fails:
+1. Run `mix deps.clean --all && mix deps.get`
+2. Check for Erlang/Elixir version compatibility
+3. Review compilation errors for missing system libraries

@@ -1,0 +1,47 @@
+id: P49.M5.E2
+name: Option B verifier and policy enforcement
+status: done
+estimate_hours: 9.0
+complexity: high
+depends_on:
+- P49.M5.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-add-explicit-dev-and-unpublish.todo
+  title: Add explicit dev and unpublished override flow with TTL and audit
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-enforce-trusted-publisher-and.todo
+  title: Enforce trusted publisher and source policy with verified-only mode
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-checksum-verificatio.todo
+  title: Implement checksum verification in plugin install and update pipeline
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-apply-capability-aware-trust-g.todo
+  title: Apply capability-aware trust gates across lifecycle and tool execution
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

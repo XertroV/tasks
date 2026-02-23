@@ -1,0 +1,40 @@
+---
+id: B013
+title: we shouldn't use hardcoded ports (eg 4002) in e2e tests. we should pick a random
+  available port (highher than 4000) and use that instead.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:02:33.769693+00:00'
+started_at: '2026-02-15T17:02:33.769693+00:00'
+completed_at: '2026-02-15T17:07:09.386259+00:00'
+duration_minutes: 4.5936093
+---
+
+we shouldn't use hardcoded ports (eg 4002) in e2e tests. we should pick a random available port (highher than 4000) and use that instead.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:02 UTC
+**Primary task**: B012 - start a subagent to review and fix other lint issues. minimum 20. while there are lint issues remaining, add another bug back to keep fixing lint issues.
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

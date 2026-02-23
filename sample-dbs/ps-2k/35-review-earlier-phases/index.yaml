@@ -1,0 +1,25 @@
+id: P35
+name: Review Earlier Phases
+status: done
+locked: true
+weeks: 4
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Milestone Reviews
+  path: 01-milestone-reviews
+  status: done
+  estimate_hours: 40.0
+  complexity: medium
+  depends_on: []
+  description: One task per milestone from P20-P34. Each task is a review covering
+    all epics and code under that milestone.
+  locked: false
+stats:
+  total_tasks: 34
+  done: 34
+  in_progress: 0
+  blocked: 0
+  pending: 0

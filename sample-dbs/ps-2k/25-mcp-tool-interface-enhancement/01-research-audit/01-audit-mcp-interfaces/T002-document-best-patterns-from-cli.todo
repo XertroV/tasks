@@ -1,0 +1,45 @@
+---
+id: P25.M1.E1.T002
+title: Document best patterns from each CLI tool interface audit
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on:
+- P25.M1.E1.T001
+tags:
+- research
+- mcp
+- tools
+- documentation
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:17:26.615275+00:00'
+started_at: '2026-02-18T18:17:26.615275+00:00'
+completed_at: '2026-02-18T18:34:01.360577+00:00'
+duration_minutes: 16.579088199999997
+---
+
+# Document best patterns from each CLI tool interface audit
+
+Synthesize the findings from T001 into a canonical "best of breed" spec for each
+tool type. Identify which CLI has the best argument shape, description quality, and
+UX for each tool category. Combine the best elements into a recommended design for
+pag-server's MCP tool suite.
+
+## Requirements
+
+- For each tool category (bash/exec, read, write, edit, glob, list, spawn-agent):
+  - Identify the strongest argument design from the audited CLIs
+  - Identify the strongest tool description and parameter descriptions
+  - Note any UX patterns worth adopting (e.g. `old_string`/`new_string` diff style,
+    line-number-aware reads, recursive glob, subagent size/model hints)
+- Produce a design document: `docs/mcp-tool-interface-design.md`
+- Flag any gaps or improvements not yet seen in any existing CLI
+
+## Acceptance Criteria
+
+- [ ] Design document created at docs/mcp-tool-interface-design.md (or equivalent)
+- [ ] Each tool type has a recommended argument schema with rationale
+- [ ] Descriptions are precise, concise, and actionable for LLM consumers
+- [ ] Document is reviewed and ready to drive M2 implementation
+- [ ] Any novel improvements beyond existing CLIs are clearly marked

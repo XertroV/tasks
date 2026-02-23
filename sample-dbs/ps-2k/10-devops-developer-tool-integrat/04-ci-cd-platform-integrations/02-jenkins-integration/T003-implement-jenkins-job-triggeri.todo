@@ -1,0 +1,52 @@
+---
+id: P10.M4.E2.T003
+title: Implement Jenkins job triggering and log fetching
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: medium
+depends_on:
+- P10.M4.E2.T001
+- P10.M4.E2.T002
+tags:
+- jenkins
+- job-triggers
+- log-retrieval
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:30:27.126977+00:00'
+started_at: '2026-02-12T04:30:27.126977+00:00'
+completed_at: '2026-02-12T04:42:39.053129+00:00'
+duration_minutes: 12.198768983333334
+---
+
+# Implement Jenkins job triggering and log fetching
+
+Integrate Jenkins jobs into agent workflow by implementing job triggers and log collection.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/jenkins/orchestrator.ex` module for high-level operations
+- [ ] Implement job trigger function that:
+  - [ ] Accepts job name and build parameters
+  - [ ] Calls Jenkins API to start job
+  - [ ] Returns build number and initial status
+- [ ] Implement log fetching function:
+  - [ ] Query Jenkins API for build logs
+  - [ ] Handle streaming large logs efficiently (pagination)
+  - [ ] Parse and extract relevant information
+- [ ] Implement polling function for checking build status
+- [ ] Integrate with agent state updates via Events module
+- [ ] Implement Oban job for background status monitoring
+- [ ] Add telemetry tracking for trigger latency and success rates
+
+## Acceptance Criteria
+
+- [ ] Trigger function successfully initiates Jenkins job with parameters
+- [ ] Log fetching correctly retrieves full build logs
+- [ ] Status polling reads build state from API
+- [ ] Polling job runs on configurable interval
+- [ ] Build status updates are persisted via Events system
+- [ ] Agent receives notifications when build completes
+- [ ] Failed builds include error messages from logs
+- [ ] `mix test` passes for all integration tests
+- [ ] `mix lint` passes without warnings

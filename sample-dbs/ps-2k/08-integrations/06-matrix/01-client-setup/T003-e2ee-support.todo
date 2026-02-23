@@ -1,0 +1,89 @@
+---
+id: P8.M6.E1.T003
+title: Add Matrix E2EE support foundation
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: medium
+depends_on:
+- P8.M6.E1.T002
+tags:
+- matrix
+- encryption
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:40:18.422489+00:00'
+started_at: '2026-02-08T10:40:18.422489+00:00'
+completed_at: '2026-02-08T10:50:00+0000'
+---
+
+# Add Matrix E2EE support foundation
+
+Lay groundwork for end-to-end encrypted Matrix rooms (implementation optional for MVP).
+
+## Requirements
+
+- [x] Research Olm/Megolm Elixir bindings availability
+- [x] Document E2EE implementation requirements
+- [x] Add config flag to enable/disable E2EE
+- [x] Create stub for key management in encrypted rooms
+- [x] Add warning when joining encrypted room with E2EE disabled
+
+## Acceptance Criteria
+
+- [x] Documentation clearly explains E2EE limitations in current version
+- [x] Config includes `enable_e2ee: false` with explanation
+- [x] Bot can join encrypted rooms but displays "E2EE not supported" message
+- [x] Key management architecture documented for future implementation
+- [x] Alternative: Document bridge pattern for E2EE (use Element as proxy)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 453-458 (Matrix E2EE feature)
+- `.plan/2026-02-05-velvet-cascade/security.md` lines 134-156 (encryption requirements)
+
+**Key Points**:
+- Matrix E2EE uses Olm (1:1) and Megolm (group) protocols
+- Requires device key management and verification
+- Complex: key backup, cross-signing, device verification
+- Can defer by using unencrypted rooms or bridge pattern
+
+## Notes
+
+E2EE implementation scope (future):
+1. Device key generation and storage
+2. Key upload to homeserver
+3. Session establishment (Olm)
+4. Group session management (Megolm)
+5. Key rotation and backup
+6. Device verification flow
+
+Bridge pattern alternative:
+```
+User (Element) <--E2EE--> Homeserver <--Plain--> PAG Bot
+```
+- User enables E2EE in their client
+- Bot connects to same homeserver but in separate process
+- Messages decrypted by homeserver, sent plain to bot
+- Requires homeserver trust
+
+Olm binding options:
+- `olm` package (NIF wrapper)
+- `matrix-sdk-crypto` (Rust via Rustler)
+- Pure Elixir (very complex, not recommended)
+
+Config structure:
+```elixir
+config :pag_server, PAGServer.Integrations.Matrix,
+  enable_e2ee: false,
+  e2ee_backend: nil, # :olm | :matrix_sdk_crypto
+  device_name: "PAG-Server",
+  store_path: "/var/lib/pag-server/matrix-store"
+```
+
+Warning message for encrypted rooms:
+```
+"This bot does not support E2EE. Please use an unencrypted room or 
+bridge via Element for encrypted conversations."
+```

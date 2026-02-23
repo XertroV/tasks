@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T009
+title: 'Review P27.M3: Ephemeral Session Tests'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:15:13.897588+00:00'
+started_at: '2026-02-19T02:15:13.897588+00:00'
+completed_at: '2026-02-19T02:26:51.396009+00:00'
+duration_minutes: 11.624973533333334
+---
+Load the review-and-fix skill. Review all epics and tasks under P27.M3 (Ephemeral Session Spawning - Tests). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Verify that lifecycle tests cover: ephemeral session creation, auto-cleanup after completion, that in-progress sessions are not prematurely destroyed, and cron-triggered ephemeral session teardown.

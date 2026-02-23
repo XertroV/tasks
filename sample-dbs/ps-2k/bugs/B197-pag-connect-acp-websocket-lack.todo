@@ -1,0 +1,16 @@
+---
+id: B197
+title: pag-connect ACP websocket lacks authentication/origin hardening
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:48:11.976156+00:00'
+started_at: '2026-02-21T14:48:11.976156+00:00'
+completed_at: '2026-02-21T14:57:36.413451+00:00'
+duration_minutes: 9.407288083333333
+---
+ACP websocket endpoint should enforce local-origin/auth checks to prevent local CSWSH/control-plane abuse. Add request validation and tests.

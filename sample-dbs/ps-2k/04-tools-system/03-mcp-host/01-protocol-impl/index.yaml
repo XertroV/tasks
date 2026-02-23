@@ -1,0 +1,43 @@
+# Epic: Protocol Implementation
+# Phase 4, Milestone 3, Epic 1 (P4.M3.E1)
+
+id: P4.M3.E1
+name: Protocol Implementation
+status: pending
+estimate_hours: 5
+complexity: high
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-json-rpc.todo
+    title: Implement JSON-RPC 2.0 handler
+    status: pending
+    estimate_hours: 2.0
+    complexity: high
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-mcp-messages.todo
+    title: MCP message types and schemas
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-protocol-handlers.todo
+    title: Protocol request/response handlers
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

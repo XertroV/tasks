@@ -1,0 +1,17 @@
+---
+id: P38.M1.E1.T003
+title: Implement list_connectors MCP tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P38.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:43:11.771030+00:00'
+started_at: '2026-02-19T04:43:11.771030+00:00'
+completed_at: '2026-02-19T04:47:45.841100+00:00'
+duration_minutes: 4.5678342333333335
+---
+MCP tool: list_connectors. No required args; reads workspace_id from tool context. Calls ConnectorRegistry.list_workspace_connectors/1. Returns JSON array of {id, platform, name, status} for each active connector in the workspace. Follows existing tool patterns (see lib/pag_server/tools/builtin/). Add to ConnectorPlugin.mcp_tools/0.

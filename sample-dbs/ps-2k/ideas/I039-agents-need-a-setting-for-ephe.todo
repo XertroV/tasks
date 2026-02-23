@@ -1,0 +1,53 @@
+---
+id: I039
+title: Agents need a setting for epheremal or persistent execution modes. Ask the
+  user questions about this to understand exactly what this means.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:44:20.937350+00:00'
+started_at: '2026-02-18T22:44:20.937350+00:00'
+completed_at: '2026-02-19T02:40:35.375493+00:00'
+duration_minutes: 236.24063551666669
+---
+
+# Idea Intake: Agents need a setting for epheremal or persistent execution modes. Ask the user questions about this to understand exactly what this means.
+
+## Original Idea
+
+Agents need a setting for epheremal or persistent execution modes. Ask the user questions about this to understand exactly what this means.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Agents need a setting for epheremal or persistent execution modes. Ask the user questions about this to understand exactly what this means."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P36 (Agent Execution Modes — already done)
+- P36.M1 (Core Infrastructure)
+- P36.M1.E1 (Schema & Migrations)
+- P36.M1.E2 (Pure Logic Modules)
+- P36.M1.E3 (SessionStore Query)
+- P36.M1.E4 (BootManager GenServer)
+- P36.M1.E5 (AgentWaker)
+- P36.M2 (UI)
+- P36.M2.E1 (Agent Manager UI)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

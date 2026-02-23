@@ -1,0 +1,24 @@
+---
+id: P50.M2.E2.T003
+title: Implement remove_worker and set_worker_state actions
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:30:19.429546+00:00'
+started_at: '2026-02-23T02:30:19.429546+00:00'
+completed_at: '2026-02-23T02:30:22.041527+00:00'
+duration_minutes: 0.04353276666666666
+---
+## Description
+remove_worker/3 (team_id, worker_id, actor_agent_id): cannot remove lead while non-stopped non-lead workers exist. Transitions worker through shutting_down->stopped. Writes collab_worker_state_changed audit event per transition. set_worker_state/4 (team_id, worker_id, new_status, actor_agent_id): delegates to Lifecycle.transition/3. On success: Repo.update + write collab_worker_state_changed audit event. Fire :plugin_event %{plugin: collab_teams, subtype: worker_idle} when new status is idle. Return {:ok, %{action: set_worker_state, worker_id, previous_state, state: new_status}}.
+
+## Acceptance Criteria
+- remove_worker on lead with active workers returns :cannot_remove_lead_while_workers_active
+- set_worker_state with invalid transition returns :invalid_transition without DB write
+- audit events written
+- :plugin_event fired for idle transition

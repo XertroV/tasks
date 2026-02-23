@@ -1,0 +1,52 @@
+---
+id: P15.M7.E6.T001
+title: Schema Changes - WorkspaceTemplate Fields
+epic: P15.M7.E6
+estimate_hours: 2.0
+complexity: medium
+priority: high
+status: done
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:52:52.978242+00:00'
+started_at: '2026-02-18T12:52:52.978242+00:00'
+completed_at: '2026-02-18T12:58:41.297774+00:00'
+duration_minutes: 5.8053252833333335
+---
+
+# Schema Changes - WorkspaceTemplate Fields
+
+Add three fields to the WorkspaceTemplate embedded schema:
+
+## New Fields
+
+1. `agent_template` (string) - Named reference to a Template from priv/templates/
+2. `initial_message` (string) - First user-turn message injected invisibly at bootstrap start
+3. `bootstrap_config` (map, default: %{}) - Bootstrap-specific overrides
+
+## bootstrap_config Map Keys
+
+- `initial_temperature` - LLM temperature during early bootstrap (default: 1.0)
+- `normal_temperature` - Temperature after dial-down (default: 0.7)
+- `temperature_message_count` - Messages before dial-down (default: 6)
+- `initial_message_ttl` - Messages before purging initial_message from history (default: 4)
+
+## Validation
+
+`agent_template` must match `Shared.name_regex()` if present.
+
+## Files to Modify
+
+- `lib/pag_server/templates/workspace_template.ex` - Add fields to embedded schema and `@optional_fields`
+
+## Implementation Notes
+
+See IMPLEMENTATION_PLAN.md Phase 1 for full details and context.
+
+## Acceptance Criteria
+
+- [ ] All three fields added to WorkspaceTemplate schema
+- [ ] `agent_template` field validates against name regex
+- [ ] `bootstrap_config` defaults to empty map
+- [ ] Tests updated to cover new fields

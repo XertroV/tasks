@@ -1,0 +1,24 @@
+---
+id: P50.M1.E3.T002
+title: Add shared context validation to dispatcher
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:13:06.594445+00:00'
+started_at: '2026-02-23T02:13:06.594445+00:00'
+completed_at: '2026-02-23T02:13:09.101274+00:00'
+duration_minutes: 0.041780116666666665
+---
+## Description
+Dispatcher extracts workspace_id and actor_agent_id from arguments first, falls back to context map (supports both atom and string keys). Read-only actions (get_team, list_teams, list_messages, help, next_task) do NOT require actor_agent_id. Mutating actions with missing workspace_id return {:error, %{ok: false, error: missing_required_context, missing: [workspace_id], known_options: @valid_actions}}. Same for missing actor_agent_id. Validation runs before action routing.
+
+## Acceptance Criteria
+- Missing workspace_id on create_team returns missing_required_context error
+- missing actor_agent_id on claim_task returns same shape
+- help action succeeds with no context
+- workspace_id resolved from context map as fallback

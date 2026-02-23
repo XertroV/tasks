@@ -1,0 +1,109 @@
+---
+id: B081
+title: String vs atom key access on context messages causes KeyError crashes
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- architecture
+- refactor
+- agent-server
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:45:33.121764+00:00'
+started_at: '2026-02-17T11:45:33.121764+00:00'
+completed_at: '2026-02-17T12:03:53.972750+00:00'
+duration_minutes: 18.347516233333334
+---
+## Bug Description
+
+Agent context messages can have either atom keys (`%{role: :user, content: "..."}`) or string keys (`%{"role" => "user", "content" => "..."}`) depending on their origin:
+
+- **Atom keys**: Messages created in-process by AgentServer (e.g., `%{role: :user, content: text}`)
+- **String keys**: Messages loaded from DB/events during crash recovery or session restore (persisted as JSON, deserialized with string keys)
+
+Code that accesses message fields using dot notation (`msg.role`) or pattern matching on atom keys crashes with `KeyError` when encountering string-keyed messages.
+
+## How It Happened
+
+1. Telegram poller receives a message, dispatches to agent via `SharedMainAgentRouter.dispatch/3`
+2. Agent starts (or recovers from crash), loads message history from events — these have **string keys**
+3. `build_memory_context/1` calls `Enum.find(fn msg -> msg.role == :user end)` on context
+4. Crashes with `KeyError: key :role not found` because the message map has `"role"` not `:role`
+
+The same pattern exists in `build_rag_context/1` and potentially other places that iterate over context messages.
+
+## Immediate Fix Applied
+
+Changed dot access to defensive bracket access:
+```elixir
+# Before (crashes on string keys):
+Enum.find(fn msg -> msg.role == :user end)
+last_user_msg.content
+
+# After (handles both):
+Enum.find(fn msg -> (msg[:role] || msg["role"]) in [:user, "user"] end)
+last_user_msg[:content] || last_user_msg["content"]
+```
+
+## Architectural Concern
+
+The `msg[:role] || msg["role"]` pattern is fragile and easy to forget. Every new piece of code that touches context messages needs to remember to handle both key types. This is a recurring source of bugs.
+
+## Proposed Architectural Solutions
+
+### Option A: Normalize messages at ingestion boundaries (Recommended)
+Create a `normalize_message/1` function that converts all messages to a canonical format (atom keys) at every boundary where messages enter the agent's context:
+- When loading from DB/events during crash recovery
+- When appending new messages from user input
+- When restoring from checkpoints
+
+```elixir
+defp normalize_message(%{"role" => role} = msg) do
+  %{
+    role: normalize_role(role),
+    content: msg["content"],
+    message_id: msg["message_id"],
+    # ... other fields
+  }
+end
+defp normalize_message(%{role: _} = msg), do: msg
+```
+
+**Pro**: Single point of normalization, all downstream code can use atom keys safely.
+**Con**: Need to find and guard all ingestion points.
+
+### Option B: Use a Message struct
+Define a proper `%Message{}` struct (or use the existing Ecto schema) for in-memory context messages. Enforce that context is always `[%Message{}, ...]`.
+
+```elixir
+defmodule PagServer.Agents.ContextMessage do
+  defstruct [:role, :content, :message_id, :metadata, :timestamp, :model_used]
+end
+```
+
+**Pro**: Compile-time safety, dot access works, clear contract.
+**Con**: More invasive refactor, need to handle conversion everywhere.
+
+### Option C: Accessor helper module
+Create a small helper that abstracts key access:
+
+```elixir
+defmodule PagServer.Agents.Msg do
+  def role(msg), do: msg[:role] || msg["role"]
+  def content(msg), do: msg[:content] || msg["content"]
+end
+```
+
+**Pro**: Minimal change, easy to adopt incrementally.
+**Con**: Doesn't fix the root cause, just papers over it.
+
+### Recommendation
+**Option A** is the best balance of effort vs safety. Normalize at the boundaries (especially `load_context_from_events/1` and `restore_from_checkpoint/1`) so all downstream code can assume atom keys. This is a one-time fix that prevents the entire class of bugs.
+
+## Files Affected
+
+- `lib/pag_server/agents/agent_server.ex` (lines 3192-3199, 3237-3244 — fixed)
+- Potentially any code that iterates `state.context` with dot/atom access
+- Context loading: checkpoint restore, event replay, message append paths

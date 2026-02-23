@@ -1,0 +1,24 @@
+---
+id: P23.M3.E2.T001
+title: Update PluginLoader to discover plugins from plugins/ dir
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M3.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:33:27.380362+00:00'
+started_at: '2026-02-18T15:33:27.380362+00:00'
+completed_at: '2026-02-18T15:48:54.792891+00:00'
+duration_minutes: 15.456875283333334
+---
+PluginLoader should find plugin modules from the new directory layout.
+
+## Acceptance Criteria
+- [ ] Locate `PluginLoader` (likely in `lib/pag_server/plugins/` or similar)
+- [ ] Update discovery logic to scan `plugins/*/` for modules implementing `@behaviour PagServer.Plugin`
+- [ ] Maintain backward compatibility: plugins still under `lib/pag_server/plugins/` continue to load (during transition period)
+- [ ] PluginLoader logs which plugins it discovered and from which path
+- [ ] PluginLoader tests updated to cover the new discovery path

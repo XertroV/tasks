@@ -1,0 +1,168 @@
+---
+id: P8.M1.E2.T001
+title: Build session key logic
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on:
+- P8.M1.E1.T001
+tags:
+- gateway
+- router
+- session
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:45:57.971468+00:00'
+started_at: '2026-02-08T07:45:57.971468+00:00'
+completed_at: '2026-02-08T08:07:24.155209+00:00'
+duration_minutes: 21.4363955
+---
+
+# Build session key logic
+
+Implement session key building logic to map platform messages to unique session identifiers.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/gateway/router.ex` (~80 LoC)
+- [ ] Implement `build_session_key/1` function
+- [ ] Handle all platform-specific key structures
+- [ ] Ensure keys are unique per conversation context
+- [ ] Document key structure for each platform
+- [ ] Add validation for required context fields
+
+## Acceptance Criteria
+
+- [ ] Router module compiles without warnings
+- [ ] Session keys are unique per conversation
+- [ ] Multi-user channels have separate keys from DMs
+- [ ] Thread support is properly handled
+- [ ] Keys are consistent across restarts
+- [ ] Documentation explains key collision avoidance
+- [ ] Tests verify key uniqueness for all platforms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 519-528 (Session key building)
+
+**Key Points**:
+- Session keys determine which agent handles the message
+- Different platforms have different session semantics
+- Telegram: one session per user (DM) or thread (group)
+- Slack: one session per channel+user or thread
+- Discord: one session per channel or thread
+- Keys must be deterministic and collision-free
+
+## Notes
+
+Session key structures by platform:
+
+**Telegram**:
+```elixir
+# Private chat
+{:telegram, user_id}
+
+# Group/channel
+{:telegram, chat_id, thread_id}
+```
+
+**Slack**:
+```elixir
+# Channel
+{:slack, channel_id, user_id}
+
+# Thread
+{:slack, channel_id, thread_ts}
+```
+
+**Discord**:
+```elixir
+# Channel
+{:discord, guild_id, channel_id}
+
+# Thread
+{:discord, guild_id, channel_id, thread_id}
+```
+
+**WhatsApp**:
+```elixir
+# Chat
+{:whatsapp, phone_number}
+
+# Group
+{:whatsapp, group_id}
+```
+
+**Matrix**:
+```elixir
+# Room
+{:matrix, room_id}
+
+# Thread
+{:matrix, room_id, thread_root}
+```
+
+**WebSocket**:
+```elixir
+# Session-based
+{:websocket, session_id}
+```
+
+Implementation example:
+```elixir
+defmodule PAGServer.Gateway.Router do
+  @moduledoc """
+  Routes normalized messages to appropriate agents/sessions.
+  """
+
+  def build_session_key(%Gateway.Message{platform: :telegram} = msg) do
+    case msg.context do
+      %{chat_id: chat_id, thread_id: nil} when chat_id > 0 ->
+        # Private chat: one session per user
+        {:telegram, msg.sender.id}
+      
+      %{chat_id: chat_id, thread_id: nil} ->
+        # Group without threads: one session per group
+        {:telegram, chat_id}
+      
+      %{chat_id: chat_id, thread_id: thread_id} ->
+        # Group with thread: one session per thread
+        {:telegram, chat_id, thread_id}
+    end
+  end
+
+  def build_session_key(%Gateway.Message{platform: :slack} = msg) do
+    case msg.context do
+      %{thread_ts: nil} ->
+        # Channel message: one session per user in channel
+        {:slack, msg.context.channel, msg.sender.id}
+      
+      %{thread_ts: thread_ts} ->
+        # Thread: one session per thread
+        {:slack, msg.context.channel, thread_ts}
+    end
+  end
+
+  # ... other platforms
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-08 07:45 UTC
+**Sibling tasks**: P8.M1.E2.T002, P8.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E2.T001 → P8.M1.E2.T002 → P8.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E2.T001: .tasks/08-integrations/01-unified-gateway/02-router/T001-session-key-logic.todo
+- P8.M1.E2.T002: .tasks/08-integrations/01-unified-gateway/02-router/T002-get-or-create-session.todo
+- P8.M1.E2.T003: .tasks/08-integrations/01-unified-gateway/02-router/T003-route-to-agent.todo

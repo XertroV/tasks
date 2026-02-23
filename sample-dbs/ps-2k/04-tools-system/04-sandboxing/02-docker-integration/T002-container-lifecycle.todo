@@ -1,0 +1,83 @@
+---
+id: P4.M4.E2.T002
+title: Container create/exec/destroy
+status: done
+estimate_hours: 2.5
+complexity: critical
+priority: critical
+depends_on:
+- P4.M4.E2.T001
+tags:
+- sandboxing
+- docker
+- lifecycle
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:45:42.347900'
+started_at: '2026-02-05T22:45:42.347900'
+completed_at: '2026-02-05T22:51:34.267165'
+duration_minutes: 5.865320816666666
+---
+
+# Container create/exec/destroy
+
+Implement full container lifecycle management.
+
+## Requirements
+
+- [ ] Create containers from images
+- [ ] Execute commands in containers
+- [ ] Stream exec output
+- [ ] Stop and remove containers
+- [ ] Handle container cleanup on errors
+
+## Acceptance Criteria
+
+- [ ] Creates containers successfully
+- [ ] Executes commands and captures output
+- [ ] Cleans up containers after execution
+- [ ] Handles failures gracefully
+- [ ] No container leaks
+- [ ] Test full lifecycle
+
+## Context
+
+Container lifecycle for tool execution:
+1. Create container
+2. Execute command
+3. Capture output
+4. Remove container
+
+## Notes
+
+Lifecycle:
+```elixir
+def execute_in_container(image, command, opts) do
+  with {:ok, container_id} <- create_container(image, opts),
+       {:ok, output} <- exec_in_container(container_id, command),
+       :ok <- remove_container(container_id) do
+    {:ok, output}
+  end
+end
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:45 UTC
+**Primary task**: P4.M2.E4.T001 - Implement send_message tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M4.E2 vs P4.M2.E4)
+- No dependency chain: ✓ (verified at claim time)

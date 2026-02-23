@@ -1,0 +1,260 @@
+---
+id: P7.M7.E1.T008
+title: Write Phoenix Channel protocol specification
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P3.M1.E4.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:48:38.503404+00:00'
+started_at: '2026-02-06T21:48:38.503404+00:00'
+completed_at: '2026-02-06T22:11:02.019026+00:00'
+tags:
+- documentation
+- websocket
+- channels
+- protocol
+duration_minutes: 22.391926666666667
+---
+
+# Write Phoenix Channel protocol specification
+
+Create comprehensive documentation for the Phoenix Channel WebSocket protocol.
+
+## Requirements
+
+- [ ] Document connection establishment
+  - [ ] WebSocket URL: `ws://host/socket/websocket`
+  - [ ] Authentication parameters (token, api_key)
+  - [ ] Connection handshake sequence
+  - [ ] Heartbeat/keepalive requirements
+
+- [ ] Document channel topics
+  - [ ] `agent:{agent_id}` - Agent-specific channel
+  - [ ] `session:{session_id}` - Session-specific channel
+  - [ ] Join parameters and permissions
+
+- [ ] Document client-to-server messages
+  - [ ] `phx_join` - Join channel
+  - [ ] `send_message` - Send user message
+  - [ ] `queue_message` - Queue message with mode
+  - [ ] `cancel` - Cancel current operation
+  - [ ] `get_state` - Request agent state
+
+- [ ] Document server-to-client events
+  - [ ] `token` - Streaming token chunk
+  - [ ] `message_complete` - Full message received
+  - [ ] `tool_call` - Tool invocation
+  - [ ] `tool_result` - Tool execution result
+  - [ ] `error` - Error notification
+  - [ ] `state_changed` - Agent state change
+
+- [ ] Document message schemas
+  - [ ] JSON structure for each message type
+  - [ ] Required vs optional fields
+  - [ ] Field types and constraints
+
+- [ ] Document authentication flow
+  - [ ] Token-based auth
+  - [ ] Connection rejection handling
+
+## Acceptance Criteria
+
+- [ ] Complete protocol spec in markdown format
+- [ ] All message types documented with JSON schemas
+- [ ] Connection lifecycle clearly explained
+- [ ] Authentication requirements documented
+- [ ] Sequence diagrams for key flows
+- [ ] Spec lives in `docs/websocket-protocol.md`
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on P3.M1.E4 (Channel Error Handling)
+
+## Implementation Guide
+
+### Protocol Specification Structure
+
+```markdown
+# PAG Server WebSocket Protocol
+
+## Connection
+
+### Establishing Connection
+
+```
+WebSocket URL: ws://localhost:4000/socket/websocket
+```
+
+Query parameters:
+- `token`: Authentication token (required)
+- `vsn`: Protocol version (default: "2.0.0")
+
+### Handshake
+
+1. Client opens WebSocket connection
+2. Server accepts or rejects based on token
+3. Client sends `phx_join` for desired channel
+4. Server responds with `phx_reply`
+
+## Channels
+
+### Agent Channel (`agent:{agent_id}`)
+
+Join payload:
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "phx_join",
+  "payload": {},
+  "ref": "1"
+}
+```
+
+### Session Channel (`session:{session_id}`)
+
+Join payload with history options:
+```json
+{
+  "topic": "session:def-456",
+  "event": "phx_join", 
+  "payload": {"include_history": true},
+  "ref": "2"
+}
+```
+
+## Client Messages
+
+### send_message
+
+Send a message and wait for response:
+
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "send_message",
+  "payload": {
+    "content": "Hello, agent!",
+    "session_id": "def-456"
+  },
+  "ref": "3"
+}
+```
+
+### queue_message
+
+Queue a message with delivery mode:
+
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "queue_message",
+  "payload": {
+    "content": "Process this next",
+    "mode": "when_done"
+  },
+  "ref": "4"
+}
+```
+
+Modes:
+- `immediate`: Interrupt at next safe point
+- `after_thinking`: Wait for current thought to complete
+- `when_done`: Queue until agent finishes current turn
+
+## Server Events
+
+### token
+
+Streaming token during generation:
+
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "token",
+  "payload": {
+    "content": "Hello",
+    "index": 0,
+    "message_id": "msg-789"
+  }
+}
+```
+
+### message_complete
+
+Full message after streaming:
+
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "message_complete",
+  "payload": {
+    "message_id": "msg-789",
+    "content": "Hello! How can I help?",
+    "role": "assistant",
+    "tokens": {"input": 10, "output": 8}
+  }
+}
+```
+
+### tool_call
+
+Agent invoking a tool:
+
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "tool_call",
+  "payload": {
+    "call_id": "call-001",
+    "tool": "file_read",
+    "arguments": {"path": "/etc/hosts"}
+  }
+}
+```
+
+### error
+
+Error notification:
+
+```json
+{
+  "topic": "agent:abc-123",
+  "event": "error",
+  "payload": {
+    "code": "rate_limited",
+    "message": "Too many requests",
+    "retry_after": 60
+  }
+}
+```
+```
+
+### Sequence Diagrams
+
+```
+Client                    Server
+   |                         |
+   |------ WS Connect ------>|
+   |<----- WS Accept --------|
+   |                         |
+   |------ phx_join -------->|
+   |<----- phx_reply --------|
+   |                         |
+   |---- send_message ------>|
+   |<------ token -----------|
+   |<------ token -----------|
+   |<------ token -----------|
+   |<-- message_complete ----|
+   |                         |
+```
+
+## Notes
+
+- Protocol based on Phoenix Channel 2.0 spec
+- Heartbeat every 30 seconds required
+- Reconnection with exponential backoff recommended

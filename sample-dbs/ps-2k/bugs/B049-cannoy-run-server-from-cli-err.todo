@@ -1,0 +1,33 @@
+---
+id: B049
+title: Cannoy run server from cli, errors
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:36:19.716224+00:00'
+started_at: '2026-02-16T02:36:19.716224+00:00'
+completed_at: '2026-02-16T02:38:32.716663+00:00'
+duration_minutes: 2.216673833333333
+---
+
+# Cannoy run server from cli, errors
+
+~/src/pag-server master* ≡ ⇡
+❯ mix phx.server
+** (Mix) the application :pag_server has a different value set for key PagServerWeb.Endpoint during runtime compared to compile time. Since this application environment entry was marked as compile time, this difference can lead to different behavior than expected:
+
+  * Compile time value was set to: [url: [host: "localhost"], adapter: Bandit.PhoenixAdapter, render_errors: [formats: [json: PagServerWeb.ErrorJSON], layout: false], pubsub_server: PagServer.PubSub, live_view: [signing_salt: "5LhENcH+"], check_origin: false, code_reloader: true, debug_errors: true, secret_key_base: "zLc6URxrezF/zE12ph9XzEG/cPhHceHYGKOTnPc5n+qk26hsJSS/zeUIFHOLKq4f", watchers: [], socket_transport_log: :debug, http: [ip: {127, 0, 0, 1}, port: 4000]]
+  * Runtime value was set to: [url: [host: "localhost"], adapter: Bandit.PhoenixAdapter, render_errors: [formats: [json: PagServerWeb.ErrorJSON], layout: false], pubsub_server: PagServer.PubSub, live_view: [signing_salt: "5LhENcH+"], http: [ip: {127, 0, 0, 1}], check_origin: false, code_reloader: true, debug_errors: true, secret_key_base: "zLc6URxrezF/zE12ph9XzEG/cPhHceHYGKOTnPc5n+qk26hsJSS/zeUIFHOLKq4f", watchers: [], socket_transport_log: :debug, live_reload: [patterns: [~r/priv\/static\/.*(js|css|png|jpeg|jpg|gif|svg)$/E, ~r/priv\/gettext\/.*(po)$/E, ~r/lib\/pag_server_web\/(controllers|live|components|router)\/.*\.(ex|heex)$/E]]]
+
+To fix this error, you might:
+
+  * Make the runtime value match the compile time one
+
+  * Recompile your project. If the misconfigured application is a dependency, you may need to run "mix deps.clean pag_server --build"
+
+  * Alternatively, you can disable this check. If you are using releases, you can set :validate_compile_env to false in your release configuration. If you are using Mix to start your system, you can pass the --no-validate-compile-env flag
+

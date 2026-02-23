@@ -1,0 +1,52 @@
+---
+id: P46.M1.E3.T001
+title: Create Accounts context module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P46.M1.E2.T001
+- P46.M1.E2.T002
+- P46.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:50:07.229555+00:00'
+started_at: '2026-02-19T20:50:07.229555+00:00'
+completed_at: '2026-02-19T20:57:33.269116+00:00'
+duration_minutes: 7.433992450000001
+---
+Create lib/pag_server/accounts/accounts.ex as the primary context for user identity operations (separate from existing PagServer.Users which handles agent/workspace ownership concerns):
+- get_user!/1, get_user_by_email/1, get_user_by_username/1
+- get_or_create_user_from_oauth/2 — upsert user from OAuth identity data (email, name)
+- list_user_identities/1 — list linked OAuth providers for a user
+- link_identity/3 — link a new OAuth provider identity to an existing user
+- unlink_identity/2 — remove an OAuth identity link (guard: must keep at least one)
+- update_username/2 — update username with validation
+- is_admin?/1 — check user.is_admin
+- promote_to_admin/1, demote_from_admin/1
+Session token functions:
+- create_session_token/1 — create token, return raw bytes
+- get_user_by_session_token/1 — lookup user by token bytes
+- delete_session_token/1 — revoke specific token
+- create_remember_me_token/1, get_user_by_remember_me_token/1
+- delete_all_user_tokens/1 — logout from all sessions
+Acceptance: Module compiles, all functions have typespecs, basic unit tests in test/pag_server/accounts/.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-19 20:50 UTC
+**Sibling tasks**: P46.M1.E3.T002, P46.M1.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M1.E3.T001 → P46.M1.E3.T002 → P46.M1.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M1.E3.T001: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/03-accounts-context-username-util/T001-create-accounts-context-module.todo
+- P46.M1.E3.T002: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/03-accounts-context-username-util/T002-create-username-derivation-and.todo
+- P46.M1.E3.T003: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/03-accounts-context-username-util/T003-update-seeds-exs-for-dev-auto.todo

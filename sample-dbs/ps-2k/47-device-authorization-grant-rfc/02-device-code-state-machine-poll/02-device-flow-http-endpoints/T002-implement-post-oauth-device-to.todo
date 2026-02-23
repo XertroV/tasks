@@ -1,0 +1,17 @@
+---
+id: P47.M2.E2.T002
+title: Implement POST /oauth/device/token polling endpoint
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P47.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:16:49.079753+00:00'
+started_at: '2026-02-20T06:16:49.079753+00:00'
+completed_at: '2026-02-20T06:24:54.053276+00:00'
+duration_minutes: 8.082891766666666
+---
+POST /oauth/device/token: parse form-encoded body, validate grant_type=urn:ietf:params:oauth:grant-type:device_code, validate client_id, look up device_code. State machine: (1) not found → 400 {error: access_denied}; (2) expired → 400 {error: expired_token}; (3) used → 400 {error: access_denied}; (4) pending + poll too fast → update last_polled_at, return 400 {error: slow_down, interval: N} (include new interval in body, GitHub extension); (5) pending + ok → update last_polled_at, return 400 {error: authorization_pending}; (6) authorized → atomically transition to used, issue pag_sk_... ApiKey with scope=companion:full for device_code.user_id, return 200 {access_token, token_type: api_key, scope: companion:full}. Key creation must be atomic with status transition (use Repo.transaction). No auth required on this endpoint.

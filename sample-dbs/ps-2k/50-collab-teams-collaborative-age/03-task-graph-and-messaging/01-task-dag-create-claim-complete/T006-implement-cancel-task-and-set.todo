@@ -1,0 +1,24 @@
+---
+id: P50.M3.E1.T006
+title: Implement cancel_task and set_task_blocked actions
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:20:05.020033+00:00'
+started_at: '2026-02-23T02:20:05.020033+00:00'
+completed_at: '2026-02-23T02:20:07.519218+00:00'
+duration_minutes: 0.04165288333333333
+---
+## Description
+TaskGraph.cancel_task/2 (task_id, actor_agent_id): transitions pending|blocked->cancelled; in_progress cancel requires actor==owner. Write collab_task_cancelled audit event. TaskGraph.set_task_blocked/3 (task_id, actor_agent_id, reason): transitions in_progress->blocked; only owner can block. Write collab_task_blocked audit event. Invalid transitions return {:error, :invalid_transition, %{from, to}}.
+
+## Acceptance Criteria
+- cancel_task from pending succeeds
+- cancel_task from in_progress without ownership returns :not_owner
+- set_task_blocked from active succeeds
+- invalid transition returns structured error

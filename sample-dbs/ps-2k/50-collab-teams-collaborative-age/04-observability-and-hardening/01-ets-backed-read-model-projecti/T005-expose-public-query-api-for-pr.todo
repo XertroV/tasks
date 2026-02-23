@@ -1,0 +1,25 @@
+---
+id: P50.M4.E1.T005
+title: Expose public query API for projection read models
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M4.E1.T001
+- P50.M4.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:32.345418+00:00'
+started_at: '2026-02-23T02:42:32.345418+00:00'
+completed_at: '2026-02-23T02:42:34.838300+00:00'
+duration_minutes: 0.04154775
+---
+## Description
+Implement: Projection.get_overview/1 returns {:ok, map} with keys state, worker_count, task_summary (%{pending, in_progress, completed, failed}) or {:error, :not_found}; Projection.get_task_board/1 returns tasks grouped by state with dependency lists; Projection.get_activity_feed/2 (team_id, limit \ 50) returns last N events+messages ordered by time. All return {:error, :projection_not_running} if GenServer not up.
+
+## Acceptance Criteria
+- All 3 query functions return correct data from ETS
+- :projection_not_running returned when GenServer absent
+- activity feed merges audit events and messages ordered by time
+- limit respected

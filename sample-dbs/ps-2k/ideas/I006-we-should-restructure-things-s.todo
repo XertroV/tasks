@@ -1,0 +1,47 @@
+---
+id: I006
+title: We should restructure things so that agents aren't created adhoc but instead
+  chosen from a list. We will prepopualte that list with some common ones.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+---
+
+# Idea Intake: We should restructure things so that agents aren't created adhoc but instead chosen from a list. We will prepopualte that list with some common ones.
+
+## Original Idea
+
+We should restructure things so that agents aren't created adhoc but instead chosen from a list. We will prepopualte that list with some common ones.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "We should restructure things so that agents aren't created adhoc but instead chosen from a list. We will prepopualte that list with some common ones."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Milestone: `P15.M6` Workspace & Onboarding (`.tasks/15-new-capabilities/06-workspace-onboarding/`).
+- Epic: `P15.M6.E1` Agent Template Catalog.
+- Tasks: `P15.M6.E1.T001` → `P15.M6.E1.T002` → `P15.M6.E1.T003`.
+- Dependency chain ensures template specification before schema/API/docs onboarding integration.
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

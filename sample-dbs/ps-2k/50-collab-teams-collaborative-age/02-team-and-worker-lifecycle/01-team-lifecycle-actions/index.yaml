@@ -1,0 +1,63 @@
+id: P50.M2.E1
+name: Team Lifecycle Actions
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-collabteams-runtime.todo
+  title: Implement CollabTeams.Runtime and create_team action
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E2.T004
+  - P50.M1.E3.T001
+- id: T002
+  file: T002-implement-get-team-and-list-te.todo
+  title: Implement get_team and list_teams actions
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E1.T001
+- id: T003
+  file: T003-implement-request-shutdown-act.todo
+  title: Implement request_shutdown action and draining transition
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E1.T001
+- id: T004
+  file: T004-implement-cleanup-team-action.todo
+  title: Implement cleanup_team action and closed transition
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E1.T003
+- id: T005
+  file: T005-wire-team-lifecycle-actions-in.todo
+  title: Wire team lifecycle actions into dispatcher and add tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E1.T001
+  - P50.M2.E1.T002
+  - P50.M2.E1.T003
+  - P50.M2.E1.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

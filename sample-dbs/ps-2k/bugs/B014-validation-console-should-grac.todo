@@ -1,0 +1,18 @@
+---
+id: B014
+title: validation console should gracefully handle provider catalog load failures
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- validation-console
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:14:36.809545+00:00'
+started_at: '2026-02-15T17:14:36.809545+00:00'
+completed_at: '2026-02-15T17:22:24.825112+00:00'
+duration_minutes: 7.800259216666666
+---
+Validation Console currently loads dynamic provider models on mount and params without rescue. If DB/provider config query fails, the LiveView can fail to mount. Add fallback behavior so the page still loads with static catalog defaults, shows a non-blocking warning state, and allows core chat/settings flows to continue. Add tests for fallback path and failure-state UX.

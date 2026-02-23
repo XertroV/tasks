@@ -1,0 +1,57 @@
+---
+id: P2.M4.E1.T005
+title: Implement tool result submission for OpenRouter
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M4.E1.T002
+tags:
+- llm
+- openrouter
+- tools
+- results
+claimed_by: cli-user
+claimed_at: '2026-02-06T08:58:43.817833'
+started_at: '2026-02-06T08:58:43.817833'
+completed_at: '2026-02-06T09:01:04.131344'
+duration_minutes: 2.33855835
+---
+
+# Implement tool result submission for OpenRouter
+
+
+
+## Requirements
+
+- [x] Implement tool result submission for the OpenRouter adapter, mirroring OpenAI-compatible tool calling where supported.
+- [x] Map tool result message formats to OpenRouter requirements, including tool_call_id and tool name fields.
+- [x] Support multiple tool calls in a single assistant response and submit each tool result in order.
+- [x] Integrate the tool result submission with the LLM registry OpenRouter provider entry.
+- [x] Handle provider-specific errors and surface them consistently with other adapters.
+
+## Acceptance Criteria
+
+- [x] When OpenRouter returns tool calls, the adapter submits tool results and continues the conversation until completion.
+- [x] Tool result messages conform to OpenRouter-compatible OpenAI message formats.
+- [x] The adapter gracefully handles unknown tool_call_id values and fails with a clear error.
+- [x] LLM registry calls using OpenRouter can complete a tool loop without manual intervention.
+- [x] Logging/telemetry includes tool submission counts for OpenRouter requests.
+
+## Context
+
+- [x] OpenRouter uses an OpenAI-compatible API surface but may enforce its own model constraints for tools.
+- [x] The OpenRouter adapter is responsible for translating tool messages to the provider-specific format.
+- [x] The LLM registry routes tool-capable requests to OpenRouter when configured.
+
+## Notes
+
+- [x] Tool result message format should match the OpenAI convention expected by OpenRouter: role=tool, tool_call_id, name, content.
+- [x] Keep tool outputs as strings; if structured, serialize to JSON before submission.
+- [x] Ensure tool result submission is deterministic for replay (stable ordering, stable payloads).
+
+## Testing
+
+- [x] Add/extend OpenRouter adapter tests for tool result formatting (e.g., `test/pag_server/llm/openrouter/adapter_test.exs`).
+- [x] Add integration test for OpenRouter tool loop via LLM registry (e.g., `test/pag_server/llm/registry_test.exs`).

@@ -1,0 +1,27 @@
+---
+id: P24.M1.E1.T002
+title: mailbox_message Ecto schema and migration
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:01:28.206893+00:00'
+started_at: '2026-02-18T16:01:28.206893+00:00'
+completed_at: '2026-02-18T16:09:09.806492+00:00'
+duration_minutes: 7.693326483333333
+---
+
+# mailbox_message Ecto schema and migration
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

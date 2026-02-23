@@ -1,0 +1,82 @@
+---
+id: P15.M15.E1.T001
+title: Implement ?framed flag for file placeholders in LivePromptResolver
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- persona
+- prompts
+- templates
+- documentation
+claimed_by: cli-user
+claimed_at: '2026-02-19T13:52:33.344495+00:00'
+started_at: '2026-02-19T13:52:33.344495+00:00'
+completed_at: '2026-02-19T13:54:29.172945+00:00'
+duration_minutes: 1.9304739833333333
+---
+## Summary
+
+The LivePromptResolver currently supports `{{file:X}}` placeholders that inject file contents into the system prompt at runtime. We need a new `?framed` query-parameter flag: `{{file:X?framed}}` that wraps file contents in delimiters, with special behavior when files are missing.
+
+## Behavior
+
+### `{{file:X?framed}}` — when file EXISTS:
+Resolves to:
+```
+--- BEGIN X ---
+<file contents>
+--- END X ---
+```
+
+### `{{file:X?framed}}` — when file is MISSING:
+Resolves to **empty string** (no delimiters emitted). This is critical for conditional injection (e.g., BIRTH.md disappears after bootstrap when the file is deleted).
+
+### `{{file:X}}` — without flag (unchanged):
+Existing behavior is preserved. No behavioral changes to unframed placeholders.
+
+## Implementation Details
+
+- LivePromptResolver must parse `?framed` query parameter from the placeholder syntax
+- The delimiter format is `--- BEGIN X ---` / `--- END X ---` where X is the filename
+- ALL core files in the agent-persona prompt template should use `?framed`: EGO.md, IDENTITY.md, USER.md, MY_TEAM.md, BIRTH.md
+- This is part of the agent-persona system prompt rewrite effort
+- Files remain as live references in `system_prompt_files` list
+
+## Documentation Requirements
+
+- Document the `?framed` flag in docs about workspace templates and agent templates
+- Document how `{{file:X}}` vs `{{file:X?framed}}` differ
+- Document the behavior when files are missing for both variants
+- Look for existing template documentation (e.g., docs/AGENT_PERSONA_SYSTEM.md, docs/WORKSPACE_TEMPLATES.md, or similar) and update/create as appropriate
+
+## Acceptance Criteria
+
+1. `{{file:X?framed}}` wraps content in `--- BEGIN X ---` / `--- END X ---` delimiters
+2. `{{file:X?framed}}` resolves to empty string when file is missing (no delimiters)
+3. `{{file:X}}` (without flag) behavior is unchanged
+4. LivePromptResolver parses the `?framed` query parameter from placeholder syntax
+5. Documentation updated: workspace template docs explain `?framed` flag, give examples, clarify missing-file behavior
+6. Unit tests cover: framed with content, framed without content (missing file), unframed (backward compat)
+7. Works correctly with the existing `system_prompt_files` list (files left as live references)
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M15.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 13:52 UTC
+**Sibling tasks**: P15.M15.E1.T002, P15.M15.E1.T003, P15.M15.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M15.E1.T001 → P15.M15.E1.T002 → P15.M15.E1.T003 → P15.M15.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M15.E1.T001: .tasks/15-new-capabilities/15-livepromptresolver-enhancement/01-framed-file-placeholder-flag/T001-implement-framed-flag-for-file.todo
+- P15.M15.E1.T002: .tasks/15-new-capabilities/15-livepromptresolver-enhancement/01-framed-file-placeholder-flag/T002-extend-livepromptresolver-tool.todo
+- P15.M15.E1.T003: .tasks/15-new-capabilities/15-livepromptresolver-enhancement/01-framed-file-placeholder-flag/T003-pass-runtime-context-to-livepr.todo
+- P15.M15.E1.T004: .tasks/15-new-capabilities/15-livepromptresolver-enhancement/01-framed-file-placeholder-flag/T004-tests-for-livepromptresolver-e.todo

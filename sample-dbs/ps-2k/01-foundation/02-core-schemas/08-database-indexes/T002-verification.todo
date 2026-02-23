@@ -1,0 +1,34 @@
+---
+id: P1.M2.E8.T002
+title: Verify indexes are used by queries
+status: pending
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on: [P1.M2.E8.T001]
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+tags: [database, indexes, verification]
+---
+
+# Verify indexes are used by queries
+
+Run EXPLAIN ANALYZE on common queries to verify the new indexes are being used correctly.
+
+## Requirements
+- [ ] Run EXPLAIN ANALYZE on stats aggregation queries
+- [ ] Run EXPLAIN ANALYZE on message chain verification queries
+- [ ] Run EXPLAIN ANALYZE on event filtering queries
+- [ ] Run EXPLAIN ANALYZE on pending tool calls queries
+- [ ] Run EXPLAIN ANALYZE on session fork queries
+- [ ] Verify no sequential scans on indexed columns
+
+## Acceptance Criteria
+- [ ] All new indexes show up in query plans
+- [ ] No unexpected sequential scans
+- [ ] Document query patterns and their indexes
+
+## Implementation Notes
+This task requires running the migrations first and then executing test queries.

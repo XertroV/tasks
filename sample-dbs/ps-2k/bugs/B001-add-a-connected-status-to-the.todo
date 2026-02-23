@@ -1,0 +1,24 @@
+---
+id: B001
+title: Add a connected status to the web app UI to show if it's connected tto a backend
+  server or not
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:04:57.093321+00:00'
+started_at: '2026-02-15T16:04:57.093321+00:00'
+completed_at: '2026-02-15T16:06:41.818162+00:00'
+duration_minutes: 1.7454139
+---
+
+Add a connected status to the web app UI to show if it's connected tto a backend server or not
+
+## Fix Record
+
+- **Fixed in commit**: 37eab364
+- **Summary**: test
+- **Fixed at**: 2026-02-20T14:59:54Z

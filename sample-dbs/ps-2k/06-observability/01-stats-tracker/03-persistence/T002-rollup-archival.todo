@@ -1,0 +1,112 @@
+---
+id: P6.M1.E3.T002
+title: Implement rollup and archival logic
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P6.M1.E3.T001
+tags:
+- observability
+- stats
+- rollup
+- archival
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:33:20.164155+00:00'
+started_at: '2026-02-06T19:33:20.164155+00:00'
+completed_at: '2026-02-06T19:52:58.598588+00:00'
+duration_minutes: 19.6405737
+---
+
+# Implement rollup and archival logic
+
+Create periodic tasks to aggregate detailed stats into hourly/daily rollups and archive old data.
+
+## Requirements
+
+- [ ] Implement `Stats.Rollup` module:
+  - [ ] `rollup_to_hourly(date_range)` - Aggregate minute stats to hourly
+  - [ ] `rollup_to_daily(date_range)` - Aggregate hourly stats to daily
+  - [ ] Delete source records after successful rollup
+- [ ] Schedule rollup tasks:
+  - [ ] Hourly rollup every hour (via GenServer or Oban)
+  - [ ] Daily rollup every night at 2 AM
+- [ ] Implement archival:
+  - [ ] Archive stats older than 90 days to separate table
+  - [ ] Or export to S3/cold storage
+  - [ ] Scheduled monthly via Oban job
+- [ ] Add configuration for retention periods
+
+## Acceptance Criteria
+
+- [ ] Hourly rollup runs automatically
+- [ ] Daily rollup runs at scheduled time
+- [ ] Rollup math is accurate (sum tokens, costs, counts)
+- [ ] Source data deleted after rollup
+- [ ] Archival moves old data successfully
+- [ ] Configurable retention periods
+
+## Context
+
+**Key Points**:
+- Use Oban for scheduled tasks (if available) or GenServer with `:timer.send_interval/2`
+- Rollup reduces storage: 1440 minute records → 24 hourly records → 1 daily record
+- Keep hourly data for 30 days, daily data forever (or archive after 1 year)
+
+## Notes
+
+**Rollup Logic**:
+```elixir
+defmodule PagServer.Stats.Rollup do
+  alias PagServer.Stats.{StatRecord, Persister}
+  alias PagServer.Repo
+  import Ecto.Query
+
+  def rollup_to_hourly(date) do
+    # Find all stats for the hour
+    hour_start = Timex.beginning_of_hour(date)
+    hour_end = Timex.end_of_hour(date)
+
+    stats = from(s in StatRecord,
+      where: s.period_start >= ^hour_start and s.period_start < ^hour_end,
+      group_by: [s.agent_id, s.session_id, s.model]
+    )
+    |> select([s], %{
+      agent_id: s.agent_id,
+      session_id: s.session_id,
+      model: s.model,
+      period_start: ^hour_start,
+      period_end: ^hour_end,
+      tokens_in: sum(s.tokens_in),
+      tokens_out: sum(s.tokens_out),
+      total_cost: sum(s.total_cost),
+      request_count: sum(s.request_count)
+    })
+    |> Repo.all()
+
+    # Insert rolled up records
+    Repo.insert_all(StatRecord, stats)
+
+    # Delete source records
+    from(s in StatRecord,
+      where: s.period_start >= ^hour_start and s.period_start < ^hour_end
+    )
+    |> Repo.delete_all()
+  end
+end
+```
+
+**Oban Job**:
+```elixir
+defmodule PagServer.Workers.HourlyRollup do
+  use Oban.Worker, queue: :stats, max_attempts: 3
+
+  @impl Oban.Worker
+  def perform(%Oban.Job{}) do
+    yesterday = DateTime.utc_now() |> Timex.shift(hours: -1)
+    PagServer.Stats.Rollup.rollup_to_hourly(yesterday)
+    :ok
+  end
+end
+```

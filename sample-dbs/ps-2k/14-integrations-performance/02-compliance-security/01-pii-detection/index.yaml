@@ -1,0 +1,45 @@
+id: P14.M2.E1
+name: PII Detection
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-pii-regex-detection-a.todo
+  title: Implement PII regex detection (API keys, SSNs, emails)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-automatic-redactionhashing-.todo
+  title: Add automatic redaction/hashing options
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-integrate-pii-check-into-tool-e.todo
+  title: Integrate PII check into tool execution
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-audit-log-integration.todo
+  title: Add audit log integration
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

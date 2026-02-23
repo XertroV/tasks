@@ -1,0 +1,29 @@
+id: P17.M2.E2
+name: Multi-Agent Orchestration Tests
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-parent-child-agent-test.todo
+  title: Add parent-child agent test
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-agent-coordination-test.todo
+  title: Add agent coordination test
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

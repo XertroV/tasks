@@ -1,0 +1,126 @@
+---
+id: P6.M1.E1.T002
+title: Implement telemetry event handlers
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P6.M1.E1.T001
+tags:
+- observability
+- telemetry
+- events
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:12:36.627480+00:00'
+started_at: '2026-02-06T19:12:36.627480+00:00'
+completed_at: '2026-02-06T19:33:01.872966+00:00'
+duration_minutes: 20.42075795
+---
+
+# Implement telemetry event handlers
+
+Attach telemetry handlers to capture LLM and tool execution events for stats tracking.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/stats/telemetry.ex` module
+- [ ] Implement `attach/0` function to register handlers
+- [ ] Handle `[:pag, :llm, :request, :start]` event
+  - [ ] Extract agent_id, session_id, model
+  - [ ] Record request start timestamp
+- [ ] Handle `[:pag, :llm, :request, :stop]` event
+  - [ ] Calculate tokens_in, tokens_out
+  - [ ] Calculate cost from pricing
+  - [ ] Call `Stats.Tracker.record_usage/6`
+- [ ] Handle `[:pag, :tool, :execute, :stop]` event
+  - [ ] Track tool execution counts
+- [ ] Call `Stats.Telemetry.attach/0` in Application.start
+- [ ] Add error handling for missing metadata
+
+## Acceptance Criteria
+
+- [ ] Telemetry handlers attached on application start
+- [ ] LLM events correctly update stats
+- [ ] Tool events tracked
+- [ ] Missing metadata handled gracefully (logged, not crashed)
+- [ ] No memory leaks from handler state
+- [ ] Events flow: LLM call → telemetry → Stats.Tracker update
+
+## Context
+
+**Plan References**:
+- Elixir `:telemetry` library for instrumentation
+- Stats tracked per agent, session, model
+
+**Key Points**:
+- Use `:telemetry.attach_many/4` to register multiple handlers
+- Handler receives: `event_name, measurements, metadata, config`
+- Extract needed fields from metadata: `agent_id`, `session_id`, `model`
+- Calculate cost using `LLM.Pricing` module (from Phase 2)
+
+## Notes
+
+**Handler Structure**:
+```elixir
+defmodule PagServer.Stats.Telemetry do
+  require Logger
+
+  def attach do
+    :telemetry.attach_many(
+      "pag-stats-tracker",
+      [
+        [:pag, :llm, :request, :stop],
+        [:pag, :tool, :execute, :stop]
+      ],
+      &handle_event/4,
+      nil
+    )
+  end
+
+  defp handle_event([:pag, :llm, :request, :stop], measurements, metadata, _config) do
+    %{
+      tokens_in: tokens_in,
+      tokens_out: tokens_out,
+      duration: duration
+    } = measurements
+
+    %{
+      agent_id: agent_id,
+      session_id: session_id,
+      model: model
+    } = metadata
+
+    cost = calculate_cost(model, tokens_in, tokens_out)
+
+    PagServer.Stats.Tracker.record_usage(
+      agent_id,
+      session_id,
+      model,
+      tokens_in,
+      tokens_out,
+      cost
+    )
+  end
+end
+```
+
+Ensure handlers are lightweight (no blocking operations).
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-06 19:12 UTC
+**Sibling tasks**: P6.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E1.T002 → P6.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E1.T002: .tasks/06-observability/01-stats-tracker/01-tracker-genserver/T002-event-handlers.todo
+- P6.M1.E1.T003: .tasks/06-observability/01-stats-tracker/01-tracker-genserver/T003-tests.todo

@@ -1,0 +1,33 @@
+---
+id: B035
+title: fix Agent.State tests calling removed helper functions
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- agents
+- tests
+- regression
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:01:47.278569+00:00'
+started_at: '2026-02-15T18:01:47.278569+00:00'
+completed_at: '2026-02-15T18:02:13.432826+00:00'
+duration_minutes: 0.43590413333333333
+---
+
+# fix Agent.State tests calling removed helper functions
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe failures in `PagServer.Agents.StateTest` for undefined `Agent.context_state/0` and `Agent.queue_state/0`.
+
+## Expected Behavior
+
+State tests should validate empty context/queue through supported public API functions and pass consistently.
+
+## Actual Behavior
+
+Two tests call removed or non-existent helper functions, causing `UndefinedFunctionError` and full-suite failures.

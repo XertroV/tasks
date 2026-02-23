@@ -1,0 +1,49 @@
+id: P8.M6.E1
+name: Client Setup
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+description: Polyjuice client, homeserver connection, E2EE
+tasks:
+- id: T001
+  title: Add Polyjuice dependency
+  file: T001-polyjuice-dependency.todo
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  status: pending
+  depends_on: []
+  tags:
+  - dependency
+  - setup
+- id: T002
+  title: Configure homeserver connection
+  file: T002-homeserver-connection.todo
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  status: pending
+  depends_on:
+  - T001
+  tags:
+  - configuration
+  - matrix
+- id: T003
+  title: Set up E2EE support
+  file: T003-e2ee-support.todo
+  estimate_hours: 1
+  complexity: high
+  priority: medium
+  status: pending
+  depends_on:
+  - T002
+  tags:
+  - security
+  - encryption
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

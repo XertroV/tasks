@@ -1,0 +1,115 @@
+---
+id: P7.M3.E4.T003
+title: Add permission checks to remaining tools
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P7.M3.E3.T001
+tags:
+- security
+- permissions
+- json
+- text
+- time
+- image
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:36:53.345832'
+started_at: '2026-02-06T17:36:53.345832'
+completed_at: '2026-02-06T18:05:41.748225+00:00'
+duration_minutes: 28.806706383333335
+---
+
+# Add permission checks to remaining tools
+
+After network and git tools are secured, 15 tools still lack permission checks: JSON processing
+(json_parse, json_query, json_transform), text processing (regex_search, regex_replace,
+text_format, text_diff), time/date (get_time, parse_datetime, format_datetime), image operations
+(image_info, image_resize), and archive operations (archive_create, archive_extract). Additionally,
+agent communication tools (send_message, spawn_agent) should be evaluated.
+
+This task adds appropriate permission checks or explicitly documents tools that are safe to run
+without permissions.
+
+## Requirements
+
+- [ ] Categorize tools by risk level and define appropriate permission atoms:
+  - **Safe (no permission needed)**: Pure computation tools that cannot cause side effects:
+    - `json_parse`, `json_query`, `json_transform` - in-memory data manipulation
+    - `regex_search`, `regex_replace`, `text_format`, `text_diff` - in-memory text processing
+    - `get_time`, `parse_datetime`, `format_datetime` - time calculations
+  - **Requires `:file_read` permission**:
+    - `image_info` - reads files from filesystem
+  - **Requires `:file_write` permission**:
+    - `image_resize` - writes files to filesystem
+    - `archive_create` - writes archive files
+    - `archive_extract` - writes extracted files
+  - **Requires `:agent_spawn` permission**:
+    - `spawn_agent` - creates new agent processes
+  - **Requires `:agent_communicate` permission**:
+    - `send_message` - sends messages to other agents
+- [ ] For safe tools, add a comment at the top of `execute/2` documenting that no permission is required and why:
+  ```elixir
+  # No permission check required: pure in-memory computation with no side effects
+  ```
+- [ ] For tools requiring permissions, add the standard permission check pattern
+- [ ] Add permission documentation to each tool's `@moduledoc`
+- [ ] Create a central reference document or module attribute listing all tools and their required permissions
+- [ ] Update tests for tools that gain permission checks
+
+## Acceptance Criteria
+
+- [ ] All 34 registered tools have documented permission requirements
+- [ ] Tools with file system access (image_info, image_resize, archive_create, archive_extract) enforce permission checks
+- [ ] Agent communication tools enforce permission checks
+- [ ] Pure computation tools explicitly document they need no permissions
+- [ ] A central reference exists mapping tool names to required permissions
+- [ ] All existing tests pass with updated permission contexts
+
+## Context
+
+**Source**: Architecture audit - tool system security gap analysis (2026-02-06)
+**Severity**: HIGH - most unpermissioned tools are low-risk (pure computation) but file/agent tools need protection
+**Depends on**: P7.M3.E3.T001 (wire permissions into tool context) for end-to-end functionality
+
+**Related tasks**:
+- P7.M3.E4.T001 (network tools permissions)
+- P7.M3.E4.T002 (git tools permissions)
+
+## Notes
+
+Recommended permission atoms for the full tool system:
+```elixir
+# Defined in a central module like PagServer.Security.Permissions
+@permissions [
+  :shell_exec,       # execute_shell
+  :file_read,        # read_file, list_directory, image_info
+  :file_write,       # write_file, image_resize, archive_create, archive_extract
+  :network,          # http_get, http_post, http_request, web_search, dns_lookup, ping, port_check
+  :git_read,         # git_status, git_diff, git_log
+  :git_write,        # git_commit, git_clone
+  :agent_spawn,      # spawn_agent
+  :agent_communicate # send_message
+  # json_*, regex_*, text_*, time_* - no permission needed (pure computation)
+]
+```
+
+**Affected files**:
+- `lib/pag_server/tools/builtin/json_parse.ex`
+- `lib/pag_server/tools/builtin/json_query.ex`
+- `lib/pag_server/tools/builtin/json_transform.ex`
+- `lib/pag_server/tools/builtin/regex_search.ex`
+- `lib/pag_server/tools/builtin/regex_replace.ex`
+- `lib/pag_server/tools/builtin/text_format.ex`
+- `lib/pag_server/tools/builtin/text_diff.ex`
+- `lib/pag_server/tools/builtin/get_time.ex`
+- `lib/pag_server/tools/builtin/parse_datetime.ex`
+- `lib/pag_server/tools/builtin/format_datetime.ex`
+- `lib/pag_server/tools/builtin/image_info.ex`
+- `lib/pag_server/tools/builtin/image_resize.ex`
+- `lib/pag_server/tools/builtin/archive_create.ex` (if exists)
+- `lib/pag_server/tools/builtin/archive_extract.ex`
+- `lib/pag_server/tools/builtin/send_message.ex` (if exists)
+- `lib/pag_server/tools/builtin/spawn_agent.ex` (if exists)

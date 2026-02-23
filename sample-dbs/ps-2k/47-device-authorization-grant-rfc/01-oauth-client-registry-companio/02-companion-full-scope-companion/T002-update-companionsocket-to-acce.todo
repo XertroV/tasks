@@ -1,0 +1,17 @@
+---
+id: P47.M1.E2.T002
+title: Update CompanionSocket to accept companion:full scope (user-scoped)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P47.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:05:25.802797+00:00'
+started_at: '2026-02-19T21:05:25.802797+00:00'
+completed_at: '2026-02-19T21:09:01.153337+00:00'
+duration_minutes: 3.5891754833333334
+---
+In lib/pag_server_web/sockets/companion_socket.ex: add 'companion:full' to accepted scopes. For companion:full keys, load user's workspace memberships from DB to determine accessible workspaces (no workspace_id param required, or accept it as an optional hint). Update connect/3 and connect_info accordingly. Update CompanionChannel to handle user-scoped auth — resolve accessible workspace IDs from the user's memberships. Update tests in test/pag_server/companions/.

@@ -1,0 +1,46 @@
+---
+id: P27.M2.E1.T001
+title: Update agent spawn logic to accept session_id or create ephemeral session
+status: done
+estimate_hours: 5.0
+complexity: medium
+priority: high
+depends_on:
+- P27.M1.E1.T001
+tags:
+- agent
+- session
+- ephemeral
+- spawn
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:28.274474+00:00'
+started_at: '2026-02-18T18:34:28.274474+00:00'
+completed_at: '2026-02-18T18:44:47.531422+00:00'
+duration_minutes: 10.320948983333333
+---
+
+# Update agent spawn logic to accept session_id or create ephemeral session
+
+Modify the agent spawn path so callers can either target an existing session by
+providing a `session_id`, or omit it to automatically create a transient ephemeral
+session scoped to the agent's lifetime.
+
+## Requirements
+
+- Update `Agents.spawn_agent/1` (or equivalent entry point) to accept an optional
+  `session_id` parameter
+- If `session_id` is `nil` or omitted, call `Sessions.create_session(%{ephemeral: true})`
+  to mint a new ephemeral session before starting the agent
+- Pass the resolved `session_id` (provided or newly created) to the agent GenServer
+- Ensure the agent stores its `session_id` and exposes it in agent state/inspect
+- Return the `session_id` alongside the agent pid/id in the spawn response so callers
+  know which session to poll
+
+## Acceptance Criteria
+
+- [ ] `spawn_agent` accepts optional `session_id` in its options map
+- [ ] When `session_id` is absent, an ephemeral session is created automatically
+- [ ] The agent's state includes the resolved `session_id`
+- [ ] Spawn response includes `session_id` (whether provided or auto-created)
+- [ ] Providing a valid existing `session_id` targets that session (no new session created)
+- [ ] Unit tests for both code paths (with and without session_id)

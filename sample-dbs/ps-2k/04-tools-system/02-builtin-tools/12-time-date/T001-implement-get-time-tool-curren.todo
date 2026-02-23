@@ -1,0 +1,168 @@
+---
+id: P4.M2.E12.T001
+title: Implement get_time tool (current time, timezone)
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tools
+- time
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:42:12.347669'
+started_at: '2026-02-06T02:42:12.347669'
+completed_at: '2026-02-06T02:53:29.018007'
+duration_minutes: 11.277838800000001
+---
+
+# Implement get_time tool (current time, timezone)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/get_time.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use DateTime module for time operations
+- [ ] Support timezone conversion using Timex
+- [ ] Return current time in multiple formats (ISO8601, Unix timestamp, custom)
+- [ ] Support both UTC and local timezones
+- [ ] Include timezone information in response
+
+## Acceptance Criteria
+
+- [ ] Returns current time by default (UTC)
+- [ ] Accepts optional timezone parameter (IANA timezone names)
+- [ ] Accepts optional format parameter (iso8601, unix, rfc3339, custom)
+- [ ] Returns structured response with ISO8601, Unix timestamp, human-readable
+- [ ] Includes timezone offset and name
+- [ ] Handles errors: invalid timezone, invalid format
+- [ ] Test coverage: UTC time, timezone conversion, different formats, invalid timezone
+- [ ] No security concerns (read-only operation)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use Timex for robust timezone handling
+- Always include timezone info to avoid ambiguity
+- Support common formats for interoperability
+- No external API calls needed
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.GetTime do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "get_time"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "get_time",
+      description: "Get current time in specified timezone and format",
+      parameters: %{
+        type: "object",
+        properties: %{
+          timezone: %{
+            type: "string",
+            description: "IANA timezone name (default: UTC, e.g., 'America/New_York')"
+          },
+          format: %{
+            type: "string",
+            enum: ["iso8601", "unix", "rfc3339", "human"],
+            description: "Output format (default: iso8601)"
+          }
+        }
+      }
+    }
+  end
+
+  @impl true
+  def execute(args, _context) do
+    timezone = Map.get(args, "timezone", "UTC")
+    format = Map.get(args, "format", "iso8601")
+    
+    with {:ok, now} <- get_current_time(timezone),
+         {:ok, formatted} <- format_time(now, format) do
+      {:ok, %{
+        formatted: formatted,
+        iso8601: DateTime.to_iso8601(now),
+        unix: DateTime.to_unix(now),
+        timezone: timezone,
+        offset: get_offset(now),
+        human: format_human(now)
+      }}
+    else
+      {:error, reason} -> {:error, "Get time failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp get_current_time("UTC") do
+    {:ok, DateTime.utc_now()}
+  end
+  
+  defp get_current_time(timezone) do
+    case Timex.now(timezone) do
+      %DateTime{} = dt -> {:ok, dt}
+      {:error, reason} -> {:error, "Invalid timezone: #{reason}"}
+      _ -> {:error, "Failed to get time for timezone: #{timezone}"}
+    end
+  rescue
+    _ -> {:error, "Invalid timezone: #{timezone}"}
+  end
+
+  defp format_time(dt, "iso8601"), do: {:ok, DateTime.to_iso8601(dt)}
+  defp format_time(dt, "unix"), do: {:ok, DateTime.to_unix(dt)}
+  defp format_time(dt, "rfc3339"), do: {:ok, DateTime.to_iso8601(dt)}
+  defp format_time(dt, "human"), do: {:ok, format_human(dt)}
+  defp format_time(_dt, format), do: {:error, "Unsupported format: #{format}"}
+
+  defp format_human(dt) do
+    Timex.format!(dt, "{WDfull}, {Mfull} {D}, {YYYY} at {h12}:{m}:{s} {AM}")
+  end
+
+  defp get_offset(dt) do
+    case dt.utc_offset + dt.std_offset do
+      0 -> "+00:00"
+      offset_seconds ->
+        hours = div(offset_seconds, 3600)
+        minutes = rem(abs(offset_seconds), 3600) |> div(60)
+        sign = if hours >= 0, do: "+", else: "-"
+        "#{sign}#{String.pad_leading(to_string(abs(hours)), 2, "0")}:#{String.pad_leading(to_string(minutes), 2, "0")}"
+    end
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "timezone": "America/New_York",
+  "format": "human"
+}
+```
+
+Example response:
+```json
+{
+  "formatted": "Thursday, February 6, 2026 at 10:30:45 AM",
+  "iso8601": "2026-02-06T10:30:45-05:00",
+  "unix": 1770401445,
+  "timezone": "America/New_York",
+  "offset": "-05:00",
+  "human": "Thursday, February 6, 2026 at 10:30:45 AM"
+}
+```
+
+Security considerations:
+- No security risks (read-only operation)
+- Validate timezone names against Timex database
+- No user input affects system time

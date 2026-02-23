@@ -1,0 +1,326 @@
+---
+id: P3.M5.E3.T001
+title: Define permission/capability schema
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- auth
+- permissions
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:42:14.618568+00:00'
+started_at: '2026-02-06T18:42:14.618568+00:00'
+completed_at: '2026-02-06T18:58:45.411732+00:00'
+duration_minutes: 16.51321925
+---
+
+# Define permission/capability schema
+
+
+
+## Requirements
+
+- [ ] Define permission atom constants in `PAGServer.Auth.Permissions` module
+- [ ] Document standard permission categories (agent, session, message, tool, system)
+- [ ] Define capability schema structure for API keys and agents
+- [ ] Create validation functions for capability maps
+- [ ] Add helper functions to check if a capability set includes specific permissions
+- [ ] Document capability inheritance patterns (agent -> session -> operation)
+- [ ] Add examples of common capability configurations
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/auth/permissions.ex`
+- [ ] Permission atoms defined for all resource types:
+  - [ ] Agent operations: `:read_agent`, `:create_agent`, `:update_agent`, `:delete_agent`, `:archive_agent`
+  - [ ] Session operations: `:read_session`, `:create_session`, `:update_session`, `:delete_session`, `:fork_session`
+  - [ ] Message operations: `:read_messages`, `:send_messages`, `:verify_chain`
+  - [ ] Tool execution: `:execute_tools`, `:file_read`, `:file_write`, `:network_access`, `:bash_exec`
+  - [ ] System operations: `:manage_api_keys`, `:view_metrics`, `:admin_access`
+- [ ] Capability schema documented with examples:
+  ```elixir
+  %{
+    "permissions" => [:read_agent, :create_session, :execute_tools],
+    "tool_access" => ["read_file", "write_file"],
+    "resource_scope" => "project:my-project",
+    "constraints" => %{
+      "max_tokens" => 100_000,
+      "rate_limit" => 100
+    }
+  }
+  ```
+- [ ] Validation functions implemented:
+  - [ ] `validate_capability_map/1` - validates structure and permission atoms
+  - [ ] `has_permission?/2` - checks if capability set includes a permission
+  - [ ] `has_all_permissions?/2` - checks if capability set includes all required permissions
+  - [ ] `can_access_resource?/3` - checks resource scope permissions
+- [ ] Helper functions for common checks:
+  - [ ] `can_execute_tool?/2` - checks tool execution permission
+  - [ ] `can_access_agent?/2` - checks agent access by ID/project
+  - [ ] `can_access_session?/2` - checks session access
+- [ ] Permission hierarchy documented (e.g., `:admin_access` implies all other permissions)
+- [ ] Tests cover validation and permission checking logic
+- [ ] Module documentation includes usage examples
+- [ ] All functions have proper typespecs
+
+## Context
+
+This task defines the foundational permission model for PAG-Server. The system uses a capability-based authorization model where:
+
+1. **API Keys** have capabilities that define what operations they can perform
+2. **Agents** have capabilities that restrict which tools they can execute
+3. **Permissions** are checked at multiple layers: API boundary, agent operations, tool execution
+
+The capability model supports:
+- Fine-grained permission control (per-resource type)
+- Tool-level restrictions (specific tools vs broad categories)
+- Resource scoping (project-level, agent-level isolation)
+- Operational constraints (rate limits, token budgets)
+
+## Implementation Notes
+
+### Module Structure
+
+```elixir
+defmodule PAGServer.Auth.Permissions do
+  @moduledoc """
+  Permission and capability definitions for PAG-Server authorization.
+  
+  ## Permission Model
+  
+  PAG-Server uses capability-based authorization where each API key and agent
+  has a set of permissions defining allowed operations.
+  
+  ### Permission Categories
+  
+  - **Agent Operations**: CRUD operations on agent resources
+  - **Session Operations**: Session lifecycle and forking
+  - **Message Operations**: Reading and sending messages
+  - **Tool Execution**: Which tools can be invoked
+  - **System Operations**: Administrative functions
+  
+  ### Capability Structure
+  
+  Capabilities are stored as maps with this structure:
+  
+      %{
+        "permissions" => [:read_agent, :create_session],
+        "tool_access" => ["read_file", "write_file"],
+        "resource_scope" => "project:my-project",
+        "constraints" => %{"max_tokens" => 100_000}
+      }
+  
+  ## Examples
+  
+      # Check if capability allows agent creation
+      iex> capabilities = %{"permissions" => [:read_agent, :create_agent]}
+      iex> Permissions.has_permission?(capabilities, :create_agent)
+      true
+      
+      # Check tool access
+      iex> capabilities = %{"tool_access" => ["read_file", "write_file"]}
+      iex> Permissions.can_execute_tool?(capabilities, "bash")
+      false
+  """
+
+  # Permission atom definitions
+  @agent_permissions [:read_agent, :create_agent, :update_agent, :delete_agent, :archive_agent]
+  @session_permissions [:read_session, :create_session, :update_session, :delete_session, :fork_session]
+  @message_permissions [:read_messages, :send_messages, :verify_chain]
+  @tool_permissions [:execute_tools, :file_read, :file_write, :network_access, :bash_exec]
+  @system_permissions [:manage_api_keys, :view_metrics, :admin_access]
+  
+  @all_permissions @agent_permissions ++ @session_permissions ++ 
+                   @message_permissions ++ @tool_permissions ++ @system_permissions
+
+  @doc """
+  Returns all valid permission atoms.
+  """
+  def all_permissions, do: @all_permissions
+  
+  @doc """
+  Returns permissions by category.
+  """
+  def permissions_by_category(category) do
+    case category do
+      :agent -> @agent_permissions
+      :session -> @session_permissions
+      :message -> @message_permissions
+      :tool -> @tool_permissions
+      :system -> @system_permissions
+      _ -> []
+    end
+  end
+
+  @doc """
+  Validates a capability map structure.
+  
+  Returns {:ok, capability_map} if valid, {:error, reason} otherwise.
+  """
+  @spec validate_capability_map(map()) :: {:ok, map()} | {:error, String.t()}
+  def validate_capability_map(capabilities) when is_map(capabilities) do
+    with :ok <- validate_permissions(capabilities["permissions"]),
+         :ok <- validate_tool_access(capabilities["tool_access"]),
+         :ok <- validate_resource_scope(capabilities["resource_scope"]),
+         :ok <- validate_constraints(capabilities["constraints"]) do
+      {:ok, capabilities}
+    end
+  end
+  def validate_capability_map(_), do: {:error, "capabilities must be a map"}
+
+  @doc """
+  Checks if a capability set includes a specific permission.
+  """
+  @spec has_permission?(map(), atom()) :: boolean()
+  def has_permission?(%{"permissions" => permissions}, permission) 
+      when is_list(permissions) and is_atom(permission) do
+    # Check for admin access (grants all permissions)
+    :admin_access in permissions or permission in permissions
+  end
+  def has_permission?(_, _), do: false
+
+  @doc """
+  Checks if a capability set includes all required permissions.
+  """
+  @spec has_all_permissions?(map(), [atom()]) :: boolean()
+  def has_all_permissions?(capabilities, required_permissions) 
+      when is_list(required_permissions) do
+    Enum.all?(required_permissions, &has_permission?(capabilities, &1))
+  end
+
+  @doc """
+  Checks if capabilities allow access to a specific resource.
+  
+  Resource scopes can be:
+  - "project:project-name" - access to specific project
+  - "agent:agent-id" - access to specific agent
+  - "*" - access to all resources (admin)
+  """
+  @spec can_access_resource?(map(), String.t(), term()) :: boolean()
+  def can_access_resource?(capabilities, resource_type, resource_id)
+
+  @doc """
+  Checks if capabilities allow executing a specific tool.
+  """
+  @spec can_execute_tool?(map(), String.t()) :: boolean()
+  def can_execute_tool?(%{"tool_access" => tools}, tool_name) 
+      when is_list(tools) do
+    "*" in tools or tool_name in tools
+  end
+  def can_execute_tool?(capabilities, _tool_name) do
+    # Fallback: check if execute_tools permission exists
+    has_permission?(capabilities, :execute_tools)
+  end
+
+  @doc """
+  Checks if capabilities allow accessing a specific agent.
+  """
+  @spec can_access_agent?(map(), String.t()) :: boolean()
+  def can_access_agent?(capabilities, agent_id)
+
+  @doc """
+  Checks if capabilities allow accessing a specific session.
+  """
+  @spec can_access_session?(map(), String.t()) :: boolean()
+  def can_access_session?(capabilities, session_id)
+  
+  # Private validation functions
+  defp validate_permissions(nil), do: :ok
+  defp validate_permissions(permissions) when is_list(permissions) do
+    invalid = Enum.reject(permissions, &(&1 in @all_permissions))
+    if Enum.empty?(invalid) do
+      :ok
+    else
+      {:error, "invalid permissions: #{inspect(invalid)}"}
+    end
+  end
+  defp validate_permissions(_), do: {:error, "permissions must be a list"}
+  
+  defp validate_tool_access(nil), do: :ok
+  defp validate_tool_access(tools) when is_list(tools), do: :ok
+  defp validate_tool_access(_), do: {:error, "tool_access must be a list"}
+  
+  defp validate_resource_scope(nil), do: :ok
+  defp validate_resource_scope(scope) when is_binary(scope), do: :ok
+  defp validate_resource_scope(_), do: {:error, "resource_scope must be a string"}
+  
+  defp validate_constraints(nil), do: :ok
+  defp validate_constraints(constraints) when is_map(constraints), do: :ok
+  defp validate_constraints(_), do: {:error, "constraints must be a map"}
+end
+```
+
+### Testing Plan
+
+Create `test/pag_server/auth/permissions_test.exs`:
+
+```elixir
+defmodule PAGServer.Auth.PermissionsTest do
+  use ExUnit.Case, async: true
+  
+  alias PAGServer.Auth.Permissions
+  
+  describe "validate_capability_map/1" do
+    test "accepts valid capability map"
+    test "rejects invalid permission atoms"
+    test "accepts nil optional fields"
+    test "validates tool_access is list"
+    test "validates resource_scope is string"
+  end
+  
+  describe "has_permission?/2" do
+    test "returns true when permission exists"
+    test "returns false when permission missing"
+    test "admin_access grants all permissions"
+    test "handles empty permissions list"
+  end
+  
+  describe "has_all_permissions?/2" do
+    test "returns true when all permissions present"
+    test "returns false when any permission missing"
+  end
+  
+  describe "can_execute_tool?/2" do
+    test "allows tool in tool_access list"
+    test "wildcard grants all tools"
+    test "falls back to execute_tools permission"
+    test "denies unlisted tool"
+  end
+  
+  describe "can_access_agent?/2" do
+    test "allows access with matching project scope"
+    test "allows access with wildcard scope"
+    test "denies access with mismatched scope"
+  end
+end
+```
+
+## Notes
+
+- Permission model follows principle of least privilege
+- Admin permissions should be granted sparingly (only to system operators)
+- Resource scoping enables multi-tenancy and project isolation
+- Tool access list allows fine-grained control over agent capabilities
+- Consider adding permission presets for common roles (e.g., `admin_capabilities()`, `readonly_capabilities()`)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M5.E3)
+**Agent**: cli-user
+**Date**: 2026-02-06 18:42 UTC
+**Sibling tasks**: P3.M5.E3.T002, P3.M5.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M5.E3.T001 → P3.M5.E3.T002 → P3.M5.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M5.E3.T001: .tasks/03-streaming-realtime/05-authentication/03-authorization-middleware/T001-define-permission-capability-s.todo
+- P3.M5.E3.T002: .tasks/03-streaming-realtime/05-authentication/03-authorization-middleware/T002-implement-authorization-check.todo
+- P3.M5.E3.T003: .tasks/03-streaming-realtime/05-authentication/03-authorization-middleware/T003-add-resource-level-access-cont.todo

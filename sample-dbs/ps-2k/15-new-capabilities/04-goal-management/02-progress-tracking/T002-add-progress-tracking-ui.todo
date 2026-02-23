@@ -1,0 +1,37 @@
+---
+id: P15.M4.E2.T002
+title: Add progress tracking UI
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M4.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T14:54:03.051751+00:00'
+started_at: '2026-02-13T14:54:03.051751+00:00'
+completed_at: '2026-02-13T15:32:25.789175+00:00'
+duration_minutes: 38.37895686666666
+---
+
+# Add progress tracking UI
+
+## Description
+Add UI components for visualizing goal progress. Show goal hierarchy, completion status, estimated vs actual effort, and blocking issues.
+
+## Acceptance Criteria
+- [ ] Add goal list view to agent dashboard
+- [ ] Implement hierarchical goal tree visualization
+- [ ] Show progress bars for goals with sub-goals
+- [ ] Display blocked goals with blocking reason
+- [ ] Add goal detail view with execution history
+- [ ] Support goal status filtering and search
+- [ ] Add real-time progress updates via PubSub
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server_web/live/agent_dashboard.ex`, `lib/pag_server/schema/goal.ex`, `lib/pag_server/cluster/pub_sub.ex`
+- Part of epic: Progress Tracking
+- Integrate with P15.M2 dashboard

@@ -1,0 +1,61 @@
+---
+id: P10.M4.E1.T002
+title: Build CircleCI webhook handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P10.M4.E1.T001
+tags:
+- webhooks
+- circleci
+- event-handling
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:46:47.411817+00:00'
+started_at: '2026-02-12T03:46:47.411817+00:00'
+completed_at: '2026-02-12T04:01:59.809009+00:00'
+duration_minutes: 15.206619533333333
+---
+
+# Build CircleCI webhook handler
+
+Implement webhook receiver and event processor for CircleCI pipeline and workflow events.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/circleci/webhook_handler.ex` module
+- [ ] Define webhook event parsing for CircleCI events:
+  - [ ] Workflow started events
+  - [ ] Job completed events
+  - [ ] Pipeline status changed events
+- [ ] Implement event signature verification (HMAC-SHA256)
+- [ ] Route events to appropriate handler functions
+- [ ] Implement idempotent event processing using message hash deduplication
+- [ ] Add comprehensive logging for webhook lifecycle
+- [ ] Write tests for valid and invalid webhook signatures
+
+## Acceptance Criteria
+
+- [ ] Webhook receiver validates CircleCI request signatures correctly
+- [ ] Event parsing handles all documented CircleCI event types
+- [ ] Duplicate webhook events are deduplicated (same message hash = skip)
+- [ ] Invalid signatures are rejected with 403 response
+- [ ] Webhook events trigger appropriate downstream handlers
+- [ ] All events logged with webhook ID, workflow ID, and status
+- [ ] `mix test` passes for all webhook tests
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Webhook Security**: CircleCI signs webhooks with HMAC-SHA256 using shared secret stored in config.
+
+**Event Processing**: Webhooks are parsed and fed into event sourcing system via `Events` module. Each unique workflow gets its own stream.
+
+## Notes
+
+CircleCI webhook payload structure:
+- `id`: webhook ID (for deduplication)
+- `type`: event type (workflow-completed, job-completed)
+- `workflow`: workflow info with status
+- `pipeline`: pipeline info with trigger details

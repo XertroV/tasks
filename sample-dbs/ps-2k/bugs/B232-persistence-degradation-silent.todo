@@ -1,0 +1,18 @@
+---
+id: B232
+title: Persistence degradation silent to caller
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- agent
+- observability
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.098195+00:00'
+started_at: '2026-02-23T07:29:02.098195+00:00'
+completed_at: '2026-02-23T07:43:45.715497+00:00'
+duration_minutes: 14.7269549
+---
+agent_server.ex:2824-2848 - DB persistence failure logs error but continues in-memory; caller never learns

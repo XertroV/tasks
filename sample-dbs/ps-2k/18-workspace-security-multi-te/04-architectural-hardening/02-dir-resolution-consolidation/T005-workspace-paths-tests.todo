@@ -1,0 +1,48 @@
+---
+id: P18.M4.E2.T005
+title: Add tests for WorkspacePaths edge cases
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P18.M4.E2.T004
+tags:
+- workspace
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:56:19.993011+00:00'
+started_at: '2026-02-17T20:56:19.993011+00:00'
+completed_at: '2026-02-17T21:15:18.018767+00:00'
+duration_minutes: 18.96709578333333
+---
+
+# Add tests for WorkspacePaths edge cases
+
+## Description
+
+Tests for the `WorkspacePaths` module covering resolution logic, traversal protection, and configuration.
+
+## Requirements
+
+- [ ] Test root/0 with WORKSPACE_DIR env var set
+- [ ] Test root/0 with config value
+- [ ] Test root/0 with fallback default
+- [ ] Test workspace_dir/1 with workspace struct
+- [ ] Test workspace_dir/1 with nil workspace_dir (fallback)
+- [ ] Test resolve_file/2 normal paths
+- [ ] Test resolve_file/2 path traversal attempts (.. sequences)
+- [ ] Test resolve_file/2 absolute path attempts
+- [ ] Test resolve_file/2 null byte injection
+- [ ] Test ensure_dir!/1 creates directory
+
+## Acceptance Criteria
+
+- [ ] All edge cases covered
+- [ ] Path traversal attempts raise ArgumentError
+- [ ] Tests pass with async: true
+- [ ] Tests clean up env vars in on_exit callback
+
+## Context
+
+**Files affected**: `test/pag_server/workspace_paths_test.exs`

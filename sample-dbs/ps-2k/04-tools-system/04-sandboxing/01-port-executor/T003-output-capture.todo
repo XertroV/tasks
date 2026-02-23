@@ -1,0 +1,58 @@
+---
+id: P4.M4.E1.T003
+title: Capture stdout/stderr
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P4.M4.E1.T001
+tags:
+- sandboxing
+- output
+- capture
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:47:56.008153'
+started_at: '2026-02-05T11:47:56.008153'
+completed_at: '2026-02-05T11:53:51.843799'
+duration_minutes: 5.930593900000001
+---
+
+# Capture stdout/stderr
+
+Implement robust stdout/stderr capture and streaming.
+
+## Requirements
+
+- [ ] Capture stdout and stderr separately
+- [ ] Stream output for long-running commands
+- [ ] Handle large output (>1MB)
+- [ ] Support binary and text output
+- [ ] Preserve output ordering
+
+## Acceptance Criteria
+
+- [ ] Captures stdout/stderr separately
+- [ ] Handles large output without memory issues
+- [ ] Streams output in chunks
+- [ ] Test with binary and text output
+- [ ] Preserves line endings
+
+## Context
+
+**Plan References**:
+- Architecture sandboxing requirements
+
+## Notes
+
+Separate stderr capture:
+```elixir
+port = Port.open({:spawn_executable, cmd}, [
+  :binary,
+  :exit_status,
+  {:line, 1024},  # Line buffering
+  :use_stdio,     # Separate stderr
+  :stderr_to_stdout,  # Or handle separately
+  args: args
+])
+```

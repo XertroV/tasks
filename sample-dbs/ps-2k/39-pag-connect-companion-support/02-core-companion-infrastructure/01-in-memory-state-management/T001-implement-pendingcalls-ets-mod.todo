@@ -1,0 +1,38 @@
+---
+id: P39.M2.E1.T001
+title: Implement PendingCalls ETS module
+status: done
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on: []
+tags:
+- companion
+- infrastructure
+- ets
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:28:22.454148+00:00'
+started_at: '2026-02-19T11:28:22.454148+00:00'
+completed_at: '2026-02-19T11:31:57.744901+00:00'
+duration_minutes: 3.5881790666666666
+---
+Create the PendingCalls ETS-backed correlation table for companion tool call request/response pairs.
+
+## New file
+lib/pag_server/companions/pending_calls.ex
+
+## Design (from companion-support plan §3)
+- GenServer that owns a named ETS table :companion_pending_calls
+- Public API: register/2, resolve/2, reject/2
+- register(call_id, caller_pid) — inserts {call_id, caller_pid}
+- resolve(call_id, result) — takes entry, sends {:companion_tool_result, call_id, result} to caller
+- reject(call_id, error_msg) — takes entry, sends {:companion_tool_error, call_id, error_msg} to caller
+- Both resolve/reject return {:error, :not_found} if call_id not in table
+- ETS config: :named_table, :set, :public, read_concurrency: true
+
+## Acceptance criteria
+- [ ] Module compiles with no warnings
+- [ ] register + resolve delivers message to caller process
+- [ ] register + reject delivers error message to caller process
+- [ ] Resolving unknown call_id returns {:error, :not_found}
+- [ ] Each call_id can only be resolved once (ets.take semantics)

@@ -1,0 +1,23 @@
+---
+id: P36.M1.E3.T002
+title: Tests for SessionStore boot query functions
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P36.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:08:27.726692+00:00'
+started_at: '2026-02-19T03:08:27.726692+00:00'
+completed_at: '2026-02-19T03:08:29.976196+00:00'
+duration_minutes: 0.037491533333333334
+---
+## Acceptance Criteria
+- DataCase tests for query_auto_start_candidates
+- Fixture sessions covering: interrupted discrete, explicit_flag, recent_continuous, and :skip cases
+- Verify sessions in completed/archived status are excluded
+- Verify sessions outside recency window are excluded
+- Test update_startup_duration updates the field correctly
+- Tests are async: true

@@ -1,0 +1,81 @@
+---
+id: I038
+title: All agents should ALWAYS be started in a docker container. Their filesystem
+  should include a common mounted area (for whole workspace), a private mounted area
+  (for just them). The private area might be shared with other sibling agents if the
+  configuration option to enable this is on. (default on when when the agent uses
+  ephemeral sessions, default off when agent uses a persistent session).
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: All agents should ALWAYS be started in a docker container. Their filesystem should include a common mounted area (for whole workspace), a private mounted area (for just them). The private area might be shared with other sibling agents if the configuration option to enable this is on. (default on when when the agent uses ephemeral sessions, default off when agent uses a persistent session).
+
+## Original Idea
+
+All agents should ALWAYS be started in a docker container. Their filesystem should include a common mounted area (for whole workspace), a private mounted area (for just them). The private area might be shared with other sibling agents if the configuration option to enable this is on. (default on when when the agent uses ephemeral sessions, default off when agent uses a persistent session).
+
+## Planning Task (Equivalent of /plan-task)
+
+- [x] Decomposed into actionable work items
+- [x] Confirmed placement in `.tasks` hierarchy under P21
+
+## Ingest Plan Into .tasks
+
+- [x] Created implementation items with `backlog add`
+- [x] Created phase, milestone, and epic hierarchy
+
+## Created Work Items
+
+### Phase: P21 - Agent Containerization
+**Milestone: P21.M1 - Mandatory Agent Containerization**
+**Epic: P21.M1.E1 - Container Infrastructure & Agent Integration**
+
+**Foundation Tasks:**
+- P21.M1.E1.T001 - Define ContainerConfig struct and types (2h)
+- P21.M1.E1.T002 - Define IsolationProfile module with preset profiles (2h)
+- P21.M1.E1.T003 - Implement ContainerSupervisor (DynamicSupervisor) (2h)
+- P21.M1.E1.T004 - Implement ContainerRegistry for container lookup (2h)
+- P21.M1.E1.T005 - Implement ContainerManager GenServer for lifecycle (4h)
+
+**Volume Management Tasks:**
+- P21.M1.E1.T006 - Implement VolumeManager for mount path computation (3h)
+- P21.M1.E1.T007 - Implement workspace volume mounting logic (2h)
+- P21.M1.E1.T008 - Implement private volume mounting with agent isolation (2h)
+- P21.M1.E1.T009 - Implement shared volume for sibling agent coordination (2h)
+
+**Agent Integration Tasks:**
+- P21.M1.E1.T010 - Add container initialization to AgentServer lifecycle (4h)
+- P21.M1.E1.T011 - Add container cleanup to AgentServer terminate (2h)
+- P21.M1.E1.T012 - Implement ContainerToolExecutor for routing tool calls (4h)
+
+**Configuration Tasks:**
+- P21.M1.E1.T013 - Add feature flag for containerization rollout (2h)
+- P21.M1.E1.T014 - Add per-workspace containerization settings (3h)
+- P21.M1.E1.T015 - Implement session-type-based sibling sharing defaults (2h)
+
+**Testing & Documentation:**
+- P21.M1.E1.T016 - Write unit tests for ContainerManager and VolumeManager (4h)
+- P21.M1.E1.T017 - Write integration tests for agent container lifecycle (4h)
+- P21.M1.E1.T018 - Update documentation for container infrastructure (2h)
+
+**Total Estimate: 46 hours**
+
+## Design Decisions
+
+1. **Container Lifecycle**: Long-lived per agent session (create on start, destroy on stop)
+2. **Default Isolation**: Network-enabled by default
+3. **Module Location**: New `lib/pag_server/containers/` directory
+4. **Sibling Sharing**: Ephemeral sessions share /private by default, persistent sessions don't
+
+## Completion Criteria
+
+- [x] Idea has been decomposed into concrete `.tasks` work items.
+- [x] New items include clear acceptance criteria and dependencies.
+- [x] This idea intake is updated with created IDs and marked done.

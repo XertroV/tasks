@@ -1,0 +1,31 @@
+---
+id: P49.M6.E3.T001
+title: Implement progressive enforcement modes and break-glass exceptions
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:59:34.406206+00:00'
+started_at: '2026-02-20T18:59:34.406206+00:00'
+completed_at: '2026-02-20T19:06:45.991822+00:00'
+duration_minutes: 7.193093416666667
+---
+
+# Implement progressive enforcement modes and break-glass exceptions
+
+
+
+## Requirements
+
+- Implement progressive trust enforcement modes from warn to strict enforcement.
+- Support break-glass exceptions with explicit reason, TTL, and audit trail.
+- Ensure enforcement mode transitions are safe and reversible.
+
+## Acceptance Criteria
+
+- Enforcement modes can be configured and applied without code changes.
+- Break-glass usage is explicit, time-bounded, and auditable.
+- Tests cover mode transitions and emergency override behavior.

@@ -1,0 +1,24 @@
+---
+id: P36.M1.E1.T003
+title: Tests for agent and session schema changes
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P36.M1.E1.T001
+- P36.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:49:38.863202+00:00'
+started_at: '2026-02-19T02:49:38.863202+00:00'
+completed_at: '2026-02-19T02:58:55.131809+00:00'
+duration_minutes: 9.271143133333334
+---
+## Acceptance Criteria
+- DataCase tests verify execution_mode defaults to :discrete on agents
+- DataCase tests verify default_auto_start defaults to false on agents
+- DataCase tests verify execution_mode defaults to :discrete on sessions
+- DataCase tests verify auto_start defaults to false on sessions
+- DataCase tests verify Ecto.Enum rejects invalid execution_mode values
+- Tests are async: true

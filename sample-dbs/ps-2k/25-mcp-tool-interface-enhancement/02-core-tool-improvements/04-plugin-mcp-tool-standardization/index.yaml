@@ -1,0 +1,94 @@
+id: P25.M2.E4
+name: Plugin MCP Tool-call Standardization
+status: done
+estimate_hours: 23.5
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-standardize-connector-messaging-plugin-mcp-interface.todo
+  title: Standardize Connector Messaging plugin MCP interface
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-standardize-cron-plugin-mcp-interface.todo
+  title: Standardize Cron plugin MCP interface
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-standardize-cross-workspace-messaging-plugin-interface.todo
+  title: Standardize Cross-workspace messaging plugin MCP interface
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-standardize-graphiti-wall-plugin-mcp-interface.todo
+  title: Standardize Graphiti Wall plugin MCP interface
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-standardize-pair-programming-plugin-mcp-interface.todo
+  title: Standardize Pair Programming plugin MCP interface
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-standardize-ssh-plugin-mcp-interface.todo
+  title: Standardize SSH plugin MCP interface
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T007
+  file: T007-standardize-tailscale-plugin-mcp-interface.todo
+  title: Standardize Tailscale plugin MCP interface
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T008
+  file: T008-standardize-whisper-plugin-mcp-interface.todo
+  title: Standardize Whisper plugin MCP interface
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-add-plugin-tool-call-compatibility-migration-plan.todo
+  title: Add plugin tool-call compatibility and migration plan
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P25.M2.E4.T001
+  - P25.M2.E4.T002
+  - P25.M2.E4.T003
+  - P25.M2.E4.T004
+  - P25.M2.E4.T005
+  - P25.M2.E4.T006
+  - P25.M2.E4.T007
+  - P25.M2.E4.T008
+stats:
+  total: 9
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 9

@@ -1,0 +1,20 @@
+---
+id: B105
+title: No replies are being sent to telegram after a tool call. is this because only
+  the immediate reply is sent to telegram? We should send all messages as replies
+  to telegram (including thinking, tool calls, etc). This goes for the other connectors
+  too.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:31:53.374181+00:00'
+started_at: '2026-02-17T14:31:53.374181+00:00'
+completed_at: '2026-02-17T15:25:34.025785+00:00'
+duration_minutes: 53.67752648333333
+---
+
+No replies are being sent to telegram after a tool call. is this because only the immediate reply is sent to telegram? We should send all messages as replies to telegram (including thinking, tool calls, etc). This goes for the other connectors too.

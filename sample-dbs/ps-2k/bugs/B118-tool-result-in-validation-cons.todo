@@ -1,0 +1,19 @@
+---
+id: B118
+title: TOOL_RESULT in validation console is now printed twice (we should only print
+  the first one). Keep the tool result that si part of the TOOL_CALL, and don't show
+  the TOOL_RESULT that is just raw unformatted json
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T22:09:57.026013+00:00'
+started_at: '2026-02-17T22:09:57.026013+00:00'
+completed_at: '2026-02-17T22:22:18.436038+00:00'
+duration_minutes: 12.356833583333334
+---
+
+TOOL_RESULT in validation console is now printed twice (we should only print the first one). Keep the tool result that si part of the TOOL_CALL, and don't show the TOOL_RESULT that is just raw unformatted json

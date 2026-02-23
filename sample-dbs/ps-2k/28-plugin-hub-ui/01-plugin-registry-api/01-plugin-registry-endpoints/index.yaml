@@ -1,0 +1,31 @@
+id: P28.M1.E1
+name: Plugin Registry Endpoints
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-rest-api-list-all-plugins-with-m.todo
+  title: REST API to list all available plugins with metadata
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-rest-api-enable-disable-plugins-p.todo
+  title: REST API to enable/disable plugins per workspace
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P28.M1.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,17 @@
+---
+id: P15.M7.E5.T023
+title: 'T23: Persona File Templates'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E5.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:03:53.571275+00:00'
+started_at: '2026-02-18T09:03:53.571275+00:00'
+completed_at: '2026-02-18T10:32:06.624764+00:00'
+duration_minutes: 88.21755796666666
+---
+Create EEx/YAML templates for PERSONA.md, MY_TEAM.md (or MY_FAMILY.md), BIRTH.md, BOOTSTRAP.md with conversational guide to understand human deeply.

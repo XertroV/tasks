@@ -1,0 +1,24 @@
+---
+id: P44.M3.E4.T001
+title: Add command interception to AgentChannel WebSocket handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.177590+00:00'
+started_at: '2026-02-19T19:33:54.177590+00:00'
+completed_at: '2026-02-19T19:34:12.827237+00:00'
+duration_minutes: 0.3108272166666667
+---
+## Summary
+Intercept slash commands in the AgentChannel before forwarding to agent.
+
+## Acceptance Criteria
+- [ ] In AgentChannel handle_in("message:send", ...), call Commands.Dispatcher.dispatch_text/2 before sending to AgentServer
+- [ ] If command matched: send response back to socket as a system message (new event type "command:response")
+- [ ] If not a command: continue normal agent dispatch path
+- [ ] Context: agent_id from socket assigns, session_id from socket assigns, platform: :websocket, sender from socket assigns user
+- [ ] Tests: command intercepted and returned as command:response event, plain text goes to agent

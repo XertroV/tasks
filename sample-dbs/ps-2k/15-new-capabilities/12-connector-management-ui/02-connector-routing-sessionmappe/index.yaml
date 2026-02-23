@@ -1,0 +1,51 @@
+id: P15.M12.E2
+name: 'Connector Routing: SessionMapper & Reply Dispatch'
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P15.M12.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-refactor-telegramsessionmapper.todo
+  title: Refactor TelegramSessionMapper to route by bot_config.session_id
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - P15.M12.E1.T003
+- id: T002
+  file: T002-preserve-chat-id-in-message-me.todo
+  title: Preserve chat_id in message metadata for reply dispatch
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E2.T001
+- id: T003
+  file: T003-update-telegram-reply-dispatch.todo
+  title: Update Telegram reply dispatch to use message metadata chat_id
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M12.E2.T002
+- id: T004
+  file: T004-write-tests-shared-session-rou.todo
+  title: 'Write tests: shared-session routing and per-chat fallback'
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M12.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,33 @@
+---
+id: P15.M10.E2.T003
+title: Extract DuckDuckGo logic into adapter and keep as no-key fallback
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M10.E1.T001
+tags:
+- tools
+- web-search
+- duckduckgo
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:20:04.971222+00:00'
+started_at: '2026-02-17T15:20:04.971222+00:00'
+completed_at: '2026-02-17T15:20:23.640619+00:00'
+duration_minutes: 0.3111564333333333
+---
+
+# Extract DuckDuckGo logic into adapter and keep as no-key fallback
+
+
+
+## Requirements
+
+- Move existing DuckDuckGo request/parsing logic into a dedicated provider adapter module.
+- Preserve current DuckDuckGo behavior as baseline no-key fallback provider.
+
+## Acceptance Criteria
+
+- DuckDuckGo adapter implements provider behaviour and passes existing parser tests.
+- `web_search` continues to work with no additional provider keys configured.

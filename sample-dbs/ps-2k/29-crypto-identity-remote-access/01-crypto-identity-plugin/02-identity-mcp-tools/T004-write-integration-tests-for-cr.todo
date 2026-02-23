@@ -1,0 +1,19 @@
+---
+id: P29.M1.E2.T004
+title: Write integration tests for crypto MCP tools
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P29.M1.E2.T001
+- P29.M1.E2.T002
+- P29.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:03:38.079605+00:00'
+started_at: '2026-02-18T19:03:38.079605+00:00'
+completed_at: '2026-02-18T19:03:39.570621+00:00'
+duration_minutes: 0.02485008333333333
+---
+Test sign->verify roundtrip, tampered data fails verify, key retrieval, identity export. Use DataCase with factory workspace.

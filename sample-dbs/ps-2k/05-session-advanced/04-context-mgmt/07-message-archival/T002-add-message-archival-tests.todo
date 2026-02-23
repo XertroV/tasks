@@ -1,0 +1,94 @@
+---
+id: P5.M4.E7.T002
+title: Add message archival tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P5.M4.E7.T001
+tags:
+- testing
+- archival
+claimed_by: cli-user
+claimed_at: '2026-02-08T03:02:56.345295+00:00'
+started_at: '2026-02-08T03:02:56.345295+00:00'
+completed_at: '2026-02-08T03:03:44.989498+00:00'
+duration_minutes: 0.8107365333333333
+---
+
+# Add message archival tests
+
+Comprehensive test suite for message archival functionality, covering the archive
+and restore operations, query filtering behavior, bulk operations, hash chain
+integrity preservation, and edge cases.
+
+## Requirements
+
+- [ ] Create test file `test/pag_server/context/messages_archival_test.exs`
+- [ ] Test `archive_message/1`
+  - Verify message gets archived_at timestamp set
+  - Verify archived message excluded from `get_session_messages/2` by default
+  - Verify returns `{:error, :not_found}` for non-existent message ID
+  - Verify telemetry event `[:pag_server, :message, :archived]` emitted
+- [ ] Test `restore_message/1`
+  - Verify archived message gets archived_at set to nil
+  - Verify restored message appears again in `get_session_messages/2`
+  - Verify returns `{:error, :not_found}` for non-existent message ID
+  - Verify telemetry event `[:pag_server, :message, :restored]` emitted
+- [ ] Test query filtering
+  - `get_session_messages/2` default: excludes archived
+  - `get_session_messages/2` with `include_archived: true`: returns all
+  - `get_session_messages/2` with `only_archived: true`: returns only archived
+  - `get_last_message/1` excludes archived messages
+- [ ] Test `archive_session_messages/2` bulk archival
+  - Archive all messages in a session
+  - Archive with `:before` date filter
+  - Archive with `:role` filter
+  - Verify count returned matches expected
+- [ ] Test hash chain integrity with archived messages
+  - Create a chain of messages, archive some in the middle
+  - Verify chain verification still passes (uses include_archived: true)
+  - Verify the hash chain is not broken by archival
+- [ ] Test edge cases
+  - Archive an already-archived message (idempotent or error?)
+  - Restore a non-archived message (no-op)
+  - Archive all messages in a session, verify get_session_messages returns empty
+  - Session with mix of archived and non-archived messages
+
+## Acceptance Criteria
+
+- [ ] All archive/restore functions have test coverage
+- [ ] Query filtering behavior fully tested (default, include_archived, only_archived)
+- [ ] Bulk archival with filters tested
+- [ ] Hash chain integrity preserved after archival is verified
+- [ ] Edge cases handled and tested
+- [ ] Telemetry events verified in tests
+- [ ] Tests pass in both development and CI environments
+
+## Context
+
+Test companion for T001. Identified in architecture audit as part of
+the MINOR priority message archival gap.
+
+## Notes
+
+Telemetry assertion pattern:
+
+```elixir
+test "emits telemetry on archive", %{session: session, message: message} do
+  ref = :telemetry_test.attach_event_handlers(self(), [
+    [:pag_server, :message, :archived]
+  ])
+
+  {:ok, archived} = Messages.archive_message(message.id)
+  assert_received {[:pag_server, :message, :archived], ^ref, %{}, %{message_id: _}}
+end
+```
+
+## Reference Files
+
+- `lib/pag_server/context/messages.ex` - Module under test
+- `lib/pag_server/schema/message.ex` - Message schema with archived_at
+- `test/pag_server/context/` - Existing test directory
+- `test/support/data_case.ex` - DataCase test helper

@@ -1,0 +1,208 @@
+---
+id: P7.M5.E4.T002
+title: Implement dead letter queue for permanently failed Oban jobs
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on:
+- P7.M5.E4.T001
+tags:
+- oban
+- dlq
+- persistence
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:08:26.263187+00:00'
+started_at: '2026-02-06T18:08:26.263187+00:00'
+completed_at: '2026-02-06T18:26:00.455796+00:00'
+duration_minutes: 17.56987665
+---
+
+# Implement dead letter queue for permanently failed Oban jobs
+
+When Oban jobs exhaust all retry attempts, they are discarded and eventually pruned.
+This means permanently failed jobs are lost, making debugging and manual recovery impossible.
+This task creates a dead letter queue (DLQ) that preserves permanently failed jobs in a
+separate table with full error context, and provides admin functions to inspect and retry them.
+
+## Requirements
+
+- [ ] Create Ecto migration for `oban_dead_letters` table:
+  - `id` (bigserial primary key)
+  - `original_job_id` (bigint, references the original Oban job ID)
+  - `worker` (text, the Oban worker module name)
+  - `queue` (text, the queue name)
+  - `args` (jsonb, the original job arguments)
+  - `errors` (jsonb array, accumulated error list from all attempts)
+  - `max_attempts` (integer)
+  - `attempted_at` (utc_datetime, when the last attempt was made)
+  - `discarded_at` (utc_datetime, when the job was moved to DLQ)
+  - `meta` (jsonb, additional metadata - tags, original priority, etc.)
+  - `retried_at` (utc_datetime, nullable - set when retried from DLQ)
+  - `retry_job_id` (bigint, nullable - references the new Oban job if retried)
+  - Indexes on: `worker`, `queue`, `discarded_at`, `retried_at`
+- [ ] Create `PagServer.Schema.ObanDeadLetter` Ecto schema
+- [ ] Create `lib/pag_server/oban_dead_letter_queue.ex` module:
+  - `move_to_dlq/1` - Moves a discarded Oban job to the DLQ table
+  - `list/1` - Lists DLQ entries with filtering (by worker, queue, date range)
+  - `get/1` - Gets a single DLQ entry by ID with full error details
+  - `retry/1` - Re-enqueues a DLQ entry as a new Oban job and records the retry
+  - `retry_all/1` - Retries all matching DLQ entries (by worker or queue)
+  - `purge/1` - Permanently deletes DLQ entries older than a threshold
+  - `count/0` - Returns count of entries in DLQ, grouped by worker
+- [ ] Hook into Oban discard telemetry event (from T001's error handler) to automatically
+      move discarded jobs to DLQ
+- [ ] Ensure DLQ writes are transactional and idempotent (re-discard of same job is a no-op)
+- [ ] Add telemetry: `[:pag_server, :oban, :dlq_entry_created]` and `[:pag_server, :oban, :dlq_retried]`
+
+## Acceptance Criteria
+
+- [ ] Permanently failed (discarded) Oban jobs are automatically moved to `oban_dead_letters` table
+- [ ] DLQ entries preserve full error history from all retry attempts
+- [ ] Admin can list DLQ entries filtered by worker, queue, or date range
+- [ ] Admin can retry individual DLQ entries, which creates a new Oban job
+- [ ] Retried DLQ entries are marked with `retried_at` and `retry_job_id`
+- [ ] DLQ entries can be purged after a configurable retention period
+- [ ] DLQ count can be exposed via admin API for monitoring dashboards
+- [ ] No data loss: every discarded job is preserved in DLQ before pruning
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+Oban's `Pruner` plugin deletes discarded jobs after `max_age`, meaning permanently failed
+jobs disappear without any ability to inspect or retry them. A DLQ provides a safety net
+for production operations, allowing operators to understand failure patterns and manually
+retry jobs after fixing the underlying issue.
+
+**Key Files**:
+- `lib/pag_server/oban_error_handler.ex` - Created in T001, hooks into discard events
+- `priv/repo/migrations/` - New migration for DLQ table
+- `lib/pag_server/schema/` - New schema for DLQ entries
+- `config/config.exs` - Oban configuration at line 61
+
+## Notes
+
+Migration example:
+```elixir
+defmodule PagServer.Repo.Migrations.CreateObanDeadLetters do
+  use Ecto.Migration
+
+  def change do
+    create table(:oban_dead_letters) do
+      add :original_job_id, :bigint, null: false
+      add :worker, :text, null: false
+      add :queue, :text, null: false
+      add :args, :map, null: false
+      add :errors, {:array, :map}, default: []
+      add :max_attempts, :integer, null: false
+      add :attempted_at, :utc_datetime
+      add :discarded_at, :utc_datetime, null: false
+      add :meta, :map, default: %{}
+      add :retried_at, :utc_datetime
+      add :retry_job_id, :bigint
+
+      timestamps()
+    end
+
+    create index(:oban_dead_letters, [:worker])
+    create index(:oban_dead_letters, [:queue])
+    create index(:oban_dead_letters, [:discarded_at])
+    create unique_index(:oban_dead_letters, [:original_job_id])
+  end
+end
+```
+
+DLQ module:
+```elixir
+defmodule PagServer.ObanDeadLetterQueue do
+  @moduledoc """
+  Dead letter queue for permanently failed Oban jobs.
+
+  Provides inspection and retry capabilities for jobs that have
+  exhausted all retry attempts.
+  """
+
+  import Ecto.Query
+  alias PagServer.Repo
+  alias PagServer.Schema.ObanDeadLetter
+
+  @doc "Move a discarded Oban job to the dead letter queue."
+  def move_to_dlq(%Oban.Job{} = job) do
+    attrs = %{
+      original_job_id: job.id,
+      worker: job.worker,
+      queue: to_string(job.queue),
+      args: job.args,
+      errors: job.errors || [],
+      max_attempts: job.max_attempts,
+      attempted_at: job.attempted_at,
+      discarded_at: DateTime.utc_now(),
+      meta: Map.get(job, :meta, %{})
+    }
+
+    %ObanDeadLetter{}
+    |> ObanDeadLetter.changeset(attrs)
+    |> Repo.insert(on_conflict: :nothing, conflict_target: :original_job_id)
+  end
+
+  @doc "Retry a DLQ entry by creating a new Oban job."
+  def retry(dlq_id) do
+    Repo.transaction(fn ->
+      dlq_entry = Repo.get!(ObanDeadLetter, dlq_id)
+      worker_module = String.to_existing_atom(dlq_entry.worker)
+
+      {:ok, new_job} =
+        dlq_entry.args
+        |> worker_module.new(queue: String.to_atom(dlq_entry.queue))
+        |> Oban.insert()
+
+      dlq_entry
+      |> ObanDeadLetter.changeset(%{
+        retried_at: DateTime.utc_now(),
+        retry_job_id: new_job.id
+      })
+      |> Repo.update!()
+
+      new_job
+    end)
+  end
+
+  @doc "List DLQ entries with optional filters."
+  def list(opts \\ []) do
+    ObanDeadLetter
+    |> maybe_filter_worker(opts[:worker])
+    |> maybe_filter_queue(opts[:queue])
+    |> order_by(desc: :discarded_at)
+    |> Repo.all()
+  end
+
+  @doc "Count DLQ entries grouped by worker."
+  def count do
+    ObanDeadLetter
+    |> where([d], is_nil(d.retried_at))
+    |> group_by(:worker)
+    |> select([d], {d.worker, count(d.id)})
+    |> Repo.all()
+    |> Enum.into(%{})
+  end
+end
+```
+
+Integration with error handler (update from T001):
+```elixir
+def handle_event([:oban, :job, :discard], _measure, meta, _config) do
+  # Move to DLQ before logging
+  case ObanDeadLetterQueue.move_to_dlq(meta.job) do
+    {:ok, _entry} ->
+      :telemetry.execute([:pag_server, :oban, :dlq_entry_created], %{count: 1}, %{
+        worker: meta.job.worker,
+        queue: meta.job.queue
+      })
+    {:error, reason} ->
+      Logger.error("Failed to move job to DLQ: #{inspect(reason)}")
+  end
+
+  # ... existing logging ...
+end
+```

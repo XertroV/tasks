@@ -1,0 +1,95 @@
+id: P2
+name: LLM Integration
+status: pending
+weeks: 3
+estimate_hours: 62
+complexity: high
+depends_on:
+- P1
+milestones:
+- id: M1
+  name: Provider Abstraction
+  path: 01-provider-abstraction
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on: []
+  description: LLM provider behaviour, registry, and model spec parsing
+- id: M2
+  name: Anthropic Provider
+  path: 02-anthropic
+  status: pending
+  estimate_hours: 12
+  complexity: medium
+  depends_on:
+  - M1
+  description: Basic client, streaming, tool calling, prompt caching
+- id: M3
+  name: OpenAI Provider
+  path: 03-openai
+  status: pending
+  estimate_hours: 10
+  complexity: medium
+  depends_on:
+  - M1
+  description: Basic client, streaming, tool calling
+- id: M4
+  name: OpenRouter Provider
+  path: 04-openrouter
+  status: pending
+  estimate_hours: 6
+  complexity: low
+  depends_on:
+  - M1
+  description: Multi-provider routing client
+- id: M5
+  name: Ollama Provider
+  path: 05-ollama
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - M1
+  description: Local model client with model detection
+- id: M6
+  name: Stream Processing
+  path: 06-streaming
+  status: pending
+  estimate_hours: 10
+  complexity: high
+  depends_on:
+  - M1
+  description: SSE parser, token processor, thinking tag extraction
+- id: M7
+  name: Cost Tracking
+  path: 07-cost-tracking
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - M1
+  description: Token counting, pricing database, cost calculator
+- id: M8
+  name: Context Window Management
+  path: 08-context-management
+  status: pending
+  estimate_hours: 14
+  complexity: high
+  depends_on:
+  - M7
+  description: Token tracking, overflow handling, pruning strategies, and provider
+    fallback
+- id: M9
+  name: Provider Resilience
+  path: 09-provider-resilience
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Health checks and resilience improvements for cloud LLM providers
+stats:
+  total_tasks: 99
+  done: 99
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,41 @@
+id: P19.M2
+name: Medium Priority Fixes
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Model Names Update
+  path: 01-model-names-update
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Config Keys Fix
+  path: 02-config-keys-fix
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Design Docs Sync
+  path: 03-design-docs-sync
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,55 @@
+id: P1.M3
+name: Agent System Core
+status: pending
+estimate_hours: 32
+complexity: high
+depends_on:
+- M1
+- M2
+epics:
+- id: E1
+  name: Agent GenServer
+  path: 01-genserver
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on: []
+- id: E2
+  name: Supervision Tree
+  path: 02-supervision
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on:
+  - E1
+- id: E3
+  name: Agent Registry
+  path: 03-registry
+  status: pending
+  estimate_hours: 4
+  complexity: low
+  depends_on:
+  - E2
+- id: E4
+  name: State Management
+  path: 04-state-mgmt
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on:
+  - E1
+- id: E5
+  name: Lifecycle Hooks
+  path: 05-lifecycle
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on:
+  - E1
+  - E4
+stats:
+  total_tasks: 19
+  done: 19
+  in_progress: 0
+  blocked: 0
+  pending: 0

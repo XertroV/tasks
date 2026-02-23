@@ -1,0 +1,24 @@
+---
+id: P55.M2.E3.T002
+title: Message bubble - user role rendering
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- component
+- messages
+claimed_by: cli-user
+claimed_at: '2026-02-22T09:12:00.804701+00:00'
+started_at: '2026-02-22T09:12:00.804701+00:00'
+completed_at: '2026-02-22T10:51:22.847740+00:00'
+duration_minutes: 99.36738371666667
+---
+Create lib/pag_server_web/live/workspace_chat/message_bubble.ex as function component with role-based pattern matching. User role: right-aligned, indigo-tinted border/background, plain text or light markdown. Shows sequence_num as subtle gutter number. Fork button appears on hover (phx-click='fork_thread' with message sequence_num).
+
+## Acceptance Criteria
+- User messages right-aligned with indigo styling
+- Sequence number visible in gutter
+- Fork button appears on hover
+- Text content renders correctly

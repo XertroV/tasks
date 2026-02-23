@@ -1,0 +1,77 @@
+---
+id: P11.M3.E1.T001
+title: Create plugin registry schema and storage
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T10:31:06.546277+00:00'
+started_at: '2026-02-12T10:31:06.546277+00:00'
+completed_at: '2026-02-12T11:03:06.304355+00:00'
+duration_minutes: 31.995967800000003
+---
+
+# Create plugin registry schema and storage
+
+Design and implement the core plugin registry schema in Ecto, supporting plugin metadata storage, versioning, and registry tracking.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/plugin.ex` Ecto schema with fields:
+  - [ ] `id` (UUID primary key)
+  - [ ] `name` (string, unique per registry type)
+  - [ ] `namespace` (string, e.g., "core", "community", "custom")
+  - [ ] `version` (string, semantic versioning)
+  - [ ] `source_url` (string, registry or GitHub URL)
+  - [ ] `status` (enum: installed, available, disabled)
+  - [ ] `installed_at` (datetime, nullable)
+  - [ ] `updated_at` (datetime)
+  - [ ] `checksum` (string, for integrity validation)
+  - [ ] `metadata` (jsonb, for extensibility)
+
+- [ ] Create database migration `priv/repo/migrations/*_create_plugins.exs`:
+  - [ ] Create `plugins` table with proper indexes
+  - [ ] Add unique constraint on (name, namespace, version)
+  - [ ] Add indexes on (status, namespace, installed_at)
+
+- [ ] Create `lib/pag_server/schema/plugin_version.ex` for version history:
+  - [ ] Track all published versions of each plugin
+  - [ ] Store release notes and changelog
+  - [ ] Mark deprecated versions
+
+- [ ] Create Ecto changesets with validation:
+  - [ ] Name format validation (alphanumeric, hyphens, underscores only)
+  - [ ] Version semantic versioning validation
+  - [ ] Required field validation
+
+## Acceptance Criteria
+
+- [ ] Ecto schema compiles without warnings
+- [ ] Migrations run successfully: `mix ecto.migrate`
+- [ ] Schema supports create, read, update operations via Repo
+- [ ] Validation prevents invalid names/versions
+- [ ] Unique constraint on (name, namespace, version) enforced
+- [ ] Metadata jsonb field stores arbitrary plugin configuration
+- [ ] Tests verify schema validations and database constraints
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-12 10:31 UTC
+**Sibling tasks**: P11.M3.E1.T002, P11.M3.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M3.E1.T001 → P11.M3.E1.T002 → P11.M3.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M3.E1.T001: .tasks/11-api-first-configuration-system/03-plugin-management-api/01-plugin-registry-discovery/T001-create-plugin-registry-schema.todo
+- P11.M3.E1.T002: .tasks/11-api-first-configuration-system/03-plugin-management-api/01-plugin-registry-discovery/T002-implement-plugin-discovery-end.todo
+- P11.M3.E1.T003: .tasks/11-api-first-configuration-system/03-plugin-management-api/01-plugin-registry-discovery/T003-add-plugin-metadata-and-manife.todo

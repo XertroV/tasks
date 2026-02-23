@@ -1,0 +1,80 @@
+id: P50.M3.E1
+name: Task DAG -- create, claim, complete, fail, cancel, block
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-collabteams-schema-task-ec.todo
+  title: Add CollabTeams.Schema.Task Ecto schema and changeset
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E2.T004
+- id: T002
+  file: T002-implement-create-task-action.todo
+  title: Implement create_task action
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E1.T001
+- id: T003
+  file: T003-implement-dependency-closure-r.todo
+  title: Implement dependency-closure recursive CTE query
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E1.T002
+- id: T004
+  file: T004-implement-claim-task-action-wi.todo
+  title: Implement claim_task action with optimistic locking
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E1.T003
+- id: T005
+  file: T005-implement-complete-task-and-fa.todo
+  title: Implement complete_task and fail_task with dependent unblocking
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E1.T004
+- id: T006
+  file: T006-implement-cancel-task-and-set.todo
+  title: Implement cancel_task and set_task_blocked actions
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E1.T004
+- id: T007
+  file: T007-wire-task-graph-actions-into-d.todo
+  title: Wire task graph actions into dispatcher and add integration tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E1.T002
+  - P50.M3.E1.T004
+  - P50.M3.E1.T005
+  - P50.M3.E1.T006
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

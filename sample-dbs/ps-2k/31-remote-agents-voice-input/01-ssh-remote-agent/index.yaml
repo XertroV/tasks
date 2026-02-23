@@ -1,0 +1,32 @@
+id: P31.M1
+name: SSH Remote Agent
+status: pending
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: SSH Connection & Port Forwarding
+  path: 01-ssh-connection-port-forwarding
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Remote MCP Tool & Plugin
+  path: 02-remote-mcp-tool-plugin
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

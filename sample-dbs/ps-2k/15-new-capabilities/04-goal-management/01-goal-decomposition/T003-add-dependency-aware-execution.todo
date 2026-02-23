@@ -1,0 +1,37 @@
+---
+id: P15.M4.E1.T003
+title: Add dependency-aware execution planning
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M4.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T07:52:09.589298+00:00'
+started_at: '2026-02-13T07:52:09.589298+00:00'
+completed_at: '2026-02-13T08:26:42.483678+00:00'
+duration_minutes: 34.5482395
+---
+
+# Add dependency-aware execution planning
+
+## Description
+Implement execution planning that respects goal dependencies. Generate execution order, identify parallelizable goals, and detect blocking situations.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Goals.Planner` module
+- [ ] Implement topological sort for execution order
+- [ ] Identify parallelizable sub-goals (no dependencies)
+- [ ] Detect and report circular dependencies
+- [ ] Calculate critical path for execution
+- [ ] Support dynamic replanning when goals complete/fail
+- [ ] Add estimated completion time based on effort
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/goal.ex`, `lib/pag_server/agents/coordinator.ex`, `lib/pag_server/agents/queue_manager.ex`
+- Part of epic: Goal Decomposition
+- Use graph algorithms for dependency resolution

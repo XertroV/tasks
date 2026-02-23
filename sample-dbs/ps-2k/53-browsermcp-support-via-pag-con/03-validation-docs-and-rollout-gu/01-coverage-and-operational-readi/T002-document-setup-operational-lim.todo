@@ -1,0 +1,48 @@
+---
+id: P53.M3.E1.T002
+title: Document setup, operational limits, and rollout checklist
+status: done
+estimate_hours: 3.0
+complexity: low
+priority: medium
+depends_on:
+- P53.M3.E1.T001
+tags:
+- browsermcp
+- docs
+- runbook
+claimed_by: cli-user
+claimed_at: '2026-02-21T06:04:42.685158+00:00'
+started_at: '2026-02-21T06:04:42.685158+00:00'
+completed_at: '2026-02-21T06:05:16.306435+00:00'
+duration_minutes: 0.5603543166666667
+---
+
+# Document setup, operational limits, and rollout checklist
+
+
+
+## Requirements
+
+- Document setup steps for companion-backed Browser MCP in dev and production-like environments.
+- Capture operational limits, known caveats, and fallback behavior.
+- Provide rollout checklist with verification and rollback guidance.
+
+## Acceptance Criteria
+
+- Docs include end-to-end setup with required config/env examples.
+- Known limitations section describes headless constraints and companion dependency.
+- Launch checklist includes smoke tests, monitoring checks, and rollback steps.
+
+## Execution Notes (2026-02-21)
+
+- Added a BrowserMCP rollout runbook with setup prerequisites, runtime config
+  examples, and companion registration expectations.
+- Documented operational limits and deterministic error model including
+  headless fallback caveats and companion dependency.
+- Added explicit launch checklist sections for smoke tests, monitoring checks,
+  and rollback steps.
+
+## Evidence Artifacts
+
+- `docs/guides/browsermcp-rollout-checklist.md`

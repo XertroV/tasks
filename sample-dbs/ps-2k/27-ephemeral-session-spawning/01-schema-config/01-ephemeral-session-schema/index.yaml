@@ -1,0 +1,31 @@
+id: P27.M1.E1
+name: Ephemeral Session Schema
+status: pending
+estimate_hours: 8.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-ephemeral-flag-to-session-s.todo
+  title: Add ephemeral boolean flag to session schema and migration
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-auto-cleanup-genserver-for-ephem.todo
+  title: Auto-cleanup GenServer that destroys ephemeral sessions after completion
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P27.M1.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

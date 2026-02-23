@@ -1,0 +1,85 @@
+---
+id: I058
+title: 'Plugin security and trust hardening strategy (planning first): evaluate provenance/signing,
+  capability permissions, policy controls, and operational safeguards before implementation.
+  References: docs/plans/2026-02-20-plugin-platform-remediation-plan.md and docs/plans/2026-02-20-plugin-security-model.md'
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:18:27.307839+00:00'
+started_at: '2026-02-20T09:18:27.307839+00:00'
+completed_at: '2026-02-20T09:18:29.544713+00:00'
+duration_minutes: 0.037281
+---
+
+# Idea Intake: Plugin security and trust hardening strategy (planning first): evaluate provenance/signing, capability permissions, policy controls, and operational safeguards before implementation. References: docs/plans/2026-02-20-plugin-platform-remediation-plan.md and docs/plans/2026-02-20-plugin-security-model.md
+
+## Original Idea
+
+Plugin security and trust hardening strategy (planning first): evaluate provenance/signing, capability permissions, policy controls, and operational safeguards before implementation. References: docs/plans/2026-02-20-plugin-platform-remediation-plan.md and docs/plans/2026-02-20-plugin-security-model.md
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Plugin security and trust hardening strategy (planning first): evaluate provenance/signing, capability permissions, policy controls, and operational safeguards before implementation. References: docs/plans/2026-02-20-plugin-platform-remediation-plan.md and docs/plans/2026-02-20-plugin-security-model.md"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Planning docs created and linked:
+  - `docs/plans/2026-02-20-plugin-platform-remediation-plan.md`
+  - `docs/plans/2026-02-20-plugin-security-model.md`
+- Planning path:
+  - `P49` Plugin Platform Remediation
+  - `P49.M4` Plugin Security and Trust Strategy Planning
+  - `P49.M4.E1` Plan the plugin security and trust hardening direction
+  - `P49.M4.E1.T001` Evaluate security/trust options and propose implementation path
+- Option B implementation path (must land before Option C):
+  - `P49.M5` Plugin Trust Baseline (Option B)
+  - `P49.M5.E1` Trust policy and provenance foundation
+    - `P49.M5.E1.T001` Define trust policy schema risk tiers and reason-code contract
+    - `P49.M5.E1.T002` Add plugin provenance persistence model and migrations
+    - `P49.M5.E1.T003` Implement PluginTrustVerifier behaviour and shared verification interface
+  - `P49.M5.E2` Option B verifier and policy enforcement
+    - `P49.M5.E2.T001` Add explicit dev and unpublished override flow with TTL and audit
+    - `P49.M5.E2.T002` Enforce trusted publisher and source policy with verified-only mode
+    - `P49.M5.E2.T003` Implement checksum verification in plugin install and update pipeline
+    - `P49.M5.E2.T004` Apply capability-aware trust gates across lifecycle and tool execution
+  - `P49.M5.E3` Trust observability incident tooling and docs sync
+    - `P49.M5.E3.T001` Emit structured trust events and wire telemetry handlers
+    - `P49.M5.E3.T002` Update trust docs and add adversarial regression tests for Option B
+    - `P49.M5.E3.T003` Build plugin trust report command or API for incident reconstruction
+- Option C implementation path (depends on Option B milestone):
+  - `P49.M6` Plugin Signature Hardening (Option C)
+  - `P49.M6.E1` Sigstore and cosign verification backend
+    - `P49.M6.E1.T001` Add signature verification failure diagnostics and regression tests
+    - `P49.M6.E1.T002` Implement Sigstore verifier adapter with cosign integration
+    - `P49.M6.E1.T003` Map signature identity claims into trust policy decisions
+  - `P49.M6.E2` Pluggable trust endpoints and local-only verification mode
+    - `P49.M6.E2.T001` Implement local-only verification mode with managed trust roots
+    - `P49.M6.E2.T002` Implement configurable trust endpoint profiles for public and private Sigstore
+    - `P49.M6.E2.T003` Add verifier backend selection and deterministic fallback chain
+  - `P49.M6.E3` Attestations progressive enforcement and migration
+    - `P49.M6.E3.T001` Implement progressive enforcement modes and break-glass exceptions
+    - `P49.M6.E3.T002` Define attestation policy contract and verify for high-risk plugin tiers
+    - `P49.M6.E3.T003` Publish migration and operations playbook for Option B to Option C
+- Dependency ordering:
+  - `P49.M5` depends on `P49.M4`
+  - `P49.M6` depends on `P49.M5`
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

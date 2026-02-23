@@ -1,0 +1,37 @@
+id: P4.M2.E6
+name: HTTP Client
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-http-get-tool.todo
+  title: Implement http_get tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-http-post-tool.todo
+  title: Implement http_post tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-http-request-tool-ge.todo
+  title: Implement http_request tool (generic)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

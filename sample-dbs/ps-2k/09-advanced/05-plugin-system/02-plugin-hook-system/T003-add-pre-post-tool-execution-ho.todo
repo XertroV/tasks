@@ -1,0 +1,58 @@
+---
+id: P9.M5.E2.T003
+title: Add pre/post tool execution hooks with interception support
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E2.T002
+tags:
+- hooks
+- tools
+- interception
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:08:28.607868'
+started_at: '2026-02-06T17:08:28.607868'
+completed_at: '2026-02-06T17:13:26.560529'
+duration_minutes: 4.965877516666667
+---
+
+# Add pre/post tool execution hooks with interception support
+
+
+
+## Requirements
+
+- [ ] Define pre-tool hook handler contract:
+  - [ ] Receives `HookEvent` with type `:pre_tool_use` containing tool_name, input args, agent state
+  - [ ] Can return `:continue` (pass through), `:deny` (block execution), or `{:allow, modified_input}` (modify args)
+- [ ] Define post-tool hook handler contract:
+  - [ ] Receives `HookEvent` with type `:post_tool_use` containing tool_name, input, result, duration
+  - [ ] Can return `:continue` (pass through) or `{:modify, modified_result}` (alter result)
+- [ ] Define pre-failure hook handler contract:
+  - [ ] Receives `HookEvent` with type `:pre_tool_use_failure` containing tool_name, input, error
+  - [ ] Can return `:continue` (propagate error) or `{:recover, fallback_result}` (suppress error)
+- [ ] Create helper functions in `lib/pag_server/plugins/hooks/tool_hooks.ex`:
+  - [ ] `fire_pre_tool/3` - (tool_name, input, agent_state) -> {:allow, input} | :deny
+  - [ ] `fire_post_tool/4` - (tool_name, input, result, duration) -> result
+  - [ ] `fire_pre_failure/3` - (tool_name, input, error) -> {:error, error} | {:ok, fallback}
+- [ ] Integrate with `ToolExecutor.execute/3` at the correct call sites
+
+## Acceptance Criteria
+
+- [ ] Pre-tool hooks can block tool execution by returning `:deny`
+- [ ] Pre-tool hooks can modify input arguments via `{:allow, modified_input}`
+- [ ] Post-tool hooks can modify tool results via `{:modify, modified_result}`
+- [ ] Pre-failure hooks can recover from errors via `{:recover, fallback_result}`
+- [ ] Multiple hooks chain correctly (priority ordering respected)
+- [ ] Tool execution still works normally when no hooks are registered
+- [ ] Unit tests cover: deny flow, modify input, modify result, error recovery, no-hooks passthrough
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/hooks/tool_hooks.ex`
+- **Modifies**: `lib/pag_server/tools/executor.ex` (or equivalent ToolExecutor) to add hook call sites
+- **Depends on**: `PagServer.Plugins.HookDispatcher` (T002), `PagServer.Plugins.HookEvent` (T001)
+- **Integration point**: Wraps existing `ToolExecutor.execute/3` with pre/post hook dispatch
+- **Performance**: Hooks should add <1ms overhead when no handlers registered

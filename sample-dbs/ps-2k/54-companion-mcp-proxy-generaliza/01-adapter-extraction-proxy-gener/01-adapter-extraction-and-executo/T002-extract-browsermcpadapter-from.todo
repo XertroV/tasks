@@ -1,0 +1,30 @@
+---
+id: P54.M1.E1.T002
+title: Extract BrowserMcpAdapter from CompanionProxyExecutor
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P54.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:31:28.634842+00:00'
+started_at: '2026-02-21T10:31:28.634842+00:00'
+completed_at: '2026-02-21T10:37:19.201736+00:00'
+duration_minutes: 5.8427813833333335
+---
+## Context
+~160 lines of BrowserMCP-specific logic live inside CompanionProxyExecutor: action validation (@browser_actions), authorization (authorize_browsermcp/2), session lifecycle hooks (maybe_prepare_browser_payload/2, maybe_finalize_browser_lifecycle/3), error mapping (normalize_browser_error/1, build_browser_error_execution/2), and config checks (browsermcp_companion_enabled?/0, configured_browsermcp_timeout_ms/0). Extract all of it into a dedicated adapter.
+
+## Acceptance Criteria
+- [ ] `PagServer.Companions.BrowserMcpAdapter` created at `lib/pag_server/companions/browser_mcp_adapter.ex`
+- [ ] Implements `CompanionToolAdapter` behaviour (all required callbacks)
+- [ ] `authorize/2`: validates workspace context, session context, action in @browser_actions whitelist, cross-workspace blocking — identical logic to P53's `authorize_browsermcp/2`
+- [ ] `pre_execute/2`: calls `BrowserSessionLifecycle.assign_or_reuse/3` to enrich arguments with `browser_session_id`
+- [ ] `post_execute/3`: calls `BrowserSessionLifecycle.cleanup/3` or `cleanup_workspace/2` on error/close actions
+- [ ] `normalize_error/1`: delegates to `BrowserErrorMapper.normalize/1`
+- [ ] `timeout_ms/0`: reads `Application.get_env(:pag_server, :browsermcp_request_timeout_ms, 30_000)`
+- [ ] `enabled?/1`: reads `browsermcp_enabled` and `browsermcp_backend == "companion"` config
+- [ ] All tests in `companion_proxy_executor_test.exs` and `browsermcp_flow_integration_test.exs` still pass after move
+- [ ] `mix lint` passes

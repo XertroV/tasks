@@ -1,0 +1,21 @@
+---
+id: P36.M1.E4.T002
+title: Add BootManager to application supervisor
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: high
+depends_on:
+- P36.M1.E4.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:08:45.412153+00:00'
+started_at: '2026-02-19T03:08:45.412153+00:00'
+completed_at: '2026-02-19T03:08:47.338077+00:00'
+duration_minutes: 0.03209848333333334
+---
+## Acceptance Criteria
+- lib/pag_server/application.ex adds PagServer.Agents.BootManager to supervision tree
+- Positioned after Repo, PubSub, Agents.Registry, Agents.Supervisor (DynamicSupervisor)
+- restart: :permanent strategy
+- No other supervisors or workers affected

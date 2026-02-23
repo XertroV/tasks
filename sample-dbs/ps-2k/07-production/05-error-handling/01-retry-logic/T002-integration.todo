@@ -1,0 +1,57 @@
+---
+id: P7.M5.E1.T002
+title: Integrate retry into LLM calls
+status: done
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on:
+- P7.M5.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-07T03:38:22.039363+00:00'
+started_at: '2026-02-07T03:38:22.039363+00:00'
+completed_at: '2026-02-07T03:49:47.637674+00:00'
+tags:
+- error-handling
+- retry
+- integration
+duration_minutes: 11.42663835
+---
+
+# Integrate retry into LLM calls
+
+Wrap all LLM API calls with retry logic.
+
+## Requirements
+
+- [ ] Update LLM.Registry.chat/3 to use Retry.with_retry/2
+- [ ] Configure retry for each provider
+- [ ] Handle provider-specific errors
+- [ ] Log retry attempts
+- [ ] Emit telemetry on retries
+- [ ] Document retry behavior
+
+## Acceptance Criteria
+
+- [ ] All LLM calls automatically retry on transient failures
+- [ ] Provider-specific retry configs applied
+- [ ] Retry attempts logged
+- [ ] Telemetry tracks success/failure after retries
+- [ ] No breaking changes to API
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M5 (Error Recovery)
+
+## Notes
+
+```elixir
+defmodule PagServer.LLM.Registry do
+  def chat(provider, model, messages, opts) do
+    Retry.with_retry(fn ->
+      do_chat(provider, model, messages, opts)
+    end, max_attempts: 3, base_delay_ms: 1000)
+  end
+end
+```

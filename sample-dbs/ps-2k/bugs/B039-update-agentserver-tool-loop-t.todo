@@ -1,0 +1,33 @@
+---
+id: B039
+title: update AgentServer tool-loop test for current continuation content
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- agents
+- tests
+- tool-loop
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:22:36.239986+00:00'
+started_at: '2026-02-15T18:22:36.239986+00:00'
+completed_at: '2026-02-15T18:23:27.590949+00:00'
+duration_minutes: 0.85584925
+---
+
+# update AgentServer tool-loop test for current continuation content
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe failure in `PagServer.Agents.AgentServerToolLoopTest` expecting assistant content `Mock continuation`.
+
+## Expected Behavior
+
+Tool-loop test should assert continuation behavior using content values produced by current mocked provider flow.
+
+## Actual Behavior
+
+Test expects old assistant continuation text and fails when runtime emits `Mock response` after tool execution.

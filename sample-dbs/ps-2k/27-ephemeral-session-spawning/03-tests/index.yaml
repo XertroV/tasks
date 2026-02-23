@@ -1,0 +1,26 @@
+id: P27.M3
+name: Tests
+status: pending
+estimate_hours: 6.0
+complexity: low
+depends_on:
+- P27.M2.E1
+locked: false
+epics:
+- id: E1
+  name: Lifecycle Tests
+  path: 01-lifecycle-tests
+  status: pending
+  estimate_hours: 6.0
+  complexity: low
+  depends_on:
+  - P27.M2.E1
+  description: Tests covering the full ephemeral session lifecycle including creation,
+    agent association, completion, and auto-cleanup.
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

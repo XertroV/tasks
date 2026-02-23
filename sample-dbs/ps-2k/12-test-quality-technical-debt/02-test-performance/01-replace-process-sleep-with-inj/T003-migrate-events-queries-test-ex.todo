@@ -1,0 +1,36 @@
+---
+id: P12.M2.E1.T003
+title: Migrate events/queries_test.exs (21 sleeps)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:18:28.331659+00:00'
+started_at: '2026-02-13T20:18:28.331659+00:00'
+completed_at: '2026-02-13T20:50:50.744843+00:00'
+duration_minutes: 32.37355291666667
+---
+
+# Migrate events/queries_test.exs (21 sleeps)
+
+## Description
+
+Replace `Process.sleep` calls in events/queries tests with the injectable `sleep_fn` pattern or better synchronization mechanisms.
+
+## Acceptance Criteria
+
+- [ ] Audit all `Process.sleep` calls in the file
+- [ ] Replace sleeps with `sleep_fn` injection where applicable
+- [ ] Or use better synchronization (assert_receive, refs) where appropriate
+- [ ] All tests pass
+- [ ] Test file runs significantly faster
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/events/queries_test.exs`
+- Related modules: `lib/pag_server/events/queries.ex`
+- Part of epic: Replace Process.sleep with Injectable Functions

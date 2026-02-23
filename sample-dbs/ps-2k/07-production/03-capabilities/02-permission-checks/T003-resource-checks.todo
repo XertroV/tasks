@@ -1,0 +1,87 @@
+---
+id: P7.M3.E2.T003
+title: Resource limit checks
+status: done
+estimate_hours: 1
+complexity: medium
+priority: high
+depends_on:
+- P7.M3.E2.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:55:18.680271'
+started_at: '2026-02-06T14:55:18.680271'
+completed_at: '2026-02-06T15:00:03.043284'
+tags:
+- security
+- permissions
+- resources
+duration_minutes: 4.739383366666667
+---
+
+# Resource limit checks
+
+Implement resource limit checking and enforcement.
+
+## Requirements
+
+- [ ] Implement `check_resource_limit/3` function
+- [ ] Check max_tokens, max_cost, max_tool_calls, max_time
+- [ ] Return {:error, {:limit_exceeded, resource, limit}}
+- [ ] Add `remaining_budget/2` helper
+- [ ] Track resource usage in agent state
+- [ ] Add warnings at 80% threshold
+- [ ] Emit telemetry on limit approach
+
+## Acceptance Criteria
+
+- [ ] All resource types checked correctly
+- [ ] Errors include limit value and current usage
+- [ ] Warnings emitted before hard limit
+- [ ] Telemetry tracks limit approaches
+- [ ] No performance regression
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1457-1465 (check_resource_limit)
+- Task breakdown P7.M3.E2 (Permission Checks)
+
+**Key Points**:
+- Check before consuming resource
+- Track cumulative usage per session
+- Warn before hitting limit
+- Allow graceful degradation
+
+## Notes
+
+From architecture:
+```elixir
+def check_resource_limit(%__MODULE__{} = caps, resource, current_value) do
+  limit = Map.get(caps.resource_limits, resource)
+  if limit && current_value >= limit do
+    {:error, {:limit_exceeded, resource, limit}}
+  else
+    :ok
+  end
+end
+
+def remaining_budget(caps, resource, current_value) do
+  limit = Map.get(caps.resource_limits, resource)
+  if limit, do: limit - current_value, else: :unlimited
+end
+
+def check_and_warn(caps, resource, current_value) do
+  case check_resource_limit(caps, resource, current_value) do
+    :ok ->
+      # Warn at 80% threshold
+      limit = Map.get(caps.resource_limits, resource)
+      if limit && current_value >= limit * 0.8 do
+        :telemetry.execute([:pag, :resource, :warning], 
+          %{current: current_value, limit: limit}, 
+          %{resource: resource})
+      end
+      :ok
+    error -> error
+  end
+end
+```

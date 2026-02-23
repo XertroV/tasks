@@ -1,0 +1,46 @@
+id: P19.M4.E3
+name: Architecture Docs Creation
+status: pending
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-document-plugin-architecture.todo
+  title: Document plugin architecture
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-document-semantic-cache.todo
+  title: Document semantic cache
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T003
+  file: T003-create-api-scopes-reference.todo
+  title: Create API scopes reference
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-document-workspace-model.todo
+  title: Document workspace model
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

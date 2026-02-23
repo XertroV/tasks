@@ -1,0 +1,47 @@
+---
+id: P7.M7.E1.T015
+title: Update error documentation for unified REST and WebSocket format
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P3.M6.E1.T003
+- P7.M7.E1.T009
+tags:
+- documentation
+- error-handling
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:04:05.913633+00:00'
+started_at: '2026-02-08T06:04:05.913633+00:00'
+completed_at: '2026-02-08T06:10:32.707446+00:00'
+duration_minutes: 6.446563383333333
+---
+
+# Update error documentation for unified REST and WebSocket format
+
+## Context
+
+P7.M7.E1.T009 (done) documented error codes focused on WebSocket with a nested `{error: {code, numeric_code, message, details}}` format. After P3.M6.E1 standardizes the REST API on a flat `%{error: "code", message: "text"}` format, the error documentation needs to be reconciled to cover both transports consistently.
+
+## Requirements
+
+- [ ] Update `docs/error-handling.md` to document the unified error format
+  - [ ] REST API errors: `%{error: "code_string", message: "Human text"}`
+  - [ ] Optional keys: `details` (map), `field_errors` (map of field -> [messages])
+  - [ ] WebSocket errors: `%{reason: "string"}` for join/reply, event-specific for pushes
+  - [ ] Document the relationship between REST error codes and WebSocket error codes
+- [ ] Add REST-specific error examples for each HTTP status code
+  - [ ] 400 (bad request), 401 (unauthorized), 403 (forbidden), 404 (not found)
+  - [ ] 422 (validation with field_errors), 429 (rate limited with details)
+- [ ] Reference the `ErrorCodes` module (from P3.M6.E1.T003) as the canonical list
+- [ ] Add a "Error Handling" section to the OpenAPI spec description
+- [ ] Verify consistency between the error code taxonomy and actual implementation
+
+## Acceptance Criteria
+
+- [ ] `docs/error-handling.md` covers both REST and WebSocket error formats
+- [ ] REST error examples use the actual unified format
+- [ ] Error code strings are consistent between REST and WebSocket where applicable
+- [ ] Documentation references `ErrorCodes` module as source of truth
+- [ ] No contradictions between docs and implementation

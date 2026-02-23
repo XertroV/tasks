@@ -1,0 +1,35 @@
+---
+id: P15.M10.E1.T004
+title: Implement global provider cooldown and backoff policy
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P15.M10.E1.T003
+tags:
+- tools
+- web-search
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:11:27.182563+00:00'
+started_at: '2026-02-17T15:11:27.182563+00:00'
+completed_at: '2026-02-17T15:13:38.722349+00:00'
+duration_minutes: 2.1923295333333335
+---
+
+# Implement global provider cooldown and backoff policy
+
+
+
+## Requirements
+
+- Track provider failures and place failing providers on temporary global cooldown with exponential backoff and jitter.
+- Expose cooldown checks to provider selection so cooling providers are skipped.
+- Build cooldown/backoff logic as a reusable state machine with injectable clock for deterministic tests.
+
+## Acceptance Criteria
+
+- Consecutive failures trigger cooldown and block provider selection until expiry.
+- Backoff policy and cooldown expiry behavior are covered by focused unit tests.
+- Cooldown primitive is tool-agnostic and reusable by other multi-provider tool orchestrators.

@@ -1,0 +1,63 @@
+---
+id: P25.M2.E4.T007
+title: Standardize Tailscale plugin MCP interface
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- tailscale
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:21:51.405891+00:00'
+started_at: '2026-02-19T15:21:51.405891+00:00'
+completed_at: '2026-02-19T15:25:58.876913+00:00'
+duration_minutes: 4.124516816666667
+---
+
+# Standardize Tailscale plugin MCP interface
+
+## Scope
+
+- Audit `plugins/tailscale/lib/tailscale_plugin.ex`.
+- Plan conversion from:
+  - `tailscale_connect`
+  - `tailscale_disconnect`
+  - `tailscale_status`
+  - `tailscale_list_peers`
+- to one tailscale domain tool with internal dispatch.
+
+## Requirements
+
+- Define single schema with operation enum and clear per-operation arguments/output.
+- Keep workspace manager interactions and status behavior unchanged in planned semantics.
+- Require deterministic dispatch failures for unknown actions.
+
+## Acceptance Criteria
+
+- [ ] Unified tool schema created with explicit supported operations.
+- [ ] Operation-level arguments and output semantics planned for each action.
+- [ ] Unknown actions return structured errors with supported options.
+- [ ] Compatibility plan for legacy tool names is documented.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P25.M2.E4)
+**Agent**: cli-user
+**Date**: 2026-02-19 15:21 UTC
+**Sibling tasks**: P25.M2.E4.T008, P25.M2.E4.T009
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P25.M2.E4.T007 → P25.M2.E4.T008 → P25.M2.E4.T009
+Mark each done individually after completion.
+
+**Task files**:
+- P25.M2.E4.T007: .tasks/25-mcp-tool-interface-enhancement/02-core-tool-improvements/04-plugin-mcp-tool-standardization/T007-standardize-tailscale-plugin-mcp-interface.todo
+- P25.M2.E4.T008: .tasks/25-mcp-tool-interface-enhancement/02-core-tool-improvements/04-plugin-mcp-tool-standardization/T008-standardize-whisper-plugin-mcp-interface.todo
+- P25.M2.E4.T009: .tasks/25-mcp-tool-interface-enhancement/02-core-tool-improvements/04-plugin-mcp-tool-standardization/T009-add-plugin-tool-call-compatibility-migration-plan.todo

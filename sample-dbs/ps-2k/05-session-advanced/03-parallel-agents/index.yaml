@@ -1,0 +1,40 @@
+id: P5.M03
+name: Parallel Sub-Agents
+status: pending
+estimate_hours: 12
+complexity: high
+depends_on:
+- M2
+epics:
+- id: E1
+  name: Fork for Queries
+  path: 01-fork-for-queries
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on: []
+  description: Create fork for each query in list
+- id: E2
+  name: Result Aggregation
+  path: 02-result-aggregation
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+  description: Use Task.await_many to gather results
+- id: E3
+  name: Timeout Handling
+  path: 03-timeout-handling
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+  description: Accept timeout option in fork_for_parallel_queries
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

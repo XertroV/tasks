@@ -1,0 +1,53 @@
+---
+status: done
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:57:47.227619'
+started_at: '2026-02-05T16:57:47.227619'
+completed_at: '2026-02-05T17:01:55.338635'
+duration_minutes: 4.135183433333333
+---
+id: P2.M5.E2.T002
+title: Add model info via /api/show
+status: pending
+priority: high
+estimate_hours: 1.5
+complexity: medium
+depends_on: [P2.M5.E2.T001]
+
+description: |
+  Implement Ollama's /api/show endpoint to get detailed model information.
+  
+  Request: POST /api/show with {"model": "llama3.2"}
+  
+  Response includes:
+  - modelfile: full modelfile definition
+  - parameters: model parameters
+  - template: prompt template
+  - details: architecture info
+  - model_info: detailed GGUF metadata
+  - capabilities: ["completion", "vision"] etc.
+
+acceptance_criteria:
+  - [ ] Implement show_model/1 function
+  - [ ] Parse /api/show response
+  - [ ] Extract capabilities array
+  - [ ] Extract context length (llama.context_length)
+  - [ ] Extract vocab size
+  - [ ] Extract model architecture info
+  - [ ] Return structured model info
+  - [ ] Handle model not found error
+
+files:
+  - lib/pag_server/llm/ollama.ex
+  - lib/pag_server/llm/ollama/model_info.ex (optional struct)
+
+references:
+  - POST /api/show endpoint
+  - model_info field contains GGUF metadata
+
+notes: |
+  Use this to:
+  - Detect vision/multimodal capabilities
+  - Get context window size
+  - Validate model features before use
+  - Display model details to users

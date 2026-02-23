@@ -1,0 +1,18 @@
+---
+id: P38.M1.E3.T003
+title: 'Documentation: PLUGIN_DEVELOPMENT.md update and connector_messaging/README.md'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P38.M1.E2.T002
+- P38.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:53:57.449210+00:00'
+started_at: '2026-02-19T04:53:57.449210+00:00'
+completed_at: '2026-02-19T04:56:57.946585+00:00'
+duration_minutes: 3.008289333333333
+---
+Update docs/PLUGIN_DEVELOPMENT.md with a brief mention of connector_messaging as a reference plugin example for outbound messaging. Create plugins/connector_messaging/README.md with: overview, setup instructions (enable plugin, configure BotConfig connectors), tool reference (list_connectors, send_connector_message with arg tables), and a worked example agent prompt.

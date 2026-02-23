@@ -1,0 +1,37 @@
+---
+id: P15.M2.E3.T002
+title: Create cost breakdown visualization
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T13:54:55.249963+00:00'
+started_at: '2026-02-13T13:54:55.249963+00:00'
+completed_at: '2026-02-13T14:25:36.269797+00:00'
+duration_minutes: 30.683663683333336
+---
+
+# Create cost breakdown visualization
+
+## Description
+Build visualization showing cost breakdown by tool type, session, and time period. Help developers understand where time and resources are being spent.
+
+## Acceptance Criteria
+- [ ] Create cost aggregation queries by tool type
+- [ ] Implement cost breakdown by session/agent
+- [ ] Add time-series view for cost over time
+- [ ] Show top expensive tools/operations
+- [ ] Display token usage alongside time costs
+- [ ] Add comparison view (before/after optimization)
+- [ ] Export cost reports as CSV/JSON
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/tool_call.ex`, `lib/pag_server/pricing.ex`, `lib/pag_server/schema/stats.ex`
+- Part of epic: Tool Execution Timeline
+- Leverage existing pricing/stats infrastructure

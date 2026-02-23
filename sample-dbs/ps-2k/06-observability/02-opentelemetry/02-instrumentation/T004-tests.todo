@@ -1,0 +1,71 @@
+---
+id: P6.M2.E2.T004
+title: Write instrumentation tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P6.M2.E2.T001
+- P6.M2.E2.T002
+- P6.M2.E2.T003
+tags:
+- observability
+- opentelemetry
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:00:46.888338+00:00'
+started_at: '2026-02-06T20:00:46.888338+00:00'
+completed_at: '2026-02-06T20:11:36.622670+00:00'
+duration_minutes: 10.828905366666667
+---
+
+# Write instrumentation tests
+
+Test that spans are created correctly with proper attributes and relationships.
+
+## Requirements
+
+- [ ] Create test helper for capturing spans
+- [ ] Test LLM instrumentation:
+  - [ ] Spans created for completions
+  - [ ] Attributes populated correctly
+  - [ ] Errors set span status
+- [ ] Test tool instrumentation:
+  - [ ] Tool invocations create spans
+  - [ ] Nested tool calls linked
+- [ ] Test agent instrumentation:
+  - [ ] Message processing traced
+  - [ ] Multi-turn conversations linked
+- [ ] Use in-memory span exporter for tests
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Spans verified with correct names
+- [ ] Attributes validated
+- [ ] Parent-child relationships tested
+- [ ] Error handling tested
+
+## Notes
+
+**Test Setup**:
+```elixir
+defmodule PagServer.ObservabilityTest do
+  use ExUnit.Case
+  require OpenTelemetry.Tracer, as: Tracer
+
+  setup do
+    :otel_simple_processor.set_exporter(:otel_exporter_pid, self())
+    :ok
+  end
+
+  test "LLM call creates span" do
+    PagServer.LLM.Anthropic.complete("claude-3-5-sonnet", [...])
+    
+    assert_receive {:span, span_record}
+    assert span_record.name == "llm.request"
+    assert span_record.attributes[:"llm.model"] == "claude-3-5-sonnet"
+  end
+end
+```

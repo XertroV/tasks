@@ -1,0 +1,101 @@
+---
+id: P7.M7.E1.T001
+title: Add open_api_spex dependency
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:48:38.500162+00:00'
+started_at: '2026-02-06T21:48:38.500162+00:00'
+completed_at: '2026-02-06T22:10:59.621372+00:00'
+tags:
+- documentation
+- openapi
+- setup
+duration_minutes: 22.352019966666667
+---
+
+# Add open_api_spex dependency
+
+Add the open_api_spex library to enable OpenAPI 3.0 specification generation from Phoenix controllers.
+
+## Requirements
+
+- [ ] Add `open_api_spex` dependency to `mix.exs`
+  - [ ] Use latest stable version (~> 3.18 or higher)
+  - [ ] Add as a regular dependency (not dev-only)
+  
+- [ ] Run `mix deps.get` to fetch dependency
+
+- [ ] Add OpenApiSpex to application supervision (if required)
+  - [ ] Check library docs for startup requirements
+
+## Acceptance Criteria
+
+- [ ] `open_api_spex` is listed in `mix.exs` dependencies
+- [ ] `mix deps.get` completes without errors
+- [ ] `mix compile` succeeds with the new dependency
+- [ ] Library modules are available: `OpenApiSpex`, `OpenApiSpex.Schema`, etc.
+- [ ] No compiler warnings related to the new dependency
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+
+**Why open_api_spex?**
+- Native Elixir library with tight Phoenix integration
+- Schema-first approach: define schemas once, use in validation and documentation
+- Generates OpenAPI 3.0 spec from code annotations
+- Active maintenance and community support
+
+## Implementation Guide
+
+### mix.exs Addition
+
+```elixir
+defp deps do
+  [
+    # ... existing deps ...
+    {:open_api_spex, "~> 3.18"}
+  ]
+end
+```
+
+### Verification
+
+```bash
+mix deps.get
+mix compile
+iex -S mix
+iex> Code.ensure_loaded?(OpenApiSpex)
+true
+```
+
+## Notes
+
+This is a foundational task - all other OpenAPI documentation tasks depend on this.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-06 21:48 UTC
+**Sibling tasks**: P7.M7.E1.T002, P7.M7.E1.T003, P7.M7.E1.T008, P7.M7.E1.T009, P7.M7.E1.T010
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T001 → P7.M7.E1.T002 → P7.M7.E1.T003 → P7.M7.E1.T008 → P7.M7.E1.T009 → P7.M7.E1.T010
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T001: .tasks/07-production/07-documentation/01-api-docs/T001-add-open-api-spex-dependency.todo
+- P7.M7.E1.T002: .tasks/07-production/07-documentation/01-api-docs/T002-create-openapi-base-specificat.todo
+- P7.M7.E1.T003: .tasks/07-production/07-documentation/01-api-docs/T003-integrate-redoc-ui-at-api-docs.todo
+- P7.M7.E1.T008: .tasks/07-production/07-documentation/01-api-docs/T008-write-phoenix-channel-protocol.todo
+- P7.M7.E1.T009: .tasks/07-production/07-documentation/01-api-docs/T009-document-error-codes-and-recov.todo
+- P7.M7.E1.T010: .tasks/07-production/07-documentation/01-api-docs/T010-create-websocket-client-integr.todo

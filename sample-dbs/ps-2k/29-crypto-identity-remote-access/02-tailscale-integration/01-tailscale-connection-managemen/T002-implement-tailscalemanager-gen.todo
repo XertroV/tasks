@@ -1,0 +1,17 @@
+---
+id: P29.M2.E1.T002
+title: Implement TailscaleManager GenServer
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P29.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:05:41.064208+00:00'
+started_at: '2026-02-18T19:05:41.064208+00:00'
+completed_at: '2026-02-18T19:08:56.420104+00:00'
+duration_minutes: 3.2559314666666666
+---
+GenServer managing tailscale daemon lifecycle per workspace: start_tailscale/1 (runs tailscaled + tailscale up --authkey), stop_tailscale/1, status/1. Uses System.cmd/Port for daemon management. Monitors daemon health and auto-reconnects.

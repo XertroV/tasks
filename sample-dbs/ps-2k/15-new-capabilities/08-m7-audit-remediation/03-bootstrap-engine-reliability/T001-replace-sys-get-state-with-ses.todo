@@ -1,0 +1,51 @@
+---
+id: P15.M8.E3.T001
+title: Replace :sys.get_state with Session.get_compile_context/1 single call
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- performance
+- bootstrap
+- otp
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:48:48.535698+00:00'
+started_at: '2026-02-17T15:48:48.535698+00:00'
+completed_at: '2026-02-17T16:08:36.394090+00:00'
+duration_minutes: 19.797639666666665
+---
+:sys.get_state(pid) is called on every agent message during bootstrap via get_bootstrap_prompt -> compile_prompt_from_session -> get_template_from_pid. This is an OTP debugging tool that suspends the GenServer. Under load, serializes all agent message processing.
+
+Currently 4 sequential GenServer calls per prompt resolution: Registry.lookup -> Session.get_status -> Session.current_section -> :sys.get_state.
+
+Fix: Add Session.get_compile_context/1 that returns {template, status, section, answers} in one GenServer.call. Update compile_prompt_from_session to use it.
+
+Source: E3 Audit C2, I7
+
+## Acceptance Criteria
+- [ ] No :sys.get_state usage in production code
+- [ ] Single GenServer.call for all bootstrap prompt data
+- [ ] get_bootstrap_prompt uses the new single-call API
+- [ ] Performance improvement measurable (fewer GenServer messages)
+- [ ] All bootstrap tests pass
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M8.E3)
+**Agent**: cli-user
+**Date**: 2026-02-17 15:48 UTC
+**Sibling tasks**: P15.M8.E3.T002, P15.M8.E3.T003, P15.M8.E3.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M8.E3.T001 → P15.M8.E3.T002 → P15.M8.E3.T003 → P15.M8.E3.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M8.E3.T001: .tasks/15-new-capabilities/08-m7-audit-remediation/03-bootstrap-engine-reliability/T001-replace-sys-get-state-with-ses.todo
+- P15.M8.E3.T002: .tasks/15-new-capabilities/08-m7-audit-remediation/03-bootstrap-engine-reliability/T002-formalize-state-machine-transi.todo
+- P15.M8.E3.T003: .tasks/15-new-capabilities/08-m7-audit-remediation/03-bootstrap-engine-reliability/T003-wrap-transition-agent-in-trans.todo
+- P15.M8.E3.T004: .tasks/15-new-capabilities/08-m7-audit-remediation/03-bootstrap-engine-reliability/T004-expose-advance-through-facade.todo

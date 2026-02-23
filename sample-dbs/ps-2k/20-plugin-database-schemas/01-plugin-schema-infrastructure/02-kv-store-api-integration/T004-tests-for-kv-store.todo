@@ -1,0 +1,23 @@
+---
+id: P20.M1.E2.T004
+title: Tests for KV store
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P20.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:16:11.778905+00:00'
+started_at: '2026-02-18T10:16:11.778905+00:00'
+completed_at: '2026-02-18T10:30:49.848404+00:00'
+duration_minutes: 14.634491483333333
+---
+## Acceptance Criteria
+- CRUD operations work correctly
+- Scope isolation (different scopes don't conflict)
+- Plugin validation (disabled plugin can't access KV)
+- Concurrent access safety
+- clear/1 removes all plugin data
+- All tests async: true

@@ -1,0 +1,19 @@
+---
+id: B096
+title: Whhen an error occurs and we retry, only the last error is saved. so if we
+  fallback to OPENAI and don't have an api key for them, the error message is always
+  permissions issue.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T12:06:55.719821+00:00'
+started_at: '2026-02-17T12:06:55.719821+00:00'
+completed_at: '2026-02-17T12:52:08.164567+00:00'
+duration_minutes: 45.20741221666666
+---
+
+Whhen an error occurs and we retry, only the last error is saved. so if we fallback to OPENAI and don't have an api key for them, the error message is always permissions issue.

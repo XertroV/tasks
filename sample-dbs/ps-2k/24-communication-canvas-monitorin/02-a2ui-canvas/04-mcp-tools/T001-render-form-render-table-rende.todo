@@ -1,0 +1,27 @@
+---
+id: P24.M2.E4.T001
+title: render_form, render_table, render_button MCP tools
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:05.430700+00:00'
+started_at: '2026-02-18T17:04:05.430700+00:00'
+completed_at: '2026-02-18T17:04:09.819642+00:00'
+duration_minutes: 0.07314886666666666
+---
+
+# render_form, render_table, render_button MCP tools
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

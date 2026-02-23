@@ -1,0 +1,64 @@
+---
+id: P7.M7.E1.T016
+title: Document Sessions public API and typedocs
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- documentation
+- exdoc
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:37:45.786733+00:00'
+started_at: '2026-02-08T06:37:45.786733+00:00'
+completed_at: '2026-02-08T06:46:53.483960+00:00'
+duration_minutes: 9.128286966666668
+---
+
+# Document Sessions public API and typedocs
+
+Document the public Session API so callers can understand forking, parallel query,
+and context construction behavior without reading implementation details.
+
+
+## Requirements
+
+- [x] Add or improve `@doc` for public functions in `lib/pag_server/sessions/session.ex`
+  - [x] Cover `build_context/1`, `list_forked_sessions/1`, and `build_fork_tree/1`
+  - [x] Cover `fork_for_parallel_queries/3` and `start_agents_for_forks/2`
+  - [x] Cover any other exported functions currently lacking docs
+- [x] Ensure public function `@spec` exists and matches current return contracts
+- [x] Add `@typedoc` for all exported session/fork result types in the module
+- [x] Verify examples and terminology match current session behavior and error handling
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] `PagServer.Sessions.Session` has `@doc` on all public functions
+- [x] Public function `@spec` definitions are present and accurate
+- [x] All exported public types in `session.ex` have `@typedoc`
+- [x] `mix docs` completes without new warnings from this module
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 06:37 UTC
+**Sibling tasks**: P7.M7.E1.T017, P7.M7.E1.T018, P7.M7.E1.T019, P7.M7.E1.T020, P7.M7.E1.T021
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T016 → P7.M7.E1.T017 → P7.M7.E1.T018 → P7.M7.E1.T019 → P7.M7.E1.T020 → P7.M7.E1.T021
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T016: .tasks/07-production/07-documentation/01-api-docs/T016-document-sessions-public-api-a.todo
+- P7.M7.E1.T017: .tasks/07-production/07-documentation/01-api-docs/T017-document-agent-runtime-api-con.todo
+- P7.M7.E1.T018: .tasks/07-production/07-documentation/01-api-docs/T018-document-llm-registry-and-stre.todo
+- P7.M7.E1.T019: .tasks/07-production/07-documentation/01-api-docs/T019-document-built-in-tool-module.todo
+- P7.M7.E1.T020: .tasks/07-production/07-documentation/01-api-docs/T020-document-mcp-server-lifecycle.todo
+- P7.M7.E1.T021: .tasks/07-production/07-documentation/01-api-docs/T021-document-events-query-and-repl.todo

@@ -1,0 +1,34 @@
+id: P47.M3
+name: Approval LiveView & Cleanup Worker
+status: done
+estimate_hours: 7.0
+complexity: high
+depends_on:
+- P47.M2
+- P46.M3
+locked: false
+epics:
+- id: E1
+  name: Device Approval LiveView
+  path: 01-device-approval-liveview
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: DeviceCodeCleanup Oban Worker
+  path: 02-devicecodecleanup-oban-worker
+  status: done
+  estimate_hours: 1.5
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,34 @@
+id: P36.M1.E5
+name: AgentWaker
+status: done
+estimate_hours: 2.5
+complexity: medium
+depends_on:
+- P36.M1.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-pagserver-agents-age.todo
+  title: Implement PagServer.Agents.AgentWaker
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P36.M1.E1.T001
+  - P36.M1.E1.T002
+- id: T002
+  file: T002-tests-for-agentwaker.todo
+  title: Tests for AgentWaker
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P36.M1.E5.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,78 @@
+---
+id: P33.M1.E1.T001
+title: Design Pag mascot appearance and sprite system
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- design
+- mascot
+- svg
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:42:13.525557+00:00'
+started_at: '2026-02-18T22:42:13.525557+00:00'
+completed_at: '2026-02-18T22:49:20.630752+00:00'
+duration_minutes: 7.1184197000000005
+---
+
+# Design Pag mascot appearance and sprite system
+
+Create the visual design for Pag the orange frog mascot as an SVG sprite system with multiple expression states.
+
+## Requirements
+
+- SVG-based mascot that scales well at any size
+- Orange frog character with distinctive, cute appearance
+- Multiple sprite states for different moods/activities
+- Consistent visual language with dashboard theme
+
+## Sprite States
+
+1. **Idle** - Standing still, occasional blink
+2. **Happy** - Eyes happy, slight bounce
+3. **Working** - Determined expression, maybe holding a tool
+4. **Sleeping** - Eyes closed, Zzz animation
+5. **Hungry** - Slightly sad, stomach rumble indicator
+6. **Excited** - Big eyes, jumping animation
+7. **Walking** - Walking cycle animation frames
+
+## Color Palette
+
+- Body: Warm orange (#FF8C42)
+- Belly: Cream/light orange (#FFD4A3)
+- Eyes: Bright cyan (#4CC9F0)
+- Blush: Soft pink (#FFB4C4)
+- Highlights: Gold (#FFD700)
+
+## Acceptance Criteria
+
+- [ ] SVG sprite file created at `priv/static/images/pag-sprite.svg`
+- [ ] All 7 sprite states defined with consistent styling
+- [ ] SVG uses CSS custom properties for theming
+- [ ] Dark mode compatible (colors adjust automatically)
+- [ ] Sprite dimensions: 48x48px base, scalable
+- [ ] Each state has clear visual distinction
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P33.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 22:42 UTC
+**Sibling tasks**: P33.M1.E1.T002, P33.M1.E1.T003, P33.M1.E1.T004, P33.M1.E1.T005, P33.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P33.M1.E1.T001 → P33.M1.E1.T002 → P33.M1.E1.T003 → P33.M1.E1.T004 → P33.M1.E1.T005 → P33.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P33.M1.E1.T001: .tasks/33-ui-ux-enhancements/01-pag-mascot-system/01-pag-mascot-core/T001-design-pag-mascot-appearance-a.todo
+- P33.M1.E1.T002: .tasks/33-ui-ux-enhancements/01-pag-mascot-system/01-pag-mascot-core/T002-create-paglivecomponent-for-re.todo
+- P33.M1.E1.T003: .tasks/33-ui-ux-enhancements/01-pag-mascot-system/01-pag-mascot-core/T003-implement-css-animation-system.todo
+- P33.M1.E1.T004: .tasks/33-ui-ux-enhancements/01-pag-mascot-system/01-pag-mascot-core/T004-add-tamagotchi-mechanics-mood.todo
+- P33.M1.E1.T005: .tasks/33-ui-ux-enhancements/01-pag-mascot-system/01-pag-mascot-core/T005-implement-user-interactions-cl.todo
+- P33.M1.E1.T006: .tasks/33-ui-ux-enhancements/01-pag-mascot-system/01-pag-mascot-core/T006-integrate-pag-into-dashboard-l.todo

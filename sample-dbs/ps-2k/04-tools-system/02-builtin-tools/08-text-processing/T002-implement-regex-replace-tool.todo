@@ -1,0 +1,289 @@
+---
+id: P4.M2.E8.T002
+title: Implement regex_replace tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- text
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:15:31.686570'
+started_at: '2026-02-05T23:15:31.686570'
+completed_at: '2026-02-05T23:24:17.776092'
+duration_minutes: 8.768158533333333
+---
+
+# Implement regex_replace tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/regex_replace.ex` (~180 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support pattern, text, replacement, and options
+- [ ] Support backreferences in replacement ($1, $2, named groups)
+- [ ] Implement replace-all and replace-first modes
+- [ ] Implement ReDoS protection (timeout, complexity limits)
+- [ ] Support limit option (replace first N matches)
+- [ ] Return modified text and replacement count
+
+## Acceptance Criteria
+
+- [ ] Replaces matches of regex pattern with replacement string
+- [ ] Supports backreferences: $1, $2, etc. for capture groups
+- [ ] Supports named backreferences: $name for named groups
+- [ ] Supports $& for full match, $` for text before match, $' for text after match
+- [ ] Supports global replace (all matches) and first-only mode
+- [ ] Supports limit option: replace first N matches only
+- [ ] Returns modified text and count of replacements made
+- [ ] Supports same regex options as regex_search (case_insensitive, multiline, dotall)
+- [ ] Protects against ReDoS: timeout after 5 seconds, reject overly complex patterns
+- [ ] Handles common errors: invalid regex, invalid backreference, timeout
+- [ ] Truncates result at 10MB to prevent memory issues
+- [ ] Test coverage: simple replace, backreferences, named groups, replace-all, replace-first, limit, case-insensitive, ReDoS protection, invalid regex
+- [ ] Performance: efficiently handles multi-MB text inputs
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- ReDoS protection critical (same as regex_search)
+- Backreferences enable powerful transformations
+- Limit option useful for controlled replacements
+- Return replacement count for verification
+- Memory limits prevent unbounded output
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.RegexReplace do
+  @behaviour PAGServer.Tools.Tool
+  @max_result_bytes 10_000_000  # 10MB
+  @regex_timeout_ms 5_000
+  @max_pattern_length 500
+
+  @impl true
+  def name, do: "regex_replace"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "regex_replace",
+      description: "Replace text matching regex pattern with replacement string (supports backreferences)",
+      parameters: %{
+        type: "object",
+        properties: %{
+          pattern: %{
+            type: "string",
+            description: "Regular expression pattern"
+          },
+          text: %{
+            type: "string",
+            description: "Text to search and replace"
+          },
+          replacement: %{
+            type: "string",
+            description: "Replacement string (use $1, $2 for capture groups, $& for full match)"
+          },
+          global: %{
+            type: "boolean",
+            description: "Replace all matches (default: true)"
+          },
+          limit: %{
+            type: "integer",
+            description: "Maximum number of replacements (default: unlimited)"
+          },
+          case_insensitive: %{
+            type: "boolean",
+            description: "Case-insensitive matching (default: false)"
+          },
+          multiline: %{
+            type: "boolean",
+            description: "Multiline mode (default: false)"
+          },
+          dotall: %{
+            type: "boolean",
+            description: "Dotall mode (default: false)"
+          }
+        },
+        required: ["pattern", "text", "replacement"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"pattern" => pattern, "text" => text, "replacement" => replacement} = args, _context) do
+    with :ok <- validate_pattern(pattern),
+         {:ok, regex} <- compile_regex(pattern, args),
+         {:ok, result, count} <- perform_replace(regex, text, replacement, args) do
+      {:ok, %{
+        result: result,
+        replacement_count: count,
+        pattern: pattern
+      }}
+    else
+      {:error, reason} -> {:error, "Regex replace failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_pattern(pattern) when byte_size(pattern) > @max_pattern_length do
+    {:error, "Pattern too long (max #{@max_pattern_length} chars)"}
+  end
+  defp validate_pattern(_pattern), do: :ok
+
+  defp compile_regex(pattern, args) do
+    opts = []
+    opts = if Map.get(args, "case_insensitive"), do: [:caseless | opts], else: opts
+    opts = if Map.get(args, "multiline"), do: [:multiline | opts], else: opts
+    opts = if Map.get(args, "dotall"), do: [:dotall | opts], else: opts
+    
+    case Regex.compile(pattern, opts) do
+      {:ok, regex} -> {:ok, regex}
+      {:error, reason} -> {:error, "Invalid regex: #{inspect(reason)}"}
+    end
+  end
+
+  defp perform_replace(regex, text, replacement, args) do
+    global = Map.get(args, "global", true)
+    limit = Map.get(args, "limit")
+    
+    # Use Task with timeout for ReDoS protection
+    task = Task.async(fn ->
+      if global do
+        replace_all(regex, text, replacement, limit)
+      else
+        replace_first(regex, text, replacement)
+      end
+    end)
+    
+    case Task.yield(task, @regex_timeout_ms) || Task.shutdown(task) do
+      {:ok, {result, count}} -> 
+        truncated_result = truncate_result(result)
+        {:ok, truncated_result, count}
+      nil -> 
+        {:error, "Regex replace timeout (possible ReDoS)"}
+    end
+  end
+
+  defp replace_all(regex, text, replacement, nil) do
+    count = count_matches(regex, text)
+    result = Regex.replace(regex, text, replacement)
+    {result, count}
+  end
+
+  defp replace_all(regex, text, replacement, limit) when is_integer(limit) and limit > 0 do
+    # Manual replacement with limit
+    matches = Regex.scan(regex, text, return: :index, capture: :all)
+    limited_matches = Enum.take(matches, limit)
+    
+    result = replace_with_limit(text, limited_matches, replacement, regex)
+    {result, length(limited_matches)}
+  end
+
+  defp replace_first(regex, text, replacement) do
+    case Regex.run(regex, text) do
+      nil -> {text, 0}
+      _match -> {Regex.replace(regex, text, replacement, global: false), 1}
+    end
+  end
+
+  defp replace_with_limit(text, matches, replacement, regex) do
+    # Process matches in reverse order to maintain correct positions
+    matches
+    |> Enum.reverse()
+    |> Enum.reduce(text, fn [match_data | _], acc_text ->
+      {start_pos, length} = match_data
+      before = String.slice(acc_text, 0, start_pos)
+      match = String.slice(acc_text, start_pos, length)
+      after_text = String.slice(acc_text, start_pos + length, String.length(acc_text))
+      
+      replaced = Regex.replace(regex, match, replacement)
+      before <> replaced <> after_text
+    end)
+  end
+
+  defp count_matches(regex, text) do
+    Regex.scan(regex, text) |> length()
+  end
+
+  defp truncate_result(result) when byte_size(result) > @max_result_bytes do
+    binary_part(result, 0, @max_result_bytes) <>
+      "\n\n[Result truncated at 10MB]"
+  end
+  defp truncate_result(result), do: result
+end
+```
+
+Example usage:
+```json
+{
+  "pattern": "(\\w+)@([\\w.]+)",
+  "text": "Contact john@example.com or support@test.org",
+  "replacement": "$1 [at] $2",
+  "global": true
+}
+```
+
+Example response:
+```json
+{
+  "result": "Contact john [at] example.com or support [at] test.org",
+  "replacement_count": 2,
+  "pattern": "(\\w+)@([\\w.]+)"
+}
+```
+
+Advanced example with limit:
+```json
+{
+  "pattern": "\\d+",
+  "text": "Version 1.2.3",
+  "replacement": "X",
+  "limit": 2
+}
+```
+
+Response:
+```json
+{
+  "result": "Version X.X.3",
+  "replacement_count": 2,
+  "pattern": "\\d+"
+}
+```
+
+Security considerations:
+- Same ReDoS protection as regex_search
+- Truncate result to prevent memory exhaustion
+- Validate backreferences don't cause expansion bombs
+- Limit option prevents accidental mass replacement
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 10:15 UTC
+**Primary task**: P4.M2.E7.T002 - Implement json_query tool (JSONPath)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M2.E8 vs P4.M2.E7)
+- No dependency chain: ✓ (verified at claim time)

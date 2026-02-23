@@ -1,0 +1,77 @@
+---
+id: I017
+title: We should support multiple auth entries per provider (1 enough to use, but
+  can have failover with 2+) for preferred models
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:40:16.639040+00:00'
+started_at: '2026-02-18T14:40:16.639040+00:00'
+completed_at: '2026-02-18T14:40:18.471305+00:00'
+duration_minutes: 0.03053755
+---
+
+# Idea Intake: We should support multiple auth entries per provider (1 enough to use, but can have failover with 2+) for preferred models
+
+## Original Idea
+
+We should support multiple auth entries per provider (1 enough to use, but can have failover with 2+) for preferred models
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "We should support multiple auth entries per provider (1 enough to use, but can have failover with 2+) for preferred models"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+Phase: P22 - LLM Provider & Session Enhancements
+Milestone: P22.M1 - Multi-Credential Provider Auth
+
+Epics:
+- P22.M1.E1 - DB Schema: llm_provider_credentials table
+- P22.M1.E2 - Credential Lookup & Rotation Logic
+- P22.M1.E3 - Credential Management API
+- P22.M1.E4 - Tests: Multi-Credential Auth
+
+Tasks:
+- P22.M1.E1.T001 - Create llm_provider_credentials Ecto schema and migration
+- P22.M1.E1.T002 - Migrate existing llm_providers.api_key_encrypted to new credentials table
+- P22.M1.E2.T001 - Implement CredentialSelector: ordered credential list lookup per provider
+- P22.M1.E2.T002 - Implement credential rotation in route_with_failover/7
+- P22.M1.E2.T003 - Differentiated cooldown tracking: rate-limit vs auth-fail vs timeout
+- P22.M1.E3.T001 - API: CRUD endpoints for provider credentials
+- P22.M1.E3.T002 - API: POST reset-cooldown endpoint
+- P22.M1.E4.T001 - Unit tests: CredentialSelector ordering and cooldown filtering
+- P22.M1.E4.T002 - Integration tests: credential rotation on 429/401/403/timeout responses
+- P22.M1.E4.T003 - API controller tests: credential CRUD and reset-cooldown endpoints
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.
+
+## Details
+
+What It Solves
+1. Rate limit handling - Auto-rotate to next key when one hits limits
+2. Auth failure recovery - Switch profiles on 401/403 errors
+3. Timeout resilience - Fall back on request timeouts
+4. Cooldown tracking - Don't retry a failed key until cooldown expires
+
+We have lots But missing:
+- Multiple auth profiles per provider
+- Profile rotation logic
+- Differentiated cooldown (rate-limit vs auth-fail vs timeout)

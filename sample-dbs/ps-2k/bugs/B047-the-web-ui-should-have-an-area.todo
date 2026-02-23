@@ -1,0 +1,40 @@
+---
+id: B047
+title: the web UI should have an area to create and edit agents (Which I assume we
+  can then invoke in the validation console inside of a session?)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T01:37:56.588407+00:00'
+started_at: '2026-02-16T01:37:56.588407+00:00'
+completed_at: '2026-02-16T01:59:27.550511+00:00'
+duration_minutes: 21.516034833333332
+---
+
+the web UI should have an area to create and edit agents (Which I assume we can then invoke in the validation console inside of a session?)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-16 01:37 UTC
+**Primary task**: B046 - in light mode, 'enter a validation prompt' text input cannot be easily seen since it blends in with the bg
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

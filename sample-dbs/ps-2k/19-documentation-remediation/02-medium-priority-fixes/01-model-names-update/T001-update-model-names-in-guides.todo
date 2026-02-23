@@ -1,0 +1,36 @@
+---
+id: P19.M2.E1.T001
+title: Update model names in guides
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- guides
+- models
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:42:38.831982+00:00'
+started_at: '2026-02-18T01:42:38.831982+00:00'
+completed_at: '2026-02-18T02:03:12.654224+00:00'
+duration_minutes: 20.56370383333333
+---
+Update gpt-4 → gpt-4o in production-agent-example.md. Update claude-sonnet-4 references as needed.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 01:42 UTC
+**Sibling tasks**: P19.M2.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M2.E1.T001 → P19.M2.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M2.E1.T001: .tasks/19-documentation-remediation/02-medium-priority-fixes/01-model-names-update/T001-update-model-names-in-guides.todo
+- P19.M2.E1.T002: .tasks/19-documentation-remediation/02-medium-priority-fixes/01-model-names-update/T002-update-model-aliases-in-rest-a.todo

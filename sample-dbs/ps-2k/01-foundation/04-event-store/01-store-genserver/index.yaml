@@ -1,0 +1,62 @@
+# Epic: EventStore GenServer
+# Phase 1, Milestone 4, Epic 1 (P1.M4.E1)
+
+id: P1.M4.E1
+name: EventStore GenServer
+status: pending
+estimate_hours: 6
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-event-struct.todo
+    title: Define Event struct and types
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-genserver-module.todo
+    title: Create EventStore GenServer module
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-append-logic.todo
+    title: Implement append and query logic
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    # Implicit dependency on T002
+    
+  - id: T004
+    file: T004-subscription.todo
+    title: Add PubSub subscription support
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    # Implicit dependency on T003
+    
+  - id: T005
+    file: T005-tests.todo
+    title: Write EventStore GenServer tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    # Implicit dependency on T004
+
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

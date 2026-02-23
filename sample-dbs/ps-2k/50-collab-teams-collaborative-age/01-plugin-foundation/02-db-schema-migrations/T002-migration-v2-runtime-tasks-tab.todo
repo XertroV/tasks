@@ -1,0 +1,24 @@
+---
+id: P50.M1.E2.T002
+title: 'Migration V2: runtime_tasks table'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:09:20.706128+00:00'
+started_at: '2026-02-23T02:09:20.706128+00:00'
+completed_at: '2026-02-23T02:09:23.361992+00:00'
+duration_minutes: 0.04426416666666667
+---
+## Description
+CollabTeams.Migrations.V2 creates plugin_collab_teams_runtime_tasks (id uuid PK, team_id uuid FK runtime_teams ON DELETE CASCADE, title text NOT NULL, description text, state text CHECK IN (pending in_progress blocked completed failed cancelled), claimed_by_worker_id uuid FK runtime_workers nullable ON DELETE SET NULL, depends_on uuid[] DEFAULT {}, priority text DEFAULT normal, lock_version integer DEFAULT 0, timestamps). Indexes: team_id, state, claimed_by_worker_id composite and individual. down/0 drops table.
+
+## Acceptance Criteria
+- Migration applies and rolls back cleanly
+- depends_on column accepts uuid array
+- lock_version defaults to 0
+- FK on claimed_by_worker_id enforced

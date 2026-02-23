@@ -1,0 +1,49 @@
+---
+id: P18.M1.E2.T001
+title: Define permission constants and role hierarchy module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- security
+- workspace
+- rbac
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:04:18.093978+00:00'
+started_at: '2026-02-17T17:04:18.093978+00:00'
+completed_at: '2026-02-17T17:05:56.328466+00:00'
+duration_minutes: 1.6372412833333334
+---
+
+# Define permission constants and role hierarchy module
+
+## Description
+
+Create `PagServer.Workspaces.Roles` module defining the role hierarchy, permission action atoms, and the role-to-permission mapping matrix.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/workspaces/roles.ex`
+- [ ] Define roles: `:owner`, `:admin`, `:member`
+- [ ] Define action atoms: `:view_workspace`, `:manage_workspace`, `:delete_workspace`, `:manage_members`, `:manage_agents`, `:manage_config`, `:manage_bots`, `:create_sessions`, `:send_messages`, `:view_agents`, `:view_sessions`, `:view_files`
+- [ ] Permission matrix:
+  - owner: all actions
+  - admin: all except `:delete_workspace`
+  - member: `:view_workspace`, `:view_agents`, `:view_sessions`, `:view_files`, `:create_sessions`, `:send_messages`
+- [ ] `has_permission?(role, action)` — boolean check against matrix
+- [ ] `role_hierarchy/0` — returns `[:owner, :admin, :member]` ordered by privilege
+- [ ] `role_at_least?(role, minimum_role)` — checks if role meets minimum threshold
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] `has_permission?(:owner, action)` returns true for all actions
+- [ ] `has_permission?(:member, :delete_workspace)` returns false
+- [ ] `role_at_least?(:admin, :member)` returns true
+- [ ] `role_at_least?(:member, :admin)` returns false
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces/roles.ex`

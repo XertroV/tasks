@@ -1,0 +1,48 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T09:37:18.293900+00:00'
+started_at: '2026-02-13T09:37:18.293900+00:00'
+completed_at: '2026-02-13T09:59:12.092548+00:00'
+duration_minutes: 21.89664395
+---
+# Configure Swoosh email adapter
+
+## Description
+Set up Swoosh email library with provider adapters (Sendgrid, SES, SMTP) and configure development/test modes with Local and Adapters.Memory for safe testing.
+
+## Acceptance Criteria
+- [ ] `{:swoosh, "~> 1.0"}` added to mix.exs dependencies
+- [ ] `PagServer.Mailer` module created with Swoosh.Mailer behaviour
+- [ ] Provider adapters configured via application env (sendgrid, ses, smtp, local)
+- [ ] Dev mode uses Swoosh.Adapters.Local with mailbox preview
+- [ ] Test mode uses Swoosh.Adapters.Test for assertions
+- [ ] Runtime configuration via `config/runtime.exs`
+- [ ] `PagServer.Email` module for building emails
+- [ ] Email preview endpoint in dev environment
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: Check `mix.exs` for existing deps, Phoenix mailer patterns
+- Part of epic: P14.M1.E4 - Email Notifications
+- Reference: https://hexdocs.pm/swoosh/
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P14.M1.E4)
+**Agent**: cli-user
+**Date**: 2026-02-13 09:37 UTC
+**Sibling tasks**: P14.M1.E4.T002, P14.M1.E4.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P14.M1.E4.T001 → P14.M1.E4.T002 → P14.M1.E4.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P14.M1.E4.T001: .tasks/14-integrations-performance/01-missing-messaging-integrations/04-email-notifications/T001-configure-swoosh-email-adapter.todo
+- P14.M1.E4.T002: .tasks/14-integrations-performance/01-missing-messaging-integrations/04-email-notifications/T002-add-email-notification-template.todo
+- P14.M1.E4.T003: .tasks/14-integrations-performance/01-missing-messaging-integrations/04-email-notifications/T003-implement-notification-triggers.todo

@@ -1,0 +1,21 @@
+id: P6.M6
+name: Correlation IDs & Request Tracing
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Correlation ID Infrastructure
+  path: 01-correlation-id-infrastructure
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

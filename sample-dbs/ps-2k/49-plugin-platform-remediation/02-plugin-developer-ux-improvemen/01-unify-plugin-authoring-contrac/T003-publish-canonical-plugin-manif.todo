@@ -1,0 +1,31 @@
+---
+id: P49.M2.E1.T003
+title: Publish canonical plugin manifest contract used by validator docs and examples
+status: done
+estimate_hours: 3.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:17:26.498487+00:00'
+started_at: '2026-02-20T09:17:26.498487+00:00'
+completed_at: '2026-02-20T09:28:53.465088+00:00'
+duration_minutes: 11.449443183333333
+---
+
+# Publish canonical plugin manifest contract used by validator docs and examples
+
+
+
+## Requirements
+
+- Define and publish a single canonical plugin manifest contract used by validator, parser, docs, and examples.
+- Remove schema drift in tool/capability representation across plugin examples and validation code.
+- Add validation error messages that point authors to exact corrective action.
+
+## Acceptance Criteria
+
+- One authoritative contract exists and is referenced by docs and runtime validators.
+- Existing first-party plugin manifests conform to the canonical contract.
+- Author-facing validation errors are deterministic and actionable.

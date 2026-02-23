@@ -1,0 +1,50 @@
+---
+id: P10.M1.E1.T002
+title: Create integration_settings database schema
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T19:55:09.622708+00:00'
+started_at: '2026-02-11T19:55:09.622708+00:00'
+completed_at: '2026-02-11T20:09:26.029674+00:00'
+duration_minutes: 14.273449166666667
+---
+
+# Create integration_settings database schema
+
+
+
+## Requirements
+
+Create a database migration for the `integration_settings` table to store encrypted GitHub API tokens and configuration per organization/user.
+
+## Description
+
+The integration_settings table stores GitHub authentication credentials and configuration. Sensitive fields (API tokens, webhook secrets) must be encrypted at rest using a field-level encryption mechanism. This table supports per-org and per-user GitHub integrations with audit trail support.
+
+## Acceptance Criteria
+
+- [ ] Migration creates `integration_settings` table with UUID primary key
+- [ ] Fields include: `user_id` (FK to users), `integration_type` (string, "github"), `api_token_encrypted` (text), `webhook_secret_encrypted` (text), `github_username`, `github_org`, `config` (jsonb), `encrypted_metadata` (text), `is_active`, `last_synced_at`, `created_at`, `updated_at`
+- [ ] Unique constraint on `(user_id, integration_type, github_username)` to prevent duplicate integrations
+- [ ] Index on `(user_id, integration_type)` for finding user's integrations
+- [ ] Separate index on `integration_type` for admin queries
+- [ ] Ensure encrypted fields use consistent encryption configuration
+
+## Implementation Notes
+
+- Use `:binary_id` primary key (consistent with codebase)
+- `integration_type`: String enum value, default "github"
+- Encrypted fields (`api_token_encrypted`, `webhook_secret_encrypted`, `encrypted_metadata`): Store as text (base64-encoded ciphertext)
+- `config`: JSONB for storing additional settings (webhook URL, event preferences, etc.)
+- `github_username`: Optional, for personal integrations
+- `github_org`: Optional, for org-level integrations
+- `is_active`: Boolean, default true
+- Encryption: Use Cloak-style field encryption (AES-256-GCM) via custom type or Ecto hook
+- `last_synced_at`: Track last GitHub API sync for rate limiting awareness
+- Suggested location: `priv/repo/migrations/YYYYMMDDHHMMSS_create_integration_settings.exs`
+- See reference: `/home/xertrov/src/pag-server/priv/repo/migrations/20260206140727_create_api_keys.exs` for pattern

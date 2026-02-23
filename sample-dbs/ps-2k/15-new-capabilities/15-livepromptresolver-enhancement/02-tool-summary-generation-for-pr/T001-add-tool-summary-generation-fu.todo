@@ -1,0 +1,29 @@
+---
+id: P15.M15.E2.T001
+title: Add tool summary generation function for prompt injection
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- persona
+- tools
+- prompts
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-19T13:57:05.976419+00:00'
+---
+Create a function that generates a one-line summary list of all tools available to an agent.
+
+Format: `- tool_name: description` (one per line)
+
+Requirements:
+- Must be capability-filtered (only tools the agent has access to)
+- Source descriptions from each tool's ToolSchema
+
+Acceptance criteria:
+- Function returns formatted tool summary string
+- Filtered by capabilities
+- Descriptions match ToolSchema

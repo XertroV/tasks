@@ -1,0 +1,24 @@
+---
+id: P42.M4.E1.T001
+title: Implement RemoteServer TOFU module and pag:// address stub
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:37:12.853744+00:00'
+started_at: '2026-02-19T17:37:12.853744+00:00'
+completed_at: '2026-02-19T18:19:59.878838+00:00'
+duration_minutes: 42.78375136666667
+---
+## Context
+plugins/mailman/lib/remote_server.ex
+Remote delivery is NOT implemented. But we build the identity infrastructure and extension points now so the addressing scheme is stable.
+
+## Acceptance Criteria
+- [ ] RemoteServer module with: register_server/2 (host, public_key), get_by_host/1, verify_key/2 (TOFU check), revoke/1
+- [ ] Address.resolve_remote/1 returns {:error, :remote_not_supported, message} with clear message: 'Remote pag-server delivery not yet supported. Address recorded for future use.'
+- [ ] When pag:// address encountered, attempt to store host in plugin_mailman_remote_servers with trust_status: untrusted (so it is ready when support is added)
+- [ ] Extension point: @behaviour PagServer.Plugins.Mailman.RemoteTransport with deliver/2 callback for future HTTP transport

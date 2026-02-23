@@ -1,0 +1,119 @@
+---
+id: P8.M1.E1.T001
+title: Create Gateway.Message struct
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- gateway
+- integrations
+- message-format
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:36:10.563746+00:00'
+started_at: '2026-02-08T07:36:10.563746+00:00'
+completed_at: '2026-02-08T07:44:18.554745+00:00'
+duration_minutes: 8.133183066666668
+---
+
+# Create Gateway.Message struct
+
+Define the `PAGServer.Gateway.Message` struct for normalized message format across all platforms.
+
+## Requirements
+
+- [x] Create `lib/pag_server/gateway/message.ex` (~80 LoC)
+- [x] Define struct with all required fields (id, platform, platform_id, sender, content, attachments, context, timestamp, metadata)
+- [x] Add typespecs for all fields
+- [x] Define platform atoms: `:telegram`, `:slack`, `:discord`, `:whatsapp`, `:matrix`, `:websocket`
+- [x] Add struct validation (ensure required fields are present)
+- [x] Document each field with examples
+
+## Acceptance Criteria
+
+- [x] Struct module compiles without warnings
+- [x] All fields have proper typespecs
+- [x] Documentation includes examples for each platform
+- [x] Platform atom type is properly defined
+- [x] Struct can be created with valid data for all platforms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 463-492 (Message struct definition)
+
+**Key Points**:
+- The Message struct is the common format for all incoming messages
+- Each platform has platform-specific fields stored in `metadata`
+- The `context` field contains thread ID, channel, room info
+- The `sender` field structure varies by platform but includes ID and display name
+- Attachments are normalized to a common format
+
+## Notes
+
+The struct should support all platform-specific variations:
+
+**Telegram context**:
+```elixir
+%{chat_id: integer(), thread_id: integer() | nil}
+```
+
+**Slack context**:
+```elixir
+%{channel: String.t(), thread_ts: String.t() | nil}
+```
+
+**Discord context**:
+```elixir
+%{guild_id: String.t(), channel_id: String.t(), thread_id: String.t() | nil}
+```
+
+**WhatsApp context**:
+```elixir
+%{chat_id: String.t(), quoted_message_id: String.t() | nil}
+```
+
+**Matrix context**:
+```elixir
+%{room_id: String.t(), thread_root: String.t() | nil}
+```
+
+**WebSocket context**:
+```elixir
+%{session_id: String.t(), connection_id: String.t()}
+```
+
+Example struct:
+```elixir
+%Gateway.Message{
+  id: "msg_abc123",
+  platform: :telegram,
+  platform_id: "987654",
+  sender: %{id: "123456", username: "alice", first_name: "Alice"},
+  content: "Hello world",
+  attachments: [],
+  context: %{chat_id: 123456, thread_id: nil},
+  timestamp: ~U[2026-02-05 12:00:00Z],
+  metadata: %{}
+}
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 07:36 UTC
+**Sibling tasks**: P8.M1.E1.T002, P8.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E1.T001 → P8.M1.E1.T002 → P8.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E1.T001: .tasks/08-integrations/01-unified-gateway/01-common-format/T001-message-struct.todo
+- P8.M1.E1.T002: .tasks/08-integrations/01-unified-gateway/01-common-format/T002-platform-converters.todo
+- P8.M1.E1.T003: .tasks/08-integrations/01-unified-gateway/01-common-format/T003-attachment-handling.todo

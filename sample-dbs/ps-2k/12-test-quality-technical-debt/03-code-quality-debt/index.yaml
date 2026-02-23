@@ -1,0 +1,37 @@
+id: P12.M3
+name: Code Quality & Debt
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Resolve Credo Warnings
+  path: 01-resolve-credo-warnings
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Refactor Complex Functions
+  path: 02-refactor-complex-functions
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Complete TODO Implementations
+  path: 03-complete-todo-implementations
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

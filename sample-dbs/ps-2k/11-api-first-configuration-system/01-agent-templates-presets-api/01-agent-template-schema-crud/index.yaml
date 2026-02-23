@@ -1,0 +1,45 @@
+id: P11.M1.E1
+name: Agent Template Schema & CRUD
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-agent-templates-databas.todo
+  title: Create agent_templates database schema
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-agenttemplate-ecto-schem.todo
+  title: Build AgentTemplate Ecto schema
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-create-agenttemplatecontroller.todo
+  title: Create AgentTemplateController with CRUD
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-add-template-validation-and-pe.todo
+  title: Add template validation and permissions
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

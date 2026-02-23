@@ -1,0 +1,314 @@
+---
+id: P1.M4.E1.T003
+title: Implement append and query logic
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P1.M4.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:28:59.701300'
+started_at: '2026-02-05T09:28:59.701300'
+completed_at: '2026-02-05T09:33:08.116283'
+tags:
+- event-store
+- crud
+- queries
+- validation
+---
+
+# Implement append and query logic
+
+Implement the core append and query operations for the EventStore GenServer.
+
+## Requirements
+
+- [ ] Implement `append_event/1` function with validation
+  - [ ] Client API function (calls GenServer.call)
+  - [ ] Server callback handler
+  - [ ] Validate event struct before appending
+  - [ ] Auto-assign event ID
+  - [ ] Add timestamp if not present
+  - [ ] Return `{:ok, event_id}` or `{:error, reason}`
+- [ ] Implement `query_events/1` function with filters
+  - [ ] Client API function (calls GenServer.call)
+  - [ ] Server callback handler
+  - [ ] Support filters: agent_id, session_id, event_type, time_range
+  - [ ] Return events in insertion order (oldest first)
+  - [ ] Support multiple filters combined with AND logic
+- [ ] Add proper type specifications for all functions
+- [ ] Add comprehensive documentation with examples
+- [ ] Ensure ordering guarantees (events maintain insertion order)
+
+## Acceptance Criteria
+
+- [ ] `append_event/1` successfully stores events in order
+- [ ] `append_event/1` validates required fields (event_type, payload)
+- [ ] `append_event/1` rejects invalid events with clear error messages
+- [ ] `append_event/1` returns unique, incrementing event IDs
+- [ ] `query_events/1` filters by agent_id correctly
+- [ ] `query_events/1` filters by session_id correctly
+- [ ] `query_events/1` filters by event_type correctly
+- [ ] `query_events/1` filters by time_range correctly
+- [ ] `query_events/1` supports multiple filters combined
+- [ ] `query_events/1` returns empty list when no matches
+- [ ] `query_events/1` returns events in insertion order
+- [ ] All functions have proper type specs
+- [ ] Dialyzer passes with no type errors
+- [ ] Module compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 7.1 (Session Replay)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.6 (Events Domain)
+- `.plan/2026-02-05-velvet-cascade/index.md` Lines 241-250 (events table schema)
+
+**Key Requirements**:
+- Events are append-only and immutable
+- Insertion order must be preserved for deterministic replay
+- Queries support common filtering patterns
+- Validation prevents invalid data from entering the store
+
+## Implementation Guide
+
+### Append Event Function
+
+```elixir
+@doc """
+Append an event to the event store.
+
+Events are validated before storage and assigned a unique ID.
+The `inserted_at` timestamp is added automatically if not present.
+
+## Parameters
+
+  - `event` - Event struct to append
+
+## Returns
+
+  - `{:ok, event_id}` - Successfully appended, returns assigned ID
+  - `{:error, reason}` - Validation failed or other error
+
+## Examples
+
+    event = %Event{
+      event_type: "agent_created",
+      agent_id: "abc123",
+      payload: %{name: "MyAgent"}
+    }
+    {:ok, event_id} = EventStore.append_event(event)
+
+## Validation Rules
+
+  - `event_type` must be present and non-empty string
+  - `payload` must be a valid map
+  - `agent_id` and `session_id` must be valid UUIDs if present
+"""
+@spec append_event(Event.t()) :: {:ok, pos_integer()} | {:error, term()}
+def append_event(event) do
+  GenServer.call(__MODULE__, {:append_event, event})
+end
+
+@impl true
+def handle_call({:append_event, event}, _from, state) do
+  case validate_event(event) do
+    :ok ->
+      event_with_id = %{event | id: state.next_id, inserted_at: DateTime.utc_now()}
+      new_state = %{
+        state |
+        events: state.events ++ [event_with_id],
+        next_id: state.next_id + 1
+      }
+      {:reply, {:ok, event_with_id.id}, new_state}
+
+    {:error, reason} ->
+      {:reply, {:error, reason}, state}
+  end
+end
+
+# Private validation function
+defp validate_event(%Event{} = event) do
+  cond do
+    is_nil(event.event_type) or event.event_type == "" ->
+      {:error, :event_type_required}
+
+    not is_map(event.payload) ->
+      {:error, :payload_must_be_map}
+
+    not is_nil(event.agent_id) and not valid_uuid?(event.agent_id) ->
+      {:error, :invalid_agent_id}
+
+    not is_nil(event.session_id) and not valid_uuid?(event.session_id) ->
+      {:error, :invalid_session_id}
+
+    true ->
+      :ok
+  end
+end
+
+defp valid_uuid?(uuid) when is_binary(uuid) do
+  match?({:ok, _}, Ecto.UUID.cast(uuid))
+end
+```
+
+### Query Events Function
+
+```elixir
+@doc """
+Query events from the event store with optional filters.
+
+Events are returned in insertion order (oldest first). Multiple filters
+are combined with AND logic.
+
+## Parameters
+
+  - `filters` - Keyword list of filters
+
+## Filters
+
+  - `:agent_id` - Filter by agent UUID
+  - `:session_id` - Filter by session UUID
+  - `:event_type` - Filter by event type string
+  - `:time_range` - Tuple of `{from, to}` DateTime values
+
+## Returns
+
+  List of matching events in insertion order
+
+## Examples
+
+    # Get all events for an agent
+    events = EventStore.query_events(agent_id: "abc123")
+
+    # Get events by type for a session
+    events = EventStore.query_events(
+      session_id: "xyz789",
+      event_type: "message_sent"
+    )
+
+    # Get events in time range
+    from = ~U[2026-02-01 00:00:00Z]
+    to = ~U[2026-02-05 23:59:59Z]
+    events = EventStore.query_events(time_range: {from, to})
+
+    # Combine multiple filters
+    events = EventStore.query_events(
+      agent_id: "abc123",
+      event_type: "tool_called",
+      time_range: {from, to}
+    )
+"""
+@spec query_events(keyword()) :: [Event.t()]
+def query_events(filters \\ []) do
+  GenServer.call(__MODULE__, {:query_events, filters})
+end
+
+@impl true
+def handle_call({:query_events, filters}, _from, state) do
+  filtered_events =
+    state.events
+    |> filter_by_agent_id(filters[:agent_id])
+    |> filter_by_session_id(filters[:session_id])
+    |> filter_by_event_type(filters[:event_type])
+    |> filter_by_time_range(filters[:time_range])
+
+  {:reply, filtered_events, state}
+end
+
+# Private filter functions
+defp filter_by_agent_id(events, nil), do: events
+defp filter_by_agent_id(events, agent_id) do
+  Enum.filter(events, fn event -> event.agent_id == agent_id end)
+end
+
+defp filter_by_session_id(events, nil), do: events
+defp filter_by_session_id(events, session_id) do
+  Enum.filter(events, fn event -> event.session_id == session_id end)
+end
+
+defp filter_by_event_type(events, nil), do: events
+defp filter_by_event_type(events, event_type) do
+  Enum.filter(events, fn event -> event.event_type == event_type end)
+end
+
+defp filter_by_time_range(events, nil), do: events
+defp filter_by_time_range(events, {from, to}) do
+  Enum.filter(events, fn event ->
+    DateTime.compare(event.inserted_at, from) in [:gt, :eq] and
+    DateTime.compare(event.inserted_at, to) in [:lt, :eq]
+  end)
+end
+```
+
+## Notes
+
+### Ordering Guarantees
+
+**Insertion Order**:
+- Events stored in a list, appended to the end
+- List maintains insertion order by definition
+- Query results preserve this order
+
+**Event IDs**:
+- Auto-increment ensures unique, ordered IDs
+- ID reflects insertion sequence
+- Useful for pagination and "events since ID N"
+
+### Query Performance
+
+**Phase 1 (In-Memory)**:
+- All queries are O(n) - scan entire event list
+- Acceptable for <100K events
+- Filters applied sequentially (pipeline pattern)
+
+**Phase 2 Optimization**:
+- Move to database with indexes
+- Add compound indexes on common filter combinations
+- Consider ETS for hot-path queries
+
+### Validation Strategy
+
+**Why Validate Here?**
+- Prevent garbage data from entering the store
+- Clear error messages for debugging
+- Type safety beyond Elixir's dynamic typing
+
+**What to Validate**:
+- Required fields (event_type, payload)
+- Field types (payload must be map)
+- UUID format for references
+- NOT validating foreign keys (performance, decoupling)
+
+### Memory Considerations
+
+**Event Growth**:
+- Each event ~512 bytes average
+- 500K events = ~256MB
+- Monitor with: `:erlang.process_info(pid, :memory)`
+
+**Mitigation**:
+- Implement event cleanup (archive old events)
+- Move to database persistence (Phase 2)
+- Add metrics/alerts for memory usage
+
+## Troubleshooting
+
+**Error**: "event_type_required"
+- Ensure event has `event_type` field set
+- Check for empty strings
+
+**Error**: "invalid_agent_id" or "invalid_session_id"
+- IDs must be valid UUID format
+- Use `Ecto.UUID.generate()` to create valid UUIDs
+
+**Performance degradation with many events**:
+- Expected in Phase 1 (O(n) queries)
+- Monitor query latency
+- Plan migration to database (Phase 2)
+
+**Memory growth**:
+- Implement event archival
+- Set retention policy (e.g., 30 days)
+- Consider event compression for large payloads

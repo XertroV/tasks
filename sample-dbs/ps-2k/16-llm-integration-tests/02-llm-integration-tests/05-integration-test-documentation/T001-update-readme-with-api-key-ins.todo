@@ -1,0 +1,62 @@
+---
+id: P16.M2.E5.T001
+title: Update README with API key instructions
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- documentation
+- readme
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:55:46.774527+00:00'
+started_at: '2026-02-14T02:55:46.774527+00:00'
+completed_at: '2026-02-14T02:59:04.589539+00:00'
+duration_minutes: 3.2969166000000003
+---
+
+# Update README with API key instructions
+
+Update README.md with instructions for setting up API keys for integration tests.
+
+## Requirements
+
+- Add section explaining integration test setup
+- Document required environment variables
+- Explain how to run integration tests
+- List free tier providers and their limitations
+- Document Groq provider configuration
+
+## Acceptance Criteria
+
+- [ ] README includes "Running Integration Tests" section
+- [ ] Documents `GROQ_API_KEY` environment variable with signup link (console.groq.com)
+- [ ] Documents `OPENROUTER_API_KEY` environment variable with signup link (openrouter.ai)
+- [ ] Explains `mix test --only integration` command
+- [ ] Notes which models are free tier:
+  - Groq: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`
+  - OpenRouter: `meta-llama/llama-3.1-8b-instruct`, `google/gemini-flash-1.5`
+- [ ] Documents Groq in "LLM Provider API Keys" section
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-14 02:55 UTC
+**Primary task**: P16.M2.E2.T001 - Add Groq streaming test
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P16.M2.E5 vs P16.M2.E2)
+- No dependency chain: ✓ (verified at claim time)

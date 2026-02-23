@@ -1,0 +1,30 @@
+id: P24.M2.E3
+name: Channel Integration
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-phoenix-channel-events-for-can.todo
+  title: Phoenix channel events for canvas push and update
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-client-interaction-routing-but.todo
+  title: 'Client interaction routing: button click to agent tool result'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

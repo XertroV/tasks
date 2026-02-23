@@ -1,0 +1,122 @@
+---
+id: P2.M2.E2.T004
+title: Handle streaming errors and reconnection
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P2.M2.E2.T002
+tags:
+- llm
+- anthropic
+- streaming
+- errors
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-05T14:00:47.119814'
+started_at: '2026-02-05T14:00:47.119814'
+completed_at: '2026-02-05T14:01:00.408977'
+duration_minutes: 0.22148589999999999
+---
+
+# Handle streaming errors and reconnection
+
+Implement error handling for streaming connections including network failures and incomplete streams.
+
+## Requirements
+
+- [ ] Detect connection drops mid-stream
+- [ ] Parse error events in SSE stream
+- [ ] Emit error events to stream consumer
+- [ ] Add option for auto-reconnect (default: false)
+- [ ] Log errors with telemetry
+- [ ] Add tests for error scenarios
+
+## Acceptance Criteria
+
+- [ ] Connection errors are caught and emitted
+- [ ] Incomplete streams are detected
+- [ ] Error events from API are parsed correctly
+- [ ] Stream consumer receives error tuples: {:error, reason}
+- [ ] Telemetry events emitted for monitoring
+- [ ] Tests cover network failures, API errors, incomplete streams
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+
+**Key Points**:
+- Streaming connections can fail mid-response
+- API may send error events via SSE
+- Consumer needs clear error signals
+
+## Notes
+
+Error event format:
+```
+event: error
+data: {"type":"error","error":{"type":"overloaded_error","message":"..."}}
+
+```
+
+Stream error handling:
+```elixir
+defp process_chunk({conn, buffer}) do
+  case read_chunk(conn) do
+    {:ok, chunk} ->
+      {events, remaining} = parse_events(buffer <> chunk)
+      
+      errors = Enum.filter(events, &is_error_event?/1)
+      if errors != [] do
+        {:halt, {:error, hd(errors)}}
+      else
+        {events, {conn, remaining}}
+      end
+    
+    {:error, :closed} ->
+      {:halt, {:error, :connection_closed}}
+    
+    {:error, reason} ->
+      :telemetry.execute([:pag, :llm, :stream_error], %{}, %{reason: reason})
+      {:halt, {:error, reason}}
+  end
+end
+```
+
+Error detection:
+```elixir
+defp is_error_event?({:error, _}), do: true
+defp is_error_event?({:message_stop, _}), do: false
+defp is_error_event?(_), do: false
+```
+
+Consumer usage:
+```elixir
+stream
+|> Stream.each(fn
+  {:error, reason} ->
+    Logger.error("Stream error: #{inspect(reason)}")
+    
+  {:content_block_delta, data} ->
+    process_delta(data)
+    
+  _ ->
+    :ok
+end)
+|> Stream.run()
+```
+
+Test pattern:
+```elixir
+test "handles connection drop" do
+  # Mock connection that drops after 3 chunks
+  {:ok, stream} = Anthropic.chat(client, stream: true, ...)
+  
+  events = Enum.to_list(stream)
+  
+  assert {:error, :connection_closed} in events
+end
+```

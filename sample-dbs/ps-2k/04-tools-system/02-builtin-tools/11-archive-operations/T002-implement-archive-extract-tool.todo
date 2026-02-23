@@ -1,0 +1,339 @@
+---
+id: P4.M2.E11.T002
+title: Implement archive_extract tool (zip/tar)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- archive
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:04:34.274497'
+started_at: '2026-02-06T03:04:34.274497'
+completed_at: '2026-02-06T03:06:30.089981'
+duration_minutes: 1.9302579166666667
+---
+
+# Implement archive_extract tool (zip/tar)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/archive_extract.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support ZIP format using `:zip` Erlang module
+- [ ] Support TAR/TAR.GZ using System.cmd with tar
+- [ ] Extract to specified directory within workspace
+- [ ] Prevent directory traversal attacks (../ in archive entries)
+- [ ] Detect and block zip bombs
+- [ ] List archive contents without extracting (dry-run mode)
+
+## Acceptance Criteria
+
+- [ ] Accepts archive path, output directory, optional file filter
+- [ ] Extracts archive to specified directory
+- [ ] Validates all extracted paths stay within output directory
+- [ ] Supports dry-run mode to list contents without extracting
+- [ ] Returns list of extracted files with sizes
+- [ ] Handles errors: archive not found, corrupt archive, disk full, path traversal attempt, zip bomb detected
+- [ ] Test coverage: zip extraction, tar extraction, tar.gz extraction, path traversal attack, zip bomb, file filter, dry-run mode
+- [ ] Security: blocks path traversal (../, absolute paths), detects zip bombs (>100:1 compression), validates output directory
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Path traversal is the primary security risk
+- Zip bombs can exhaust disk space (check uncompressed size)
+- Must sanitize all entry names before extraction
+- Provide dry-run for safe inspection
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ArchiveExtract do
+  @behaviour PAGServer.Tools.Tool
+  @max_uncompressed_size 1_000_000_000  # 1GB limit
+  @max_compression_ratio 100  # Detect zip bombs
+
+  @impl true
+  def name, do: "archive_extract"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "archive_extract",
+      description: "Extract files from an archive (zip, tar, tar.gz)",
+      parameters: %{
+        type: "object",
+        properties: %{
+          archive: %{
+            type: "string",
+            description: "Archive file path (relative to workspace)"
+          },
+          destination: %{
+            type: "string",
+            description: "Destination directory (relative to workspace, default: current directory)"
+          },
+          filter: %{
+            type: "string",
+            description: "Optional file pattern to extract (e.g., '*.txt')"
+          },
+          dry_run: %{
+            type: "boolean",
+            description: "List contents without extracting (default: false)"
+          }
+        },
+        required: ["archive"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"archive" => archive} = args, context) do
+    with :ok <- validate_path(archive, context.workspace_path),
+         {:ok, archive_path} <- resolve_path(archive, context.workspace_path),
+         {:ok, dest_path} <- prepare_destination(args, context.workspace_path),
+         {:ok, result} <- extract_archive(archive_path, dest_path, args) do
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, "Archive extraction failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_path(path, workspace) do
+    cond do
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      Path.type(path) == :absolute and not String.starts_with?(path, workspace) ->
+        {:error, "Absolute paths outside workspace not allowed"}
+      true ->
+        :ok
+    end
+  end
+
+  defp resolve_path(path, workspace) do
+    full_path = 
+      if Path.type(path) == :absolute do
+        path
+      else
+        Path.join(workspace, path)
+      end
+      |> Path.expand()
+    
+    if String.starts_with?(full_path, workspace) and File.exists?(full_path) do
+      {:ok, full_path}
+    else
+      {:error, "Archive not found or outside workspace"}
+    end
+  end
+
+  defp prepare_destination(args, workspace) do
+    dest = Map.get(args, "destination", ".")
+    
+    full_path = 
+      if Path.type(dest) == :absolute do
+        dest
+      else
+        Path.join(workspace, dest)
+      end
+      |> Path.expand()
+    
+    if String.starts_with?(full_path, workspace) do
+      File.mkdir_p!(full_path)
+      {:ok, full_path}
+    else
+      {:error, "Destination outside workspace"}
+    end
+  end
+
+  defp extract_archive(archive, destination, args) do
+    format = detect_format(archive)
+    dry_run = Map.get(args, "dry_run", false)
+    filter = Map.get(args, "filter")
+    
+    case format do
+      :zip -> extract_zip(archive, destination, dry_run, filter)
+      :tar -> extract_tar(archive, destination, dry_run, filter, false)
+      :tar_gz -> extract_tar(archive, destination, dry_run, filter, true)
+      :unknown -> {:error, "Unsupported archive format"}
+    end
+  end
+
+  defp detect_format(path) do
+    ext = Path.extname(path) |> String.downcase()
+    
+    case ext do
+      ".zip" -> :zip
+      ".tar" -> :tar
+      ".gz" -> 
+        if String.ends_with?(path, ".tar.gz") or String.ends_with?(path, ".tgz") do
+          :tar_gz
+        else
+          :unknown
+        end
+      _ -> :unknown
+    end
+  end
+
+  defp extract_zip(archive, destination, dry_run, filter) do
+    case :zip.list_dir(to_charlist(archive)) do
+      {:ok, file_list} ->
+        # Check for zip bomb
+        total_uncompressed = Enum.reduce(file_list, 0, fn {_name, info}, acc ->
+          acc + Keyword.get(info, :size, 0)
+        end)
+        
+        if total_uncompressed > @max_uncompressed_size do
+          return {:error, "Archive too large (potential zip bomb)"}
+        end
+        
+        compressed_size = File.stat!(archive).size
+        compression_ratio = if compressed_size > 0, do: total_uncompressed / compressed_size, else: 0
+        
+        if compression_ratio > @max_compression_ratio do
+          return {:error, "Excessive compression ratio (potential zip bomb)"}
+        end
+        
+        # Filter files
+        files_to_extract = Enum.filter(file_list, fn {name, _info} ->
+          name_str = to_string(name)
+          matches_filter = is_nil(filter) or String.match?(name_str, ~r/#{filter}/)
+          safe_path = validate_entry_path(name_str, destination)
+          matches_filter and safe_path == :ok
+        end)
+        
+        if dry_run do
+          {:ok, %{
+            dry_run: true,
+            file_count: length(files_to_extract),
+            files: Enum.map(files_to_extract, fn {name, info} ->
+              %{name: to_string(name), size: Keyword.get(info, :size, 0)}
+            end)
+          }}
+        else
+          # Extract files
+          case :zip.extract(to_charlist(archive), cwd: to_charlist(destination)) do
+            {:ok, extracted} ->
+              {:ok, %{
+                destination: destination,
+                file_count: length(extracted),
+                files: Enum.map(extracted, &to_string/1)
+              }}
+            
+            {:error, reason} ->
+              {:error, reason}
+          end
+        end
+      
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp extract_tar(archive, destination, dry_run, filter, gzip) do
+    list_args = if gzip, do: ["tzf", archive], else: ["tf", archive]
+    
+    case System.cmd("tar", list_args, stderr_to_stdout: true) do
+      {output, 0} ->
+        files = String.split(output, "\n", trim: true)
+        
+        # Validate all paths
+        invalid_paths = Enum.filter(files, fn file ->
+          validate_entry_path(file, destination) != :ok
+        end)
+        
+        unless Enum.empty?(invalid_paths) do
+          return {:error, "Archive contains dangerous paths: #{inspect(invalid_paths)}"}
+        end
+        
+        files = if filter do
+          Enum.filter(files, &String.match?(&1, ~r/#{filter}/))
+        else
+          files
+        end
+        
+        if dry_run do
+          {:ok, %{
+            dry_run: true,
+            file_count: length(files),
+            files: files
+          }}
+        else
+          # Extract
+          extract_args = if gzip, do: ["xzf", archive, "-C", destination], else: ["xf", archive, "-C", destination]
+          
+          case System.cmd("tar", extract_args, stderr_to_stdout: true) do
+            {_output, 0} ->
+              {:ok, %{
+                destination: destination,
+                file_count: length(files),
+                files: files
+              }}
+            
+            {error, _code} ->
+              {:error, "tar extraction failed: #{error}"}
+          end
+        end
+      
+      {error, _code} ->
+        {:error, "Failed to list archive: #{error}"}
+    end
+  rescue
+    e -> {:error, Exception.message(e)}
+  end
+
+  defp validate_entry_path(entry_name, destination) do
+    # Check for directory traversal
+    cond do
+      String.contains?(entry_name, "..") ->
+        {:error, "Path traversal detected"}
+      
+      String.starts_with?(entry_name, "/") ->
+        {:error, "Absolute path not allowed"}
+      
+      true ->
+        # Verify resolved path is within destination
+        resolved = Path.join(destination, entry_name) |> Path.expand()
+        if String.starts_with?(resolved, destination) do
+          :ok
+        else
+          {:error, "Path escapes destination"}
+        end
+    end
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "archive": "backups/project.zip",
+  "destination": "extracted/",
+  "filter": "*.ex",
+  "dry_run": false
+}
+```
+
+Example response:
+```json
+{
+  "destination": "/workspace/extracted",
+  "file_count": 23,
+  "files": ["src/main.ex", "src/utils.ex", "test/main_test.ex"]
+}
+```
+
+Security considerations:
+- **Critical**: Path traversal prevention (../, absolute paths)
+- Zip bomb detection (check compression ratio)
+- Size limits to prevent disk exhaustion
+- Validate every entry before extraction
+- Dry-run mode for safe inspection

@@ -1,0 +1,34 @@
+---
+id: P43.M2.E2.T003
+title: Register /dashboard/llm-calls route and add card to DashboardIndex
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:03:37.140759+00:00'
+started_at: '2026-02-20T00:03:37.140759+00:00'
+completed_at: '2026-02-20T00:08:29.209226+00:00'
+duration_minutes: 4.867807583333333
+---
+
+# Register /dashboard/llm-calls route and add card to DashboardIndex
+
+
+
+## Requirements
+
+- The new LLM calls dashboard must be reachable via the application router under the authenticated dashboard scope, and discoverable from the main dashboard index page.
+
+## Acceptance Criteria
+
+- `lib/pag_server_web/router.ex` contains a `live` route mapping `"/dashboard/llm-calls"` to `PagServerWeb.LlmCallsDashboardLive` with action `:index`, placed inside the authenticated `live_session` scope that contains other dashboard routes (around line ~959).
+- Navigating to `/dashboard/llm-calls` without a valid session redirects to the login page (enforced by the `live_session` scope's `on_mount` hook).
+- `lib/pag_server_web/live/dashboard_index.ex` includes a new card for the LLM Calls dashboard.
+- The card's title (or heading) is `"LLM Calls"` (exact string).
+- The card contains the description text `"Monitor LLM requests — token usage, cost, timing"` (exact string).
+- The card links to `"/dashboard/llm-calls"` (using `~p"/dashboard/llm-calls"` or equivalent verified route helper).
+- `mix phx.routes` lists `GET /dashboard/llm-calls` (or `LIVE /dashboard/llm-calls`) without error.
+- No compiler warnings are introduced; all existing router and dashboard index tests continue to pass.

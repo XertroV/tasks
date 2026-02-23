@@ -1,0 +1,24 @@
+---
+id: P55.M3.E2.T002
+title: Approval banner with approve/deny buttons
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- component
+- approvals
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:03:02.809376+00:00'
+started_at: '2026-02-22T12:03:02.809376+00:00'
+completed_at: '2026-02-22T12:03:05.133386+00:00'
+duration_minutes: 0.03873326666666667
+---
+Create lib/pag_server_web/live/workspace_chat/approval_banner.ex as function component. Amber/warning-styled banner showing command preview and reason text. Approve button (green) fires phx-click='approve_command' with approval_id. Deny button (red) fires phx-click='deny_command' with approval_id. Timeout countdown if timeout_ms provided. Renders within message list at the position where approval was requested.
+
+## Acceptance Criteria
+- Amber banner with command preview and reason
+- Approve (green) and Deny (red) buttons
+- Buttons fire correct events with approval_id
+- Banner removed from pending_approvals after action

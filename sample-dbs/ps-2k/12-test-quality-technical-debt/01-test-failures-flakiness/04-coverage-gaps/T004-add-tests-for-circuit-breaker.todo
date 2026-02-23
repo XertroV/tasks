@@ -1,0 +1,30 @@
+---
+id: P12.M1.E4.T004
+title: Add tests for circuit breaker state transitions under load
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:00:17.806047+00:00'
+started_at: '2026-02-13T10:00:17.806047+00:00'
+completed_at: '2026-02-13T10:17:03.549120+00:00'
+duration_minutes: 16.762384383333334
+---
+
+# Add tests for circuit breaker state transitions under load
+
+## Description
+Add tests to verify circuit breaker correctly handles state transitions (closed -> open -> half-open -> closed) under simulated load and failure conditions.
+
+## Acceptance Criteria
+- [ ] Tests cover all circuit breaker state transitions
+- [ ] Tests verify behavior under high failure rate scenarios
+- [ ] Tests verify recovery after cooling period
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/llm/circuit_breaker_test.exs`

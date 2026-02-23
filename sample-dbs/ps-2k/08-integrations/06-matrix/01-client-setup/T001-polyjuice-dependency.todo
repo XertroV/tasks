@@ -1,0 +1,93 @@
+---
+id: P8.M6.E1.T001
+title: Add Polyjuice Matrix client dependency
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- matrix
+- dependencies
+- setup
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:20:55.541776+00:00'
+started_at: '2026-02-08T10:20:55.541776+00:00'
+completed_at: '2026-02-08T21:31:00+00:00'
+---
+
+# Add Polyjuice Matrix client dependency
+
+Add and configure Polyjuice as the Matrix protocol client library.
+
+## Requirements
+
+- [x] Add `{:polyjuice_client, "~> 0.4"}` to mix.exs
+- [x] Add `{:polyjuice_util, "~> 0.2"}` for helper utilities
+- [x] Run `mix deps.get` and verify compilation
+- [x] Add Matrix configuration to runtime.exs
+- [x] Document alternative clients (Kazarma, MatrixSDK)
+
+## Acceptance Criteria
+
+- [x] Dependencies install without conflicts
+- [x] No compilation warnings
+- [x] Configuration structure documented in config/runtime.exs
+- [x] README includes Matrix setup section
+- [x] Alternative client evaluation documented in decision log
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 414-434 (Matrix architecture)
+
+**Key Points**:
+- Polyjuice is most mature Elixir Matrix client
+- Supports both client-server and application service APIs
+- Handles sync loop and event dispatching
+- Built on Finch/Mint for connection pooling
+
+## Notes
+
+Configuration structure:
+```elixir
+config :pag_server, PAGServer.Integrations.Matrix,
+  homeserver: System.get_env("MATRIX_HOMESERVER") || "https://matrix.org",
+  user_id: System.get_env("MATRIX_USER_ID"),
+  access_token: System.get_env("MATRIX_ACCESS_TOKEN"),
+  device_id: System.get_env("MATRIX_DEVICE_ID"),
+  # Optional: Application Service registration
+  as_token: System.get_env("MATRIX_AS_TOKEN"),
+  hs_token: System.get_env("MATRIX_HS_TOKEN")
+```
+
+Client alternatives:
+- **Polyjuice** (chosen): Mature, active development, good docs
+- **Kazarma**: ActivityPub bridge, more complex
+- **MatrixSDK**: Newer, less battle-tested
+
+Dependencies for E2EE (if needed later):
+- `{:olm, "~> 0.1"}` - Olm/Megolm crypto
+- Requires native compilation
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-08 10:20 UTC
+**Primary task**: P8.M5.E2.T001 - Implement webhook verification endpoint
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M6.E1 vs P8.M5.E2)
+- No dependency chain: ✓ (verified at claim time)

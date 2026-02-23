@@ -1,0 +1,17 @@
+---
+id: P22.M2.E4.T001
+title: 'API: GET /api/v1/providers/:provider/models/refresh endpoint'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:37:45.612615+00:00'
+started_at: '2026-02-18T17:37:45.612615+00:00'
+completed_at: '2026-02-18T17:45:27.054692+00:00'
+duration_minutes: 7.6907011333333335
+---
+Add endpoint POST /api/v1/providers/:provider/models/refresh (or GET with side-effect via POST). Triggers ModelDiscoveryCache.refresh(provider) and returns {:ok, %{status: 'refresh_triggered', provider: provider_id}}. Also add GET /api/v1/providers/:provider/models to return live merged model list. Acceptance criteria: - refresh endpoint returns 202 Accepted - Returns 404 if provider not found - GET models endpoint returns merged static+live list with source field - Requires authentication

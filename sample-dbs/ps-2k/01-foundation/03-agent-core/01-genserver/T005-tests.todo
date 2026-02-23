@@ -1,0 +1,453 @@
+---
+id: P1.M3.E1.T005
+title: Write Agent GenServer tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P1.M3.E1.T003
+- P1.M3.E1.T004
+claimed_by: claude
+claimed_at: '2026-02-05T09:05:34.437210'
+started_at: '2026-02-05T09:05:34.437210'
+completed_at: '2026-02-05T09:07:58.933910'
+tags:
+- agent
+- genserver
+- testing
+- foundation
+---
+
+# Write Agent GenServer tests
+
+Create comprehensive tests for the Agent GenServer module covering all callbacks, client API, and PubSub broadcasting.
+
+## Requirements
+
+- [ ] Create `test/pag_server/agents/agent_test.exs`
+
+- [ ] Test initialization (`init/1`)
+  - [ ] Loads agent config from database
+  - [ ] Initializes state with correct fields
+  - [ ] Sets status to `:idle`
+  - [ ] Broadcasts `agent_started` event
+  
+- [ ] Test client API functions
+  - [ ] `start_link/1` - Creates process and registers in Registry
+  - [ ] `send_message/2` - Returns response (sync)
+  - [ ] `queue_message/3` - Returns immediately (async)
+  - [ ] `get_state/1` - Returns current state
+  - [ ] `switch_model/2` - Updates model configuration
+  - [ ] `stop/1` - Gracefully terminates process
+  
+- [ ] Test GenServer callbacks
+  - [ ] `handle_call/3` - Synchronous operations
+  - [ ] `handle_cast/2` - Asynchronous operations
+  - [ ] `handle_info/2` - External messages (tokens, results)
+  - [ ] `terminate/2` - Cleanup and broadcasting
+  
+- [ ] Test state management
+  - [ ] State transitions (idle → processing → idle)
+  - [ ] Message queue operations (enqueue, dequeue)
+  - [ ] Context updates
+  - [ ] Stats tracking
+  
+- [ ] Test PubSub events
+  - [ ] `agent_started` on init
+  - [ ] `agent_stopped` on terminate
+  - [ ] `llm_token` during streaming
+  - [ ] `state_changed` on status transition
+  - [ ] `tool_start` and `tool_complete`
+  
+- [ ] Test error handling
+  - [ ] Agent not found
+  - [ ] Invalid messages
+  - [ ] Timeout scenarios
+  - [ ] Database errors
+  
+- [ ] Use factories for test data (ExMachina)
+- [ ] Use mocks for LLM and DB interactions (Mox)
+- [ ] Target >90% code coverage
+
+## Acceptance Criteria
+
+- [ ] File `test/pag_server/agents/agent_test.exs` exists
+- [ ] All client API functions have tests
+- [ ] All GenServer callbacks have tests
+- [ ] State management tests cover transitions
+- [ ] PubSub events are verified
+- [ ] Error cases are tested
+- [ ] Tests use async: true where safe
+- [ ] All tests pass with `mix test`
+- [ ] Code coverage >= 90% for Agent module
+- [ ] No warnings from test compilation
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+- AGENTS.md - Testing commands and patterns
+
+**Key Testing Points**:
+- Use unique agent IDs per test for parallel execution
+- Mock database and LLM calls
+- Verify PubSub events with subscriptions
+- Test concurrent operations
+
+## Implementation Guide
+
+### Test Module Structure
+
+```elixir
+defmodule PagServer.Agents.AgentTest do
+  use PagServer.DataCase, async: true
+  
+  import PagServer.Factory
+  
+  alias PagServer.Agents.Agent
+  alias PagServer.Agents.Registry
+  
+  describe "init/1" do
+    test "initializes agent state from database" do
+      agent_record = insert(:agent, config: %{model: "gpt-4"})
+      
+      {:ok, pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      state = Agent.get_state(agent_record.id)
+      
+      assert state.id == agent_record.id
+      assert state.status == :idle
+      assert state.config.model == "gpt-4"
+      assert state.message_queue == :queue.new()
+      assert state.context == []
+    end
+    
+    test "broadcasts agent_started event" do
+      agent_record = insert(:agent)
+      
+      # Subscribe to events
+      Phoenix.PubSub.subscribe(PagServer.PubSub, "agents:#{agent_record.id}")
+      
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      # Verify event received
+      assert_receive {:agent_event, "agent_started", payload}
+      assert payload.agent_id == agent_record.id
+      assert %DateTime{} = payload.timestamp
+    end
+  end
+  
+  describe "start_link/1" do
+    test "starts and registers agent process" do
+      agent_record = insert(:agent)
+      
+      assert {:ok, pid} = Agent.start_link(agent_id: agent_record.id)
+      assert Process.alive?(pid)
+      
+      # Verify registration
+      assert {:ok, ^pid} = Registry.lookup(agent_record.id)
+    end
+    
+    test "fails if agent not in database" do
+      fake_id = Ecto.UUID.generate()
+      
+      assert {:error, _} = Agent.start_link(agent_id: fake_id)
+    end
+  end
+  
+  describe "send_message/2" do
+    setup do
+      agent_record = insert(:agent)
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      %{agent_id: agent_record.id}
+    end
+    
+    test "sends message and returns response", %{agent_id: agent_id} do
+      # Mock LLM response
+      # (Actual LLM integration in future tasks)
+      
+      {:ok, response} = Agent.send_message(agent_id, "Hello!")
+      
+      # For now, verify it doesn't crash
+      # Full assertion when LLM integration complete
+      assert is_map(response)
+    end
+    
+    test "returns error for non-existent agent" do
+      fake_id = Ecto.UUID.generate()
+      
+      assert {:error, :agent_not_found} = Agent.send_message(fake_id, "Hello")
+    end
+    
+    test "times out on slow response", %{agent_id: agent_id} do
+      # Simulate slow LLM
+      # (Implementation depends on executor module)
+      
+      assert {:error, :timeout} =
+               Agent.send_message(agent_id, "Slow task", timeout: 10)
+    end
+  end
+  
+  describe "queue_message/3" do
+    setup do
+      agent_record = insert(:agent)
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      %{agent_id: agent_record.id}
+    end
+    
+    test "queues message asynchronously", %{agent_id: agent_id} do
+      assert :ok = Agent.queue_message(agent_id, "Task 1", :when_done)
+      assert :ok = Agent.queue_message(agent_id, "Task 2", :when_done)
+      
+      # Verify messages in queue
+      state = Agent.get_state(agent_id)
+      assert :queue.len(state.message_queue) == 2
+    end
+    
+    test "supports all queue modes", %{agent_id: agent_id} do
+      assert :ok = Agent.queue_message(agent_id, "Msg 1", :immediate)
+      assert :ok = Agent.queue_message(agent_id, "Msg 2", :after_thinking)
+      assert :ok = Agent.queue_message(agent_id, "Msg 3", :when_done)
+    end
+    
+    test "returns immediately without blocking", %{agent_id: agent_id} do
+      start_time = System.monotonic_time(:millisecond)
+      :ok = Agent.queue_message(agent_id, "Long task", :when_done)
+      end_time = System.monotonic_time(:millisecond)
+      
+      # Should return in <10ms
+      assert end_time - start_time < 10
+    end
+  end
+  
+  describe "get_state/1" do
+    test "returns current agent state" do
+      agent_record = insert(:agent)
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      state = Agent.get_state(agent_record.id)
+      
+      assert state.id == agent_record.id
+      assert state.status in [:idle, :processing, :interrupted]
+      assert is_list(state.context)
+    end
+  end
+  
+  describe "switch_model/2" do
+    test "updates agent model configuration" do
+      agent_record = insert(:agent, config: %{model: "gpt-3.5-turbo"})
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      :ok = Agent.switch_model(agent_record.id, "gpt-4")
+      
+      state = Agent.get_state(agent_record.id)
+      assert state.config.model == "gpt-4"
+    end
+  end
+  
+  describe "stop/1" do
+    test "gracefully stops agent process" do
+      agent_record = insert(:agent)
+      {:ok, pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      # Subscribe to stopped event
+      Phoenix.PubSub.subscribe(PagServer.PubSub, "agents:#{agent_record.id}")
+      
+      :ok = Agent.stop(agent_record.id)
+      
+      # Verify process stopped
+      refute Process.alive?(pid)
+      
+      # Verify event
+      assert_receive {:agent_event, "agent_stopped", payload}
+      assert payload.agent_id == agent_record.id
+    end
+    
+    test "returns :ok even if already stopped" do
+      fake_id = Ecto.UUID.generate()
+      
+      assert :ok = Agent.stop(fake_id)
+    end
+  end
+  
+  describe "PubSub events" do
+    test "broadcasts state_changed on status transition" do
+      agent_record = insert(:agent)
+      Phoenix.PubSub.subscribe(PagServer.PubSub, "agents:#{agent_record.id}")
+      
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      # Clear started event
+      assert_receive {:agent_event, "agent_started", _}
+      
+      # Trigger state change
+      # (Will implement when executor module exists)
+      # Agent.send_message(agent_record.id, "Hello")
+      
+      # For now, just verify subscription works
+      # Full test when executor complete
+    end
+    
+    test "broadcasts llm_token during streaming" do
+      # Test when LLM integration complete
+      # Verify each token is broadcast individually
+    end
+    
+    test "broadcasts tool events" do
+      # Test when tool execution complete
+      # Verify tool_start and tool_complete events
+    end
+  end
+  
+  describe "state transitions" do
+    test "idle -> processing -> idle cycle" do
+      # Test full message processing cycle
+      # When executor module complete
+    end
+    
+    test "processing -> interrupted -> idle" do
+      # Test interrupt handling
+      # When interrupt logic complete
+    end
+  end
+  
+  describe "concurrent operations" do
+    test "handles multiple concurrent message sends" do
+      agent_record = insert(:agent)
+      {:ok, _pid} = Agent.start_link(agent_id: agent_record.id)
+      
+      # Send 10 messages concurrently
+      tasks =
+        for i <- 1..10 do
+          Task.async(fn ->
+            Agent.queue_message(agent_record.id, "Message #{i}", :when_done)
+          end)
+        end
+      
+      results = Task.await_many(tasks)
+      
+      # All should succeed
+      assert Enum.all?(results, &(&1 == :ok))
+      
+      # Queue should have 10 messages
+      state = Agent.get_state(agent_record.id)
+      assert :queue.len(state.message_queue) == 10
+    end
+  end
+  
+  describe "error handling" do
+    test "handles database errors gracefully" do
+      # Test when DB is unavailable or record missing
+    end
+    
+    test "handles invalid message formats" do
+      # Test malformed messages
+    end
+    
+    test "recovers from LLM errors" do
+      # Test when LLM returns error
+      # When LLM integration complete
+    end
+  end
+end
+```
+
+### Factory Setup (ExMachina)
+
+```elixir
+# test/support/factory.ex
+defmodule PagServer.Factory do
+  use ExMachina.Ecto, repo: PagServer.Repo
+  
+  def agent_factory do
+    %PagServer.Schema.Agent{
+      id: Ecto.UUID.generate(),
+      name: "Test Agent",
+      config: %{
+        model: "gpt-4",
+        temperature: 0.7,
+        max_tokens: 1000
+      },
+      current_session_id: Ecto.UUID.generate(),
+      status: :active
+    }
+  end
+end
+```
+
+### Running Tests
+
+```bash
+# Run all agent tests
+mix test test/pag_server/agents/agent_test.exs
+
+# Run specific test
+mix test test/pag_server/agents/agent_test.exs:42
+
+# Run with coverage
+mix test --cover
+
+# Run only fast tests (skip integration)
+mix test --exclude integration
+```
+
+## Notes
+
+### Test Organization
+
+```
+test/pag_server/agents/
+├── agent_test.exs           # This file - GenServer tests
+├── supervisor_test.exs      # From epic P1.M3.E2
+├── registry_test.exs        # From epic P1.M3.E3
+├── state_test.exs           # From epic P1.M3.E4
+└── broadcaster_test.exs     # PubSub tests (optional separate file)
+```
+
+### Async vs Sync Tests
+
+- **async: true**: Use unique agent IDs, safe for parallel execution
+- **async: false**: Tests that modify global state (rare)
+
+### Mocking Strategy
+
+```elixir
+# Use Mox for LLM and DB mocks (when needed)
+defmock(PagServer.LLM.MockProvider, for: PagServer.LLM.Provider)
+
+# In test
+expect(PagServer.LLM.MockProvider, :chat, fn _model, _messages, _opts ->
+  {:ok, %{content: "Mocked response"}}
+end)
+```
+
+### Coverage Goals
+
+| Module | Target | Critical |
+|--------|--------|----------|
+| Agent (init) | 100% | Yes |
+| Agent (callbacks) | 95% | Yes |
+| Client API | 100% | Yes |
+| Error handling | 90% | Medium |
+
+## Troubleshooting
+
+**Issue**: Tests fail with `:noproc`
+- Agent process not started before calling API
+- Ensure `start_link/1` called in setup
+
+**Issue**: PubSub events not received
+- Missing subscription before starting agent
+- Use `assert_receive` with timeout
+
+**Issue**: Database errors
+- Missing test database setup
+- Run `mix ecto.setup` for test env
+- Check `test/support/data_case.ex` is configured
+
+**Issue**: Async tests interfere
+- Agent IDs not unique per test
+- Use `Ecto.UUID.generate()` for unique IDs

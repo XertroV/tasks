@@ -1,0 +1,16 @@
+---
+id: P29.M1.E1.T002
+title: Implement CryptoKeyManager GenServer
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:59:29.562022+00:00'
+started_at: '2026-02-18T18:59:29.562022+00:00'
+completed_at: '2026-02-18T19:03:07.374803+00:00'
+duration_minutes: 3.63021285
+---
+GenServer managing per-workspace key lifecycle: generate_key_pair/1, get_or_create_keypair/1, rotate_key/1. Use :crypto.generate_key(:eddsa, :ed25519). Store encrypted private key in DB using Cloak or similar. Cache public key in ETS.

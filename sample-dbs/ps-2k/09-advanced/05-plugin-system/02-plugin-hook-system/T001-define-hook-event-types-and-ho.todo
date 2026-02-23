@@ -1,0 +1,103 @@
+---
+id: P9.M5.E2.T001
+title: Define hook event types and HookEvent struct
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- hooks
+- types
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:08:28.605669'
+started_at: '2026-02-06T17:08:28.605669'
+completed_at: '2026-02-06T17:13:25.099693'
+duration_minutes: 4.9415669
+---
+
+# Define hook event types and HookEvent struct
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/hook_event.ex` module
+- [ ] Define `HookEvent` struct with fields:
+  - [ ] `:type` - Atom identifying the hook event type
+  - [ ] `:timestamp` - DateTime when event was created
+  - [ ] `:agent_id` - ID of the agent context (nil for system-level events)
+  - [ ] `:session_id` - ID of the session context (nil for agent-level events)
+  - [ ] `:data` - Event-type-specific payload map
+  - [ ] `:metadata` - Additional metadata (source plugin, correlation_id, etc.)
+- [ ] Define all hook event type atoms and their data shapes:
+  - [ ] `:pre_tool_use` - data: %{tool_name, input, agent_state_summary}
+  - [ ] `:post_tool_use` - data: %{tool_name, input, result, duration_ms}
+  - [ ] `:pre_tool_use_failure` - data: %{tool_name, input, error}
+  - [ ] `:message_received` - data: %{message, role, agent_state_summary}
+  - [ ] `:session_start` - data: %{config, agent_id}
+  - [ ] `:session_end` - data: %{reason, duration_ms, message_count}
+  - [ ] `:agent_start` - data: %{config, capabilities}
+  - [ ] `:agent_stop` - data: %{reason}
+  - [ ] `:agent_error` - data: %{error, stacktrace}
+  - [ ] `:agent_spawn` - data: %{parent_id, child_id, config}
+  - [ ] `:context_build` - data: %{messages, token_count, agent_state_summary}
+  - [ ] `:pre_compact` - data: %{messages, strategy, token_budget}
+- [ ] Implement `new/2` constructor that validates type and sets timestamp
+- [ ] Add `@type t()` typespec and documentation for each event type
+
+## Acceptance Criteria
+
+- [ ] HookEvent struct is defined with all specified fields
+- [ ] All 12 hook event types are defined with documented data shapes
+- [ ] `new/2` validates that the type is a known event type
+- [ ] Unknown event types return `{:error, :unknown_hook_type}`
+- [ ] Unit tests verify struct creation for each event type
+- [ ] Typespecs pass Dialyzer checks
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/hook_event.ex`
+- **Used by**: `PagServer.Plugins.HookDispatcher` (T002), all hook integration tasks (T003-T006)
+- **Relates to**: `PagServer.Agents.Lifecycle` callbacks (existing) - hook events mirror lifecycle events
+- **Design note**: Hook events are separate from Lifecycle callbacks; HookDispatcher wraps lifecycle callbacks to fire hooks
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M5.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 03:45 UTC
+**Sibling tasks**: P9.M5.E2.T002, P9.M5.E2.T003, P9.M5.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M5.E2.T001 → P9.M5.E2.T002 → P9.M5.E2.T003 → P9.M5.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M5.E2.T001: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T001-define-hook-event-types-and-ho.todo
+- P9.M5.E2.T002: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T002-implement-hookdispatcher-gense.todo
+- P9.M5.E2.T003: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T003-add-pre-post-tool-execution-ho.todo
+- P9.M5.E2.T004: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T004-add-session-and-agent-lifecycl.todo
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M5.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 04:08 UTC
+**Sibling tasks**: P9.M5.E2.T002, P9.M5.E2.T003, P9.M5.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M5.E2.T001 → P9.M5.E2.T002 → P9.M5.E2.T003 → P9.M5.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M5.E2.T001: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T001-define-hook-event-types-and-ho.todo
+- P9.M5.E2.T002: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T002-implement-hookdispatcher-gense.todo
+- P9.M5.E2.T003: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T003-add-pre-post-tool-execution-ho.todo
+- P9.M5.E2.T004: .tasks/09-advanced/05-plugin-system/02-plugin-hook-system/T004-add-session-and-agent-lifecycl.todo

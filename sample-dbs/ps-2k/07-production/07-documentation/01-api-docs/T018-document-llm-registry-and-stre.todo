@@ -1,0 +1,40 @@
+---
+id: P7.M7.E1.T018
+title: Document LLM registry and stream types
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- llm
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:37:45.790325+00:00'
+started_at: '2026-02-08T06:37:45.790325+00:00'
+completed_at: '2026-02-08T06:46:55.239060+00:00'
+duration_minutes: 9.157478633333334
+---
+
+# Document LLM registry and stream types
+
+Standardize docs and type documentation for key LLM routing and streaming modules.
+
+
+## Requirements
+
+- [x] Improve `@doc/@spec` coverage in `lib/pag_server/llm/registry.ex`
+- [x] Add `@typedoc` and function docs for stream parser/state modules:
+  - [x] `lib/pag_server/llm/providers/anthropic/sse.ex`
+  - [x] `lib/pag_server/llm/openai/stream_accumulator.ex`
+- [x] Ensure event/state type names are documented consistently across modules
+- [x] Clarify callback contracts used by registry/streaming interfaces
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] Scoped LLM modules have complete public `@doc` coverage
+- [x] Missing public `@spec` in scoped modules are added and accurate
+- [x] Public stream/registry types have `@typedoc`
+- [x] `mix docs` completes without new warnings from scoped modules

@@ -1,0 +1,25 @@
+---
+id: P23.M1.E3.T001
+title: Add approval_required / approve / deny channel events
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:26:15.994976+00:00'
+started_at: '2026-02-18T15:26:15.994976+00:00'
+completed_at: '2026-02-18T15:35:52.228550+00:00'
+duration_minutes: 9.60389275
+---
+Wire approval flow into Phoenix agent channels for real-time WebSocket communication.
+
+## Acceptance Criteria
+- [ ] Locate the agent Phoenix channel under `lib/pag_server_web/channels/`
+- [ ] Server pushes `approval_required` event to channel with payload: `{approval_id, command, reason, timeout_ms, agent_id}`
+- [ ] Client can send `approve` event with `{approval_id}` to approve
+- [ ] Client can send `deny` event with `{approval_id, reason}` to deny
+- [ ] Channel handler validates that the requesting user has permission to approve (workspace membership check)
+- [ ] Channel integration test covering the full round-trip: command → pause → client receives approval_required → approve → execution resumes

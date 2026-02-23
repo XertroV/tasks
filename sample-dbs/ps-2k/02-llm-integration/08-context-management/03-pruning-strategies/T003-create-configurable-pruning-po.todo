@@ -1,0 +1,45 @@
+---
+id: P2.M8.E3.T003
+title: Create configurable pruning policy
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- context
+- config
+- policy
+claimed_by: claude-1
+claimed_at: '2026-02-05T20:28:15.586536'
+started_at: '2026-02-05T20:28:15.586536'
+completed_at: '2026-02-05T20:31:49.628599'
+duration_minutes: 3.5673675166666663
+---
+
+# Create configurable pruning policy
+
+Simple configuration system to choose between pruning strategies: sliding window (fast, cheap) or summarization (LLM-based compression).
+
+## Requirements
+
+- [x] Create `PagServer.Context.Pruning.Policy` module
+- [x] Support application-level configuration via `:default_pruning_strategy` config
+- [x] Support per-call override via `:strategy` option
+- [x] Route to `SlidingWindow` for `:sliding_window` strategy
+- [x] Route to `Summarization` for `:summarization` strategy
+- [x] Fallback to sliding window for unknown strategies
+- [x] Pass through all options to underlying strategies
+- [x] Default to `:sliding_window` (simpler, faster, cheaper)
+
+## Acceptance Criteria
+
+- [x] Policy module implements `prune/2` function
+- [x] Routes correctly to each strategy based on configuration
+- [x] Application config can set default strategy
+- [x] Per-call `:strategy` option overrides default
+- [x] Unknown strategies log warning and fallback to sliding window
+- [x] All strategy options (max_tokens, model_spec, etc.) pass through
+- [x] Comprehensive test coverage for routing and configuration
+- [x] Documentation includes examples of both config and runtime usage
+- [x] All tests pass: `mix test test/pag_server/context/pruning/policy_test.exs`

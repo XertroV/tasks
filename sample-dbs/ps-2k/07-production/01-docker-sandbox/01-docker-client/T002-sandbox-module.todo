@@ -1,0 +1,91 @@
+---
+id: P7.M1.E1.T002
+title: Create Sandbox module
+status: done
+estimate_hours: 2
+complexity: high
+priority: high
+depends_on:
+- P7.M1.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:21:28.219711'
+started_at: '2026-02-06T14:21:28.219711'
+completed_at: '2026-02-06T14:27:18.334956'
+tags:
+- docker
+- sandbox
+- security
+duration_minutes: 5.8352539
+---
+
+# Create Sandbox module
+
+Create PagServer.Sandbox module for executing untrusted code in isolated environments.
+
+## Requirements
+
+- [x] Create `lib/pag_server/sandbox.ex`
+- [x] Define sandbox types: `:docker`, `:process`, `:none`
+- [x] Implement `execute/2` function with options
+- [x] Add configuration for sandbox type selection
+- [x] Implement `execute_process/2` for process isolation
+- [x] Add command escaping for security
+- [x] Add module documentation
+
+## Acceptance Criteria
+
+- [x] Sandbox module exists with proper structure
+- [x] Supports multiple execution modes
+- [x] Configuration allows runtime sandbox selection
+- [x] Code compiles without warnings
+- [x] Module documentation includes examples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1468-1530 (Sandboxed Execution)
+- Task breakdown P7.M1.E1 (Docker Client Integration)
+
+**Key Points**:
+- Sandbox provides abstraction over execution environments
+- Process mode uses Erlang Ports for lightweight isolation
+- Docker mode provides stronger isolation with resource limits
+- None mode for development/testing only
+
+## Notes
+
+Module structure from architecture:
+```elixir
+defmodule PagServer.Sandbox do
+  @moduledoc """
+  Sandbox for executing untrusted code.
+  Uses Docker containers or process isolation.
+  """
+
+  @sandbox_types [:docker, :process, :none]
+
+  def execute(command, opts \\ [])
+  defp execute_docker(command, opts)
+  defp execute_process(command, opts)
+  defp execute_raw(command, opts)
+  defp escape_command(command)
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:21 UTC
+**Sibling tasks**: P7.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M1.E1.T002 → P7.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M1.E1.T002: .tasks/07-production/01-docker-sandbox/01-docker-client/T002-sandbox-module.todo
+- P7.M1.E1.T003: .tasks/07-production/01-docker-sandbox/01-docker-client/T003-execute-docker.todo

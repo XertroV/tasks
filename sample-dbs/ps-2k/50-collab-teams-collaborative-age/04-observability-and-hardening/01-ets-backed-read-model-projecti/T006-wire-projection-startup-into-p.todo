@@ -1,0 +1,25 @@
+---
+id: P50.M4.E1.T006
+title: Wire projection startup into plugin lifecycle and broadcast events from Runtime
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M4.E1.T003
+- P50.M4.E1.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:39.680859+00:00'
+started_at: '2026-02-23T02:42:39.680859+00:00'
+completed_at: '2026-02-23T02:42:42.212454+00:00'
+duration_minutes: 0.04219291666666667
+---
+## Description
+CollabTeams.ProjectionSupervisor is DynamicSupervisor started in on_enable/1. Start a Projection GenServer when collab_team_created fires (via PubSub or direct call from Runtime.create_team). Runtime and TaskGraph modules broadcast to Phoenix.PubSub collab_teams:#{team_id} topic after each state change so Projection receives events. on_disable/1 shuts down ProjectionSupervisor.
+
+## Acceptance Criteria
+- Creating a team automatically starts its Projection GenServer
+- task/worker state changes broadcast to correct PubSub topic
+- on_disable shuts down all projection processes
+- test: create team, complete task, call get_task_board and see completed count = 1

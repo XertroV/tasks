@@ -1,0 +1,49 @@
+---
+id: P28.M3.E1.T001
+title: Plugin registry API tests
+status: done
+estimate_hours: 8.0
+complexity: low
+priority: high
+depends_on:
+- P28.M2.E1.T002
+tags:
+- test
+- plugin
+- api
+- registry
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:45:06.565481+00:00'
+started_at: '2026-02-18T18:45:06.565481+00:00'
+completed_at: '2026-02-18T18:50:53.552376+00:00'
+duration_minutes: 5.783114749999999
+---
+
+# Plugin registry API tests
+
+Write a comprehensive API test suite covering all plugin hub endpoints: listing,
+enable/disable, config GET/PATCH, and config schema retrieval.
+
+## Test Scenarios
+
+1. **List plugins**: authenticated workspace member gets 200 with plugin list; each item
+   has required metadata fields; `enabled` reflects workspace setting
+2. **List plugins - auth**: unauthenticated or wrong workspace returns 401/403
+3. **Enable plugin**: admin PUT with `{"enabled": true}` returns updated descriptor
+4. **Disable plugin**: admin PUT with `{"enabled": false}` persists and returns updated state
+5. **Enable/disable - auth**: non-admin returns 403
+6. **Enable unknown plugin**: returns 404
+7. **Get plugin config**: member GET returns current config with defaults filled in
+8. **Patch plugin config - valid**: admin PATCH merges and returns updated config
+9. **Patch plugin config - invalid**: returns 422 with field errors
+10. **Config schema**: GET schema returns valid JSON Schema document
+11. **Config schema for unknown plugin**: returns 404
+
+## Acceptance Criteria
+
+- [ ] All 11 scenarios above are covered
+- [ ] Tests use `async: true` with unique workspace/user fixtures per test
+- [ ] A stub/test plugin is defined to provide predictable metadata and schema
+- [ ] Full test suite still runs under 20 seconds after these tests are added
+- [ ] `mix test test/pag_server_web/controllers/plugin*` passes with no failures

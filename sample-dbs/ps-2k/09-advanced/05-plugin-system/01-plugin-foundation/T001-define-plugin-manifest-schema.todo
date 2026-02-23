@@ -1,0 +1,81 @@
+---
+id: P9.M5.E1.T001
+title: Define plugin manifest schema (plugin.yaml)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- schema
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:52.198417'
+started_at: '2026-02-06T17:07:52.198417'
+completed_at: '2026-02-06T17:07:52.937692'
+duration_minutes: 0.012321083333333333
+---
+
+# Define plugin manifest schema (plugin.yaml)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/manifest.ex` module
+- [ ] Define manifest schema struct with required fields:
+  - [ ] `:name` - Plugin name (string, required, validated format: lowercase alphanumeric + hyphens)
+  - [ ] `:version` - SemVer version string (required, validated)
+  - [ ] `:description` - Human-readable description (required)
+  - [ ] `:author` - Author name or organization (optional)
+  - [ ] `:type` - Plugin type: `:elixir` or `:external` (required, default `:elixir`)
+  - [ ] `:entry_point` - Module name (Elixir) or command path (external) (required)
+- [ ] Define capability declaration fields:
+  - [ ] `:tools` - List of tool definitions the plugin provides
+  - [ ] `:hooks` - List of hook event types the plugin subscribes to
+  - [ ] `:prompts` - System prompt injection text or callback module
+  - [ ] `:providers` - LLM provider definitions
+- [ ] Define metadata fields:
+  - [ ] `:dependencies` - List of required plugins (name + version constraint)
+  - [ ] `:config_schema` - JSON Schema map for plugin configuration options
+  - [ ] `:min_pag_version` - Minimum PAG server version compatibility
+- [ ] Implement YAML parsing via `YamlElixir` with validation
+- [ ] Return `{:ok, manifest}` or `{:error, reasons}` with descriptive error list
+- [ ] Support both minimal manifests (name + version + entry_point) and full manifests
+
+## Acceptance Criteria
+
+- [ ] Manifest schema validates all required fields (name, version, description, type, entry_point)
+- [ ] Invalid manifests return `{:error, reasons}` with list of specific validation failures
+- [ ] SemVer version strings are validated (rejects "abc", accepts "1.0.0", "0.1.0-beta")
+- [ ] Plugin name format enforced (rejects spaces, special chars; accepts "my-plugin", "tool123")
+- [ ] Both minimal and full YAML manifests parse correctly
+- [ ] Unit tests cover valid parsing, missing required fields, invalid types, and malformed YAML
+- [ ] Typespecs and `@moduledoc` documentation present
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/manifest.ex`
+- **YAML parsing**: Add `yaml_elixir` dependency if not present
+- **Pattern reference**: Similar to `PagServer.Tools.Tool` behaviour for schema definition
+- **Used by**: `PagServer.Plugins.Discovery` (T003), `PagServer.Plugins.Plugin` struct (T002)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 03:30 UTC
+**Sibling tasks**: P9.M5.E1.T002, P9.M5.E1.T003, P9.M5.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M5.E1.T001 → P9.M5.E1.T002 → P9.M5.E1.T003 → P9.M5.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M5.E1.T001: .tasks/09-advanced/05-plugin-system/01-plugin-foundation/T001-define-plugin-manifest-schema.todo
+- P9.M5.E1.T002: .tasks/09-advanced/05-plugin-system/01-plugin-foundation/T002-implement-plugin-struct-and-va.todo
+- P9.M5.E1.T003: .tasks/09-advanced/05-plugin-system/01-plugin-foundation/T003-build-directory-based-plugin-d.todo
+- P9.M5.E1.T004: .tasks/09-advanced/05-plugin-system/01-plugin-foundation/T004-implement-pluginregistry-gense.todo

@@ -1,0 +1,37 @@
+id: P3.M5.E3
+name: Authorization Middleware
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-define-permission-capability-s.todo
+  title: Define permission/capability schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-authorization-check.todo
+  title: Implement authorization check plug
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-resource-level-access-cont.todo
+  title: Add resource-level access control
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

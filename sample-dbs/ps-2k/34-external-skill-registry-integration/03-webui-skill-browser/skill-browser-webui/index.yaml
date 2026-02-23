@@ -1,0 +1,47 @@
+id: P34.M3.E1
+name: Skill Browser WebUI
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- P34.M2.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-skill-list-liveview.todo
+  title: Skill List LiveView
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-skill-detail-view.todo
+  title: Skill Detail View
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-install-action.todo
+  title: Install Action
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-integration-with-plugin-hub.todo
+  title: Integration with Plugin Hub
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

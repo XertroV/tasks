@@ -1,0 +1,50 @@
+---
+id: P15.M2.E4.T002
+title: Scaffold Phoenix LiveView console shell with responsive layout
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E4.T001
+tags:
+- frontend
+- liveview
+- devex
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:37:33.070653+00:00'
+started_at: '2026-02-14T12:37:33.070653+00:00'
+completed_at: '2026-02-14T12:45:46.242137+00:00'
+duration_minutes: 8.219524583333333
+---
+
+# Scaffold Phoenix LiveView console shell with responsive layout
+
+
+
+## Requirements
+
+- Create a dedicated LiveView route/module for the validation console inside the existing Phoenix app.
+- Implement a responsive shell layout with panels for left navigation (sessions/agents), center chat, and right utility/settings.
+- Add baseline client-side hooks needed for streaming updates and interactive tool actions.
+- Keep implementation lightweight and local-first, reusing existing app styles/components where practical.
+
+## Acceptance Criteria
+
+- The console route renders successfully on desktop and mobile breakpoints without layout breakage.
+- Core shell regions are present with stable IDs/classes for future task wiring.
+- LiveView mounts cleanly with no console errors and supports hot reload in local dev.
+- A simple empty-state layout is visible before any session/chat data loads.
+
+## Implementation Notes
+
+- Added `PagServerWeb.Live.ValidationConsole` + `validation_console.html.heex`.
+- Added route: `live "/validation-console", ValidationConsole` under `/dashboard` scope.
+- Added nav link in `layouts/app.html.heex`.
+- Shell regions with stable IDs:
+  - `validation-console-shell`
+  - `vc-browser-pane`
+  - `vc-chat-pane`
+  - `vc-utility-pane`
+- Responsive behavior implemented with `xl:grid-cols-12` split (3/6/3) and stacked mobile layout.
+- Empty states implemented for sessions, agents, and transcript.

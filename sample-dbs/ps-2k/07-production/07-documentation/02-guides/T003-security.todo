@@ -1,0 +1,43 @@
+---
+id: P7.M7.E2.T003
+title: Security hardening guide
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M7.E2.T002
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:27:25.249044+00:00'
+started_at: '2026-02-08T07:27:25.249044+00:00'
+completed_at: '2026-02-08T07:31:10.016499+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 3.7461240499999997
+---
+
+# Security hardening guide
+
+Document security best practices
+
+## Requirements
+
+- [x] Create security hardening guide
+- [x] Cover secrets management, network security, and container security
+- [x] Document backup, monitoring, and incident response
+
+## Acceptance Criteria
+
+- [x] Security guide covers secrets/headers/auth/tool-sandboxing
+- [x] Database security and encryption guidance included
+- [x] Incident response and compliance documented
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.

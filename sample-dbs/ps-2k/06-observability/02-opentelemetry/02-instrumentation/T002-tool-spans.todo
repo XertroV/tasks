@@ -1,0 +1,84 @@
+---
+id: P6.M2.E2.T002
+title: Add spans for tool invocations
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- observability
+- opentelemetry
+- tools
+- tracing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:00:46.886395+00:00'
+started_at: '2026-02-06T20:00:46.886395+00:00'
+completed_at: '2026-02-06T20:11:35.101197+00:00'
+duration_minutes: 10.80357985
+---
+
+# Add spans for tool invocations
+
+Instrument tool invocations with spans to trace tool execution time and success rates.
+
+## Requirements
+
+- [ ] Wrap tool invocations in `Tracer.with_span/2`:
+  - [ ] Span name: `tool.invoke`
+  - [ ] Attributes: `tool.name`, `tool.type` (mcp/builtin)
+  - [ ] MCP-specific: `tool.server`, `tool.method`
+- [ ] Add span events:
+  - [ ] `tool.input` with input size
+  - [ ] `tool.output` with result size
+  - [ ] `tool.error` for failures
+- [ ] Instrument Tools.Registry.invoke/2
+- [ ] Add MCP-specific instrumentation
+
+## Acceptance Criteria
+
+- [ ] Tool invocations create spans
+- [ ] Attributes identify tool and type
+- [ ] Errors recorded with details
+- [ ] MCP tools traced separately
+- [ ] Nested spans for tool chains
+
+## Context
+
+**Key Points**:
+- Tools can be nested (agent calls tool that calls agent)
+- MCP tools involve network calls (trace separately)
+- Capture tool input/output sizes (not full content for privacy)
+
+## Notes
+
+**Example**:
+```elixir
+defmodule PagServer.Tools.Registry do
+  require OpenTelemetry.Tracer, as: Tracer
+
+  def invoke(tool_name, args) do
+    Tracer.with_span "tool.invoke", %{
+      "tool.name" => tool_name,
+      "tool.type" => tool_type(tool_name)
+    } do
+      Span.add_event("tool.input", %{
+        arg_count: map_size(args)
+      })
+
+      case execute_tool(tool_name, args) do
+        {:ok, result} ->
+          Span.add_event("tool.output", %{
+            result_size: estimate_size(result)
+          })
+          {:ok, result}
+
+        {:error, reason} ->
+          Span.set_status(:error, inspect(reason))
+          Span.add_event("tool.error", %{error: inspect(reason)})
+          {:error, reason}
+      end
+    end
+  end
+end
+```

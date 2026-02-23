@@ -1,0 +1,170 @@
+---
+id: P2.M4.E1.T004
+title: Write OpenRouter client tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P2.M4.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T08:58:22.924238'
+started_at: '2026-02-06T08:58:22.924238'
+completed_at: '2026-02-06T08:58:43.111808'
+tags:
+- llm
+- openrouter
+- testing
+- quality
+duration_minutes: 0.33645936666666665
+---
+
+# Write OpenRouter client tests
+
+Create comprehensive test suite for OpenRouter provider adapter.
+
+## Requirements
+
+- [x] Create `test/pag_server/llm/providers/openrouter_test.exs`
+- [ ] Test configuration struct:
+  - [x] Default values
+  - [x] Required fields validation
+  - [x] Custom base URL
+- [ ] Test request formatting:
+  - [x] Message format conversion
+  - [x] Streaming parameters
+  - [x] Tool calls and results
+  - [x] OpenRouter-specific parameters
+- [ ] Test response parsing:
+  - [x] Success responses
+  - [x] Error responses
+  - [x] Metadata extraction
+  - [x] Usage statistics
+- [ ] Test model routing:
+  - [x] Primary model success
+  - [x] Fallback on failure
+  - [x] Model list fetching
+  - [x] Invalid model handling
+- [ ] Test streaming:
+  - [x] SSE parsing
+  - [x] Token accumulation
+  - [x] Error mid-stream
+- [x] Mock HTTP requests with Bypass or Mox
+- [x] Test error handling (timeout, rate limit, auth failure)
+
+## Acceptance Criteria
+
+- [x] Test file exists with comprehensive coverage
+- [x] All core functions have unit tests
+- [x] HTTP requests are properly mocked
+- [x] Tests cover success and error paths
+- [x] Model fallback scenarios tested
+- [x] All tests pass with `mix test`
+- [x] Test coverage > 90% for OpenRouter module
+- [x] Tests document expected behavior clearly
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` lines 1114-1115 (OpenRouter Provider)
+- Reference existing provider tests (Anthropic, OpenAI)
+- `.plan/2026-02-05-velvet-cascade/testing.md`
+
+**Key Points**:
+- OpenRouter responses include extra metadata vs OpenAI
+- Fallback behavior is critical for reliability
+- Cost tracking must use actual model, not requested model
+- Need to handle both OpenRouter and upstream provider errors
+
+**Test Scenarios**:
+1. **Basic completion**: Simple request/response
+2. **Streaming**: SSE token stream
+3. **Tool calling**: Function calling format
+4. **Model fallback**: Primary fails, fallback succeeds
+5. **All models unavailable**: Proper error handling
+6. **Rate limiting**: Retry with exponential backoff
+7. **Invalid model**: Clear error message
+8. **Cost tracking**: Correct model pricing applied
+
+## Notes
+
+Example test structure:
+```elixir
+defmodule PagServer.LLM.Providers.OpenRouterTest do
+  use PagServer.ConnCase, async: true
+  
+  alias PagServer.LLM.Providers.OpenRouter
+  
+  setup do
+    config = %OpenRouter{
+      api_key: "test-key",
+      site_url: "https://test.local",
+      site_name: "Test Suite"
+    }
+    
+    {:ok, config: config}
+  end
+  
+  describe "complete/2" do
+    test "sends request with correct format", %{config: config} do
+      # Mock HTTP response
+      bypass = Bypass.open()
+      config = %{config | base_url: "http://localhost:#{bypass.port}"}
+      
+      Bypass.expect_once(bypass, "POST", "/chat/completions", fn conn ->
+        assert {"authorization", "Bearer test-key"} in conn.req_headers
+        assert {"http-referer", "https://test.local"} in conn.req_headers
+        
+        {:ok, body, _} = Plug.Conn.read_body(conn)
+        request = Jason.decode!(body)
+        
+        assert request["model"] == "anthropic/claude-3-5-sonnet"
+        assert request["route"] == "fallback"
+        
+        Plug.Conn.resp(conn, 200, mock_response())
+      end)
+      
+      request = %{
+        model: "anthropic/claude-3-5-sonnet",
+        messages: [%{role: "user", content: "test"}]
+      }
+      
+      assert {:ok, response} = OpenRouter.complete(config, request)
+      assert response.content == "Test response"
+    end
+    
+    test "handles model fallback", %{config: config} do
+      # Test fallback scenario
+    end
+  end
+  
+  describe "stream/2" do
+    # Streaming tests
+  end
+  
+  describe "list_models/1" do
+    # Model listing tests
+  end
+  
+  defp mock_response do
+    Jason.encode!(%{
+      id: "gen-123",
+      model: "anthropic/claude-3-5-sonnet",
+      choices: [
+        %{
+          message: %{
+            role: "assistant",
+            content: "Test response"
+          },
+          finish_reason: "stop"
+        }
+      ],
+      usage: %{
+        prompt_tokens: 10,
+        completion_tokens: 5,
+        total_tokens: 15
+      }
+    })
+  end
+end
+```

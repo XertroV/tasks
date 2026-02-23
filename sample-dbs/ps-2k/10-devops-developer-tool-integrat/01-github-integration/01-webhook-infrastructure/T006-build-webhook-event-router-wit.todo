@@ -1,0 +1,54 @@
+---
+id: P10.M1.E1.T006
+title: Build webhook event router with priority sorting
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T19:55:09.625683+00:00'
+started_at: '2026-02-11T19:55:09.625683+00:00'
+completed_at: '2026-02-11T20:09:30.819948+00:00'
+duration_minutes: 14.353237533333333
+---
+
+# Build webhook event router with priority sorting
+
+
+
+## Requirements
+
+Build a webhook event router that routes GitHub webhook events to matching subscriptions, sorted by priority and with deduplication support.
+
+## Description
+
+The webhook router processes incoming GitHub events, finds all matching subscriptions using the filter engine, sorts them by priority (custom field or timestamp), handles retries, and forwards events to the appropriate handlers. This is the central event distribution system.
+
+## Acceptance Criteria
+
+- [ ] Module `PagServer.Webhooks.EventRouter` with `route/2` function (event, payload)
+- [ ] Finds all active subscriptions for the integration matching the event
+- [ ] Calls FilterMatcher to identify which subscriptions match the payload
+- [ ] Sorts matching subscriptions by priority (lower priority value first; default 100)
+- [ ] Returns list of matched subscriptions with metadata (matched_filters, delivery_id)
+- [ ] Handles missing/invalid payloads gracefully (returns empty list, logs warning)
+- [ ] Supports deduplication by delivery ID to prevent duplicate processing
+- [ ] Records event routing metrics (subscriptions matched, filters evaluated, time taken)
+- [ ] Unit tests with multiple subscriptions and complex filter scenarios
+
+## Implementation Notes
+
+- Location: `lib/pag_server/webhooks/event_router.ex`
+- Main function: `route(integration_settings, event_name, payload) :: {:ok, [matched_subscription]} | {:error, reason}`
+- Each matched_subscription result includes: `%{id, webhook_url, matched_filters, delivery_id, priority}`
+- Query subscriptions: filter by `integration_id`, `is_active: true`, order by `priority ASC`
+- For each subscription, call `FilterMatcher.matches?(subscription, payload)` to test
+- Sort matching subscriptions by `priority` field (ascending, so priority=1 comes before priority=100)
+- Deduplication via delivery_id: generate `UUID.uuid5(:dns, "webhook:#{integration_id}:#{event_name}:#{payload["id"]}")` for idempotency key
+- Error handling: log at `:warning` if integration/payload invalid, return `{:error, :invalid_integration}` or `{:error, :invalid_payload}`
+- Metrics: emit telemetry `[:pag_server, :webhook, :routed]` with tags `{count: N, event: "push"}`
+- Log successful routing at `:debug` level with subscription count and matched filter names
+- Return empty list (not error) if no subscriptions match - this is normal behavior
+- Reference pattern: `/home/xertrov/src/pag-server/lib/pag_server_web/controllers/slack_events_controller.ex` (lines 55-62)

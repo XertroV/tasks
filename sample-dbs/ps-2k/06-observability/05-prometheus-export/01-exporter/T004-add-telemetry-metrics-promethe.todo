@@ -1,0 +1,97 @@
+---
+id: P6.M5.E1.T004
+title: Add telemetry_metrics_prometheus dependency and wire to telemetry
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- observability
+- prometheus
+- dependency
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:11:43.421551+00:00'
+started_at: '2026-02-07T01:11:43.421551+00:00'
+completed_at: '2026-02-07T01:22:49.527387+00:00'
+duration_minutes: 11.101763766666666
+---
+
+# Add telemetry_metrics_prometheus dependency and wire to telemetry
+
+Add the `telemetry_metrics_prometheus` (or `telemetry_metrics_prometheus_core`) hex package
+which provides the standard Elixir integration between the `:telemetry` library and Prometheus.
+This replaces the manual Prometheus formatting approach in T001/T002 with the idiomatic
+telemetry-based approach, where metric definitions declaratively map telemetry events to
+Prometheus metric types.
+
+## Requirements
+
+- [ ] Add `{:telemetry_metrics_prometheus_core, "~> 1.2"}` to `mix.exs` dependencies
+  - [ ] Alternative: `{:telemetry_metrics_prometheus, "~> 0.6"}` if using the Plug-integrated version
+- [ ] Also ensure `{:telemetry_metrics, "~> 1.0"}` is present (likely already a transitive dep)
+- [ ] Run `mix deps.get` to fetch
+- [ ] Create `lib/pag_server/observability/prometheus_metrics.ex` module
+- [ ] Define a `Telemetry.Metrics` spec list mapping telemetry events to Prometheus metrics:
+  ```elixir
+  def metrics do
+    [
+      counter("pag_server.llm.error.count", tags: [:provider, :error_type]),
+      counter("pag_server.llm.retry.count", tags: [:provider, :model]),
+      counter("pag_server.llm.failover.count", tags: [:from_provider, :to_provider]),
+      distribution("pag_server.agent.lifecycle_hook.duration",
+        tags: [:hook_name],
+        unit: {:native, :millisecond},
+        reporter_options: [buckets: [10, 50, 100, 500, 1000, 5000]]
+      ),
+      last_value("pag_server.agent.memory_bounds.count", tags: [:agent_id])
+    ]
+  end
+  ```
+- [ ] Start the Prometheus reporter in `PagServer.Application` supervision tree
+- [ ] Wire the `/metrics` endpoint to use `TelemetryMetricsPrometheus.Core.scrape/0`
+- [ ] Verify metrics appear when telemetry events are emitted
+- [ ] Add test that emits a telemetry event and checks `/metrics` output
+
+## Acceptance Criteria
+
+- [ ] `telemetry_metrics_prometheus_core` dependency compiles without issues
+- [ ] Prometheus reporter starts in supervision tree
+- [ ] Emitting a `:telemetry.execute/3` event results in the metric appearing at `/metrics`
+- [ ] No conflicts with existing telemetry handler attachments (from P6.M1)
+- [ ] Metrics use the standard `telemetry_metrics` DSL (counter, distribution, last_value, sum)
+
+## Context
+
+**Source**: Architecture audit noted P6.M5 had endpoint tasks but no dependency setup for the
+standard Elixir Prometheus integration. The existing T001/T002 use a manual formatting approach;
+this task adds the idiomatic library-based approach.
+
+**Relationship**: This task should be done BEFORE or alongside T001 (exporter plug) -- the plug
+can simply call `TelemetryMetricsPrometheus.Core.scrape/0` instead of manual formatting.
+
+## Notes
+
+**mix.exs**:
+```elixir
+{:telemetry_metrics_prometheus_core, "~> 1.2"},
+# or
+{:telemetry_metrics_prometheus, "~> 0.6"},  # includes built-in Plug
+```
+
+**Application Supervisor**:
+```elixir
+children = [
+  {TelemetryMetricsPrometheus.Core,
+    metrics: PagServer.Observability.PrometheusMetrics.metrics(),
+    name: :pag_prometheus}
+]
+```
+
+**Scrape in Endpoint**:
+```elixir
+# In the /metrics Plug:
+body = TelemetryMetricsPrometheus.Core.scrape(:pag_prometheus)
+conn |> put_resp_content_type("text/plain") |> send_resp(200, body)
+```

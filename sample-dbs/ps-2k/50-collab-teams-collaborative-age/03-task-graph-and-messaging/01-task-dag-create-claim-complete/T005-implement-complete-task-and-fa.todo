@@ -1,0 +1,24 @@
+---
+id: P50.M3.E1.T005
+title: Implement complete_task and fail_task with dependent unblocking
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:19:57.438533+00:00'
+started_at: '2026-02-23T02:19:57.438533+00:00'
+completed_at: '2026-02-23T02:20:00.021165+00:00'
+duration_minutes: 0.04304368333333333
+---
+## Description
+TaskGraph.complete_task/2 (task_id, actor_agent_id): enforce owner check (claimed_by_worker_id == actor_agent_id) or return {:error, :not_owner}. Transition in_progress->completed. Bulk-update any blocked tasks whose entire dependency set is now completed to pending state (recursive check for each blocked task). Write collab_task_completed audit event. TaskGraph.fail_task/3 (task_id, actor_agent_id, reason): enforce owner check, transition in_progress->failed, write collab_task_failed audit event; does NOT auto-unblock dependents. Both fire :plugin_event via PolicyHooks.fire/2 (see M3.E2).
+
+## Acceptance Criteria
+- Owner mismatch returns :not_owner
+- completing B (A->B->C, A done) unblocks C from blocked to pending
+- fail_task does not unblock dependents
+- audit events written for both

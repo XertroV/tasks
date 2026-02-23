@@ -1,0 +1,43 @@
+---
+id: P46.M2.E3.T001
+title: Create Login LiveView page with OAuth provider buttons
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P46.M2.E1.T001
+- P46.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:11:18.441295+00:00'
+started_at: '2026-02-19T22:11:18.441295+00:00'
+completed_at: '2026-02-19T22:16:22.631063+00:00'
+duration_minutes: 5.069829283333333
+---
+Create lib/pag_server_web/live/auth_live/login_live.ex:
+- Displays 'Sign in to PAG' header
+- Renders a button for each enabled OAuth provider (from OAuthProviders.providers/0)
+- Each button links to GET /auth/:provider
+- If user is already logged in (current_user in socket.assigns), redirect to /dashboard
+- Simple, clean design consistent with existing LiveView UI patterns
+Also create route in router.ex: GET /login -> LoginLive
+Redirect root '/' to '/login' if unauthenticated, or '/dashboard' if authenticated.
+Acceptance: /login page renders with GitHub/Google/GitLab buttons. Clicking a button initiates OAuth. Already-logged-in users are redirected away.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-19 22:11 UTC
+**Sibling tasks**: P46.M2.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M2.E3.T001 → P46.M2.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M2.E3.T001: .tasks/46-user-authentication-identity/02-oauth-login-flow/03-login-page-liveview-dev-permis/T001-create-login-liveview-page-wit.todo
+- P46.M2.E3.T002: .tasks/46-user-authentication-identity/02-oauth-login-flow/03-login-page-liveview-dev-permis/T002-implement-dev-permissive-auto.todo

@@ -1,0 +1,18 @@
+---
+id: P15.M7.E5.T025
+title: 'T25: Combine-Personality Feature'
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: low
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:03:53.572009+00:00'
+started_at: '2026-02-18T09:03:53.572009+00:00'
+completed_at: '2026-02-18T10:32:09.791999+00:00'
+duration_minutes: 88.27033295
+---
+Merge multiple personas. Command registered from plugin: pag persona combine <persona1> <persona2>

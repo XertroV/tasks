@@ -1,0 +1,43 @@
+---
+status: done
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:57:46.685284'
+started_at: '2026-02-05T16:57:46.685284'
+completed_at: '2026-02-05T17:04:41.183893'
+duration_minutes: 6.908309849999999
+---
+id: P2.M5.E1.T003
+title: Add streaming response handling
+status: pending
+priority: high
+estimate_hours: 1.0
+complexity: medium
+depends_on: [P2.M5.E1.T002]
+
+description: |
+  Implement streaming response handling for Ollama's SSE-based streaming.
+  
+  Ollama streams JSON objects line-by-line:
+  - Each line is a complete JSON object
+  - message.content contains incremental text
+  - done: true on final message
+  - Final message includes stats (eval_count, duration)
+
+acceptance_criteria:
+  - [ ] Implement chat_stream/3 function
+  - [ ] Parse line-delimited JSON responses
+  - [ ] Emit {:chunk, content} messages
+  - [ ] Handle done: true final message
+  - [ ] Extract token statistics from final message
+  - [ ] Handle streaming errors gracefully
+
+files:
+  - lib/pag_server/llm/ollama.ex
+
+references:
+  - Ollama streaming example in API docs
+  - Phase 2 M6: Stream Processing milestone
+
+notes: |
+  Unlike OpenAI SSE format, Ollama sends one JSON object per line.
+  No "data: " prefix. Simpler parsing.

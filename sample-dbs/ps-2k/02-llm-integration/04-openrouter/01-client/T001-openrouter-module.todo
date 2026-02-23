@@ -1,0 +1,112 @@
+---
+id: P2.M4.E1.T001
+title: Create OpenRouter adapter module
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:21:27.190836'
+started_at: '2026-02-05T16:21:27.190836'
+completed_at: '2026-02-05T16:47:25.879131'
+tags:
+- llm
+- openrouter
+- adapter
+- integration
+duration_minutes: 25.978138066666666
+---
+
+# Create OpenRouter adapter module
+
+Create the OpenRouter provider adapter module that implements the LLM.Provider behaviour.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/providers/openrouter.ex`
+- [ ] Implement `LLM.Provider` behaviour:
+  - [ ] `complete/2` - Non-streaming completion
+  - [ ] `stream/2` - Streaming completion
+  - [ ] `models/1` - List available models
+- [ ] Define configuration struct with:
+  - [ ] `:api_key` - OpenRouter API key
+  - [ ] `:base_url` - Base URL (defaults to `https://openrouter.ai/api/v1`)
+  - [ ] `:timeout` - Request timeout (default 60s)
+  - [ ] `:site_url` - Optional site URL for rankings
+  - [ ] `:site_name` - Optional site name for rankings
+- [ ] Add module documentation explaining OpenAI compatibility
+- [ ] Set custom headers: `HTTP-Referer`, `X-Title`
+
+## Acceptance Criteria
+
+- [ ] File `lib/pag_server/llm/providers/openrouter.ex` exists
+- [ ] Module implements all `LLM.Provider` callbacks
+- [ ] Configuration struct includes all required fields
+- [ ] Module has `@moduledoc` explaining OpenRouter integration
+- [ ] Code compiles without warnings
+- [ ] Follows existing provider pattern (reference Anthropic/OpenAI)
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` lines 1114-1115 (OpenRouter Provider)
+- Reference: `lib/pag_server/llm/providers/anthropic.ex` (if exists)
+- Reference: `lib/pag_server/llm/providers/openai.ex` (if exists)
+
+**Key Points**:
+- OpenRouter uses OpenAI-compatible API format
+- Supports multiple models from different providers (Claude, GPT-4, Llama, etc.)
+- Requires HTTP-Referer and X-Title headers for request attribution
+- Can reuse OpenAI request/response formatting logic
+- Supports model routing and automatic fallbacks
+
+**Integration Notes**:
+- OpenRouter endpoint: `https://openrouter.ai/api/v1/chat/completions`
+- Authentication: Bearer token in Authorization header
+- Request format: Same as OpenAI `/v1/chat/completions`
+- Response format: OpenAI-compatible with additional metadata
+
+## Notes
+
+Example module structure:
+```elixir
+defmodule PagServer.LLM.Providers.OpenRouter do
+  @moduledoc """
+  OpenRouter provider adapter.
+  
+  OpenRouter provides a unified gateway to multiple LLM providers
+  using an OpenAI-compatible API. Supports Claude, GPT-4, Llama,
+  and many other models with automatic fallbacks.
+  
+  API Docs: https://openrouter.ai/docs
+  """
+  
+  @behaviour PagServer.LLM.Provider
+  
+  defstruct [
+    :api_key,
+    base_url: "https://openrouter.ai/api/v1",
+    timeout: 60_000,
+    site_url: nil,
+    site_name: nil
+  ]
+  
+  @type t :: %__MODULE__{
+    api_key: String.t(),
+    base_url: String.t(),
+    timeout: pos_integer(),
+    site_url: String.t() | nil,
+    site_name: String.t() | nil
+  }
+  
+  @impl true
+  def complete(config, request), do: ...
+  
+  @impl true
+  def stream(config, request), do: ...
+  
+  @impl true
+  def models(config), do: ...
+end
+```

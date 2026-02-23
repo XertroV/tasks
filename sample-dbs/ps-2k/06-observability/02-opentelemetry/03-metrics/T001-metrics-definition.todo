@@ -1,0 +1,111 @@
+---
+completed_at: '2026-02-07T01:09:46.104737+00:00'
+complexity: low
+depends_on: []
+estimate_hours: 1.5
+id: P6.M2.E3.T001
+priority: medium
+status: done
+tags:
+- observability
+- opentelemetry
+- metrics
+title: Define OpenTelemetry metrics
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:03:28.938455+00:00'
+started_at: '2026-02-07T01:03:28.938455+00:00'
+duration_minutes: 6.286104466666667
+---
+
+# Define OpenTelemetry metrics
+
+Define and instrument key metrics using OpenTelemetry Metrics API.
+
+## Requirements
+
+- [ ] Define metrics module `PagServer.Observability.Metrics`
+- [ ] Create counters:
+  - [ ] `llm.requests.total` - Total LLM requests
+  - [ ] `llm.errors.total` - Total LLM errors
+  - [ ] `tool.invocations.total` - Total tool calls
+  - [ ] `agent.messages.total` - Total agent messages
+- [ ] Create histograms:
+  - [ ] `llm.duration` - LLM call duration
+  - [ ] `llm.tokens_in` - Input tokens per request
+  - [ ] `llm.tokens_out` - Output tokens per request
+  - [ ] `tool.duration` - Tool execution time
+- [ ] Create gauges:
+  - [ ] `agents.active` - Active agent count
+  - [ ] `sessions.active` - Active session count
+- [ ] Add labels: model, provider, tool_name, agent_type
+
+## Acceptance Criteria
+
+- [ ] Metrics defined and registered
+- [ ] Metrics recorded during operations
+- [ ] Labels applied correctly
+- [ ] Metrics exported to OTLP
+- [ ] Compatible with Prometheus
+
+## Notes
+
+**Metrics Module**:
+```elixir
+defmodule PagServer.Observability.Metrics do
+  require OpenTelemetry.Meter, as: Meter
+
+  @meter_name :pag_server
+
+  def setup do
+    # Counters
+    Meter.create_counter(@meter_name, "llm.requests.total",
+      description: "Total LLM requests",
+      unit: "1"
+    )
+
+    # Histograms
+    Meter.create_histogram(@meter_name, "llm.duration",
+      description: "LLM call duration",
+      unit: "ms"
+    )
+
+    # Gauges
+    Meter.create_observable_gauge(@meter_name, "agents.active",
+      description: "Active agents",
+      callback: fn -> Registry.count(:agents) end
+    )
+  end
+
+  def record_llm_request(model, duration, tokens_in, tokens_out) do
+    Meter.counter_add(@meter_name, "llm.requests.total", 1, %{
+      model: model
+    })
+    
+    Meter.record(@meter_name, "llm.duration", duration, %{
+      model: model
+    })
+    
+    Meter.record(@meter_name, "llm.tokens_in", tokens_in, %{
+      model: model
+    })
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:03 UTC
+**Sibling tasks**: P6.M2.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M2.E3.T001 → P6.M2.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M2.E3.T001: .tasks/06-observability/02-opentelemetry/03-metrics/T001-metrics-definition.todo
+- P6.M2.E3.T002: .tasks/06-observability/02-opentelemetry/03-metrics/T002-tests.todo

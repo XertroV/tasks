@@ -1,0 +1,23 @@
+---
+id: P44.M3.E3.T002
+title: Format unified command Response for Discord
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.176251+00:00'
+started_at: '2026-02-19T19:33:54.176251+00:00'
+completed_at: '2026-02-19T19:34:10.914617+00:00'
+duration_minutes: 0.2789726166666667
+---
+## Summary
+Render unified Response struct as Discord ephemeral interaction response.
+
+## Acceptance Criteria
+- [ ] Text rendered as Discord markdown (pass-through)
+- [ ] Options rendered as ephemeral text list (Discord select components are complex — text fallback acceptable for v1)
+- [ ] Ephemeral flag respected: all command responses use flags: 64 (EPHEMERAL)
+- [ ] Tests: text response formatted, options fallback to text list

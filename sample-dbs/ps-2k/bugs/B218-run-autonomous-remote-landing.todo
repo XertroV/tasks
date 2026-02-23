@@ -1,0 +1,15 @@
+---
+id: B218
+title: Run autonomous remote landing-page build via x-pi-1 companion
+status: blocked
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T04:36:07.452529+00:00'
+started_at: '2026-02-22T04:36:07.452529+00:00'
+completed_at: null
+---
+Execute a full remote autonomous coding loop using pag-server + pag-connect on x-pi-1.local, with model zai_coding:glm-5, targeting ~/src/test-landingpage-website.\n\nAcceptance criteria:\n- pag-connect configured/running against local pag-server with working_dir set to /home/xertrov/src/test-landingpage-website on x-pi-1\n- Create/start an agent session using provider zai_coding and model glm-5\n- Build landing page project entirely via prompts/tool calls from pag (no manual coding by root agent in target directory)\n- Capture evidence of remote file creation/updates and resulting site files\n- Summarize run outcomes and any missing features discovered

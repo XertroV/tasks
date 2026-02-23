@@ -1,0 +1,41 @@
+id: P42.M2
+name: Orchestration & Routing
+status: done
+estimate_hours: 7.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Orchestrator GenServer
+  path: 01-orchestrator-genserver
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Mailman Agent Provisioning
+  path: 02-mailman-agent-provisioning
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Fork-and-Question Pattern
+  path: 03-fork-and-question-pattern
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

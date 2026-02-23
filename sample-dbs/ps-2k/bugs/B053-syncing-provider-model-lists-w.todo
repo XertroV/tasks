@@ -1,0 +1,20 @@
+---
+id: B053
+title: Syncing provider model lists works for openrouter and I see 'Created provider
+  openrouter with 340 models from API'. Great! But, this should also be run for Groq
+  which is similar to openrouter in that it provides multiple different families of
+  models from different providers.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:41:34.769774+00:00'
+started_at: '2026-02-16T03:41:34.769774+00:00'
+completed_at: '2026-02-16T03:41:36.747876+00:00'
+duration_minutes: 0.03296815
+---
+
+Syncing provider model lists works for openrouter and I see 'Created provider openrouter with 340 models from API'. Great! But, this should also be run for Groq which is similar to openrouter in that it provides multiple different families of models from different providers.

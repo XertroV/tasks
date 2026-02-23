@@ -1,0 +1,53 @@
+---
+id: P15.M7.E1.T002
+title: Create Personal Assistant workspace template
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E1.T001
+tags:
+- templates
+- content
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:46:28.589092+00:00'
+started_at: '2026-02-17T08:46:28.589092+00:00'
+completed_at: '2026-02-17T08:46:29.842799+00:00'
+duration_minutes: 0.020894916666666666
+---
+## Description
+Create a full workspace template YAML file for a Personal Assistant use case. This is the flagship template demonstrating the conversational bootstrap pattern.
+
+## Bootstrap Prompt
+Detailed system prompt instructing the agent to conduct onboarding conversation. The agent should:
+- Introduce itself warmly and explain the setup process
+- Work through questionnaire sections one at a time
+- Ask follow-up questions based on answers
+- Confirm answers before moving on
+- Generate workspace files from collected answers
+- Signal completion when done
+
+## Questionnaire Sections
+1. **Identity & Naming**: What should I call you? What name do you want for me? What vibe/personality should I have?
+2. **Communication Style**: Formal or casual? Emoji usage? Verbosity preference? Humor level?
+3. **About You (USER.md)**: Your name, timezone, pronouns, what you do, current projects/interests
+4. **Daily Life & Routines**: Morning routine, work schedule, common tasks you need help with
+5. **Privacy & Boundaries**: What topics are off-limits? What should never be shared externally? Comfort level with proactive suggestions?
+6. **Tools & Environment**: What platforms do you use? Preferred apps? Smart home devices?
+7. **Memory Preferences**: What should I remember? How often should I summarize? Daily log preferences?
+
+## Default Files (with {{variable}} substitution)
+- SOUL.md - Personality, tone, values, boundaries (populated from sections 2, 5)
+- IDENTITY.md - Agent name, vibe, emoji, avatar (from section 1)
+- USER.md - Human profile (from section 3)
+- MEMORY.md - Empty template with structure
+- TOOLS.md - Environment notes (from section 6)
+
+## Acceptance Criteria
+- [ ] personal-assistant.yml in priv/workspace_templates/
+- [ ] Bootstrap prompt is detailed enough to conduct full conversation
+- [ ] All questionnaire sections defined with question types and expected formats
+- [ ] Default files use {{variable}} substitution from questionnaire answers
+- [ ] Template loads and validates via WorkspaceTemplate schema
+- [ ] Template variables match questionnaire answer keys

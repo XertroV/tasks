@@ -1,0 +1,33 @@
+---
+id: P54.M4.E1.T002
+title: 'PagConnect.MCPServer GenServer: stdio MCP client via Erlang Port'
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P54.M4.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:17:23.701164+00:00'
+started_at: '2026-02-21T12:17:23.701164+00:00'
+completed_at: '2026-02-21T12:24:27.676149+00:00'
+duration_minutes: 7.066249583333333
+---
+## Context
+MCPServer wraps an external stdio MCP process (e.g. bunx @browsermcp/mcp@latest) via an Erlang Port. It performs the MCP initialize handshake, fetches the tool list, and serves tool call requests. Modeled on pag-server's PagServer.Tools.MCP.Server + ServerLifecycle + StdioTransport — read those files as reference (/home/xertrov/src/pag-server/lib/pag_server/tools/mcp/).
+
+## Acceptance Criteria
+- [ ] PagConnect.MCPServer at lib/pag_connect/mcp_server.ex
+- [ ] start_link(%{name: string, command: string, args: [string], init_timeout_secs: integer}) -> GenServer.on_start()
+- [ ] On init: opens Port via Port.open({:spawn_executable,...}, [:binary, :exit_status, :use_stdio, args: [...]]); sends self() :do_initialize message
+- [ ] handle_info(:do_initialize): sends MCP initialize request (JSON-RPC), awaits response; sends notifications/initialized; calls tools/list; stores tool schemas in state; sets status: :ready; calls MCPRegistry.register/3
+- [ ] list_tools(pid) -> {:ok, [tool_schema_map]} when ready, {:error, :not_ready} otherwise
+- [ ] call_tool(pid, tool_name, arguments, timeout \\ 30_000) -> {:ok, result_map} | {:error, reason}
+- [ ] Port exits mid-call: all pending callers receive {:error, {:server_exited, status}} before GenServer stops
+- [ ] bunx not on PATH: init rescues ErlangError(:enoent), returns {:stop, :bunx_not_found}; logged as warning
+- [ ] init_timeout_secs configurable (default 60) to handle slow first-run npm download
+- [ ] Process.flag(:trap_exit, true) in init
+- [ ] Fake MCP server script in test/fixtures/fake_mcp_server.sh for unit tests
+- [ ] Tests in test/pag_connect/mcp_server_test.exs
+- [ ] mix compile passes

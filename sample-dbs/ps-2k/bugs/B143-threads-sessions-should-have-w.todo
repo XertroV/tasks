@@ -1,0 +1,18 @@
+---
+id: B143
+title: threads/sessions should have word-y IDs that are freidnly for LLMs to use than
+  random chars
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:04:57.572139+00:00'
+started_at: '2026-02-18T14:04:57.572139+00:00'
+completed_at: '2026-02-18T14:33:24.463256+00:00'
+duration_minutes: 28.448185083333332
+---
+
+threads/sessions should have word-y IDs that are freidnly for LLMs to use than random chars

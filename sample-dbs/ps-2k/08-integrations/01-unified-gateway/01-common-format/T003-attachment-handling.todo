@@ -1,0 +1,97 @@
+---
+id: P8.M1.E1.T003
+title: Add attachment handling
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P8.M1.E1.T001
+tags:
+- gateway
+- integrations
+- attachments
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:36:10.566763+00:00'
+started_at: '2026-02-08T07:36:10.566763+00:00'
+completed_at: '2026-02-08T07:44:20.354002+00:00'
+duration_minutes: 8.16312035
+---
+
+# Add attachment handling
+
+Define normalized attachment format and extraction logic for platform-specific attachments.
+
+## Requirements
+
+- [x] Define `Gateway.Message.Attachment` struct (~30 LoC)
+- [x] Add fields: type, url, mime_type, filename, size, thumbnail_url
+- [x] Support attachment types: `:image`, `:video`, `:audio`, `:document`, `:file`
+- [x] Add helper function `extract_attachments/2` for each platform
+- [x] Handle inline vs uploaded attachments
+- [x] Document attachment normalization rules
+
+## Acceptance Criteria
+
+- [x] Attachment struct compiles without warnings
+- [x] All attachment types are properly defined
+- [x] URLs are normalized across platforms
+- [x] MIME types are detected correctly
+- [x] File sizes are normalized to bytes
+- [x] Thumbnail URLs are extracted when available
+- [x] Tests verify attachment extraction for all platforms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 472 (Attachments field)
+
+**Key Points**:
+- Different platforms handle attachments differently
+- Some platforms provide direct URLs, others require download
+- Images may have thumbnails
+- File metadata varies by platform
+- Attachment processing should not block message handling
+
+## Notes
+
+Example Attachment struct:
+```elixir
+defmodule PAGServer.Gateway.Message.Attachment do
+  @moduledoc """
+  Normalized attachment format across platforms.
+  """
+
+  defstruct [
+    :type,           # :image | :video | :audio | :document | :file
+    :url,            # Direct URL or platform-specific identifier
+    :mime_type,      # MIME type (e.g., "image/png")
+    :filename,       # Original filename
+    :size,           # Size in bytes
+    :thumbnail_url,  # Thumbnail URL (for images/videos)
+    :metadata        # Platform-specific metadata
+  ]
+
+  @type t :: %__MODULE__{}
+end
+```
+
+Platform-specific handling:
+- **Telegram**: file_id needs to be resolved to URL via Bot API
+- **Slack**: files already have download URLs
+- **Discord**: attachments have direct URLs
+- **WhatsApp**: media messages need to be downloaded
+- **Matrix**: mxc:// URLs need to be converted to HTTP
+
+Example extraction:
+```elixir
+defp extract_telegram_attachments(msg) do
+  cond do
+    msg["photo"] -> extract_photo(msg["photo"])
+    msg["document"] -> extract_document(msg["document"])
+    msg["video"] -> extract_video(msg["video"])
+    msg["audio"] -> extract_audio(msg["audio"])
+    true -> []
+  end
+end
+```

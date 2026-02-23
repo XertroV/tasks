@@ -1,0 +1,16 @@
+---
+id: B191
+title: Matrix sync manager logs raw sync token
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:29:59.688340+00:00'
+started_at: '2026-02-21T14:29:59.688340+00:00'
+completed_at: '2026-02-21T14:32:45.187850+00:00'
+duration_minutes: 2.75832495
+---
+Matrix SyncManager currently logs raw sync token material. Redact/remove token from logs and add regression test to prevent leakage.

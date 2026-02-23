@@ -1,0 +1,42 @@
+---
+id: I049
+title: 'USER_REQUIRED: GOAL: should be able to remotely control a collective of agents
+  working in parallel on a single task. When connected locally, should be able to
+  connect opencode or toad as a frontend.'
+status: pending
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: USER_REQUIRED: GOAL: should be able to remotely control a collective of agents working in parallel on a single task. When connected locally, should be able to connect opencode or toad as a frontend.
+
+## Original Idea
+
+USER_REQUIRED: GOAL: should be able to remotely control a collective of agents working in parallel on a single task. When connected locally, should be able to connect opencode or toad as a frontend.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "USER_REQUIRED: GOAL: should be able to remotely control a collective of agents working in parallel on a single task. When connected locally, should be able to connect opencode or toad as a frontend."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

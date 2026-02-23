@@ -1,0 +1,57 @@
+---
+id: P46.M5.E1.T001
+title: Create User Settings LiveView with profile editing
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: medium
+depends_on:
+- P46.M3.E2.T001
+- P46.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:00:59.043542+00:00'
+started_at: '2026-02-20T06:00:59.043542+00:00'
+completed_at: '2026-02-20T06:09:40.328916+00:00'
+duration_minutes: 8.688089116666667
+---
+Create lib/pag_server_web/live/auth_live/settings_live.ex:
+
+Sections:
+1. Profile:
+   - Display current username (editable inline, async validate with debounce)
+   - Display email (read-only, from OAuth)
+   - Display name (editable)
+   - Save button calls Accounts.update_username/2; show success/error flash
+
+2. Linked Accounts:
+   - List all linked OAuth providers (from user_identities) with provider icon, linked date
+   - 'Link [Provider]' button for unlinked providers → initiates OAuth link flow
+   - 'Unlink' button for linked providers (disabled if it's the last linked identity)
+   
+3. Sessions (read-only for now):
+   - Count of active sessions
+   - 'Log out all other sessions' button → calls Accounts.delete_all_user_tokens/1 except current
+
+4. Danger Zone:
+   - 'Delete Account' (placeholder, not yet functional — adds TODO comment)
+
+Route: GET /settings/profile → SettingsLive (under :authenticated live_session)
+Acceptance: Username update works and validates in real-time. Provider linking initiates OAuth. Unlink prevents removing last identity.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-20 06:00 UTC
+**Sibling tasks**: P46.M5.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M5.E1.T001 → P46.M5.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M5.E1.T001: .tasks/46-user-authentication-identity/05-user-profile-settings-integrat/01-user-settings-liveview/T001-create-user-settings-liveview.todo
+- P46.M5.E1.T002: .tasks/46-user-authentication-identity/05-user-profile-settings-integrat/01-user-settings-liveview/T002-add-user-profile-and-api-key-m.todo

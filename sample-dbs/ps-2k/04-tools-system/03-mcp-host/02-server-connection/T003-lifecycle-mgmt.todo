@@ -1,0 +1,74 @@
+---
+id: P4.M3.E2.T003
+title: Server lifecycle management
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P4.M3.E2.T002
+tags:
+- tools
+- mcp
+- lifecycle
+- supervision
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:07:41.199836'
+started_at: '2026-02-06T03:07:41.199836'
+completed_at: '2026-02-06T03:10:16.629930'
+duration_minutes: 2.5905014166666667
+---
+
+# Server lifecycle management
+
+Manage MCP server lifecycle (startup, shutdown, restart).
+
+## Requirements
+
+- [ ] Implement graceful shutdown
+- [ ] Handle server crashes and restarts
+- [ ] Initialize handshake on startup
+- [ ] Cleanup resources on termination
+- [ ] Status monitoring and health checks
+
+## Acceptance Criteria
+
+- [ ] Graceful shutdown sends cleanup messages
+- [ ] Crashed servers restart automatically
+- [ ] Initialize handshake before tool calls
+- [ ] Ports closed on termination
+- [ ] Health check reports server status
+- [ ] Test crash recovery
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` OTP supervision
+
+**Key Points**:
+- Supervisor handles restart strategy
+- Initialize called on each restart
+- Cleanup prevents resource leaks
+- Health checks detect hung servers
+
+## Notes
+
+Lifecycle handling:
+```elixir
+@impl true
+def terminate(_reason, state) do
+  if state.port do
+    Port.close(state.port)
+  end
+  :ok
+end
+
+@impl true
+def handle_info({:EXIT, port, _reason}, %{port: port} = state) do
+  {:stop, :server_crashed, state}
+end
+
+def health_check(server_name) do
+  GenServer.call(via_tuple(server_name), :health_check, 5000)
+end
+```

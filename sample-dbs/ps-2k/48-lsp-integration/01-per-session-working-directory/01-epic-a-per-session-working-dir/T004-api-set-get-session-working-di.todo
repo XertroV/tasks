@@ -1,0 +1,16 @@
+---
+id: P48.M1.E1.T004
+title: 'API: set/get session working_directory and git_branch'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:16.861513+00:00'
+started_at: '2026-02-20T08:37:16.861513+00:00'
+completed_at: '2026-02-20T08:50:06.661283+00:00'
+duration_minutes: 12.829995966666667
+---
+PATCH /api/v1/sessions/:id supports working_directory and git_branch fields. Validation: path must be within workspace root, directory must exist. GET /api/v1/sessions/:id includes these fields.

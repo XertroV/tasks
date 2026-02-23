@@ -1,0 +1,37 @@
+---
+id: P13.M3.E2.T003
+title: Implement OpenAIDetector
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T11:31:54.233395+00:00'
+started_at: '2026-02-13T11:31:54.233395+00:00'
+completed_at: '2026-02-13T11:47:51.992486+00:00'
+duration_minutes: 15.962651316666667
+---
+
+# Implement OpenAIDetector
+
+## Description
+
+Implement the `ThinkingDetector` protocol for OpenAI's streaming format. OpenAI models may use different conventions for reasoning phases (o1 models use reasoning_content, others may not have explicit markers).
+
+## Acceptance Criteria
+- [ ] Create `lib/pag_server/llm/thinking_detector/openai_detector.ex`
+- [ ] Implement `ThinkingDetector` protocol for `OpenAIDetector` struct
+- [ ] Handle `reasoning_content` field for o1 models (if applicable)
+- [ ] Default implementation for models without explicit thinking markers
+- [ ] Return consistent state structure matching protocol spec
+- [ ] Unit tests for o1 reasoning and standard models
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/thinking_detector.ex` (protocol)
+- Related files: `lib/pag_server/llm/providers/openai.ex`
+- Part of epic: P13.M3.E2 - Thinking Phase Protocol

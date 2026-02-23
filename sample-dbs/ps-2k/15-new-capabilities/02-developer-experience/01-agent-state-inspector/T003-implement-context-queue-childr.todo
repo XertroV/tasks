@@ -1,0 +1,37 @@
+---
+id: P15.M2.E1.T003
+title: Implement context/queue/children tree views
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:49:50.204416+00:00'
+started_at: '2026-02-13T23:49:50.204416+00:00'
+completed_at: '2026-02-14T00:22:09.473904+00:00'
+duration_minutes: 32.32115771666667
+---
+
+# Implement context/queue/children tree views
+
+## Description
+Add expandable tree views for inspecting agent context (messages), message queue, and child agents. Provide drill-down capability for debugging complex agent hierarchies.
+
+## Acceptance Criteria
+- [ ] Create collapsible tree component for context messages
+- [ ] Show message queue with pending items and priorities
+- [ ] Display child agent hierarchy with parent-child relationships
+- [ ] Add click-to-expand for message content preview
+- [ ] Show token counts for context messages
+- [ ] Implement search/filter within tree views
+- [ ] Add "jump to session" action from tree items
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex`, `lib/pag_server/agents/queue_manager.ex`, `lib/pag_server/context/messages.ex`
+- Part of epic: Agent State Inspector
+- Reference existing agent hierarchy patterns

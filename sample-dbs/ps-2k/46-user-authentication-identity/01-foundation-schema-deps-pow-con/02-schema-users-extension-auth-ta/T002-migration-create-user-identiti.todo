@@ -1,0 +1,29 @@
+---
+id: P46.M1.E2.T002
+title: 'Migration: create user_identities table'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P46.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:30:06.111002+00:00'
+started_at: '2026-02-19T20:30:06.111002+00:00'
+completed_at: '2026-02-19T20:33:31.969639+00:00'
+duration_minutes: 3.4309771333333337
+---
+Create user_identities table for PowAssent/Assent OAuth identity linking:
+- id: bigserial primary key
+- user_id: bigint not null, FK to users(id) on delete cascade
+- provider: varchar(255) not null ("github", "google", "gitlab")
+- uid: varchar(255) not null (provider's user ID)
+- token: text nullable (OAuth access token, store as-is initially; encryption at rest is a future hardening task)
+- refresh_token: text nullable
+- token_expires_at: timestamp(0) nullable
+- provider_data: jsonb default '{}'
+- inserted_at, updated_at timestamps
+Unique index on (provider, uid). Index on user_id.
+Create lib/pag_server/accounts/user_identity.ex Ecto schema.
+Acceptance: mix ecto.migrate succeeds, schema compiles.

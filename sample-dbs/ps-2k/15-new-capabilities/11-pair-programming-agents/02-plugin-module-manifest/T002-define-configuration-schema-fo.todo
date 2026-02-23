@@ -1,0 +1,30 @@
+---
+id: P15.M11.E2.T002
+title: Define configuration schema for pair sessions
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.215847+00:00'
+started_at: '2026-02-17T18:46:51.215847+00:00'
+completed_at: '2026-02-17T19:21:49.210281+00:00'
+duration_minutes: 34.966573733333334
+---
+## Description
+Define the Config struct that holds all settings for a pair programming session. This is used by SessionManager to configure agent spawning, model selection, and behavior.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/config.ex`
+
+## Acceptance Criteria
+- [ ] Config struct with all fields: task_description, coder_model, observer_model, coordinator_model, workspace_id, git_worktree, branch_name, max_review_rounds, interrupt_mode, summarizer_model, summary_interval, continuation_mode, auto_swap_roles
+- [ ] Sensible defaults (opus for coder, sonnet for observer, haiku for coordinator/summarizer)
+- [ ] `validate/1` function checks required fields, validates model names exist in ModelCatalog (Gotcha #9)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+See plan: .plan/pair-programming-agents.md, Epic 1, Task 1.2 for full struct definition

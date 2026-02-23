@@ -1,0 +1,31 @@
+---
+id: P39.M1.E2.T001
+title: Fix Tailscale plugin.json tools mismatch
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: low
+depends_on: []
+tags:
+- tailscale
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:28:22.451276+00:00'
+started_at: '2026-02-19T11:28:22.451276+00:00'
+completed_at: '2026-02-19T11:31:56.157032+00:00'
+duration_minutes: 3.5617624500000002
+---
+The Tailscale plugin.json lists 3 tools but the module exposes 4. Add the missing tailscale_list_peers tool.
+
+## File to modify
+- plugins/tailscale/plugin.json — add 'tailscale_list_peers' to the capabilities.tools array
+
+## Current (incorrect)
+"tools": ["tailscale_connect", "tailscale_disconnect", "tailscale_status"]
+
+## Expected (correct)
+"tools": ["tailscale_connect", "tailscale_disconnect", "tailscale_status", "tailscale_list_peers"]
+
+## Acceptance criteria
+- [ ] plugin.json lists all 4 tools that the module exposes
+- [ ] mix lint passes

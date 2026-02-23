@@ -1,0 +1,37 @@
+---
+id: P15.M11.E5.T002
+title: Build session lifecycle manager
+status: done
+estimate_hours: 5.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.226390+00:00'
+started_at: '2026-02-17T18:46:51.226390+00:00'
+completed_at: '2026-02-17T19:22:01.490619+00:00'
+duration_minutes: 35.17107031666667
+---
+## Description
+Orchestrates the full pair programming session lifecycle: validation, worktree creation, agent spawning, observation setup, blackboard initialization, and initial task delivery.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/session_manager.ex`
+
+## Acceptance Criteria
+- [ ] `start_session/1` validates config, creates worktree (optional), spawns 3 agents, starts observation subscriber, initializes blackboard, sends initial task
+- [ ] Spawns coordinator, coder, observer agents via `Api.spawn_agent/3`
+- [ ] Creates sessions for each agent (Gotcha #6 — sessions not auto-created)
+- [ ] Writes pair session config to Blackboard for each agent (Gotcha #1 — tools read config from here)
+- [ ] Initializes phase state on Blackboard (`pair:<session_id>:phase` = "coding")
+- [ ] Starts ObservationSubscriber as linked process (Gotcha #4)
+- [ ] Configures correct tool lists for coder vs observer (with namespaced names — Gotcha #2)
+- [ ] `stop_session/1` cleans up: stops agents, removes worktree, generates report
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+- Verify workspace field in tool context maps correctly (Gotcha #5)
+- Validate model names against ModelCatalog before spawning (Gotcha #9)
+- See plan: .plan/pair-programming-agents.md, Epic 4, Task 4.2 for full code

@@ -1,0 +1,112 @@
+---
+id: P8.M4.E2.T003
+title: Implement streaming responses
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: medium
+depends_on:
+- P8.M4.E2.T001
+tags:
+- streaming
+- responses
+- updates
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:22:04.751705+00:00'
+started_at: '2026-02-11T02:22:04.751705+00:00'
+completed_at: '2026-02-11T02:22:09.014707+00:00'
+duration_minutes: 0.07104978333333332
+---
+
+# Implement streaming responses
+
+Implement streaming response updates for Discord messages.
+Update messages in chunks as agent generates responses to provide
+real-time feedback instead of long waits.
+
+## Acceptance Criteria
+
+- [ ] Send initial "Thinking..." message
+- [ ] Update message periodically with response chunks
+- [ ] Handle Discord rate limits (5 edits per 5 seconds)
+- [ ] Batch updates to avoid excessive API calls
+- [ ] Handle long responses (split into multiple messages if >2000 chars)
+- [ ] Graceful fallback if streaming fails
+
+## Notes
+
+Reference: .plan/2026-02-05-velvet-cascade/integrations.md:330-341
+
+lib/pag_server/integrations/discord/streaming.ex:
+```elixir
+defmodule PagServer.Integrations.Discord.Streaming do
+  alias Nostrum.Api
+  
+  @update_interval 1000  # Update every 1 second
+  @max_length 2000  # Discord message limit
+  
+  def stream_response(channel_id, agent_id, text) do
+    # Send initial message
+    {:ok, initial} = Api.create_message(channel_id, "Thinking...")
+    
+    # Accumulate response
+    acc = %{
+      channel_id: channel_id,
+      message_id: initial.id,
+      buffer: "",
+      last_update: System.monotonic_time(:millisecond)
+    }
+    
+    # Process with streaming callback
+    PagServer.Agent.send_message(agent_id, text,
+      on_chunk: fn chunk ->
+        handle_chunk(acc, chunk)
+      end,
+      on_complete: fn ->
+        finalize_message(acc)
+      end
+    )
+  end
+  
+  defp handle_chunk(acc, chunk) do
+    new_buffer = acc.buffer <> chunk
+    now = System.monotonic_time(:millisecond)
+    
+    # Update if enough time passed and we have content
+    if now - acc.last_update >= @update_interval do
+      update_message(acc, new_buffer)
+      %{acc | buffer: new_buffer, last_update: now}
+    else
+      %{acc | buffer: new_buffer}
+    end
+  end
+  
+  defp update_message(%{channel_id: cid, message_id: mid}, content) do
+    # Split if too long
+    chunks = split_message(content, @max_length)
+    
+    # Edit first message
+    Api.edit_message(cid, mid, content: Enum.at(chunks, 0))
+    
+    # Send additional messages if needed
+    Enum.drop(chunks, 1)
+    |> Enum.each(fn chunk ->
+      Api.create_message(cid, chunk)
+    end)
+  end
+  
+  defp split_message(content, max_length) do
+    if String.length(content) <= max_length do
+      [content]
+    else
+      # Split at sentence boundaries when possible
+      # Implementation details...
+    end
+  end
+end
+```
+
+Rate limit handling:
+- Discord allows 5 message edits per 5 seconds per channel
+- Update every 1 second (safe margin)
+- Use Nostrum's built-in rate limit handling

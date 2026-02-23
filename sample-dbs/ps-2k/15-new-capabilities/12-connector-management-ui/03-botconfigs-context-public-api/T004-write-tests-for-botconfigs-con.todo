@@ -1,0 +1,17 @@
+---
+id: P15.M12.E3.T004
+title: Write tests for BotConfigs context new public API
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E3.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.290837+00:00'
+started_at: '2026-02-18T06:45:12.290837+00:00'
+completed_at: '2026-02-18T07:25:28.254373+00:00'
+duration_minutes: 40.26605876666667
+---
+test/pag_server/bot_configs_test.exs: (1) bind_session/2 sets session_id; (2) bind_session/2 rejects session from different workspace; (3) unbind_session/1 clears session_id; (4) create_connector_with_session with :main_agent creates session on main agent; (5) create_connector_with_session with :new_session and agent_id; (6) create_connector_with_session with :existing_session id. All async: true, unique workspace/agent/session names.

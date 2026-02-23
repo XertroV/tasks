@@ -1,0 +1,167 @@
+---
+id: P4.M2.E4.T001
+title: Implement send_message tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P4.M0.E3.T004
+tags:
+- tools
+- builtin
+- agent-comms
+- multi-agent
+- directives
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:45:42.341882'
+started_at: '2026-02-05T22:45:42.341882'
+completed_at: '2026-02-05T22:51:33.268650'
+duration_minutes: 5.848779250000001
+---
+
+# Implement send_message tool
+
+Create the `send_message` builtin tool for inter-agent communication.
+
+**NOTE**: This tool must return `Directive.SendMessage` directives (P4.M0 directive pattern), not execute GenServer calls directly.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/send_message.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Send message to another agent by ID
+- [ ] Support synchronous (wait for reply) and async modes
+- [ ] Validate target agent exists
+- [ ] Return message ID and delivery status
+
+## Acceptance Criteria
+
+- [ ] Sends message to target agent GenServer
+- [ ] Validates target agent exists in AgentRegistry
+- [ ] Supports async mode (fire and forget)
+- [ ] Supports sync mode (wait for reply with timeout)
+- [ ] Returns message metadata (id, timestamp, status)
+- [ ] Test coverage for valid/invalid agents, timeouts
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Enables multi-agent collaboration
+- Foundation for agent swarms and hierarchies
+- Messages go through agent's message queue (GenServer)
+- Consider message ordering and delivery guarantees
+
+## Notes
+
+Implementation:
+```elixir
+defmodule PAGServer.Tools.Builtin.SendMessage do
+  @behaviour PAGServer.Tools.Tool
+  alias PAGServer.Agents.Registry, as: AgentRegistry
+
+  @impl true
+  def name, do: "send_message"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "send_message",
+      description: "Send a message to another agent",
+      parameters: %{
+        type: "object",
+        properties: %{
+          agent_id: %{
+            type: "string",
+            description: "Target agent ID"
+          },
+          content: %{
+            type: "string",
+            description: "Message content"
+          },
+          wait_for_reply: %{
+            type: "boolean",
+            description: "Wait for agent reply (default false)",
+            default: false
+          },
+          timeout: %{
+            type: "number",
+            description: "Reply timeout in seconds (default 30)",
+            default: 30
+          }
+        },
+        required: ["agent_id", "content"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(args, context) do
+    %{
+      "agent_id" => target_id,
+      "content" => content
+    } = args
+    
+    wait = Map.get(args, "wait_for_reply", false)
+    timeout = Map.get(args, "timeout", 30) * 1000
+    
+    case AgentRegistry.lookup(target_id) do
+      {:ok, pid} ->
+        message = %{
+          from: context.agent_id,
+          content: content,
+          timestamp: DateTime.utc_now()
+        }
+        
+        if wait do
+          case GenServer.call(pid, {:receive_message, message}, timeout) do
+            {:ok, reply} ->
+              {:ok, %{delivered: true, reply: reply}}
+            {:error, reason} ->
+              {:error, "Failed to get reply: #{reason}"}
+          end
+        else
+          GenServer.cast(pid, {:receive_message, message})
+          {:ok, %{delivered: true, async: true}}
+        end
+        
+      {:error, :not_found} ->
+        {:error, "Agent not found: #{target_id}"}
+    end
+  end
+end
+```
+
+Message flow:
+1. Tool validates target agent exists
+2. Constructs message with sender context
+3. Sends to target agent's GenServer
+4. Optionally waits for reply (GenServer.call)
+5. Returns delivery confirmation
+
+Integration with Agent GenServer:
+```elixir
+# In PAGServer.Agents.Agent GenServer
+def handle_call({:receive_message, message}, from, state) do
+  # Process message, optionally reply
+  reply = process_message(message, state)
+  {:reply, {:ok, reply}, state}
+end
+
+def handle_cast({:receive_message, message}, state) do
+  # Async message handling
+  new_state = add_message_to_queue(message, state)
+  {:noreply, new_state}
+end
+```
+
+Future enhancements:
+- Message priority queues
+- Delivery receipts and tracking
+- Message filtering and routing rules
+- Broadcast to multiple agents
+
+Register in Registry startup.

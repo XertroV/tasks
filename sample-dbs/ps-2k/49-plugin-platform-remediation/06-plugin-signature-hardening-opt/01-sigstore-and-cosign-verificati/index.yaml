@@ -1,0 +1,39 @@
+id: P49.M6.E1
+name: Sigstore and cosign verification backend
+status: done
+estimate_hours: 8.0
+complexity: high
+depends_on:
+- P49.M5.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-add-signature-verification-fai.todo
+  title: Add signature verification failure diagnostics and regression tests
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-sigstore-verifier-ad.todo
+  title: Implement Sigstore verifier adapter with cosign integration
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-map-signature-identity-claims.todo
+  title: Map signature identity claims into trust policy decisions
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

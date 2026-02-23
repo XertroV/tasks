@@ -1,0 +1,49 @@
+---
+id: P12.M1.E4.T001
+title: Add tests for agent crash recovery edge cases
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:00:17.800935+00:00'
+started_at: '2026-02-13T10:00:17.800935+00:00'
+completed_at: '2026-02-13T10:17:00.414849+00:00'
+duration_minutes: 16.710231716666666
+---
+
+# Add tests for agent crash recovery edge cases
+
+## Description
+Add comprehensive tests covering agent crash recovery scenarios including state restoration, message replay, and supervisor restart behavior.
+
+## Acceptance Criteria
+- [ ] Tests cover agent crash and recovery scenarios
+- [ ] Tests verify state is properly restored after crash
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/agents/agent_server_test.exs`, `test/pag_server/agents/supervisor_test.exs`, `test/pag_server/agents/lifecycle_test.exs`
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M1.E4)
+**Agent**: cli-user
+**Date**: 2026-02-13 10:00 UTC
+**Sibling tasks**: P12.M1.E4.T002, P12.M1.E4.T003, P12.M1.E4.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M1.E4.T001 → P12.M1.E4.T002 → P12.M1.E4.T003 → P12.M1.E4.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M1.E4.T001: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/04-coverage-gaps/T001-add-tests-for-agent-crash-reco.todo
+- P12.M1.E4.T002: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/04-coverage-gaps/T002-add-tests-for-stream-cancellat.todo
+- P12.M1.E4.T003: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/04-coverage-gaps/T003-add-tests-for-concurrent-sessi.todo
+- P12.M1.E4.T004: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/04-coverage-gaps/T004-add-tests-for-circuit-breaker.todo

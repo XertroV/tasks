@@ -1,0 +1,118 @@
+id: P15.M2.E4
+name: Rapid Validation Web Console
+status: pending
+estimate_hours: 24.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-validation-console-scop.todo
+  title: Define validation console scope and API interaction map
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-scaffold-phoenix-liveview-cons.todo
+  title: Scaffold Phoenix LiveView console shell with responsive layout
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E4.T001
+- id: T003
+  file: T003-implement-chat-workspace-with.todo
+  title: Implement chat workspace with streaming transcript and input composer
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M2.E4.T002
+- id: T004
+  file: T004-build-sessions-and-agents-brow.todo
+  title: Build sessions and agents browser with filtering and grouping
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E4.T002
+- id: T005
+  file: T005-add-quick-action-buttons-for-t.todo
+  title: Add quick action buttons for tool invocation and test presets
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M2.E4.T003
+- id: T006
+  file: T006-create-settings-panel-for-prov.todo
+  title: Create settings panel for provider, model, and runtime options
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E4.T003
+- id: T007
+  file: T007-implement-run-controls-for-new.todo
+  title: Implement run controls for new session, fork, stop, and retry flows
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M2.E4.T003
+  - P15.M2.E4.T004
+- id: T008
+  file: T008-add-lightweight-event-timeline.todo
+  title: Add lightweight event timeline for messages and tool activity
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M2.E4.T003
+  - P15.M2.E4.T005
+- id: T009
+  file: T009-harden-ux-with-loading-error-h.todo
+  title: Harden UX with loading, error handling, and empty states
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E4.T003
+  - P15.M2.E4.T004
+  - P15.M2.E4.T006
+- id: T010
+  file: T010-cover-console-with-integration.todo
+  title: Cover console with integration tests and rapid validation smoke script
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M2.E4.T007
+  - P15.M2.E4.T008
+  - P15.M2.E4.T009
+- id: T011
+  file: T011-document-local-usage-workflows.todo
+  title: Document local usage workflows for quick validation sessions
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M2.E4.T010
+stats:
+  total: 11
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 11

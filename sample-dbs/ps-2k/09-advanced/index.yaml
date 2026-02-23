@@ -1,0 +1,59 @@
+id: P9
+name: Advanced Integrations
+status: pending
+weeks: 2
+estimate_hours: 40
+complexity: medium
+depends_on:
+- P8
+milestones:
+- id: M1
+  name: Vector Search
+  path: 01-vector-search
+  status: pending
+  estimate_hours: 12
+  complexity: high
+  depends_on: []
+  description: pgvector production setup, HNSWLib dev fallback, embedding client integration
+- id: M2
+  name: Long-term Memory/RAG
+  path: 02-long-term-memory
+  status: pending
+  estimate_hours: 12
+  complexity: high
+  depends_on:
+  - M1
+  description: Persistent memory store, retrieval-augmented generation system
+- id: M3
+  name: Agent Templates
+  path: 03-agent-templates
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on: []
+  description: Template system for quick agent instantiation with preset configurations
+- id: M4
+  name: Cluster Preparation
+  path: 04-cluster-prep
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on: []
+  description: Distributed registry patterns, cluster configuration for future scaling
+- id: M5
+  name: Plugin System
+  path: 05-plugin-system
+  status: pending
+  estimate_hours: 48.0
+  complexity: high
+  depends_on: []
+  description: Server-side plugin system supporting MCP tools, lifecycle hooks, prompt
+    injection, chat history access, agent triggering, and per-agent plugin selection.
+    Directory-based plugin model with Elixir-native and external (MCP stdio/HTTP)
+    plugin support.
+stats:
+  total_tasks: 58
+  done: 58
+  in_progress: 0
+  blocked: 0
+  pending: 0

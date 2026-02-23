@@ -1,0 +1,55 @@
+---
+id: P52.M1.E1.T003
+title: Scaffold server entrypoint and baseline config
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- implementation
+- mcp
+- stdio
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:22:27.560901+00:00'
+started_at: '2026-02-21T04:22:27.560901+00:00'
+completed_at: '2026-02-21T04:25:44.157673+00:00'
+duration_minutes: 3.2766126666666664
+---
+
+# Scaffold server entrypoint and baseline config
+
+## Implementation Notes
+
+- Added runtime config loader: `lib/pag_server/mcp/stdio_runtime_config.ex`.
+  - Reads `PAG_API_KEY` (required), `PAG_BASE_URL`, `PAG_WORKSPACE_ID`, `PAG_SESSION_ID`, `PAG_MCP_LOG_LEVEL`.
+  - Fails fast with clear error messages for missing required config.
+- Added stdio server loop scaffold: `lib/pag_server/mcp/stdio_server.ex`.
+  - Reads JSON-RPC lines from stdin, routes to `PagServer.Tools.MCP.ProtocolHandler`, writes newline-delimited responses.
+  - Handles parse errors and invalid batch entries with deterministic JSON-RPC error responses.
+- Added runnable entrypoint mix task: `lib/mix/tasks/pag.mcp.stdio.ex`.
+  - Command: `mix pag.mcp.stdio`.
+  - Supports CLI overrides: `--base-url`, `--api-key`, `--workspace-id`, `--session-id`, `--log-level`.
+  - Stores loaded runtime config under app env `:pag_server, :mcp_stdio` for bridge use.
+
+## Verification Notes
+
+- Added tests:
+  - `test/pag_server/mcp/stdio_runtime_config_test.exs`
+  - `test/pag_server/mcp/stdio_server_test.exs`
+- Ran targeted tests and appended output to `recent-mix-tests.log`.
+- Result: 5 tests, 0 failures.
+
+
+
+## Requirements
+
+- Create a minimal stdio server entrypoint that can start, initialize, and exit cleanly.
+- Add baseline runtime config loading for API base URL, auth token source, and logging verbosity.
+- Ensure scaffold follows plugin-first architecture where feasible and keeps core boundaries clear.
+
+## Acceptance Criteria
+
+- A runnable command starts the MCP stdio process and responds to a basic initialize handshake.
+- Missing or invalid required config fails fast with actionable error output.
+- Scaffold code and config defaults are covered by focused tests.

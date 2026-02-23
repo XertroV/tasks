@@ -1,0 +1,131 @@
+---
+id: P3.M3.E2.T006
+title: DELETE /agents/:id endpoint to delete agent
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- rest
+- crud
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:17:09.620370+00:00'
+started_at: '2026-02-08T04:17:09.620370+00:00'
+completed_at: '2026-02-08T04:25:04.087149+00:00'
+duration_minutes: 7.907779466666667
+---
+
+# DELETE /agents/:id endpoint to delete agent
+
+
+
+## Requirements
+
+- [ ] Create `DELETE /agents/:id` endpoint in `lib/pag_server_web/controllers/agent_controller.ex`
+- [ ] Implement `delete/2` action following Phoenix controller patterns
+- [ ] Validate agent exists before deletion
+- [ ] Stop agent GenServer process if running
+- [ ] Delete agent record from database (or soft-delete)
+- [ ] Handle active sessions gracefully (orphan or cascade delete)
+- [ ] Return 204 No Content on success
+- [ ] Return 404 Not Found if agent doesn't exist
+- [ ] Return 409 Conflict if agent has active sessions (optional)
+
+## Acceptance Criteria
+
+- [ ] Validates agent_id is valid UUID format
+- [ ] Returns 404 if agent doesn't exist
+- [ ] Stops agent GenServer process gracefully before deleting
+- [ ] Deletes agent record from database
+- [ ] Returns 204 No Content with empty body on success
+- [ ] Handles case where agent process is running but DB record deleted (inconsistent state)
+- [ ] Handles case where agent process stopped but DB delete fails (transaction rollback)
+- [ ] Optional: Returns 409 if agent has active sessions (configurable behavior)
+- [ ] Test coverage: delete existing agent, delete non-existent agent, delete running agent, delete with sessions, concurrent deletes
+- [ ] Idempotent - deleting already-deleted agent returns 404
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 89-96 (REST controllers)
+
+**Key Points**:
+- Gracefully stop GenServer before DB deletion
+- Handle orphaned sessions (delete cascade or prevent deletion)
+- Consider soft-delete for audit trail
+- Idempotent operation
+
+## Notes
+
+Implementation pattern:
+```elixir
+def delete(conn, %{"id" => id}) do
+  with {:ok, agent} <- get_agent(id),
+       :ok <- stop_agent_process(id),
+       {:ok, _deleted} <- delete_agent_record(agent) do
+    conn
+    |> send_resp(:no_content, "")
+  else
+    {:error, :not_found} ->
+      conn
+      |> put_status(:not_found)
+      |> json(%{error: "Agent not found"})
+    
+    {:error, :has_active_sessions} ->
+      conn
+      |> put_status(:conflict)
+      |> json(%{error: "Cannot delete agent with active sessions"})
+  end
+end
+
+defp stop_agent_process(agent_id) do
+  case PagServer.Agents.Registry.lookup(agent_id) do
+    {:ok, pid} ->
+      PagServer.Agents.Supervisor.stop_agent(agent_id)
+      # Wait for graceful shutdown with timeout
+      wait_for_shutdown(pid, timeout: 5000)
+    
+    {:error, :not_found} ->
+      # Process not running, proceed with deletion
+      :ok
+  end
+end
+
+defp delete_agent_record(agent) do
+  # Option 1: Hard delete
+  Repo.delete(agent)
+  
+  # Option 2: Soft delete (recommended for audit trail)
+  # agent |> Ecto.Changeset.change(deleted_at: DateTime.utc_now()) |> Repo.update()
+end
+```
+
+Request example:
+```
+DELETE /api/agents/550e8400-e29b-41d4-a716-446655440000
+```
+
+Response example (204 No Content):
+```
+(empty body)
+```
+
+Error example (409 Conflict):
+```json
+{
+  "error": "Cannot delete agent with active sessions",
+  "sessions": [
+    "session-id-1",
+    "session-id-2"
+  ]
+}
+```
+
+Edge cases:
+- Agent in middle of LLM request - wait for completion or force stop?
+- Concurrent delete requests
+- Agent process crashes during deletion
+- Database constraint violations (foreign keys)
+- Soft delete vs hard delete decision

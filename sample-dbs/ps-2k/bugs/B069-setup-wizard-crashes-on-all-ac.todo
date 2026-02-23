@@ -1,0 +1,21 @@
+---
+id: B069
+title: 'Setup wizard crashes on ALL actions: dev-mode current_user.id ''dev-user''
+  is not a valid binary_id for PlatformConfig.updated_by'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- bug
+- webui
+- setup-wizard
+- blocker
+claimed_by: cli-user
+claimed_at: '2026-02-17T04:41:44.379261+00:00'
+started_at: '2026-02-17T04:41:44.379261+00:00'
+completed_at: '2026-02-17T04:46:55.785917+00:00'
+duration_minutes: 5.190110766666667
+---
+Ecto.ChangeError: value 'dev-user' for PlatformConfig.updated_by in insert does not match type :binary_id. Affects: create_workspace (line 149) and create_user (line 118). Root cause: dev-mode current_user is %{id: "dev-user"} which isn't a valid UUID. Fix: either make dev auth plug use a real UUID, or make the wizard handle non-UUID user IDs gracefully.

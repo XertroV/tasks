@@ -1,0 +1,114 @@
+---
+id: P6.M5.E1.T005
+title: Define custom business metrics for Prometheus export
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P6.M5.E1.T004
+tags:
+- observability
+- prometheus
+- business-metrics
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:11:43.422432+00:00'
+started_at: '2026-02-07T01:11:43.422432+00:00'
+completed_at: '2026-02-07T01:22:52.196295+00:00'
+duration_minutes: 11.1462309
+---
+
+# Define custom business metrics for Prometheus export
+
+Define and implement the full set of custom business metrics that are specific to PAG-Server's
+domain: active agents, token usage, cost tracking, error rates, and operational health. These
+go beyond basic HTTP/system metrics to provide domain-specific observability for Grafana dashboards
+and alerting.
+
+## Requirements
+
+- [ ] Define gauge metrics:
+  - [ ] `pag_server_agents_active` - Number of currently active AgentServer processes
+  - [ ] `pag_server_sessions_active` - Number of active sessions
+  - [ ] `pag_server_mcp_servers_connected` - Number of connected MCP servers
+- [ ] Define counter metrics:
+  - [ ] `pag_server_token_usage_total` (labels: provider, model, direction=input|output)
+  - [ ] `pag_server_cost_total_usd` (labels: provider, model) - Running cost in USD
+  - [ ] `pag_server_llm_requests_total` (labels: provider, model, status=success|error)
+  - [ ] `pag_server_tool_executions_total` (labels: tool_name, status=success|error)
+  - [ ] `pag_server_agent_messages_total` (labels: role=user|assistant|system)
+  - [ ] `pag_server_llm_retries_total` (labels: provider, model)
+  - [ ] `pag_server_llm_failovers_total` (labels: from_provider, to_provider)
+  - [ ] `pag_server_context_overflows_total`
+- [ ] Define histogram metrics:
+  - [ ] `pag_server_llm_request_duration_seconds` (labels: provider, model)
+    - Buckets: [0.1, 0.25, 0.5, 1, 2.5, 5, 10, 30, 60]
+  - [ ] `pag_server_tool_execution_duration_seconds` (labels: tool_name)
+    - Buckets: [0.01, 0.05, 0.1, 0.5, 1, 5, 10, 30]
+  - [ ] `pag_server_llm_tokens_per_request` (labels: provider, model, direction)
+    - Buckets: [10, 50, 100, 500, 1000, 5000, 10000, 50000]
+- [ ] Implement gauge collection via periodic polling (every 15s):
+  - [ ] Query agent/session counts from Registry or process monitoring
+  - [ ] Query MCP server connection count from MCP.Supervisor
+- [ ] Map each metric to its source telemetry event (from P6.M1.E4 handlers)
+- [ ] Add metric descriptions (HELP text) for self-documenting /metrics output
+- [ ] Add tests that emit telemetry events and verify metrics appear in scrape output
+
+## Acceptance Criteria
+
+- [ ] `/metrics` endpoint returns all listed metrics in valid Prometheus format
+- [ ] Gauge metrics reflect current system state (not historical)
+- [ ] Counter metrics monotonically increase
+- [ ] Histogram buckets follow Prometheus conventions (le labels, _sum, _count)
+- [ ] All metrics have HELP and TYPE annotations
+- [ ] `promtool check metrics` validates the output (if available)
+- [ ] Grafana can successfully scrape and display metrics
+- [ ] Token and cost metrics correctly aggregate across providers
+
+## Context
+
+**Source**: Architecture audit identified that P6.M5 existed with endpoint tasks but no
+business metric definitions. Without domain-specific metrics, Prometheus would only expose
+generic HTTP metrics, missing the PAG-Server-specific operational data needed for
+production monitoring.
+
+## Notes
+
+**Metric Naming Conventions** (Prometheus best practices):
+- Use `pag_server_` prefix for all custom metrics
+- Use `_total` suffix for counters
+- Use `_seconds` suffix for durations (not milliseconds)
+- Use `_bytes` suffix for sizes
+- Labels should be low-cardinality (don't use agent_id as label -- too many values)
+
+**Grafana Dashboard Queries** (example PromQL):
+```promql
+# Request rate by provider
+rate(pag_server_llm_requests_total[5m])
+
+# P99 latency by model
+histogram_quantile(0.99, rate(pag_server_llm_request_duration_seconds_bucket[5m]))
+
+# Cost rate per hour
+rate(pag_server_cost_total_usd[1h]) * 3600
+
+# Error rate percentage
+rate(pag_server_llm_requests_total{status="error"}[5m])
+/ rate(pag_server_llm_requests_total[5m]) * 100
+
+# Active agents
+pag_server_agents_active
+```
+
+**Periodic Gauge Collection**:
+```elixir
+# In Application supervision tree:
+{:telemetry_poller,
+  measurements: [
+    {PagServer.Observability.PrometheusMetrics, :measure_agents_active, []},
+    {PagServer.Observability.PrometheusMetrics, :measure_sessions_active, []}
+  ],
+  period: :timer.seconds(15),
+  name: :pag_metrics_poller}
+```

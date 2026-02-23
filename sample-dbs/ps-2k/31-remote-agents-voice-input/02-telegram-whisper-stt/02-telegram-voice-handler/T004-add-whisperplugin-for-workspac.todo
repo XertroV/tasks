@@ -1,0 +1,16 @@
+---
+id: P31.M2.E2.T004
+title: Add WhisperPlugin for workspace-level voice config
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:47:04.197920+00:00'
+started_at: '2026-02-18T19:47:04.197920+00:00'
+completed_at: '2026-02-18T19:47:10.432514+00:00'
+duration_minutes: 0.10390973333333334
+---
+Optional plugin: name=whisper, configures whisper_model and language per workspace, provides transcribe_audio MCP tool, default_enabled?=true when whisper is installed. config_schema: {model, language, auto_transcribe_voice}.

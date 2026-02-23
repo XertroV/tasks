@@ -1,0 +1,39 @@
+---
+id: B225
+title: Partial tool result persistence breaks replay
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- agent
+- data-integrity
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:42:29.074331+00:00'
+started_at: '2026-02-23T05:42:29.074331+00:00'
+completed_at: '2026-02-23T05:51:59.116536+00:00'
+duration_minutes: 9.5007031
+---
+agent_server.ex:2311-2322 - Tool results persisted one-at-a-time in reduce; if persistence fails mid-batch, agent continues with inconsistent event log
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-23 05:42 UTC
+**Primary task**: B224 - Unreplied GenServer requests on agent error/shutdown
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

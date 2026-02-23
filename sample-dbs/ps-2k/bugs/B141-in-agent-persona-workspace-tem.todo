@@ -1,0 +1,42 @@
+---
+id: B141
+title: 'in agent-persona workspace template, we should, at agent creation, have a
+  template variable that injects some random ''birth words'' which are taken from
+  a long word list (like for crypto mnemonics). We can tell the agent: ''here are
+  your birth words'' and let it cause a bit of entropy.'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T13:16:15.694725+00:00'
+started_at: '2026-02-18T13:16:15.694725+00:00'
+completed_at: '2026-02-18T13:24:45.669468+00:00'
+duration_minutes: 8.499578883333333
+---
+
+in agent-persona workspace template, we should, at agent creation, have a template variable that injects some random 'birth words' which are taken from a long word list (like for crypto mnemonics). We can tell the agent: 'here are your birth words' and let it cause a bit of entropy.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-18 12:51 UTC
+**Primary task**: B140 - When I first message the bot after setting it up with the setup wizard, it doesn't start bootstrapping or anything. Personally I think the template should inject the first message, which can be hidden from the user in the bootstrap interface. That first message says read BOOTSTRAP.md etc. It can say a lot.
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

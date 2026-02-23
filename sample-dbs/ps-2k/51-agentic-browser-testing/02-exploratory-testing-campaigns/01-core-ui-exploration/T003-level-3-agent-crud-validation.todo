@@ -1,0 +1,75 @@
+---
+id: P51.M2.E1.T003
+title: 'Level 3: Agent CRUD & validation console basic'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T19:28:13.793304+00:00'
+started_at: '2026-02-20T19:28:13.793304+00:00'
+completed_at: '2026-02-21T05:20:46.644880+00:00'
+duration_minutes: 592.5475260999999
+---
+## Campaign: Create an agent, send a message, see a response
+
+The bread-and-butter of pag-server. Core value path.
+
+## Acceptance Criteria
+- [x] Agent create/edit/delete lifecycle exercised
+- [x] Validation console: session created, message sent, and run outcome surfaced (assistant reply or explicit provider error)
+- [x] Model selection works in console
+- [x] Bugs filed for failures; trivial ones fixed inline
+
+## Test Sequence (simple → complex)
+
+### Agent Manager
+1. Navigate to /dashboard/agent-manager
+2. View the list of agents
+3. Click 'New Agent' → /dashboard/agent-manager/new
+4. Fill in: name, description, system prompt, select model
+5. Submit and verify agent appears in list
+6. Click agent → verify detail/edit view
+7. Edit a field and save — verify update persists
+8. Delete the test agent — verify it disappears
+
+### Validation Console — Basic
+1. Navigate to /dashboard/validation-console
+2. Verify 3-column layout renders (sidebar panels, chat area)
+3. Select an agent from the agent selector
+4. Select a model from the model picker
+5. Type a simple message: 'Hello, what is 2+2?'
+6. Send and wait for response
+7. Verify response appears in chat
+8. Verify the session appears in the sessions panel
+
+### Validation Console — Session Panel
+1. Create a second session for the same agent
+2. Switch between sessions — verify messages load correctly
+3. Check the workflow panel — any templates available?
+4. Check the settings panel — can you change model/parameters?
+
+### Agent Dashboard
+1. Navigate to /dashboard/agents
+2. Verify real-time agent monitoring shows the test agent
+3. Verify PubSub updates arrive (agent state changes after sending a message)
+
+## Expected Missing Features
+- Model list may be empty if provider API keys not configured
+- Some panel sections may be stubs
+- File with 'medium' severity if core path broken
+
+## Execution Notes (2026-02-21)
+- Agent Manager CRUD path exercised successfully (create/edit/archive cycle observed).
+- Validation Console renders with selected agent/model and shows explicit run-control/workflow guidance for missing prerequisites.
+- Run-control clickability issue (`B163`) is now fixed; browser runner confirmed `+ New` click creates sessions and emits `control.session_created` (`.tasks/bugs/B163-validation-console-run-control.todo`).
+- Silent prompt-stall issue (`B165`) was fixed; non-responsive runs now surface explicit recoverable provider errors (e.g., missing credentials) instead of hanging without feedback (`.tasks/bugs/B165-validation-console-prompt-send.todo`).
+- Re-verified core flow on 2026-02-20: session `059aabba-b245-454f-92ae-b3dcc04cf39e` created, message sent, and response rendered as explicit recoverable `:no_credentials` guidance (no silent stall).
+
+## Evidence Artifacts
+- `.tasks/bugs/B163-validation-console-run-control.todo`
+- `.tasks/bugs/B165-validation-console-prompt-send.todo`
+- `test/pag_server_web/live/validation_console_test.exs:130`
+- `test/pag_server_web/live/validation_console_test.exs:301`

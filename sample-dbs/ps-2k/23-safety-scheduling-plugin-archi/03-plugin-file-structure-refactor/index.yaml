@@ -1,0 +1,41 @@
+id: P23.M3
+name: Plugin File Structure Refactor
+status: pending
+estimate_hours: 20.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Plugin Directory Structure
+  path: 01-plugin-directory-structure
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: PluginLoader Update & Migration
+  path: 02-pluginloader-update-migration
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Verification & Documentation
+  path: 03-verification-documentation
+  status: pending
+  estimate_hours: 5.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

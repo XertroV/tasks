@@ -1,0 +1,17 @@
+---
+id: P29.M1.E3.T002
+title: Add CryptoIdentityPlugin to supervision tree and plugin registry
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P29.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:05:10.793754+00:00'
+started_at: '2026-02-18T19:05:10.793754+00:00'
+completed_at: '2026-02-18T19:05:12.901707+00:00'
+duration_minutes: 0.035132399999999994
+---
+Register plugin in PluginLoader scan paths. Add CryptoKeyManager to supervision tree (DynamicSupervisor or application supervisor). Ensure it starts before plugin registry.

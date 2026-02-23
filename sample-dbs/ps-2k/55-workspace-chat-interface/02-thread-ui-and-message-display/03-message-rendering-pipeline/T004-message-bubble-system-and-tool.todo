@@ -1,0 +1,24 @@
+---
+id: P55.M2.E3.T004
+title: Message bubble - system and tool_result roles
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- component
+- messages
+claimed_by: cli-user
+claimed_at: '2026-02-22T09:12:00.809784+00:00'
+started_at: '2026-02-22T09:12:00.809784+00:00'
+completed_at: '2026-02-22T10:51:32.496390+00:00'
+duration_minutes: 99.52810988333334
+---
+System role in message_bubble.ex: centered, muted text, smaller font. Tool_result role: cyan-tinted background, monospace font, collapsible if content exceeds ~10 lines. Both show sequence_num in gutter.
+
+## Acceptance Criteria
+- System messages centered and muted
+- Tool results cyan-tinted with monospace
+- Large tool results collapsible
+- Sequence numbers in gutter

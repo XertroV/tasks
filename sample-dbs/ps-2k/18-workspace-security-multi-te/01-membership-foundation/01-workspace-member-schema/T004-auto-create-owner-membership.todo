@@ -1,0 +1,42 @@
+---
+id: P18.M1.E1.T004
+title: Auto-create owner membership on workspace creation
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on:
+- P18.M1.E1.T003
+tags:
+- security
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:54:50.502292+00:00'
+started_at: '2026-02-17T16:54:50.502292+00:00'
+completed_at: '2026-02-17T16:57:07.700020+00:00'
+duration_minutes: 2.28662855
+---
+
+# Auto-create owner membership on workspace creation
+
+## Description
+
+When a workspace is created (via `create_workspace/2` or `bootstrap_workspace/3`), automatically create an `owner` role membership record for the workspace owner within the same database transaction.
+
+## Requirements
+
+- [ ] Update `Workspaces.create_workspace/2` to insert owner membership in the same transaction
+- [ ] Update `Workspaces.bootstrap_workspace/3` to include owner membership (may already be covered if it calls create_workspace)
+- [ ] Owner membership must have `role: "owner"` and `joined_at` set to creation time
+- [ ] If membership creation fails, the entire workspace creation transaction must roll back
+
+## Acceptance Criteria
+
+- [ ] Creating a workspace always results in an owner membership record
+- [ ] Bootstrap workspace also creates owner membership
+- [ ] Transaction rollback on membership failure prevents orphaned workspaces
+- [ ] `WorkspaceMembers.member?(workspace.id, owner_id)` returns true after creation
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces.ex` (lines 34-58 for bootstrap, lines 61-95 for create)

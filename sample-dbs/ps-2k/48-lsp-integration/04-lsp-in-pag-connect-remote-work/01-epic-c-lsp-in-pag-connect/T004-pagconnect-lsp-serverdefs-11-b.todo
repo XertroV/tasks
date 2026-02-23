@@ -1,0 +1,16 @@
+---
+id: P48.M4.E1.T004
+title: 'PagConnect.Lsp.ServerDefs: 11 built-in server definitions'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:26.204401+00:00'
+started_at: '2026-02-20T08:37:26.204401+00:00'
+completed_at: '2026-02-20T08:51:04.014754+00:00'
+duration_minutes: 13.630172366666667
+---
+Mirror of pag-server built-in server modules: elixir-ls (with git worktree bug check guard), typescript, rust-analyzer, pyright, gopls, clangd, zls, ruby-lsp, yaml-ls, taplo, json-ls. Same root detection logic. Assume binaries pre-installed (auto-download in Epic D).

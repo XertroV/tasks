@@ -1,0 +1,132 @@
+---
+id: P6.M8.E1.T002
+title: Configure context enrichment for error reports
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on:
+- P6.M8.E1.T001
+tags:
+- observability
+- error-tracking
+- sentry
+- context
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:38:57.324484+00:00'
+started_at: '2026-02-07T06:38:57.324484+00:00'
+completed_at: '2026-02-07T06:46:21.890972+00:00'
+duration_minutes: 7.4094411
+---
+
+# Configure context enrichment for error reports
+
+Configure Sentry error reports to include PAG-Server-specific context: agent_id, session_id,
+LLM model, provider, and correlation_id. This context makes error reports actionable --
+instead of just seeing a stack trace, developers can immediately identify which agent,
+session, and LLM request caused the error.
+
+## Requirements
+
+- [ ] Implement a `before_send` callback for Sentry that enriches events:
+  ```elixir
+  config :sentry, before_send: {PagServer.SentryContext, :before_send}
+  ```
+- [ ] Create `lib/pag_server/observability/sentry_context.ex` module
+- [ ] In `before_send/1`, extract Logger.metadata and add to Sentry event:
+  - [ ] Set `user` context with agent_id (Sentry uses this for user-level grouping)
+  - [ ] Set `extra` context with:
+    - [ ] `agent_id` - Which agent was running
+    - [ ] `session_id` - Which session was active
+    - [ ] `model` - Which LLM model was in use
+    - [ ] `provider` - Which LLM provider (anthropic, openai, openrouter)
+    - [ ] `correlation_id` - Request trace ID (from P6.M6)
+    - [ ] `tool_name` - If error occurred during tool execution
+  - [ ] Set `tags` for Sentry filtering/grouping:
+    - [ ] `provider` - For filtering errors by provider
+    - [ ] `model` - For filtering errors by model
+    - [ ] `subsystem` - agent|llm|tool|mcp (derived from error source)
+- [ ] Add Sentry breadcrumbs at key points in the pipeline:
+  - [ ] Agent message received -> breadcrumb
+  - [ ] LLM request started -> breadcrumb
+  - [ ] Tool execution started -> breadcrumb
+  - [ ] These create a timeline of events leading to the error
+- [ ] Add helper function for manual Sentry reporting with context:
+  ```elixir
+  def report_error(exception, context \\ %{}) do
+    Sentry.capture_exception(exception, extra: context)
+  end
+  ```
+- [ ] Test that error reports include expected context fields
+
+## Acceptance Criteria
+
+- [ ] Sentry error reports include agent_id, session_id, model, and provider
+- [ ] Sentry tags enable filtering by provider and model in the Sentry dashboard
+- [ ] Breadcrumbs show the sequence of operations leading to the error
+- [ ] Context is nil-safe (missing metadata does not prevent error reporting)
+- [ ] `before_send` callback does not crash on unexpected event structure
+- [ ] Manual `report_error/2` helper works for explicit error capture
+
+## Context
+
+**Source**: Architecture audit identified that without context enrichment, Sentry errors would
+contain only stack traces -- insufficient for debugging in a multi-agent, multi-provider system.
+
+## Notes
+
+**SentryContext Module**:
+```elixir
+defmodule PagServer.Observability.SentryContext do
+  def before_send(event) do
+    metadata = Logger.metadata()
+
+    event
+    |> add_user_context(metadata)
+    |> add_extra_context(metadata)
+    |> add_tags(metadata)
+  end
+
+  defp add_user_context(event, metadata) do
+    case metadata[:agent_id] do
+      nil -> event
+      agent_id -> %{event | user: %{id: agent_id}}
+    end
+  end
+
+  defp add_extra_context(event, metadata) do
+    extra = %{
+      agent_id: metadata[:agent_id],
+      session_id: metadata[:session_id],
+      model: metadata[:model],
+      provider: metadata[:provider],
+      correlation_id: metadata[:correlation_id],
+      tool_name: metadata[:tool_name]
+    }
+    |> Enum.reject(fn {_, v} -> is_nil(v) end)
+    |> Map.new()
+
+    %{event | extra: Map.merge(event.extra || %{}, extra)}
+  end
+
+  defp add_tags(event, metadata) do
+    tags = %{}
+    |> maybe_put(:provider, metadata[:provider])
+    |> maybe_put(:model, metadata[:model])
+    |> maybe_put(:subsystem, detect_subsystem(event))
+
+    %{event | tags: Map.merge(event.tags || %{}, tags)}
+  end
+end
+```
+
+**Breadcrumb Example**:
+```elixir
+# In AgentServer before LLM call:
+Sentry.Context.add_breadcrumb(%{
+  category: "llm",
+  message: "Starting LLM request",
+  data: %{model: model, provider: provider}
+})
+```

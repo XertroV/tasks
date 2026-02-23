@@ -1,0 +1,54 @@
+---
+id: P43.M2.E3.T001
+title: Schema/changeset unit tests for LlmCallRecord
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:12:49.240647+00:00'
+started_at: '2026-02-20T00:12:49.240647+00:00'
+completed_at: '2026-02-20T00:17:18.107092+00:00'
+duration_minutes: 4.481107283333333
+---
+
+# Schema/changeset unit tests for LlmCallRecord
+
+
+
+## Requirements
+
+- The `LlmCallRecord` schema changesets must be verified in isolation, confirming required-field validation, status transitions, and enum guard behaviour.
+
+## Acceptance Criteria
+
+- Test file `test/pag_server/schema/llm_call_record_test.exs` exists and uses `use PagServer.DataCase, async: true`.
+- A test named (or equivalent to) `"create_changeset/1 with all required fields is valid"` calls `LlmCallRecord.create_changeset/1` with a map containing all required fields (`provider`, `model`, `model_spec`, `started_at` at minimum) and asserts `changeset.valid? == true`.
+- For each required field (`provider`, `model`, `model_spec`, `started_at`), a separate test omits that field and asserts `changeset.valid? == false` and that `changeset.errors` contains an error for that field.
+- A test calls `LlmCallRecord.complete_changeset/2` on a persisted pending record, supplying valid completion params, and asserts the updated record in the DB has `status: :completed` and a non-nil `completed_at`.
+- Tests for `fail_changeset/2` cover all three terminal-failure statuses: `:failed`, `:timed_out`, and `:cancelled` — each test asserts the correct `status` is persisted and `completed_at` is set.
+- A test asserts that supplying an invalid status atom (e.g. `:bogus`) to a changeset either produces `changeset.valid? == false` with an error on `:status`, or raises — either outcome is acceptable as long as it does not silently persist the invalid value.
+- A test calls `recent/1`, `in_flight/0`, `summary_stats/2`, `providers_used/1`, and `models_used/1` against an empty database and asserts each returns the correct empty-result type (`[]` or map with zero counts) without raising.
+- All tests pass with `mix test test/pag_server/schema/llm_call_record_test.exs`.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P43.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-20 00:12 UTC
+**Sibling tasks**: P43.M2.E3.T002, P43.M2.E3.T003, P43.M2.E3.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P43.M2.E3.T001 → P43.M2.E3.T002 → P43.M2.E3.T003 → P43.M2.E3.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P43.M2.E3.T001: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/03-tests/T001-schema-changeset-unit-tests-fo.todo
+- P43.M2.E3.T002: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/03-tests/T002-callrecorder-unit-tests-insert.todo
+- P43.M2.E3.T003: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/03-tests/T003-registry-integration-test-veri.todo
+- P43.M2.E3.T004: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/03-tests/T004-liveview-tests-for-llmcallsdas.todo

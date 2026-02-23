@@ -1,0 +1,40 @@
+---
+id: P25.M2.E4.T008
+title: Standardize Whisper plugin MCP interface
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- whisper
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:21:51.408539+00:00'
+started_at: '2026-02-19T15:21:51.408539+00:00'
+completed_at: '2026-02-19T15:26:04.064573+00:00'
+duration_minutes: 4.210933716666667
+---
+
+# Standardize Whisper plugin MCP interface
+
+## Scope
+
+- Audit `plugins/whisper/lib/whisper_plugin.ex`.
+- Plan conversion from `transcribe_audio` and legacy alias `whisper_transcribe`
+  to a standardized action/subcommand model under a single domain tool.
+
+## Requirements
+
+- Define one schema with explicit operation dispatch and required args per operation.
+- Preserve alias compatibility policy (if any) for one deprecation window.
+- Define migration messaging for consumers using `whisper_transcribe`.
+
+## Acceptance Criteria
+
+- [ ] Whisper standardization design uses action/subcommand dispatch.
+- [ ] `transcribe_audio` behavior is preserved and documented in operation map.
+- [ ] Legacy alias handling strategy is defined and time-bounded.
+- [ ] Unknown operation handling is deterministic and includes available operations.

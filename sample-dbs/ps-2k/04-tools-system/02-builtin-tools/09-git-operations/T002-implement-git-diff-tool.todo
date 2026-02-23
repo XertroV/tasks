@@ -1,0 +1,234 @@
+---
+id: P4.M2.E9.T002
+title: Implement git_diff tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- git
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:58:11.224510'
+started_at: '2026-02-06T02:58:11.224510'
+completed_at: '2026-02-06T03:00:14.012515'
+duration_minutes: 2.0464665833333333
+---
+
+# Implement git_diff tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/git_diff.ex` (~250 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Execute `git diff` with various options (staged, unstaged, commit range)
+- [ ] Validate workspace path and file paths are within workspace
+- [ ] Support unified diff format and optional patch format
+- [ ] Use System.cmd for command execution with safe argument passing
+- [ ] Support diff between commits, branches, or working tree
+
+## Acceptance Criteria
+
+- [ ] Executes `git diff` in workspace directory with specified options
+- [ ] Validates workspace path is within allowed workspace boundaries
+- [ ] Prevents command injection through all parameters (refs, paths, options)
+- [ ] Supports diff modes: unstaged (default), staged (--cached), commit range (ref1..ref2)
+- [ ] Supports optional file/directory path filtering
+- [ ] Returns unified diff format output
+- [ ] Handles errors: not a git repo, invalid ref, invalid path, command failure
+- [ ] Limits output size (max 2MB) to prevent memory issues
+- [ ] Truncates large diffs with clear indication
+- [ ] Validates all git refs (commits, branches, tags) before use
+- [ ] Test coverage: unstaged diff, staged diff, commit range, path filter, invalid ref, non-git directory, path outside workspace, large diff truncation
+- [ ] Security: validates all inputs, prevents injection, blocks dangerous refs (../../../etc/passwd)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Diff output can be large - implement size limits
+- Support common diff use cases: working tree, staged, between commits
+- Validate all refs to prevent injection through symbolic refs
+- Never interpolate user input into shell commands
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.GitDiff do
+  @behaviour PAGServer.Tools.Tool
+  @max_diff_bytes 2_000_000  # 2MB
+
+  @impl true
+  def name, do: "git_diff"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "git_diff",
+      description: "Show changes in git repository",
+      parameters: %{
+        type: "object",
+        properties: %{
+          workspace: %{
+            type: "string",
+            description: "Repository path (must be within workspace)"
+          },
+          mode: %{
+            type: "string",
+            enum: ["unstaged", "staged", "commit_range"],
+            description: "Diff mode (default: unstaged)",
+            default: "unstaged"
+          },
+          ref1: %{
+            type: "string",
+            description: "First commit/branch for commit_range mode"
+          },
+          ref2: %{
+            type: "string",
+            description: "Second commit/branch for commit_range mode (default: HEAD)"
+          },
+          path: %{
+            type: "string",
+            description: "Optional file/directory path to filter diff"
+          },
+          context_lines: %{
+            type: "integer",
+            description: "Number of context lines (default: 3)",
+            default: 3
+          }
+        },
+        required: ["workspace"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"workspace" => workspace} = args, context) do
+    with :ok <- validate_workspace_path(workspace, context.workspace_root),
+         :ok <- validate_diff_params(args),
+         {:ok, output} <- run_git_diff(workspace, args) do
+      {:ok, %{
+        diff: truncate_diff(output),
+        truncated: byte_size(output) > @max_diff_bytes
+      }}
+    else
+      {:error, reason} -> {:error, "git diff failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_workspace_path(path, root) do
+    abs_path = Path.expand(path)
+    abs_root = Path.expand(root)
+    
+    cond do
+      not String.starts_with?(abs_path, abs_root) ->
+        {:error, "Path outside workspace"}
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      not File.dir?(abs_path) ->
+        {:error, "Directory does not exist"}
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_diff_params(%{"mode" => "commit_range", "ref1" => ref1} = args) do
+    # Validate refs don't contain dangerous characters
+    ref2 = Map.get(args, "ref2", "HEAD")
+    
+    with :ok <- validate_ref(ref1),
+         :ok <- validate_ref(ref2) do
+      :ok
+    end
+  end
+  defp validate_diff_params(_), do: :ok
+
+  defp validate_ref(ref) do
+    # Block path traversal and shell metacharacters in refs
+    dangerous = ["../", "..\\", ";", "|", "&", "$", "`", "\n", "\r"]
+    
+    if Enum.any?(dangerous, &String.contains?(ref, &1)) do
+      {:error, "Invalid git ref: contains dangerous characters"}
+    else
+      :ok
+    end
+  end
+
+  defp run_git_diff(workspace, args) do
+    mode = Map.get(args, "mode", "unstaged")
+    context = Map.get(args, "context_lines", 3)
+    
+    # Build safe argument list
+    cmd_args = build_diff_args(mode, args) ++ ["-U#{context}"]
+    cmd_args = if path = args["path"], do: cmd_args ++ ["--", path], else: cmd_args
+    
+    case System.cmd("git", cmd_args, cd: workspace, stderr_to_stdout: true) do
+      {output, 0} -> {:ok, output}
+      {output, 1} -> {:ok, output}  # Exit code 1 can indicate differences found
+      {error, code} -> {:error, {code, error}}
+    end
+  end
+
+  defp build_diff_args("unstaged", _args), do: ["diff"]
+  defp build_diff_args("staged", _args), do: ["diff", "--cached"]
+  defp build_diff_args("commit_range", %{"ref1" => ref1} = args) do
+    ref2 = Map.get(args, "ref2", "HEAD")
+    ["diff", "#{ref1}..#{ref2}"]
+  end
+
+  defp truncate_diff(diff) when byte_size(diff) > @max_diff_bytes do
+    binary_part(diff, 0, @max_diff_bytes) <>
+      "\n\n[Diff truncated at 2MB - #{byte_size(diff) - @max_diff_bytes} bytes omitted]"
+  end
+  defp truncate_diff(diff), do: diff
+end
+```
+
+Example usage (unstaged changes):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "mode": "unstaged",
+  "path": "src/"
+}
+```
+
+Example usage (staged changes):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "mode": "staged"
+}
+```
+
+Example usage (commit range):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "mode": "commit_range",
+  "ref1": "main",
+  "ref2": "feature-branch"
+}
+```
+
+Example response:
+```json
+{
+  "diff": "diff --git a/lib/app.ex b/lib/app.ex\nindex 1234567..abcdefg 100644\n--- a/lib/app.ex\n+++ b/lib/app.ex\n@@ -10,7 +10,7 @@\n...",
+  "truncated": false
+}
+```
+
+Security considerations:
+- Validate all refs to prevent injection attacks
+- Block path traversal in ref names
+- Limit output size to prevent memory exhaustion
+- Use System.cmd with list arguments only
+- Validate workspace path boundaries

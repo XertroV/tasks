@@ -1,0 +1,109 @@
+id: P10.M1.E1
+name: Webhook Infrastructure
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-webhook-subscriptions-d.todo
+  title: Create webhook_subscriptions database schema
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-integration-settings-da.todo
+  title: Create integration_settings database schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-build-webhooksubscription-ecto.todo
+  title: Build WebhookSubscription Ecto schema and changesets
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-build-integrationsettings-ecto.todo
+  title: Build IntegrationSettings Ecto schema with encryption
+  status: pending
+  estimate_hours: 1.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-implement-webhook-filter-match.todo
+  title: Implement webhook filter matching engine
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-build-webhook-event-router-wit.todo
+  title: Build webhook event router with priority sorting
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T007
+  file: T007-create-webhooksubscriptioncont.todo
+  title: Create WebhookSubscriptionController (CRUD endpoints)
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T008
+  file: T008-create-integrationsettingscont.todo
+  title: Create IntegrationSettingsController with encryption
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-add-webhook-subscription-route.todo
+  title: Add webhook subscription routes to router
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T010
+  file: T010-implement-permission-checks-fo.todo
+  title: Implement permission checks for webhook management
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T011
+  file: T011-add-webhook-subscription-test.todo
+  title: Add webhook subscription test endpoint
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T012
+  file: T012-write-tests-for-webhook-routin.todo
+  title: Write tests for webhook routing and filtering
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 12
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 12

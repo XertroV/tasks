@@ -1,0 +1,251 @@
+---
+title: Use iolists for Efficient Streaming
+epic: P3.M1.E3-token-streaming
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimate_hours: 0.5
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:38:07.154908'
+started_at: '2026-02-06T15:38:07.154908'
+completed_at: '2026-02-06T15:59:59.581809'
+duration_minutes: 21.873781483333335
+id: P3.M1.E3.T003
+---
+
+# Task: Use iolists for Efficient Streaming
+
+## Context
+When streaming tokens, we need to accumulate and transmit data efficiently. String concatenation in Elixir creates new strings each time, causing memory churn. iolists are nested lists of binaries that can be efficiently concatenated and sent to IO without copying.
+
+## Goal
+Use iolists throughout the streaming pipeline to minimize memory allocations and improve performance.
+
+## Requirements
+- Use iolists in agent state for accumulating response
+- Phoenix automatically handles iolist serialization
+- Avoid string concatenation (no `token <> acc`)
+- Convert to string only when persisting to DB
+- Benchmark memory usage improvement
+
+## Implementation
+
+### File: `lib/pag_server/agents/agent.ex`
+
+Update agent to use iolists for accumulation:
+
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  # ... existing code ...
+  
+  defp stream_response(message, state) do
+    agent_id = state.agent_id
+    message_id = message.id
+    
+    Task.start(fn ->
+      # Accumulate tokens as iolist
+      accumulated = []
+      token_count = 0
+      
+      LLM.stream(context, state.model, fn event ->
+        case event do
+          {:token, token} ->
+            # Add to iolist (no copying)
+            accumulated = [accumulated, token]
+            
+            broadcast_event(agent_id, %{
+              type: :token,
+              agent_id: agent_id,
+              message_id: message_id,
+              token: token,
+              index: token_count,
+              timestamp: System.system_time(:millisecond)
+            })
+            
+            token_count = token_count + 1
+          
+          {:complete, metadata} ->
+            # Convert iolist to binary only when persisting
+            full_content = IO.iodata_to_binary(accumulated)
+            
+            # Save completed message
+            save_assistant_message(message_id, full_content, metadata, state)
+            
+            broadcast_event(agent_id, %{
+              type: :stream_complete,
+              agent_id: agent_id,
+              message_id: message_id,
+              total_tokens: token_count,
+              finish_reason: metadata.finish_reason,
+              timestamp: System.system_time(:millisecond)
+            })
+        end
+      end)
+    end)
+  end
+end
+```
+
+### File: `lib/pag_server/llm/anthropic.ex`
+
+Ensure LLM adapter emits tokens efficiently:
+
+```elixir
+defmodule PagServer.LLM.Anthropic do
+  @moduledoc """
+  Anthropic API client with streaming support.
+  """
+  
+  def stream(context, model, callback) do
+    request_body = build_request(context, model, stream: true)
+    
+    # Use HTTPoison stream or Finch stream
+    Finch.build(:post, url, headers, Jason.encode!(request_body))
+    |> Finch.stream(MyFinch, nil, fn
+      {:status, status}, acc ->
+        {:cont, Map.put(acc || %{}, :status, status)}
+      
+      {:headers, headers}, acc ->
+        {:cont, Map.put(acc, :headers, headers)}
+      
+      {:data, data}, acc ->
+        # Parse SSE events
+        events = parse_sse(data)
+        
+        Enum.each(events, fn event ->
+          case event do
+            %{"type" => "content_block_delta", "delta" => %{"text" => text}} ->
+              # Emit token (already a binary, no conversion needed)
+              callback.({:token, text})
+            
+            %{"type" => "message_stop"} ->
+              callback.({:complete, %{finish_reason: "stop"}})
+            
+            _ ->
+              :ok
+          end
+        end)
+        
+        {:cont, acc}
+    end)
+  end
+  
+  defp parse_sse(data) do
+    # Parse Server-Sent Events format
+    # Returns list of parsed JSON events
+    data
+    |> String.split("\n\n")
+    |> Enum.filter(&String.starts_with?(&1, "data: "))
+    |> Enum.map(fn line ->
+      line
+      |> String.replace_prefix("data: ", "")
+      |> Jason.decode!()
+    end)
+  rescue
+    _ -> []
+  end
+end
+```
+
+### File: `test/support/benchmarks/streaming_benchmark.exs`
+
+Add benchmark to measure iolist performance:
+
+```elixir
+defmodule PagServer.StreamingBenchmark do
+  @moduledoc """
+  Benchmark iolist vs string concatenation for streaming.
+  
+  Run with:
+    mix run test/support/benchmarks/streaming_benchmark.exs
+  """
+  
+  def run do
+    tokens = generate_tokens(1000)
+    
+    IO.puts("Benchmarking streaming with 1000 tokens...\n")
+    
+    # String concatenation
+    {time_string, _result} = :timer.tc(fn ->
+      Enum.reduce(tokens, "", fn token, acc -> acc <> token end)
+    end)
+    
+    # iolist accumulation
+    {time_iolist, _result} = :timer.tc(fn ->
+      iolist = Enum.reduce(tokens, [], fn token, acc -> [acc, token] end)
+      IO.iodata_to_binary(iolist)
+    end)
+    
+    IO.puts("String concatenation: #{time_string}μs")
+    IO.puts("iolist accumulation:  #{time_iolist}μs")
+    IO.puts("Speedup: #{Float.round(time_string / time_iolist, 2)}x")
+  end
+  
+  defp generate_tokens(count) do
+    for i <- 1..count, do: "token_#{i} "
+  end
+end
+
+PagServer.StreamingBenchmark.run()
+```
+
+## Acceptance Criteria
+- [ ] Agent uses iolists for token accumulation
+- [ ] No string concatenation in hot path
+- [ ] Conversion to binary only when persisting
+- [ ] Benchmark shows performance improvement
+- [ ] Memory usage reduced
+
+## Testing
+
+```elixir
+# test/pag_server/agents/streaming_efficiency_test.exs
+defmodule PagServer.Agents.StreamingEfficiencyTest do
+  use PagServer.DataCase
+  
+  alias PagServer.Agents
+  
+  test "streaming uses iolists efficiently" do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      user_id: "test-user"
+    })
+    
+    # Monitor memory before
+    :erlang.garbage_collect()
+    memory_before = :erlang.memory(:total)
+    
+    # Stream many tokens
+    {:ok, message_id} = Agents.send_message(agent.id, %{
+      content: "Generate 1000 words"
+    })
+    
+    # Wait for completion
+    :timer.sleep(5000)
+    
+    # Check memory after
+    :erlang.garbage_collect()
+    memory_after = :erlang.memory(:total)
+    
+    memory_used = memory_after - memory_before
+    
+    # Should not use excessive memory
+    # (exact threshold depends on your system)
+    assert memory_used < 10_000_000  # < 10MB
+  end
+end
+```
+
+## References
+- Erlang iolists: https://www.erlang.org/doc/man/erlang.html#type-iolist
+- IO.iodata_to_binary/1: https://hexdocs.pm/elixir/IO.html#iodata_to_binary/1
+- Phoenix iolist support: implicit in all IO operations
+
+## Notes
+- iolists are especially beneficial for >100 token responses
+- Phoenix.Channel automatically handles iolists in JSON encoding
+- Consider keeping iolists all the way to PostgreSQL (via iodata_to_binary before insert)
+- Future: Store full response as compressed iolist in EventStore

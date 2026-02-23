@@ -1,0 +1,24 @@
+id: P28.M1
+name: Plugin Registry API
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Plugin Registry Endpoints
+  path: 01-plugin-registry-endpoints
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: Implement REST endpoints to list all available plugins with metadata
+    and to enable/disable plugins per workspace.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

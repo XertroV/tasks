@@ -1,0 +1,82 @@
+id: P50.M4.E1
+name: ETS-backed Read Model Projections
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-ets-table-layout-and-pr.todo
+  title: Define ETS table layout and projection state struct for CollabTeams.Projection
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E1.T003
+- id: T002
+  file: T002-implement-apply-event-2-increm.todo
+  title: Implement apply_event/2 incremental update handler for all collab_ event
+    types
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M4.E1.T001
+- id: T003
+  file: T003-add-pubsub-subscription-to-pro.todo
+  title: Add PubSub subscription to Projection GenServer for live updates
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M4.E1.T002
+- id: T004
+  file: T004-implement-rebuild-from-audit-e.todo
+  title: Implement rebuild-from-audit-events for projection recovery
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M4.E1.T002
+- id: T005
+  file: T005-expose-public-query-api-for-pr.todo
+  title: Expose public query API for projection read models
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M4.E1.T001
+  - P50.M4.E1.T003
+- id: T006
+  file: T006-wire-projection-startup-into-p.todo
+  title: Wire projection startup into plugin lifecycle and broadcast events from Runtime
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M4.E1.T003
+  - P50.M4.E1.T005
+- id: T007
+  file: T007-add-comprehensive-projection-u.todo
+  title: Add comprehensive projection unit tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E1.T004
+  - P50.M4.E1.T005
+  - P50.M4.E1.T006
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

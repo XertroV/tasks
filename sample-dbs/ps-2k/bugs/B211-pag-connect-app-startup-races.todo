@@ -1,0 +1,16 @@
+---
+id: B211
+title: pag-connect app startup races Config before MCP bootstrap
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T16:47:43.902280+00:00'
+started_at: '2026-02-21T16:47:43.902280+00:00'
+completed_at: '2026-02-21T16:52:16.782714+00:00'
+duration_minutes: 4.548007016666667
+---
+During live remote run, PagConnect.Application.start/2 calls MCPSupervisor.start_mcp_servers immediately after Supervisor.start_link, but Config process may not be registered yet. This causes GenServer.call(PagConnect.Config, :get) no process and startup failure. Add race-safe bootstrap for MCP server start and regression coverage.

@@ -1,0 +1,25 @@
+id: P34.M2
+name: Skill Format Parser
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P34.M1
+locked: false
+epics:
+- id: E1
+  name: AgentSkills Format Parser
+  path: agentskills-format-parser
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P34.M1.E1
+  description: Parse AgentSkills-compatible SKILL.md format with YAML frontmatter.
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,25 @@
+id: P27.M1
+name: Schema & Config
+status: pending
+estimate_hours: 8.0
+complexity: low
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Ephemeral Session Schema
+  path: 01-ephemeral-session-schema
+  status: pending
+  estimate_hours: 8.0
+  complexity: low
+  depends_on: []
+  description: Add ephemeral boolean flag to the session schema with a migration,
+    and implement an auto-cleanup GenServer that destroys ephemeral sessions once
+    their agent completes.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

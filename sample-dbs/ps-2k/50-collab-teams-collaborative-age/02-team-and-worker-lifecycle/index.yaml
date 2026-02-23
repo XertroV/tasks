@@ -1,0 +1,33 @@
+id: P50.M2
+name: Team and Worker Lifecycle
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P50.M1
+locked: false
+epics:
+- id: E1
+  name: Team Lifecycle Actions
+  path: 01-team-lifecycle-actions
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Worker Lifecycle Actions and Spawn Integration
+  path: 02-worker-lifecycle-actions-and-s
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 11
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 11

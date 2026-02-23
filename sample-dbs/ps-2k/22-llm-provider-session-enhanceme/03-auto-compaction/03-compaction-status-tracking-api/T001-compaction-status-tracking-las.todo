@@ -1,0 +1,18 @@
+---
+id: P22.M3.E3.T001
+title: 'Compaction status tracking: last_compaction_at, token_reduction_achieved,
+  compaction_count'
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M3.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:44.513855+00:00'
+started_at: '2026-02-18T17:04:44.513855+00:00'
+completed_at: '2026-02-18T17:17:38.824408+00:00'
+duration_minutes: 12.905175733333333
+---
+Track compaction history per session. Store in CompactionMonitor state: last_compaction_at (DateTime), total_tokens_saved (integer), compaction_count (integer). Persist to DB or session metadata after each compaction so stats survive process restarts. Expose via CompactionMonitor.get_status(session_id) -> %{last_compaction_at, tokens_saved, count, current_pct}. Acceptance criteria: - Status survives CompactionMonitor crash/restart (stored in DB or session metadata) - get_status/1 returns accurate current token percentage - tokens_saved reflects cumulative reduction across all compactions

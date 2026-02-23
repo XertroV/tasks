@@ -1,0 +1,66 @@
+id: P18.M1.E1
+name: WorkspaceMember Schema & Context
+status: pending
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-members-migration.todo
+  title: Create workspace_members migration
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-create-member-schema.todo
+  title: Create WorkspaceMember Ecto schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on:
+  - P18.M1.E1.T001
+- id: T003
+  file: T003-create-members-context.todo
+  title: Create WorkspaceMembers context module
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - P18.M1.E1.T002
+- id: T004
+  file: T004-auto-create-owner-membership.todo
+  title: Auto-create owner membership on workspace creation
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - P18.M1.E1.T003
+- id: T005
+  file: T005-backfill-owner-memberships.todo
+  title: Write backfill migration for existing workspace owners
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P18.M1.E1.T003
+- id: T006
+  file: T006-membership-crud-tests.todo
+  title: Add tests for membership CRUD and queries
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P18.M1.E1.T004
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

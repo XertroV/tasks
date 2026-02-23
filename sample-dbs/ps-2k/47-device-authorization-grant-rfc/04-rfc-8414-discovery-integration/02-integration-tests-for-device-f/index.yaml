@@ -1,0 +1,32 @@
+id: P47.M4.E2
+name: Integration Tests for Device Flow
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-write-integration-tests-for-co.todo
+  title: Write integration tests for complete device authorization flow
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P47.M3.E1.T002
+- id: T002
+  file: T002-add-mix-test-device-flow-alias.todo
+  title: Add mix test.device_flow alias and update docs
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on:
+  - P47.M4.E2.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

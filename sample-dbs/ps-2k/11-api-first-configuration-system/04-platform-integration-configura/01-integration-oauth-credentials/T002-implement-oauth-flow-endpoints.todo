@@ -1,0 +1,101 @@
+---
+id: P11.M4.E1.T002
+title: Implement OAuth flow endpoints
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P11.M4.E1.T001
+tags:
+- api
+- oauth
+- endpoints
+claimed_by: cli-user
+claimed_at: '2026-02-12T09:44:04.935967+00:00'
+started_at: '2026-02-12T09:44:04.935967+00:00'
+completed_at: '2026-02-12T10:01:57.988675+00:00'
+duration_minutes: 17.8842116
+---
+
+# Implement OAuth flow endpoints
+
+Create endpoints for OAuth authorization initiation, callback handling, and token exchange.
+
+## Requirements
+
+- [ ] Create `PlatformCredentialController` in `lib/pag_server/controllers/`
+- [ ] Implement `POST /api/credentials/authorize/:platform` endpoint
+- [ ] Implement `GET /api/credentials/callback` endpoint for OAuth callback
+- [ ] Implement `POST /api/credentials/:platform/token` endpoint for token exchange
+- [ ] Add state parameter validation for CSRF protection
+- [ ] Generate authorization URLs with proper scopes for each platform
+- [ ] Store OAuth credentials after successful callback
+- [ ] Handle token exchange and refresh token storage
+- [ ] Add error handling for failed OAuth flows
+- [ ] Write integration tests for OAuth flow
+- [ ] Document API endpoints in CLAUDE.md
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] `POST /api/credentials/authorize/:platform` endpoint:
+  - [ ] Accepts `platform` param (telegram, slack, discord, custom)
+  - [ ] Accepts optional `workspace_id` for workspace-scoped setup
+  - [ ] Generates cryptographically secure state token
+  - [ ] Stores state temporarily in Redis with 10-minute TTL
+  - [ ] Constructs correct OAuth authorization URL per platform
+  - [ ] Includes proper scopes for agent functionality per platform
+  - [ ] Returns `{auth_url: "https://...", state: "..."}` in JSON
+  - [ ] Returns 400 if platform unsupported
+  - [ ] Returns 401 if user not authenticated
+- [ ] `GET /api/credentials/callback` endpoint:
+  - [ ] Accepts `code`, `state`, and optional `error` parameters
+  - [ ] Validates state token matches stored token
+  - [ ] Returns 400 if state invalid or expired
+  - [ ] Exchanges code for tokens with platform OAuth server
+  - [ ] Handles platform-specific token response formats
+  - [ ] Stores encrypted credentials in database
+  - [ ] Returns credential ID and success message
+  - [ ] Handles OAuth errors (access_denied, invalid_grant, etc.)
+  - [ ] Logs failed attempts without storing credentials
+- [ ] `POST /api/credentials/:platform/token` endpoint:
+  - [ ] Exchanges OAuth code for access token
+  - [ ] Handles refresh token grant if provided
+  - [ ] Stores both access and refresh tokens
+  - [ ] Sets `expires_at` based on `expires_in` parameter
+  - [ ] Returns credential metadata (platform, scope, expires_at)
+  - [ ] Handles platform-specific token formats
+  - [ ] Validates token before storing (optional early validation)
+- [ ] Platform-specific implementations:
+  - [ ] Telegram Bot API: Store bot token
+  - [ ] Slack OAuth: Store xoxb/xoxp token, workspace ID, scopes
+  - [ ] Discord OAuth: Store bot token, guild IDs, scopes
+  - [ ] Custom: Accept generic token_type and token payload
+- [ ] State management:
+  - [ ] Generate state using `:crypto.strong_rand_bytes/1`
+  - [ ] Store state in Cachex with key `oauth_state:{state}`, TTL 600s
+  - [ ] Validate state exists and has not expired
+  - [ ] Delete state immediately after validation (prevent replay)
+- [ ] Error handling:
+  - [ ] Return 400 with error message for invalid requests
+  - [ ] Return 401 for authentication failures
+  - [ ] Return 500 with generic message for server errors
+  - [ ] Log detailed errors to application logs
+  - [ ] Never expose sensitive data in error responses
+- [ ] Response formats:
+  - [ ] Successful auth: `{success: true, credential_id: "...", message: "..."}`
+  - [ ] Successful callback: `{success: true, credential: {...}, platform: "..."}`
+  - [ ] Error: `{success: false, error: "...", code: "..."}`
+- [ ] Integration tests:
+  - [ ] Mock OAuth provider endpoints
+  - [ ] Test successful OAuth flow end-to-end
+  - [ ] Test state validation and CSRF protection
+  - [ ] Test invalid platform handling
+  - [ ] Test OAuth provider errors (access_denied, etc.)
+  - [ ] Test token exchange and storage
+- [ ] Code quality:
+  - [ ] Functions kept under 40 lines
+  - [ ] Proper error handling with Result pattern
+  - [ ] No sensitive data in logs
+  - [ ] `mix lint` passes without warnings

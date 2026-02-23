@@ -1,0 +1,122 @@
+---
+id: P8.M6.E2.T002
+title: Manage Matrix sync loop
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M6.E1.T002
+tags:
+- matrix
+- sync
+- real-time
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:51:27.631911+00:00'
+started_at: '2026-02-08T10:51:27.631911+00:00'
+completed_at: '2026-02-08T11:17:20.467691+00:00'
+duration_minutes: 25.88059613333333
+---
+
+# Manage Matrix sync loop
+
+Implement robust sync loop management with backpressure and error handling.
+
+## Requirements
+
+- [x] Wrap Polyjuice sync in supervised task
+- [x] Handle sync errors with exponential backoff
+- [x] Implement backpressure when event processing lags
+- [x] Add metrics for sync lag and event throughput
+- [x] Persist sync token on every successful sync
+
+## Acceptance Criteria
+
+- [x] Sync continues after transient network errors
+- [x] Backpressure prevents memory overflow on event spike
+- [x] Sync token persistence survives app restart
+- [x] Metrics dashboard shows sync health (lag, events/sec)
+- [x] Stuck sync loop triggers alert after 60 seconds
+- [x] Can manually reset sync position via admin command
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 426-434 (sync loop example)
+- `.plan/2026-02-05-velvet-cascade/observability.md` lines 78-94 (metrics)
+
+**Key Points**:
+- Matrix sync is long-polling HTTP request (30s timeout)
+- Events arrive in batches that can be large (100+ events)
+- Must handle network failures gracefully
+- Sync token is critical for not missing messages
+
+## Notes
+
+Sync loop with backpressure:
+```elixir
+defmodule PAGServer.Integrations.Matrix.SyncManager do
+  use GenServer
+  
+  def init(state) do
+    schedule_sync()
+    {:ok, state}
+  end
+  
+  def handle_info(:sync, state) do
+    case Polyjuice.Client.sync(state.client, 
+           since: state.sync_token,
+           timeout: 30_000) do
+      {:ok, %{next_batch: token, rooms: rooms}} ->
+        events = extract_events(rooms)
+        
+        # Backpressure check
+        if event_queue_size() < 1000 do
+          enqueue_events(events)
+          save_sync_token(token)
+          schedule_sync(0) # Immediate next sync
+        else
+          # Wait for queue to drain
+          schedule_sync(5_000)
+        end
+        
+        {:noreply, %{state | sync_token: token}}
+        
+      {:error, reason} ->
+        Logger.error("Sync failed: #{inspect(reason)}")
+        schedule_sync(backoff_delay(state.errors))
+        {:noreply, %{state | errors: state.errors + 1}}
+    end
+  end
+  
+  defp backoff_delay(errors) do
+    min(30_000, 1000 * :math.pow(2, errors))
+  end
+end
+```
+
+Event queue:
+- Use GenStage or Broadway for event processing
+- Producer: Sync manager
+- Consumers: Event handlers (parallelized)
+- Buffer size: 1000 events
+
+Metrics to track:
+- `matrix.sync.lag_ms` - Time since last sync
+- `matrix.events.received` - Events/sec counter
+- `matrix.events.queued` - Current queue size
+- `matrix.sync.errors` - Error rate
+
+Sync token storage:
+- Write to Postgres on every successful sync
+- Schema: `{service: :matrix, key: :sync_token, value: token, updated_at: timestamp}`
+- Atomic update to prevent conflicts
+
+Manual reset (admin tool):
+```elixir
+# Reset to beginning of history
+PAGServer.Integrations.Matrix.reset_sync()
+
+# Reset to specific token
+PAGServer.Integrations.Matrix.set_sync_token("s123_456_789")
+```

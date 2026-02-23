@@ -1,0 +1,45 @@
+---
+id: I008
+title: we should hhave a quick way to set up a telegram bot workspace, like a quicklaunch
+  wizard. maybe we also need to introduce the 'workspace' idea which groups sessions
+  and agents together
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: we should hhave a quick way to set up a telegram bot workspace, like a quicklaunch wizard. maybe we also need to introduce the 'workspace' idea which groups sessions and agents together
+
+## Original Idea
+
+we should hhave a quick way to set up a telegram bot workspace, like a quicklaunch wizard. maybe we also need to introduce the 'workspace' idea which groups sessions and agents together
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "we should hhave a quick way to set up a telegram bot workspace, like a quicklaunch wizard. maybe we also need to introduce the 'workspace' idea which groups sessions and agents together"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Milestone: `P15.M6` Workspace & Onboarding.
+- Epic: `P15.M6.E3` Telegram Quicklaunch Wizard.
+- Tasks: `P15.M6.E3.T001` -> `P15.M6.E3.T002` -> `P15.M6.E3.T003`.
+- Dependencies: workspace API/liveview prerequisites (`P15.M6.E2.T002`, `P15.M6.E2.T003`) before Telegram connect and chat loop wiring.
+- Follow-up implementation note: workspace records now include `workspace_dir` and create per-workspace directories for associated tooling/workspace operations.
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

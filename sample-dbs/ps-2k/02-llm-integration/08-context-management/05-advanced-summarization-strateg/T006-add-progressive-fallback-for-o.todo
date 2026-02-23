@@ -1,0 +1,55 @@
+---
+id: P2.M8.E5.T006
+title: Add progressive fallback for oversized content
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- context
+- fallback
+- defensive
+- openclaw
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:01:34.632497'
+started_at: '2026-02-06T03:01:34.632497'
+completed_at: '2026-02-06T03:03:18.411245'
+duration_minutes: 1.7296456166666667
+---
+
+# Add progressive fallback for oversized content
+
+Multi-level fallback strategy when summarization fails. Ensures system never fails catastrophically.
+
+**Reference**: `ref-projects/openclaw/src/agents/compaction.ts:171-241`
+
+## Requirements
+
+1. **Level 1**: Try full summarization
+2. **Level 2** (if fails): Filter oversized messages (>50% of context), summarize rest
+   - Keep small messages, note oversized ones
+   - Append notes: `[Large assistant (~25K tokens) omitted from summary]`
+3. **Level 3** (if still fails): Return fallback message
+   - `"Context contained N messages (M oversized). Summary unavailable."`
+
+## Acceptance Criteria
+
+- [ ] Oversized message detection
+  - [ ] Identify messages > 50% of context window
+  - [ ] Filter into small vs oversized lists
+
+- [ ] Progressive fallback
+  - [ ] Try full summarization first
+  - [ ] If fails, summarize small messages only
+  - [ ] Append notes for oversized messages
+  - [ ] Final fallback: descriptive error message
+
+- [ ] Integration
+  - [ ] Replace current fallback with progressive fallback
+  - [ ] Preserve existing sliding-window fallback as final option
+
+- [ ] Tests
+  - [ ] Test: full summarization succeeds
+  - [ ] Test: partial summarization when large messages present
+  - [ ] Test: final fallback when all messages oversized

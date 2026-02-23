@@ -1,0 +1,24 @@
+---
+id: P50.M4.E3.T001
+title: Add concurrent claim contention tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M3.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:51:16.768273+00:00'
+started_at: '2026-02-23T02:51:16.768273+00:00'
+completed_at: '2026-02-23T02:51:19.252239+00:00'
+duration_minutes: 0.04139926666666667
+---
+## Description
+Test spawns 5+ Task.async workers all calling claim_task for same task_id simultaneously. Assert exactly one claim succeeds. Assert all failed claims return {:error, %{code: claim_conflict}} or :dependencies_unmet. Test is deterministic (Task.await_many with short timeout, no sleep). Runs in under 3s. Tests in test/pag_server/plugins/collab_teams/contention_test.exs.
+
+## Acceptance Criteria
+- Exactly one claim wins in concurrent race
+- losers receive structured error
+- test deterministic across multiple runs
+- under 3s; async: true with unique team/task IDs

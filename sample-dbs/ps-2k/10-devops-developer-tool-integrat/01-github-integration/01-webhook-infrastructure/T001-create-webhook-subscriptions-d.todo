@@ -1,0 +1,70 @@
+---
+id: P10.M1.E1.T001
+title: Create webhook_subscriptions database schema
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T19:55:09.621511+00:00'
+started_at: '2026-02-11T19:55:09.621511+00:00'
+completed_at: '2026-02-11T20:09:24.820773+00:00'
+duration_minutes: 14.2533207
+---
+
+# Create webhook_subscriptions database schema
+
+
+
+## Requirements
+
+Create a database migration for the `webhook_subscriptions` table to store GitHub webhook subscriptions with filter configuration.
+
+## Description
+
+The webhook_subscriptions table tracks GitHub webhook registrations per repository or organization. Each subscription stores the webhook URL, event types to listen for, filter expressions (JSON), and soft-delete support. This is the foundation for webhook persistence.
+
+## Acceptance Criteria
+
+- [ ] Migration creates `webhook_subscriptions` table with UUID primary key
+- [ ] Fields include: `integration_id` (FK to integration_settings), `repository`, `webhook_url`, `events` (array), `filters` (jsonb), `is_active` (boolean), `secret_hash` (SHA-256), `last_triggered_at`, `created_at`, `updated_at`
+- [ ] Unique constraint on `(integration_id, repository, webhook_url)` to prevent duplicates
+- [ ] Index on `integration_id` for fast subscription lookups per integration
+- [ ] Index on `(is_active, integration_id)` for filtering active subscriptions
+- [ ] Migration follows existing pattern (see `20260206140727_create_api_keys.exs`)
+
+## Implementation Notes
+
+- Use `:binary_id` primary key (consistent with rest of codebase)
+- `webhook_url`: String, required (endpoint receiving GitHub events)
+- `events`: Array of strings (e.g., `["push", "pull_request", "issues"]`)
+- `filters`: JSONB field for storing filter rules (e.g., `{"branches": ["main"], "paths": ["src/**"]}`)
+- `secret_hash`: SHA-256 hash of GitHub webhook secret (never store raw secret)
+- `is_active`: Boolean, default true (allows disabling without deletion)
+- `priority`: Integer, default 100 (for sorting subscriptions by priority)
+- Suggested location: `priv/repo/migrations/YYYYMMDDHHMMSS_create_webhook_subscriptions.exs`
+- See reference: `/home/xertrov/src/pag-server/priv/repo/migrations/20260206140727_create_api_keys.exs`
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-11 19:55 UTC
+**Sibling tasks**: P10.M1.E1.T002, P10.M1.E1.T003, P10.M1.E1.T004, P10.M1.E1.T005, P10.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M1.E1.T001 → P10.M1.E1.T002 → P10.M1.E1.T003 → P10.M1.E1.T004 → P10.M1.E1.T005 → P10.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M1.E1.T001: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T001-create-webhook-subscriptions-d.todo
+- P10.M1.E1.T002: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T002-create-integration-settings-da.todo
+- P10.M1.E1.T003: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T003-build-webhooksubscription-ecto.todo
+- P10.M1.E1.T004: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T004-build-integrationsettings-ecto.todo
+- P10.M1.E1.T005: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T005-implement-webhook-filter-match.todo
+- P10.M1.E1.T006: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T006-build-webhook-event-router-wit.todo

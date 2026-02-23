@@ -1,0 +1,26 @@
+---
+id: P50.M4.E2.T002
+title: Implement CollabTeams.DashboardLive mount and team index
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E2.T001
+- P50.M4.E1.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:43:12.937410+00:00'
+started_at: '2026-02-23T02:43:12.937410+00:00'
+completed_at: '2026-02-23T02:52:07.732233+00:00'
+duration_minutes: 8.913246816666666
+---
+## Description
+mount/3 fetches all active teams for connected workspace via Projection.get_overview/1. Subscribes to collab_teams:index PubSub topic for team create/destroy notifications. Renders list of teams with: name, state badge, worker_count, task summary row. Unauthenticated access redirects to login via on_mount hook.
+
+## Acceptance Criteria
+- Dashboard lists active teams
+- unauthenticated redirects
+- PubSub subscription set on connect
+- team list updates when new team created
+- workspace_id resolved from session assigns

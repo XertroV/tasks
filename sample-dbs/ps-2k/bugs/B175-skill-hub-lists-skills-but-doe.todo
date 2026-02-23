@@ -1,0 +1,19 @@
+---
+id: B175
+title: skill hub lists skills but does not show a description on their page. The entire
+  skill up section needs to be redesigned and rebuilt using the frontend-design skill.
+  Also it does not look good in dark mode.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T07:30:21.266313+00:00'
+started_at: '2026-02-21T07:30:21.266313+00:00'
+completed_at: '2026-02-21T08:07:07.867658+00:00'
+duration_minutes: 36.776688883333335
+---
+
+skill hub lists skills but does not show a description on their page. The entire skill up section needs to be redesigned and rebuilt using the frontend-design skill. Also it does not look good in dark mode.

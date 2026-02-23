@@ -1,0 +1,56 @@
+---
+id: P10.M2.E1.T003
+title: Add GitLab webhook event routing
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T01:17:00.926829+00:00'
+started_at: '2026-02-12T01:17:00.926829+00:00'
+completed_at: '2026-02-12T01:36:18.328890+00:00'
+duration_minutes: 19.290034116666668
+---
+
+# Add GitLab webhook event routing
+
+## Requirements
+
+- [ ] Create Oban job worker for async GitLab event processing
+- [ ] Route parsed events to appropriate handlers based on event type
+- [ ] Support filtering events by subscription rules (branch, label, etc.)
+- [ ] Implement retry logic for failed event handlers
+- [ ] Log event processing with correlation IDs
+
+## Acceptance Criteria
+
+- [ ] Oban worker module created at `lib/pag_server/integrations/gitlab/process_webhook_job.ex`
+- [ ] Worker implements `Oban.Worker` behaviour with:
+  - [ ] `perform/1` function to process webhook job
+  - [ ] `perform` takes `%{"event" => event_map, "integration_id" => id}`
+  - [ ] Return `:ok` on success or `{:error, reason}`
+- [ ] Event router created at `lib/pag_server/integrations/gitlab/event_router.ex`
+- [ ] Router dispatches to handlers:
+  - [ ] `handle_issue_event/1` for issue events → GitLab Issues epic
+  - [ ] `handle_merge_request_event/1` for MR events → Merge Requests epic
+  - [ ] `handle_pipeline_event/1` for CI/CD events → CI/CD Integration epic
+  - [ ] `handle_push_event/1` for push events (optional)
+- [ ] Event filtering:
+  - [ ] Load subscription rules from integration settings
+  - [ ] Match events against filters (branch patterns, labels, paths)
+  - [ ] Skip events that don't match any active subscription
+- [ ] Retry configuration:
+  - [ ] Configure Oban with exponential backoff (1s, 10s, 100s)
+  - [ ] Max 3 retries before dead-lettering
+  - [ ] Log retry attempts with context
+- [ ] Correlation tracking:
+  - [ ] Generate or pass through correlation ID
+  - [ ] Include in all log messages
+  - [ ] Store in telemetry metadata
+- [ ] Tests cover:
+  - [ ] Event routing to correct handler
+  - [ ] Filter matching (include/exclude cases)
+  - [ ] Retry logic
+  - [ ] Error handling and logging

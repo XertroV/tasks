@@ -1,0 +1,17 @@
+---
+id: P39.M4.E1.T003
+title: Add API key connect param support to UserSocket
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P39.M4.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:51:55.108818+00:00'
+started_at: '2026-02-19T18:51:55.108818+00:00'
+completed_at: '2026-02-19T18:51:57.145706+00:00'
+duration_minutes: 0.03394793333333333
+---
+Add a second connect/3 clause to UserSocket matching %{"api_key" => raw_key}. Validates via ApiKeyValidator.validate/2 (no scope requirement — consistent with JWT path). Sets user_id, api_key_id, heartbeat_interval on socket assigns. Allows pag-connect to connect to wss://host/socket/websocket?api_key=pag_sk_... without needing a JWT. AgentChannel.join/3 continues to handle authorization via can_access_agent?/2. Tests added to user_socket_test.exs.

@@ -1,0 +1,24 @@
+---
+id: P50.M1.E3.T003
+title: Declare MCP tool schema for collab_teams.team
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:13:14.351763+00:00'
+started_at: '2026-02-23T02:13:14.351763+00:00'
+completed_at: '2026-02-23T02:13:17.226342+00:00'
+duration_minutes: 0.04790945
+---
+## Description
+Implement CollabTeams.mcp_tools/0 returning the JSON Schema for the team tool. Schema includes: action (enum of all @valid_actions), workspace_id (string), actor_agent_id (string), team_id (string optional), payload (object optional). Tool description includes per-action usage summary. plugin.json capabilities.tools is [team] (verified). Add mcp_tools/0 to main CollabTeams module.
+
+## Acceptance Criteria
+- mcp_tools/0 returns list with one map for team tool
+- action field is enum with all 17 values
+- tool description is non-empty
+- plugin.json declares tools: [team]

@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T008
+title: 'Review P23.M3: Plugin File Structure Refactor'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:07:09.507107+00:00'
+started_at: '2026-02-19T02:07:09.507107+00:00'
+completed_at: '2026-02-19T02:15:00.680357+00:00'
+duration_minutes: 7.852887183333333
+---
+Load the review-and-fix skill. Review all epics and tasks under P23.M3 (Plugin File Structure Refactor). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: top-level plugins/ directory structure, PluginLoader discovery update, migration of all plugins from lib/pag_server/plugins/ to plugins/, mix.exs compile path changes, removal of old lib/pag_server/plugins/, and that the full test suite passes after the refactor. Check for any leftover references to old paths.

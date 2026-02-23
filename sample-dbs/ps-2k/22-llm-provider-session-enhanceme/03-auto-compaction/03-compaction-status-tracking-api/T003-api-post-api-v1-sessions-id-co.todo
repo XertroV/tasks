@@ -1,0 +1,17 @@
+---
+id: P22.M3.E3.T003
+title: 'API: POST /api/v1/sessions/:id/compaction/trigger - manual compaction'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M3.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:18:25.829099+00:00'
+started_at: '2026-02-18T17:18:25.829099+00:00'
+completed_at: '2026-02-18T17:28:02.465267+00:00'
+duration_minutes: 9.610602666666667
+---
+Add endpoint POST /api/v1/sessions/:session_id/compaction/trigger. Triggers compaction immediately regardless of current token usage. Returns {status: 'compaction_triggered'} with 202 Accepted. Also add PATCH /api/v1/sessions/:id/compaction to update compaction config (auto_compact_enabled, threshold_pct, strategy). Acceptance criteria: - POST returns 202 immediately, compaction runs async - PATCH updates session compaction config - PATCH validates threshold_pct between 0.1 and 0.95 - Both require authentication

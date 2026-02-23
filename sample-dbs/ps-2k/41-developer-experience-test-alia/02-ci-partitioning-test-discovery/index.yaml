@@ -1,0 +1,32 @@
+id: P41.M2
+name: CI Partitioning & Test Discovery
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: CI Parallel Partitioning
+  path: 01-ci-parallel-partitioning
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: test.changed script for targeted local runs
+  path: 02-test-changed-script-for-target
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

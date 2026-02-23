@@ -1,0 +1,39 @@
+---
+id: P13.M3.E3.T002
+title: Migrate existing error returns to structured types
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T12:00:10.158032+00:00'
+started_at: '2026-02-13T12:00:10.158032+00:00'
+completed_at: '2026-02-13T12:29:13.229110+00:00'
+duration_minutes: 29.051184466666665
+---
+
+# Migrate existing error returns to structured types
+
+## Description
+
+Migrate existing error handling code throughout the codebase to use the new `LLMError` and `ToolError` structs instead of tuple-based errors like `{:error, :rate_limited}`.
+
+## Acceptance Criteria
+- [ ] Update `AgentServer.handle_info({:llm_error, ...})` to use LLMError struct
+- [ ] Update `AgentServer.handle_info({:tool_error, ...})` to use ToolError struct
+- [ ] Update LLM provider adapters to return structured errors
+- [ ] Update ToolExecutor to wrap errors in ToolError structs
+- [ ] Update error logging to use struct fields
+- [ ] Update LifecycleHooks.fire_agent_error to accept structured errors
+- [ ] Maintain backward compatibility with tuple-based error handling where needed
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex` (lines 879-924)
+- Related files: `lib/pag_server/llm/provider.ex`
+- Related files: `lib/pag_server/tools/tool_executor.ex`
+- Part of epic: P13.M3.E3 - Structured Error Types

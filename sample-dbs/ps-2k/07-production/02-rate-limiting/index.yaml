@@ -1,0 +1,20 @@
+id: P7.M2
+name: Rate Limiting
+status: pending
+estimate_hours: 6
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Rate Limiter Implementation
+  path: 01-limiter
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on: []
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

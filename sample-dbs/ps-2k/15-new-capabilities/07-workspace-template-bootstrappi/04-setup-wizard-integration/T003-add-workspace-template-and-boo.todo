@@ -1,0 +1,45 @@
+---
+id: P15.M7.E4.T003
+title: Add workspace template and bootstrap API endpoints
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E3.T001
+- P15.M7.E2.T002
+tags:
+- api
+- rest
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:40:09.047971+00:00'
+started_at: '2026-02-17T09:40:09.047971+00:00'
+completed_at: '2026-02-17T09:54:01.160179+00:00'
+duration_minutes: 13.868536633333333
+---
+## Description
+REST API endpoints for workspace templates and bootstrap management.
+
+## Endpoints
+
+### Workspace Templates
+- GET /api/workspace-templates - List available workspace templates
+- GET /api/workspace-templates/:name - Template details (questionnaire structure, file list, description)
+
+### Bootstrap Management
+- POST /api/workspaces/:workspace_id/bootstrap - Start bootstrap session (body: {template_name: ...})
+- GET /api/workspaces/:workspace_id/bootstrap/status - Bootstrap progress (status, current_section, completed/total, answers so far)
+- DELETE /api/workspaces/:workspace_id/bootstrap - Cancel bootstrap session
+
+### Workspace Files
+- GET /api/workspaces/:workspace_id/files - List tracked files with latest revision info
+- GET /api/workspaces/:workspace_id/files/:path - Read specific file with revision history
+- GET /api/workspaces/:workspace_id/files/:path/revisions - Full revision log for a file
+
+## Acceptance Criteria
+- [ ] All endpoints implemented with proper auth
+- [ ] JSON responses with consistent format
+- [ ] Error handling for missing workspaces, templates, files
+- [ ] Controller tests for all endpoints
+- [ ] Workspace ownership/permission checks
+- [ ] OpenAPI-compatible response schemas

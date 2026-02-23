@@ -1,0 +1,40 @@
+id: P15.M9.E2
+name: Context Sanitization
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-context-sanitizer-modul.todo
+  title: Create PagServer.Context.Sanitizer module with pairing repair algorithm
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-wire-sanitizer-into-build-llm.todo
+  title: Wire sanitizer into build_llm_messages in agent_server
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P15.M9.E2.T001
+- id: T003
+  file: T003-comprehensive-sanitizer-tests.todo
+  title: Comprehensive sanitizer tests covering all edge cases
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M9.E2.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

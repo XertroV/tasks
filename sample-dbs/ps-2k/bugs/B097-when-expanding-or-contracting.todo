@@ -1,0 +1,18 @@
+---
+id: B097
+title: When expanding or contracting the sidebar boxes in validaiton console, they
+  should animate open and closed over 200ms to indicate what's happening to the user
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T12:52:23.435262+00:00'
+started_at: '2026-02-17T12:52:23.435262+00:00'
+completed_at: '2026-02-17T13:23:41.376010+00:00'
+duration_minutes: 31.299012249999997
+---
+
+When expanding or contracting the sidebar boxes in validaiton console, they should animate open and closed over 200ms to indicate what's happening to the user

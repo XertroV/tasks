@@ -1,0 +1,165 @@
+id: P7.M7.E1
+name: API Documentation
+status: pending
+estimate_hours: 17.5
+complexity: medium
+depends_on: []
+tasks:
+- T001-add-open-api-spex-dependency.todo
+- T002-create-openapi-base-specificat.todo
+- T003-integrate-redoc-ui-at-api-docs.todo
+- T004-document-agent-rest-endpoints.todo
+- T005-document-session-rest-endpoint.todo
+- T006-document-stats-rest-endpoints.todo
+- T007-document-openai-compatible-end.todo
+- T008-write-phoenix-channel-protocol.todo
+- T009-document-error-codes-and-recov.todo
+- T010-create-websocket-client-integr.todo
+- T011-configure-exdoc-with-module-gr.todo
+- T012-audit-and-complete-module-docu.todo
+- id: T013
+  file: T013-review-codebase-for-undocument.todo
+  title: Review codebase for undocumented modules and create documentation tasks
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T014
+  file: T014-add-openapi-annotations-to-exi.todo
+  title: Add OpenAPI annotations to existing endpoints
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P3.M6.E1.T003
+- id: T015
+  file: T015-update-error-documentation-for.todo
+  title: Update error documentation for unified REST and WebSocket format
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P3.M6.E1.T003
+  - P7.M7.E1.T009
+- id: T016
+  file: T016-document-sessions-public-api-a.todo
+  title: Document Sessions public API and typedocs
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T017
+  file: T017-document-agent-runtime-api-con.todo
+  title: Document agent runtime API contracts
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T018
+  file: T018-document-llm-registry-and-stre.todo
+  title: Document LLM registry and stream types
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T019
+  file: T019-document-built-in-tool-module.todo
+  title: Document built-in tool module contracts (batch 1)
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T020
+  file: T020-document-mcp-server-lifecycle.todo
+  title: Document MCP server lifecycle and transport modules
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T021
+  file: T021-document-events-query-and-repl.todo
+  title: Document events query and replay module APIs
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T022
+  file: T022-add-typedocs-across-schema-mod.todo
+  title: Add typedocs across schema modules
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T023
+  file: T023-document-web-channels-controll.todo
+  title: Document web channels/controllers/plugs contracts
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T024
+  file: T024-document-missing-composable-qu.todo
+  title: Document missing composable query arities in Events.Queries
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T025
+  file: T025-add-missing-ratelimiter-typedo.todo
+  title: Add missing RateLimiter typedoc for bucket state
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T026
+  file: T026-resolve-remaining-exdoc-warnin.todo
+  title: Resolve remaining ExDoc warning references and baseline moduledocs
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T027
+  file: T027-restore-openapi-annotations-fo.todo
+  title: Restore OpenAPI annotations for legacy controllers
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T028
+  file: T028-wire-openapispex-castandvalida.todo
+  title: Wire OpenApiSpex CastAndValidate in authenticated API pipeline
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T029
+  file: T029-complete-openai-operation-docs.todo
+  title: Complete OpenAI operation docs for PAG headers and SSE
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total_tasks: 12
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 29
+  total: 17

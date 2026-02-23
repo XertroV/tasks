@@ -1,0 +1,50 @@
+---
+id: P18.M1.E1.T003
+title: Create WorkspaceMembers context module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- P18.M1.E1.T002
+tags:
+- security
+- workspace
+- context
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:51:41.010399+00:00'
+started_at: '2026-02-17T16:51:41.010399+00:00'
+completed_at: '2026-02-17T16:54:19.386319+00:00'
+duration_minutes: 2.6395985
+---
+
+# Create WorkspaceMembers context module
+
+## Description
+
+Create `PagServer.WorkspaceMembers` context module with CRUD operations, membership queries, and role checks.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/workspace_members.ex`
+- [ ] `add_member(workspace_id, user_id, role, opts \\ [])` — creates membership record. Opts: `invited_by:`
+- [ ] `remove_member(workspace_id, user_id)` — deletes membership. Must reject removing the last owner.
+- [ ] `update_role(workspace_id, user_id, new_role)` — updates role. Must reject demoting the last owner.
+- [ ] `list_members(workspace_id, opts \\ [])` — lists members, optional role filter
+- [ ] `get_member(workspace_id, user_id)` — returns member or nil
+- [ ] `member?(workspace_id, user_id)` — boolean check
+- [ ] `get_role(workspace_id, user_id)` — returns role atom or nil
+- [ ] `count_members(workspace_id, opts \\ [])` — count, optional role filter
+- [ ] `list_workspace_ids(user_id)` — returns all workspace_ids the user is a member of (needed for scoping flat routes)
+
+## Acceptance Criteria
+
+- [ ] All CRUD operations work correctly
+- [ ] Cannot remove or demote the last owner of a workspace
+- [ ] `list_workspace_ids/1` returns correct workspace IDs for a user
+- [ ] Duplicate membership insertion returns `{:error, changeset}` with unique constraint error
+
+## Context
+
+**Files affected**: `lib/pag_server/workspace_members.ex`
+**Pattern reference**: Follow the same context pattern as `PagServer.WorkspaceInvitations`

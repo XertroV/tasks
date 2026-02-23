@@ -1,0 +1,49 @@
+---
+id: P28.M1.E1.T001
+title: REST API to list all available plugins with metadata
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- plugin
+- api
+- registry
+- ui
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:05:54.541985+00:00'
+started_at: '2026-02-18T18:05:54.541985+00:00'
+completed_at: '2026-02-18T18:17:08.201421+00:00'
+duration_minutes: 11.227657116666668
+---
+
+# REST API: List all available plugins with metadata
+
+Implement `GET /api/v1/workspaces/:workspace_id/plugins` to return a structured list
+of all plugins known to the system, including their enabled status for the given
+workspace. This endpoint is the primary data source for the plugin hub UI.
+
+## Requirements
+
+- Route: `GET /api/v1/workspaces/:workspace_id/plugins`
+- Response: JSON array of plugin descriptors with fields:
+  - `id` (atom/string key, e.g. `"cron"`)
+  - `name` (human-readable display name)
+  - `description` (short summary of what the plugin does)
+  - `version` (plugin version string)
+  - `enabled` (boolean, workspace-specific)
+  - `default_enabled` (boolean, system default)
+  - `tags` (list of category strings, e.g. `["scheduling", "automation"]`)
+- Source plugin metadata from the plugin behaviour's `__info__/0` or equivalent callback
+- Workspace-specific enabled state loaded from workspace plugin settings
+- Return 404 if workspace not found, 403 if caller lacks access
+
+## Acceptance Criteria
+
+- [ ] `GET /api/v1/workspaces/:id/plugins` returns 200 with plugin list
+- [ ] Each plugin descriptor includes id, name, description, version, enabled, default_enabled, tags
+- [ ] `enabled` reflects the workspace's specific setting (not just global default)
+- [ ] Endpoint is authenticated and workspace-scoped (returns 403 for wrong workspace)
+- [ ] Plugins with missing optional metadata fields return sensible defaults (empty string/list)
+- [ ] Route is listed in the router and covered by a controller test

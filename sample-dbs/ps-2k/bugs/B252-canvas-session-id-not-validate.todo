@@ -1,0 +1,18 @@
+---
+id: B252
+title: Canvas session_id not validated before PubSub subscribe
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- web
+- validation
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.688597+00:00'
+started_at: '2026-02-23T05:59:32.688597+00:00'
+completed_at: '2026-02-23T05:59:59.535422+00:00'
+duration_minutes: 0.44744683333333335
+---
+agent_channel.ex:126-128 - session_id used directly in PubSub topic without UUID validation

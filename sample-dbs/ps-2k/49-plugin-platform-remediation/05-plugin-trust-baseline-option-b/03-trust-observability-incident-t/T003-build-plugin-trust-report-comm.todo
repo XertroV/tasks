@@ -1,0 +1,31 @@
+---
+id: P49.M5.E3.T003
+title: Build plugin trust report command or API for incident reconstruction
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T10:10:03.510773+00:00'
+started_at: '2026-02-20T10:10:03.510773+00:00'
+completed_at: '2026-02-20T10:14:39.264581+00:00'
+duration_minutes: 4.59589655
+---
+
+# Build plugin trust report command or API for incident reconstruction
+
+
+
+## Requirements
+
+- Build a plugin trust report command or API that reconstructs provenance, verification, policy decisions, and lifecycle events.
+- Support filtering by plugin id, version, workspace, and time range.
+- Format output for incident triage with deterministic sections.
+
+## Acceptance Criteria
+
+- Trust report returns end-to-end trace for a plugin/version lifecycle.
+- Operators can identify why a plugin was allowed or denied from one report.
+- Tests cover report output for both successful and denied trust decisions.

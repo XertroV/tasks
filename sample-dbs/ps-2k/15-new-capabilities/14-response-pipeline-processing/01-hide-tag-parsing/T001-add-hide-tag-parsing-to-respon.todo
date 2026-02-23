@@ -1,0 +1,46 @@
+---
+id: P15.M14.E1.T001
+title: Add <hide> tag parsing to response pipeline
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- response-pipeline
+- persona
+- parsing
+- streaming
+claimed_by: cli-user
+claimed_at: '2026-02-19T13:00:54.171233+00:00'
+started_at: '2026-02-19T13:00:54.171233+00:00'
+completed_at: '2026-02-19T13:20:56.820657+00:00'
+duration_minutes: 20.0441569
+---
+## Description
+
+Agents can output `<hide name="description">...</hide>` tags in their responses containing internal reasoning, notes-to-self, or auxiliary content not intended for the user's primary display. The response pipeline must parse these tags and route them based on the capabilities of the downstream UI/connector:
+
+- **Collapsible-capable UIs** (e.g., web UI): Render `<hide name="X">...</hide>` as a collapsible/expandable section, using the `name` attribute as the section title/summary. The hidden content is still present in the delivered response but collapsed by default.
+- **Constrained surfaces** (e.g., Telegram, plain text): Strip the hidden content entirely from the user-facing response.
+
+The `name` attribute provides a short description of the hidden content's purpose and doubles as the collapsible section title on capable UIs. This is part of the agent-persona system prompt rewrite effort.
+
+**Rule of thumb**: Each connector/integration declares whether it supports collapsible sections (a capability flag). The response pipeline checks this flag and routes accordingly — collapsible rendering vs. full stripping.
+
+Hidden content is always stored separately for debugging, logging, and expanded views regardless of the downstream rendering mode.
+
+## Acceptance Criteria
+
+- [ ] Parser extracts `<hide name="...">...</hide>` tags from agent responses
+- [ ] Hidden content is stored separately and accessible for debugging/logging
+- [ ] Connectors/integrations declare a `supports_collapsible_sections` capability flag (or equivalent)
+- [ ] Response pipeline checks the connector capability flag to decide rendering mode
+- [ ] Collapsible-capable UIs (web UI etc.) receive hidden content rendered as collapsible sections with `name` attribute as the section title
+- [ ] Constrained surfaces (Telegram, plain text etc.) have hidden content fully stripped from the user-facing response
+- [ ] Nested hide tags handled gracefully (or explicitly disallowed with clear error)
+- [ ] Works with streaming responses (handles partial tag boundaries across chunks)
+- [ ] Unit tests cover: basic extraction, multiple hide tags, nested tags, missing name attr, streaming chunk boundaries
+- [ ] Unit tests cover both rendering paths: collapsible output and stripped output
+- [ ] Integration with existing Telegram connector verified (stripping mode)
+- [ ] Integration with web UI verified (collapsible mode), or stub/test demonstrating collapsible output format

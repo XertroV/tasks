@@ -1,0 +1,26 @@
+epic_id: P3.M4.E2
+name: Translation Layer
+description: Translate between OpenAI and PAG formats
+milestone: 04-openai-compat
+phase: 03-streaming-realtime
+
+estimated_hours: 4
+priority: high
+
+tasks:
+  - T001-request-translator.todo
+  - T002-response-translator.todo
+  - T003-streaming-sse.todo
+
+dependencies:
+  - P3.M4.E1
+
+acceptance_criteria:
+  - OpenAI messages → PAG context
+  - PAG response → OpenAI format
+  - SSE streaming
+
+deliverables:
+  - RequestTranslator module
+  - ResponseTranslator module
+  - SSE streaming

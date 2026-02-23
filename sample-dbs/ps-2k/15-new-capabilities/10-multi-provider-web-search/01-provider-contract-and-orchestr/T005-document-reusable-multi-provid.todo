@@ -1,0 +1,35 @@
+---
+id: P15.M10.E1.T005
+title: Document reusable multi-provider orchestrator pattern for future tools
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M10.E1.T001
+- P15.M10.E1.T003
+- P15.M10.E1.T004
+tags:
+- architecture
+- tools
+- docs
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:27:01.534571+00:00'
+started_at: '2026-02-17T16:27:01.534571+00:00'
+completed_at: '2026-02-17T16:28:38.455737+00:00'
+duration_minutes: 1.6153524833333333
+---
+
+# Document reusable multi-provider orchestrator pattern for future tools
+
+
+
+## Requirements
+
+- Document the generic multi-provider orchestration pattern (facade, provider behaviour, orchestrator, cooldown, capability detection).
+- Provide adoption guidance and anti-patterns for applying the pattern to future tools.
+
+## Acceptance Criteria
+
+- A dedicated architecture note describes reusable primitives vs web-search-specific concerns.
+- Documentation includes a checklist for onboarding another tool to the same pattern.

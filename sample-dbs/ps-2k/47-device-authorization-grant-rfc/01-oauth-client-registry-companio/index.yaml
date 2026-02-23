@@ -1,0 +1,32 @@
+id: P47.M1
+name: OAuth Client Registry & companion:full Scope
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: oauth_clients Schema & Registry
+  path: 01-oauth-clients-schema-registry
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: companion:full Scope & CompanionSocket Update
+  path: 02-companion-full-scope-companion
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

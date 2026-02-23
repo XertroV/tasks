@@ -1,0 +1,24 @@
+---
+id: P20.M1.E2.T002
+title: Implement Plugins.KVStore context module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P20.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:10:43.071764+00:00'
+started_at: '2026-02-18T10:10:43.071764+00:00'
+completed_at: '2026-02-18T10:15:46.309481+00:00'
+duration_minutes: 5.053961583333333
+---
+## Acceptance Criteria
+- Module at lib/pag_server/plugins/kv_store.ex
+- get/3, put/4, delete/3 for basic CRUD (plugin_name, key, scope opts)
+- list_keys/2 to enumerate a plugin's keys
+- clear/1 to remove all data for a plugin
+- All operations validate plugin is registered and enabled
+- Scope support: :global (default), {:workspace, id}, {:session, id}
+- Ecto schema at lib/pag_server/schema/plugin_kv_entry.ex

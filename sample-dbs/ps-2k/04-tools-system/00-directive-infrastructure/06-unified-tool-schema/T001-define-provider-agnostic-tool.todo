@@ -1,0 +1,77 @@
+---
+id: P4.M0.E6.T001
+title: Define provider-agnostic tool schema struct
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- schema
+- abstraction
+claimed_by: cli-user
+claimed_at: '2026-02-05T20:48:47.317300'
+started_at: '2026-02-05T20:48:47.317300'
+completed_at: '2026-02-05T21:25:45.160780'
+duration_minutes: 36.96405783333333
+---
+
+# Define provider-agnostic tool schema struct
+
+
+
+## Requirements
+
+- [x] Research Anthropic tool schema format (`input_schema` with JSON Schema)
+- [x] Research OpenAI tool schema format (`type: "function"` wrapper with `function.parameters`)
+- [x] Research OpenAI strict mode feature (`strict: true`, requires `additionalProperties: false`)
+- [x] Research Anthropic cache control feature (prompt caching)
+- [x] Design unified schema struct that captures all provider capabilities
+- [x] Create `lib/pag_server/tools/provider_schema.ex` module
+- [x] Define struct with common fields (name, description, parameters)
+- [x] Include provider-specific optional fields (strict, cache_control, metadata)
+- [x] Implement validation matching ToolSchema pattern
+- [x] Add helper functions (strict_mode?, has_cache_control?, to_map)
+- [x] Write comprehensive tests covering all scenarios
+- [x] Document the module with clear examples
+
+## Acceptance Criteria
+
+- [x] `ProviderSchema` struct defined with enforced keys `:name` and `:parameters`
+- [x] `new/1` function creates schema with validation
+- [x] `new!/1` function raises on validation errors
+- [x] `validate/1` function validates schema structure
+- [x] `update/2` function updates schema with revalidation
+- [x] Validation ensures `name` is non-empty string
+- [x] Validation ensures `parameters` is JSON Schema object with `type: "object"`
+- [x] When `strict: true`, validation requires `additionalProperties: false` (OpenAI requirement)
+- [x] Optional fields (description, strict, cache_control, metadata) properly validated
+- [x] Helper functions: `strict_mode?/1`, `has_cache_control?/1`, `to_map/1`
+- [x] Comprehensive test suite with 52 total tests (41 unit + 11 doctests)
+- [x] Real-world use cases tested: OpenAI strict mode, Anthropic cache control, nested schemas
+- [x] All tests pass: `mix test test/pag_server/tools/provider_schema_test.exs`
+- [x] Module documentation includes purpose, conversion flow, and examples
+- [x] Code follows existing patterns from ToolSchema and provider tool schema modules
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 07:48 UTC
+**Primary task**: P2.M8.E5.T001 - Implement adaptive chunk sizing for summarization
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E6 vs P2.M8.E5)
+- No dependency chain: ✓ (verified at claim time)

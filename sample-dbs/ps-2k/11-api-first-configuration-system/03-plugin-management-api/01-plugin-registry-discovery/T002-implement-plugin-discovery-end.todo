@@ -1,0 +1,58 @@
+---
+id: P11.M3.E1.T002
+title: Implement plugin discovery endpoint
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T10:31:06.547272+00:00'
+started_at: '2026-02-12T10:31:06.547272+00:00'
+completed_at: '2026-02-12T11:03:07.226331+00:00'
+duration_minutes: 32.01131745
+---
+
+# Implement plugin discovery endpoint
+
+Build HTTP endpoints for discovering available plugins from registries and local installation.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/controllers/plugins_controller.ex`:
+  - [ ] `GET /api/plugins/available` - list all available plugins with filters
+  - [ ] Query params: `namespace`, `search`, `sort` (name|updated_at), `limit` (default 50)
+  - [ ] Return: `{plugins: [...], total: N, has_more: bool}`
+
+- [ ] Create `lib/pag_server_web/controllers/plugin_controller.ex`:
+  - [ ] `GET /api/plugins/:id` - get single plugin details
+  - [ ] Include version history and metadata
+  - [ ] Return 404 if not found
+
+- [ ] Implement search functionality:
+  - [ ] Search by name (substring match, case-insensitive)
+  - [ ] Search by description/tags (full-text search if postgres)
+  - [ ] Filter by status (available, installed, disabled)
+  - [ ] Filter by namespace
+
+- [ ] Create JSON response formatters in `lib/pag_server_web/views/plugin_view.ex`:
+  - [ ] Format plugin listing (condensed)
+  - [ ] Format plugin details (full metadata)
+  - [ ] Include available versions for each plugin
+
+- [ ] Add comprehensive error handling:
+  - [ ] 400 for invalid query parameters
+  - [ ] 404 for missing plugins
+  - [ ] 500 with error details (non-sensitive)
+
+## Acceptance Criteria
+
+- [ ] `GET /api/plugins/available` returns list of available plugins
+- [ ] Search filters work correctly (name, namespace, status)
+- [ ] Pagination works with `limit` parameter
+- [ ] `GET /api/plugins/:id` returns full plugin details
+- [ ] 404 returned for non-existent plugins
+- [ ] All endpoints return proper JSON response format
+- [ ] Response time <100ms for pagination (with proper indexes)
+- [ ] Tests cover all endpoints and query parameter combinations

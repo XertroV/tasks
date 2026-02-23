@@ -1,0 +1,23 @@
+---
+id: P20.M1.E1.T004
+title: Integrate migrator into Plugins.Lifecycle.enable/2
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P20.M1.E1.T002
+- P20.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:15:51.191209+00:00'
+started_at: '2026-02-18T10:15:51.191209+00:00'
+completed_at: '2026-02-18T10:30:46.013902+00:00'
+duration_minutes: 14.91371135
+---
+## Acceptance Criteria
+- When a plugin is enabled, pending migrations are run automatically
+- Plugin module can export __plugin_migrations__/0 returning [{version, module}]
+- If migration fails, plugin enable fails with clear error
+- Lifecycle.uninstall with force_drop: true runs down migrations and drops tables
+- Tables preserved by default on uninstall

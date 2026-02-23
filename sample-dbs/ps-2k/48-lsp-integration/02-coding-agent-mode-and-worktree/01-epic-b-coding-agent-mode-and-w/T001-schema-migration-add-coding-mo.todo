@@ -1,0 +1,16 @@
+---
+id: P48.M2.E1.T001
+title: 'Schema migration: add coding_mode enum to agents'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:16.459643+00:00'
+started_at: '2026-02-20T08:51:16.459643+00:00'
+completed_at: '2026-02-20T09:06:04.123092+00:00'
+duration_minutes: 14.794390633333334
+---
+Add coding_mode enum column to agents table. Values: none (default), worktree, direct. 'worktree' = auto-creates git worktree on session start. 'direct' = edits workspace root directly. Changeset validation.

@@ -1,0 +1,30 @@
+---
+id: P15.M13.E1.T008
+title: Add LiveView web routes for wall UI
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- web
+- liveview
+- ui
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:14:57.085255+00:00'
+started_at: '2026-02-18T22:14:57.085255+00:00'
+completed_at: '2026-02-18T22:25:11.591324+00:00'
+duration_minutes: 10.241767566666665
+---
+
+# Add LiveView web routes for wall UI
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

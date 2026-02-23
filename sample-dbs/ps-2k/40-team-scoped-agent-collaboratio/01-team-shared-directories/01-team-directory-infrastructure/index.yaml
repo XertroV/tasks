@@ -1,0 +1,70 @@
+id: P40.M1.E1
+name: Team Directory Infrastructure
+status: done
+estimate_hours: 11.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-team-directory-data-model-and.todo
+  title: Team directory data model and lifecycle management
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-team-directory-visibility-and.todo
+  title: Team directory visibility and access control
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P40.M1.E1.T001
+- id: T003
+  file: T003-container-volume-mounting-for.todo
+  title: Container volume mounting for team directories
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P40.M1.E1.T001
+  - P40.M1.E1.T002
+- id: T004
+  file: T004-system-prompt-and-agent-awaren.todo
+  title: System prompt and agent awareness of team directories
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P40.M1.E1.T001
+  - P40.M1.E1.T002
+- id: T005
+  file: T005-team-leader-role-enforcement-a.todo
+  title: Team leader role enforcement and subteam creation authorization
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P40.M1.E1.T001
+- id: T006
+  file: T006-multiple-team-membership-and-m.todo
+  title: Multiple team membership and mount aggregation
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P40.M1.E1.T001
+  - P40.M1.E1.T002
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

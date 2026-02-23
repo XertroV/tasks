@@ -1,0 +1,50 @@
+id: P23.M1
+name: Exec Approval System
+status: pending
+estimate_hours: 28.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Command Classifier
+  path: 01-command-classifier
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Approval Manager
+  path: 02-approval-manager
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Phoenix Channel Integration
+  path: 03-phoenix-channel-integration
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Config, API & Tests
+  path: 04-config-api-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

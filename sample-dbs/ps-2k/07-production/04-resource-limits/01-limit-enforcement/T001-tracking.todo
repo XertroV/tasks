@@ -1,0 +1,111 @@
+---
+id: P7.M4.E1.T001
+title: Resource usage tracking
+status: done
+estimate_hours: 1
+complexity: medium
+priority: high
+depends_on:
+- P7.M3.E2.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:02:24.572224+00:00'
+started_at: '2026-02-06T21:02:24.572224+00:00'
+completed_at: '2026-02-06T21:18:15.057759+00:00'
+tags:
+- resources
+- tracking
+- state
+duration_minutes: 15.8414254
+---
+
+# Resource usage tracking
+
+Add resource usage tracking to agent state.
+
+## Requirements
+
+- [ ] Add `resource_usage` field to agent state
+- [ ] Track tokens consumed (input + output)
+- [ ] Track cost in millicents
+- [ ] Track tool call count
+- [ ] Track execution time
+- [ ] Implement `update_usage/3` helper
+- [ ] Persist usage to database on checkpoints
+
+## Acceptance Criteria
+
+- [ ] Agent state includes resource_usage map
+- [ ] Usage updated on every LLM call
+- [ ] Usage updated on every tool execution
+- [ ] Usage persists across agent restarts
+- [ ] Usage queryable via API
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M4 (Resource Limits)
+- Capabilities resource_limits field
+
+**Key Points**:
+- Track cumulative per session
+- Update atomically in GenServer
+- Checkpoint periodically to DB
+- Include in agent status updates
+
+## Notes
+
+State structure:
+```elixir
+defmodule PagServer.Agents.State do
+  defstruct [
+    :agent_id,
+    :session_id,
+    :status,
+    :context,
+    :capabilities,
+    resource_usage: %{
+      tokens_consumed: 0,
+      cost_millicents: 0,
+      tool_calls: 0,
+      execution_time_ms: 0,
+      started_at: nil
+    }
+  ]
+  
+  def update_usage(state, resource, amount) do
+    update_in(state.resource_usage[resource], &(&1 + amount))
+  end
+  
+  def check_limits(state) do
+    caps = state.capabilities
+    usage = state.resource_usage
+    
+    with :ok <- Capabilities.check_resource_limit(caps, :max_tokens, usage.tokens_consumed),
+         :ok <- Capabilities.check_resource_limit(caps, :max_cost_millicents, usage.cost_millicents),
+         :ok <- Capabilities.check_resource_limit(caps, :max_tool_calls, usage.tool_calls),
+         :ok <- Capabilities.check_resource_limit(caps, :max_execution_time_ms, usage.execution_time_ms) do
+      :ok
+    end
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M4.E1)
+**Agent**: cli-user
+**Date**: 2026-02-06 21:02 UTC
+**Sibling tasks**: P7.M4.E1.T002, P7.M4.E1.T003, P7.M4.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M4.E1.T001 → P7.M4.E1.T002 → P7.M4.E1.T003 → P7.M4.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M4.E1.T001: .tasks/07-production/04-resource-limits/01-limit-enforcement/T001-tracking.todo
+- P7.M4.E1.T002: .tasks/07-production/04-resource-limits/01-limit-enforcement/T002-enforcement.todo
+- P7.M4.E1.T003: .tasks/07-production/04-resource-limits/01-limit-enforcement/T003-cost-calculation.todo
+- P7.M4.E1.T004: .tasks/07-production/04-resource-limits/01-limit-enforcement/T004-tests.todo

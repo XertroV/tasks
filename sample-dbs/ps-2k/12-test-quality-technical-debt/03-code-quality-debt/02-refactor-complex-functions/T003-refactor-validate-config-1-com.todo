@@ -1,0 +1,37 @@
+---
+id: P12.M3.E2.T003
+title: Refactor validate_config/1 (complexity 13)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:37:36.450259+00:00'
+started_at: '2026-02-13T10:37:36.450259+00:00'
+completed_at: '2026-02-13T10:49:49.827009+00:00'
+duration_minutes: 12.222945616666667
+---
+
+# Refactor validate_config/1 (complexity 13)
+
+## Description
+
+Reduce the cyclomatic complexity of `validate_config/1` functions. Current complexity of 13 suggests too many validation branches. Consolidate validation logic.
+
+## Acceptance Criteria
+
+- [ ] Identify which `validate_config/1` has complexity 13
+- [ ] Extract individual field validators into separate functions
+- [ ] Consider using a validation pipeline pattern
+- [ ] Maintain same validation behavior and error messages
+- [ ] Target complexity: reduce to <= 10
+- [ ] All existing tests pass
+- [ ] Lint passes
+
+## Context
+
+- Related files: Check `lib/pag_server/sessions/plugin_config.ex`, `lib/pag_server/plugins/manifest.ex`, and others
+- Pattern: Extract validators, use Ecto changesets if applicable
+- Part of epic: Refactor Complex Functions

@@ -1,0 +1,16 @@
+---
+id: P30.M2.E1.T002
+title: Write PLUGIN_DEVELOPMENT.md developer guide
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:20:06.769867+00:00'
+started_at: '2026-02-18T19:20:06.769867+00:00'
+completed_at: '2026-02-18T19:24:37.225454+00:00'
+duration_minutes: 4.5075929666666665
+---
+Update docs/PLUGIN_DEVELOPMENT.md with: plugin directory structure, duck-typed interface reference, plugin.json schema, config_schema/0 format, MCP tool schema format, testing patterns (DataCase + Factory), and a complete worked example (e.g. a weather plugin).

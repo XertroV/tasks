@@ -1,0 +1,85 @@
+---
+id: P8.M5.E1.T002
+title: Implement WhatsApp authentication
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P8.M5.E1.T001
+tags:
+- whatsapp
+- authentication
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:09:09.579686+00:00'
+started_at: '2026-02-08T10:09:09.579686+00:00'
+completed_at: '2026-02-08T21:18:30+00:00'
+---
+
+# Implement WhatsApp authentication
+
+Set up Meta Business App authentication and token management.
+
+## Requirements
+
+- [x] Add config validation for required credentials on startup
+- [x] Implement token refresh logic (tokens expire after 90 days)
+- [x] Add webhook verification token validation
+- [x] Store app secret for signature verification
+- [ ] Document Meta Business App setup process in README
+
+## Acceptance Criteria
+
+- [x] Application fails fast with clear error if credentials missing
+- [x] Token expiration is logged with 7-day warning
+- [x] Webhook verification endpoint returns correct challenge response
+- [x] Invalid signatures are rejected with 401 status
+- [ ] Setup documentation includes step-by-step screenshots
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 357-366 (WhatsApp architecture)
+- `.plan/2026-02-05-velvet-cascade/security.md` lines 45-78 (API key management patterns)
+
+**Key Points**:
+- Requires Meta Business Account verification (can take 2-3 weeks)
+- Access tokens are long-lived (90 days) but must be rotated
+- Webhook verification uses challenge parameter
+- Request signatures use HMAC-SHA256 with app secret
+
+## Notes
+
+Webhook verification flow:
+```elixir
+def verify_webhook(params) do
+  mode = params["hub.mode"]
+  token = params["hub.verify_token"]
+  challenge = params["hub.challenge"]
+  
+  if mode == "subscribe" && token == verify_token() do
+    {:ok, challenge}
+  else
+    {:error, :forbidden}
+  end
+end
+```
+
+Signature verification:
+```elixir
+def verify_signature(payload, signature_header) do
+  expected = :crypto.mac(:hmac, :sha256, app_secret(), payload)
+             |> Base.encode16(case: :lower)
+  
+  "sha256=" <> expected == signature_header
+end
+```
+
+Meta Business App setup requirements:
+1. Create Meta Developer account
+2. Create Business App
+3. Add WhatsApp product
+4. Configure webhook URL (must be HTTPS)
+5. Generate access token
+6. Submit for business verification

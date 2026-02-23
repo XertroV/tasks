@@ -1,0 +1,65 @@
+---
+id: P4.M4.E1.T001
+title: Create Port wrapper module
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- sandboxing
+- port
+- isolation
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:40:12.679550'
+started_at: '2026-02-05T11:40:12.679550'
+completed_at: '2026-02-05T11:45:01.490468'
+---
+
+# Create Port wrapper module
+
+Create abstraction layer for safe process execution via Ports.
+
+## Requirements
+
+- [ ] Create `PAGServer.Tools.Sandbox.PortExecutor` module
+- [ ] Wrap Port.open with safety checks
+- [ ] Handle stdout/stderr separately
+- [ ] Implement timeout enforcement
+- [ ] Provide clean API for command execution
+
+## Acceptance Criteria
+
+- [ ] Executes commands via Port
+- [ ] Captures stdout and stderr separately
+- [ ] Enforces timeouts
+- [ ] Returns structured results
+- [ ] Handles process crashes
+- [ ] Test coverage for success/failure/timeout
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Sandboxing
+
+## Notes
+
+Port wrapper:
+```elixir
+defmodule PAGServer.Tools.Sandbox.PortExecutor do
+  def execute(command, args, opts \\ []) do
+    timeout = Keyword.get(opts, :timeout, 30_000)
+    workdir = Keyword.get(opts, :workdir, "/tmp")
+    
+    port = Port.open({:spawn_executable, command}, [
+      :binary,
+      :exit_status,
+      :stderr_to_stdout,
+      args: args,
+      cd: workdir
+    ])
+    
+    await_result(port, timeout)
+  end
+end
+```

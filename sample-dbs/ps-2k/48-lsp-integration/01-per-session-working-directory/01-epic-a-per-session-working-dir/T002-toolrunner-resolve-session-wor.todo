@@ -1,0 +1,23 @@
+---
+id: P48.M1.E1.T002
+title: 'ToolRunner: resolve session working directory as effective path'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:16.859392+00:00'
+started_at: '2026-02-20T08:37:16.859392+00:00'
+completed_at: '2026-02-20T08:49:58.908689+00:00'
+duration_minutes: 12.700821450000001
+---
+Update ToolRunner.resolve_workspace_path/1: if session.working_directory is set, resolve to workspace_root/working_directory. Requires loading session record. All tools automatically get the correct working dir via this single change.
+
+## Edge Case: Crash Recovery
+
+On session resume, validate that `working_directory` path actually exists on disk.
+If it does not exist (e.g. the worktree directory was removed after a crash),
+fall back to nil (workspace root) and log a warning. Update `session.working_directory`
+to nil so subsequent resumes also see the correct state.

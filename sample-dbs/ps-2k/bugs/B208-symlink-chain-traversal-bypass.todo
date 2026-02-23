@@ -1,0 +1,16 @@
+---
+id: B208
+title: Symlink-chain traversal bypass in path guard and ACP cwd containment
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T16:00:27.956639+00:00'
+started_at: '2026-02-21T16:00:27.956639+00:00'
+completed_at: '2026-02-21T16:02:22.951397+00:00'
+duration_minutes: 1.9165791333333333
+---
+Current path canonicalization resolves only single-hop symlinks, allowing chained symlink escape in tool path guard and session manager cwd checks. Implement full-chain realpath resolution with loop/error handling and add regression tests.

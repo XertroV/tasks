@@ -1,0 +1,40 @@
+id: P8.M3
+name: Slack Integration
+status: pending
+estimate_hours: 10
+complexity: high
+depends_on:
+- M1
+epics:
+- id: E1
+  name: App Setup
+  path: 01-app-setup
+  status: pending
+  estimate_hours: 3
+  complexity: high
+  depends_on: []
+  description: OAuth flow, app manifest, permissions configuration
+- id: E2
+  name: Event Handlers
+  path: 02-event-handlers
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on:
+  - E1
+  description: Handle messages, events, interactive components
+- id: E3
+  name: Slash Commands
+  path: 03-slash-commands
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E2
+  description: Implement /pag commands for agent interaction
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

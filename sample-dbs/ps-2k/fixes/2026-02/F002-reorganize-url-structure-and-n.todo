@@ -1,0 +1,78 @@
+---
+id: F002
+type: fixed
+title: Reorganize URL structure and navbar for workspace-centric navigation
+description: Reorganize URL structure and navbar for workspace-centric navigation
+status: done
+estimate_hours: 0.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- urls
+- navbar
+- routing
+- frontend
+created_at: '2026-02-22T10:06:16.050517+00:00'
+completed_at: '2026-02-22T10:06:16.050517+00:00'
+---
+## Summary
+
+Reorganized the entire URL structure and navbar from a flat /dashboard/* hierarchy
+to a structured, workspace-centric layout. This includes smart landing page logic,
+legacy redirect support, and a completely redesigned navbar.
+
+## Changes
+
+### New URL Structure
+- /w/:workspace_id/chat (and /chat/:session_id) — workspace chat
+- /w/:workspace_id/agents — agent dashboard (merged monitor + manage)
+- /w/:workspace_id/agents/manage — agent CRUD
+- /w/:workspace_id/events — workspace events
+- /w/:workspace_id/settings — workspace settings
+- /settings/* — platform settings (profile, api-keys, llm, plugins, platform)
+- /monitor/* — observability (agents, llm-calls, events, sessions/:id/timeline)
+- /console, /console/templates — validation console + workflow templates
+- /workspaces, /skills, /setup, /admin — standalone pages
+
+### Smart Landing Page (/)
+- 0 workspaces → /setup
+- 1 workspace → /w/:id/chat
+- 2+ workspaces → /workspaces
+
+### Navbar Redesign
+- Workspace picker dropdown (loads from RequireAuth hook)
+- Chat + Agents links (visible when workspace selected)
+- Monitor dropdown (Agent Status, LLM Calls, Events, Console)
+- Skills link
+- Settings gear icon
+- User avatar menu (Profile, API Keys, Admin, Log out)
+- Mobile hamburger menu with organized sections
+
+### Legacy Redirects
+- LegacyRedirectController handles 301 redirects from old /dashboard/* and /chat/* paths
+- Covers all old routes including parameterized paths
+
+### Files Modified
+- 52 files changed (18 lib/, 24 test/, plus .tasks)
+- New: lib/pag_server_web/controllers/legacy_redirect_controller.ex
+- Major rewrites: router.ex, app.html.heex
+- Updated: all LiveView modules and tests with old URL references
+
+## Acceptance Criteria for Review
+
+- [ ] All new URL paths load correctly (/w/:id/chat, /settings/llm, /monitor/agents, etc.)
+- [ ] Smart redirect at / works for 0, 1, and 2+ workspace cases
+- [ ] Legacy /dashboard/* URLs return 301 redirects to correct new paths
+- [ ] Legacy /chat/:workspace_id URLs redirect to /w/:workspace_id/chat
+- [ ] Navbar shows workspace picker with user's accessible workspaces
+- [ ] Chat and Agents links appear only when a workspace is selected
+- [ ] Monitor dropdown contains Agent Status, LLM Calls, Events, Console
+- [ ] Settings gear links to /settings
+- [ ] User menu shows Profile, API Keys, Admin (if admin), Log out
+- [ ] Mobile hamburger menu renders correctly with all sections
+- [ ] No new test failures introduced (24 failures are all pre-existing)
+- [ ] mix compile produces no warnings from changed files
+- [ ] mix lint passes (no new credo issues)
+- [ ] Workspace picker in navbar correctly detects current workspace from URL context
+- [ ] Theme toggle (light/dark) still functions in new navbar

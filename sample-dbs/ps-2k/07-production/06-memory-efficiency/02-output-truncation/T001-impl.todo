@@ -1,0 +1,42 @@
+---
+id: P7.M6.E2.T001
+title: Tool output truncation
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T04:24:22.772022+00:00'
+started_at: '2026-02-07T04:24:22.772022+00:00'
+completed_at: '2026-02-07T04:26:40.461623+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 2.2948264666666662
+---
+
+# Tool output truncation
+
+Truncate tool outputs at 512KB with indicator
+
+## Requirements
+
+- [x] Implement core functionality
+- [x] Add tests
+- [x] Update documentation
+
+## Acceptance Criteria
+
+- [x] Feature works as specified
+- [x] Tests pass
+- [x] Documentation updated
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.

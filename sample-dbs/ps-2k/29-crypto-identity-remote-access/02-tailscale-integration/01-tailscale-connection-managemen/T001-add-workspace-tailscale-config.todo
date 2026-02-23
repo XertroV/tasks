@@ -1,0 +1,35 @@
+---
+id: P29.M2.E1.T001
+title: Add workspace_tailscale_config schema and migration
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:05:41.062848+00:00'
+started_at: '2026-02-18T19:05:41.062848+00:00'
+completed_at: '2026-02-18T19:08:54.643772+00:00'
+duration_minutes: 3.2263484333333334
+---
+Schema for tailscale config per workspace: auth_key (encrypted), hostname_prefix, tailnet, enabled, ip (populated after connect), last_status. Migration adds workspace_tailscale_configs table.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P29.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 19:05 UTC
+**Sibling tasks**: P29.M2.E1.T002, P29.M2.E1.T003, P29.M2.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P29.M2.E1.T001 → P29.M2.E1.T002 → P29.M2.E1.T003 → P29.M2.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P29.M2.E1.T001: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/01-tailscale-connection-managemen/T001-add-workspace-tailscale-config.todo
+- P29.M2.E1.T002: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/01-tailscale-connection-managemen/T002-implement-tailscalemanager-gen.todo
+- P29.M2.E1.T003: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/01-tailscale-connection-managemen/T003-implement-tailscalesupervisor.todo
+- P29.M2.E1.T004: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/01-tailscale-connection-managemen/T004-write-tailscalemanager-tests-w.todo

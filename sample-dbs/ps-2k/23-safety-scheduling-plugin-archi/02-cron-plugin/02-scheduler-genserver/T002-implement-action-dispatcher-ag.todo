@@ -1,0 +1,25 @@
+---
+id: P23.M2.E2.T002
+title: Implement action dispatcher (agent message + CLI command)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.791731+00:00'
+started_at: '2026-02-18T17:03:35.791731+00:00'
+completed_at: '2026-02-18T17:03:41.745417+00:00'
+duration_minutes: 0.09922793333333332
+---
+Dispatcher that handles the two action types when a cron fires.
+
+## Acceptance Criteria
+- [ ] `PagServer.Plugins.Cron.ActionDispatcher.dispatch/1` accepts a CronSchedule and fires its action
+- [ ] `agent_message` action: dispatches a message to the target session/agent via the existing session messaging system; if target agent not found, logs a warning but does not crash
+- [ ] `cli_command` action: runs the command via the bash tool (or directly via System.cmd); captures output
+- [ ] If `output_forwarding` is set, sends the command output as a message to the specified agent
+- [ ] All dispatch errors are caught and logged; dispatcher never raises
+- [ ] Unit tests for each action type with mocked session/agent references

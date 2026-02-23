@@ -1,0 +1,16 @@
+---
+id: P30.M1.E1.T002
+title: Add PluginMarketplace context module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:16:02.854622+00:00'
+started_at: '2026-02-18T19:16:02.854622+00:00'
+completed_at: '2026-02-18T19:17:56.693876+00:00'
+duration_minutes: 1.8973207166666666
+---
+Create PagServer.Plugins.Marketplace context with list/1, search/2, get_details/2. Wraps Installer functions with caching (Cachex, 5 min TTL). Provides a stable API for the controller layer.

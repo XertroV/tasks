@@ -1,0 +1,95 @@
+---
+id: P8.M4.E2.T001
+title: Implement message handler
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M4.E1.T003
+tags:
+- handlers
+- messages
+- core
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:21:35.063919+00:00'
+started_at: '2026-02-11T02:21:35.063919+00:00'
+completed_at: '2026-02-11T02:21:39.866394+00:00'
+duration_minutes: 0.0800411
+---
+
+# Implement message handler
+
+Implement Discord MESSAGE_CREATE event handler to process mentions,
+DMs, and prefix commands. Integrate with agent session management
+to route messages to appropriate agents.
+
+## Acceptance Criteria
+
+- [ ] Handle @bot mentions in guilds
+- [ ] Handle direct messages
+- [ ] Handle !pag prefix commands
+- [ ] Strip mentions and format text for agents
+- [ ] Get or create sessions per user/channel
+- [ ] Ignore bot's own messages
+- [ ] Ignore other bots
+
+## Notes
+
+Reference: .plan/2026-02-05-velvet-cascade/integrations.md:298-328
+
+lib/pag_server/integrations/discord.ex:
+```elixir
+@impl true
+def handle_event({:MESSAGE_CREATE, msg, _ws_state}) do
+  # Ignore bots
+  if msg.author.bot, do: return(:noop)
+  
+  cond do
+    # Direct mention
+    mentioned_bot?(msg) ->
+      handle_mention(msg)
+    
+    # DM channel
+    dm_channel?(msg) ->
+      handle_dm(msg)
+    
+    # Prefix command
+    String.starts_with?(msg.content, "!pag") ->
+      handle_command(msg)
+    
+    true ->
+      :noop
+  end
+end
+
+defp handle_mention(msg) do
+  text = strip_mention(msg.content)
+  {:ok, session} = get_or_create_session(
+    platform: :discord,
+    guild_id: msg.guild_id,
+    channel_id: msg.channel_id,
+    user_id: msg.author.id
+  )
+  
+  send_to_agent(session.agent_id, text, msg)
+end
+
+defp mentioned_bot?(msg) do
+  bot_id = Nostrum.Cache.Me.get().id
+  Enum.any?(msg.mentions, fn user -> user.id == bot_id end)
+end
+
+defp dm_channel?(msg) do
+  msg.guild_id == nil
+end
+
+defp strip_mention(content) do
+  String.replace(content, ~r/<@!?\d+>/, "")
+  |> String.trim()
+end
+```
+
+Session lookup:
+- Guild messages: session per channel (shared team agent)
+- DMs: session per user (private agent)

@@ -1,0 +1,46 @@
+id: P37.M1.E1
+name: send, spawn, status, interrupt
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-threads-send-action.todo
+  title: Implement threads send action
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-threads-spawn-action.todo
+  title: Implement threads spawn action
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-threads-status-actio.todo
+  title: Implement threads status action
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-implement-threads-interrupt-ac.todo
+  title: Implement threads interrupt action
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,17 @@
+---
+id: P45.M6.E1.T003
+title: Implement reveal endpoint with rate limit and audit log
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P45.M6.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.206056+00:00'
+started_at: '2026-02-19T19:17:35.206056+00:00'
+completed_at: '2026-02-19T19:51:41.042482+00:00'
+duration_minutes: 34.09727358333333
+---
+POST /secrets/:id/reveal — returns plaintext value. Apply a separate human reveal rate limit (e.g. 10 reveals/minute per user using TokenBucket). Write to vault_access_log with action='reveal', actor_type='user'. Return {value: '...', version: N, revealed_at: timestamp}. Requires explicit body param {confirm: true} as an intentional friction mechanism.

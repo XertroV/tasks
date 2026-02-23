@@ -1,0 +1,37 @@
+---
+id: P15.M3.E1.T003
+title: Add cache invalidation strategies (TTL, drift)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T21:21:45.255229+00:00'
+started_at: '2026-02-13T21:21:45.255229+00:00'
+completed_at: '2026-02-13T21:48:06.692833+00:00'
+duration_minutes: 26.357293016666667
+---
+
+# Add cache invalidation strategies (TTL, drift)
+
+## Description
+Implement intelligent cache invalidation strategies including TTL-based expiration and semantic drift detection. Invalidate cached responses when context changes significantly or responses become stale.
+
+## Acceptance Criteria
+- [ ] Implement TTL-based expiration with configurable duration
+- [ ] Add semantic drift detection (invalidate if query context shifts)
+- [ ] Support manual cache invalidation by agent_id/session_id
+- [ ] Add invalidation on system prompt changes
+- [ ] Implement invalidation on tool definition changes
+- [ ] Add background cleanup job for expired entries
+- [ ] Log invalidation reasons for debugging
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/cache.ex`, `lib/pag_server/agents/agent.ex`, `lib/pag_server/application.ex`
+- Part of epic: Semantic Response Cache
+- Use Cachex expiration features

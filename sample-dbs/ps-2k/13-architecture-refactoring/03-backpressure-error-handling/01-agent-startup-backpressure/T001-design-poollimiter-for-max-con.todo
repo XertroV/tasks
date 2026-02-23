@@ -1,0 +1,78 @@
+---
+id: P13.M3.E1.T001
+title: Design PoolLimiter for max concurrent agents
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:08:36.482796+00:00'
+started_at: '2026-02-13T23:08:36.482796+00:00'
+completed_at: '2026-02-13T23:18:49.665628+00:00'
+duration_minutes: 10.219713633333333
+---
+
+# Design PoolLimiter for max concurrent agents
+
+## Description
+
+Design a `PagServer.Agents.PoolLimiter` module that enforces maximum concurrent agent limits at the system level. This provides backpressure to prevent resource exhaustion from too many simultaneous agent processes.
+
+## Acceptance Criteria
+- [ ] Design PoolLimiter GenServer or GenStage-based architecture
+- [ ] Define configuration: `max_concurrent_agents` (default from config)
+- [ ] Design `acquire/1` function that blocks or returns error when at capacity
+- [ ] Design `release/1` function to return a slot to the pool
+- [ ] Design `available/0` to query remaining capacity
+- [ ] Consider per-workspace limits in addition to global limits
+- [ ] Document design in module or separate design doc
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/supervisor.ex` (agent startup)
+- Related files: `lib/pag_server/agents/resource_tracker.ex` (existing resource tracking)
+- Part of epic: P13.M3.E1 - Agent Startup Backpressure
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-13 10:51 UTC
+**Primary task**: P13.M1.E2.T001 - Create AgentServer.StreamProcessor module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P13.M3.E1 vs P13.M1.E2)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P13.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 23:08 UTC
+**Sibling tasks**: P13.M3.E1.T002, P13.M3.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P13.M3.E1.T001 → P13.M3.E1.T002 → P13.M3.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P13.M3.E1.T001: .tasks/13-architecture-refactoring/03-backpressure-error-handling/01-agent-startup-backpressure/T001-design-poollimiter-for-max-con.todo
+- P13.M3.E1.T002: .tasks/13-architecture-refactoring/03-backpressure-error-handling/01-agent-startup-backpressure/T002-implement-admission-control-wi.todo
+- P13.M3.E1.T003: .tasks/13-architecture-refactoring/03-backpressure-error-handling/01-agent-startup-backpressure/T003-add-telemetry-for-throttling-e.todo

@@ -1,0 +1,50 @@
+id: P45.M2.E1
+name: Vault Context Module
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-vaultsecret-and-vaultse.todo
+  title: Define VaultSecret and VaultSecretVersion Ecto schemas
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P45.M1.E2.T002
+- id: T002
+  file: T002-implement-vault-store-2-and-va.todo
+  title: Implement Vault.store/2 and Vault.fetch_current/2
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P45.M2.E1.T001
+- id: T003
+  file: T003-implement-vault-list-1-delete.todo
+  title: Implement Vault.list/1, delete/2, rotate/2, history/2
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P45.M2.E1.T002
+- id: T004
+  file: T004-write-unit-tests-for-vault-con.todo
+  title: Write unit tests for Vault context module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P45.M2.E1.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

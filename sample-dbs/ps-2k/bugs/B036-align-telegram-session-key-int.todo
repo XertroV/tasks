@@ -1,0 +1,33 @@
+---
+id: B036
+title: align Telegram session key integer test with runtime formatting
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: high
+depends_on: []
+tags:
+- telegram
+- tests
+- regression
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:18:00.975192+00:00'
+started_at: '2026-02-15T18:18:00.975192+00:00'
+completed_at: '2026-02-15T18:18:25.725474+00:00'
+duration_minutes: 0.41250455
+---
+
+# align Telegram session key integer test with runtime formatting
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe `PagServer.Integrations.Telegram.SessionMapperTest` failure in `build_session_key/1` integer case.
+
+## Expected Behavior
+
+Integer chat IDs should be asserted using the same string formatting returned by `SessionMapper.build_session_key/1`.
+
+## Actual Behavior
+
+The test expects underscore-formatted integer output (`telegram:12_345`) but runtime interpolation returns `telegram:12345`.

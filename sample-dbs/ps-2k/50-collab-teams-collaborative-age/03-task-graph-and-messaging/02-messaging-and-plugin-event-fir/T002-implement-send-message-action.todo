@@ -1,0 +1,25 @@
+---
+id: P50.M3.E2.T002
+title: Implement send_message action
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E2.T001
+- P50.M2.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:34:03.889171+00:00'
+started_at: '2026-02-23T02:34:03.889171+00:00'
+completed_at: '2026-02-23T02:34:06.997205+00:00'
+duration_minutes: 0.05180038333333334
+---
+## Description
+CollabTeams.Messaging.send_message/1 (team_id, workspace_id, from_agent_id, to_agent_id \ nil, type, content, metadata \ %{}) inserts message row. Returns {:ok, %{message_id, team_id, action: send_message, event_id}}. Writes collab_message_sent audit event. Validates from_agent_id belongs to the team -- returns {:error, :agent_not_in_team} otherwise.
+
+## Acceptance Criteria
+- send_message returns {:ok, map}
+- agent not in team returns :agent_not_in_team
+- audit event written
+- NULL to_agent_id accepted for broadcasts

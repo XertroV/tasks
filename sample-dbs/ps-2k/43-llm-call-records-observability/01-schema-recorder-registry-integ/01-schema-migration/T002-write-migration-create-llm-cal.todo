@@ -1,0 +1,71 @@
+---
+id: P43.M1.E1.T002
+title: 'Write migration: create_llm_call_records with columns and 6 indexes'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:35:23.607666+00:00'
+started_at: '2026-02-19T18:35:23.607666+00:00'
+completed_at: '2026-02-19T18:41:18.801190+00:00'
+duration_minutes: 5.919891883333333
+---
+
+# Write migration: create_llm_call_records with columns and 6 indexes
+
+
+
+## Requirements
+
+- Write an Ecto migration that creates the `llm_call_records` table with all columns matching the `LlmCallRecord` schema
+- Add 6 composite indexes to support common query access patterns
+- Migration must be reversible (both `up` and `down`, or using `create/drop` which Ecto handles automatically)
+
+## Acceptance Criteria
+
+- A migration file exists at `priv/repo/migrations/<TIMESTAMP>_create_llm_call_records.exs` where `<TIMESTAMP>` is a valid Ecto timestamp integer
+- The migration defines `defmodule PagServer.Repo.Migrations.CreateLlmCallRecords` (or similar) using `use Ecto.Migration`
+- `create table(:llm_call_records, primary_key: false)` block includes:
+  - `add :id, :binary_id, primary_key: true`
+  - `add :agent_id, :binary_id, null: true`
+  - `add :session_id, :binary_id, null: true`
+  - `add :workspace_id, :binary_id, null: true`
+  - `add :message_id, :binary_id, null: true`
+  - `add :provider, :string, null: false`
+  - `add :model, :string, null: false`
+  - `add :model_spec, :string, null: false`
+  - `add :operation, :string, null: false`
+  - `add :caller_context, :string`
+  - `add :status, :string, null: false, default: "pending"`
+  - `add :estimated_input_tokens, :integer`
+  - `add :input_tokens, :integer`
+  - `add :output_tokens, :integer`
+  - `add :cache_read_tokens, :integer`
+  - `add :cache_creation_tokens, :integer`
+  - `add :total_tokens, :integer`
+  - `add :input_cost_millicents, :integer`
+  - `add :output_cost_millicents, :integer`
+  - `add :total_cost_millicents, :integer`
+  - `add :ttft_ms, :integer`
+  - `add :duration_ms, :integer`
+  - `add :stop_reason, :string`
+  - `add :error_details, :map`
+  - `add :retry_count, :integer, default: 0`
+  - `add :failover_from, :string`
+  - `add :started_at, :utc_datetime_usec, null: false`
+  - `add :completed_at, :utc_datetime_usec`
+  - `timestamps(type: :utc_datetime_usec)`
+- Exactly 6 indexes are created outside the `create table` block:
+  - `create index(:llm_call_records, [:agent_id, :started_at])`
+  - `create index(:llm_call_records, [:session_id, :started_at])`
+  - `create index(:llm_call_records, [:workspace_id, :started_at])`
+  - `create index(:llm_call_records, [:status, :started_at])`
+  - `create index(:llm_call_records, [:started_at])`
+  - `create index(:llm_call_records, [:provider, :model, :started_at])`
+  - Each index may specify `desc` ordering for `started_at` via a raw index expression or by any Ecto-supported mechanism; if Ecto version doesn't support per-column sort in `index/3`, a note in comments is acceptable and the index is still created without the `DESC` hint
+- `mix ecto.migrate` runs without errors and the `llm_call_records` table is present in the database afterward
+- `mix ecto.rollback` drops the table and all indexes without errors, and can be followed by a second `mix ecto.migrate` successfully
+- No foreign key constraints are declared (FKs are soft references only — the columns exist but no `references/2` call)

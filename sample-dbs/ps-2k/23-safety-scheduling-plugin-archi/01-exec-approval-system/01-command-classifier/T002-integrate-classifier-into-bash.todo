@@ -1,0 +1,26 @@
+---
+id: P23.M1.E1.T002
+title: Integrate classifier into bash/exec tool execution path
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:02:56.918449+00:00'
+started_at: '2026-02-18T15:02:56.918449+00:00'
+completed_at: '2026-02-18T17:03:55.565221+00:00'
+duration_minutes: 120.97744605
+---
+Wire `CommandClassifier` into the existing bash/shell tool execution path.
+
+## Acceptance Criteria
+- [ ] Locate the bash/exec tool under `lib/pag_server/tools/` (look for `bash_tool.ex` or `exec_tool.ex`)
+- [ ] Before executing any command, call `CommandClassifier.classify/2`
+- [ ] If `:safe`, execute immediately (no change in behavior)
+- [ ] If `{:dangerous, reason}`, delegate to `ApprovalManager` (see E2) instead of executing
+- [ ] Tool returns a structured pending response while waiting for approval
+- [ ] Feature is gated by workspace config `exec_approval_enabled` flag
+- [ ] Existing tests still pass; add integration test for the interception path

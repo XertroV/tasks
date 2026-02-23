@@ -1,0 +1,18 @@
+---
+id: B230
+title: Stream cancel race condition in agent_server
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- agent
+- race-condition
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.096077+00:00'
+started_at: '2026-02-23T07:29:02.096077+00:00'
+completed_at: '2026-02-23T07:43:45.622058+00:00'
+duration_minutes: 14.725432783333334
+---
+agent_server.ex:1009-1024, 3241-3250 - Cancel arriving before :llm_stream_started uses fragile cancel_pending flag

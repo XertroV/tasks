@@ -1,0 +1,39 @@
+---
+id: P49.M6.E3.T003
+title: Publish migration and operations playbook for Option B to Option C
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T19:11:07.047493+00:00'
+started_at: '2026-02-20T19:11:07.047493+00:00'
+completed_at: '2026-02-20T19:12:13.858040+00:00'
+duration_minutes: 1.1135089333333332
+---
+
+# Publish migration and operations playbook for Option B to Option C
+
+
+
+## Requirements
+
+- Publish migration playbook from Option B baseline to Option C enforcement.
+- Include operations guidance for key rotation, revocation handling, and incident response drills.
+- Keep plan docs, developer docs, and backlog acceptance criteria synchronized.
+
+## Acceptance Criteria
+
+- Migration playbook includes phased rollout and rollback guidance.
+- Operations runbooks cover rotation, revocation, and outage scenarios.
+- Documentation sync checklist is complete and reviewable.
+
+## Implementation Notes
+
+- Added migration/operations playbook: `docs/plugins/option-b-to-c-migration-playbook.md`.
+- Synced plan and developer docs to reference playbook:
+  - `docs/plans/2026-02-20-plugin-security-model.md`
+  - `docs/plans/2026-02-20-plugin-platform-remediation-plan.md`
+  - `docs/PLUGIN_DEVELOPMENT.md`

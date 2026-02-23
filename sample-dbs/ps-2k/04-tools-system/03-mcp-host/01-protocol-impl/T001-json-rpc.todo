@@ -1,0 +1,137 @@
+---
+id: P4.M3.E1.T001
+title: Implement JSON-RPC 2.0 handler
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- tools
+- mcp
+- jsonrpc
+- protocol
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:28:04.427543'
+started_at: '2026-02-05T11:28:04.427543'
+completed_at: '2026-02-05T11:32:09.305661'
+---
+
+# Implement JSON-RPC 2.0 handler
+
+Create JSON-RPC 2.0 message handler for MCP protocol.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/mcp/json_rpc.ex` (~150 LoC)
+- [ ] Parse JSON-RPC 2.0 requests and responses
+- [ ] Validate message structure and required fields
+- [ ] Handle request, response, notification, and error messages
+- [ ] Generate compliant JSON-RPC responses
+
+## Acceptance Criteria
+
+- [ ] Parses valid JSON-RPC 2.0 messages
+- [ ] Validates jsonrpc, method, id fields
+- [ ] Handles batch requests
+- [ ] Generates error responses for invalid messages
+- [ ] Test coverage for all message types
+- [ ] Compliant with JSON-RPC 2.0 specification
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 72-97 (MCP Protocol)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 351-354 (MCP modules)
+
+**Key Points**:
+- JSON-RPC 2.0 is the transport for MCP messages
+- MCP adds methods like `initialize`, `tools/list`, `tools/call`
+- Error handling is critical for protocol reliability
+- Reference implementation: Anubis MCP library
+
+## Notes
+
+JSON-RPC 2.0 message types:
+```elixir
+# Request
+%{
+  "jsonrpc" => "2.0",
+  "method" => "tools/list",
+  "params" => %{},
+  "id" => 1
+}
+
+# Response
+%{
+  "jsonrpc" => "2.0",
+  "result" => %{...},
+  "id" => 1
+}
+
+# Error
+%{
+  "jsonrpc" => "2.0",
+  "error" => %{
+    "code" => -32600,
+    "message" => "Invalid Request"
+  },
+  "id" => nil
+}
+
+# Notification (no id)
+%{
+  "jsonrpc" => "2.0",
+  "method" => "$/progress",
+  "params" => %{...}
+}
+```
+
+Implementation:
+```elixir
+defmodule PAGServer.Tools.MCP.JsonRPC do
+  def parse(json_string) do
+    with {:ok, data} <- Jason.decode(json_string),
+         :ok <- validate_jsonrpc(data) do
+      classify_message(data)
+    end
+  end
+
+  defp validate_jsonrpc(%{"jsonrpc" => "2.0"}), do: :ok
+  defp validate_jsonrpc(_), do: {:error, :invalid_jsonrpc}
+
+  defp classify_message(%{"method" => method, "id" => id} = msg) when not is_nil(id) do
+    {:ok, {:request, method, msg["params"], id}}
+  end
+  defp classify_message(%{"method" => method} = msg) do
+    {:ok, {:notification, method, msg["params"]}}
+  end
+  defp classify_message(%{"result" => result, "id" => id}) do
+    {:ok, {:response, result, id}}
+  end
+  defp classify_message(%{"error" => error, "id" => id}) do
+    {:ok, {:error, error, id}}
+  end
+
+  def encode_response(result, id) do
+    Jason.encode!(%{
+      "jsonrpc" => "2.0",
+      "result" => result,
+      "id" => id
+    })
+  end
+
+  def encode_error(code, message, id) do
+    Jason.encode!(%{
+      "jsonrpc" => "2.0",
+      "error" => %{
+        "code" => code,
+        "message" => message
+      },
+      "id" => id
+    })
+  end
+end
+```
+
+Reference: https://www.jsonrpc.org/specification

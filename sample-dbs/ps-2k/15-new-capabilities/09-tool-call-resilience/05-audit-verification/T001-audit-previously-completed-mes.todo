@@ -1,0 +1,41 @@
+---
+id: P15.M9.E5.T001
+title: Audit previously completed MessageFormatter and related changes
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- audit
+- review
+- message-formatter
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:17:19.467318+00:00'
+started_at: '2026-02-17T14:17:19.467318+00:00'
+completed_at: '2026-02-17T14:34:52.264804+00:00'
+duration_minutes: 17.546624450000003
+---
+Audit the changes listed as "Already Completed" in .plan/tool-call-resilience.md:
+
+1. **MessageFormatter module** (lib/pag_server/llm/openai/message_formatter.ex):
+   Verify role mapping, tool_call formatting, orphan dropping logic
+2. **Provider delegation**: All 4 OpenAI-compatible providers (groq, openai,
+   openrouter, zai) delegate to MessageFormatter.format_messages/1
+3. **agent_server.ex simplification**: Removed ~60 lines of duplicate formatting
+4. **tool_executor.ex**: format_results clauses for :groq and :zai
+5. **client.ex**: post_stream drains Req.Response.Async on errors
+6. **DB migration**: tool_call_id and tool_name columns added
+7. **retry.ex**: 4xx (except 429) no longer retried
+8. **Registry retry guards**: Verify still intact after other agent's refactoring
+
+Also check the user's note: uncommitted changes across ~20 files need to be
+verified for conflicts with the other agent's work on validation_console etc.
+
+## Acceptance Criteria
+- [ ] Each "Already Completed" item verified as correctly implemented
+- [ ] MessageFormatter test coverage is adequate
+- [ ] No regressions from the ~60-line agent_server simplification
+- [ ] retry.ex and registry.ex 4xx guards are intact and not conflicting
+- [ ] Any issues found are documented with file:line references
+- [ ] Uncommitted changes are reviewed for conflicts

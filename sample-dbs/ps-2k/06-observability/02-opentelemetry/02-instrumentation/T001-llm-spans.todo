@@ -1,0 +1,134 @@
+---
+id: P6.M2.E2.T001
+title: Add spans for LLM calls
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- opentelemetry
+- llm
+- tracing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:00:46.885030+00:00'
+started_at: '2026-02-06T20:00:46.885030+00:00'
+completed_at: '2026-02-06T20:11:34.342566+00:00'
+duration_minutes: 10.790958783333334
+---
+
+# Add spans for LLM calls
+
+Instrument LLM provider calls with OpenTelemetry spans for visibility into latency and errors.
+
+## Requirements
+
+- [ ] Wrap LLM calls in `Tracer.with_span/2`:
+  - [ ] Span name: `llm.request`
+  - [ ] Attributes: `llm.model`, `llm.provider`, `llm.tokens_in`, `llm.tokens_out`
+  - [ ] Status: set to `:error` on failures
+- [ ] Add span events:
+  - [ ] `llm.request.start` with request payload size
+  - [ ] `llm.response.chunk` for streaming responses
+  - [ ] `llm.response.complete` with final token counts
+- [ ] Instrument each provider adapter:
+  - [ ] `PagServer.LLM.Anthropic`
+  - [ ] `PagServer.LLM.OpenAI`
+  - [ ] Future providers
+- [ ] Add context propagation for distributed traces
+
+## Acceptance Criteria
+
+- [ ] LLM calls create spans with correct attributes
+- [ ] Streaming responses emit chunk events
+- [ ] Errors set span status and record exception
+- [ ] Spans exported to OTLP collector
+- [ ] Parent-child relationships preserved
+
+## Context
+
+**Key Points**:
+- Use `require OpenTelemetry.Tracer, as: Tracer`
+- Set semantic conventions for LLM attributes (llm.*)
+- Record exceptions with `Tracer.record_exception/2`
+
+## Notes
+
+**Example Instrumentation**:
+```elixir
+defmodule PagServer.LLM.Anthropic do
+  require OpenTelemetry.Tracer, as: Tracer
+  alias OpenTelemetry.Span
+
+  def complete(model, messages, opts) do
+    Tracer.with_span "llm.request", %{
+      "llm.provider" => "anthropic",
+      "llm.model" => model,
+      "llm.streaming" => Keyword.get(opts, :stream, false)
+    } do
+      Span.add_event("llm.request.start", %{
+        message_count: length(messages)
+      })
+
+      case do_complete(model, messages, opts) do
+        {:ok, response} ->
+          Span.set_attributes(%{
+            "llm.tokens_in" => response.usage.input_tokens,
+            "llm.tokens_out" => response.usage.output_tokens,
+            "llm.cost" => calculate_cost(response)
+          })
+          Span.add_event("llm.response.complete")
+          {:ok, response}
+
+        {:error, reason} ->
+          Span.set_status(:error, inspect(reason))
+          Tracer.record_exception(reason)
+          {:error, reason}
+      end
+    end
+  end
+end
+```
+
+**Streaming Events**:
+```elixir
+def stream_complete(model, messages, opts) do
+  Tracer.with_span "llm.request.stream" do
+    Stream.resource(
+      fn -> start_stream() end,
+      fn state ->
+        case next_chunk(state) do
+          {:ok, chunk, new_state} ->
+            Span.add_event("llm.response.chunk", %{
+              chunk_size: byte_size(chunk)
+            })
+            {[chunk], new_state}
+          :done -> {:halt, state}
+        end
+      end,
+      fn state -> cleanup(state) end
+    )
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-06 20:00 UTC
+**Sibling tasks**: P6.M2.E2.T002, P6.M2.E2.T003, P6.M2.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M2.E2.T001 → P6.M2.E2.T002 → P6.M2.E2.T003 → P6.M2.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M2.E2.T001: .tasks/06-observability/02-opentelemetry/02-instrumentation/T001-llm-spans.todo
+- P6.M2.E2.T002: .tasks/06-observability/02-opentelemetry/02-instrumentation/T002-tool-spans.todo
+- P6.M2.E2.T003: .tasks/06-observability/02-opentelemetry/02-instrumentation/T003-agent-spans.todo
+- P6.M2.E2.T004: .tasks/06-observability/02-opentelemetry/02-instrumentation/T004-tests.todo

@@ -1,0 +1,56 @@
+id: P2.M4.E1
+name: OpenRouter Client
+status: pending
+estimate_hours: 6
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-openrouter-module.todo
+  title: Create OpenRouter adapter module
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+- id: T002
+  file: T002-request-formatting.todo
+  title: Implement OpenAI-compatible request formatting
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-model-routing.todo
+  title: Add model routing and fallbacks
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T002
+- id: T004
+  file: T004-tests.todo
+  title: Write OpenRouter client tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - T003
+- id: T005
+  file: T005-implement-tool-result-submissi.todo
+  title: Implement tool result submission for OpenRouter
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P2.M4.E1.T002
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

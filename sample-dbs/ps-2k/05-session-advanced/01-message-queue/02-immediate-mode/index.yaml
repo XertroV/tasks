@@ -1,0 +1,53 @@
+# Epic: Immediate Mode
+# Phase 5, Milestone 01, Epic 2 (P5.M01.E2)
+
+id: P5.M01.E2
+name: Immediate Mode
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-add-immediate-mode-interrupt-f.todo
+    title: Add immediate mode interrupt flag
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-implement-safe-point-detection.todo
+    title: Implement safe point detection
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-handle-interrupt-in-agent-gens.todo
+    title: Handle interrupt in Agent GenServer
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-test-immediate-mode.todo
+    title: Test immediate mode
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T003]
+    
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,17 @@
+---
+id: P22.M3.E3.T002
+title: 'API: GET /api/v1/sessions/:id/compaction - get compaction status'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M3.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:18:25.826619+00:00'
+started_at: '2026-02-18T17:18:25.826619+00:00'
+completed_at: '2026-02-18T17:28:00.972284+00:00'
+duration_minutes: 9.585760883333334
+---
+Add endpoint GET /api/v1/sessions/:session_id/compaction. Returns: {auto_compact_enabled, threshold_pct, strategy, last_compaction_at, total_tokens_saved, compaction_count, current_token_usage_pct}. Acceptance criteria: - Returns 200 with compaction status for active session - Returns 404 for unknown session - Requires authentication - Returns 200 with auto_compact_enabled: false and nulls for other fields when monitoring not active

@@ -1,0 +1,33 @@
+---
+id: P47.M1.E2.T001
+title: Add companion:full to valid ApiKey scopes and document
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:05:25.801323+00:00'
+started_at: '2026-02-19T21:05:25.801323+00:00'
+completed_at: '2026-02-19T21:08:57.156683+00:00'
+duration_minutes: 3.52258915
+---
+In lib/pag_server/schema/api_key.ex: add 'companion:full' to the recognized scopes comment block. The existing regex already matches it. Document: companion:full grants CompanionSocket access + all companion:<workspace_id> channels for the user's workspaces; no REST API access. Update any scope validation tests.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P47.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-19 21:05 UTC
+**Sibling tasks**: P47.M1.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P47.M1.E2.T001 → P47.M1.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P47.M1.E2.T001: .tasks/47-device-authorization-grant-rfc/01-oauth-client-registry-companio/02-companion-full-scope-companion/T001-add-companion-full-to-valid-ap.todo
+- P47.M1.E2.T002: .tasks/47-device-authorization-grant-rfc/01-oauth-client-registry-companio/02-companion-full-scope-companion/T002-update-companionsocket-to-acce.todo

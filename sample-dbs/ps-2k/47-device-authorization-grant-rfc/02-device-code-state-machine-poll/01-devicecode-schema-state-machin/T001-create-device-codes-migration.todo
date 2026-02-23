@@ -1,0 +1,34 @@
+---
+id: P47.M2.E1.T001
+title: Create device_codes migration and DeviceCode Ecto schema
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P47.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:12:53.567347+00:00'
+started_at: '2026-02-20T06:12:53.567347+00:00'
+completed_at: '2026-02-20T06:16:18.392159+00:00'
+duration_minutes: 3.4137466
+---
+Migration: create device_codes table with columns: device_code (string, 40-char hex, unique index), user_code (string, unique index on normalized form), client_id (FK → oauth_clients.client_id, string), scope (string), user_id (FK → users.id, nullable until approval), api_key_id (FK → api_keys.id, nullable until approval), status (string: pending|authorized|used|expired), last_polled_at (utc_datetime_usec, nullable), fail_count (integer, default 0), expires_at (utc_datetime_usec), interval_seconds (integer, default 5), timestamps. Schema: PagServer.Schema.DeviceCode with belongs_to :oauth_client, belongs_to :user, belongs_to :api_key. Add composite index on (status, expires_at) for cleanup queries.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P47.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 21:29 UTC
+**Sibling tasks**: P47.M2.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P47.M2.E1.T001 → P47.M2.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P47.M2.E1.T001: .tasks/47-device-authorization-grant-rfc/02-device-code-state-machine-poll/01-devicecode-schema-state-machin/T001-create-device-codes-migration.todo
+- P47.M2.E1.T002: .tasks/47-device-authorization-grant-rfc/02-device-code-state-machine-poll/01-devicecode-schema-state-machin/T002-implement-devicecodes-context.todo

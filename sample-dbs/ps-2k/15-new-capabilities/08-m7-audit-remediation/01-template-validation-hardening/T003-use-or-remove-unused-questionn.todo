@@ -1,0 +1,31 @@
+---
+id: P15.M8.E1.T003
+title: Use or remove unused questionnaire variables in built-in templates
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M8.E1.T002
+tags:
+- templates
+- content
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:48:09.689411+00:00'
+started_at: '2026-02-17T16:48:09.689411+00:00'
+completed_at: '2026-02-17T17:01:24.918887+00:00'
+duration_minutes: 13.253824416666667
+---
+Several questionnaire variables collected but never used in default file templates:
+
+personal-assistant.yml: common_tasks, daily_patterns, improvement_areas, important_to_remember, keep_daily_logs, proactive_reminders, proactive_suggestions, explain_reasoning
+software-pm-architect.yml: team_roles
+
+Add them to appropriate default file templates or document as future-use.
+
+Source: E1 Audit I5
+
+## Acceptance Criteria
+- [ ] All questionnaire variables used in default files or documented as future-use
+- [ ] Cross-validation passes after changes
+- [ ] Generated files improved with additional context

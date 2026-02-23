@@ -1,0 +1,22 @@
+id: P15.M14.E1
+name: Hide Tag Parsing
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-hide-tag-parsing-to-respon.todo
+  title: Add <hide> tag parsing to response pipeline
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

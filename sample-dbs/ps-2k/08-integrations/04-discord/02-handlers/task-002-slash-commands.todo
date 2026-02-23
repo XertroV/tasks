@@ -1,0 +1,116 @@
+---
+id: P8.M4.E2.T002
+title: Add slash command support
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M4.E2.T001
+tags:
+- commands
+- slash
+- interaction
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:21:54.899289+00:00'
+started_at: '2026-02-11T02:21:54.899289+00:00'
+completed_at: '2026-02-11T02:22:00.485536+00:00'
+duration_minutes: 0.09310398333333333
+---
+
+# Add slash command support
+
+Implement Discord slash commands for structured agent interactions.
+Register commands (/ask, /agent, /stats) and handle INTERACTION_CREATE events.
+Provide immediate responses and support deferred responses for long operations.
+
+## Acceptance Criteria
+
+- [ ] Slash commands registered with Discord API
+- [ ] Handle INTERACTION_CREATE events
+- [ ] Implement /ask command for one-off questions
+- [ ] Implement /agent command for session management
+- [ ] Implement /stats command for usage info
+- [ ] Support deferred responses (thinking...)
+- [ ] Handle command options and autocomplete
+
+## Notes
+
+Reference: .plan/2026-02-05-velvet-cascade/integrations.md:347
+
+Register commands on startup:
+```elixir
+defmodule PagServer.Integrations.Discord.Commands do
+  alias Nostrum.Api
+  
+  def register_global_commands do
+    commands = [
+      %{
+        name: "ask",
+        description: "Ask the agent a question",
+        options: [
+          %{
+            type: 3,  # STRING
+            name: "question",
+            description: "Your question",
+            required: true
+          }
+        ]
+      },
+      %{
+        name: "agent",
+        description: "Manage your agent session",
+        options: [
+          %{
+            type: 3,
+            name: "action",
+            description: "Action to perform",
+            required: true,
+            choices: [
+              %{name: "status", value: "status"},
+              %{name: "reset", value: "reset"},
+              %{name: "fork", value: "fork"}
+            ]
+          }
+        ]
+      },
+      %{
+        name: "stats",
+        description: "View usage statistics"
+      }
+    ]
+    
+    Api.bulk_overwrite_global_application_commands(commands)
+  end
+end
+```
+
+Handle interactions:
+```elixir
+@impl true
+def handle_event({:INTERACTION_CREATE, interaction, _ws_state}) do
+  case interaction.data.name do
+    "ask" ->
+      handle_ask_command(interaction)
+    "agent" ->
+      handle_agent_command(interaction)
+    "stats" ->
+      handle_stats_command(interaction)
+  end
+end
+
+defp handle_ask_command(interaction) do
+  question = get_option_value(interaction.data.options, "question")
+  
+  # Defer response for long-running operations
+  Api.create_interaction_response(interaction, %{
+    type: 5  # DEFERRED_CHANNEL_MESSAGE_WITH_SOURCE
+  })
+  
+  # Process async and edit response
+  Task.start(fn ->
+    response = process_question(interaction.user.id, question)
+    Api.edit_interaction_response(interaction, %{content: response})
+  end)
+end
+```

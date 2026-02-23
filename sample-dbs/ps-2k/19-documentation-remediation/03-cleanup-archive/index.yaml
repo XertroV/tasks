@@ -1,0 +1,32 @@
+id: P19.M3
+name: Cleanup & Archive
+status: done
+estimate_hours: 8.0
+complexity: low
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Delete Low-Value Docs
+  path: 01-delete-low-value-docs
+  status: done
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Archive Completed Docs
+  path: 02-archive-completed-docs
+  status: done
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

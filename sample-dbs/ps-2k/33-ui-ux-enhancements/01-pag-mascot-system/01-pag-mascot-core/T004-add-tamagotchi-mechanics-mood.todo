@@ -1,0 +1,68 @@
+---
+id: P33.M1.E1.T004
+title: Add tamagotchi mechanics (mood, energy, hunger)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P33.M1.E1.T002
+tags:
+- gamification
+- state
+- mascot
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:42:13.530280+00:00'
+started_at: '2026-02-18T22:42:13.530280+00:00'
+completed_at: '2026-02-18T22:49:30.745064+00:00'
+duration_minutes: 7.286912883333333
+---
+
+# Add tamagotchi mechanics (mood, energy, hunger)
+
+Implement tamagotchi-style metrics and decay system for Pag mascot.
+
+## Metrics System
+
+### Hunger (0-100)
+- Decreases over time (1 point per 5 minutes)
+- When < 20: Shows hungry state
+- When < 10: Shows sad state
+- Feeding restores +30 points
+
+### Energy (0-100)
+- Decreases during work activities
+- Recovers during idle/sleep
+- When < 20: Suggests rest
+- Sleeping restores +5 per minute
+
+### Happiness (0-100)
+- Affected by interactions
+- Affected by hunger/energy levels
+- Increases when fed, pet, or played with
+- Decreases when neglected
+
+### Overall Mood
+- Derived from metrics
+- Determines visual state
+- Affects tooltip messages
+
+## State Transitions
+
+```
+Happiness > 80 & Energy > 50 -> Happy
+Happiness < 30 OR Hunger < 20 -> Sad
+Energy < 20 -> Sleepy
+Hunger < 20 -> Hungry
+Activity = working -> Working
+Default -> Idle
+```
+
+## Acceptance Criteria
+
+- [ ] Metrics module created at `lib/pag_server/mascot/metrics.ex`
+- [ ] Periodic decay via Process.send_after (check every 30s)
+- [ ] Metrics persisted to localStorage via JS hook
+- [ ] Visual indicator for current mood
+- [ ] Tooltip shows current metrics on hover
+- [ ] Warning indicators when metrics low

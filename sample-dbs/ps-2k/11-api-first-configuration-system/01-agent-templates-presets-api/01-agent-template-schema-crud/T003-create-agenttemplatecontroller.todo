@@ -1,0 +1,131 @@
+---
+id: P11.M1.E1.T003
+title: Create AgentTemplateController with CRUD
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P11.M1.E1.T002
+tags:
+- controller
+- crud
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-12T09:05:24.232035+00:00'
+started_at: '2026-02-12T09:05:24.232035+00:00'
+completed_at: '2026-02-12T09:40:28.095198+00:00'
+duration_minutes: 35.06438588333333
+---
+
+# Create AgentTemplateController with CRUD
+
+Build Phoenix controller for agent template CRUD operations with proper error handling, validation, and JSON responses.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/controllers/agent_template_controller.ex` module
+- [ ] Implement actions:
+  - [ ] `index/2` - List all templates (with pagination, filtering)
+  - [ ] `create/2` - Create new template
+  - [ ] `show/2` - Get single template by ID
+  - [ ] `update/2` - Update template
+  - [ ] `delete/2` - Delete/archive template
+- [ ] Add query parameters for index:
+  - [ ] `page` (default 1)
+  - [ ] `limit` (default 20, max 100)
+  - [ ] `category` (filter)
+  - [ ] `is_public` (filter)
+  - [ ] `search` (full-text on name/description)
+  - [ ] `sort_by` (default: inserted_at desc)
+- [ ] Error handling:
+  - [ ] Return 404 for missing templates
+  - [ ] Return 422 for validation errors (with changeset errors)
+  - [ ] Return 400 for bad requests
+  - [ ] Return 500 for unexpected errors
+- [ ] JSON responses:
+  - [ ] Index: paginated list with metadata (page, limit, total)
+  - [ ] Create/Update: return full template + status code
+  - [ ] Show: return template
+  - [ ] Delete: return 204 No Content
+- [ ] Add controller tests (integration tests)
+- [ ] Add routes to `lib/pag_server_web/router.ex` under `/api/v1/templates`
+
+## Acceptance Criteria
+
+- [ ] All CRUD endpoints implemented and routed
+- [ ] Index endpoint supports filtering, pagination, search
+- [ ] Validation errors return 422 with error details
+- [ ] Successful operations return correct HTTP status codes
+- [ ] List responses include pagination metadata
+- [ ] Controller handles concurrent requests without errors
+- [ ] All tests pass
+- [ ] No compiler warnings
+
+## Context
+
+**Key Points**:
+- Follow Phoenix conventions for controller structure
+- Use Ecto.Query for filtering and pagination
+- Return consistent JSON structure across endpoints
+- Include error messages in responses for debugging
+- Support filtering by multiple criteria
+
+## Notes
+
+### Route Structure
+
+```elixir
+scope "/api/v1", PagServerWeb do
+  pipe_through :api
+  resources :templates, AgentTemplateController
+end
+```
+
+### Index Response Format
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Template Name",
+      "category": "research",
+      "version": "1.0.0",
+      "is_public": true,
+      "inserted_at": "2026-02-12T10:30:00Z"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 42
+  }
+}
+```
+
+### Create Request
+
+```json
+{
+  "template": {
+    "name": "Research Assistant",
+    "description": "For data analysis",
+    "category": "research",
+    "version": "1.0.0",
+    "base_config": {...},
+    "tags": ["research"]
+  }
+}
+```
+
+### Error Response
+
+```json
+{
+  "errors": {
+    "name": ["can't be blank"],
+    "category": ["is invalid"]
+  }
+}
+```

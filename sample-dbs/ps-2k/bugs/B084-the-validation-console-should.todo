@@ -1,0 +1,18 @@
+---
+id: B084
+title: The validation console should show what tools are available to the agent (and
+  have a debug interface for making tool calls)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T12:06:47.094004+00:00'
+started_at: '2026-02-17T12:06:47.094004+00:00'
+completed_at: '2026-02-17T12:52:06.370518+00:00'
+duration_minutes: 45.321275033333336
+---
+
+The validation console should show what tools are available to the agent (and have a debug interface for making tool calls)

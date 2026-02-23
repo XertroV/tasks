@@ -1,0 +1,60 @@
+---
+id: I028
+title: We need to publish an SDK type package for people to develop and test plugins,
+  or have a way for them to easily run pag locally to test their plugins. Also we
+  should write some skills or things (and a special agent maybe) to make writing plugins
+  easy (since they're in elixir). We also want a way to install plugins from a URL,
+  we could have eg a plugin marketplace type thing.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:13:43.132496+00:00'
+started_at: '2026-02-18T22:13:43.132496+00:00'
+completed_at: '2026-02-18T22:13:45.072508+00:00'
+duration_minutes: 0.03233333333333333
+---
+
+# Idea Intake: We need to publish an SDK type package for people to develop and test plugins, or have a way for them to easily run pag locally to test their plugins. Also we should write some skills or things (and a special agent maybe) to make writing plugins easy (since they're in elixir). We also want a way to install plugins from a URL, we could have eg a plugin marketplace type thing.
+
+## Original Idea
+
+We need to publish an SDK type package for people to develop and test plugins, or have a way for them to easily run pag locally to test their plugins. Also we should write some skills or things (and a special agent maybe) to make writing plugins easy (since they're in elixir). We also want a way to install plugins from a URL, we could have eg a plugin marketplace type thing.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "We need to publish an SDK type package for people to develop and test plugins, or have a way for them to easily run pag locally to test their plugins. Also we should write some skills or things (and a special agent maybe) to make writing plugins easy (since they're in elixir). We also want a way to install plugins from a URL, we could have eg a plugin marketplace type thing."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P28 (Plugin Hub UI)
+- P28.M1 (Plugin Registry API)
+- P28.M1.E1 (Plugin Registry Endpoints — tasks not yet created)
+- P28.M2 (Plugin Configuration)
+- P28.M2.E1 (Plugin Config Endpoints — tasks not yet created)
+- P28.M3 (Tests)
+- P28.M3.E1 (Plugin API Tests — tasks not yet created)
+- P30 (Plugin Marketplace & SDK)
+- P30.M1 (Marketplace Registry API)
+- P30.M1.E1 (Marketplace Installer Enhancements — tasks not yet created)
+- P30.M1.E2 (Marketplace REST Endpoints — tasks not yet created)
+- P30.M2 (Plugin Development Skill)
+- P30.M2.E1 (Plugin Dev Skill & Docs — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

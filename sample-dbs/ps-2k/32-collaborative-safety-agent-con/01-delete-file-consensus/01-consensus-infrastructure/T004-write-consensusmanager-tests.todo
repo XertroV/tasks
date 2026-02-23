@@ -1,0 +1,21 @@
+---
+id: P32.M1.E1.T004
+title: Write ConsensusManager tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P32.M1.E1.T002
+- P32.M1.E1.T003
+tags:
+- tests
+- consensus
+- voting
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.289659+00:00'
+started_at: '2026-02-18T20:03:22.289659+00:00'
+completed_at: '2026-02-18T22:09:22.904909+00:00'
+duration_minutes: 126.01025393333333
+---
+Write unit and integration tests for ConsensusManager and VoteForker.\n\nTest cases:\n- Vote collection: single voter approves => approved\n- Vote collection: majority yes => approved\n- Vote collection: majority no => rejected\n- Vote collection: tie => rejected (conservative default)\n- Timeout: no voters respond => :timeout after 30s (use sleep_fn mock)\n- Unanimous yes => approved immediately\n- Unanimous no => rejected immediately\n- No other agents in session => auto-approve\n- VoteForker: forked agents receive interruption message\n- VoteForker: forked agents cleaned up after vote\n\nAcceptance criteria:\n- [ ] All test cases pass\n- [ ] Tests complete in < 5s (use sleep_fn mock for timeout tests)\n- [ ] async: true where possible\n- [ ] mix test path/to/consensus_manager_test.exs passes cleanly

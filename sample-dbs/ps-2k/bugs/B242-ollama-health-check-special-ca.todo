@@ -1,0 +1,18 @@
+---
+id: B242
+title: Ollama health check special case is fragile
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- llm
+- ollama
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.102443+00:00'
+started_at: '2026-02-23T07:29:02.102443+00:00'
+completed_at: '2026-02-23T07:43:45.904593+00:00'
+duration_minutes: 14.7300357
+---
+registry.ex:1129-1140 - allow_unhealthy_direct_attempt? hardcoded for :ollama only

@@ -1,0 +1,53 @@
+# Epic: Fork Logic
+# Phase 5, Milestone 02, Epic 1 (P5.M02.E1)
+
+id: P5.M02.E1
+name: Fork Logic
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-create-session.fork-function.todo
+    title: Create Session.fork function
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-copy-session-metadata.todo
+    title: Copy session metadata
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-set-fork-point-marker.todo
+    title: Set fork point marker
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-test-fork-creation.todo
+    title: Test fork creation
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T003]
+    
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

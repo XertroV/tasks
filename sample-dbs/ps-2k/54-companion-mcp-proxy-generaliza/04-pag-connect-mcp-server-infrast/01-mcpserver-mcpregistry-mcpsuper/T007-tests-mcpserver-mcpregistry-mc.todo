@@ -1,0 +1,29 @@
+---
+id: P54.M4.E1.T007
+title: 'Tests: MCPServer, MCPRegistry, MCPSupervisor, Connection MCP integration'
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P54.M4.E1.T002
+- P54.M4.E1.T003
+- P54.M4.E1.T004
+- P54.M4.E1.T005
+- P54.M4.E1.T006
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:36:21.605346+00:00'
+started_at: '2026-02-21T12:36:21.605346+00:00'
+completed_at: '2026-02-21T12:39:35.060999+00:00'
+duration_minutes: 3.2242607000000003
+---
+## Acceptance Criteria
+- [ ] test/fixtures/fake_mcp_server.sh: executable bash script that speaks JSON-RPC 2.0 over stdio; handles initialize, tools/list (returns [{"name":"fake_tool","inputSchema":{}}]), tools/call (returns {"content":[{"type":"text","text":"ok"}]}); exits on EOF
+- [ ] mcp_server_test.exs: start_link with fake server -> status :ready within 2s; list_tools returns [{"name"=>"fake_tool",...}]; call_tool returns {:ok,...}; forced Port close -> GenServer stops and callers get {:error,_}; bunx not found -> {:stop, :bunx_not_found}
+- [ ] mcp_registry_test.exs: register/lookup round-trip; list_all; kill pid -> entry auto-removed
+- [ ] config_test.exs (extend): mcp_servers present/absent/invalid cases
+- [ ] connection integration (test_mode: true): handle_message "mcp_tool_call" with missing call_id drops silently; server not in registry -> mcp_tool_error push; valid call -> mcp_tool_result push (using mock MCPServer)
+- [ ] All tests use unique server names (System.unique_integer) to avoid parallel test contamination
+- [ ] mix test in pag-connect repo passes
+- [ ] Output captured in /home/xertrov/src/pag-connect/recent-mix-tests.log

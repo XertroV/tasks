@@ -1,0 +1,225 @@
+---
+id: P5.M4.E4.T005
+title: Wire session params to AgentServer
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P5.M4.E4.T002
+- P5.M4.E4.T003
+- P5.M4.E4.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:29:56.416376+00:00'
+started_at: '2026-02-07T14:29:56.416376+00:00'
+completed_at: '2026-02-07T14:37:33.320564+00:00'
+duration_minutes: 7.615069666666667
+---
+
+# Wire session params to AgentServer
+
+Modify AgentServer to load session and use its llm_params, update build_llm_options to merge session params, create build_model_spec to resolve aliases
+
+## Requirements
+
+- [ ] Modify AgentServer to load session on initialization
+- [ ] Store session in AgentServer state
+- [ ] Update `build_llm_options/1` to accept state instead of just config
+- [ ] Create `build_model_spec/1` function to resolve model with session overrides
+- [ ] Modify `build_llm_options/1` to merge three-tier parameters
+- [ ] Update all calls to `build_llm_options` to pass full state
+- [ ] Ensure session params override agent params
+- [ ] Handle session reload on session parameter updates
+- [ ] Add logging for parameter merging (debug level)
+- [ ] Update relevant tests
+
+## Acceptance Criteria
+
+- [ ] AgentServer loads session in `init/1` callback
+- [ ] Session stored in state struct as `:session` field
+- [ ] Session preloaded with necessary associations (agent)
+- [ ] `build_model_spec/1` function implemented:
+  - [ ] Takes state as parameter
+  - [ ] Resolves model from session.model_override or agent.model_name
+  - [ ] Resolves provider from agent.model_provider
+  - [ ] Uses ModelResolver.resolve_alias/1 for alias resolution
+  - [ ] Returns `ModelSpec` struct
+- [ ] `build_llm_options/1` signature changed to accept full state
+- [ ] `build_llm_options/1` implementation updated:
+  - [ ] Calls `ModelResolver.get_model_defaults/1` for model defaults
+  - [ ] Extracts agent parameters from agent config
+  - [ ] Extracts session parameters from session.llm_params
+  - [ ] Calls `ModelResolver.merge_params/3` to merge three tiers
+  - [ ] Converts merged params to keyword list for LLM provider
+  - [ ] Includes system prompt from agent config
+- [ ] All existing calls to `build_llm_options` updated to pass state
+- [ ] Session parameter updates trigger option rebuild:
+  - [ ] Add `handle_cast({:update_session_params, params}, state)` handler
+  - [ ] Reload session from database
+  - [ ] Rebuild LLM options with new params
+  - [ ] Log parameter changes at debug level
+- [ ] Parameter merging logged at debug level:
+  - [ ] Log model defaults
+  - [ ] Log agent params
+  - [ ] Log session params
+  - [ ] Log final merged params
+- [ ] Tests updated to reflect new function signatures
+- [ ] Integration test added for three-tier parameter merging
+- [ ] No compilation warnings
+- [ ] All existing tests pass
+
+## Context
+
+Wiring session params to AgentServer enables the three-tier parameter merging strategy:
+1. Model defaults (from config)
+2. Agent parameters (from agent schema)
+3. Session parameters (from session schema)
+
+The AgentServer must load the session, extract LLM parameters, and merge them
+appropriately when building LLM request options.
+
+**Key Integration Points**:
+- `init/1` - Load session on agent startup
+- `build_model_spec/1` - Resolve model with session overrides
+- `build_llm_options/1` - Merge parameters from all three sources
+- `dispatch_llm_request/5` - Use merged options for LLM calls
+
+## Implementation Notes
+
+Update `AgentServer.init/1`:
+
+```elixir
+def init(opts) do
+  agent_id = Keyword.fetch!(opts, :agent_id)
+  session_id = Keyword.get(opts, :session_id)
+  
+  # Load agent
+  agent = Repo.get!(AgentSchema, agent_id)
+  
+  # Load or create session
+  session = 
+    if session_id do
+      Repo.get!(Session, session_id) |> Repo.preload(:agent)
+    else
+      # Create new session
+      {:ok, session} = 
+        %Session{}
+        |> Session.create_changeset(%{agent_id: agent_id})
+        |> Repo.insert()
+      session |> Repo.preload(:agent)
+    end
+  
+  config = build_agent_config(agent)
+  
+  state = %AgentState{
+    id: agent.id,
+    name: agent.name,
+    config: config,
+    session: session,
+    # ... other fields
+  }
+  
+  {:ok, state}
+end
+```
+
+Update `build_llm_options/1`:
+
+```elixir
+defp build_llm_options(state) do
+  # Get model spec (with session override if present)
+  model_spec = build_model_spec(state)
+  
+  # Get model defaults
+  model_defaults = ModelResolver.get_model_defaults(model_spec)
+  
+  # Extract agent parameters
+  agent_params = extract_agent_params(state.config)
+  
+  # Extract session parameters
+  session_params = state.session.llm_params || %{}
+  
+  # Merge with precedence: session > agent > model
+  merged_params = ModelResolver.merge_params(
+    model_defaults,
+    agent_params,
+    session_params
+  )
+  
+  Logger.debug("LLM params merged",
+    model_defaults: model_defaults,
+    agent_params: agent_params,
+    session_params: session_params,
+    merged: merged_params
+  )
+  
+  # Convert to keyword list and add system prompt
+  opts = params_to_keyword_list(merged_params)
+  
+  if state.config[:system_prompt] do
+    Keyword.put(opts, :system, state.config.system_prompt)
+  else
+    opts
+  end
+end
+
+defp build_model_spec(state) do
+  # Use session model override if present, otherwise agent's model
+  model_name = state.session.model_override || state.config.model_name
+  provider = state.config.model_provider
+  
+  # Resolve alias if needed
+  {:ok, resolved_model} = ModelResolver.resolve_alias(model_name)
+  
+  # Parse into ModelSpec
+  case ModelSpec.parse("#{provider}:#{resolved_model}") do
+    {:ok, spec} -> spec
+    {:error, _} -> 
+      # Fallback to building directly
+      ModelSpec.build(provider, resolved_model)
+  end
+end
+
+defp extract_agent_params(config) do
+  %{}
+  |> maybe_put("temperature", config[:temperature])
+  |> maybe_put("max_tokens", config[:max_tokens])
+  |> maybe_put("top_p", config[:top_p])
+  |> maybe_put("top_k", config[:top_k])
+end
+
+defp maybe_put(map, _key, nil), do: map
+defp maybe_put(map, key, value), do: Map.put(map, key, value)
+
+defp params_to_keyword_list(params) do
+  params
+  |> Enum.map(fn {k, v} -> {String.to_atom(k), v} end)
+  |> Keyword.new()
+end
+```
+
+Add session update handler:
+
+```elixir
+def handle_cast({:update_session_params, params}, state) do
+  # Reload session with updated params
+  session = Repo.get!(Session, state.session.id) |> Repo.preload(:agent)
+  
+  Logger.debug("Session LLM params updated",
+    session_id: session.id,
+    old_params: state.session.llm_params,
+    new_params: session.llm_params
+  )
+  
+  new_state = %{state | session: session}
+  {:noreply, new_state}
+end
+```
+
+Testing approach:
+- Test model spec resolution with session.model_override
+- Test parameter merging with all three sources
+- Test parameter merging with only some sources present
+- Test session param updates trigger state refresh
+- Test thinking level resolution in merge context

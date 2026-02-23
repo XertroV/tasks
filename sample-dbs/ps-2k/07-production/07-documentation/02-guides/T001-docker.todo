@@ -1,0 +1,61 @@
+---
+id: P7.M7.E2.T001
+title: Docker deployment guide
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:27:25.245771+00:00'
+started_at: '2026-02-08T07:27:25.245771+00:00'
+completed_at: '2026-02-08T07:31:08.244741+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 3.716649316666667
+---
+
+# Docker deployment guide
+
+Document Docker setup and deployment
+
+## Requirements
+
+- [x] Create Dockerfile for containerized deployment
+- [x] Write Docker deployment guide with examples
+- [x] Document environment variables and configuration
+
+## Acceptance Criteria
+
+- [x] Dockerfile created with multi-stage build
+- [x] Docker deployment guide covers build/run/compose
+- [x] Health checks and troubleshooting documented
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E2)
+**Agent**: cli-user
+**Date**: 2026-02-08 07:27 UTC
+**Sibling tasks**: P7.M7.E2.T002, P7.M7.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E2.T001 → P7.M7.E2.T002 → P7.M7.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E2.T001: .tasks/07-production/07-documentation/02-guides/T001-docker.todo
+- P7.M7.E2.T002: .tasks/07-production/07-documentation/02-guides/T002-production.todo
+- P7.M7.E2.T003: .tasks/07-production/07-documentation/02-guides/T003-security.todo

@@ -1,0 +1,23 @@
+---
+id: P44.M4.E3.T001
+title: Add commands capability to plugin manifest schema
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:34:25.048903+00:00'
+started_at: '2026-02-19T19:34:25.048903+00:00'
+completed_at: '2026-02-19T19:34:33.312784+00:00'
+duration_minutes: 0.13773115
+---
+## Summary
+Extend Plugins.Manifest to support commands capability declaration.
+
+## Acceptance Criteria
+- [ ] plugin.json schema extended with capabilities.commands: [{name, description, aliases?}]
+- [ ] Plugins.Manifest validates commands list (names must be strings, no duplicates within plugin)
+- [ ] PLUGIN_DEVELOPMENT.md updated with example of declaring a command
+- [ ] Tests: valid manifest with commands parses correctly, invalid command declaration rejected

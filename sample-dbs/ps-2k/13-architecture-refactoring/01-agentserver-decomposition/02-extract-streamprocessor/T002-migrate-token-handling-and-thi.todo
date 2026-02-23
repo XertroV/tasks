@@ -1,0 +1,37 @@
+---
+id: P13.M1.E2.T002
+title: Migrate token handling and thinking phase detection
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T21:52:52.643472+00:00'
+started_at: '2026-02-13T21:52:52.643472+00:00'
+completed_at: '2026-02-13T22:03:20.370916+00:00'
+duration_minutes: 10.462123850000001
+---
+
+# Migrate token handling and thinking phase detection
+
+## Description
+
+Migrate the thinking phase tracking logic (`scan_thinking_tags`, `trailing_tag_prefix`, etc.) and token processing to the new `StreamProcessor` module. This includes the `<thinking>` tag detection state machine.
+
+## Acceptance Criteria
+- [ ] Move `scan_thinking_tags/2` to StreamProcessor module
+- [ ] Move `trailing_tag_prefix/1` helper to StreamProcessor
+- [ ] Move `maybe_track_thinking_phase_from_token/2` to StreamProcessor
+- [ ] Move `in_thinking_phase?/1`, `set_stream_phase/2`, `clear_stream_phase/1` to StreamProcessor
+- [ ] Update AgentServer to delegate to StreamProcessor functions
+- [ ] All existing stream-related tests continue to pass
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex` (lines 77-79, 1506-1591)
+- Related files: `lib/pag_server/llm/thinking_extractor.ex` (reference for thinking extraction)
+- Part of epic: P13.M1.E2 - Extract StreamProcessor

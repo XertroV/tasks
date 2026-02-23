@@ -1,0 +1,115 @@
+---
+id: P7.M3.E3.T001
+title: Wire agent config permissions into tool execution context
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: critical
+depends_on:
+- P7.M3.E1.T001
+tags:
+- security
+- permissions
+- agent-server
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:24:05.133257'
+started_at: '2026-02-06T17:24:05.133257'
+completed_at: '2026-02-06T17:34:04.693559'
+duration_minutes: 9.992671533333333
+---
+
+# Wire agent config permissions into tool execution context
+
+The `agent_server.ex` builds the tool execution context in `run_tool_calls_async/3` (around line 834)
+WITHOUT populating a `permissions` field. This means tools that check `context[:permissions]` (like
+`execute_shell` which checks for `:shell_exec`) receive an empty list by default, silently allowing
+or denying based on fallback behavior rather than the agent's actual configured permissions.
+
+This task wires the agent's configured permissions from its config into the tool execution context
+so that all permission checks in tool `execute/2` functions receive the correct authorization data.
+
+## Requirements
+
+- [ ] Read the Agent struct definition in `lib/pag_server/agents/agent.ex` and identify where permissions should be stored in config
+- [ ] Add a `default_permissions` configuration option in `config/config.exs` under `:pag_server, PagServer.Agents.AgentServer`
+  - Default should be a minimal safe set (e.g., `[:file_read, :file_write, :shell_exec]` for development)
+  - Production default should be empty `[]` (deny-all)
+- [ ] In `agent_server.ex` `run_tool_calls_async/3`, populate the `context` map with a `:permissions` key:
+  ```elixir
+  context: %{
+    agent_id: state.id,
+    session_id: state.session_id,
+    workspace: Map.get(state, :workspace),
+    permissions: get_agent_permissions(state)
+  }
+  ```
+- [ ] Implement `get_agent_permissions/1` private function that:
+  - Reads permissions from `state.config["permissions"]` or `state.config[:permissions]`
+  - Falls back to `Application.get_env(:pag_server, PagServer.Agents.AgentServer, [])[:default_permissions]`
+  - Falls back to `[]` if neither is set
+  - Always returns a list of atoms
+- [ ] Ensure permissions propagate through the full tool execution pipeline:
+  - `run_tool_calls_async/3` -> `execute_tool_calls_task/2` -> `ToolExecutor.execute/3` -> `module.execute/2`
+- [ ] Add telemetry event `[:pag_server, :tools, :permission_context]` emitted when building tool context, including the permissions list for observability
+- [ ] Write tests in `test/pag_server/agents/agent_server_test.exs`:
+  - Test that permissions from agent config appear in tool execution context
+  - Test fallback to default_permissions config
+  - Test fallback to empty list when nothing configured
+
+## Acceptance Criteria
+
+- [ ] Tools with permission checks (execute_shell, read_file, write_file) receive the correct permissions from agent config
+- [ ] Default permissions are configurable via application config
+- [ ] Agent config permissions override application-level defaults
+- [ ] Empty permissions list is the ultimate fallback (deny-all safe default)
+- [ ] Telemetry event emitted for permission context observability
+- [ ] No existing tests broken by the change
+
+## Context
+
+**Source**: Architecture audit - tool system security gap analysis (2026-02-06)
+**Severity**: CRITICAL - permission checks in tools are currently broken because the agent_server does not wire permissions into the tool context
+
+**Related tasks**:
+- P7.M3.E1 (Capability Structure) - defines the permissions struct
+- P7.M3.E2 (Permission Checks) - defines the checking functions
+- This task bridges the gap: without wiring, the struct and checks are useless
+
+## Notes
+
+Current code in `lib/pag_server/agents/agent_server.ex` around line 834:
+```elixir
+task_payload = %{
+  agent_id: state.id,
+  session_id: state.session_id,
+  message_id: persisted_message && persisted_message.id,
+  tool_calls: tool_calls,
+  provider: provider,
+  context: %{
+    agent_id: state.id,
+    session_id: state.session_id,
+    workspace: Map.get(state, :workspace)
+    # NOTE: permissions field is MISSING here
+  },
+  sandbox_owner: sandbox_owner
+}
+```
+
+Example of a tool checking permissions in `lib/pag_server/tools/builtin/execute_shell.ex`:
+```elixir
+def execute(%{"command" => command} = args, %{workspace: workspace} = context) do
+  permissions = context[:permissions] || []
+  if :shell_exec in permissions do
+    # ... execute
+  else
+    {:error, "Permission denied: shell_exec required"}
+  end
+end
+```
+
+**Key files**:
+- `lib/pag_server/agents/agent_server.ex` (lines ~829-846)
+- `lib/pag_server/agents/agent.ex` (struct definition)
+- `lib/pag_server/tools/tool_executor.ex` (execution pipeline)
+- `config/config.exs` (application config)

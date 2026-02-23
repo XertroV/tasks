@@ -1,0 +1,17 @@
+---
+id: P15.M12.E3.T002
+title: Add bind_session/2 and unbind_session/1 to BotConfigs context
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P15.M12.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.287929+00:00'
+started_at: '2026-02-18T06:45:12.287929+00:00'
+completed_at: '2026-02-18T07:51:59.236953+00:00'
+duration_minutes: 66.7824835
+---
+lib/pag_server/bot_configs.ex: add bind_session(bot_config, session_id) :: {:ok, BotConfig.t()} | {:error, changeset} — sets session_id FK. Add unbind_session(bot_config) :: {:ok, BotConfig.t()} | {:error, changeset} — sets session_id to nil. Both use update_changeset. These are the canonical entry points for the LiveView and any future API endpoint to change session binding. Also: verify the session belongs to the same workspace before binding (cross-workspace guard). Return {:error, :cross_workspace_session} if violated.

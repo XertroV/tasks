@@ -1,0 +1,45 @@
+id: P12.M2.E1
+name: Replace Process.sleep with injectable sleep-fn
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-sleep-fn-pattern-docume.todo
+  title: Create sleep-fn pattern documentation
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-migrate-agent-server-test-exs.todo
+  title: Migrate agent_server_test.exs (34 sleeps)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-migrate-events-queries-test-ex.todo
+  title: Migrate events/queries_test.exs (21 sleeps)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-migrate-remaining-test-files-w.todo
+  title: Migrate remaining test files with sleeps
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

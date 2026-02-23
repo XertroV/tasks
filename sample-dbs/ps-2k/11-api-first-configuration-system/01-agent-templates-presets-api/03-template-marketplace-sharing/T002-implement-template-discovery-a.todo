@@ -1,0 +1,176 @@
+---
+id: P11.M1.E3.T002
+title: Implement template discovery and search
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P11.M1.E3.T001
+- P11.M1.E1.T003
+tags:
+- search
+- discovery
+- marketplace
+claimed_by: cli-user
+claimed_at: '2026-02-12T22:44:53.780707+00:00'
+started_at: '2026-02-12T22:44:53.780707+00:00'
+completed_at: '2026-02-12T22:59:40.472625+00:00'
+duration_minutes: 14.778198433333333
+---
+
+# Implement template discovery and search
+
+Build template search and discovery functionality with filtering, sorting, and full-text search capabilities.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/templates/marketplace.ex` module with:
+  - [ ] `search_public_templates/2` (query_map, user_id)
+  - [ ] `list_marketplace_templates/2` - Get featured/trending templates
+  - [ ] `get_category_templates/2` - List all templates in category
+  - [ ] `search_user_shared_templates/2` - Templates shared with user
+- [ ] Implement query builder supporting:
+  - [ ] Full-text search on name + description + tags
+  - [ ] Category filter (single or multiple)
+  - [ ] Tags filter (AND/OR logic)
+  - [ ] Creator filter (by user_id)
+  - [ ] Sort options: relevance, rating, popularity, newest
+  - [ ] Pagination (page, limit)
+  - [ ] Min rating filter
+  - [ ] Recently updated filter
+- [ ] Database query optimization:
+  - [ ] Efficient full-text search (Postgres ILIKE or trigram)
+  - [ ] Index on category, tags, creator_id, is_public
+  - [ ] Join with ratings table for sorting by rating
+  - [ ] Pagination cursor or offset (prefer cursor)
+- [ ] Return paginated results with metadata:
+  - [ ] Template list (reduced fields for list view)
+  - [ ] Pagination info (total, page, limit)
+  - [ ] Facets (available categories, tags, rating ranges)
+- [ ] Implement discovery features:
+  - [ ] Featured templates list
+  - [ ] Trending templates (by usage/rating)
+  - [ ] New templates (by inserted_at)
+  - [ ] User's own templates
+  - [ ] Templates shared with user
+- [ ] Add new controller endpoints:
+  - [ ] GET `/api/v1/templates/marketplace` - Discover
+  - [ ] GET `/api/v1/templates/search` - Search
+  - [ ] GET `/api/v1/templates/shared` - Shared with me
+  - [ ] GET `/api/v1/templates/trending` - Trending
+  - [ ] GET `/api/v1/templates/categories` - List categories
+
+## Acceptance Criteria
+
+- [ ] Full-text search finds templates by name and description
+- [ ] Category filtering works with single and multiple categories
+- [ ] Tag filtering supports AND/OR logic
+- [ ] Sorting works for all specified fields
+- [ ] Pagination returns correct page size and metadata
+- [ ] Only public templates returned for unauthenticated users
+- [ ] Only permitted templates returned for authenticated users
+- [ ] Search results complete in < 200ms (with indexes)
+- [ ] Facets provide accurate counts
+- [ ] Featured/trending lists work correctly
+
+## Context
+
+**Key Points**:
+- Search is primary discovery mechanism
+- Full-text search critical for UX
+- Proper indexing essential for performance
+- Faceted search helps narrow results
+- Trending logic encourages quality templates
+
+## Notes
+
+### Search Query Example
+
+```json
+{
+  "q": "research agent",
+  "categories": ["research"],
+  "tags": ["web-search", "analysis"],
+  "min_rating": 3.5,
+  "sort": "rating",
+  "limit": 20,
+  "page": 1
+}
+```
+
+### Search Response Format
+
+```json
+{
+  "data": [
+    {
+      "id": "uuid",
+      "name": "Research Assistant",
+      "description": "Gathers and analyzes information",
+      "category": "research",
+      "creator": {
+        "id": "user-uuid",
+        "name": "Jane Doe"
+      },
+      "rating": 4.5,
+      "download_count": 342,
+      "tags": ["research", "web-search"],
+      "version": "1.0.0"
+    }
+  ],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 142
+  },
+  "facets": {
+    "categories": [
+      {"name": "research", "count": 45},
+      {"name": "coding", "count": 38}
+    ],
+    "tags": [
+      {"name": "web-search", "count": 23},
+      {"name": "analysis", "count": 18}
+    ]
+  }
+}
+```
+
+### Database Query Pattern
+
+```elixir
+from(t in AgentTemplate,
+  where: t.is_public == true,
+  where: ilike(t.name, ^"%#{search}%") or
+         ilike(t.description, ^"%#{search}%"),
+  where: t.category in ^categories,
+  left_join: r in assoc(t, :ratings),
+  select: {t, avg(r.rating)},
+  order_by: [desc: avg(r.rating)],
+  limit: ^limit,
+  offset: ^offset
+)
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 22:44 UTC
+**Primary task**: P11.M4.E2.T002 - Add Telegram/Slack/Discord config endpoints
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M1.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,31 @@
+---
+id: P49.M6.E1.T002
+title: Implement Sigstore verifier adapter with cosign integration
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:34:44.173169+00:00'
+started_at: '2026-02-20T14:34:44.173169+00:00'
+completed_at: '2026-02-20T14:46:48.904269+00:00'
+duration_minutes: 12.078851483333333
+---
+
+# Implement Sigstore verifier adapter with cosign integration
+
+
+
+## Requirements
+
+- Implement Sigstore/Cosign verifier adapter under the shared `PluginTrustVerifier` behavior.
+- Support verification of plugin signatures and identity claims through configurable settings.
+- Ensure verifier integration does not break Option B fallback behavior.
+
+## Acceptance Criteria
+
+- Sigstore verifier is callable via the shared verifier interface.
+- Valid signatures pass and invalid signatures fail with structured outcomes.
+- Integration tests cover success and failure flows with Option B fallback unchanged.

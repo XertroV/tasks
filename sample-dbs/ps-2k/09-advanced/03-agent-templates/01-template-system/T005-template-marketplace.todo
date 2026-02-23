@@ -1,0 +1,76 @@
+---
+id: P9.M3.E1.T005
+title: Design template marketplace API
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on:
+- P9.M3.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:49:08.329320+00:00'
+tags:
+- advanced
+- future
+- phase9
+started_at: '2026-02-11T02:49:08.329320+00:00'
+completed_at: '2026-02-11T03:00:00.000000+00:00'
+---
+
+# Design template marketplace API
+
+Allow sharing/discovering community templates (future).
+
+## Requirements
+
+- [x] List available templates
+- [x] Search and filter
+- [x] Import remote templates
+- [x] Versioning
+- [x] Security considerations
+
+## Acceptance Criteria
+
+- [x] Implementation complete
+- [x] Unit tests pass (>80% coverage)
+- [x] Integration tests pass
+- [x] Documentation updated
+- [x] No compilation warnings
+- [ ] Passes `mix credo --strict`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md`
+- `.plan/2026-02-05-velvet-cascade/architecture.md`
+
+**Key Points**:
+- Phase 9 is low priority - implement after core features
+- Memory efficiency: <512MB per session, <4GB total
+- All advanced features should be optional/configurable
+
+## Notes
+
+This is an advanced feature for Phase 9. Focus on core functionality first (Phases 1-6) before implementing.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:49 UTC
+**Primary task**: P9.M5.E4.T005 - Implement LLM provider registration from plugins
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P9.M3.E1 vs P9.M5.E4)
+- No dependency chain: ✓ (verified at claim time)

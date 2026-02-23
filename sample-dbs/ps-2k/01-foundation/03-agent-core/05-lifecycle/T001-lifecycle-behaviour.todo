@@ -1,0 +1,106 @@
+---
+id: P1.M3.E5.T001
+title: Define lifecycle callback behaviour
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+claimed_by: claude
+claimed_at: '2026-02-05T09:21:02.067505'
+started_at: '2026-02-05T09:21:02.067505'
+completed_at: '2026-02-05T09:22:02.904793'
+tags:
+- agent
+- lifecycle
+- behaviour
+- hooks
+---
+
+# Define lifecycle callback behaviour
+
+Create a behaviour module that defines the lifecycle callback interface for agents.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/lifecycle.ex`
+- [ ] Define `@callback` specifications for lifecycle events:
+  - [ ] `on_start/1` - Called after agent process starts
+  - [ ] `on_shutdown/2` - Called before graceful shutdown (reason, state)
+  - [ ] `on_error/3` - Called when error occurs (error, stacktrace, state)
+  - [ ] `on_message_received/2` - Called when message queued
+  - [ ] `on_turn_complete/2` - Called after LLM turn completes
+- [ ] Add optional callbacks using `@optional_callbacks`
+- [ ] Define return type specs for each callback
+- [ ] Add module documentation with usage examples
+
+## Acceptance Criteria
+
+- [ ] File `lib/pag_server/agents/lifecycle.ex` exists
+- [ ] All 5 lifecycle callbacks are defined with `@callback`
+- [ ] Callbacks marked as `@optional_callbacks`
+- [ ] Type specs use proper return types (`:ok`, `{:ok, state}`, etc.)
+- [ ] Module has comprehensive `@moduledoc` with examples
+- [ ] Code compiles without warnings
+- [ ] Dialyzer passes with no type errors
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agent callbacks)
+- Agent lifecycle events for instrumentation, logging, cleanup
+
+**Key Points**:
+- Callbacks are optional - agents can implement none, some, or all
+- Callbacks should not block - keep them fast or use async tasks
+- Error callbacks provide debugging/telemetry hooks
+- Shutdown callbacks enable graceful cleanup (close files, notify tools)
+
+## Notes
+
+Example behaviour definition:
+```elixir
+defmodule PagServer.Agents.Lifecycle do
+  @moduledoc """
+  Behaviour for agent lifecycle event hooks.
+  
+  Agents can implement these callbacks to respond to lifecycle events.
+  All callbacks are optional.
+  
+  ## Example
+  
+      defmodule MyAgent do
+        @behaviour PagServer.Agents.Lifecycle
+        
+        def on_start(state) do
+          Logger.info("Agent started: #{state.id}")
+          {:ok, state}
+        end
+        
+        def on_shutdown(:normal, state) do
+          Logger.info("Agent shutting down gracefully")
+          :ok
+        end
+      end
+  """
+  
+  @callback on_start(state :: map()) :: {:ok, state :: map()} | {:error, term()}
+  @callback on_shutdown(reason :: term(), state :: map()) :: :ok
+  @callback on_error(error :: term(), stacktrace :: list(), state :: map()) :: :ok
+  @callback on_message_received(message :: map(), state :: map()) :: :ok
+  @callback on_turn_complete(response :: map(), state :: map()) :: :ok
+  
+  @optional_callbacks [
+    on_start: 1,
+    on_shutdown: 2,
+    on_error: 3,
+    on_message_received: 2,
+    on_turn_complete: 2
+  ]
+end
+```
+
+## Related
+
+- Next: T002 implements hook execution in Agent GenServer
+- Depends on: E1 (Agent GenServer structure)

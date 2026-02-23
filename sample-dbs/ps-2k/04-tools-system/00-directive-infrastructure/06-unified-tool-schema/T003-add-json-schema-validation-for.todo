@@ -1,0 +1,183 @@
+---
+id: P4.M0.E6.T003
+title: Add JSON Schema validation for tool definitions
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tools
+- schema
+- validation
+---
+
+# Add JSON Schema validation for tool definitions
+
+## Context
+
+Currently `ProviderSchema.validate_parameters/1` only checks that parameters have
+`type: "object"`. We need deeper validation to catch common JSON Schema errors early,
+before schemas are sent to LLM providers.
+
+LLM providers expect valid JSON Schema structures. Invalid schemas can cause:
+- Runtime errors when providers reject malformed schemas
+- Silent failures where tools aren't called correctly
+- Debugging nightmares from subtle schema issues
+
+## Requirements
+
+### R1: Validate JSON Schema Type Values
+- [x] Validate `type` field contains valid JSON Schema types
+- [x] Valid types: "object", "array", "string", "number", "integer", "boolean", "null"
+- [x] Support type as single string OR array of strings (union types)
+- [x] Reject invalid types like "datetime", "float", "int", etc.
+
+### R2: Validate Object Schema Structure
+- [x] When `type: "object"`, validate object-specific fields:
+  - [x] `properties` must be a map (if present)
+  - [x] `required` must be an array of strings (if present)
+  - [x] `additionalProperties` must be boolean or object (if present)
+  - [x] `patternProperties` must be a map (if present)
+  - [x] Property names in `required` should exist in `properties` (warning, not error)
+
+### R3: Validate Array Schema Structure
+- [x] When `type: "array"`, validate array-specific fields:
+  - [x] `items` must be an object or array (if present)
+  - [x] `minItems` must be non-negative integer (if present)
+  - [x] `maxItems` must be non-negative integer (if present)
+  - [x] `uniqueItems` must be boolean (if present)
+
+### R4: Validate String Schema Constraints
+- [x] When `type: "string"`, validate string-specific fields:
+  - [x] `minLength` must be non-negative integer (if present)
+  - [x] `maxLength` must be non-negative integer (if present)
+  - [x] `pattern` must be a string (if present)
+  - [x] `format` must be a string (if present)
+  - [x] `enum` must be array of strings (if present)
+
+### R5: Validate Numeric Schema Constraints
+- [x] When `type: "number"` or `type: "integer"`, validate numeric fields:
+  - [x] `minimum` must be a number (if present)
+  - [x] `maximum` must be a number (if present)
+  - [x] `exclusiveMinimum` must be a number (if present)
+  - [x] `exclusiveMaximum` must be a number (if present)
+  - [x] `multipleOf` must be a positive number (if present)
+
+### R6: Validate Nested Schemas Recursively
+- [x] Recursively validate nested schemas in:
+  - [x] `properties.*` (each property schema)
+  - [x] `items` (array item schema)
+  - [x] `additionalProperties` (when it's an object)
+  - [x] `patternProperties.*` (each pattern property schema)
+
+### R7: Integration
+- [x] Add validation to `ProviderSchema.validate_parameters/1`
+- [x] Validation runs when calling `ProviderSchema.new/1`
+- [x] Validation runs when calling `ProviderSchema.validate/1`
+- [x] Return clear error messages indicating what's wrong and where
+
+### R8: No External Dependencies
+- [x] Implement custom validation (no new dependencies)
+- [x] Focus on structural validation, not full JSON Schema compliance
+- [x] Goal: Catch 95% of common schema errors, not 100% of edge cases
+
+## Acceptance Criteria
+
+### AC1: Valid Types Are Accepted
+- [x] Schema with `type: "object"` validates successfully
+- [x] Schema with `type: "array"` validates successfully
+- [x] Schema with `type: "string"` validates successfully
+- [x] Schema with `type: ["string", "null"]` validates successfully (union types)
+
+### AC2: Invalid Types Are Rejected
+- [x] Schema with `type: "datetime"` returns error
+- [x] Schema with `type: "float"` returns error
+- [x] Schema with `type: 123` returns error
+- [x] Schema with `type: ["string", "invalid"]` returns error
+
+### AC3: Object Schema Validation
+- [x] Valid object schema with properties/required validates
+- [x] Invalid: `properties` as non-map returns error
+- [x] Invalid: `required` as non-array returns error
+- [x] Invalid: `required` containing non-strings returns error
+- [x] Invalid: `additionalProperties` as string returns error
+
+### AC4: Array Schema Validation
+- [x] Valid array schema with items validates
+- [x] Invalid: `items` as string returns error
+- [x] Invalid: `minItems: -1` returns error
+- [x] Invalid: `maxItems: "10"` returns error
+
+### AC5: String Schema Validation
+- [x] Valid string schema with minLength/maxLength/pattern validates
+- [x] Invalid: `minLength: -1` returns error
+- [x] Invalid: `maxLength: "10"` returns error
+- [x] Invalid: `pattern: 123` returns error
+
+### AC6: Numeric Schema Validation
+- [x] Valid number schema with minimum/maximum validates
+- [x] Invalid: `minimum: "10"` returns error
+- [x] Invalid: `multipleOf: -1` returns error
+- [x] Invalid: `multipleOf: 0` returns error
+
+### AC7: Nested Schema Validation
+- [x] Deeply nested object schemas are validated recursively
+- [x] Error in nested schema is detected and reported with path
+- [x] Example: `properties.user.properties.age.type: "invalid"` returns error
+  with path "properties.user.properties.age.type"
+
+### AC8: Error Messages
+- [x] Error messages clearly indicate what's wrong
+- [x] Error messages include the JSON path to the invalid field
+- [x] Example: "Invalid type 'datetime' at properties.createdAt.type"
+
+### AC9: Comprehensive Test Coverage
+- [x] Tests for all valid type values
+- [x] Tests for all invalid type values
+- [x] Tests for object/array/string/number constraints
+- [x] Tests for nested schema validation
+- [x] Tests for error message clarity
+- [x] Tests for real-world complex schemas
+
+### AC10: Integration Tests
+- [x] `ProviderSchema.new/1` rejects schemas with invalid JSON Schema
+- [x] `ProviderSchema.validate/1` detects invalid schemas
+- [x] Existing tests still pass
+- [x] `mix test` passes
+- [x] `mix lint` passes (format, credo, dialyzer)
+
+## Implementation Notes
+
+### Validation Strategy
+
+Create a new module `PagServer.Tools.JsonSchemaValidator` that:
+1. Validates type field correctness
+2. Validates type-specific constraints (object/array/string/number)
+3. Recursively validates nested schemas
+4. Returns `{:ok, schema}` or `{:error, path, message}`
+
+### Error Path Tracking
+
+Track the JSON path during recursive validation to provide helpful errors:
+- "type" - top-level type error
+- "properties.location.type" - nested property error
+- "items.properties.id.minimum" - array items error
+
+### Performance Considerations
+
+- Validation runs once when schema is created/updated
+- Runtime impact is negligible (schemas are created rarely)
+- Focus on correctness over micro-optimizations
+
+## Out of Scope
+
+- Full JSON Schema Draft 7/2019-09/2020-12 compliance
+- Schema reference resolution ($ref)
+- Schema composition (allOf, anyOf, oneOf)
+- Format validation (email, uri, date-time, etc.)
+- Conditional schemas (if/then/else)
+- Complex keywords (dependencies, propertyNames, etc.)
+
+These can be added later if needed. For now, focus on common structural
+validation that catches 95% of errors.

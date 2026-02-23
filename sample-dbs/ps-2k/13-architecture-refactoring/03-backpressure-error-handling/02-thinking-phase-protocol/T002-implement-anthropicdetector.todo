@@ -1,0 +1,37 @@
+---
+id: P13.M3.E2.T002
+title: Implement AnthropicDetector
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T11:31:54.232380+00:00'
+started_at: '2026-02-13T11:31:54.232380+00:00'
+completed_at: '2026-02-13T11:47:50.541829+00:00'
+duration_minutes: 15.9384906
+---
+
+# Implement AnthropicDetector
+
+## Description
+
+Implement the `ThinkingDetector` protocol for Anthropic's streaming format, which uses `<thinking>` and `</thinking>` tags to delimit extended thinking content.
+
+## Acceptance Criteria
+- [ ] Create `lib/pag_server/llm/thinking_detector/anthropic_detector.ex`
+- [ ] Implement `ThinkingDetector` protocol for `AnthropicDetector` struct
+- [ ] Handle tag detection with carry-over for partial tags across tokens
+- [ ] Support nested thinking tags (depth tracking)
+- [ ] Track state: `in_thinking`, `carry_buffer`, `tag_depth`
+- [ ] Unit tests with edge cases (partial tags, nested tags, empty content)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/thinking_detector.ex` (protocol)
+- Related files: `lib/pag_server/llm/thinking_extractor.ex` (reference for tag handling)
+- Part of epic: P13.M3.E2 - Thinking Phase Protocol

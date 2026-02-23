@@ -1,0 +1,50 @@
+id: P8.M6.E2
+name: Event Handlers
+status: pending
+estimate_hours: 5
+complexity: medium
+depends_on:
+- E1
+description: Room messages, sync, federation
+tasks:
+- id: T001
+  title: Implement room message handler
+  file: T001-room-message-handler.todo
+  estimate_hours: 2
+  complexity: medium
+  priority: high
+  status: pending
+  depends_on: []
+  tags:
+  - handler
+  - messaging
+- id: T002
+  title: Add sync loop
+  file: T002-sync-loop.todo
+  estimate_hours: 2
+  complexity: medium
+  priority: high
+  status: pending
+  depends_on: []
+  tags:
+  - sync
+  - matrix
+- id: T003
+  title: Handle federation events
+  file: T003-federation-events.todo
+  estimate_hours: 1
+  complexity: medium
+  priority: medium
+  status: pending
+  depends_on:
+  - T001
+  - T002
+  tags:
+  - federation
+  - events
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,33 @@
+---
+id: P41.M1.E1.T001
+title: Add test aliases for the 43 subdirectories currently without one
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:26:23.518529+00:00'
+started_at: '2026-02-19T15:26:23.518529+00:00'
+completed_at: '2026-02-19T15:29:07.601478+00:00'
+duration_minutes: 2.734715583333333
+---
+## Context
+
+Currently only 13 of 55 test subdirectories have `mix test.*` aliases. The following 43 have no alias:
+
+analytics, audit, auth, blackboard, bootstrap, cache, canvas, cluster, compliance,
+connector_messaging, consensus, containers, contract_net, credentials, cross_workspace,
+embeddings, errors, events, gateway, goals, mascot, memory, notifications, observability,
+otel, preferences, pubsub, rate_limiter, retrieval, sandbox, security, skills, ssh, stats,
+streaming, tailscale, teams, templates, types, vector_search, webhooks, whisper, workers, workspaces
+
+## Acceptance Criteria
+
+- [ ] Every subdirectory under `test/pag_server/` has a corresponding `mix test.<name>` alias in `mix.exs`
+- [ ] Each alias follows the existing pattern: `["ecto.create --quiet", "ecto.migrate --quiet", "test test/pag_server/<dir>/"]`
+- [ ] `mix test.web` is unchanged (it covers `test/pag_server_web/`)
+- [ ] All aliases are added in alphabetical order within the aliases block
+- [ ] Run `mix compile --warnings-as-errors` to verify mix.exs is valid after changes
+- [ ] Update AGENTS.md subsystem test alias list to reflect all new aliases

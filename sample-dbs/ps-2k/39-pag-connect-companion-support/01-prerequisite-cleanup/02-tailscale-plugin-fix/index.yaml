@@ -1,0 +1,22 @@
+id: P39.M1.E2
+name: Tailscale Plugin Fix
+status: done
+estimate_hours: 0.5
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fix-tailscale-plugin-json-tool.todo
+  title: Fix Tailscale plugin.json tools mismatch
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

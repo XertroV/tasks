@@ -1,0 +1,27 @@
+---
+id: P54.M2.E1.T002
+title: 'PendingCalls: add MCP-scoped register/resolve/reject functions'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:18:57.313225+00:00'
+started_at: '2026-02-21T10:18:57.313225+00:00'
+completed_at: '2026-02-21T10:29:01.422044+00:00'
+duration_minutes: 10.068480016666665
+---
+## Context
+PendingCalls currently has resolve/2 and reject/2 that send {:companion_tool_result,...} and {:companion_tool_error,...}. MCP tool calls need distinct message tags to avoid cross-resolution with ordinary tool calls.
+
+## Acceptance Criteria
+- [ ] Second ETS table `:companion_pending_mcp_calls` initialized in PendingCalls.init/1
+- [ ] `PendingCalls.register_mcp(call_id, caller_pid)` -> `:ok`
+- [ ] `PendingCalls.resolve_mcp(call_id, result)` -> `:ok` | `{:error, :not_found}`; sends `{:companion_mcp_result, call_id, result}` to caller; atomic take semantics
+- [ ] `PendingCalls.reject_mcp(call_id, error_msg)` -> `:ok` | `{:error, :not_found}`; sends `{:companion_mcp_error, call_id, error_msg}`
+- [ ] Calling resolve_mcp on a plain-tool call_id returns `{:error, :not_found}` (separate table = no cross-resolution)
+- [ ] call_ids for MCP calls prefixed "cmcp_" by convention (enforced by CompanionMCPProxy, not by PendingCalls)
+- [ ] Tests added to `test/pag_server/companions/pending_calls_test.exs`
+- [ ] `mix lint` passes

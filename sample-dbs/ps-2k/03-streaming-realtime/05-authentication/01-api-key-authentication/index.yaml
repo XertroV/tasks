@@ -1,0 +1,37 @@
+id: P3.M5.E1
+name: API Key Authentication
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-api-key-schema-and-migr.todo
+  title: Create API key schema and migration
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-api-key-validation-p.todo
+  title: Implement API key validation plug
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-api-key-management-endpoin.todo
+  title: Add API key management endpoints
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,16 @@
+---
+id: P22.M2.E1.T001
+title: Add fetch_models/1 callback to Provider behaviour
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:37:37.768942+00:00'
+started_at: '2026-02-18T14:37:37.768942+00:00'
+completed_at: '2026-02-18T14:40:01.012886+00:00'
+duration_minutes: 2.3873989166666667
+---
+Add @callback fetch_models(config :: map()) :: {:ok, [model_info()]} | {:error, term()} to lib/pag_server/llm/provider.ex. Define model_info() type: %{id: String.t(), name: String.t(), context_length: non_neg_integer() | nil, supports_tools: boolean(), supports_vision: boolean()}. Add a default implementation returning {:error, :not_supported} via defmacro __using__ or a behaviour default. Acceptance criteria: - Behaviour module compiles cleanly - All existing provider modules still compile (no missing callback warnings) - Type spec is well-defined for model_info()

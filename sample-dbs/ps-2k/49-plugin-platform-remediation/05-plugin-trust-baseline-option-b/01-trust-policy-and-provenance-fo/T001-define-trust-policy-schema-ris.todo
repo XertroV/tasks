@@ -1,0 +1,31 @@
+---
+id: P49.M5.E1.T001
+title: Define trust policy schema risk tiers and reason-code contract
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:53:08.204939+00:00'
+started_at: '2026-02-20T09:53:08.204939+00:00'
+completed_at: '2026-02-20T10:54:08.561382+00:00'
+duration_minutes: 61.00594048333333
+---
+
+# Define trust policy schema risk tiers and reason-code contract
+
+
+
+## Requirements
+
+- Define trust policy schema covering publishers, sources, verified-only mode, override rules, and risk tiers.
+- Define stable reason-code contract used by all allow/deny/warn decisions.
+- Document policy precedence and conflict resolution for workspace and global rules.
+
+## Acceptance Criteria
+
+- Policy schema is represented in code and documented with examples.
+- Decision outcomes return machine-readable reason codes from a canonical enum.
+- Tests validate precedence behavior and deterministic outcomes.

@@ -1,0 +1,37 @@
+---
+id: P15.M9.E1.T001
+title: Add pending_tool_calls tracking to agent state metadata
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- agent-server
+- tool-calls
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:30:10.465936+00:00'
+started_at: '2026-02-17T13:30:10.465936+00:00'
+completed_at: '2026-02-17T13:45:37.804440+00:00'
+duration_minutes: 15.455641516666667
+---
+When tool execution begins, store the list of pending tool call IDs in
+`state.metadata.pending_tool_calls`. This enables all failure paths (crash,
+timeout, startup failure) to generate properly-paired synthetic error results.
+
+Also add a helper `build_synthetic_error_results/2` that takes the pending
+tool_calls list and a reason, and returns a list of error result structs with
+correct `call_id` values matching the original assistant message's tool_calls.
+
+Source: .plan/tool-call-resilience.md — Gap 1
+
+Files to modify:
+- lib/pag_server/agents/agent_server.ex (~line 1126-1140, mark_tool_execution_in_progress)
+
+## Acceptance Criteria
+- [ ] `state.metadata.pending_tool_calls` is set when tool execution starts
+- [ ] `state.metadata.pending_tool_calls` is cleared when tool execution completes (success or failure)
+- [ ] `build_synthetic_error_results/2` produces one result per tool call with matching `call_id`
+- [ ] Synthetic results have `status: :error` and descriptive error info
+- [ ] Existing tool call tests still pass

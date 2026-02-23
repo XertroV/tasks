@@ -1,0 +1,58 @@
+---
+id: I013
+title: A VPN type client that is run on eg a VPS, and it acts as a remote endpoint
+  for the filesystem related MCP calls (bash, read, write, etc). We probably already
+  have some of that infrastructure from the docker stuff right?
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+- blocked
+blocked_reason: "Related work exists (P29.M2 Tailscale, P31.M1.E2 Remote MCP Tool)\
+  \ but the specific VPN-proxy concept \u2014 a lightweight client running on a VPS\
+  \ that proxies filesystem MCP calls \u2014 has no dedicated phase. Pending user\
+  \ review to decide if this is sufficiently covered by SSH/Tailscale or warrants\
+  \ its own phase."
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+---
+
+# Idea Intake: A VPN type client that is run on eg a VPS, and it acts as a remote endpoint for the filesystem related MCP calls (bash, read, write, etc). We probably already have some of that infrastructure from the docker stuff right?
+
+## Original Idea
+
+A VPN type client that is run on eg a VPS, and it acts as a remote endpoint for the filesystem related MCP calls (bash, read, write, etc). We probably already have some of that infrastructure from the docker stuff right?
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "A VPN type client that is run on eg a VPS, and it acts as a remote endpoint for the filesystem related MCP calls (bash, read, write, etc). We probably already have some of that infrastructure from the docker stuff right?"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P29.M2 (Tailscale Integration)
+- P29.M2.E1 (Tailscale Connection Management — tasks not yet created)
+- P29.M2.E2 (Tailscale MCP Tools & REST API — tasks not yet created)
+- P31.M1.E2 (Remote MCP Tool & Plugin)
+- P31.M1.E2.T001 (Implement remote_agent_spawn MCP tool)
+- P31.M1.E2.T002 (Implement SshPlugin module)
+- P31.M1.E2.T003 (Add SSH REST API endpoints)
+- P31.M1.E2.T004 (Write SSH plugin and API tests)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

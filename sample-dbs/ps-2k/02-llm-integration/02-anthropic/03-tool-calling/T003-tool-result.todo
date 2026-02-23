@@ -1,0 +1,116 @@
+---
+id: P2.M2.E3.T003
+title: Format tool results for API
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E3.T002
+tags:
+- llm
+- anthropic
+- tools
+- results
+claimed_by: claude-1
+claimed_at: '2026-02-05T14:10:37.091630'
+started_at: '2026-02-05T14:10:37.091630'
+completed_at: '2026-02-05T14:22:22.575075'
+duration_minutes: 11.75805725
+---
+
+# Format tool results for API
+
+Format tool execution results into Anthropic's tool_result message format.
+
+## Requirements
+
+- [ ] Create tool_result content blocks
+- [ ] Include tool_use_id to link result to call
+- [ ] Handle success and error results
+- [ ] Truncate large tool outputs (>512KB from architecture.md)
+- [ ] Support multiple tool results in single message
+- [ ] Add tests with example results
+
+## Acceptance Criteria
+
+- [ ] Tool results formatted correctly
+- [ ] tool_use_id properly links results
+- [ ] Large outputs are truncated with indicator
+- [ ] Errors are formatted correctly
+- [ ] Tests cover success/error/truncation scenarios
+- [ ] >85% test coverage
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 8.2 (Memory Efficiency)
+- Architecture doc lines 712-720 (tool output truncation)
+
+**Key Points**:
+- Must link result to original tool call via ID
+- Large outputs must be truncated (512KB limit)
+- Error results need special formatting
+
+## Notes
+
+Tool result message format:
+```json
+{
+  "role": "user",
+  "content": [
+    {
+      "type": "tool_result",
+      "tool_use_id": "toolu_123",
+      "content": "Weather: 72°F, sunny"
+    }
+  ]
+}
+```
+
+Error result format:
+```json
+{
+  "type": "tool_result",
+  "tool_use_id": "toolu_123",
+  "is_error": true,
+  "content": "Tool execution failed: Permission denied"
+}
+```
+
+Formatter implementation:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.ToolResult do
+  @max_output_bytes 512_000
+  
+  def format_result(tool_call_id, result) do
+    case result do
+      {:ok, output} ->
+        %{
+          type: "tool_result",
+          tool_use_id: tool_call_id,
+          content: truncate_output(output)
+        }
+      
+      {:error, error} ->
+        %{
+          type: "tool_result",
+          tool_use_id: tool_call_id,
+          is_error: true,
+          content: to_string(error)
+        }
+    end
+  end
+  
+  defp truncate_output(output) when is_binary(output) do
+    if byte_size(output) > @max_output_bytes do
+      truncated = binary_part(output, 0, @max_output_bytes)
+      truncated <> "\n\n[Output truncated at 512KB]"
+    else
+      output
+    end
+  end
+  defp truncate_output(output), do: inspect(output)
+end
+```

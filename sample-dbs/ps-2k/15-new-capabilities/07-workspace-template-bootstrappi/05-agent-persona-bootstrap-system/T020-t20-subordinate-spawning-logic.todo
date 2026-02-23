@@ -1,0 +1,17 @@
+---
+id: P15.M7.E5.T020
+title: 'T20: Subordinate Spawning Logic'
+status: done
+estimate_hours: 6.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E5.T019
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:03:53.568678+00:00'
+started_at: '2026-02-18T09:03:53.568678+00:00'
+completed_at: '2026-02-18T10:32:01.907755+00:00'
+duration_minutes: 88.13898443333332
+---
+Module for spawning subordinates based on persona config. Support eager and lazy spawning strategies. Lifecycle management. Files: lib/pag_server/personas/subordinates.ex

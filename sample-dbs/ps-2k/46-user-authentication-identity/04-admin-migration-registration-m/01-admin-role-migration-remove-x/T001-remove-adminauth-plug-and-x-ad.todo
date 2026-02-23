@@ -1,0 +1,24 @@
+---
+id: P46.M4.E1.T001
+title: Remove AdminAuth plug and x-admin-key config
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P46.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:29:28.620356+00:00'
+started_at: '2026-02-20T05:29:28.620356+00:00'
+completed_at: '2026-02-20T05:41:51.522878+00:00'
+duration_minutes: 12.381708516666666
+---
+Hard-break migration: remove the static admin key system entirely.
+1. Delete or gut lib/pag_server_web/plugs/admin_auth.ex (or repurpose to check is_admin)
+2. Remove :admin_api_key from all config files (config.exs, dev.exs, test.exs, runtime.exs)
+3. Remove PAG_ADMIN_API_KEY from documentation and runtime.exs
+4. Audit all router pipelines that use AdminAuth plug — replace with RequireLogin plug (role: :admin) for web routes, or a new :require_admin_api_key check for API admin endpoints that uses is_admin on the user linked to the API key
+5. Update any tests that set x-admin-key header — these should now use a real admin user's API key or web session
+6. Search codebase for 'admin_api_key', 'x-admin-key', 'AdminAuth' and ensure all references are removed or updated
+Acceptance: mix compile with no references to admin_api_key. mix test.auth passes. Admin API endpoints still accessible via admin user session.

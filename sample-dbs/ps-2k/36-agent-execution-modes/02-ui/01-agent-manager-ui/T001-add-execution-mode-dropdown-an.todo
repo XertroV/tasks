@@ -1,0 +1,22 @@
+---
+id: P36.M2.E1.T001
+title: Add execution mode dropdown and auto-start toggle to Agent Manager LiveView
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P36.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:09:23.188358+00:00'
+started_at: '2026-02-19T03:09:23.188358+00:00'
+completed_at: '2026-02-19T03:09:26.432802+00:00'
+duration_minutes: 0.054073616666666664
+---
+## Acceptance Criteria
+- lib/pag_server_web/live/agent_manager.ex: changeset handling includes execution_mode and default_auto_start
+- lib/pag_server_web/live/agent_manager.html.heex: form has execution mode dropdown (Continuous/Discrete options) and auto-start toggle checkbox
+- Auto-start toggle only shown when execution_mode is :continuous (JS hook or phx-change conditional)
+- Form save correctly persists both fields
+- Existing agents not broken (default discrete, no auto-start)

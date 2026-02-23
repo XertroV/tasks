@@ -1,0 +1,30 @@
+---
+id: P34.M2.E1.T002
+title: Skill Schema and Validation
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- backend
+- parser
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:43:56.270399+00:00'
+started_at: '2026-02-19T00:43:56.270399+00:00'
+completed_at: '2026-02-19T00:45:27.576661+00:00'
+duration_minutes: 1.5217708166666666
+---
+
+# Skill Schema and Validation
+
+Define `PagServer.Skills.Skill` struct:
+
+- Required fields: `name`, `description`
+- Optional fields: `homepage`, `user_invocable`, `metadata`
+- Computed fields: `requirements`, `install_instructions`
+
+## Acceptance Criteria
+
+- [ ] Validates required fields present
+- [ ] Returns `{:ok, skill}` or `{:error, validation_errors}`

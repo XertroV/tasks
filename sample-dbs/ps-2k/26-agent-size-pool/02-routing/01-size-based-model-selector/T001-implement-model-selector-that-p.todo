@@ -1,0 +1,43 @@
+---
+id: P26.M2.E1.T001
+title: Implement model selector that picks from workspace size pool
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- routing
+- models
+- size-pool
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:05:54.538246+00:00'
+started_at: '2026-02-18T18:05:54.538246+00:00'
+completed_at: '2026-02-18T18:17:01.590024+00:00'
+duration_minutes: 11.117529483333334
+---
+
+# Implement model selector that picks from workspace size pool
+
+Implement `PagServer.Agents.SizePoolResolver` (or equivalent) that resolves a size
+category to a concrete model ID by iterating the workspace's ordered pool list and
+skipping rate-limited or failed models.
+
+## Requirements
+
+- `resolve/3` function: `resolve(workspace, size, opts \\ [])` -> `{:ok, model_id} | {:error, reason}`
+- Iterates the workspace's pool list for the given size in order
+- Skips models currently rate-limited or in cooldown (integrate with rate limiter / health tracker)
+- Returns `{:error, :no_available_model}` if all models in the pool are unavailable
+- Pure function where possible; side-effects (rate limit checks) should be injectable
+- Fallback: if workspace has no pool configured for the size, use a system default
+- Log a warning when falling back to system default or when all models exhausted
+
+## Acceptance Criteria
+
+- [ ] `SizePoolResolver` module implemented with `resolve/3` function
+- [ ] Iterates pool in order, skipping rate-limited/failed models
+- [ ] Returns `{:error, :no_available_model}` when pool exhausted
+- [ ] Falls back to system defaults when workspace pool not configured
+- [ ] Integrated into agent creation path (called when `size` is set without `model`)
+- [ ] Unit tests cover: normal resolution, rate-limited skip, pool exhausted, no config fallback

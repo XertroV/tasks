@@ -1,0 +1,40 @@
+---
+id: P17.M3.E1.T001
+title: Add tool execute-respond loop test
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- integration
+- tools
+- llm
+- loop
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:09:19.848986+00:00'
+started_at: '2026-02-14T05:09:19.848986+00:00'
+completed_at: '2026-02-14T05:16:01.997807+00:00'
+duration_minutes: 6.702480166666667
+---
+
+# Add tool execute-respond loop test
+
+Add integration test for the full tool execution loop with real LLM calls.
+
+## Requirements
+
+- Create test file `test/integration/tools/execution_loop_test.exs`
+- Test the complete loop: LLM requests tool → tool executes → LLM responds with result
+- Use Groq (free tier) for real LLM calls
+- Test should define a simple tool (e.g., get_weather) and verify the full workflow
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists at `test/integration/tools/execution_loop_test.exs`
+- [ ] Test uses Groq provider with real API calls
+- [ ] Test sends message that triggers tool call request
+- [ ] Test executes tool and provides result back to LLM
+- [ ] Test verifies LLM incorporates tool result in final response
+- [ ] Test uses `@moduletag :integration` for filtering
+- [ ] Test skips gracefully if no API keys available

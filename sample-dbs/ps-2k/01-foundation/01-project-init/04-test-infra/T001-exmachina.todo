@@ -1,0 +1,109 @@
+---
+id: P1.M1.E4.T001
+title: Set up ExMachina factories
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on: []
+tags:
+- testing
+- factory
+- test-data
+- foundation
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:33:02.631889'
+started_at: '2026-02-05T07:33:02.631889'
+completed_at: '2026-02-05T07:40:49.387539'
+---
+
+# Set up ExMachina factories
+
+Create factory module for generating test data with ExMachina.
+
+## Requirements
+
+- [ ] Create `test/support/factory.ex` with ExMachina setup
+- [ ] Define basic factory structure following best practices
+- [ ] Add example factory definitions for future schemas
+- [ ] Configure factory in `test/test_helper.exs`
+- [ ] Add helper functions for common patterns
+- [ ] Verify factory module compiles without errors
+
+## Acceptance Criteria
+
+- [ ] `test/support/factory.ex` exists and defines `PagServer.Factory`
+- [ ] Factory uses `ExMachina.Ecto` with `PagServer.Repo`
+- [ ] Includes example factories:
+  - [ ] `agent_factory` - Agent schema template
+  - [ ] `session_factory` - Session schema template
+  - [ ] `message_factory` - Message schema template
+- [ ] Helper functions defined:
+  - [ ] `build/2` - Build struct without inserting
+  - [ ] `insert/2` - Build and insert into database
+  - [ ] `params_for/2` - Build params map
+- [ ] Factory module is imported in `test/support/data_case.ex`
+- [ ] Can build test data: `build(:agent)` works
+- [ ] Tests can use factories successfully
+- [ ] No compilation warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md` Section 3.1 (Factories)
+
+**Key Points**:
+- ExMachina provides a clean API for test data generation
+- Factories use sequences for unique values
+- Build associations using `build/1` helper
+- Keep factories simple - mirror schema structure
+- Use sensible defaults for all fields
+
+## Implementation Guide
+
+```elixir
+# test/support/factory.ex
+defmodule PagServer.Factory do
+  use ExMachina.Ecto, repo: PagServer.Repo
+
+  def agent_factory do
+    %PagServer.Schema.Agent{
+      id: Ecto.UUID.generate(),
+      name: sequence(:name, &"test-agent-#{&1}"),
+      display_name: "Test Agent",
+      system_prompt: "You are a helpful assistant.",
+      model_provider: "anthropic",
+      model_name: "claude-sonnet-4",
+      status: "idle"
+    }
+  end
+
+  def session_factory do
+    %PagServer.Schema.Session{
+      id: Ecto.UUID.generate(),
+      agent: build(:agent),
+      name: sequence(:name, &"test-session-#{&1}"),
+      status: "active"
+    }
+  end
+
+  def message_factory do
+    %PagServer.Schema.Message{
+      id: Ecto.UUID.generate(),
+      session: build(:session),
+      role: "user",
+      content: "Test message content",
+      sequence_num: 0,
+      content_hash: nil
+    }
+  end
+end
+```
+
+## Notes
+
+- Factories are templates, not actual schemas (those come in later epics)
+- These examples serve as placeholders until schemas are defined
+- Update factories as schemas evolve
+- Use `build/1` for in-memory testing, `insert/1` for database tests
+- Sequences ensure unique values across tests

@@ -1,0 +1,91 @@
+---
+id: P2.M3.E2.T001
+title: Implement SSE streaming with Finch
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- streaming
+- sse
+- openai
+- finch
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:36:43.914924'
+started_at: '2026-02-05T15:36:43.914924'
+completed_at: '2026-02-05T15:41:56.755698'
+duration_minutes: 5.214012666666666
+---
+
+# Implement SSE streaming with Finch
+
+Create Server-Sent Events (SSE) streaming implementation using Finch transport.
+
+## Requirements
+
+- [ ] Add `stream: true` parameter support to chat completions
+- [ ] Implement Finch-based SSE streaming (ref: `openai_ex/http_sse.ex`)
+- [ ] Return `{:ok, stream}` with lazy Stream for token chunks
+- [ ] Handle SSE connection lifecycle (start, stream, end)
+- [ ] Support async streaming with task-based architecture
+- [ ] Provide stream metadata (status, headers, task_pid)
+
+## Acceptance Criteria
+
+- [ ] Setting `stream: true` returns a Stream instead of complete response
+- [ ] Stream emits tokens as they arrive from OpenAI
+- [ ] Connection is established asynchronously
+- [ ] Stream can be consumed lazily (backpressure-friendly)
+- [ ] Returns `task_pid` for cancellation support
+- [ ] Handles connection errors gracefully
+- [ ] Tests verify streaming behavior
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex/http_sse.ex` (SSE implementation)
+- `ref-projects/openai_ex/lib/openai_ex/chat_completions.ex` Lines 71-80 (streaming)
+
+**Key Points**:
+- OpenAI streams using Server-Sent Events (SSE) format
+- Use Finch streaming: `Finch.stream/5` with async receiver
+- Build Stream.resource/3 for lazy consumption
+- Return task_pid to enable stream cancellation
+- Stream receives `:status`, `:headers`, `:data` messages
+
+## Implementation Notes
+
+Request with streaming:
+```elixir
+def create(client, params, stream: true) do
+  body = params |> Map.take(@api_fields) |> Map.put(:stream, true)
+  
+  client
+  |> HttpSse.post("/chat/completions", json: body)
+end
+```
+
+SSE stream structure (from openai_ex):
+```elixir
+def post(client, url, json: json) do
+  me = self()
+  ref = make_ref()
+  request = build_post(client, url, json: json)
+  
+  task = Task.async(fn -> finch_stream(client, request, me, ref) end)
+  
+  with {:ok, status} <- receive_timeout(ref, :status),
+       {:ok, headers} <- receive_timeout(ref, :headers) do
+    body_stream = Stream.resource(
+      &init_stream/0,
+      create_receiver(ref, client.stream_timeout),
+      end_stream(task)
+    )
+    
+    {:ok, %{status: status, headers: headers, body_stream: body_stream, task_pid: task.pid}}
+  end
+end
+```
+
+SSE event format: `data: {...}\n\n`

@@ -1,0 +1,195 @@
+---
+id: P1.M2.E2.T002
+title: Create Session Ecto schema module
+status: done
+estimate_hours: 2
+complexity: medium
+priority: high
+depends_on:
+- P1.M2.E2.T001
+tags:
+- ecto
+- schema
+- session
+- core-schema
+claimed_by: claude
+claimed_at: '2026-02-05T09:00:11.858624'
+started_at: '2026-02-05T09:00:11.858624'
+completed_at: '2026-02-05T09:04:34.241850'
+---
+
+# Create Session Ecto schema module
+
+Create the `PagServer.Schema.Session` Ecto schema with associations, validations, and changesets.
+
+## Requirements
+
+- [ ] Create file `lib/pag_server/schema/session.ex`
+- [ ] Define schema with all fields from sessions table
+- [ ] Add `belongs_to :agent, PagServer.Schema.Agent` association
+- [ ] Add self-referential associations:
+  - [ ] `belongs_to :parent_session, PagServer.Schema.Session`
+  - [ ] `has_many :forked_sessions, PagServer.Schema.Session, foreign_key: :parent_session_id`
+- [ ] Add `belongs_to :fork_point_message, PagServer.Schema.Message` (when messages schema exists)
+- [ ] Create `changeset/2` function with validations:
+  - [ ] Required fields: `[:agent_id, :status]`
+  - [ ] Optional fields: `[:parent_session_id, :fork_point_message_id, :name, :model_override]`
+  - [ ] Validate `status` is in ["active", "paused", "completed", "failed"]
+  - [ ] Validate `agent_id` references existing agent
+- [ ] Add helper functions:
+  - [ ] `create_changeset/1` - for creating new sessions
+  - [ ] `update_changeset/2` - for updating existing sessions
+  - [ ] `fork_changeset/2` - for forking from parent session
+- [ ] Write doctests and basic unit tests
+
+## Acceptance Criteria
+
+- [ ] Module `PagServer.Schema.Session` compiles without errors
+- [ ] Schema defines all fields with correct types
+- [ ] `belongs_to :agent` association works correctly
+- [ ] Self-referential associations for forking work:
+  - [ ] Can query `session.parent_session`
+  - [ ] Can query `session.forked_sessions`
+- [ ] Changesets validate required fields
+- [ ] Status enum validation prevents invalid status values
+- [ ] Can create sessions via `PagServer.Repo.insert(changeset)`
+- [ ] Can update sessions via `PagServer.Repo.update(changeset)`
+- [ ] Fork changeset properly sets `parent_session_id` and `fork_point_message_id`
+- [ ] Tests pass: `mix test test/pag_server/schema/session_test.exs`
+- [ ] Doctests pass
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 211-221 (sessions table)
+- `AGENTS.md` Section "Module Organization" (lib/pag_server/schema/)
+
+**Key Points**:
+- Sessions belong to agents and can fork from parent sessions
+- Status transitions: active → paused → active, active → completed, active → failed
+- `model_override` allows per-session LLM switching without changing agent config
+- Self-referential associations enable conversation branching
+- Forking creates a new session with reference to parent and fork point
+
+## Schema Template
+
+```elixir
+defmodule PagServer.Schema.Session do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @valid_statuses ~w(active paused completed failed)
+
+  schema "sessions" do
+    field :name, :string
+    field :status, :string, default: "active"
+    field :model_override, :string
+
+    belongs_to :agent, PagServer.Schema.Agent
+    belongs_to :parent_session, __MODULE__
+    belongs_to :fork_point_message, PagServer.Schema.Message
+    
+    has_many :forked_sessions, __MODULE__, foreign_key: :parent_session_id
+
+    timestamps(type: :utc_datetime_usec)
+  end
+
+  @doc """
+  Changeset for creating a new session.
+  """
+  def create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:agent_id, :name, :status, :model_override])
+    |> validate_required([:agent_id])
+    |> validate_inclusion(:status, @valid_statuses)
+    |> foreign_key_constraint(:agent_id)
+  end
+
+  @doc """
+  Changeset for updating an existing session.
+  """
+  def update_changeset(session, attrs) do
+    session
+    |> cast(attrs, [:name, :status, :model_override])
+    |> validate_inclusion(:status, @valid_statuses)
+  end
+
+  @doc """
+  Changeset for forking a session from a parent.
+  """
+  def fork_changeset(parent_session, attrs) do
+    attrs = Map.merge(attrs, %{
+      agent_id: parent_session.agent_id,
+      parent_session_id: parent_session.id,
+      status: "active"
+    })
+
+    %__MODULE__{}
+    |> cast(attrs, [:agent_id, :parent_session_id, :fork_point_message_id, :name, :model_override])
+    |> validate_required([:agent_id, :parent_session_id])
+    |> foreign_key_constraint(:agent_id)
+    |> foreign_key_constraint(:parent_session_id)
+    |> foreign_key_constraint(:fork_point_message_id)
+  end
+end
+```
+
+## Test Template
+
+Create `test/pag_server/schema/session_test.exs`:
+
+```elixir
+defmodule PagServer.Schema.SessionTest do
+  use PagServer.DataCase, async: true
+
+  alias PagServer.Schema.{Agent, Session}
+
+  describe "create_changeset/1" do
+    test "valid attributes create a session" do
+      agent = insert(:agent)
+      attrs = %{agent_id: agent.id, name: "Main session"}
+      
+      changeset = Session.create_changeset(attrs)
+      assert changeset.valid?
+    end
+
+    test "requires agent_id" do
+      changeset = Session.create_changeset(%{})
+      refute changeset.valid?
+      assert "can't be blank" in errors_on(changeset).agent_id
+    end
+
+    test "validates status is in valid list" do
+      agent = insert(:agent)
+      changeset = Session.create_changeset(%{agent_id: agent.id, status: "invalid"})
+      
+      refute changeset.valid?
+      assert "is invalid" in errors_on(changeset).status
+    end
+  end
+
+  describe "fork_changeset/2" do
+    test "creates fork from parent session" do
+      parent = insert(:session)
+      attrs = %{name: "Forked session"}
+      
+      changeset = Session.fork_changeset(parent, attrs)
+      
+      assert changeset.valid?
+      assert get_change(changeset, :parent_session_id) == parent.id
+      assert get_change(changeset, :agent_id) == parent.agent_id
+    end
+  end
+end
+```
+
+## Notes
+
+- The `fork_point_message` association references the messages schema (Epic 3)
+- Until messages schema exists, comment out that association or handle gracefully
+- Consider adding virtual fields for derived state (e.g., `is_forked?`, `has_forks?`)
+- Future enhancements may include status transition validation in changesets
+- The `__MODULE__` reference enables self-referential associations

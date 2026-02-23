@@ -1,0 +1,26 @@
+id: P40
+name: Team-Scoped Agent Collaboration
+status: done
+locked: true
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Team Shared Directories
+  path: 01-team-shared-directories
+  status: done
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: Team-scoped shared directories (/teams/<name>/) for multi-agent collaboration.
+    When a main agent creates a sub-team of agents, the team needs a shared working
+    directory that is visible to team members and ancestors but not to unrelated agents.
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

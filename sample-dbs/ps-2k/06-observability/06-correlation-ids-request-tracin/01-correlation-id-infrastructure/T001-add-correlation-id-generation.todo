@@ -1,0 +1,120 @@
+---
+id: P6.M6.E1.T001
+title: Add correlation ID generation plug to Phoenix endpoint
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- observability
+- tracing
+- correlation-id
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:34:00.805443+00:00'
+started_at: '2026-02-06T20:34:00.805443+00:00'
+completed_at: '2026-02-06T20:46:44.569375+00:00'
+duration_minutes: 12.72939865
+---
+
+# Add correlation ID generation plug to Phoenix endpoint
+
+Create a Phoenix Plug that generates a unique correlation ID for every incoming HTTP request
+and stores it in both the conn assigns and Logger.metadata. This enables end-to-end request
+tracing across the entire system. If the client provides a correlation ID via the
+`X-Correlation-ID` header, the plug reuses it; otherwise it generates a new UUID.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/plugs/correlation_id.ex` module
+- [ ] Implement as a `Plug` module with `init/1` and `call/2`
+- [ ] Check for incoming `X-Correlation-ID` or `X-Request-ID` header
+  - [ ] If present, validate format (UUID or up to 128 chars alphanumeric+dashes)
+  - [ ] If absent, generate a new UUIDv4
+- [ ] Store correlation_id in `conn.assigns.correlation_id`
+- [ ] Set `Logger.metadata(correlation_id: correlation_id)`
+- [ ] Add `X-Correlation-ID` response header for client-side correlation
+- [ ] Add the plug to the Phoenix endpoint pipeline (before router)
+- [ ] Add unit tests:
+  - [ ] Test auto-generation when no header provided
+  - [ ] Test reuse of client-provided header
+  - [ ] Test invalid header values are rejected (new ID generated)
+  - [ ] Test response header is set
+
+## Acceptance Criteria
+
+- [ ] Every HTTP request gets a correlation_id in conn.assigns
+- [ ] Logger.metadata includes correlation_id for all downstream log calls
+- [ ] Response includes X-Correlation-ID header
+- [ ] Client-provided correlation IDs are passed through
+- [ ] Invalid/missing headers result in auto-generated UUIDs
+- [ ] Plug adds <1ms overhead per request
+
+## Context
+
+**Source**: Architecture audit identified no end-to-end request tracing capability. A single
+user request can spawn agent operations, LLM calls, and tool executions -- without a
+correlation ID these are impossible to connect in logs.
+
+## Notes
+
+**Plug Implementation**:
+```elixir
+defmodule PagServerWeb.Plugs.CorrelationId do
+  import Plug.Conn
+  require Logger
+
+  @header "x-correlation-id"
+  @fallback_header "x-request-id"
+
+  def init(opts), do: opts
+
+  def call(conn, _opts) do
+    correlation_id =
+      get_req_header(conn, @header)
+      |> List.first()
+      |> Kernel.||(get_req_header(conn, @fallback_header) |> List.first())
+      |> validate_or_generate()
+
+    Logger.metadata(correlation_id: correlation_id)
+
+    conn
+    |> assign(:correlation_id, correlation_id)
+    |> put_resp_header(@header, correlation_id)
+  end
+
+  defp validate_or_generate(nil), do: generate_id()
+  defp validate_or_generate(id) when byte_size(id) > 128, do: generate_id()
+  defp validate_or_generate(id) do
+    if Regex.match?(~r/^[a-zA-Z0-9_-]+$/, id), do: id, else: generate_id()
+  end
+
+  defp generate_id, do: Ecto.UUID.generate()
+end
+```
+
+**Endpoint wiring** (in `lib/pag_server_web/endpoint.ex`):
+```elixir
+plug PagServerWeb.Plugs.CorrelationId
+plug PagServerWeb.Router
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M6.E1)
+**Agent**: cli-user
+**Date**: 2026-02-06 20:34 UTC
+**Sibling tasks**: P6.M6.E1.T002, P6.M6.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M6.E1.T001 → P6.M6.E1.T002 → P6.M6.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M6.E1.T001: .tasks/06-observability/06-correlation-ids-request-tracin/01-correlation-id-infrastructure/T001-add-correlation-id-generation.todo
+- P6.M6.E1.T002: .tasks/06-observability/06-correlation-ids-request-tracin/01-correlation-id-infrastructure/T002-propagate-correlation-ids-thro.todo
+- P6.M6.E1.T003: .tasks/06-observability/06-correlation-ids-request-tracin/01-correlation-id-infrastructure/T003-include-correlation-ids-in-all.todo

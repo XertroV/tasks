@@ -1,0 +1,24 @@
+---
+id: P55.M3.E1.T003
+title: State transition handlers for processing and idle
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- streaming
+- state
+claimed_by: cli-user
+claimed_at: '2026-02-22T11:04:32.699399+00:00'
+started_at: '2026-02-22T11:04:32.699399+00:00'
+completed_at: '2026-02-22T11:07:36.418431+00:00'
+duration_minutes: 3.0619837
+---
+Handle :state_changed PubSub events. On transition to :processing: set agent_status to :processing, initialize streaming_state to %{content: '', thinking_content: '', model: ''}. On transition to :idle: set agent_status to :idle, clear streaming_state to nil, flush any remaining token_buffer, reload transcript tail (fetch messages with sequence_num > last_known and append to transcript, re-merge entries). Also handle :llm_thinking events by appending to streaming_state.thinking_content.
+
+## Acceptance Criteria
+- Processing state initializes streaming correctly
+- Idle state clears streaming and reloads new messages
+- Thinking tokens accumulated in streaming_state.thinking_content
+- Transcript tail reload only fetches new messages (not full reload)

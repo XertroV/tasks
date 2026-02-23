@@ -1,0 +1,21 @@
+---
+id: P44.M1.E3.T002
+title: Write Parser unit tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:35:42.847177+00:00'
+started_at: '2026-02-19T18:35:42.847177+00:00'
+completed_at: '2026-02-19T18:43:31.733071+00:00'
+duration_minutes: 7.814764683333333
+---
+## Summary
+Comprehensive unit tests for Commands.Parser.
+
+## Acceptance Criteria
+- [ ] Tests for: normal command, command with args, no slash, slash only, extra spaces, mixed case normalization, empty string
+- [ ] Tests run fast (no external deps, pure function)

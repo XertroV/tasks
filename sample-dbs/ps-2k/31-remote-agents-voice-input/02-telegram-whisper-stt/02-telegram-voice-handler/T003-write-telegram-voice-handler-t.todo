@@ -1,0 +1,16 @@
+---
+id: P31.M2.E2.T003
+title: Write Telegram voice handler tests
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:47:04.196847+00:00'
+started_at: '2026-02-18T19:47:04.196847+00:00'
+completed_at: '2026-02-18T19:47:08.865388+00:00'
+duration_minutes: 0.07780885
+---
+Test: voice message triggers download+transcribe, transcription prepended to context, Whisper not available graceful degradation, large file rejection, network download failure handling.

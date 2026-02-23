@@ -1,0 +1,27 @@
+---
+id: P36.M1.E3.T001
+title: Add query_auto_start_candidates/0 and update_startup_duration/2 to SessionStore
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:08:19.897213+00:00'
+started_at: '2026-02-19T03:08:19.897213+00:00'
+completed_at: '2026-02-19T03:08:23.185420+00:00'
+duration_minutes: 0.05480321666666667
+---
+## Acceptance Criteria
+- `SessionStore.query_auto_start_candidates/0` queries sessions where:
+  - status NOT IN ('completed','archived') AND (
+      auto_start = true
+      OR (execution_mode = 'discrete' AND status IN ('running','pending'))
+      OR (execution_mode = 'continuous' AND last_active_at > NOW() - INTERVAL)
+    )
+- Recency interval uses Application.get_env(:pag_server, :boot_recency_window_days, 7)
+- Returns list of Session structs with agent preloaded
+- `SessionStore.update_startup_duration/2` takes session_id and duration_ms (integer)
+- update_startup_duration also sets last_active_at to now()
+- Both functions have @spec annotations

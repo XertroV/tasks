@@ -1,0 +1,363 @@
+---
+title: Test Streaming with Large Payloads
+epic: P3.M1.E3-token-streaming
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimate_hours: 1
+depends_on:
+- P3.M1.E3.T001
+- P3.M1.E3.T002
+- P3.M1.E3.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:38:07.156274'
+started_at: '2026-02-06T15:38:07.156274'
+completed_at: '2026-02-06T16:00:00.316316'
+duration_minutes: 21.886000433333333
+id: P3.M1.E3.T004
+---
+
+# Task: Test Streaming with Large Payloads
+
+## Context
+We need comprehensive tests for streaming, especially edge cases like very large responses, network interruptions, slow clients, and concurrent streams. These tests ensure reliability under production conditions.
+
+## Goal
+Create a comprehensive test suite for streaming functionality, covering performance, reliability, and edge cases.
+
+## Requirements
+- Test small and large payloads
+- Test slow clients
+- Test concurrent streams
+- Test error conditions
+- Test token ordering
+- Performance benchmarks
+
+## Implementation
+
+### File: `test/pag_server_web/channels/streaming_test.exs`
+
+```elixir
+defmodule PagServerWeb.AgentChannelStreamingTest do
+  use PagServerWeb.ChannelCase, async: false
+  
+  import PagServer.Factories
+  
+  alias PagServer.Agents
+  
+  @moduletag :streaming
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      system_prompt: "Test agent for streaming",
+      user_id: "test-user"
+    })
+    
+    {:ok, agent: agent}
+  end
+  
+  describe "token streaming" do
+    test "streams tokens in order", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      ref = push(socket, "message:send", %{"content" => "Count to 10"})
+      assert_reply ref, :ok, %{message_id: message_id}
+      
+      # Collect all tokens
+      tokens = collect_all_tokens(message_id, 5000)
+      
+      # Tokens should be in order
+      assert length(tokens) > 0
+      
+      # Verify indices are sequential
+      indices = Enum.map(tokens, & &1.index)
+      assert indices == Enum.to_list(0..(length(tokens) - 1))
+    end
+    
+    test "handles large payload (10K+ tokens)", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      # Request large response
+      ref = push(socket, "message:send", %{
+        "content" => "Write a 5000 word essay"
+      })
+      assert_reply ref, :ok, %{message_id: message_id}
+      
+      # Collect tokens with longer timeout
+      tokens = collect_all_tokens(message_id, 60_000)
+      
+      # Should receive many tokens
+      assert length(tokens) > 1000
+      
+      # Should receive completion
+      assert_push "stream_complete", %{message_id: ^message_id}
+    end
+    
+    test "handles multiple concurrent streams", %{agent: agent} do
+      # Join with two clients
+      {:ok, _, socket1} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      {:ok, _, socket2} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      # Send messages from both
+      ref1 = push(socket1, "message:send", %{"content" => "Hello from client 1"})
+      ref2 = push(socket2, "message:send", %{"content" => "Hello from client 2"})
+      
+      assert_reply ref1, :ok, %{message_id: msg1}
+      assert_reply ref2, :ok, %{message_id: msg2}
+      
+      # Both should receive tokens (potentially interleaved)
+      # Collect tokens from socket1
+      tokens1 = collect_all_tokens(msg1, socket1, 5000)
+      
+      # socket2 should also have received tokens for both messages
+      # (since both are subscribed to same agent)
+      
+      assert length(tokens1) > 0
+    end
+    
+    test "handles stream interruption gracefully", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      ref = push(socket, "message:send", %{"content" => "Write a long response"})
+      assert_reply ref, :ok, %{message_id: message_id}
+      
+      # Receive some tokens
+      assert_push "token", %{message_id: ^message_id}
+      
+      # Disconnect abruptly
+      Process.unlink(socket.channel_pid)
+      close(socket)
+      
+      # Agent should continue processing
+      # (verify agent doesn't crash)
+      :timer.sleep(100)
+      {:ok, agent_state} = Agents.get_state(agent.id)
+      assert agent_state.status in [:idle, :processing]
+    end
+  end
+  
+  describe "error handling" do
+    test "receives stream_error on LLM failure", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      # Trigger error condition
+      # (mock LLM to return error)
+      ref = push(socket, "message:send", %{"content" => "__TRIGGER_ERROR__"})
+      assert_reply ref, :ok, %{message_id: message_id}
+      
+      # Should receive error event
+      assert_push "stream_error", %{message_id: ^message_id, error: _reason}
+    end
+    
+    test "handles timeout gracefully", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      # Request that will timeout
+      ref = push(socket, "message:send", %{"content" => "__TIMEOUT__"})
+      assert_reply ref, :ok, %{message_id: message_id}
+      
+      # Should eventually receive error or timeout
+      assert_push "stream_error", %{message_id: ^message_id}, 30_000
+    end
+  end
+  
+  describe "performance" do
+    @tag :performance
+    test "maintains low latency under load", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      # Send message and measure time to first token
+      start_time = System.monotonic_time(:millisecond)
+      
+      ref = push(socket, "message:send", %{"content" => "Hello"})
+      assert_reply ref, :ok, %{message_id: message_id}
+      
+      # Wait for first token
+      assert_push "token", %{message_id: ^message_id}
+      
+      first_token_time = System.monotonic_time(:millisecond)
+      latency = first_token_time - start_time
+      
+      # Should receive first token quickly (<2 seconds)
+      assert latency < 2000
+    end
+    
+    @tag :performance
+    test "handles 100 tokens/sec without backpressure", %{agent: agent} do
+      {:ok, _, socket} = subscribe_and_join(
+        socket_factory("test-user"),
+        "agent:#{agent.id}",
+        %{}
+      )
+      
+      # Simulate rapid token stream
+      for i <- 1..100 do
+        send(socket.channel_pid, {:agent_event, %{
+          type: :token,
+          agent_id: agent.id,
+          message_id: "perf-test",
+          token: "t#{i}",
+          index: i,
+          timestamp: System.system_time(:millisecond)
+        }})
+        :timer.sleep(10)  # 100 tokens/sec
+      end
+      
+      # Channel should handle without issues
+      assert Process.alive?(socket.channel_pid)
+      
+      # Should not trigger backpressure warnings
+      # (check logs in real scenario)
+    end
+  end
+  
+  # Helper functions
+  
+  defp collect_all_tokens(message_id, socket \\ nil, timeout \\ 5000) do
+    collect_tokens_loop(message_id, socket, [], timeout)
+  end
+  
+  defp collect_tokens_loop(message_id, socket, acc, timeout) do
+    receive do
+      %Phoenix.Socket.Broadcast{event: "token", payload: %{message_id: ^message_id} = payload} ->
+        collect_tokens_loop(message_id, socket, [payload | acc], timeout)
+      
+      %Phoenix.Socket.Broadcast{event: "stream_complete", payload: %{message_id: ^message_id}} ->
+        Enum.reverse(acc)
+    after
+      timeout ->
+        Enum.reverse(acc)
+    end
+  end
+end
+```
+
+### File: `test/support/mocks/llm_mock.ex`
+
+Create LLM mock for testing:
+
+```elixir
+defmodule PagServer.LLMMock do
+  @moduledoc """
+  Mock LLM for testing streaming behavior.
+  """
+  
+  def stream(context, model, callback, opts \\ []) do
+    case opts[:scenario] do
+      :error ->
+        callback.({:error, "Simulated error"})
+      
+      :timeout ->
+        :timer.sleep(60_000)
+      
+      :large_response ->
+        stream_large_response(callback)
+      
+      _ ->
+        stream_normal_response(context, callback)
+    end
+  end
+  
+  defp stream_normal_response(context, callback) do
+    # Extract last user message
+    last_message = List.last(context)
+    content = last_message["content"]
+    
+    # Generate simple response
+    tokens = String.split("Here is a response to: #{content}", "")
+    
+    Enum.each(tokens, fn token ->
+      callback.({:token, token})
+      :timer.sleep(10)  # Simulate streaming delay
+    end)
+    
+    callback.({:complete, %{
+      total_tokens: length(tokens),
+      finish_reason: "stop"
+    }})
+  end
+  
+  defp stream_large_response(callback) do
+    # Generate 10K tokens
+    for i <- 1..10_000 do
+      callback.({:token, "token#{i} "})
+      
+      # Minimal delay to simulate fast streaming
+      if rem(i, 100) == 0, do: :timer.sleep(1)
+    end
+    
+    callback.({:complete, %{
+      total_tokens: 10_000,
+      finish_reason: "stop"
+    }})
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] Tests pass for small payloads
+- [ ] Tests pass for large payloads (10K+ tokens)
+- [ ] Concurrent stream tests pass
+- [ ] Error handling tests pass
+- [ ] Performance benchmarks meet targets
+- [ ] All tests pass consistently
+
+## Testing
+
+Run tests:
+```bash
+# Run all streaming tests
+mix test --only streaming
+
+# Run performance tests
+mix test --only performance
+
+# Run with coverage
+mix test --cover test/pag_server_web/channels/streaming_test.exs
+```
+
+## References
+- ExUnit async: https://hexdocs.pm/ex_unit/ExUnit.Case.html
+- Phoenix.ChannelTest: https://hexdocs.pm/phoenix/Phoenix.ChannelTest.html
+- Mox for mocking: https://hexdocs.pm/mox/Mox.html
+
+## Notes
+- Use `async: false` for tests that modify global state
+- Tag slow tests with `@tag :performance`
+- Mock LLM responses for predictable testing
+- Consider property-based testing with StreamData

@@ -1,0 +1,39 @@
+---
+id: P1.M2.E6.T004
+title: Fix stats schema integrity issues
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on: [P1.M2.E6.T003]
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:41:00.000000'
+started_at: '2026-02-05T23:41:00.000000'
+completed_at: '2026-02-05T23:41:30.000000'
+tags: [architecture-fix, database, integrity]
+---
+
+# Fix stats schema integrity issues
+
+Fix issues identified in architectural review related to stats schema.
+
+## Requirements
+- [x] Change `on_delete` to `:nilify_all` for agent_id and session_id FKs
+- [x] Add unique index on `[:agent_id, :session_id, :period_type, :period_start]`
+- [x] Add `expires_at` column for configurable retention
+- [x] Add index for period boundary queries
+
+## Acceptance Criteria
+- [x] Migration created at `priv/repo/migrations/20260205234123_fix_stats_schema.exs`
+- [x] FK constraints changed to SET NULL instead of CASCADE
+- [x] Unique constraint prevents duplicate rollup records
+- [x] Retention column added for cleanup job support
+
+## Implementation Notes
+
+The original cascade delete behavior would lose audit data when agents/sessions were deleted.
+This fix changes to nilify behavior so stats records are preserved for billing reconciliation
+and usage auditing, even after the agent/session is deleted.
+
+The unique index prevents race conditions in concurrent rollup operations that could
+create duplicate stats records for the same period.

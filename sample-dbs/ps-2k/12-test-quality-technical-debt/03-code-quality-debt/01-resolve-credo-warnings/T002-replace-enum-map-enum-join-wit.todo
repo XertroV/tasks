@@ -1,0 +1,36 @@
+---
+id: P12.M3.E1.T002
+title: Replace Enum.map |> Enum.join with map_join/3
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:29:37.244090+00:00'
+started_at: '2026-02-13T10:29:37.244090+00:00'
+completed_at: '2026-02-13T10:37:23.640779+00:00'
+duration_minutes: 7.773277966666667
+---
+
+# Replace Enum.map |> Enum.join with map_join/3
+
+## Description
+
+Fix Credo warnings about using `Enum.map |> Enum.join` instead of the more efficient `Enum.map_join/3`. This is a performance optimization.
+
+## Acceptance Criteria
+
+- [ ] Run `mix credo` to identify all occurrences
+- [ ] Replace `Enum.map(enumerable, mapper) |> Enum.join(joiner)` with `Enum.map_join(enumerable, joiner, mapper)`
+- [ ] Verify behavior is unchanged
+- [ ] All related warnings resolved
+- [ ] Tests pass
+- [ ] Lint passes (including `mix credo`)
+
+## Context
+
+- Related files: Various files in `lib/pag_server/` and `test/pag_server/`
+- Credo check: `Credo.Check.Refactor.PipeChainStart` or similar
+- Part of epic: Resolve Credo Warnings

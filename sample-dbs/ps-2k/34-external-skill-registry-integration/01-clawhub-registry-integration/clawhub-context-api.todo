@@ -1,0 +1,72 @@
+---
+id: P34.M1.E2
+title: ClawHub Context and API Routes
+status: pending
+estimate_hours: 4.0
+complexity: low
+priority: high
+depends_on:
+- P34.M1.E1
+tags:
+- epic
+- backend
+- api
+---
+
+# Epic: ClawHub Context and API Routes
+
+Create Elixir context module and REST API endpoints for ClawHub integration.
+
+## Scope
+
+- `PagServer.Skills.ClawHub` context module
+- REST API endpoints for skill discovery
+- Integration with existing Marketplace context pattern
+
+## Tasks
+
+### T1: ClawHub Context Module
+
+Create `PagServer.Skills.ClawHub` context:
+
+- `list_skills/1` - List available skills (delegates to Client)
+- `search_skills/2` - Search skills by query
+- `get_skill/1` - Get skill details by slug
+- `download_skill/2` - Download and extract skill
+
+Acceptance Criteria:
+- [ ] Context wraps Client with proper error handling
+- [ ] Consistent return types `{:ok, ...} | {:error, reason}`
+
+### T2: REST API Endpoints
+
+Add routes under `/api/v1/skills/clawhub`:
+
+- `GET /` - List skills (paginated)
+- `GET /search?q=query` - Search skills
+- `GET /:slug` - Get skill details
+- `POST /:slug/install` - Install skill to workspace
+
+Acceptance Criteria:
+- [ ] All endpoints return proper JSON responses
+- [ ] Pagination params (`page`, `per_page`) work
+- [ ] Error responses use consistent format
+
+### T3: Install to Workspace
+
+Implement skill installation:
+
+- Download skill bundle
+- Extract to `<workspace>/skills/<slug>/`
+- Validate SKILL.md exists
+- Return installation path
+
+Acceptance Criteria:
+- [ ] Skill installed to correct workspace location
+- [ ] Overwrites existing if `force: true`
+- [ ] Returns error if SKILL.md missing
+
+## Out of Scope
+
+- Authentication/authorization (uses existing API key)
+- Skill versioning/updates

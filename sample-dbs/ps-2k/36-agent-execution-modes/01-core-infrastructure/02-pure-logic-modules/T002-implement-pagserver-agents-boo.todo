@@ -1,0 +1,29 @@
+---
+id: P36.M1.E2.T002
+title: Implement PagServer.Agents.BootPolicy
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:00:41.042016+00:00'
+started_at: '2026-02-19T03:00:41.042016+00:00'
+completed_at: '2026-02-19T03:01:22.920092+00:00'
+duration_minutes: 0.6979677
+---
+## Acceptance Criteria
+- Module at lib/pag_server/agents/boot_policy.ex
+- `should_auto_start?(Session.t()) :: boolean/1` — returns true if any rule matches
+- `classify_rule(Session.t()) :: :interrupted | :explicit_flag | :recent_continuous | :skip`
+- Rules (first match wins):
+  - :interrupted: execution_mode = :discrete AND status IN [:running, :pending]
+  - :explicit_flag: auto_start = true AND status NOT IN [:completed, :archived]
+  - :recent_continuous: execution_mode = :continuous AND last_active_at > now() - recency_window AND status = :idle
+  - :skip: no rule matched
+- `start_order([Session.t()]) :: [Session.t()]`
+  - Groups by rule priority (interrupted=1, explicit_flag=2, recent_continuous=3)
+  - Within group: sort by last_startup_duration_ms DESC NULLS LAST, then last_active_at DESC
+- Recency window: Application.get_env(:pag_server, :boot_recency_window_days, 7) days
+- Pure module (no DB access, no GenServer)

@@ -1,0 +1,39 @@
+---
+id: P16.M2.E2.T002
+title: Add OpenRouter streaming test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T004
+tags:
+- integration
+- openrouter
+- streaming
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:59:22.396959+00:00'
+started_at: '2026-02-14T02:59:22.396959+00:00'
+completed_at: '2026-02-14T02:59:23.447126+00:00'
+duration_minutes: 0.01750265
+---
+
+# Add OpenRouter streaming test
+
+Add integration test for streaming chat completion with OpenRouter.
+
+## Requirements
+
+- Create test file `test/integration/llm/openrouter_streaming_test.exs`
+- Test requires `OPENROUTER_API_KEY` environment variable
+- Test streaming response handling
+- Use `@tag :integration` to allow filtering
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists
+- [ ] Test initiates streaming request
+- [ ] Test accumulates content deltas from stream
+- [ ] Test validates final assembled content
+- [ ] Test handles stream completion event
+- [ ] Test skips gracefully if `OPENROUTER_API_KEY` not set

@@ -1,0 +1,25 @@
+---
+id: P42.M2.E3.T002
+title: Implement routing rule memory integration
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:19:28.863395+00:00'
+started_at: '2026-02-19T17:19:28.863395+00:00'
+completed_at: '2026-02-19T17:30:05.241780+00:00'
+duration_minutes: 10.606306266666667
+---
+## Context
+Routing rules are stored in the mailman agent's long-term memory (Memory.Store) so future similar messages are routed without fork_and_question.
+
+## Acceptance Criteria
+- [ ] RuleStore module (or functions in ForkAndQuestion) to read/write rules from mailman agent memory
+- [ ] store_rule/2 (mailman_agent_id, rule_map) - saves rule as memory entry with type: 'routing_rule'
+- [ ] find_matching_rule/2 (mailman_agent_id, message) - queries memory for rules matching message metadata
+- [ ] Rule matching: sender_workspace pattern, subject_contains, message_type matchers
+- [ ] clear_all_rules/1 (mailman_agent_id) - for the 'rules clear' MCP action
+- [ ] list_rules/1 (mailman_agent_id) - formatted list for 'rules list' MCP action

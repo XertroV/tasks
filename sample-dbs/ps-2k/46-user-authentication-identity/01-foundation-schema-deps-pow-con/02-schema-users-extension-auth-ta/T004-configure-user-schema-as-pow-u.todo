@@ -1,0 +1,29 @@
+---
+id: P46.M1.E2.T004
+title: Configure User schema as Pow user with PowAssent
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P46.M1.E2.T001
+- P46.M1.E2.T002
+- P46.M1.E2.T003
+- P46.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:08:35.472021+00:00'
+started_at: '2026-02-19T21:08:35.472021+00:00'
+completed_at: '2026-02-19T21:13:09.961926+00:00'
+duration_minutes: 4.574831516666666
+---
+Update lib/pag_server/schema/user.ex to satisfy Pow and PowAssent requirements:
+- Add 'use Pow.Ecto.Schema' with pow_user_fields() but DISABLE password extension (OAuth-only)
+- Add 'use PowAssent.Ecto.Schema' to enable identity linking
+- Define pow_user_id_field as :email
+- Ensure has_many :user_identities association
+- Ensure has_many :user_tokens association
+- Add registration_changeset/2 and update_changeset/2 as required by Pow
+- Since no passwords: registration_changeset should only require email (derived from OAuth)
+- Keep existing associations (api_keys, workspace_memberships, agents, agent_templates)
+Acceptance: User schema compiles with all Pow callbacks satisfied; existing schema tests pass.

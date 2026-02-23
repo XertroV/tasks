@@ -1,0 +1,59 @@
+---
+id: I062
+title: Create MCP server (stdio) for PAG API. Maybe a new package -- pac-mcp?
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:16:02.989815+00:00'
+started_at: '2026-02-21T04:16:02.989815+00:00'
+completed_at: '2026-02-21T04:21:26.326089+00:00'
+duration_minutes: 5.388937733333334
+---
+
+# Idea Intake: Create MCP server (stdio) for PAG API. Maybe a new package -- pac-mcp?
+
+## Original Idea
+
+Create MCP server (stdio) for PAG API. Maybe a new package -- pac-mcp?
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Create MCP server (stdio) for PAG API. Maybe a new package -- pac-mcp?"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Created phase: `P52` (PAG API MCP Server (stdio))
+- Created milestones: `P52.M1`, `P52.M2` (depends on `P52.M1`), `P52.M3` (depends on `P52.M2`)
+- Created epics: `P52.M1.E1`, `P52.M2.E1`, `P52.M2.E2`, `P52.M3.E1`
+- Created tasks:
+  - `P52.M1.E1.T001` Write MCP stdio contract and capability matrix
+  - `P52.M1.E1.T002` Decide package layout and bootstrap command
+  - `P52.M1.E1.T003` Scaffold server entrypoint and baseline config
+  - `P52.M2.E1.T001` Implement MCP initialize, health, and list-tools handlers
+  - `P52.M2.E1.T002` Implement tool-call dispatch to PAG API endpoints
+  - `P52.M2.E1.T003` Normalize API and transport errors into MCP responses
+  - `P52.M2.E2.T001` Implement auth/config loading for stdio runtime
+  - `P52.M2.E2.T002` Add workspace and session target resolution
+  - `P52.M3.E1.T001` Add unit/integration tests for MCP stdio flows
+  - `P52.M3.E1.T002` Document setup, auth, and example client wiring
+  - `P52.M3.E1.T003` Run lint/targeted tests and capture launch checklist
+- Created bug IDs: none
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,177 @@
+---
+id: P7.M3.E7.T001
+title: Extend validate_arguments with constraint validation
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- validation
+- json-schema
+- constraints
+claimed_by: cli-user
+claimed_at: '2026-02-07T03:20:42.385477+00:00'
+started_at: '2026-02-07T03:20:42.385477+00:00'
+completed_at: '2026-02-07T03:24:21.789885+00:00'
+duration_minutes: 3.6567399666666662
+---
+
+# Extend validate_arguments with constraint validation
+
+The `ToolExecutor.validate_arguments/2` function currently only validates types (string, number,
+integer, boolean, object, array, null) but does NOT validate JSON Schema constraints like
+minimum/maximum, pattern, enum, minLength/maxLength. This means tools that define constraints
+in their schemas have those constraints silently ignored.
+
+For example, a tool schema defining `{"type": "integer", "minimum": 1, "maximum": 100}` will
+accept any integer including -999 or 99999.
+
+This task extends the validation pipeline to check JSON Schema constraint keywords.
+
+## Requirements
+
+- [ ] Extend `validate_typed_property/3` in `lib/pag_server/tools/tool_executor.ex` to check constraints after type validation passes:
+  ```elixir
+  defp validate_typed_property(key, value, prop_schema) do
+    case Map.get(prop_schema, "type") do
+      nil ->
+        {:error, invalid_args_error("Property #{key} must define a type")}
+      type ->
+        if type_matches?(value, type) do
+          validate_constraints(key, value, prop_schema)
+        else
+          {:error, invalid_args_error("Invalid type for #{key}")}
+        end
+    end
+  end
+  ```
+- [ ] Implement `validate_constraints/3` that checks all applicable constraints:
+  - For numbers/integers:
+    - [ ] `minimum` - value must be >= minimum
+    - [ ] `maximum` - value must be <= maximum
+    - [ ] `exclusiveMinimum` - value must be > minimum
+    - [ ] `exclusiveMaximum` - value must be < maximum
+    - [ ] `multipleOf` - value must be evenly divisible
+  - For strings:
+    - [ ] `minLength` - string length must be >= minLength
+    - [ ] `maxLength` - string length must be <= maxLength
+    - [ ] `pattern` - string must match regex pattern
+    - [ ] `format` - optional format validation (e.g., "email", "uri", "date-time")
+  - For arrays:
+    - [ ] `minItems` - array length must be >= minItems
+    - [ ] `maxItems` - array length must be <= maxItems
+  - For any type:
+    - [ ] `enum` - value must be one of the listed values
+    - [ ] `const` - value must equal the const value
+- [ ] Return clear error messages including the constraint that was violated:
+  ```elixir
+  {:error, invalid_args_error("Argument '#{key}' value #{value} is below minimum #{min}")}
+  {:error, invalid_args_error("Argument '#{key}' does not match pattern '#{pattern}'")}
+  {:error, invalid_args_error("Argument '#{key}' must be one of: #{inspect(enum_values)}")}
+  ```
+- [ ] Handle `pattern` validation safely:
+  - Compile regex with `Regex.compile/1`, return error if regex is invalid
+  - Set a timeout or limit on regex complexity to prevent ReDoS
+- [ ] Write comprehensive tests:
+  - Test minimum/maximum for integers and floats
+  - Test exclusiveMinimum/exclusiveMaximum
+  - Test minLength/maxLength for strings
+  - Test pattern validation with valid and invalid regexes
+  - Test enum validation
+  - Test minItems/maxItems for arrays
+  - Test multipleOf
+  - Test error messages are clear and include constraint details
+  - Test that constraints are only checked when present (optional by default)
+
+## Acceptance Criteria
+
+- [ ] Number arguments validated against minimum/maximum/exclusiveMinimum/exclusiveMaximum/multipleOf
+- [ ] String arguments validated against minLength/maxLength/pattern
+- [ ] Array arguments validated against minItems/maxItems
+- [ ] Enum validation works for all types
+- [ ] Error messages clearly identify which constraint was violated and what the expected range/values are
+- [ ] Invalid regex patterns in schema return clear error (not crash)
+- [ ] No performance regression for tools that don't use constraints
+- [ ] All existing tests continue to pass
+
+## Context
+
+**Source**: Architecture audit - tool system security gap analysis (2026-02-06)
+**Severity**: MINOR - type validation catches most issues; constraint validation is defense-in-depth
+
+**Related tasks**:
+- P4.M1.E1.T003 (Validation) - original validation implementation
+- P4.M0.E6 (Unified Tool Schema) - schema definition
+
+## Notes
+
+Current validation in `lib/pag_server/tools/tool_executor.ex` (lines 260-272):
+```elixir
+defp validate_typed_property(key, value, prop_schema) do
+  case Map.get(prop_schema, "type") do
+    nil ->
+      {:error, invalid_args_error("Property #{key} must define a type")}
+    type ->
+      if type_matches?(value, type) do
+        :ok  # <-- Returns :ok immediately, never checks constraints
+      else
+        {:error, invalid_args_error("Invalid type for #{key}")}
+      end
+  end
+end
+```
+
+Example constraint validation implementation:
+```elixir
+defp validate_constraints(_key, _value, prop_schema) when map_size(prop_schema) <= 1, do: :ok
+
+defp validate_constraints(key, value, prop_schema) do
+  constraints = [
+    {:minimum, &validate_minimum/3},
+    {:maximum, &validate_maximum/3},
+    {"minimum", &validate_minimum/3},
+    {"maximum", &validate_maximum/3},
+    {"minLength", &validate_min_length/3},
+    {"maxLength", &validate_max_length/3},
+    {"pattern", &validate_pattern/3},
+    {"enum", &validate_enum/3}
+  ]
+
+  Enum.reduce_while(constraints, :ok, fn {constraint_key, validator}, _acc ->
+    case Map.get(prop_schema, constraint_key) do
+      nil -> {:cont, :ok}
+      constraint_value ->
+        case validator.(key, value, constraint_value) do
+          :ok -> {:cont, :ok}
+          error -> {:halt, error}
+        end
+    end
+  end)
+end
+
+defp validate_minimum(key, value, min) when is_number(value) and is_number(min) do
+  if value >= min, do: :ok,
+  else: {:error, invalid_args_error("Argument '#{key}': value #{value} is below minimum #{min}")}
+end
+
+defp validate_pattern(key, value, pattern) when is_binary(value) and is_binary(pattern) do
+  case Regex.compile(pattern) do
+    {:ok, regex} ->
+      if Regex.match?(regex, value), do: :ok,
+      else: {:error, invalid_args_error("Argument '#{key}' does not match pattern '#{pattern}'")}
+    {:error, _} ->
+      {:error, invalid_args_error("Invalid regex pattern '#{pattern}' in schema for '#{key}'")}
+  end
+end
+
+defp validate_enum(key, value, enum_values) when is_list(enum_values) do
+  if value in enum_values, do: :ok,
+  else: {:error, invalid_args_error("Argument '#{key}' must be one of: #{inspect(enum_values)}")}
+end
+```
+
+**Key files**:
+- `lib/pag_server/tools/tool_executor.ex` (lines 196-290, validation pipeline)
+- `test/pag_server/tools/tool_executor_test.exs` (if exists, or tool_schema_test.exs)

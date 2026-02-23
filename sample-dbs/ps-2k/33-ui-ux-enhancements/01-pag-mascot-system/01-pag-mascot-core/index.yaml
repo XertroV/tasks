@@ -1,0 +1,70 @@
+id: P33.M1.E1
+name: Pag Mascot Core
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-design-pag-mascot-appearance-a.todo
+  title: Design Pag mascot appearance and sprite system
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-create-paglivecomponent-for-re.todo
+  title: Create PagLiveComponent for rendering mascot
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-css-animation-system.todo
+  title: Implement CSS animation system for Pag states
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-tamagotchi-mechanics-mood.todo
+  title: Add tamagotchi mechanics (mood, energy, hunger)
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-implement-user-interactions-cl.todo
+  title: Implement user interactions (click, hover, pet)
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-integrate-pag-into-dashboard-l.todo
+  title: Integrate Pag into dashboard layout
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T007
+  file: T007-add-state-persistence-for-pag.todo
+  title: Add state persistence for Pag (localStorage)
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

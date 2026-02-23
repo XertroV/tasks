@@ -1,0 +1,58 @@
+---
+id: P43.M1.E3.T002
+title: Integrate CallRecorder into Registry streaming path; capture TTFT from TokenProcessor
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:03:19.988604+00:00'
+started_at: '2026-02-19T20:03:19.988604+00:00'
+completed_at: '2026-02-19T20:25:51.476087+00:00'
+duration_minutes: 22.524791216666664
+---
+
+# Integrate CallRecorder into Registry streaming path; capture TTFT from TokenProcessor
+
+
+
+## Requirements
+
+- Modify the streaming path in `lib/pag_server/llm/registry.ex` to record streaming LLM calls via `CallRecorder`
+- The streaming API surface for callers must remain unchanged
+- TTFT (time-to-first-token) must be captured from `TokenProcessor` stats if available and persisted on the record
+
+## Acceptance Criteria
+
+- In the `:stream_chat` dispatch path of `registry.ex` (or equivalent streaming entry point):
+  1. `CallRecorder.extract_context(provider_opts)` is called first; cleaned `provider_opts` (without context keys) is passed to the provider stream setup
+  2. `start_time = System.monotonic_time(:millisecond)` is captured before the stream is opened
+  3. `CallRecorder.insert_pending(:stream_chat, model_spec, messages, context)` is called before the stream is consumed, yielding `{:ok, record_id}`
+  4. When the first chunk arrives (first item yielded from the stream or first message through the pipeline), `CallRecorder.mark_streaming(record_id)` is called
+  5. After the stream is fully consumed and a `StreamAccumulator` result is available, `CallRecorder.complete(record_id, accumulator, elapsed_ms)` is called where `elapsed_ms = System.monotonic_time(:millisecond) - start_time`
+  6. If the stream errors or times out at any point, `CallRecorder.fail(record_id, reason)` is called with an appropriate `opts` keyword (e.g. `status: :timed_out` for timeout errors)
+
+- TTFT capture: if `TokenProcessor` (or the stream pipeline) exposes a `ttft_ms` stat in the accumulator or via metadata, `complete/3` receives it and persists it to `llm_call_records.ttft_ms`; if TTFT is not available, the field is left nil (no error)
+
+- The existing streaming API for callers is unchanged:
+  - The stream still yields chunks to the caller in the same format as before
+  - The caller-facing return value of the streaming entry point is identical
+  - No additional latency is introduced on the hot path (all recorder calls are async via `Task.start`)
+
+- `insert_pending` failure (e.g. Repo unavailable): execution continues, streaming proceeds normally; a `Logger.warning` is emitted and `record_id` is set to a sentinel (e.g. `nil`) so subsequent recorder calls are no-ops when `record_id` is `nil`
+
+- `mark_streaming`, `complete`, and `fail` are all guarded: if `record_id` is `nil`, the call is skipped silently
+
+- Existing streaming tests pass without modification
+
+- A new integration test verifies that after a full streaming call (using a mock stream or stubbed provider), a record exists in the database with:
+  - `status: :completed`
+  - `output_tokens` > 0 (or matching the mock accumulator values)
+  - `completed_at` non-nil
+  - `duration_ms` >= 0
+
+- A test verifies that a streaming call that errors results in a record with `status: :failed` or `status: :timed_out`
+
+- `mix compile` produces no errors or warnings for the modified `registry.ex`

@@ -1,0 +1,83 @@
+---
+id: P7.M3.E1.T003
+title: Capabilities struct tests
+status: done
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on:
+- P7.M3.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:30:54.604159'
+started_at: '2026-02-06T14:30:54.604159'
+completed_at: '2026-02-06T14:31:22.919136'
+tags:
+- security
+- capabilities
+- testing
+duration_minutes: 0.47191611666666666
+---
+
+# Capabilities struct tests
+
+Create tests for Capabilities struct and helper functions.
+
+## Requirements
+
+- [x] Create `test/pag_server/security/capabilities_test.exs`
+- [x] Test default/0 returns valid struct
+- [x] Test restricted/0 has minimal permissions
+- [x] Test developer/0 has appropriate permissions
+- [x] Test merge/2 takes more restrictive
+- [x] Test deny_tool/2 removes tool correctly
+- [x] Test allow_path/2 adds path
+- [x] Test invalid capability combinations
+
+## Acceptance Criteria
+
+- [x] All tests pass
+- [x] Coverage >90% for Capabilities module
+- [x] Tests document expected behavior
+- [x] Edge cases covered (empty lists, nil values)
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M3 (Capabilities)
+
+## Notes
+
+Test examples:
+```elixir
+defmodule PagServer.Security.CapabilitiesTest do
+  use ExUnit.Case, async: true
+  alias PagServer.Security.Capabilities
+  
+  describe "default/0" do
+    test "returns valid capabilities struct" do
+      caps = Capabilities.default()
+      assert %Capabilities{} = caps
+      assert caps.allowed_tools == :all
+      assert caps.can_spawn_subagents == true
+    end
+  end
+  
+  describe "merge/2" do
+    test "takes more restrictive tool access" do
+      cap1 = %Capabilities{allowed_tools: :all}
+      cap2 = %Capabilities{allowed_tools: {:allow, ["read_file"]}}
+      
+      merged = Capabilities.merge(cap1, cap2)
+      assert merged.allowed_tools == {:allow, ["read_file"]}
+    end
+    
+    test "takes minimum resource limits" do
+      cap1 = %Capabilities{resource_limits: %{max_tokens: 1000}}
+      cap2 = %Capabilities{resource_limits: %{max_tokens: 500}}
+      
+      merged = Capabilities.merge(cap1, cap2)
+      assert merged.resource_limits.max_tokens == 500
+    end
+  end
+end
+```

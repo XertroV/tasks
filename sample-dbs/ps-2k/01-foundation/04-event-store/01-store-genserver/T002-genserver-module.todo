@@ -1,0 +1,211 @@
+---
+id: P1.M4.E1.T002
+title: Create EventStore GenServer module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M4.E1.T001
+claimed_by: claude
+claimed_at: '2026-02-05T09:23:28.754647'
+started_at: '2026-02-05T09:23:28.754647'
+completed_at: '2026-02-05T09:26:48.746515'
+tags:
+- event-store
+- genserver
+- otp
+- state-management
+---
+
+# Create EventStore GenServer module
+
+Create the `PagServer.Events.EventStore` GenServer module for in-memory event storage with subscription support.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/events/event_store.ex` module
+- [ ] Implement GenServer with state containing:
+  - [ ] `events` - list of events (ordered by insertion)
+  - [ ] `subscriptions` - map of topics to subscriber PIDs
+  - [ ] `next_id` - counter for auto-incrementing event IDs
+- [ ] Implement `start_link/1` with `:name` option
+- [ ] Implement `init/1` callback initializing empty state
+- [ ] Add `@moduledoc` with comprehensive usage examples
+- [ ] Add `@doc` for each public function with type specs
+- [ ] Define state struct with proper type specifications
+- [ ] Ensure module follows architecture.md guidelines (<500 LoC)
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] `start_link/1` returns `{:ok, pid}` and registers GenServer
+- [ ] State properly tracks events and subscriptions
+- [ ] GenServer can be started as part of supervision tree
+- [ ] State struct has proper type specs for Dialyzer
+- [ ] Code follows architecture.md guidelines (<500 LoC target)
+- [ ] Dialyzer passes with no type errors
+- [ ] Module documentation includes clear usage examples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 7.1 (Session Replay & Event Sourcing)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.6 (Events Domain)
+- `.plan/2026-02-05-velvet-cascade/index.md` Lines 241-250 (events table schema)
+
+**Key Design Points**:
+- In-memory storage for Phase 1 (database persistence in Phase 2)
+- Events stored in insertion order for deterministic replay
+- Subscriptions enable real-time event streaming
+- Auto-incrementing IDs for event ordering
+- Stateless API functions (all state in GenServer)
+
+## Implementation Guide
+
+### Module Structure
+
+```elixir
+defmodule PagServer.Events.EventStore do
+  @moduledoc """
+  GenServer for in-memory event storage with pub/sub support.
+
+  Provides append-only event storage with real-time subscriptions.
+  Events are stored in insertion order and can be queried by agent_id,
+  session_id, event type, and time range.
+
+  ## Usage
+
+      # Start the store
+      {:ok, pid} = EventStore.start_link([])
+
+      # Append an event (see T003 for implementation)
+      event = %Event{event_type: "agent_created", agent_id: "abc123", payload: %{}}
+      {:ok, event_id} = EventStore.append_event(event)
+
+      # Query events (see T003 for implementation)
+      events = EventStore.query_events(agent_id: "abc123")
+
+      # Subscribe to events (see T004 for implementation)
+      :ok = EventStore.subscribe("events:abc123")
+  """
+
+  use GenServer
+  alias PagServer.Events.Event
+
+  @type state :: %{
+    events: [Event.t()],
+    subscriptions: %{String.t() => [pid()]},
+    next_id: pos_integer()
+  }
+
+  ## Client API
+
+  @doc """
+  Start the EventStore GenServer.
+
+  ## Options
+
+    - `:name` - The name to register the GenServer (default: `__MODULE__`)
+
+  ## Examples
+
+      {:ok, pid} = EventStore.start_link(name: EventStore)
+  """
+  @spec start_link(keyword()) :: GenServer.on_start()
+  def start_link(opts \\ []) do
+    name = Keyword.get(opts, :name, __MODULE__)
+    GenServer.start_link(__MODULE__, opts, name: name)
+  end
+
+  ## Server Callbacks
+
+  @impl true
+  def init(_opts) do
+    state = %{
+      events: [],
+      subscriptions: %{},
+      next_id: 1
+    }
+    {:ok, state}
+  end
+
+  # Additional callbacks will be implemented in T003 and T004
+end
+```
+
+### State Structure
+
+The GenServer state contains:
+
+1. **`events`** - List of `Event` structs in insertion order
+   - Newest events appended to the end
+   - Enables efficient iteration for queries
+
+2. **`subscriptions`** - Map of topic strings to lists of subscriber PIDs
+   - Format: `%{"events:session_id" => [pid1, pid2], ...}`
+   - Enables targeted event broadcasting
+
+3. **`next_id`** - Counter for auto-incrementing event IDs
+   - Starts at 1
+   - Increments on each append
+   - Ensures unique, ordered event IDs
+
+## Notes
+
+### GenServer Patterns
+
+**Why GenServer?**
+- Serializes all event operations (no race conditions)
+- Provides consistent view of event stream
+- Enables subscription management with process monitoring
+- Simplifies testing and debugging
+
+**State Management**:
+- State is immutable (functional updates only)
+- Events list grows monotonically (append-only)
+- Subscriptions tracked with process monitoring (auto-cleanup)
+
+### Memory Considerations
+
+**Phase 1 (In-Memory)**:
+- Target: <256MB for event store
+- Hard limit: 512MB
+- Approximate capacity: ~500K events @ 512 bytes/event
+
+**Phase 2 (Database)**:
+- Move to PostgreSQL for persistence
+- Keep recent events in memory for fast access
+- Use ETS cache with TTL and eviction
+
+### Integration Points
+
+This module will integrate with:
+- `PagServer.Events.Event` (struct definition from T001)
+- `Phoenix.PubSub` (for broadcasting to subscribers in T004)
+- `PagServer.Agents.Agent` (agents append events via this store)
+- `PagServer.Sessions.Replay` (queries events for session replay)
+
+### Future Enhancements (Phase 2)
+
+- [ ] Batch append for multiple events
+- [ ] Event compression for large payloads
+- [ ] Database persistence layer
+- [ ] Event cleanup/archival after N days
+- [ ] Metrics (events/sec, query latency, memory usage)
+
+## Troubleshooting
+
+**Error**: GenServer fails to start
+- Check that name is not already registered
+- Verify init/1 returns `{:ok, state}` tuple
+
+**Memory growth**:
+- Monitor with `:erlang.process_info(pid, :memory)`
+- Implement event cleanup if approaching limits
+- Consider moving to database persistence (Phase 2)
+
+**Performance**:
+- Query operations are O(n) in Phase 1 (scan all events)
+- Optimize with indexes in Phase 2 (database)
+- Consider ETS for hot path queries if needed

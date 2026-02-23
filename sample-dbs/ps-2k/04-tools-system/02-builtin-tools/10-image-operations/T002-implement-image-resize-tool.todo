@@ -1,0 +1,265 @@
+---
+id: P4.M2.E10.T002
+title: Implement image_resize tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- tools
+- image
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:03:10.632160'
+started_at: '2026-02-06T03:03:10.632160'
+completed_at: '2026-02-06T03:05:09.360926'
+duration_minutes: 1.97881255
+---
+
+# Implement image_resize tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/image_resize.ex` (~150 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use Mogrify for image resizing operations
+- [ ] Support width, height, fit modes (contain, cover, fill, exact)
+- [ ] Preserve aspect ratio by default
+- [ ] Support quality parameter for JPEG output
+- [ ] Validate input/output paths within workspace
+- [ ] Create output directory if doesn't exist
+
+## Acceptance Criteria
+
+- [ ] Accepts source path, destination path, width, height parameters
+- [ ] Supports fit modes: "contain" (fit within), "cover" (fill and crop), "fill" (stretch), "exact" (ignore aspect ratio)
+- [ ] Preserves aspect ratio when only width OR height specified
+- [ ] Accepts quality parameter (1-100) for JPEG/WebP output
+- [ ] Converts between formats if output extension differs from input
+- [ ] Returns output path, new dimensions, file size
+- [ ] Handles errors: source not found, invalid dimensions, disk full, permission denied, unsupported format
+- [ ] Test coverage: resize by width, by height, by both, fit modes, format conversion, quality settings, invalid paths
+- [ ] Security: validates both source and destination within workspace, prevents overwriting system files
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Fit modes match CSS object-fit for consistency
+- Quality parameter crucial for controlling output size
+- Mogrify handles format conversion automatically
+- Must create parent directories for output path
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ImageResize do
+  @behaviour PAGServer.Tools.Tool
+  @max_dimension 10_000  # Prevent excessive memory usage
+
+  @impl true
+  def name, do: "image_resize"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "image_resize",
+      description: "Resize an image file",
+      parameters: %{
+        type: "object",
+        properties: %{
+          source: %{
+            type: "string",
+            description: "Source image path (relative to workspace)"
+          },
+          destination: %{
+            type: "string",
+            description: "Destination image path (relative to workspace)"
+          },
+          width: %{
+            type: "integer",
+            description: "Target width in pixels (optional if height provided)"
+          },
+          height: %{
+            type: "integer",
+            description: "Target height in pixels (optional if width provided)"
+          },
+          fit: %{
+            type: "string",
+            enum: ["contain", "cover", "fill", "exact"],
+            description: "Resize fit mode (default: contain)"
+          },
+          quality: %{
+            type: "integer",
+            minimum: 1,
+            maximum: 100,
+            description: "Output quality for JPEG/WebP (default: 85)"
+          }
+        },
+        required: ["source", "destination"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"source" => src, "destination" => dest} = args, context) do
+    with :ok <- validate_dimensions(args),
+         :ok <- validate_path(src, context.workspace_path),
+         :ok <- validate_path(dest, context.workspace_path),
+         {:ok, src_path} <- resolve_path(src, context.workspace_path),
+         {:ok, dest_path} <- prepare_output_path(dest, context.workspace_path),
+         {:ok, result} <- resize_image(src_path, dest_path, args) do
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, "Image resize failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_dimensions(%{"width" => w}) when w > @max_dimension,
+    do: {:error, "Width exceeds maximum dimension"}
+  defp validate_dimensions(%{"height" => h}) when h > @max_dimension,
+    do: {:error, "Height exceeds maximum dimension"}
+  defp validate_dimensions(%{"width" => w}) when w < 1,
+    do: {:error, "Width must be positive"}
+  defp validate_dimensions(%{"height" => h}) when h < 1,
+    do: {:error, "Height must be positive"}
+  defp validate_dimensions(%{"width" => _, "height" => _}), do: :ok
+  defp validate_dimensions(%{"width" => _}), do: :ok
+  defp validate_dimensions(%{"height" => _}), do: :ok
+  defp validate_dimensions(_), do: {:error, "Must specify width and/or height"}
+
+  defp validate_path(path, workspace) do
+    cond do
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      Path.type(path) == :absolute and not String.starts_with?(path, workspace) ->
+        {:error, "Absolute paths outside workspace not allowed"}
+      true ->
+        :ok
+    end
+  end
+
+  defp resolve_path(path, workspace) do
+    full_path = 
+      if Path.type(path) == :absolute do
+        path
+      else
+        Path.join(workspace, path)
+      end
+      |> Path.expand()
+    
+    if String.starts_with?(full_path, workspace) and File.exists?(full_path) do
+      {:ok, full_path}
+    else
+      {:error, "File not found or outside workspace"}
+    end
+  end
+
+  defp prepare_output_path(path, workspace) do
+    full_path = 
+      if Path.type(path) == :absolute do
+        path
+      else
+        Path.join(workspace, path)
+      end
+      |> Path.expand()
+    
+    if String.starts_with?(full_path, workspace) do
+      File.mkdir_p!(Path.dirname(full_path))
+      {:ok, full_path}
+    else
+      {:error, "Output path outside workspace"}
+    end
+  end
+
+  defp resize_image(src, dest, args) do
+    fit = Map.get(args, "fit", "contain")
+    quality = Map.get(args, "quality", 85)
+    
+    img = Mogrify.open(src)
+    
+    img = case {Map.get(args, "width"), Map.get(args, "height")} do
+      {w, h} when not is_nil(w) and not is_nil(h) ->
+        apply_fit_mode(img, w, h, fit)
+      
+      {w, nil} ->
+        Mogrify.resize(img, "#{w}x")
+      
+      {nil, h} ->
+        Mogrify.resize(img, "x#{h}")
+    end
+    
+    img = Mogrify.quality(img, to_string(quality))
+    
+    img = %{img | path: dest, ext: Path.extname(dest)}
+    img = Mogrify.save(img, path: dest)
+    
+    stat = File.stat!(dest)
+    
+    {:ok, %{
+      path: dest,
+      width: img.width,
+      height: img.height,
+      file_size: stat.size,
+      format: img.format
+    }}
+  rescue
+    e -> {:error, Exception.message(e)}
+  end
+
+  defp apply_fit_mode(img, w, h, "contain") do
+    # Fit within dimensions, preserve aspect ratio
+    Mogrify.resize(img, "#{w}x#{h}")
+  end
+  
+  defp apply_fit_mode(img, w, h, "cover") do
+    # Fill dimensions, crop excess, preserve aspect ratio
+    Mogrify.resize(img, "#{w}x#{h}^") |> Mogrify.gravity("center") |> Mogrify.extent("#{w}x#{h}")
+  end
+  
+  defp apply_fit_mode(img, w, h, "fill") do
+    # Stretch to exact dimensions, ignore aspect ratio
+    Mogrify.resize(img, "#{w}x#{h}!")
+  end
+  
+  defp apply_fit_mode(img, w, h, "exact") do
+    # Same as fill
+    Mogrify.resize(img, "#{w}x#{h}!")
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "source": "images/original.jpg",
+  "destination": "images/thumbnail.jpg",
+  "width": 300,
+  "height": 200,
+  "fit": "cover",
+  "quality": 85
+}
+```
+
+Example response:
+```json
+{
+  "path": "images/thumbnail.jpg",
+  "width": 300,
+  "height": 200,
+  "file_size": 15234,
+  "format": "JPEG"
+}
+```
+
+Security considerations:
+- Path validation for both source and destination
+- Dimension limits to prevent memory exhaustion
+- Workspace boundary enforcement
+- Safe file overwrite (warn if destination exists)

@@ -1,0 +1,55 @@
+---
+id: P12.M3.E1.T001
+title: Replace length/1 with == [] in tests (20 warnings)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:29:37.241964+00:00'
+started_at: '2026-02-13T10:29:37.241964+00:00'
+completed_at: '2026-02-13T10:37:22.579931+00:00'
+duration_minutes: 7.755632433333333
+---
+
+# Replace length/1 with == [] in tests (20 warnings)
+
+## Description
+
+Fix Credo warnings about using `length(list) == 0` instead of the more idiomatic `list == []`. This is a simple refactoring task to improve code quality.
+
+## Acceptance Criteria
+
+- [ ] Run `mix credo` to identify all occurrences
+- [ ] Replace `length(list) == 0` with `list == []`
+- [ ] Replace `length(list) > 0` with `list != []` or pattern matching
+- [ ] All 20+ warnings resolved
+- [ ] Tests pass
+- [ ] Lint passes (including `mix credo`)
+
+## Context
+
+- Related files: Multiple test files in `test/pag_server/`
+- Credo check: `Credo.Check.Warning.ExpensiveEmptyListCheck`
+- Part of epic: Resolve Credo Warnings
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 10:29 UTC
+**Sibling tasks**: P12.M3.E1.T002, P12.M3.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M3.E1.T001 → P12.M3.E1.T002 → P12.M3.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M3.E1.T001: .tasks/12-test-quality-technical-debt/03-code-quality-debt/01-resolve-credo-warnings/T001-replace-length-1-with-in-tests.todo
+- P12.M3.E1.T002: .tasks/12-test-quality-technical-debt/03-code-quality-debt/01-resolve-credo-warnings/T002-replace-enum-map-enum-join-wit.todo
+- P12.M3.E1.T003: .tasks/12-test-quality-technical-debt/03-code-quality-debt/01-resolve-credo-warnings/T003-fix-single-clause-with-to-use.todo

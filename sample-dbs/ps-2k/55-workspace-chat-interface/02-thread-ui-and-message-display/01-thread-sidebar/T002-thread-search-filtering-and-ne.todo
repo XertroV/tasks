@@ -1,0 +1,26 @@
+---
+id: P55.M2.E1.T002
+title: Thread search filtering and new thread creation flow
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- component
+- sidebar
+- search
+claimed_by: cli-user
+claimed_at: '2026-02-22T09:04:49.911883+00:00'
+started_at: '2026-02-22T09:04:49.911883+00:00'
+completed_at: '2026-02-22T09:09:01.338641+00:00'
+duration_minutes: 4.190445666666666
+---
+Add search input to thread sidebar that filters threads by name or agent name (client-side filtering via sidebar_search assign). Add 'New Thread' button that creates a new session. If workspace has multiple agents, show agent picker (simple dropdown or modal). On creation: Repo.insert new session, add to threads list, push_patch to new thread URL. Handle creation errors.
+
+## Acceptance Criteria
+- Search input filters thread list by name/agent name
+- New Thread button visible and functional
+- Agent picker shown when workspace has multiple agents
+- New thread created, added to sidebar, and navigated to
+- Creation errors shown via flash/alert

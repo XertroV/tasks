@@ -1,0 +1,41 @@
+id: P24.M3
+name: Heartbeat Plugin
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Config Schema
+  path: 01-config-schema
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Scheduler
+  path: 02-scheduler
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Plugin and MCP Tools
+  path: 03-plugin-and-mcp-tools
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

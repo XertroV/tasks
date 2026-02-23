@@ -1,0 +1,27 @@
+---
+id: P24.M3.E1.T001
+title: Heartbeat config fields in plugin KV store
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:49:12.561708+00:00'
+started_at: '2026-02-18T15:49:12.561708+00:00'
+completed_at: '2026-02-18T16:01:07.170010+00:00'
+duration_minutes: 11.91013815
+---
+
+# Heartbeat config fields in plugin KV store
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

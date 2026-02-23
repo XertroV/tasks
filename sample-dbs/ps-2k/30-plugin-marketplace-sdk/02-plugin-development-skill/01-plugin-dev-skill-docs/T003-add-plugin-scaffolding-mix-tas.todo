@@ -1,0 +1,16 @@
+---
+id: P30.M2.E1.T003
+title: Add plugin scaffolding Mix task
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:20:06.771021+00:00'
+started_at: '2026-02-18T19:20:06.771021+00:00'
+completed_at: '2026-02-18T19:24:38.923963+00:00'
+duration_minutes: 4.535882083333333
+---
+Create Mix.Tasks.Pag.Gen.Plugin task: mix pag.gen.plugin my_plugin. Generates: plugins/my_plugin/plugin.json, plugins/my_plugin/lib/my_plugin.ex, test/pag_server/plugins/my_plugin_test.exs. Uses EEx templates.

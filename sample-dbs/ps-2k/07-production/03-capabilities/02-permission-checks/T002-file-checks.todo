@@ -1,0 +1,98 @@
+---
+id: P7.M3.E2.T002
+title: File permission checks
+status: done
+estimate_hours: 1
+complexity: medium
+priority: high
+depends_on:
+- P7.M3.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:55:18.679315'
+started_at: '2026-02-06T14:55:18.679315'
+completed_at: '2026-02-06T14:59:58.817898'
+tags:
+- security
+- permissions
+- filesystem
+duration_minutes: 4.668976166666667
+---
+
+# File permission checks
+
+Implement permission checking functions for file operations.
+
+## Requirements
+
+- [ ] Implement `can_access_path?/2` function
+- [ ] Implement `can_write_path?/2` function
+- [ ] Handle :full, :none, :read_only, {:paths, list}
+- [ ] Resolve symlinks before checking
+- [ ] Handle relative vs absolute paths
+- [ ] Prevent directory traversal attacks
+- [ ] Add check_file_permission!/3 (raises on deny)
+
+## Acceptance Criteria
+
+- [ ] Path checks handle all access patterns
+- [ ] Symlinks resolved before permission check
+- [ ] Directory traversal prevented (../ attacks)
+- [ ] Read vs write correctly distinguished
+- [ ] Errors include attempted path
+- [ ] Security events logged
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1433-1455 (File access checks)
+- Task breakdown P7.M3.E2 (Permission Checks)
+
+**Key Points**:
+- Always expand to absolute paths
+- Check parent directory permissions
+- Prevent /workspace/../etc/passwd attacks
+- Log suspicious access attempts
+
+## Notes
+
+From architecture:
+```elixir
+def can_access_path?(%__MODULE__{} = caps, path) do
+  case caps.file_access do
+    :full -> true
+    :none -> false
+    :read_only -> true
+    {:paths, allowed} ->
+      expanded = Path.expand(path)
+      Enum.any?(allowed, fn allowed_path ->
+        String.starts_with?(expanded, Path.expand(allowed_path))
+      end)
+  end
+end
+
+def can_write_path?(%__MODULE__{} = caps, path) do
+  case caps.file_access do
+    :full -> true
+    :read_only -> false
+    :none -> false
+    {:paths, allowed} ->
+      expanded = Path.expand(path)
+      Enum.any?(allowed, fn allowed_path ->
+        String.starts_with?(expanded, Path.expand(allowed_path))
+      end)
+  end
+end
+
+def check_file_permission!(caps, path, mode) do
+  allowed = case mode do
+    :read -> can_access_path?(caps, path)
+    :write -> can_write_path?(caps, path)
+  end
+  
+  unless allowed do
+    :telemetry.execute([:pag, :security, :file_denied], %{}, %{path: path, mode: mode})
+    raise PagServer.Security.PermissionDeniedError, 
+      "File access denied: #{path} (#{mode})"
+  end
+end
+```

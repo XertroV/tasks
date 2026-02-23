@@ -1,0 +1,30 @@
+---
+id: P51.M1.E1.T003
+title: Create docs/browser-testing/fix-agent-guide.md
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:35:52.136352+00:00'
+started_at: '2026-02-20T14:35:52.136352+00:00'
+completed_at: '2026-02-20T14:47:42.733995+00:00'
+duration_minutes: 11.843293866666667
+---
+## Purpose
+Role guide for Fix Agent teammates. Fix agents work on assigned bugs without needing the browser.
+
+## Acceptance Criteria
+- [ ] Role description: receive bug assignment, read .todo file, reproduce (via unit/integration test if possible), fix the code
+- [ ] Expectation-setting: pag-server is pre-alpha; missing features, broken flows, and unimplemented stubs are EXPECTED and part of the mission — file or fix them
+- [ ] Quick-fix protocol: for trivial fixes found during code review, use 'backlog done B_xxx' immediately without browser verify step
+- [ ] Standard fix protocol: edit code → mix test.changed → update bug .todo with Playwright scenario notes → commit
+- [ ] 'bl fixed' usage: after a fix, run 'backlog fixed B_xxx' to mark it resolved inline (documents the commit + fix summary in the bug file)
+  - NOTE: 'backlog fixed' may need to be implemented if not present in the CLI
+- [ ] Done protocol: message lead with bug ID, one-line fix description, and any follow-up bugs discovered
+- [ ] Commit format: 'fix: [area] [short description]'
+
+## Notes
+Fix agents should proactively file new bugs if they discover related issues while fixing. Use 'backlog bug' for new issues and 'backlog fixed' for resolved ones.

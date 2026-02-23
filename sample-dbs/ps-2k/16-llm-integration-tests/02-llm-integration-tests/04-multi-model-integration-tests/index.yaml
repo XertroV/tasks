@@ -1,0 +1,21 @@
+id: P16.M2.E4
+name: Multi-Model Integration Tests
+status: pending
+estimate_hours: 0.5
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-multi-provider-fallback-te.todo
+  title: Add multi-provider fallback test
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

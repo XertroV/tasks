@@ -1,0 +1,62 @@
+---
+id: P11.M3.E1.T003
+title: Add plugin metadata and manifest parsing
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T10:31:06.548025+00:00'
+started_at: '2026-02-12T10:31:06.548025+00:00'
+completed_at: '2026-02-12T11:03:08.152551+00:00'
+duration_minutes: 32.02674185
+---
+
+# Add plugin metadata and manifest parsing
+
+Implement plugin manifest parsing and metadata extraction from plugin.json manifests.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/manifest.ex` module:
+  - [ ] Define manifest schema (using Ecto.Changeset for validation)
+  - [ ] Required fields: name, version, description, author, license
+  - [ ] Optional fields: homepage, repository, documentation, tags
+  - [ ] Dependency field: format `{plugin_name: "^x.y"}` (semver ranges)
+  - [ ] Configuration schema: array of `{key, type, required?, default, description}`
+
+- [ ] Create `lib/pag_server/plugins/manifest_parser.ex`:
+  - [ ] Parse JSON manifest from file/URL
+  - [ ] Validate manifest against schema
+  - [ ] Return `{:ok, manifest}` or `{:error, reasons}`
+  - [ ] Handle missing/malformed JSON gracefully
+
+- [ ] Create `lib/pag_server/plugins/metadata_extractor.ex`:
+  - [ ] Extract author, license, homepage from manifest
+  - [ ] Calculate plugin size/complexity metrics
+  - [ ] Generate plugin description summary
+  - [ ] Detect declared capabilities (tools, models, etc.)
+
+- [ ] Add manifest validation rules:
+  - [ ] Version must be valid semver
+  - [ ] Name must match alphanumeric pattern
+  - [ ] Author email validation (if provided)
+  - [ ] License must be SPDX identifier or custom
+  - [ ] Dependencies must reference valid plugins (lazy validation)
+
+- [ ] Implement manifest caching:
+  - [ ] Cache parsed manifests in memory (Cachex)
+  - [ ] Invalidate cache on plugin updates
+
+## Acceptance Criteria
+
+- [ ] Manifest schema validates all required/optional fields
+- [ ] Parser correctly handles valid and invalid JSON
+- [ ] Semver version validation works for x.y.z, x.y, ^x.y, ~x.y ranges
+- [ ] Dependency declarations parsed correctly
+- [ ] Metadata extraction produces accurate plugin summaries
+- [ ] Caching reduces manifest parse time by 90%
+- [ ] All validation errors include helpful messages
+- [ ] Tests verify manifest parsing with 10+ fixture files

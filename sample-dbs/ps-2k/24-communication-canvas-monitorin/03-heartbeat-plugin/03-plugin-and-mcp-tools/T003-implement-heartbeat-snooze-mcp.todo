@@ -1,0 +1,23 @@
+---
+id: P24.M3.E3.T003
+title: Implement heartbeat_snooze MCP tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:08:24.247513+00:00'
+started_at: '2026-02-19T14:08:24.247513+00:00'
+completed_at: '2026-02-19T14:16:21.166101+00:00'
+duration_minutes: 7.948642933333333
+---
+## Description
+MCP tool to snooze heartbeat for N minutes.
+
+## Acceptance Criteria
+- [ ] Tool name: heartbeat_snooze
+- [ ] Param: minutes (integer 1-1440)
+- [ ] Delays next heartbeat by specified minutes
+- [ ] Returns {ok: next_heartbeat_at}

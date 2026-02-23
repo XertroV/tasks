@@ -1,0 +1,37 @@
+---
+id: P15.M1.E1.T004
+title: Create memory retrieval API
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:34:48.018954+00:00'
+started_at: '2026-02-13T19:34:48.018954+00:00'
+completed_at: '2026-02-13T20:13:17.601654+00:00'
+duration_minutes: 38.49304456666667
+---
+
+# Create memory retrieval API
+
+## Description
+Build a comprehensive API for retrieving memories with multiple query modes: semantic similarity, temporal range, keyword search, and relevance scoring. Expose via context building for agents.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Memory.Retrieval` module with multi-modal query functions
+- [ ] Implement `retrieve_similar(memory, query, opts)` for semantic similarity search
+- [ ] Implement `retrieve_by_time(agent_id, time_range, opts)` for temporal queries
+- [ ] Implement `retrieve_relevant(agent_id, context, opts)` for context-aware retrieval
+- [ ] Add pagination and limit support
+- [ ] Integrate retrieval into context building pipeline
+- [ ] Add REST API endpoints for memory queries
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/memory/store.ex`, `lib/pag_server/context/messages.ex`, `lib/pag_server/vector_search/provider.ex`
+- Part of epic: Episodic Memory System
+- Use existing VectorSearch.Provider for semantic search

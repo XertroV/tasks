@@ -1,0 +1,112 @@
+---
+id: P2.M2.E4.T002
+title: Track cache hit/miss metrics
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P2.M2.E4.T001
+tags:
+- llm
+- anthropic
+- caching
+- metrics
+- telemetry
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:16:54.683597'
+started_at: '2026-02-05T15:16:54.683597'
+completed_at: '2026-02-05T15:19:42.708974'
+duration_minutes: 2.8004227999999998
+---
+
+# Track cache hit/miss metrics
+
+Track and emit telemetry for prompt cache hits and misses.
+
+## Requirements
+
+- [x] Parse cache usage from API response
+- [x] Extract: cache_creation_input_tokens, cache_read_input_tokens
+- [x] Calculate cache hit rate
+- [x] Emit telemetry events for monitoring
+- [x] Add logging for cache performance
+- [x] Document cache metrics in moduledoc
+
+## Acceptance Criteria
+
+- [x] Cache usage is parsed from responses
+- [x] Hit/miss metrics are calculated correctly
+- [x] Telemetry events emitted with cache data
+- [x] Logs show cache performance
+- [x] Tests verify metric calculation (33 tests)
+- [x] >85% test coverage
+- [x] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 6.3 (Stats Domain)
+
+**Key Points**:
+- Cache metrics help optimize prompts
+- Track cost savings from caching
+- Monitor cache hit rates
+
+## Notes
+
+Cache usage in response:
+```json
+{
+  "usage": {
+    "input_tokens": 100,
+    "cache_creation_input_tokens": 500,
+    "cache_read_input_tokens": 500,
+    "output_tokens": 50
+  }
+}
+```
+
+Metric tracking:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.CacheMetrics do
+  def track_usage(usage) do
+    cache_created = Map.get(usage, "cache_creation_input_tokens", 0)
+    cache_read = Map.get(usage, "cache_read_input_tokens", 0)
+    input_tokens = usage["input_tokens"]
+    
+    cache_hit_rate = 
+      if cache_read > 0 do
+        cache_read / (cache_read + input_tokens)
+      else
+        0.0
+      end
+    
+    :telemetry.execute(
+      [:pag, :llm, :cache],
+      %{
+        cache_created: cache_created,
+        cache_read: cache_read,
+        cache_hit_rate: cache_hit_rate
+      },
+      %{provider: :anthropic}
+    )
+    
+    if cache_read > 0 do
+      Logger.info("Cache hit: #{cache_read} tokens, hit rate: #{Float.round(cache_hit_rate * 100, 1)}%")
+    end
+  end
+end
+```
+
+Cost savings calculation:
+```elixir
+# Cache reads cost 10% of regular input tokens
+cache_savings = (cache_read * 0.9) * input_token_price
+
+:telemetry.execute(
+  [:pag, :llm, :cost_savings],
+  %{amount: cache_savings},
+  %{provider: :anthropic, type: :cache}
+)
+```

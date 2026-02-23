@@ -1,0 +1,99 @@
+---
+id: P2.M8.E5.T004
+title: Implement metadata extraction (tool failures, file ops)
+status: done
+estimate_hours: 2.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- context
+- metadata
+- structured
+- openclaw
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:54:27.360497'
+started_at: '2026-02-06T02:54:27.360497'
+completed_at: '2026-02-06T02:59:37.017331'
+duration_minutes: 5.160947033333333
+---
+
+# Implement metadata extraction (tool failures, file ops)
+
+Extract structured metadata (tool failures, file operations) and preserve separately from text summarization. This provides critical debugging context and workspace awareness that survives context compression.
+
+**Reference**: `ref-projects/openclaw/src/agents/pi-extensions/compaction-safeguard.ts:78-159`
+
+## Requirements
+
+### Tool Failure Tracking
+
+1. Track last N tool execution failures (default: 8)
+2. For each failure, capture:
+   - Tool name, tool call ID
+   - Summary of error message (max 240 chars)
+   - Exit code (if applicable), status (if applicable)
+
+3. Format as structured section:
+```
+## Tool Failures
+- shell (exitCode=1): permission denied when accessing /tmp/foo
+- read_file (status=error): file not found: src/missing.ex
+- ...and 2 more
+```
+
+### File Operations Tracking
+
+1. Track files accessed during conversation segment:
+   - Files read (not modified)
+   - Files modified (written or edited)
+
+2. Format as XML blocks:
+```xml
+<read-files>
+lib/pag_server/agent.ex
+</read-files>
+
+<modified-files>
+lib/pag_server/agent_executor.ex
+</modified-files>
+```
+
+### Integration
+
+1. Append metadata sections to summary text AFTER LLM-generated summary
+2. Preserve metadata across multiple summarizations (merge when cascading)
+
+## Acceptance Criteria
+
+- [ ] Tool failure tracking
+  - [ ] Capture last 8 tool failures with metadata
+  - [ ] Format as "## Tool Failures" section
+  - [ ] Include tool name, exit code/status, truncated error (240 chars max)
+  - [ ] Show "...and N more" if > 8 failures
+
+- [ ] File operations tracking
+  - [ ] Track files read vs modified
+  - [ ] Format as `<read-files>` and `<modified-files>` XML blocks
+
+- [ ] Integration with summarization
+  - [ ] Append metadata to summary text
+  - [ ] Preserve metadata when cascading summaries
+
+- [ ] Configuration
+  - [ ] Configurable max failures (default: 8)
+  - [ ] Configurable max error length (default: 240 chars)
+  - [ ] Option to disable metadata extraction
+
+- [ ] Tests
+  - [ ] Unit tests for failure extraction and formatting
+  - [ ] Unit tests for file operations tracking
+  - [ ] Integration test: metadata appears in summary
+
+## Implementation Notes
+
+Create `PagServer.Context.Metadata` module for extraction/formatting.
+
+Integration point: `PagServer.Context.Pruning.Summarization.summarize_chunk/4` - append metadata after LLM summary.
+
+See OpenClaw reference for formatting details.

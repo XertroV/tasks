@@ -1,0 +1,36 @@
+---
+id: P2.M8.E4.T002
+title: Implement automatic failover on provider error
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- providers
+- failover
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-06T08:22:04.583195'
+started_at: '2026-02-06T08:22:04.583195'
+completed_at: '2026-02-06T08:25:30.613609'
+duration_minutes: 3.4338400333333334
+---
+
+# Implement automatic failover on provider error
+
+
+
+## Requirements
+
+- [x] Add automatic failover in `PagServer.LLM.Registry` for `chat/3` and `stream_chat/3`
+- [x] Attempt fallback providers in configured order when transient provider errors occur
+- [x] Preserve existing behavior for unknown/non-transient errors (no unnecessary failover)
+- [x] Add test coverage for failover success and non-failover paths
+
+## Acceptance Criteria
+
+- [x] Transient provider errors trigger fallback to next configured provider
+- [x] `failover_enabled: false` disables fallback attempts
+- [x] Permanent provider errors are returned without fallback
+- [x] Existing Registry tests pass with new failover behavior

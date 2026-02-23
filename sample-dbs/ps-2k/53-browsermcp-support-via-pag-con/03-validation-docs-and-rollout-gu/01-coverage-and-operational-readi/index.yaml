@@ -1,0 +1,32 @@
+id: P53.M3.E1
+name: Coverage and operational readiness
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-browsermcp-integration-tes.todo
+  title: Add browsermcp integration tests with companion mocks
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P53.M2.E2.T002
+- id: T002
+  file: T002-document-setup-operational-lim.todo
+  title: Document setup, operational limits, and rollout checklist
+  status: done
+  estimate_hours: 3.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P53.M3.E1.T001
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

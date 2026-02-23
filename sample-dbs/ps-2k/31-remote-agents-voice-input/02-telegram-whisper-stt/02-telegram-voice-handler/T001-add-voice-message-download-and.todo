@@ -1,0 +1,16 @@
+---
+id: P31.M2.E2.T001
+title: Add voice message download and transcription to Telegram poller
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:47:04.192706+00:00'
+started_at: '2026-02-18T19:47:04.192706+00:00'
+completed_at: '2026-02-18T19:47:05.717565+00:00'
+duration_minutes: 0.0254141
+---
+When poller_worker receives a message with voice/audio attachment: 1) Download file via Telegram API, 2) Save to temp dir, 3) Transcribe via Whisper.Client.transcribe_file/2, 4) Prepend transcription to message context: '[Voice message transcribed]: <text>'. Fall back to '[Voice message - Whisper not available]' if not installed.

@@ -1,0 +1,23 @@
+id: P49.M1
+name: Critical Plugin Correctness Fixes
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Fix plugin runtime correctness and startup consistency
+  path: 01-fix-plugin-runtime-correctness
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

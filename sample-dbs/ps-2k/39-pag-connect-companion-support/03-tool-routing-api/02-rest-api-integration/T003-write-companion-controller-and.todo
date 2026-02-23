@@ -1,0 +1,42 @@
+---
+id: P39.M3.E2.T003
+title: Write companion controller and integration tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P39.M3.E2.T001
+- P39.M3.E2.T002
+tags:
+- companion
+- tests
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.841123+00:00'
+started_at: '2026-02-19T11:40:33.841123+00:00'
+completed_at: '2026-02-19T11:45:14.153334+00:00'
+duration_minutes: 4.67187005
+---
+Write controller tests and end-to-end integration tests for the companion feature.
+
+## New files
+- test/pag_server_web/controllers/workspace_companion_controller_test.exs
+- test/pag_server/companions/companion_integration_test.exs (optional, if time permits)
+
+## Controller test cases
+- GET /companion/status when no companion connected: {connected: false}
+- GET /companion/status when companion connected: {connected: true, tools: [...]}
+- Auth: 401 without auth, 403 for non-members
+
+## Integration test (stretch goal)
+- Start companion channel (mocked socket or real)
+- Register execute_shell tool
+- Verify tool_call frame arrives at companion channel
+- Send tool_result
+- Verify agent receives the result
+
+## Acceptance criteria
+- [ ] Controller tests pass
+- [ ] Auth tests verify workspace membership
+- [ ] Tests create proper DB fixtures

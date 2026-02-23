@@ -1,0 +1,46 @@
+---
+id: P15.M13.E2.T002
+title: Design reputation/f2f network integration
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: low
+depends_on: []
+tags:
+- design
+- integration
+- reputation
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:14:55.091880+00:00'
+started_at: '2026-02-18T22:14:55.091880+00:00'
+completed_at: '2026-02-18T22:20:29.114463+00:00'
+duration_minutes: 5.567042799999999
+---
+
+# Design reputation/f2f network integration
+
+
+
+## Requirements
+
+- Design reputation tracking and trust scoring system
+- Define F2F (friend-to-friend) connection model
+- Specify trust propagation and path calculation
+- Document privacy and security considerations
+- Plan tool integration with Graphiti Wall plugin
+
+## Acceptance Criteria
+
+- [x] Design document created covering trust model overview
+- [x] Trust score calculation formulas documented
+- [x] API specification with endpoints and request/response formats
+- [x] Data models defined (Identity, Endorsement, Connection, TrustPath, ReputationScore)
+- [x] Tool definitions for reputation_check, trust_query, trust_endorse, connection_request
+- [x] Sybil resistance and attack mitigation strategies documented
+- [x] Privacy controls and consent model specified
+- [x] Integration with Graphiti Wall documented
+- [x] Implementation notes with module structure and configuration
+
+## Design Document
+
+See: [docs/design/reputation-f2f-network.md](../../../../docs/design/reputation-f2f-network.md)

@@ -1,0 +1,40 @@
+---
+id: P8.M1.E2.T005
+title: Fix metadata key type consistency and access
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M1.E2.T001
+- P8.M1.E2.T002
+- P8.M1.E2.T003
+tags:
+- sessions
+- metadata
+- bug
+claimed_by: cli-user
+claimed_at: '2026-02-08T09:30:49.148074+00:00'
+started_at: '2026-02-08T09:30:49.148074+00:00'
+completed_at: null
+---
+
+# Fix metadata key type consistency and access
+
+
+
+## Requirements
+
+- [x] Fix metadata to use string keys consistently across Router
+- [x] Update create_session_record to use string keys for all metadata values
+- [x] Update create_agent_for_session to use string keys for metadata
+- [x] Ensure all metadata access patterns use string keys
+- [x] Add tests verifying metadata string key consistency
+
+## Acceptance Criteria
+
+- [x] Session metadata uses string keys for all fields
+- [x] Agent metadata uses string keys for all fields
+- [x] Atoms are converted to strings when stored in metadata
+- [x] Tests verify metadata key type consistency
+- [x] No metadata access uses atom keys (all are strings)

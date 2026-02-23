@@ -1,0 +1,36 @@
+---
+id: P19.M4.E2.T001
+title: Document ZAI/ZAI Coding providers
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- providers
+- zai
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:02:02.004202+00:00'
+started_at: '2026-02-18T03:02:02.004202+00:00'
+completed_at: '2026-02-18T03:06:14.273315+00:00'
+duration_minutes: 4.204485066666667
+---
+Add ZAI and ZAI Coding provider documentation. Document env vars (ZAI_API_KEY, ZAI_CODING_API_KEY), configuration differences, when to use each.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M4.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 03:02 UTC
+**Sibling tasks**: P19.M4.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M4.E2.T001 → P19.M4.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M4.E2.T001: .tasks/19-documentation-remediation/04-missing-documentation/02-provider-docs-creation/T001-document-zai-zai-coding-provid.todo
+- P19.M4.E2.T002: .tasks/19-documentation-remediation/04-missing-documentation/02-provider-docs-creation/T002-document-web-search-provider-b.todo

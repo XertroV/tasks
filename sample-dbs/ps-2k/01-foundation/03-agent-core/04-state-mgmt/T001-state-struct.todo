@@ -1,0 +1,137 @@
+---
+id: P1.M3.E4.T001
+title: Define Agent.State struct
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude
+claimed_at: '2026-02-05T09:19:01.251321'
+started_at: '2026-02-05T09:19:01.251321'
+completed_at: '2026-02-05T09:19:09.523654'
+tags:
+- agent
+- state
+- foundation
+- struct
+---
+
+# Define Agent.State struct
+
+Create the `PagServer.Agents.State` module with a comprehensive state struct for agent runtime data.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/state.ex`
+- [ ] Define `defstruct` with all required fields:
+  - [ ] `:id` - Agent UUID (binary_id)
+  - [ ] `:session_id` - Current session UUID
+  - [ ] `:config` - Agent configuration map (model, system prompt, etc.)
+  - [ ] `:status` - Current status atom (`:idle`, `:processing`, `:interrupted`)
+  - [ ] `:context` - Message context list (for LLM)
+  - [ ] `:message_queue` - Erlang queue for pending messages (`:queue.queue()`)
+  - [ ] `:current_request` - Current LLM request reference or `nil`
+  - [ ] `:stats` - Session statistics map (tokens, cost, latency)
+  - [ ] `:metadata` - Additional metadata map
+- [ ] Add `@type t` spec for the state struct
+- [ ] Add `@type status` for valid status atoms
+- [ ] Add comprehensive module documentation
+
+## Acceptance Criteria
+
+- [ ] File `lib/pag_server/agents/state.ex` exists
+- [ ] State struct includes all 9 required fields
+- [ ] Type specs are complete and accurate:
+  - [ ] `@type t :: %__MODULE__{...}`
+  - [ ] `@type status :: :idle | :processing | :interrupted`
+- [ ] Module has detailed `@moduledoc` explaining:
+  - [ ] Purpose of the state struct
+  - [ ] Each field's role
+  - [ ] Status lifecycle
+- [ ] Code compiles without warnings
+- [ ] Follows architecture.md naming conventions (Section 2.2)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+  - State struct defined at lines 220-225
+  - Target size: ~150 LoC
+
+**Key Design Decisions**:
+- State is immutable - all updates return new state structs
+- `:message_queue` uses Erlang's `:queue` for O(1) enqueue/dequeue
+- `:context` is a list, not ETS - bounded by truncation logic
+- `:status` controls which operations are allowed
+- `:stats` tracks token counts, costs, and latency for billing/monitoring
+
+**Memory Considerations**:
+- Per-agent context target: <2MB (architecture.md:620)
+- Queue should be bounded to prevent memory leaks
+- Stats should be lightweight (counters, not full history)
+
+## Notes
+
+Example structure from architecture.md:
+
+```elixir
+defmodule PagServer.Agents.State do
+  @moduledoc """
+  Runtime state for an agent GenServer process.
+  
+  Each agent maintains isolated state including:
+  - Configuration (model, system prompt, tools)
+  - Processing status and message queue
+  - Current conversation context
+  - Statistics for monitoring and billing
+  
+  ## Status Lifecycle
+  
+      :idle -> :processing -> :idle
+              └> :interrupted -> :idle
+  
+  ## Fields
+  
+  - `id` - Agent UUID from database
+  - `session_id` - Current active session
+  - `config` - Agent configuration (model, system_prompt, tools, etc.)
+  - `status` - Current processing status
+  - `context` - Message list for LLM context window
+  - `message_queue` - Pending user messages (`:queue.queue()`)
+  - `current_request` - Active LLM request metadata
+  - `stats` - Accumulated statistics (tokens, cost, latency)
+  - `metadata` - Additional runtime metadata
+  """
+  
+  @type status :: :idle | :processing | :interrupted
+  
+  defstruct [
+    :id,              # binary()
+    :session_id,      # binary()
+    :config,          # map()
+    :status,          # status()
+    :context,         # list(map())
+    :message_queue,   # :queue.queue()
+    :current_request, # map() | nil
+    :stats,           # map()
+    :metadata         # map()
+  ]
+  
+  @type t :: %__MODULE__{
+    id: binary(),
+    session_id: binary(),
+    config: map(),
+    status: status(),
+    context: list(map()),
+    message_queue: :queue.queue(),
+    current_request: map() | nil,
+    stats: map(),
+    metadata: map()
+  }
+end
+```
+
+**Next Steps After This Task**:
+- T002 will add `new/1`, `update_status/2`, `add_to_context/2` helper functions
+- T003 will add JSON serialization for state persistence/debugging

@@ -1,0 +1,23 @@
+---
+id: P44.M4.E1.T002
+title: Add CommandRegistrar module for plugin command cleanup
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:34:25.045937+00:00'
+started_at: '2026-02-19T19:34:25.045937+00:00'
+completed_at: '2026-02-19T19:34:29.030559+00:00'
+duration_minutes: 0.0664102
+---
+## Summary
+Implement `PagServer.Plugins.CommandRegistrar` parallel to ToolRegistrar — tracks which commands belong to which plugin for bulk cleanup on disable.
+
+## Acceptance Criteria
+- [ ] ETS table :plugin_command_registrar_entries — {plugin_name, [command_name]}
+- [ ] `register_plugin_commands/2` — registers all commands declared in plugin manifest
+- [ ] `unregister_plugin_commands/1` — removes all commands for a plugin from Commands.Registry
+- [ ] Tests: register, unregister, re-enable re-registers

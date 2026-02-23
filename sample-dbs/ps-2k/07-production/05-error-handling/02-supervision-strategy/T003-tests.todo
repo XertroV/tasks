@@ -1,0 +1,69 @@
+---
+id: P7.M5.E2.T003
+title: Supervision and recovery tests
+status: done
+estimate_hours: 1
+complexity: high
+priority: medium
+depends_on:
+- P7.M5.E2.T002
+claimed_by: cli-user
+claimed_at: '2026-02-07T03:56:05.605305+00:00'
+started_at: '2026-02-07T03:56:05.605305+00:00'
+completed_at: '2026-02-07T04:07:35.860342+00:00'
+tags:
+- error-handling
+- supervision
+- testing
+duration_minutes: 11.50425045
+---
+
+# Supervision and recovery tests
+
+Test agent crash recovery and supervision behavior.
+
+## Requirements
+
+- [ ] Test agent restart after crash
+- [ ] Test state recovery from checkpoint
+- [ ] Test restart limit enforcement
+- [ ] Test event replay fallback
+- [ ] Test concurrent agent crashes
+- [ ] Test supervisor shutdown
+
+## Acceptance Criteria
+
+- [ ] All supervision scenarios tested
+- [ ] Tests simulate real crashes
+- [ ] Recovery verified end-to-end
+- [ ] Tests are reliable (not flaky)
+- [ ] Coverage >80% for recovery code
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M5.E2 (Supervision Strategy)
+
+## Notes
+
+```elixir
+test "agent recovers state after crash" do
+  {:ok, agent} = Agent.start_link(agent_id: "test")
+  
+  # Send message and wait for processing
+  Agent.send_message(agent, "Remember this")
+  :timer.sleep(100)
+  
+  # Simulate crash
+  Process.exit(agent, :kill)
+  :timer.sleep(100)
+  
+  # Agent should restart
+  agent = Agent.whereis("test")
+  assert agent != nil
+  
+  # State should be recovered
+  state = Agent.get_state(agent)
+  assert state.context =~ "Remember this"
+end
+```

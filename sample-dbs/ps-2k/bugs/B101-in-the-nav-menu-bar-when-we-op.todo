@@ -1,0 +1,19 @@
+---
+id: B101
+title: In the nav menu bar, when we open agents/validation/platform, the menu stays
+  open until we click the label closed. The menu should close if somethihng else on
+  the page is selected (clicked out)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:25:58.544335+00:00'
+started_at: '2026-02-17T13:25:58.544335+00:00'
+completed_at: '2026-02-17T13:31:46.060912+00:00'
+duration_minutes: 5.791942766666667
+---
+
+In the nav menu bar, when we open agents/validation/platform, the menu stays open until we click the label closed. The menu should close if somethihng else on the page is selected (clicked out)

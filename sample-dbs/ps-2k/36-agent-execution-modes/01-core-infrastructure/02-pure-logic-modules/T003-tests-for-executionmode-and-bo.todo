@@ -1,0 +1,24 @@
+---
+id: P36.M1.E2.T003
+title: Tests for ExecutionMode and BootPolicy
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P36.M1.E2.T001
+- P36.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:00:41.044811+00:00'
+started_at: '2026-02-19T03:00:41.044811+00:00'
+completed_at: '2026-02-19T03:01:27.714422+00:00'
+duration_minutes: 0.7778265666666666
+---
+## Acceptance Criteria
+- Unit tests (no DB) for all ExecutionMode functions
+- Unit tests for BootPolicy.should_auto_start? with all 3 rules + :skip case
+- Unit tests for BootPolicy.classify_rule with all 4 outcomes
+- Unit tests for BootPolicy.start_order — verify ordering within and across priority tiers
+- Tests are async: true
+- No database access required (pure module tests)

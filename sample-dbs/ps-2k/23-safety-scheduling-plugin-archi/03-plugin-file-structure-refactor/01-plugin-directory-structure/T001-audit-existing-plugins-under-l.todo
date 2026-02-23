@@ -1,0 +1,40 @@
+---
+id: P23.M3.E1.T001
+title: Audit existing plugins under lib/pag_server/plugins/
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:50:53.775095+00:00'
+started_at: '2026-02-18T14:50:53.775095+00:00'
+completed_at: '2026-02-18T14:57:23.103147+00:00'
+duration_minutes: 6.488800633333333
+---
+Enumerate all current plugins and their internal structure before migrating.
+
+## Acceptance Criteria
+- [ ] List every plugin module under `lib/pag_server/plugins/` with its files, dependencies, and DB migrations
+- [ ] Identify any plugins with unusual coupling to non-plugin lib code
+- [ ] Document the list in a short comment block at the top of the new `plugins/README.md` (if it doesn't exist yet)
+- [ ] Note any plugins that reference each other (intra-plugin dependencies)
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P23.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 14:50 UTC
+**Sibling tasks**: P23.M3.E1.T002, P23.M3.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P23.M3.E1.T001 → P23.M3.E1.T002 → P23.M3.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P23.M3.E1.T001: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/01-plugin-directory-structure/T001-audit-existing-plugins-under-l.todo
+- P23.M3.E1.T002: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/01-plugin-directory-structure/T002-create-top-level-plugins-direc.todo
+- P23.M3.E1.T003: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/01-plugin-directory-structure/T003-update-mix-exs-to-compile-file.todo

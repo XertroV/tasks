@@ -1,0 +1,39 @@
+---
+id: P13.M2.E1.T004
+title: Add performance benchmarks
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M2.E1.T002
+- P13.M2.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:53:51.686148+00:00'
+started_at: '2026-02-13T20:53:51.686148+00:00'
+completed_at: '2026-02-13T21:18:42.961106+00:00'
+duration_minutes: 24.854582116666666
+---
+
+# Add performance benchmarks
+
+## Description
+
+Create performance benchmarks comparing the old ETS-based Coordinator with the new Registry-based implementation to verify no performance regression and document any improvements.
+
+## Acceptance Criteria
+- [ ] Create benchmark script in `benchmarks/coordinator_benchmark.exs`
+- [ ] Benchmark `spawn_child/2` with 1, 10, 50, 100 children
+- [ ] Benchmark `list_children/1` with various child counts
+- [ ] Benchmark `get_parent/1` lookup performance
+- [ ] Benchmark `stop_child/3` performance
+- [ ] Document results in benchmark output or comments
+- [ ] Verify no >10% regression in any operation
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/coordinator.ex`
+- Part of epic: P13.M2.E1 - Coordinator ETS Replacement
+- Use Benchee or simple :timer.tc/1 for benchmarking

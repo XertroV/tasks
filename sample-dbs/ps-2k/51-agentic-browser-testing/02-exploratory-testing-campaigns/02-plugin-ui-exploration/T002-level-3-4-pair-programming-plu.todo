@@ -1,0 +1,72 @@
+---
+id: P51.M2.E2.T002
+title: "Level 3-4: Pair programming plugin \u2014 session creation and role management"
+status: blocked
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T03:47:08.895309+00:00'
+started_at: '2026-02-21T03:47:08.895309+00:00'
+completed_at: null
+reason: Blocked on pair_programming UX/enablement defects (B173, B174) preventing
+  session creation + role lifecycle validation
+---
+## Campaign: Pair programming plugin web UI
+
+The pair_programming plugin contributes routes at /dashboard/pair-sessions/:session_id (legacy) and possibly /plugins/pair_programming/. Test the full pair session lifecycle.
+
+## Acceptance Criteria
+- [ ] Pair session can be created
+- [ ] Both coder and observer roles rendered
+- [ ] Approval/interrupt actions tested
+- [ ] Role-switching explored
+- [x] Bugs filed with plugin area tag
+
+## Test Sequence (simple → complex)
+
+### Route Discovery
+1. Check router for all pair_programming plugin routes
+2. Navigate to each discovered route and verify it loads
+3. Document any 404s or broken mounts
+
+### Session Creation (Level 3)
+1. Find the UI to create a pair session (may be in agent manager or validation console)
+2. Create a pair session with an agent
+3. Observe the pair session page layout — two panels? Chat area?
+4. Send a message from the coder role
+5. Verify the observer sees the same context
+
+### Role Interaction (Level 4)
+1. In pair session: trigger an action that requires approval (e.g., a tool call)
+2. Observe the approval UI — does it render?
+3. Click 'Approve' — verify the action proceeds
+4. Trigger another approvalable action — click 'Interrupt' — verify it cancels
+5. Attempt role swap (if UI supports it)
+
+### Session Management
+1. View all pair sessions (list view if it exists)
+2. Close/end a pair session
+3. Verify session appears in event browser as ended
+
+## Expected Missing Features
+- Pair session create UI may not exist in LiveView
+- Approval UI may be stub
+- Legacy route /dashboard/pair-sessions/:id may redirect or 404
+
+## Execution Notes (2026-02-21)
+- Route discovery:
+  - `/dashboard/pair-sessions/:session_id` loaded and rendered the Pair Session page.
+  - `/plugins/pair_programming/sessions/:session_id` initially returned `Phoenix.Router.NoRouteError` (broken mount); fixed in this task by explicitly mounting the route in router.
+- Session creation lifecycle remains blocked from UI:
+  - No discoverable create/session-management controls in `/dashboard/agent-manager` or `/dashboard/validation-console`.
+  - Programmatic session bootstrap attempt via `PagServer.Plugins.PairProgramming.SessionManager.start_session/2` returned `{:error, :plugin_not_enabled}`.
+- Filed follow-up bugs:
+  - `B173` (missing pair-session creation and role-action controls in web UI flow).
+  - `B174` (session start path gated by `:plugin_not_enabled` despite loaded plugin surface).
+- Follow-up implementation in this pass:
+  - Fixed plugin route mount for `/plugins/pair_programming/sessions/:session_id`.
+  - Fixed backend session bootstrap blockers captured by `B174` (plugin `AgentSpawner` supervision + on-demand blackboard start).
+  - `B173` remains open/blocked for dedicated UI feature implementation scope.

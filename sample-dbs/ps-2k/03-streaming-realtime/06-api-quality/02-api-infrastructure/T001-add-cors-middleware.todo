@@ -1,0 +1,89 @@
+---
+completed_at: '2026-02-07T00:56:06.701998+00:00'
+complexity: low
+depends_on: []
+estimate_hours: 1.0
+id: P3.M6.E2.T001
+priority: high
+status: done
+tags:
+- cors
+- middleware
+- security
+title: Add CORS middleware
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:56:02.182440+00:00'
+started_at: '2026-02-07T00:56:02.182440+00:00'
+duration_minutes: 0.07532565
+---
+
+# Add CORS middleware
+
+## Context
+
+No CORS middleware exists in the project. Any browser-based or mobile WebView client will be blocked by same-origin policy. The API must support browser SPA, mobile, and CLI clients.
+
+## Requirements
+
+- [ ] Add `corsica` dependency to `mix.exs`
+  - Prefer `corsica` over `cors_plug` (more actively maintained, better Phoenix integration)
+- [ ] Configure CORS in endpoint or router
+  - [ ] Dev/test: permissive origins (`*` or `localhost:*`)
+  - [ ] Prod: configurable allowed origins via runtime config
+  - [ ] Allow headers: `Authorization`, `Content-Type`, `x-api-key`, `x-correlation-id`, `x-admin-key`
+  - [ ] Expose headers: `x-api-version`, `x-app-version`, `x-correlation-id`, `x-request-id`, `x-ratelimit-limit`, `x-ratelimit-remaining`, `x-ratelimit-reset`
+  - [ ] Allow methods: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`
+  - [ ] Allow credentials: true (for cookie-based session if needed)
+  - [ ] Max age: 86400 (24h preflight cache)
+- [ ] Add runtime config for `cors_origins` in `config/runtime.exs`
+  - [ ] `CORS_ORIGINS` env var, comma-separated list
+  - [ ] Default to `["http://localhost:3000", "http://localhost:4000"]` in dev
+- [ ] Write tests verifying CORS headers on preflight (OPTIONS) and actual requests
+- [ ] Verify WebSocket upgrade requests are not affected by CORS plug
+
+## Acceptance Criteria
+
+- [ ] Browser clients can make cross-origin requests to all API endpoints
+- [ ] OPTIONS preflight requests return correct CORS headers
+- [ ] Prod origins are configurable via environment variable
+- [ ] Dev allows localhost origins
+- [ ] CORS headers include all custom headers used by the API
+- [ ] WebSocket connections still work
+- [ ] `mix lint` passes
+- [ ] Tests pass
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M6.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 00:46 UTC
+**Sibling tasks**: P3.M6.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M6.E2.T001 → P3.M6.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M6.E2.T001: .tasks/03-streaming-realtime/06-api-quality/02-api-infrastructure/T001-add-cors-middleware.todo
+- P3.M6.E2.T002: .tasks/03-streaming-realtime/06-api-quality/02-api-infrastructure/T002-wire-ratelimiter-into-api-pipe.todo
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M6.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 00:53 UTC
+**Sibling tasks**: P3.M6.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M6.E2.T001 → P3.M6.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M6.E2.T001: .tasks/03-streaming-realtime/06-api-quality/02-api-infrastructure/T001-add-cors-middleware.todo
+- P3.M6.E2.T002: .tasks/03-streaming-realtime/06-api-quality/02-api-infrastructure/T002-wire-ratelimiter-into-api-pipe.todo

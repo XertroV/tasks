@@ -1,0 +1,46 @@
+id: P49.M3.E1
+name: Implement first-class plugin update and reload lifecycle
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-explicit-reload-oper.todo
+  title: Implement explicit reload operation for BEAM and external MCP plugins
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-failure-recovery-policies.todo
+  title: Add failure recovery policies cooldown retry and operator-visible outcomes
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-compatibility-gates-for-in.todo
+  title: Add compatibility gates for install and update operations
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-define-update-lifecycle-semant.todo
+  title: Define update lifecycle semantics with preflight health checks and rollback
+  status: pending
+  estimate_hours: 3.5
+  complexity: high
+  priority: high
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

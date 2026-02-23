@@ -1,0 +1,52 @@
+---
+id: P15.M7.E3.T003
+title: Build file generation from bootstrap answers
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E3.T002
+- P15.M7.E2.T002
+tags:
+- bootstrap
+- files
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:29:35.549612+00:00'
+started_at: '2026-02-17T09:29:35.549612+00:00'
+completed_at: '2026-02-17T09:29:40.447074+00:00'
+duration_minutes: 0.08162414999999999
+---
+## Description
+Takes collected bootstrap answers and workspace template default files, runs variable substitution, and writes tracked files to the workspace directory.
+
+## Module: PagServer.Bootstrap.FileGenerator
+
+### generate_files/3 - (workspace, template, answers)
+1. Flatten answers map into variable substitution format
+2. For each file in template.default_files:
+   a. Run Substitutor.substitute/3 with collected answers as variables
+   b. Write via WorkspaceFiles.write_tracked_file/4 with change_source: :bootstrap
+3. Return {:ok, generated_files} or {:error, reason}
+
+### transition_agent/2 - (workspace, template)
+After files are generated:
+1. Read the generated SOUL.md (or equivalent) file
+2. Compose the agents normal operational system prompt from generated files
+3. Update the workspace main agents system_prompt
+4. Clear the bootstrap_status from workspace settings
+5. Archive the bootstrap session
+
+### Prompt Composition from Files
+- Define how generated files compose into the agents ongoing system prompt
+- e.g. SOUL.md content becomes the personality section, USER.md becomes context section
+- Template can define a prompt_template that references generated files
+
+## Acceptance Criteria
+- [ ] generate_files/3 creates all default files with substituted content
+- [ ] Files written through WorkspaceFiles (tracked with revisions)
+- [ ] transition_agent/2 switches agent from bootstrap to operational prompt
+- [ ] Handles missing optional variables gracefully (uses defaults)
+- [ ] Error handling for file write failures (partial generation rollback)
+- [ ] Unit tests with mock filesystem
+- [ ] Integration test with real template and answers

@@ -1,0 +1,42 @@
+id: P46.M2
+name: OAuth Login Flow
+status: done
+estimate_hours: 16.0
+complexity: high
+depends_on:
+- P46.M1
+locked: false
+epics:
+- id: E1
+  name: OAuth Callback Controller & Provider Strategies
+  path: 01-oauth-callback-controller-prov
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: User Auto-Provisioning & Identity Linking
+  path: 02-user-auto-provisioning-identit
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Login Page LiveView & Dev Permissive Auto-Login
+  path: 03-login-page-liveview-dev-permis
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

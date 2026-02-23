@@ -1,0 +1,44 @@
+id: P49.M5
+name: Plugin Trust Baseline (Option B)
+status: done
+estimate_hours: 24.0
+complexity: high
+depends_on:
+- P49.M4
+locked: false
+epics:
+- id: E1
+  name: Trust policy and provenance foundation
+  path: 01-trust-policy-and-provenance-fo
+  status: done
+  estimate_hours: 9.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Option B verifier and policy enforcement
+  path: 02-option-b-verifier-and-policy-e
+  status: done
+  estimate_hours: 9.0
+  complexity: high
+  depends_on:
+  - P49.M5.E1
+  description: ''
+  locked: false
+- id: E3
+  name: Trust observability incident tooling and docs sync
+  path: 03-trust-observability-incident-t
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P49.M5.E1
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

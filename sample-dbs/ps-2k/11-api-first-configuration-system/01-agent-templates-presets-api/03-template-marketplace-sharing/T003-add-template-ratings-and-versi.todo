@@ -1,0 +1,187 @@
+---
+id: P11.M1.E3.T003
+title: Add template ratings and versioning
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: low
+depends_on:
+- P11.M1.E3.T002
+tags:
+- ratings
+- versioning
+- marketplace
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:02:50.790949+00:00'
+started_at: '2026-02-12T23:02:50.790949+00:00'
+completed_at: '2026-02-12T23:23:34.805834+00:00'
+duration_minutes: 20.733581183333335
+---
+
+# Add template ratings and versioning
+
+Implement template ratings/reviews system and semantic versioning support for template updates and version management.
+
+## Requirements
+
+- [ ] Create migration for `template_ratings` table:
+  - [ ] `id` (UUID primary key)
+  - [ ] `template_id` (UUID, foreign key)
+  - [ ] `user_id` (string, nullable - for future user tracking)
+  - [ ] `rating` (integer 1-5)
+  - [ ] `review_text` (text, optional)
+  - [ ] `is_helpful_count` (integer, default 0)
+  - [ ] `timestamps` (inserted_at, updated_at)
+  - [ ] Unique constraint: (template_id, user_id) - one rating per user per template
+- [ ] Create migration for `template_versions` table (for versioning):
+  - [ ] `id` (UUID primary key)
+  - [ ] `template_id` (UUID, foreign key - tracks base template)
+  - [ ] `version` (string - semantic version)
+  - [ ] `changelog` (text - what changed)
+  - [ ] `base_config_snapshot` (jsonb - config for this version)
+  - [ ] `is_deprecated` (boolean, default false)
+  - [ ] `deprecation_message` (text, optional)
+  - [ ] `downloads` (bigint, default 0)
+  - [ ] `timestamps` (inserted_at, updated_at)
+- [ ] Create `TemplateRating` Ecto schema:
+  - [ ] Fields matching table above
+  - [ ] Validation: rating 1-5, review_text optional
+  - [ ] Changeset functions: new_rating, update_rating
+- [ ] Create `TemplateVersion` Ecto schema:
+  - [ ] Fields matching table above
+  - [ ] Validation: version must be valid semver
+  - [ ] Changeset: create_version, deprecate_version
+  - [ ] Helper: `is_prerelease?/1`
+- [ ] Create `lib/pag_server/templates/ratings.ex` service:
+  - [ ] `create_rating/3` (template_id, rating, user_id)
+  - [ ] `update_rating/3` (rating_id, changes, user_id)
+  - [ ] `delete_rating/2` (rating_id, user_id)
+  - [ ] `get_template_stats/1` - Average rating, review count, etc.
+  - [ ] `mark_helpful/2` (rating_id, user_id)
+- [ ] Create `lib/pag_server/templates/versioning.ex` service:
+  - [ ] `create_version/3` (template_id, version, changelog)
+  - [ ] `get_version/2` (template_id, version)
+  - [ ] `list_versions/1` (template_id)
+  - [ ] `deprecate_version/2` (version_id, message)
+  - [ ] `get_latest_version/1` (template_id)
+  - [ ] Version validation and conflict prevention
+- [ ] Update AgentTemplate schema:
+  - [ ] Add has_many :ratings relation
+  - [ ] Add has_many :versions relation
+  - [ ] Helper: current_rating_avg, review_count
+- [ ] Add controller endpoints:
+  - [ ] POST `/api/v1/templates/:id/ratings` - Create rating
+  - [ ] PATCH `/api/v1/templates/:id/ratings/:rating_id` - Update
+  - [ ] DELETE `/api/v1/templates/:id/ratings/:rating_id` - Delete
+  - [ ] GET `/api/v1/templates/:id/ratings` - List ratings
+  - [ ] GET `/api/v1/templates/:id/versions` - List versions
+  - [ ] POST `/api/v1/templates/:id/versions` - Create version
+  - [ ] PATCH `/api/v1/templates/:id/versions/:version_id/deprecate` - Deprecate
+- [ ] Track template usage/downloads:
+  - [ ] Increment download count on create_agent_from_template
+  - [ ] Track in TemplateVersion
+
+## Acceptance Criteria
+
+- [ ] Users can rate templates (1-5 stars)
+- [ ] Users can write reviews with ratings
+- [ ] Users can update/delete their own ratings
+- [ ] Average rating calculated correctly across all ratings
+- [ ] Ratings only visible on public templates
+- [ ] Templates support semantic versioning
+- [ ] New versions created without breaking old versions
+- [ ] Old versions can be deprecated with message
+- [ ] Pre-release versions (beta, rc) handled correctly
+- [ ] Version upgrade path clear for users
+- [ ] Download counts increment on instantiation
+- [ ] All validation tests pass
+- [ ] Controller endpoints secured (auth where needed)
+
+## Context
+
+**Key Points**:
+- Ratings enable quality signaling in marketplace
+- One rating per user prevents vote manipulation
+- Semantic versioning allows safe template evolution
+- Deprecation support without breaking changes
+- Usage tracking provides creator feedback
+- Reviews help other users decide
+
+## Notes
+
+### Semantic Versioning Rules
+
+```
+Format: MAJOR.MINOR.PATCH[-PRERELEASE][+BUILD]
+Examples:
+- 1.0.0     - Stable initial release
+- 1.1.0     - Minor update (backward compatible)
+- 2.0.0     - Major update (breaking changes)
+- 1.0.0-beta.1 - Pre-release (not in marketplace)
+- 1.0.0+20260212 - Build metadata
+```
+
+### Rating Example
+
+```json
+{
+  "rating": 5,
+  "review": "Great template! Very flexible and well-designed.",
+  "user_id": "user-uuid"
+}
+```
+
+### Version Creation
+
+```elixir
+Versioning.create_version(
+  template_id,
+  "1.1.0",
+  "Added temperature override, improved error handling"
+)
+```
+
+### Deprecation Example
+
+```elixir
+Versioning.deprecate_version(
+  version_id,
+  "Use v2.0.0 instead for better performance"
+)
+```
+
+### Template Stats Response
+
+```json
+{
+  "average_rating": 4.5,
+  "rating_count": 42,
+  "five_star_count": 30,
+  "four_star_count": 10,
+  "download_count": 142,
+  "current_version": "1.0.0",
+  "available_versions": ["1.0.0", "0.9.0"]
+}
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 23:02 UTC
+**Primary task**: P11.M4.E2.T003 - Implement config validation per platform
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M1.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

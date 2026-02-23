@@ -1,0 +1,45 @@
+# Epic: Webhook Handler
+# Phase 8, Milestone 5, Epic 2 (P8.M5.E2)
+
+id: P8.M5.E2
+name: Webhook Handler
+status: pending
+estimate_hours: 6
+complexity: high
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-webhook-verification.todo
+    title: Implement webhook verification
+    status: pending
+    estimate_hours: 1.0
+    complexity: high
+    priority: critical
+    depends_on: []
+    
+  - id: T002
+    file: T002-incoming-messages.todo
+    title: Handle incoming messages
+    status: pending
+    estimate_hours: 3.0
+    complexity: high
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-media-messages.todo
+    title: Add media message handling
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: medium
+    depends_on: [T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

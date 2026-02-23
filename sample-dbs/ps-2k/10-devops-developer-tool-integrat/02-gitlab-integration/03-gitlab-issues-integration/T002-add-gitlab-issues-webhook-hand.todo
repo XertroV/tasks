@@ -1,0 +1,64 @@
+---
+id: P10.M2.E3.T002
+title: Add GitLab issues webhook handlers
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T01:59:10.449141+00:00'
+started_at: '2026-02-12T01:59:10.449141+00:00'
+completed_at: '2026-02-12T02:13:30.039282+00:00'
+duration_minutes: 14.326502133333333
+---
+
+# Add GitLab issues webhook handlers
+
+
+
+## Requirements
+
+- [ ] Implement webhook handlers for GitLab issue events
+- [ ] Support issue opened, closed, updated, and reopened actions
+- [ ] Create agent sessions for issue discussion
+- [ ] Map issue state changes to agent context
+- [ ] Log issue events for audit trail
+
+## Acceptance Criteria
+
+- [ ] Handler module created at `lib/pag_server/integrations/gitlab/issue_webhook_handler.ex`
+- [ ] `handle_issue_event/2` function accepts parsed event and integration context
+- [ ] Supported actions:
+  - [ ] `opened` - Create new agent session for issue discussion
+  - [ ] `closed` - Close/archive agent session
+  - [ ] `updated` - Sync issue metadata to session context
+  - [ ] `reopened` - Reopen archived session
+  - [ ] `note` - Create agent message from comment
+- [ ] Session creation for `opened`:
+  - [ ] Call `PagServer.Sessions` API to create new session
+  - [ ] Set session context with:
+    - [ ] `issue_id`: GitLab issue IID
+    - [ ] `issue_title`: Issue title
+    - [ ] `issue_description`: Issue body (first message)
+    - [ ] `repository`: "namespace/project"
+    - [ ] `author`: Extracted from event
+  - [ ] Return session ID for tracking
+- [ ] Integration with agent system:
+  - [ ] Use issue description as initial context for agent
+  - [ ] Issue comments become agent messages
+  - [ ] Agent responses can be posted as comments (future)
+- [ ] State tracking:
+  - [ ] Store GitLab issue ID → Session ID mapping
+  - [ ] Update on reopens/closes
+  - [ ] Handle orphaned sessions gracefully
+- [ ] Error handling:
+  - [ ] Handle missing issue metadata
+  - [ ] Log session creation failures without blocking
+  - [ ] Retry on transient errors
+- [ ] Tests cover:
+  - [ ] Each action type (opened/closed/updated/reopened)
+  - [ ] Session creation and lifecycle
+  - [ ] Comment to message mapping
+  - [ ] Error conditions

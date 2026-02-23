@@ -1,0 +1,232 @@
+---
+id: P5.M4.E4.T003
+title: Create ModelResolver module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:02:38.084349+00:00'
+started_at: '2026-02-07T14:02:38.084349+00:00'
+completed_at: '2026-02-07T14:04:08.593806+00:00'
+duration_minutes: 1.5084907666666667
+---
+
+# Create ModelResolver module
+
+Create lib/pag_server/llm/model_resolver.ex with resolve/1 for alias resolution, resolve_thinking/1 for thinking level resolution supporting named levels and native format, get_defaults/1 for model defaults, merge_params/3 for parameter merging
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/model_resolver.ex` module
+- [ ] Implement `resolve_alias/1` for model alias resolution
+- [ ] Implement `resolve_thinking/1` for thinking level resolution
+- [ ] Support named thinking levels (off, low, medium, high, xhigh)
+- [ ] Support native Anthropic thinking format (map with type and budget)
+- [ ] Implement `get_model_defaults/1` to retrieve per-model default parameters
+- [ ] Implement `merge_params/3` for three-tier parameter merging
+- [ ] Add comprehensive module documentation
+- [ ] Add typespec annotations for all public functions
+- [ ] Add detailed function documentation with examples
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/llm/model_resolver.ex`
+- [ ] `resolve_alias/1` function implemented:
+  - [ ] Takes model alias string (e.g., "opus-4.5-high")
+  - [ ] Returns full model spec string (e.g., "anthropic:claude-opus-4.5")
+  - [ ] Reads from application config `:pag_server, :model_aliases`
+  - [ ] Returns original string if not an alias
+  - [ ] Returns `{:ok, resolved_spec}` on success
+- [ ] `resolve_thinking/1` function implemented:
+  - [ ] Takes thinking parameter (string or map)
+  - [ ] Supports named levels: "off", "low", "medium", "high", "xhigh"
+  - [ ] Supports native format: `%{"type" => "enabled", "budget" => 10000}`
+  - [ ] Returns normalized thinking configuration map
+  - [ ] Returns `{:ok, thinking_config}` or `{:error, reason}`
+- [ ] Named thinking level mappings defined:
+  - [ ] "off" → `%{"type" => "disabled"}`
+  - [ ] "low" → `%{"type" => "enabled", "budget" => 3000}`
+  - [ ] "medium" → `%{"type" => "enabled", "budget" => 10000}`
+  - [ ] "high" → `%{"type" => "enabled", "budget" => 30000}`
+  - [ ] "xhigh" → `%{"type" => "enabled", "budget" => 100000}`
+- [ ] `get_model_defaults/1` function implemented:
+  - [ ] Takes `ModelSpec` struct or model string
+  - [ ] Returns map of default parameters for the model
+  - [ ] Reads from application config `:pag_server, :model_defaults`
+  - [ ] Returns empty map if no defaults configured
+- [ ] `merge_params/3` function implemented:
+  - [ ] Takes three parameter maps: `(model_defaults, agent_params, session_params)`
+  - [ ] Merges with correct precedence: session > agent > model defaults
+  - [ ] Handles thinking parameter resolution via `resolve_thinking/1`
+  - [ ] Filters out nil values
+  - [ ] Returns merged map with all valid parameters
+- [ ] All functions have proper typespecs
+- [ ] All public functions documented with examples
+- [ ] Module documentation explains parameter merging strategy
+- [ ] Module documentation includes usage examples
+- [ ] No compilation warnings
+
+## Context
+
+The ModelResolver module centralizes model configuration logic, handling:
+1. Model alias resolution (e.g., "sonnet" → "anthropic:claude-sonnet-4")
+2. Thinking level resolution (named levels → native format)
+3. Parameter merging with three-tier precedence
+
+**Three-Tier Merging Strategy**:
+1. **Model defaults** - Base parameters for the model (lowest priority)
+2. **Agent parameters** - Agent's default configuration (medium priority)
+3. **Session parameters** - Session-specific overrides (highest priority)
+
+**Thinking Levels**:
+Extended thinking is an Anthropic feature that allows the model to "think" before
+responding. Named levels provide convenient presets for common use cases.
+
+## Implementation Notes
+
+Module structure:
+
+```elixir
+defmodule PagServer.LLM.ModelResolver do
+  @moduledoc """
+  Resolves model aliases, thinking levels, and merges LLM parameters.
+  
+  This module handles the three-tier parameter merging strategy:
+  1. Model defaults (from config)
+  2. Agent parameters (from agent schema)
+  3. Session parameters (from session schema)
+  
+  Session parameters take highest precedence, followed by agent, then model defaults.
+  
+  ## Examples
+  
+      # Resolve alias
+      iex> ModelResolver.resolve_alias("sonnet")
+      {:ok, "anthropic:claude-sonnet-4"}
+      
+      # Resolve thinking level
+      iex> ModelResolver.resolve_thinking("high")
+      {:ok, %{"type" => "enabled", "budget" => 30000}}
+      
+      # Merge parameters
+      iex> model_defaults = %{"temperature" => 1.0}
+      iex> agent_params = %{"max_tokens" => 4000}
+      iex> session_params = %{"temperature" => 0.7}
+      iex> ModelResolver.merge_params(model_defaults, agent_params, session_params)
+      %{"temperature" => 0.7, "max_tokens" => 4000}
+  """
+  
+  alias PagServer.LLM.ModelSpec
+  
+  @thinking_levels %{
+    "off" => %{"type" => "disabled"},
+    "low" => %{"type" => "enabled", "budget" => 3000},
+    "medium" => %{"type" => "enabled", "budget" => 10000},
+    "high" => %{"type" => "enabled", "budget" => 30000},
+    "xhigh" => %{"type" => "enabled", "budget" => 100000}
+  }
+  
+  @doc """
+  Resolve a model alias to its full specification.
+  
+  Returns the original string if it's not an alias or already a full spec.
+  """
+  @spec resolve_alias(String.t()) :: {:ok, String.t()}
+  def resolve_alias(model_string) do
+    aliases = Application.get_env(:pag_server, :model_aliases, %{})
+    resolved = Map.get(aliases, model_string, model_string)
+    {:ok, resolved}
+  end
+  
+  @doc """
+  Resolve thinking parameter to normalized format.
+  
+  Supports named levels (string) or native format (map).
+  """
+  @spec resolve_thinking(String.t() | map()) :: {:ok, map()} | {:error, term()}
+  def resolve_thinking(thinking) when is_binary(thinking) do
+    case Map.get(@thinking_levels, thinking) do
+      nil -> {:error, {:unknown_thinking_level, thinking}}
+      config -> {:ok, config}
+    end
+  end
+  
+  def resolve_thinking(thinking) when is_map(thinking) do
+    # Already in native format - validate and return
+    case validate_thinking_map(thinking) do
+      :ok -> {:ok, thinking}
+      error -> error
+    end
+  end
+  
+  def resolve_thinking(_), do: {:error, :invalid_thinking_format}
+  
+  @doc """
+  Get default parameters for a model.
+  """
+  @spec get_model_defaults(ModelSpec.t() | String.t()) :: map()
+  def get_model_defaults(model_spec) do
+    model_key = extract_model_key(model_spec)
+    defaults = Application.get_env(:pag_server, :model_defaults, %{})
+    Map.get(defaults, model_key, %{})
+  end
+  
+  @doc """
+  Merge parameters with three-tier precedence.
+  
+  Order: session_params > agent_params > model_defaults
+  """
+  @spec merge_params(map(), map(), map()) :: map()
+  def merge_params(model_defaults, agent_params, session_params) do
+    model_defaults
+    |> Map.merge(agent_params)
+    |> Map.merge(session_params)
+    |> resolve_thinking_if_present()
+    |> reject_nil_values()
+  end
+  
+  # Private helpers...
+  
+  defp validate_thinking_map(%{"type" => type}) when type in ["enabled", "disabled"] do
+    :ok
+  end
+  defp validate_thinking_map(_), do: {:error, :invalid_thinking_type}
+  
+  defp extract_model_key(%ModelSpec{model: model}), do: model
+  defp extract_model_key(str) when is_binary(str) do
+    # Extract model name from spec string
+    case String.split(str, ":", parts: 2) do
+      [_provider, model] -> model
+      _ -> str
+    end
+  end
+  
+  defp resolve_thinking_if_present(params) do
+    case Map.get(params, "thinking") do
+      nil -> params
+      thinking ->
+        case resolve_thinking(thinking) do
+          {:ok, resolved} -> Map.put(params, "thinking", resolved)
+          {:error, _} -> params  # Keep original on error
+        end
+    end
+  end
+  
+  defp reject_nil_values(map) do
+    map
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
+  end
+end
+```
+
+Test considerations:
+- Test each thinking level resolves correctly
+- Test native thinking format passes through
+- Test invalid thinking formats return errors
+- Test merge precedence (session > agent > model)
+- Test thinking resolution in merge context
+- Test nil value filtering

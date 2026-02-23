@@ -1,0 +1,38 @@
+---
+id: P39.M2.E2.T001
+title: Implement CompanionSocket with API key auth
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- companion
+- websocket
+- auth
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:32:11.141048+00:00'
+started_at: '2026-02-19T11:32:11.141048+00:00'
+completed_at: '2026-02-19T11:40:18.664035+00:00'
+duration_minutes: 8.12538295
+---
+Create a new Phoenix.Socket for pag-connect companion connections that authenticates with raw API keys.
+
+## New file
+lib/pag_server_web/sockets/companion_socket.ex
+
+## Design (from companion-support plan §5)
+- Phoenix.Socket accepting raw pag_sk_... API keys (not JWT)
+- Connect params: api_key + workspace_id
+- Validates: key format (~r/^pag_sk_[a-zA-Z0-9]{20,64}$/), key exists in DB, not revoked, not expired, has required scope (agents:write or workspace:companion), workspace exists
+- Assigns :workspace_id and :api_key_id to socket
+- Channel routing: 'companion:*' -> CompanionChannel
+- Socket id: 'companion_socket:<workspace_id>'
+
+## Acceptance criteria
+- [ ] Valid api_key + workspace_id -> {:ok, socket} with correct assigns
+- [ ] Invalid key format -> :error
+- [ ] Valid key but wrong scope -> :error
+- [ ] Non-existent workspace -> :error
+- [ ] Revoked/expired key -> :error
+- [ ] Missing params -> :error

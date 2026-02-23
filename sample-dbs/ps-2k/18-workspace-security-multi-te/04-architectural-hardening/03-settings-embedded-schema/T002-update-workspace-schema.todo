@@ -1,0 +1,43 @@
+---
+id: P18.M4.E3.T002
+title: Update Workspace schema to use embeds_one settings
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on:
+- P18.M4.E3.T001
+tags:
+- workspace
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.653507+00:00'
+started_at: '2026-02-17T20:48:56.653507+00:00'
+completed_at: '2026-02-17T20:55:49.512326+00:00'
+duration_minutes: 6.8809801
+---
+
+# Update Workspace schema to use embeds_one settings
+
+## Description
+
+Replace the `:map` type `settings` field on Workspace with `embeds_one :settings, WorkspaceSettings`.
+
+## Requirements
+
+- [ ] Change `field :settings, :map, default: %{}` to `embeds_one :settings, WorkspaceSettings, on_replace: :update`
+- [ ] Update all changesets to use `cast_embed/3` instead of `cast/3` for settings
+- [ ] Update all code that reads `workspace.settings["tracked_files"]` to use `workspace.settings.tracked_files`
+- [ ] Update WorkspaceFiles.configure_tracked_files to work with the embedded schema
+- [ ] Ensure JSON serialization/deserialization works correctly with the embedded schema
+
+## Acceptance Criteria
+
+- [ ] Workspace schema uses embedded settings
+- [ ] All existing code that reads/writes settings is updated
+- [ ] Settings are properly validated on write
+- [ ] JSON API responses still include settings in expected format
+
+## Context
+
+**Files affected**: `lib/pag_server/schema/workspace.ex`, `lib/pag_server/workspace_files.ex`, and any other files referencing `workspace.settings`

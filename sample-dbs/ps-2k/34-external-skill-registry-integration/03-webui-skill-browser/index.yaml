@@ -1,0 +1,36 @@
+id: P34.M3
+name: WebUI Skill Browser
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P34.M2
+locked: false
+epics:
+- id: E1
+  name: Skill Browser WebUI
+  path: skill-browser-webui
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P34.M2.E1
+  description: WebUI component to browse, search, and view external skills from integrated
+    registries.
+  locked: false
+- id: E2
+  name: Multi-Registry Architecture
+  path: multi-registry-architecture
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on:
+  - P34.M3.E1
+  description: Architecture for supporting multiple skill registries beyond ClawHub.
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

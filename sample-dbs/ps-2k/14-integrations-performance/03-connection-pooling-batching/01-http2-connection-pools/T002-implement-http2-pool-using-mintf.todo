@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:32:18.655208+00:00'
+started_at: '2026-02-13T06:32:18.655208+00:00'
+completed_at: '2026-02-13T06:50:10.606777+00:00'
+duration_minutes: 17.86585923333333
+---
+# Implement HTTP/2 pool using Mint/Finch
+
+## Description
+Implement the HTTP/2 connection pool using Finch (built on Mint) for efficient connection reuse and multiplexing. Support streaming responses for LLM APIs.
+
+## Acceptance Criteria
+- [ ] Add `{:finch, "~> 0.16"}` to mix.exs dependencies
+- [ ] `PagServer.LLM.Pool.FinchPool` module created
+- [ ] HTTP/2 multiplexing enabled for supported providers
+- [ ] Connection reuse across requests
+- [ ] Streaming response support for SSE/chunked responses
+- [ ] Proper connection checkout/checkin lifecycle
+- [ ] Graceful handling of connection errors
+- [ ] Request timeout configuration
+- [ ] Integration with existing LLM provider adapters
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/pool.ex`, `lib/pag_server/llm/providers/`
+- Part of epic: P14.M3.E1 - HTTP/2 Connection Pools

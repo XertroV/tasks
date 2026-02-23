@@ -1,0 +1,59 @@
+---
+id: P10.M2.E1.T002
+title: Implement GitLab event parser and normalizer
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T01:17:00.925331+00:00'
+started_at: '2026-02-12T01:17:00.925331+00:00'
+completed_at: '2026-02-12T01:36:17.171378+00:00'
+duration_minutes: 19.270767233333334
+---
+
+# Implement GitLab event parser and normalizer
+
+## Requirements
+
+- [ ] Create event parser to normalize GitLab webhook events to internal format
+- [ ] Support all major GitLab event types: push, issues, merge_requests, note, pipeline
+- [ ] Extract repository, user, and action information from GitLab payload
+- [ ] Handle nested objects (project, user, issue, merge request metadata)
+- [ ] Support both old and new GitLab webhook payload formats
+- [ ] Normalize GitLab-specific field names to internal schema
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/integrations/gitlab/event_parser.ex`
+- [ ] `parse/1` function converts GitLab webhook payload to internal event struct
+- [ ] Return value: `{:ok, event}` or `{:error, reason}`
+- [ ] Supported event types:
+  - [ ] **push**: Extract commits, branches, author
+  - [ ] **issues**: Extract issue number, title, action (opened/closed/updated)
+  - [ ] **merge_requests**: Extract MR number, title, action (opened/merged/closed)
+  - [ ] **note**: Extract comment text, target (issue/MR), author
+  - [ ] **pipeline**: Extract pipeline ID, status, stages
+- [ ] Normalized event struct contains:
+  - [ ] `event_type`: string (e.g., "issue.opened", "merge_request.updated")
+  - [ ] `provider`: "gitlab"
+  - [ ] `repository`: "namespace/project"
+  - [ ] `user`: %{login: "...", email: "...", name: "..."}
+  - [ ] `timestamp`: ISO8601 datetime
+  - [ ] `payload`: parsed and flattened event data
+- [ ] Error handling:
+  - [ ] Gracefully handle missing fields
+  - [ ] Validate required fields per event type
+  - [ ] Log validation errors with payload context
+- [ ] Field mapping:
+  - [ ] GitLab `project.path_with_namespace` → `repository`
+  - [ ] GitLab `user.username` → `user.login`
+  - [ ] GitLab `created_at` → `timestamp`
+  - [ ] GitLab `action` → `event_type` suffix
+- [ ] Tests cover:
+  - [ ] Each event type (push, issues, MR, note, pipeline)
+  - [ ] Missing field handling
+  - [ ] Invalid payload rejection
+  - [ ] Field normalization correctness

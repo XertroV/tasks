@@ -1,0 +1,18 @@
+---
+id: B026
+title: fix PagServer.FactoryTest regressions (13 failures)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- tests
+- factory
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:43:01.832923+00:00'
+started_at: '2026-02-15T17:43:01.832923+00:00'
+completed_at: '2026-02-15T17:48:29.190487+00:00'
+duration_minutes: 5.45595925
+---
+Full suite currently reports 13 failures in PagServer.FactoryTest. Investigate broken factory defaults/associations and restore deterministic factory behavior. Add/adjust tests as needed so full factory suite passes.

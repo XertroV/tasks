@@ -1,0 +1,38 @@
+---
+id: P15.M7.E5.T019
+title: 'T19: Subordinate Agent Templates'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E5.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:03:53.567135+00:00'
+started_at: '2026-02-18T09:03:53.567135+00:00'
+completed_at: '2026-02-18T10:32:00.330921+00:00'
+duration_minutes: 88.11272958333333
+---
+Create subordinate template schema, build library of common subordinates (Code Reviewer, Security Scanner, etc.) in priv/agent_templates/subordinates/
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M7.E5)
+**Agent**: cli-user
+**Date**: 2026-02-18 09:03 UTC
+**Sibling tasks**: P15.M7.E5.T020, P15.M7.E5.T021, P15.M7.E5.T022, P15.M7.E5.T023, P15.M7.E5.T025
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M7.E5.T019 → P15.M7.E5.T020 → P15.M7.E5.T021 → P15.M7.E5.T022 → P15.M7.E5.T023 → P15.M7.E5.T025
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M7.E5.T019: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T019-t19-subordinate-agent-template.todo
+- P15.M7.E5.T020: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T020-t20-subordinate-spawning-logic.todo
+- P15.M7.E5.T021: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T021-t21-supervisor-subordinate-coo.todo
+- P15.M7.E5.T022: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T022-t22-runtime-orchestration.todo
+- P15.M7.E5.T023: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T023-t23-persona-file-templates.todo
+- P15.M7.E5.T025: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T025-t25-combine-personality-featur.todo

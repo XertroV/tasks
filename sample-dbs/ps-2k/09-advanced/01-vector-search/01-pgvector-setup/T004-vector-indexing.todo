@@ -1,0 +1,84 @@
+---
+id: P9.M1.E1.T004
+title: Configure HNSW indexing
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P9.M1.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:42:30.218754+00:00'
+tags:
+- advanced
+- future
+started_at: '2026-02-11T02:42:30.218754+00:00'
+completed_at: '2026-02-11T02:48:52.058941+00:00'
+duration_minutes: 6.36400295
+---
+
+# Configure HNSW indexing
+
+Add HNSW (Hierarchical Navigable Small World) index to vector column for fast approximate nearest neighbor search.
+
+## Requirements
+
+- [ ] Create migration to add HNSW index
+- [ ] Configure index parameters (m, ef_construction)
+- [ ] Benchmark query performance vs sequential scan
+- [ ] Document index build time and memory usage
+
+## Acceptance Criteria
+
+- [ ] Index created: `CREATE INDEX ON embeddings USING hnsw (embedding vector_cosine_ops)`
+- [ ] Query performance improves significantly (>10x for 10k+ vectors)
+- [ ] Index parameters documented
+- [ ] Tests verify index is used (EXPLAIN ANALYZE)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md`
+- `.plan/2026-02-05-velvet-cascade/architecture.md`
+
+**Key Points**:
+- Phase 9 focuses on advanced, future-oriented features
+- All tasks marked as low priority (implement after core functionality)
+- Memory efficiency targets apply: <512MB per session
+
+## Notes
+
+HNSW index significantly speeds up similarity search but increases insert time.
+
+Example migration:
+```sql
+CREATE INDEX embeddings_hnsw_idx ON vector_embeddings 
+USING hnsw (embedding vector_cosine_ops)
+WITH (m = 16, ef_construction = 64);
+```
+
+Parameters:
+- m: max connections per layer (16 default, higher = better recall)
+- ef_construction: build quality (64 default, higher = slower build, better quality)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:42 UTC
+**Primary task**: P9.M5.E4.T003 - Implement custom directive registration from plugins
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P9.M1.E1 vs P9.M5.E4)
+- No dependency chain: ✓ (verified at claim time)

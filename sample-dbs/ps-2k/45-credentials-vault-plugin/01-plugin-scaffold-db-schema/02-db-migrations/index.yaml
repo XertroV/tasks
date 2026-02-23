@@ -1,0 +1,40 @@
+id: P45.M1.E2
+name: DB Migrations
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-migration-v1-vault-secrets-tab.todo
+  title: 'Migration V1: vault_secrets table'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-migration-v2-vault-secret-vers.todo
+  title: 'Migration V2: vault_secret_versions table'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P45.M1.E2.T001
+- id: T003
+  file: T003-migration-v3-vault-access-gran.todo
+  title: 'Migration V3: vault_access_grants & vault_access_log tables'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P45.M1.E2.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

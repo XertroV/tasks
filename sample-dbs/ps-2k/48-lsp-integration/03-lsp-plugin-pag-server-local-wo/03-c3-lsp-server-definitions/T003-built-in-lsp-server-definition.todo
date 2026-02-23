@@ -1,0 +1,16 @@
+---
+id: P48.M3.E3.T003
+title: 'Built-in LSP server definitions: clangd, zls, ruby-lsp, yaml-ls, taplo, json-ls'
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:21.651762+00:00'
+started_at: '2026-02-20T08:37:21.651762+00:00'
+completed_at: '2026-02-20T08:50:40.898878+00:00'
+duration_minutes: 13.3207851
+---
+Implement LspServerConfig for: clangd --background-index --clang-tidy (root: compile_commands.json/CMakeLists.txt/Makefile), zls (root: build.zig), ruby-lsp (root: Gemfile), yaml-language-server --stdio (workspace root), taplo lsp stdio (workspace root, .toml files), vscode-json-languageserver --stdio (workspace root, .json/.jsonc files). All assume binary is pre-installed (auto-download in Epic D).

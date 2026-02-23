@@ -1,0 +1,59 @@
+id: P44.M2
+name: Built-in Command Handlers
+status: done
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Model Switch Command
+  path: 01-model-switch-command
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Help Command
+  path: 02-help-command
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Stats Command
+  path: 03-stats-command
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Status Command
+  path: 04-status-command
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E5
+  name: Compact Command
+  path: 05-compact-command
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

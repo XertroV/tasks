@@ -1,0 +1,37 @@
+id: P10.M5
+name: Additional Code Hosting
+status: pending
+estimate_hours: 12.0
+complexity: low
+depends_on: []
+epics:
+- id: E1
+  name: Bitbucket Integration
+  path: 01-bitbucket-integration
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Gitea Integration
+  path: 02-gitea-integration
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+- id: E3
+  name: Generic Git Platform Adapter
+  path: 03-generic-git-platform-adapter
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

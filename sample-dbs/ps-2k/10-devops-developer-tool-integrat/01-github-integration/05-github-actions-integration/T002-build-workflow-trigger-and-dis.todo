@@ -1,0 +1,41 @@
+---
+id: P10.M1.E5.T002
+title: Build workflow trigger and dispatch API methods
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- github
+- actions
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:19:14.990009+00:00'
+started_at: '2026-02-12T03:19:14.990009+00:00'
+completed_at: '2026-02-12T03:29:38.141117+00:00'
+duration_minutes: 10.385851533333332
+---
+
+# Build workflow trigger and dispatch API methods
+
+Extend the GitHub API client with workflow trigger and dispatch operations.
+
+## Requirements
+
+- [ ] Add `trigger_workflow(repo, workflow_id, ref, inputs: %{})` method for workflow_dispatch
+- [ ] Add `cancel_workflow_run(repo, run_id)` method to cancel running workflows
+- [ ] Add `rerun_workflow(repo, run_id)` method to rerun failed workflows
+- [ ] Add `get_workflow_run(repo, run_id)` method to fetch run details and status
+- [ ] Add `list_workflow_runs(repo, workflow_id, status, limit)` method with pagination
+- [ ] Add `get_workflow_logs(repo, run_id)` method returning log artifact
+- [ ] Implement request/response handling with proper error messages
+- [ ] All methods return `{:ok, result}` or `{:error, reason}` tuples
+
+## Acceptance Criteria
+
+- [ ] All methods compile and have type specs
+- [ ] Rate limiting respected (API client uses rate limit headers)
+- [ ] GitHub API 200/201 responses return `:ok` with parsed result
+- [ ] API errors (4xx/5xx) return `:error` with message
+- [ ] Workflow triggers support custom input variables

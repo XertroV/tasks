@@ -1,0 +1,48 @@
+id: P51.M2
+name: Exploratory Testing Campaigns
+status: in_progress
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Core UI Exploration
+  path: 01-core-ui-exploration
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: 'Explore PAG-Server''s core web surfaces: auth, sessions, validation
+    console, agent management, LLM call records. Scenarios escalate from simple (can
+    pages load?) to complex (session fork + streaming + error recovery).'
+  locked: false
+- id: E2
+  name: Plugin UI Exploration
+  path: 02-plugin-ui-exploration
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: "Explore all plugin-contributed web surfaces. Includes pair programming\
+    \ plugin, skill hub, graphiti wall, models/pricing catalog, workflow templates,\
+    \ and any other plugin routes. Expect many features to be partially implemented\
+    \ \u2014 file all issues."
+  locked: false
+- id: E3
+  name: Advanced & Admin Coverage
+  path: 03-advanced-admin-coverage
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: Coverage for admin surfaces, external compatibility endpoints, credentials
+    vault, and full end-to-end integration scenarios that span multiple subsystems.
+    These are the hardest tests to write and the most revealing.
+  locked: false
+stats:
+  total_tasks: 12
+  done: 8
+  in_progress: 0
+  blocked: 3
+  pending: 1

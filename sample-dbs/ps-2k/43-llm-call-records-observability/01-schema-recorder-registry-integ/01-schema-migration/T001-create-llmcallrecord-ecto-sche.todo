@@ -1,0 +1,66 @@
+---
+id: P43.M1.E1.T001
+title: Create LlmCallRecord Ecto schema with all fields, enums, and changesets
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:35:23.604588+00:00'
+started_at: '2026-02-19T18:35:23.604588+00:00'
+completed_at: '2026-02-19T18:41:13.427357+00:00'
+duration_minutes: 5.830379249999999
+---
+
+# Create LlmCallRecord Ecto schema with all fields, enums, and changesets
+
+
+
+## Requirements
+
+- Create `lib/pag_server/schema/llm_call_record.ex` with a complete Ecto schema covering all LLM call lifecycle fields
+- Schema must support insert, streaming update, completion update, and failure update via distinct changeset functions
+- All FK references use `:binary_id` type and are nullable
+
+## Acceptance Criteria
+
+- File exists at `lib/pag_server/schema/llm_call_record.ex` and defines `defmodule PagServer.Schema.LlmCallRecord`
+- Module-level attributes `@primary_key {:id, :binary_id, autogenerate: true}` and `@foreign_key_type :binary_id` are present
+- Schema block includes all of the following fields with correct types:
+  - `agent_id` — `:binary_id`, nullable (no `null: false`)
+  - `session_id` — `:binary_id`, nullable
+  - `workspace_id` — `:binary_id`, nullable
+  - `message_id` — `:binary_id`, nullable
+  - `provider` — `:string`, validated as required in `create_changeset/1`
+  - `model` — `:string`, validated as required in `create_changeset/1`
+  - `model_spec` — `:string`, validated as required in `create_changeset/1`
+  - `operation` — `Ecto.Enum`, values `[:chat, :stream_chat]`
+  - `caller_context` — `:string`, nullable
+  - `status` — `Ecto.Enum`, values `[:pending, :streaming, :completed, :failed, :timed_out, :cancelled]`, default `:pending`
+  - `estimated_input_tokens` — `:integer`, nullable
+  - `input_tokens` — `:integer`, nullable
+  - `output_tokens` — `:integer`, nullable
+  - `cache_read_tokens` — `:integer`, nullable
+  - `cache_creation_tokens` — `:integer`, nullable
+  - `total_tokens` — `:integer`, nullable
+  - `input_cost_millicents` — `:integer`, nullable
+  - `output_cost_millicents` — `:integer`, nullable
+  - `total_cost_millicents` — `:integer`, nullable
+  - `ttft_ms` — `:integer`, nullable
+  - `duration_ms` — `:integer`, nullable
+  - `stop_reason` — `:string`, nullable
+  - `error_details` — `:map`, nullable
+  - `retry_count` — `:integer`, default `0`
+  - `failover_from` — `:string`, nullable
+  - `started_at` — `:utc_datetime_usec`, validated as required in `create_changeset/1`
+  - `completed_at` — `:utc_datetime_usec`, nullable
+- `timestamps(type: :utc_datetime_usec)` is called inside the schema block
+- `create_changeset/1` casts and validates required fields: `provider`, `model`, `model_spec`, `operation`, `started_at`; casts optional fields; returns a valid `%Ecto.Changeset{}`
+- `complete_changeset/2` accepts a record and a map of completion fields; validates and casts: `status`, `input_tokens`, `output_tokens`, `cache_read_tokens`, `cache_creation_tokens`, `total_tokens`, `input_cost_millicents`, `output_cost_millicents`, `total_cost_millicents`, `stop_reason`, `duration_ms`, `ttft_ms`, `completed_at`
+- `fail_changeset/2` accepts a record and a map; validates and casts: `status` (must be one of `:failed`, `:timed_out`, `:cancelled`), `error_details`, `completed_at`
+- `streaming_changeset/1` accepts a record; sets `status` to `:streaming`; returns a valid changeset
+- A `@type t :: %__MODULE__{...}` typespec is defined listing all schema fields with their Elixir types (use `String.t()`, `integer()`, `map()`, `DateTime.t()`, etc.)
+- Running `mix compile` produces no errors or warnings for this module
+- A unit test file at `test/pag_server/schema/llm_call_record_test.exs` exists and covers: valid `create_changeset/1` with all required fields, invalid changeset when `provider` is missing, `complete_changeset/2` sets status to `:completed`, `fail_changeset/2` sets status to `:failed`

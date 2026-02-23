@@ -1,0 +1,43 @@
+id: P22.M3.E3
+name: Compaction Status Tracking & API
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on:
+- P22.M3.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-compaction-status-tracking-las.todo
+  title: 'Compaction status tracking: last_compaction_at, token_reduction_achieved,
+    compaction_count'
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M3.E2.T002
+- id: T002
+  file: T002-api-get-api-v1-sessions-id-com.todo
+  title: 'API: GET /api/v1/sessions/:id/compaction - get compaction status'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M3.E3.T001
+- id: T003
+  file: T003-api-post-api-v1-sessions-id-co.todo
+  title: 'API: POST /api/v1/sessions/:id/compaction/trigger - manual compaction'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M3.E3.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

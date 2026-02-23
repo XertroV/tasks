@@ -1,0 +1,78 @@
+---
+id: P2.M5.E1.T005
+title: Register Ollama provider in LLM registry and application config
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P2.M5.E1.T001
+- P2.M1.E1.T002
+tags:
+- llm
+- ollama
+- registry
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-05T21:38:18.327178'
+started_at: '2026-02-05T21:38:18.327178'
+completed_at: '2026-02-05T21:48:22.310878'
+duration_minutes: 10.06639485
+---
+
+# Register Ollama provider in LLM registry and application config
+
+
+
+## Requirements
+
+- [ ] Register the Ollama provider in the LLM registry with default model and base URL configuration.
+- [ ] Add application config entries for Ollama credentials/options (base URL, timeout, model list).
+- [ ] Ensure the Ollama provider is discoverable via the LLM registry for routing and health checks.
+- [ ] Update any provider selection logic to include Ollama when configured.
+- [ ] Document the Ollama provider configuration in task notes for local development.
+
+## Acceptance Criteria
+
+- [ ] LLM registry lists Ollama as an available provider when config is present.
+- [ ] The Ollama provider can be selected explicitly and routes requests through the registry.
+- [ ] Missing or invalid Ollama config yields a clear, actionable error.
+- [ ] Provider registration follows the same patterns as Anthropic/OpenAI/OpenRouter entries.
+
+## Context
+
+- [ ] LLM registry is the central provider map used by agents and session orchestration.
+- [ ] Ollama is a local-first provider and should use local defaults without external credentials.
+- [ ] Provider registration should be consistent with other adapters for tooling and logging.
+
+## Notes
+
+- [ ] Keep config in application environment; avoid embedding defaults in code paths outside the registry.
+- [ ] If the registry supports capabilities, note whether Ollama supports tools/streaming in its entry.
+
+## Testing
+
+- [ ] Add/extend LLM registry tests for provider registration (e.g., `test/pag_server/llm/registry_test.exs`).
+- [ ] Add Ollama adapter config validation tests (e.g., `test/pag_server/llm/ollama/config_test.exs`).
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 08:38 UTC
+**Primary task**: P2.M3.E3.T004 - Implement tool result submission loop for OpenAI
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M5.E1 vs P2.M3.E3)
+- No dependency chain: ✓ (verified at claim time)

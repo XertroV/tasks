@@ -1,0 +1,53 @@
+# Epic: Token Processor
+# Phase 2, Milestone 6, Epic 2 (P2.M6.E2)
+
+id: P2.M6.E2
+name: Token Processor
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-genserver.todo
+    title: Create token processor GenServer
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-backpressure.todo
+    title: Implement backpressure handling
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-aggregation.todo
+    title: Add token aggregation logic
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+    
+  - id: T004
+    file: T004-tests.todo
+    title: Add token processor tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    # Implicit dependency on T003 by ordering
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

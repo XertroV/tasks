@@ -1,0 +1,60 @@
+---
+id: P9.M5.E2.T006
+title: Integrate HookDispatcher with existing AgentServer and ToolExecutor
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E2.T003
+- P9.M5.E2.T004
+- P9.M5.E2.T005
+tags:
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-07T07:33:43.164826+00:00'
+started_at: '2026-02-07T07:33:43.164826+00:00'
+completed_at: '2026-02-07T07:43:28.083419+00:00'
+duration_minutes: 9.748643066666666
+---
+
+# Integrate HookDispatcher with existing AgentServer and ToolExecutor
+
+
+
+## Requirements
+
+- [x] Wire HookDispatcher into `AgentServer` GenServer:
+  - [x] Message handling: fire `:message_received` before processing user messages
+  - [x] Lifecycle: fire `:agent_start` in init, `:agent_stop` in terminate, `:agent_error` on errors
+  - [x] Session: fire `:session_start`/`:session_end` at session boundaries
+  - [x] Spawning: fire `:agent_spawn` when creating child agents via Coordinator
+- [x] Wire HookDispatcher into ToolExecutor:
+  - [x] Pre-execution: fire `:pre_tool_use` before calling tool, handle deny/modify
+  - [x] Post-execution: fire `:post_tool_use` after tool returns, handle modify
+  - [x] Failure: fire `:pre_tool_use_failure` on tool errors, handle recovery
+- [x] Wire HookDispatcher into context building:
+  - [x] Fire `:context_build` during context assembly
+  - [x] Fire `:pre_compact` before pruning strategy execution
+- [x] Add global configuration toggle to enable/disable hook dispatch:
+  - [x] Config key: `:pag_server, :plugins, :hooks_enabled` (default: true)
+  - [x] When disabled, all hook fire points become no-ops
+- [x] Benchmark hook dispatch overhead and document performance impact
+
+## Acceptance Criteria
+
+- [x] Hooks fire at correct points in AgentServer message processing flow
+- [x] Hooks fire at correct points in ToolExecutor execution flow
+- [x] Hooks fire at correct points in context building/pruning flow
+- [x] Global disable flag completely bypasses all hook dispatch (zero overhead when disabled)
+- [x] Existing tests pass without modification (hooks don't break existing behavior)
+- [x] Integration test: end-to-end flow with a plugin hook that modifies tool input and verifies the modification
+- [x] Hook dispatch adds <1ms overhead per call when no handlers registered
+
+## Context
+
+- **Modifies**: `lib/pag_server/agents/agent_server.ex`, `lib/pag_server/tools/executor.ex` (or equivalent), `lib/pag_server/context/` modules
+- **Depends on**: All previous E2 tasks (T001-T005)
+- **Uses**: `PagServer.Plugins.Hooks.ToolHooks`, `PagServer.Plugins.Hooks.LifecycleHooks`, `PagServer.Plugins.Hooks.ContextHooks`
+- **Config**: `:pag_server, :plugins, :hooks_enabled` for global toggle
+- **Testing**: Must verify no regression in existing agent/tool tests

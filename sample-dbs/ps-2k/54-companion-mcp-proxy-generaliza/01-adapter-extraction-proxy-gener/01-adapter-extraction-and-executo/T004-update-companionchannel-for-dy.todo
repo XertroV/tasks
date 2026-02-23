@@ -1,0 +1,25 @@
+---
+id: P54.M1.E1.T004
+title: Update CompanionChannel for dynamic tool enablement
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P54.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:43:57.455435+00:00'
+started_at: '2026-02-21T10:43:57.455435+00:00'
+completed_at: '2026-02-21T10:47:15.471827+00:00'
+duration_minutes: 3.3002730166666665
+---
+## Context
+CompanionChannel has two BrowserMCP-specific spots: (1) `@routable_tools` MapSet has "browsermcp" hardcoded, and routable_tool_enabled?("browsermcp") reads browsermcp-specific config; (2) terminate/2 directly calls BrowserSessionLifecycle.cleanup_workspace/2. These should be generalized.
+
+## Acceptance Criteria
+- [ ] `routable_tool_enabled?/1` delegates to adapter: calls `adapter_for(tool_name).enabled?/1` for tools that have a registered adapter; falls back to MapSet membership check for basic tools
+- [ ] `terminate/2` calls a generic `notify_adapters_of_disconnect/1` that iterates registered_mcp_servers and calls each adapter's `on_disconnect/1` callback (new optional callback on CompanionToolAdapter); BrowserMcpAdapter implements this to call `BrowserSessionLifecycle.cleanup_workspace/2`
+- [ ] `@routable_tools` MapSet: "browsermcp" remains listed but its enablement is now determined via adapter, not hardcoded config branch
+- [ ] Existing CompanionChannel tests pass unchanged
+- [ ] `mix lint` passes

@@ -1,0 +1,55 @@
+---
+id: P5.M1.E1.T006
+title: Implement SessionJanitor to close idle sessions and stop agents
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P5.M1.E1.T005
+- P1.M3.E2.T001
+tags:
+- session
+- lifecycle
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-07T07:51:48.243549+00:00'
+started_at: '2026-02-07T07:51:48.243549+00:00'
+completed_at: '2026-02-07T08:00:31.920587+00:00'
+duration_minutes: 8.727950483333332
+---
+
+# Implement SessionJanitor to close idle sessions and stop agents
+
+
+
+## Requirements
+
+- [ ] Implement SessionJanitor to scan for idle sessions using session idle tracking data.
+- [ ] Close idle sessions and call AgentSupervisor stop for associated agents.
+- [ ] Respect configurable idle timeout from config/env, not hardcoded values.
+- [ ] Ensure SessionJanitor runs on a schedule and is safe to run concurrently.
+- [ ] Emit events/logs for session cleanup decisions for observability.
+
+## Acceptance Criteria
+
+- [ ] SessionJanitor identifies idle sessions based on last_activity_at and timeout.
+- [ ] Idle sessions are closed and AgentSupervisor stop is invoked for their agents.
+- [ ] SessionJanitor honors configurable timeout without code changes.
+- [ ] Cleanup is idempotent; repeated runs do not error or double-stop agents.
+- [ ] No non-ASCII characters added; YAML frontmatter unchanged.
+
+## Context
+
+- [ ] Session idle tracking is introduced in T005 and is the basis for cleanup.
+- [ ] This task enforces session idle tracking and configurable timeout behavior.
+
+## Notes
+
+- [ ] Prefer a lightweight query for idle sessions to avoid hot loops on large datasets.
+- [ ] Keep the shutdown path consistent with existing session close semantics.
+
+## Testing
+
+- [ ] Add tests that validate SessionJanitor closes idle sessions and calls AgentSupervisor stop.
+- [ ] Use the sleep_fn pattern for any timing behavior to keep tests deterministic.

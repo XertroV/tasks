@@ -1,0 +1,41 @@
+id: P46.M1
+name: 'Foundation: Schema, Deps & Pow Config'
+status: done
+estimate_hours: 14.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Dependencies & Pow Configuration
+  path: 01-dependencies-pow-configuration
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Schema: Users Extension & Auth Tables'
+  path: 02-schema-users-extension-auth-ta
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Accounts Context & Username Utilities
+  path: 03-accounts-context-username-util
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

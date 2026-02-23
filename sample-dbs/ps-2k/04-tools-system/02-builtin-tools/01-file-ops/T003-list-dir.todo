@@ -1,0 +1,152 @@
+---
+id: P4.M2.E1.T003
+title: Implement list_directory tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- builtin
+- filesystem
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:24:50.198495'
+started_at: '2026-02-05T22:24:50.198495'
+completed_at: '2026-02-05T22:29:37.531392'
+duration_minutes: 4.788881450000001
+---
+
+# Implement list_directory tool
+
+Create the `list_directory` builtin tool for listing directory contents.
+
+## Requirements
+
+- [x] Create `lib/pag_server/tools/builtin/list_directory.ex` (~80 LoC)
+- [x] Implement Tool behaviour (name, schema, execute)
+- [x] List files and subdirectories
+- [x] Return file metadata (size, type, modified time)
+- [x] Validate path is within workspace
+
+## Acceptance Criteria
+
+- [x] Lists all files and directories in given path
+- [x] Returns metadata: name, type (file/dir), size, mtime
+- [x] Blocks path traversal attacks
+- [x] Returns empty list for empty directories
+- [x] Handles non-existent directory errors
+- [x] Test coverage for valid/invalid paths, permissions, empty dirs
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Essential for LLMs to explore file structure
+- Include metadata to help LLM understand context
+- Consider pagination for large directories (future)
+- Hidden files (starting with .) should be included
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ListDirectory do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "list_directory"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "list_directory",
+      description: "List contents of a directory in the workspace",
+      parameters: %{
+        type: "object",
+        properties: %{
+          path: %{
+            type: "string",
+            description: "Path to directory relative to workspace (empty for root)"
+          }
+        },
+        required: []
+      }
+    }
+  end
+
+  @impl true
+  def execute(args, %{workspace: workspace}) do
+    path = Map.get(args, "path", "")
+    full_path = Path.join(workspace, path)
+    
+    case validate_path(full_path, workspace) do
+      :ok ->
+        case File.ls(full_path) do
+          {:ok, entries} ->
+            files = Enum.map(entries, fn entry ->
+              entry_path = Path.join(full_path, entry)
+              stat = File.stat!(entry_path)
+              
+              %{
+                name: entry,
+                type: stat.type,
+                size: stat.size,
+                modified: DateTime.from_unix!(stat.mtime, :second)
+              }
+            end)
+            
+            {:ok, %{path: path, entries: files}}
+          {:error, reason} ->
+            {:error, "Failed to list directory: #{reason}"}
+        end
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp validate_path(full_path, workspace) do
+    # Same validation as read_file
+    real_path = Path.expand(full_path)
+    real_workspace = Path.expand(workspace)
+    
+    if String.starts_with?(real_path, real_workspace) do
+      :ok
+    else
+      {:error, "Path outside workspace"}
+    end
+  end
+end
+```
+
+Future enhancements:
+- Recursive listing with depth limit
+- Filtering by file type/extension
+- Pagination for large directories
+- Gitignore-aware filtering
+
+Register in Registry startup.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:24 UTC
+**Primary task**: P4.M1.E3.T003 - Format for OpenAI tools
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M2.E1 vs P4.M1.E3)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,25 @@
+id: P25.M3
+name: Integration Tests
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P25.M2
+locked: false
+epics:
+- id: E1
+  name: Tool Integration Tests
+  path: 01-tool-integration-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Integration tests verifying the improved MCP tool interfaces work correctly
+    end-to-end via the MCP protocol.
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

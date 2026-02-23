@@ -1,0 +1,69 @@
+---
+id: P43.M1.E3.T001
+title: Integrate CallRecorder into Registry.call_provider/5 for non-streaming calls
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:03:19.986670+00:00'
+started_at: '2026-02-19T20:03:19.986670+00:00'
+completed_at: '2026-02-19T20:25:44.959831+00:00'
+duration_minutes: 22.416219183333332
+---
+
+# Integrate CallRecorder into Registry.call_provider/5 for non-streaming calls
+
+
+
+## Requirements
+
+- Modify `lib/pag_server/llm/registry.ex` `call_provider/5` to record every non-streaming LLM call
+- Context extraction must happen before the provider call so context keys do not leak to provider adapters
+- Recording errors must never affect the LLM call result returned to the caller
+
+## Acceptance Criteria
+
+- In `call_provider/5` (or whichever internal function dispatches `:chat` operations), the following sequence is implemented in order:
+  1. `CallRecorder.extract_context(provider_opts)` is called, yielding `{context, provider_opts}` — the cleaned `provider_opts` (without context keys) is used for all subsequent provider interaction
+  2. `start_time = System.monotonic_time(:millisecond)` is captured immediately before the provider call
+  3. The provider is called with the cleaned `provider_opts`
+  4. `elapsed_ms = System.monotonic_time(:millisecond) - start_time` is computed after the call returns
+  5. On success: `CallRecorder.insert_pending(...)` is NOT called — instead, `insert_pending` is called before the provider call, then `CallRecorder.complete(record_id, response, elapsed_ms)` after; OR a single-step approach via a wrapper — the key requirement is both insert and complete are called for every successful `:chat` call
+  6. On error: `CallRecorder.fail(record_id, error)` is called
+
+- Specifically, the ordering must be: `insert_pending` → provider call → `complete` (or `fail`) — not insert-after-success
+
+- `CallRecorder.insert_pending/4` is called with `operation: :chat`, the `model_spec`, the messages list, and the extracted context keyword list
+
+- If `CallRecorder.insert_pending/4` itself returns an error, execution continues normally (the provider is still called); a `Logger.warning` or `Logger.error` is emitted for the recorder failure
+
+- The return value of `call_provider/5` is identical to what it was before this change — recorder calls do not alter the tuple returned to callers
+
+- Existing tests for `call_provider/5` (non-streaming) continue to pass without modification
+
+- A new test or test tag in `test/pag_server/llm/` verifies that after a successful `:chat` call (using a mock or stubbed provider), a record exists in the database with `status: :completed` and non-nil `completed_at`
+
+- A test verifies that when the provider returns an error, a record exists with `status: :failed` and non-nil `error_details`
+
+- `mix compile` produces no errors or warnings for `registry.ex`
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P43.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-19 20:03 UTC
+**Sibling tasks**: P43.M1.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P43.M1.E3.T001 → P43.M1.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P43.M1.E3.T001: .tasks/43-llm-call-records-observability/01-schema-recorder-registry-integ/03-registry-integration/T001-integrate-callrecorder-into-re.todo
+- P43.M1.E3.T002: .tasks/43-llm-call-records-observability/01-schema-recorder-registry-integ/03-registry-integration/T002-integrate-callrecorder-into-re.todo

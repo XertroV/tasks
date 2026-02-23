@@ -1,0 +1,26 @@
+---
+id: P54.M4.E1.T004
+title: PagConnect.MCPSupervisor DynamicSupervisor
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P54.M4.E1.T001
+- P54.M4.E1.T002
+- P54.M4.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:27:35.793801+00:00'
+started_at: '2026-02-21T12:27:35.793801+00:00'
+completed_at: '2026-02-21T12:30:50.579666+00:00'
+duration_minutes: 3.2464309
+---
+## Acceptance Criteria
+- [ ] PagConnect.MCPSupervisor at lib/pag_connect/mcp_supervisor.ex; DynamicSupervisor with strategy: :one_for_one
+- [ ] start_mcp_servers() reads Config.get().mcp_servers; starts one MCPServer child per entry
+- [ ] Each child uses restart: :transient with max_restarts: 3, max_seconds: 60 to prevent spin-looping on permanent failures (e.g. bunx not installed)
+- [ ] mcp_servers: [] -> no children started, no crash
+- [ ] Added to PagConnect.Application supervision tree: after MCPRegistry, started before ServerClient.Supervisor
+- [ ] Application.start/2 calls MCPSupervisor.start_mcp_servers() after supervisor starts
+- [ ] mix compile passes

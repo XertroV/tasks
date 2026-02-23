@@ -1,0 +1,37 @@
+id: P10.M2.E1
+name: GitLab Webhook Handler
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-gitlab-webhook-controll.todo
+  title: Create GitLab webhook controller with token verification
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-gitlab-event-parser.todo
+  title: Implement GitLab event parser and normalizer
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-gitlab-webhook-event-routi.todo
+  title: Add GitLab webhook event routing
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

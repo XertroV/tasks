@@ -1,0 +1,52 @@
+---
+id: P40.M1.E1.T002
+title: Team directory visibility and access control
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P40.M1.E1.T001
+tags:
+- containers
+- multi-agent
+- teams
+- filesystem
+- permissions
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:32:16.088116+00:00'
+started_at: '2026-02-19T14:32:16.088116+00:00'
+completed_at: '2026-02-19T15:35:17.487814+00:00'
+duration_minutes: 63.02332785
+---
+## Description
+Implement visibility and access control rules for hierarchical team directories. Each agent sees their own team directory mounted at root level (`/team-<name>/`), with descendant subteam directories nested inside. Agents cannot see sibling or ancestor team directories — only their own team and its descendants.
+
+## Visibility Rules
+- Each agent sees their own team(s) mounted at root level as `/team-<name>/`
+- Team leaders (and all ancestor leaders) can see descendant subteam directories nested inside their team dir
+- Sibling teams cannot see each other's directories (no lateral visibility)
+- An agent on multiple teams sees each team mounted separately at root level
+- `/workspace/` remains global to all agents (unchanged)
+- `/home/` remains private to each agent (unchanged)
+
+## Mount Point Examples
+```
+Root leader sees:     /team-root/team-web/team-frontend/  (all descendants nested)
+Web team leader sees: /team-web/team-frontend/            (own team + descendants only)
+Frontend member sees: /team-frontend/                      (own team only)
+```
+
+## Directory Model Context
+Full directory model per agent:
+- /home/          — private to each agent
+- /workspace/     — global shared across all agents
+- /team-<name>/   — team-scoped, one per team membership, mounted at root level
+
+## Acceptance Criteria
+- All agents in a team have read/write access to their team directory
+- Team leaders see descendant subteam directories nested inside their team directory
+- Agents cannot see sibling teams' directories (no lateral visibility)
+- Agents on multiple teams see each team mounted at root level separately
+- Mount point resolution correctly maps `/team-<name>/` to the physical nested path on disk
+- Unrelated agents have zero access to each other's team directories

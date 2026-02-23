@@ -1,0 +1,26 @@
+---
+id: P50.M2.E2.T002
+title: Implement add_worker action with agent spawn integration
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E2.T001
+- P50.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:30:11.470301+00:00'
+started_at: '2026-02-23T02:30:11.470301+00:00'
+completed_at: '2026-02-23T02:30:14.178260+00:00'
+duration_minutes: 0.04513243333333334
+---
+## Description
+Runtime.add_worker/1 accepts %{team_id, workspace_id, actor_agent_id, payload: %{role, model_provider, model_name, metadata}}. Guard: team must be active; lead role rejected if team already has non-stopped lead. Insert RuntimeWorker row with state: starting, agent_id: nil before spawn. Call Plugins.Api.spawn_agent(collab_teams, %{system_prompt: ..., model_provider, model_name, metadata: %{collab_role: role, team_id: team_id, agent_type: collab_worker}}). On {:ok, agent_id}: update row to set agent_id + state: active. On spawn failure: delete starting row return {:error, :spawn_failed}. Write collab_worker_joined audit event. Fire :plugin_event %{plugin: collab_teams, subtype: worker_joined, team_id, agent_id, role}. Return {:ok, %{action: add_worker, team_id, worker_id, agent_id, role, state: active}}.
+
+## Acceptance Criteria
+- add_worker on active team returns {:ok, map} with agent_id
+- add_worker on draining team returns :team_not_active
+- spawn failure leaves no orphaned DB row
+- audit event written
+- second lead returns :lead_already_exists

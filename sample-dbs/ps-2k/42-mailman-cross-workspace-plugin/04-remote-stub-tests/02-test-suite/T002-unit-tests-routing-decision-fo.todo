@@ -1,0 +1,20 @@
+---
+id: P42.M4.E2.T002
+title: 'Unit tests: routing_decision, fork_and_question, rule_store'
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:37:12.858008+00:00'
+started_at: '2026-02-19T17:37:12.858008+00:00'
+completed_at: '2026-02-19T18:20:07.138212+00:00'
+duration_minutes: 42.904669883333334
+---
+## Acceptance Criteria
+- [ ] test/pag_server/plugins/mailman/routing_decision_test.exs: from_map/1 with valid and invalid inputs
+- [ ] test/pag_server/plugins/mailman/fork_and_question_test.exs: build_question/1, mock LLM fork response, timeout path
+- [ ] test/pag_server/plugins/mailman/rule_store_test.exs: store, find_matching, clear_all, list
+- [ ] Mock the fork/session creation to avoid real LLM calls in tests

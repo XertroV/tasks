@@ -1,0 +1,29 @@
+id: P10.M2.E4
+name: Merge Requests Integration
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-build-gitlab-merge-request-api.todo
+  title: Build GitLab merge request API methods
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-mr-diff-fetching-and.todo
+  title: Implement MR diff fetching and review submission
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,51 @@
+---
+id: B174
+title: Pair session start returns plugin_not_enabled even when plugin is loaded
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- browser-testing
+- pair-programming
+- plugin-enablement
+claimed_by: cli-user
+claimed_at: '2026-02-21T03:54:38.528556+00:00'
+started_at: '2026-02-21T03:54:38.528556+00:00'
+completed_at: '2026-02-21T03:58:06.482900+00:00'
+duration_minutes: 3.4659055166666666
+---
+## Repro
+1. Confirm pair_programming appears as loaded in /dashboard/plugin-settings.
+2. Execute SessionManager.start_session with a valid workspace config.
+3. Observe return value.
+
+## Expected
+start_session should create coordinator/coder/observer session metadata when plugin is loaded and enabled.
+
+## Actual
+SessionManager.start_session returns {:error, :plugin_not_enabled}.
+
+## Notes
+Observed during P51.M2.E2.T002 exploration while attempting to create a session for UI lifecycle testing.
+
+## Resolution
+- Started `PagServer.Plugins.AgentSpawner` in the plugin supervision tree so plugin API spawn calls have a live default process.
+- Added a regression assertion in plugin supervisor tests that `AgentSpawner` is started and reachable by default name.
+- Hardened pair session bootstrap to start the workspace blackboard server on demand before writing session state.
+
+## Verification
+- `mix test test/pag_server/plugins/supervisor_test.exs`
+- `mix test test/pag_server/plugins/pair_programming/integration_test.exs`
+
+## Playwright Scenario Notes
+- Test name: `pair session route mount and bootstrap preconditions`
+- Preconditions: logged in as admin; pair programming plugin available; server booted with plugin supervisor children.
+- Steps:
+  1. `await page.goto('/plugins/pair_programming/sessions/test-session')`
+  2. `await expect(page.getByRole('heading', { name: 'Pair Programming Session' })).toBeVisible()`
+  3. `await expect(page.getByText('Session not found or not yet initialized.')).toBeVisible()`
+- Assertions:
+  - Plugin route resolves (no `Phoenix.Router.NoRouteError`).
+  - Pair session LiveView renders and can reach bootstrap state for unknown session IDs.

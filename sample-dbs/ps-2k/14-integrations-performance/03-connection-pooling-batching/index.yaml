@@ -1,0 +1,29 @@
+id: P14.M3
+name: Connection Pooling & Batching
+status: pending
+estimate_hours: 16.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: HTTP/2 Connection Pools
+  path: 01-http2-connection-pools
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Request Batching
+  path: 02-request-batching
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

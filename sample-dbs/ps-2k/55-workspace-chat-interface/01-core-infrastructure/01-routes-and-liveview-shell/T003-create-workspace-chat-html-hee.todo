@@ -1,0 +1,23 @@
+---
+id: P55.M1.E1.T003
+title: Create workspace_chat.html.heex full-viewport layout
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- template
+- css
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:22:50.165024+00:00'
+started_at: '2026-02-22T06:22:50.165024+00:00'
+completed_at: '2026-02-22T06:33:51.994763+00:00'
+duration_minutes: 11.03049545
+---
+Create lib/pag_server_web/live/workspace_chat.html.heex with full-viewport below-header layout (Slack/Discord style). Structure: flex container filling available height, sidebar (fixed width ~280px) on left, main content area on right. Sidebar renders thread_sidebar component. Main area conditionally renders thread_overview (no session) or message_list + composer (with session). Use Tailwind classes. Must work within existing app layout.
+
+## Acceptance Criteria
+- Full-viewport layout below app header
+- Sidebar + main area flex layout
+- Conditional rendering based on active_session_id presence

@@ -1,0 +1,31 @@
+---
+id: P15.M8.E2.T003
+title: Wire FileTracker into supervision tree and MCP tool pipeline
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- integration
+- bootstrap
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:52:12.651621+00:00'
+started_at: '2026-02-17T14:52:12.651621+00:00'
+completed_at: '2026-02-17T15:23:43.657866+00:00'
+duration_minutes: 31.516770583333333
+---
+FileTracker GenServer is implemented but NOT in the supervision tree (application.ex) and maybe_track_write/3 is never called from any MCP tool execution pipeline. Both periodic sync and post-write tracking are dead code in production.
+
+1. Add FileTracker to supervision tree in application.ex
+2. Wire maybe_track_write/3 into MCP tool execution pipeline (likely ToolExecutor or tool hooks)
+3. Implement the documented 'enabled' config option (file_tracker.ex:30-31 documents it but init/1 never checks it)
+
+Source: E2 Audit I1, I2
+
+## Acceptance Criteria
+- [ ] FileTracker starts in supervision tree
+- [ ] maybe_track_write called after MCP write_file tool execution
+- [ ] enabled config option actually controls whether sync runs
+- [ ] Integration test verifying MCP write triggers revision
+- [ ] Existing tests pass

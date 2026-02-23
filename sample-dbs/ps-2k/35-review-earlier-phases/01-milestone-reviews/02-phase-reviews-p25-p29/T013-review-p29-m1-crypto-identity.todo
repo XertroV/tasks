@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T013
+title: 'Review P29.M1: Crypto Identity Plugin'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:43:11.856261+00:00'
+started_at: '2026-02-19T02:43:11.856261+00:00'
+completed_at: '2026-02-19T02:49:17.018768+00:00'
+duration_minutes: 6.08604155
+---
+Load the review-and-fix skill. Review all epics and tasks under P29.M1 (Crypto Identity Plugin). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. This is security-critical code. Key areas: workspace_crypto_keys schema, CryptoKeyManager GenServer (key generation, encryption at rest, secure deletion), sign_data/verify_signature/get_public_key/export_identity MCP tools, CryptoIdentityPlugin wiring and lifecycle, and integration tests. Verify Ed25519 usage is correct and keys are never exposed in plaintext.

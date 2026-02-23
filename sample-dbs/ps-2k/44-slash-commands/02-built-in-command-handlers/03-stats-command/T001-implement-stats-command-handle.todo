@@ -1,0 +1,26 @@
+---
+id: P44.M2.E3.T001
+title: Implement /stats command handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:05:53.376388+00:00'
+started_at: '2026-02-19T19:05:53.376388+00:00'
+completed_at: '2026-02-19T19:06:00.885058+00:00'
+duration_minutes: 0.12514426666666667
+---
+## Summary
+Implement `PagServer.Commands.Handlers.Stats` — session/agent statistics. Migrates logic from Slack Commands.Stats and Discord /stats.
+
+## Acceptance Criteria
+- [ ] Implements Command behaviour (name: "stats")
+- [ ] Shows: session ID (truncated), message count, session duration, current model, token usage if available
+- [ ] Pulls data from the Session record and AgentServer state
+- [ ] Context with no session_id or agent_id: returns friendly error
+- [ ] Response.rich_text uses markdown table or structured list
+- [ ] Tests: happy path with mock session/agent data, missing context returns error
+- [ ] Existing Slack Commands.Stats logic is removed and replaced by this handler

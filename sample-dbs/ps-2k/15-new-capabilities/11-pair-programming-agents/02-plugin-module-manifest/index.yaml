@@ -1,0 +1,31 @@
+id: P15.M11.E2
+name: Plugin Module & Manifest
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on:
+- E1
+locked: false
+tasks:
+- id: T001
+  file: T001-create-pair-programming-plugin.todo
+  title: Create pair programming plugin module with manifest
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-define-configuration-schema-fo.todo
+  title: Define configuration schema for pair sessions
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

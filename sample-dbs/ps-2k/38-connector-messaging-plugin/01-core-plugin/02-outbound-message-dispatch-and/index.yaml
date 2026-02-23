@@ -1,0 +1,42 @@
+id: P38.M1.E2
+name: Outbound message dispatch and tests
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-connectordispatcher.todo
+  title: 'Implement ConnectorDispatcher: dispatch/3 with per-platform routing'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P38.M1.E1.T002
+- id: T002
+  file: T002-implement-send-connector-messa.todo
+  title: Implement send_connector_message MCP tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P38.M1.E2.T001
+- id: T003
+  file: T003-tests-for-connectorregistry-co.todo
+  title: Tests for ConnectorRegistry, ConnectorDispatcher, and MCP tools
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P38.M1.E2.T001
+  - P38.M1.E2.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

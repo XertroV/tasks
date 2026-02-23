@@ -1,0 +1,231 @@
+---
+title: Create AgentChannel Module
+epic: P3.M1.E2-agent-channel
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimate_hours: 1
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:39:14.112822'
+started_at: '2026-02-06T13:39:14.112822'
+completed_at: '2026-02-06T13:44:34.859930'
+duration_minutes: 5.345784933333333
+id: P3.M1.E2.T001
+---
+
+# Task: Create AgentChannel Module
+
+## Context
+Phoenix Channels provide bidirectional communication between clients and the server. We need an AgentChannel to handle real-time communication with individual agent processes, allowing clients to send messages and receive streaming responses.
+
+## Goal
+Create the AgentChannel module with basic join/leave functionality and message handling structure.
+
+## Requirements
+- Channel accepts agent ID in join params
+- Verifies agent exists before allowing join
+- Handles message:send events
+- Tracks channel-to-agent mapping
+- Clean shutdown on leave
+
+## Implementation
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  @moduledoc """
+  Channel for real-time communication with individual agents.
+  
+  Topic format: "agent:{agent_id}"
+  
+  Handles:
+  - Joining/leaving agent sessions
+  - Sending messages to agents
+  - Streaming token responses
+  - Broadcasting agent state changes
+  """
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  alias PagServer.Agents
+  alias PagServer.Sessions
+  
+  @impl true
+  def join("agent:" <> agent_id, params, socket) do
+    case Agents.get_agent(agent_id) do
+      {:ok, agent} ->
+        socket =
+          socket
+          |> assign(:agent_id, agent_id)
+          |> assign(:agent, agent)
+          |> assign(:session_id, params["session_id"])
+        
+        Logger.info("Client joined agent channel: #{agent_id}")
+        
+        # Send current agent state
+        send(self(), :after_join)
+        
+        {:ok, socket}
+      
+      {:error, :not_found} ->
+        {:error, %{reason: "agent not found"}}
+    end
+  end
+  
+  @impl true
+  def handle_info(:after_join, socket) do
+    agent_id = socket.assigns.agent_id
+    
+    # Push current agent state
+    case Agents.get_state(agent_id) do
+      {:ok, state} ->
+        push(socket, "state", %{
+          status: state.status,
+          current_session: state.current_session_id,
+          message_count: length(state.messages)
+        })
+      
+      {:error, _} ->
+        :ok
+    end
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_in("message:send", %{"content" => content} = payload, socket) do
+    agent_id = socket.assigns.agent_id
+    session_id = socket.assigns.session_id
+    
+    message_params = %{
+      content: content,
+      role: "user",
+      metadata: Map.get(payload, "metadata", %{})
+    }
+    
+    case Agents.send_message(agent_id, message_params, session_id: session_id) do
+      {:ok, message} ->
+        {:reply, {:ok, %{message_id: message.id}}, socket}
+      
+      {:error, reason} ->
+        {:reply, {:error, %{reason: inspect(reason)}}, socket}
+    end
+  end
+  
+  @impl true
+  def handle_in("ping", _payload, socket) do
+    {:reply, {:ok, %{timestamp: System.system_time(:millisecond)}}, socket}
+  end
+  
+  @impl true
+  def terminate(reason, socket) do
+    agent_id = socket.assigns[:agent_id]
+    Logger.info("Client left agent channel: #{agent_id}, reason: #{inspect(reason)}")
+    :ok
+  end
+end
+```
+
+## Acceptance Criteria
+- [x] Channel joins successfully with valid agent ID
+- [x] Join fails with invalid agent ID
+- [x] After join, pushes current agent state
+- [x] Handles message:send events
+- [x] Handles ping/pong for connection testing
+- [x] Clean termination logged
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/agent_channel_test.exs
+defmodule PagServerWeb.AgentChannelTest do
+  use PagServerWeb.ChannelCase
+  
+  alias PagServer.Agents
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      system_prompt: "Test agent"
+    })
+    
+    {:ok, agent: agent}
+  end
+  
+  test "join succeeds with valid agent ID", %{agent: agent} do
+    {:ok, _reply, socket} = subscribe_and_join(
+      socket(PagServerWeb.UserSocket),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    assert socket.assigns.agent_id == agent.id
+  end
+  
+  test "join fails with invalid agent ID" do
+    {:error, %{reason: reason}} = subscribe_and_join(
+      socket(PagServerWeb.UserSocket),
+      "agent:invalid-id",
+      %{}
+    )
+    
+    assert reason == "agent not found"
+  end
+  
+  test "pushes state after join", %{agent: agent} do
+    {:ok, _reply, _socket} = subscribe_and_join(
+      socket(PagServerWeb.UserSocket),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    assert_push "state", %{status: _status}
+  end
+  
+  test "handles message:send event", %{agent: agent} do
+    {:ok, _reply, socket} = subscribe_and_join(
+      socket(PagServerWeb.UserSocket),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    ref = push(socket, "message:send", %{"content" => "Hello"})
+    assert_reply ref, :ok, %{message_id: _id}
+  end
+end
+```
+
+## References
+- Phoenix Channels guide: https://hexdocs.pm/phoenix/channels.html
+- Phoenix.Channel: https://hexdocs.pm/phoenix/Phoenix.Channel.html
+- Real-time communication patterns
+
+## Notes
+- Consider rate limiting in future tasks
+- Session ID is optional in join params
+- If no session_id, agent creates/uses default session
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-07 00:39 UTC
+**Primary task**: P7.M3.E1.T002 - Implement access pattern helpers
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P3.M1.E2 vs P7.M3.E1)
+- No dependency chain: ✓ (verified at claim time)

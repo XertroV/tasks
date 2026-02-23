@@ -1,0 +1,29 @@
+id: P16.M2.E1
+name: Basic Chat Integration Tests
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-groq-chat-completion-test.todo
+  title: Add Groq chat completion test
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-openrouter-chat-completion.todo
+  title: Add OpenRouter chat completion test
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,293 @@
+---
+id: P4.M2.E9.T004
+title: Implement git_commit tool
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- tools
+- git
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:01:48.471653'
+started_at: '2026-02-06T03:01:48.471653'
+completed_at: '2026-02-06T03:03:29.741350'
+duration_minutes: 1.6878281
+---
+
+# Implement git_commit tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/git_commit.ex` (~250 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Execute `git add` and `git commit` safely
+- [ ] Validate workspace path and file paths are within workspace
+- [ ] Support staging specific files or all changes
+- [ ] Use System.cmd for command execution with safe argument passing
+- [ ] Configure git user identity for commits
+
+## Acceptance Criteria
+
+- [ ] Executes `git add` followed by `git commit` in workspace directory
+- [ ] Validates workspace path is within allowed workspace boundaries
+- [ ] Prevents command injection through all parameters (paths, message, author)
+- [ ] Validates all file paths are within workspace (blocks path traversal)
+- [ ] Supports staging modes: specific files (list), all tracked changes (-a), all including untracked
+- [ ] Requires commit message (validates non-empty)
+- [ ] Supports optional author name and email override
+- [ ] Returns commit hash, message, files changed count
+- [ ] Handles errors: not a git repo, nothing to commit, invalid path, command failure
+- [ ] Validates author email format if provided
+- [ ] Prevents commits with dangerous filenames (../../../etc/passwd)
+- [ ] Test coverage: commit with specific files, commit all, with author override, empty message error, invalid path, non-git directory, path outside workspace
+- [ ] Security: validates all inputs, prevents injection, validates file paths strictly
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Most security-critical git operation (modifies repository state)
+- Strict validation of all file paths required
+- Must prevent committing files outside workspace
+- Support agent identity configuration for commit authorship
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.GitCommit do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "git_commit"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "git_commit",
+      description: "Stage and commit changes to git repository",
+      parameters: %{
+        type: "object",
+        properties: %{
+          workspace: %{
+            type: "string",
+            description: "Repository path (must be within workspace)"
+          },
+          message: %{
+            type: "string",
+            description: "Commit message (required, non-empty)"
+          },
+          files: %{
+            type: "array",
+            items: %{type: "string"},
+            description: "Specific files to stage (relative paths from repo root)"
+          },
+          stage_mode: %{
+            type: "string",
+            enum: ["files", "all_tracked", "all_including_untracked"],
+            description: "Staging mode (default: files)",
+            default: "files"
+          },
+          author_name: %{
+            type: "string",
+            description: "Override commit author name"
+          },
+          author_email: %{
+            type: "string",
+            description: "Override commit author email"
+          }
+        },
+        required: ["workspace", "message"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"workspace" => workspace, "message" => message} = args, context) do
+    with :ok <- validate_workspace_path(workspace, context.workspace_root),
+         :ok <- validate_commit_params(args),
+         {:ok, _} <- stage_files(workspace, args),
+         {:ok, commit_hash} <- create_commit(workspace, message, args) do
+      {:ok, %{
+        commit_hash: commit_hash,
+        message: message
+      }}
+    else
+      {:error, reason} -> {:error, "git commit failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_workspace_path(path, root) do
+    abs_path = Path.expand(path)
+    abs_root = Path.expand(root)
+    
+    cond do
+      not String.starts_with?(abs_path, abs_root) ->
+        {:error, "Path outside workspace"}
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      not File.dir?(abs_path) ->
+        {:error, "Directory does not exist"}
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_commit_params(%{"message" => message} = args) do
+    with :ok <- validate_message(message),
+         :ok <- validate_author_if_present(args),
+         :ok <- validate_files_if_present(args) do
+      :ok
+    end
+  end
+
+  defp validate_message(message) do
+    if String.trim(message) == "" do
+      {:error, "Commit message cannot be empty"}
+    else
+      :ok
+    end
+  end
+
+  defp validate_author_if_present(%{"author_email" => email}) do
+    # Basic email validation
+    if Regex.match?(~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/, email) do
+      :ok
+    else
+      {:error, "Invalid author email format"}
+    end
+  end
+  defp validate_author_if_present(_), do: :ok
+
+  defp validate_files_if_present(%{"files" => files, "stage_mode" => "files"}) do
+    # Validate each file path
+    Enum.reduce_while(files, :ok, fn file, :ok ->
+      if validate_file_path(file) do
+        {:cont, :ok}
+      else
+        {:halt, {:error, "Invalid file path: #{file}"}}
+      end
+    end)
+  end
+  defp validate_files_if_present(_), do: :ok
+
+  defp validate_file_path(path) do
+    # Block path traversal and absolute paths
+    not (String.contains?(path, "..") or String.starts_with?(path, "/"))
+  end
+
+  defp stage_files(workspace, %{"stage_mode" => "all_tracked"}) do
+    System.cmd("git", ["add", "-u"], cd: workspace)
+  end
+
+  defp stage_files(workspace, %{"stage_mode" => "all_including_untracked"}) do
+    System.cmd("git", ["add", "-A"], cd: workspace)
+  end
+
+  defp stage_files(workspace, %{"files" => files}) when is_list(files) and length(files) > 0 do
+    # Stage each file individually to prevent injection
+    System.cmd("git", ["add", "--"] ++ files, cd: workspace)
+  end
+
+  defp stage_files(_workspace, _args) do
+    {:error, "No files specified and stage_mode is 'files'"}
+  end
+
+  defp create_commit(workspace, message, args) do
+    # Build git command with author override if provided
+    env = build_commit_env(args)
+    
+    case System.cmd("git", ["commit", "-m", message], 
+                    cd: workspace, 
+                    env: env,
+                    stderr_to_stdout: true) do
+      {output, 0} ->
+        # Parse commit hash from output
+        case extract_commit_hash(output) do
+          {:ok, hash} -> {:ok, hash}
+          :error -> {:error, "Failed to extract commit hash"}
+        end
+      {error, code} ->
+        {:error, {code, error}}
+    end
+  end
+
+  defp build_commit_env(%{"author_name" => name, "author_email" => email}) do
+    %{
+      "GIT_AUTHOR_NAME" => name,
+      "GIT_AUTHOR_EMAIL" => email,
+      "GIT_COMMITTER_NAME" => name,
+      "GIT_COMMITTER_EMAIL" => email
+    }
+  end
+  defp build_commit_env(_), do: %{}
+
+  defp extract_commit_hash(output) do
+    # Parse commit hash from git output
+    # Example: "[main abc123d] Commit message"
+    case Regex.run(~r/\[.+ ([a-f0-9]{7,})\]/, output) do
+      [_, hash] -> {:ok, hash}
+      _ -> 
+        # Try to get it with git rev-parse as fallback
+        case System.cmd("git", ["rev-parse", "HEAD"], stderr_to_stdout: true) do
+          {hash, 0} -> {:ok, String.trim(hash)}
+          _ -> :error
+        end
+    end
+  end
+end
+```
+
+Example usage (commit specific files):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "message": "Add new feature implementation",
+  "stage_mode": "files",
+  "files": ["lib/new_feature.ex", "test/new_feature_test.exs"]
+}
+```
+
+Example usage (commit all tracked changes):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "message": "Fix bug in authentication",
+  "stage_mode": "all_tracked"
+}
+```
+
+Example usage (with author override):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "message": "Automated refactoring",
+  "stage_mode": "all_tracked",
+  "author_name": "PAG Agent",
+  "author_email": "agent@pag-server.local"
+}
+```
+
+Example response:
+```json
+{
+  "commit_hash": "abc123def456",
+  "message": "Add new feature implementation"
+}
+```
+
+Security considerations:
+- CRITICAL: Validate all file paths strictly (most dangerous operation)
+- Block path traversal in all file arguments
+- Prevent shell injection through commit message
+- Validate author email format
+- Use System.cmd with list arguments exclusively
+- Never use shell interpolation for any parameter
+- Validate workspace boundaries on every path

@@ -1,0 +1,16 @@
+---
+id: P31.M2.E1.T004
+title: Add transcribe_audio MCP tool
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:50.675636+00:00'
+started_at: '2026-02-18T19:46:50.675636+00:00'
+completed_at: '2026-02-18T19:46:56.867995+00:00'
+duration_minutes: 0.10320583333333334
+---
+MCP tool: transcribe_audio(file_path, opts). Returns {transcription: text, model: model, duration_ms: ms}. Available when Whisper is installed (Whisper.is_available?/0).

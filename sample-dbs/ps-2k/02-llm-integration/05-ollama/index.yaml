@@ -1,0 +1,45 @@
+id: P2.M5
+name: Ollama Provider
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on:
+- M1
+epics:
+- id: E1
+  name: Local Client
+  path: 01-local-client
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+- id: E2
+  name: Model Detection
+  path: 02-model-detection
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+- id: E3
+  name: Tool Schema Converter
+  path: 03-tool-schema-converter
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Retry Logic
+  path: 04-retry-logic
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,21 @@
+id: P7.M4
+name: Resource Limits
+status: pending
+estimate_hours: 6
+complexity: medium
+depends_on:
+- M3
+epics:
+- id: E1
+  name: Limit Enforcement
+  path: 01-limit-enforcement
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on: []
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

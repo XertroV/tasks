@@ -1,0 +1,40 @@
+---
+id: P13.M2.E2.T003
+title: Add event replay tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M2.E2.T001
+- P13.M2.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T22:50:18.576383+00:00'
+started_at: '2026-02-13T22:50:18.576383+00:00'
+completed_at: '2026-02-13T23:06:20.836481+00:00'
+duration_minutes: 16.03766805
+---
+
+# Add event replay tests
+
+## Description
+
+Create tests that verify event replay functionality works correctly with the integrated EventStore. This tests the event sourcing capability for crash recovery and session forking.
+
+## Acceptance Criteria
+- [ ] Create `test/pag_server/events/event_store_integration_test.exs`
+- [ ] Test appending events and querying them back
+- [ ] Test PubSub subscription receives events correctly
+- [ ] Test event replay for agent state recovery
+- [ ] Test replay with filter by agent_id, session_id, event_type
+- [ ] Test replay with `after_id` pagination
+- [ ] Test replay with time range filters
+- [ ] Test buffer overflow handling (>1000 events)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/events/event_store.ex`
+- Related files: `lib/pag_server/events/replay.ex`
+- Part of epic: P13.M2.E2 - EventStore Integration

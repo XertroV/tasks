@@ -1,0 +1,30 @@
+---
+id: P39.M5.E2.T003
+title: 'Integration test: pag-connect non-interactive workspace provisioning'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P39.M5.E2.T002
+tags:
+- bootstrap
+- testing
+- integration
+- companion
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:41:55.465450+00:00'
+started_at: '2026-02-19T23:41:55.465450+00:00'
+completed_at: '2026-02-19T23:46:42.818783+00:00'
+duration_minutes: 4.7892220666666665
+---
+End-to-end test covering the full non-interactive provisioning flow that pag-connect will use.
+
+Files: test/pag_server/companions/ or test/pag_server_web/controllers/workspaces_controller_test.exs
+
+Acceptance criteria:
+- Test: POST /api/v1/workspaces/bootstrap with template=coding-assistant returns 201, workspace is ready (onboarding_status=complete), no bootstrap session started
+- Test: same request with unknown template name returns 422 with a clear error message
+- Test: same request without template param still starts a bootstrap session (existing behavior unchanged)
+- Test: the provisioned agent has the coding-assistant system prompt and anthropic/claude-sonnet-4-5 model config
+- mix test.companions (or mix test test/pag_server/companions/) passes

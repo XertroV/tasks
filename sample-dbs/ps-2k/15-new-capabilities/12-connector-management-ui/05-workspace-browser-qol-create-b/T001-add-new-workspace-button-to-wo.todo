@@ -1,0 +1,33 @@
+---
+id: P15.M12.E5.T001
+title: Add 'New Workspace' button to workspace browser that navigates to setup wizard
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:25:46.135284+00:00'
+started_at: '2026-02-18T07:25:46.135284+00:00'
+completed_at: '2026-02-18T07:29:17.369658+00:00'
+duration_minutes: 3.52057275
+---
+lib/pag_server_web/live/workspace_browser_live.ex template: Add a 'New Workspace' button in the workspace list header area (top-right of the list panel, alongside search/sort controls). Use <.link navigate={~p'/dashboard/setup'}> with a button style. No new event handler needed since it's a navigation link. The setup wizard (SetupWizard LiveView) already handles workspace creation at step 0. The button should only be visible to authenticated users. Add a tooltip: 'Create a new workspace with the setup wizard'.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M12.E5)
+**Agent**: cli-user
+**Date**: 2026-02-18 07:25 UTC
+**Sibling tasks**: P15.M12.E5.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M12.E5.T001 → P15.M12.E5.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M12.E5.T001: .tasks/15-new-capabilities/12-connector-management-ui/05-workspace-browser-qol-create-b/T001-add-new-workspace-button-to-wo.todo
+- P15.M12.E5.T002: .tasks/15-new-capabilities/12-connector-management-ui/05-workspace-browser-qol-create-b/T002-add-connector-count-field-to-w.todo

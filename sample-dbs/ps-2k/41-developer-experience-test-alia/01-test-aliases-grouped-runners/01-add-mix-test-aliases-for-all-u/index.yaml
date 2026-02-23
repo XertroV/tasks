@@ -1,0 +1,31 @@
+id: P41.M1.E1
+name: Add mix test.* aliases for all uncovered subdirectories
+status: done
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-test-aliases-for-the-43-su.todo
+  title: Add test aliases for the 43 subdirectories currently without one
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-grouped-meta-aliases-for-c.todo
+  title: Add grouped meta-aliases for common developer workflows
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P41.M1.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

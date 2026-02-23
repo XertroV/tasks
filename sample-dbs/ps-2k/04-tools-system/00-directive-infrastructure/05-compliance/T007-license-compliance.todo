@@ -1,0 +1,193 @@
+---
+id: P4.M0.E5.T007
+title: Apache 2.0 compliance for Jido attribution
+status: done
+estimate_hours: 1
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- legal
+- license
+- apache-2.0
+- jido
+claimed_by: claude-1
+claimed_at: '2026-02-05T19:15:42.379905'
+started_at: '2026-02-05T19:15:42.379905'
+completed_at: '2026-02-05T19:23:10.799145'
+duration_minutes: 7.473653850000001
+---
+
+# Apache 2.0 compliance for Jido attribution
+
+Create required attribution and licensing documentation for Jido-inspired patterns.
+
+## Requirements
+
+- [ ] Create `THIRD_PARTY_LICENSES.md` at project root
+- [ ] Include Jido attribution:
+  - [ ] Copyright notice (2019 Parker Selbert)
+  - [ ] Full Apache License 2.0 text
+  - [ ] Link to Jido repository
+  - [ ] Description of what we adapted
+- [ ] Update `README.md`:
+  - [ ] Add "Acknowledgments" section
+  - [ ] Credit Jido with link
+  - [ ] Reference THIRD_PARTY_LICENSES.md
+- [ ] Verify all directive module files have attribution headers
+- [ ] Document modifications from original Jido patterns
+
+## Acceptance Criteria
+
+- [ ] THIRD_PARTY_LICENSES.md exists at project root
+- [ ] File includes complete Apache 2.0 license text
+- [ ] Jido attribution clearly visible
+- [ ] README.md has Acknowledgments section
+- [ ] All directive files (lib/pag_server/agents/directive*.ex) have file-level headers
+- [ ] Headers note: "Directive pattern adapted from Jido"
+- [ ] Headers note: "Modified for PAG-Server event-sourced architecture"
+- [ ] Legal compliance verified
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md` (License Compliance section)
+- `docs/brainstorms/2026-02-06-multi-agent-coordination-tools-brainstorm.md` (License Compliance & Attribution)
+
+**Jido**:
+- Repository: https://github.com/agentjido/jido
+- License: Apache 2.0
+- Copyright: 2019 Parker Selbert
+
+**Apache 2.0 Requirements**:
+1. Include copyright notice
+2. Include full license text
+3. Document modifications
+4. Provide attribution in derivative works
+
+## Notes
+
+### THIRD_PARTY_LICENSES.md structure
+
+```markdown
+# Third-Party Licenses
+
+This document contains the licenses for third-party software used in PAG-Server.
+
+---
+
+## Jido
+
+**Repository**: https://github.com/agentjido/jido  
+**License**: Apache License 2.0  
+**Copyright**: 2019 Parker Selbert
+
+### What We Use
+
+PAG-Server's directive-based tool system is inspired by and adapted from Jido's
+directive pattern architecture. Specifically:
+
+- Directive struct pattern (pure data describing effects)
+- Protocol-based directive execution
+- Pure function testing approach for tools
+- Parent-child agent hierarchy concepts
+
+### Modifications
+
+PAG-Server modified these patterns for our specific needs:
+
+- Added event sourcing for directive persistence and replay
+- Integrated with existing EventStore and event-driven architecture
+- Modified blocking behavior to use Task.async instead of Jido's approach
+- Added LLM-specific integration points in AgentServer
+- Custom directive types for LLM agent coordination
+
+### License Text
+
+```
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
+
+   TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION
+
+   [Full Apache 2.0 license text here - 201 lines]
+```
+
+---
+```
+
+### README.md Acknowledgments section
+
+```markdown
+## Acknowledgments
+
+PAG-Server's directive-based tool system is inspired by and adapted from
+[Jido](https://github.com/agentjido/jido) by Parker Selbert, licensed under
+the Apache License 2.0.
+
+Jido's elegant directive pattern for pure functional agents influenced our
+architecture significantly. We modified these patterns for event sourcing,
+LLM integration, and multi-agent coordination. See [THIRD_PARTY_LICENSES.md](./THIRD_PARTY_LICENSES.md)
+for complete attribution and license details.
+```
+
+### File-level attribution header template
+
+```elixir
+# lib/pag_server/agents/directive.ex
+# Directive pattern adapted from Jido (https://github.com/agentjido/jido)
+# Copyright 2019 Parker Selbert - Apache License 2.0
+# Modified for PAG-Server event-sourced architecture
+
+defmodule PagServer.Agents.Directive do
+  # ...
+end
+```
+
+### Files requiring headers
+
+- `lib/pag_server/agents/directive.ex`
+- `lib/pag_server/agents/directive/*.ex` (all directive struct modules)
+- `lib/pag_server/agents/directive/executor.ex`
+
+### Checklist before merge
+
+- [ ] THIRD_PARTY_LICENSES.md created
+- [ ] Apache 2.0 full text included (verify all 201 lines)
+- [ ] Jido copyright notice present
+- [ ] README.md acknowledgment added
+- [ ] All directive files have attribution headers
+- [ ] Modifications documented
+- [ ] Links to Jido repo working
+
+### Apache 2.0 License Text
+
+Get full text from: https://www.apache.org/licenses/LICENSE-2.0.txt
+
+Or copy from Jido's LICENSE file at:
+https://github.com/agentjido/jido/blob/main/LICENSE
+
+Ensure exact text (201 lines), no modifications.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 06:15 UTC
+**Primary task**: P2.M7.E3.T002 - Write end-to-end cost tests
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E5 vs P2.M7.E3)
+- No dependency chain: ✓ (verified at claim time)

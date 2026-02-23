@@ -1,0 +1,45 @@
+---
+id: P55.M2.E1.T001
+title: Thread sidebar component with list rendering and active highlight
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- component
+- sidebar
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:21:36.484344+00:00'
+started_at: '2026-02-22T06:21:36.484344+00:00'
+completed_at: '2026-02-22T06:34:18.265828+00:00'
+duration_minutes: 12.6963578
+---
+Create lib/pag_server_web/live/workspace_chat/thread_sidebar.ex as function component module. Renders thread items: name, agent name badge, last activity relative time, status pill (using .status_pill from core_components). Active thread highlighted with distinct background. Sorted by last_activity_at desc. Clicking a thread fires phx-click='select_thread' with session_id, handled by root LiveView via push_patch.
+
+## Acceptance Criteria
+- Thread list renders with name, agent badge, relative time, status
+- Active thread visually highlighted
+- Click navigates to /chat/:workspace_id/:session_id via push_patch
+- Sorted by last_activity_at desc
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-22 06:21 UTC
+**Primary task**: P55.M1.E2.T001 - Thread list and workspace loading queries on mount
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P55.M2.E1 vs P55.M1.E2)
+- No dependency chain: ✓ (verified at claim time)

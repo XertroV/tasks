@@ -1,0 +1,39 @@
+id: P6.M2
+name: OpenTelemetry
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: OTel Setup
+  path: 01-setup
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on: []
+  description: Install and configure OpenTelemetry with OTLP exporter
+- id: E2
+  name: Instrumentation
+  path: 02-instrumentation
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+  description: Add traces for LLM calls, tool invocations, and agent operations
+- id: E3
+  name: Metrics
+  path: 03-metrics
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on:
+  - E1
+  description: Define and export OpenTelemetry metrics
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

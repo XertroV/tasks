@@ -1,0 +1,55 @@
+---
+id: P43.M2.E1.T001
+title: Update agent_server.ex do_llm_stream_request to pass agent_id, session_id,
+  workspace_id, caller_context
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:35:54.247415+00:00'
+started_at: '2026-02-20T06:35:54.247415+00:00'
+completed_at: '2026-02-20T06:39:09.312656+00:00'
+duration_minutes: 3.2510871499999996
+---
+
+# Update agent_server.ex do_llm_stream_request to pass agent_id, session_id, workspace_id, caller_context
+
+
+
+## Requirements
+
+- Pass agent/session/workspace identity and caller context to every LLM call made from the agent loop so that `CallRecorder` can associate records with the originating agent.
+
+## Acceptance Criteria
+
+- In `lib/pag_server/agents/agent_server.ex`, the keyword list passed to the LLM client (either assembled in `build_llm_options/2` around line ~3993 or directly in `do_llm_stream_request` around line ~2960) includes the key `:agent_id` set to `state.id`.
+- The same keyword list includes `:session_id` set to `state.session_id` (value may be `nil` if the agent has no session; the key must still be present).
+- The same keyword list includes `:workspace_id` set to `state.workspace_id`.
+- The same keyword list includes `:caller_context` set to the string `"agent_loop"`.
+- The four new keys are placed alongside existing opts such as `:temperature` and `:max_tokens` — they do not replace or shadow any existing opt.
+- The existing agent behaviour (streaming, tool calls, retries) is unaffected — all existing tests for `agent_server` continue to pass.
+- `CallRecorder.extract_context/1` is able to strip the four new keys from the opts list without error when `session_id` is `nil`.
+- No compiler warnings are introduced by the change.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P43.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 23:56 UTC
+**Sibling tasks**: P43.M2.E1.T002, P43.M2.E1.T003, P43.M2.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P43.M2.E1.T001 → P43.M2.E1.T002 → P43.M2.E1.T003 → P43.M2.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P43.M2.E1.T001: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/01-call-site-updates/T001-update-agent-server-ex-do-llm.todo
+- P43.M2.E1.T002: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/01-call-site-updates/T002-update-openai-chat-completions.todo
+- P43.M2.E1.T003: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/01-call-site-updates/T003-update-validation-console-ex-c.todo
+- P43.M2.E1.T004: .tasks/43-llm-call-records-observability/02-call-site-updates-dashboard-te/01-call-site-updates/T004-thread-agent-id-session-id-thr.todo

@@ -1,0 +1,49 @@
+id: P28
+name: Plugin Hub UI
+status: pending
+locked: false
+weeks: 3
+estimate_hours: 32.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Plugin Registry API
+  path: 01-plugin-registry-api
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: REST API endpoints to list all available plugins with metadata and
+    to enable/disable plugins per workspace, forming the backend foundation for the
+    plugin hub.
+  locked: false
+- id: M2
+  name: Plugin Configuration
+  path: 02-plugin-configuration
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on:
+  - P28.M1
+  description: Generic plugin configuration GET/PATCH endpoint and a schema endpoint
+    that returns a JSON Schema for each plugin's settings, enabling self-describing
+    plugin config UIs.
+  locked: false
+- id: M3
+  name: Tests
+  path: 03-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: low
+  depends_on:
+  - P28.M2
+  description: API-level tests for plugin registry listing, enable/disable, and config
+    endpoints.
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

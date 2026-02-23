@@ -1,0 +1,43 @@
+---
+id: P7.M6.E3.T002
+title: Memory alerts
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M6.E3.T001
+claimed_by: cli-user
+claimed_at: '2026-02-07T04:31:41.385403+00:00'
+started_at: '2026-02-07T04:31:41.385403+00:00'
+completed_at: '2026-02-07T04:33:16.536212+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 1.5858466500000001
+---
+
+# Memory alerts
+
+Alert when 512MB per-agent limit approached
+
+## Requirements
+
+- [x] Implement core functionality
+- [x] Add tests
+- [x] Update documentation
+
+## Acceptance Criteria
+
+- [x] Feature works as specified
+- [x] Tests pass
+- [x] Documentation updated
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.

@@ -1,0 +1,41 @@
+id: P45.M4.E1
+name: Token Bucket Rate Limiter
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-per-agent-token-buck.todo
+  title: Implement per-agent token bucket in ETS
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P45.M1.E1.T001
+- id: T002
+  file: T002-wire-ratelimiter-into-plugin-s.todo
+  title: Wire RateLimiter into plugin supervisor and tool fetch handler
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P45.M4.E1.T001
+- id: T003
+  file: T003-write-rate-limiter-tests.todo
+  title: Write rate limiter tests
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P45.M4.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

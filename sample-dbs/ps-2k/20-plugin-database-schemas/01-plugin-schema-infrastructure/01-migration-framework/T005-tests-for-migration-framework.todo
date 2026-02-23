@@ -1,0 +1,23 @@
+---
+id: P20.M1.E1.T005
+title: Tests for migration framework
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P20.M1.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:16:11.775069+00:00'
+started_at: '2026-02-18T10:16:11.775069+00:00'
+completed_at: '2026-02-18T10:30:47.690912+00:00'
+duration_minutes: 14.598597216666667
+---
+## Acceptance Criteria
+- Test migrator runs migrations and tracks versions
+- Test idempotency (re-enable doesn't re-run migrations)
+- Test validation rejects bad table names
+- Test rollback on force_drop uninstall
+- Test migration failure prevents plugin enable
+- All tests async: true

@@ -1,0 +1,35 @@
+---
+id: P15.M7.E5.T028
+title: 'T28: Topic-Based Persona Discovery UI'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:34:39.359098+00:00'
+started_at: '2026-02-18T10:34:39.359098+00:00'
+completed_at: '2026-02-18T10:34:41.149348+00:00'
+duration_minutes: 0.029837233333333334
+---
+Redesign initial persona selection to show topic interests rather than persona names.
+
+## Features
+- Display big list of topics/interests (ways bot can help):
+  * Email management
+  * Tech lead / Code reviews
+  * Product development & Startup/VC raising
+  * Technical offsider (code, devops, etc)
+  * Social media advisor/mentor
+  * ...and more
+
+- Toggle buttons for topics (press to select/deselect)
+- Free-text input for custom interests
+  * User types: 'help me with my maths homework'
+  * User types: 'help me track my goals and projects'
+  * These become toggle-able options
+
+- Map selected topics to appropriate personas
+- Support multiple topic selection
+- Create custom persona from combined interests

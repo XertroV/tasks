@@ -1,0 +1,27 @@
+---
+id: P15.M15.E3.T003
+title: Update docs/AGENT_PERSONA_SYSTEM.md for prompt rewrite
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- persona
+- docs
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-19T13:57:17.795300+00:00'
+---
+Update architecture docs to reflect new 12-section prompt structure.
+
+Changes needed:
+- Update terminology: 'core files' not 'workspace files'
+- Document /home + /workspace directory layout
+- Document new placeholder syntax families
+
+Acceptance criteria:
+- Docs accurate
+- Terminology consistent
+- All 12 sections described

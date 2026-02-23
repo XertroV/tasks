@@ -1,0 +1,37 @@
+id: P11.M2
+name: Tools & Capabilities Management API
+status: pending
+estimate_hours: 14.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Tools Discovery API
+  path: 01-tools-discovery-api
+  status: pending
+  estimate_hours: 5.0
+  complexity: low
+  depends_on: []
+  description: ''
+- id: E2
+  name: Tool Permissions & Sandbox Config
+  path: 02-tool-permissions-sandbox-confi
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E3
+  name: Tool Execution Quotas
+  path: 03-tool-execution-quotas
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,54 @@
+id: P2.M8
+name: Context Window Management
+status: pending
+estimate_hours: 14
+complexity: high
+depends_on:
+- P2.M7
+epics:
+- id: E1
+  name: Per-Message Token Tracking
+  path: 01-per-message-token-tracking
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Context Overflow Handling
+  path: 02-context-overflow-handling
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E3
+  name: Pruning Strategies
+  path: 03-pruning-strategies
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E4
+  name: Provider Fallback
+  path: 04-provider-fallback
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E5
+  name: Advanced Summarization Strategies
+  path: 05-advanced-summarization-strateg
+  status: pending
+  estimate_hours: 16.0
+  complexity: high
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 19
+  done: 19
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,38 @@
+id: P44.M1.E1
+name: Command Behaviour and Response Types
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-command-behaviour-modul.todo
+  title: Define Command behaviour module with callbacks
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-define-command-response-struct.todo
+  title: Define Command Response struct
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-define-command-context-map-and.todo
+  title: Define Command context map and typespecs
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

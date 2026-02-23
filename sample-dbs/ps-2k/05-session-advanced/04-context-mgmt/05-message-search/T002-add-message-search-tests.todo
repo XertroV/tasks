@@ -1,0 +1,100 @@
+---
+id: P5.M4.E5.T002
+title: Add message search tests
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P5.M4.E5.T001
+tags:
+- testing
+- search
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:48:43.663107+00:00'
+started_at: '2026-02-07T14:48:43.663107+00:00'
+completed_at: '2026-02-07T14:49:33.087345+00:00'
+duration_minutes: 0.8237371499999999
+---
+
+# Add message search tests
+
+Comprehensive test coverage for the full-text search functionality added in T001.
+Tests should cover the search function itself, filtering options, edge cases,
+and the migration/index behavior.
+
+## Requirements
+
+- [ ] Create test file `test/pag_server/context/messages_search_test.exs`
+- [ ] Test `search_messages/3` basic keyword matching
+  - Insert messages with known content, search for keywords, verify matches
+  - Verify non-matching keywords return empty results
+- [ ] Test relevance ordering
+  - Insert messages with varying keyword density
+  - Verify higher-relevance messages appear first
+- [ ] Test role filtering
+  - Insert user and assistant messages with same keywords
+  - Search with `role: "user"` and verify only user messages returned
+- [ ] Test date range filtering
+  - Insert messages across different timestamps
+  - Search with `:after` and `:before` opts, verify correct filtering
+- [ ] Test limit option
+  - Insert many matching messages, verify limit is respected
+- [ ] Test chronological ordering option
+  - Search with `order: :chronological`, verify sequence_num ordering
+- [ ] Test edge cases
+  - Empty query string returns `[]`
+  - Whitespace-only query returns `[]`
+  - Special characters in query don't cause SQL errors
+  - Query with no matches returns `[]`
+  - Very long query strings are handled gracefully
+- [ ] Test `search_across_sessions/2`
+  - Create messages in multiple sessions
+  - Search across specific session_ids list
+  - Verify results come from correct sessions only
+- [ ] Test that search respects session isolation (default single-session search)
+
+## Acceptance Criteria
+
+- [ ] All search function variants have test coverage
+- [ ] Edge cases (empty, special chars, long strings) are tested
+- [ ] Filter combinations (role + date range) are tested
+- [ ] Tests pass in both development and CI environments
+- [ ] No flaky tests due to timing or ordering assumptions
+
+## Context
+
+Test companion for T001. Identified in architecture audit as part of
+the MEDIUM priority full-text message search gap.
+
+## Notes
+
+Tests will need the DataCase setup with Ecto sandbox. Example structure:
+
+```elixir
+defmodule PagServer.Context.MessagesSearchTest do
+  use PagServer.DataCase, async: true
+
+  alias PagServer.Context.Messages
+  alias PagServer.Schema.{Message, Session}
+
+  setup do
+    {:ok, session} = create_test_session()
+    {:ok, _} = Messages.create_message(session.id, %{role: "user", content: "Hello world Elixir programming"})
+    {:ok, _} = Messages.create_message(session.id, %{role: "assistant", content: "I can help with Elixir!"})
+    {:ok, _} = Messages.create_message(session.id, %{role: "user", content: "Tell me about Python instead"})
+    %{session: session}
+  end
+
+  test "finds messages matching keywords", %{session: session} do
+    results = Messages.search_messages(session.id, "Elixir")
+    assert length(results) == 2
+  end
+end
+```
+
+## Reference Files
+
+- `lib/pag_server/context/messages.ex` - Module under test
+- `test/pag_server/context/` - Existing test directory for context modules
+- `test/support/data_case.ex` - DataCase test helper

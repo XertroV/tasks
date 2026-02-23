@@ -1,0 +1,24 @@
+id: P53.M1
+name: Execution path and protocol design
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Contract and architecture baseline
+  path: 01-contract-and-architecture-base
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Document BrowserMCP contract, companion API touchpoints, and fallback
+    decisions.
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

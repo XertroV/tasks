@@ -1,0 +1,18 @@
+---
+id: B050
+title: OpenRouter models seem to be loaded and populated in the webui, great, but
+  groq models are not (and they should be)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:03:10.925789+00:00'
+started_at: '2026-02-16T03:03:10.925789+00:00'
+completed_at: '2026-02-16T03:33:57.044162+00:00'
+duration_minutes: 30.768638766666665
+---
+
+OpenRouter models seem to be loaded and populated in the webui, great, but groq models are not (and they should be)

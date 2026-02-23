@@ -1,0 +1,43 @@
+---
+id: P21.M1.E1.T012
+title: Implement ContainerToolExecutor for routing tool calls
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P21.M1.E1.T005
+- P21.M1.E1.T010
+tags:
+- integration
+- tool-execution
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.562917+00:00'
+started_at: '2026-02-18T12:21:44.562917+00:00'
+completed_at: '2026-02-18T13:37:28.348205+00:00'
+duration_minutes: 75.7297545
+---
+
+# Implement ContainerToolExecutor for routing tool calls
+
+Route tool execution through the agent's container.
+
+## Requirements
+
+- Intercept tool calls that need filesystem access
+- Execute commands in container via ContainerManager
+- Handle streaming output from container
+- Map host paths to container paths for tool arguments
+- Support tools that should NOT run in container (e.g., internal tools)
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/container_tool_executor.ex` exists
+- [ ] `execute_in_container/4` runs tool command in agent's container
+- [ ] Path mapping: `/workspace/*` -> host workspace path
+- [ ] Path mapping: `/private/*` -> host private path
+- [ ] Tools can opt-out of containerization via metadata
+- [ ] Streaming output supported via callback
+- [ ] Timeout handling with container cleanup
+- [ ] Integration with existing ToolExecutor flow
+- [ ] Unit tests with mocked container

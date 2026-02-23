@@ -1,0 +1,53 @@
+---
+id: I043
+title: '[unsure] a way to have a remote agent runner (for a workspace) so that we
+  can seaprate out parts of the server from the main db. Like I have a little smaller
+  pag-server instance running on another machine, and I get virtual access to it through
+  the main server. I''m unsure about this idea, maybe it''s too much with too little
+  payoff. And we have the backlog idea for the remote agent anyway (runs via SSH)'
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+- blocked
+blocked_reason: Marked done in ~6 seconds with no tasks. Original idea was self-noted
+  as [unsure] with low payoff. Reset to pending, blocked pending user decision on
+  whether federated pag-server instances are worth pursuing separately from SSH remote
+  agents (P31.M1).
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+---
+
+# Idea Intake: [unsure] a way to have a remote agent runner (for a workspace) so that we can seaprate out parts of the server from the main db. Like I have a little smaller pag-server instance running on another machine, and I get virtual access to it through the main server. I'm unsure about this idea, maybe it's too much with too little payoff. And we have the backlog idea for the remote agent anyway (runs via SSH)
+
+## Original Idea
+
+[unsure] a way to have a remote agent runner (for a workspace) so that we can seaprate out parts of the server from the main db. Like I have a little smaller pag-server instance running on another machine, and I get virtual access to it through the main server. I'm unsure about this idea, maybe it's too much with too little payoff. And we have the backlog idea for the remote agent anyway (runs via SSH)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "[unsure] a way to have a remote agent runner (for a workspace) so that we can seaprate out parts of the server from the main db. Like I have a little smaller pag-server instance running on another machine, and I get virtual access to it through the main server. I'm unsure about this idea, maybe it's too much with too little payoff. And we have the backlog idea for the remote agent anyway (runs via SSH)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

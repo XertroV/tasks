@@ -1,0 +1,32 @@
+id: P39.M3
+name: Tool Routing & API
+status: done
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Companion Proxy Execution
+  path: 01-companion-proxy-execution
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: REST API & Integration
+  path: 02-rest-api-integration
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

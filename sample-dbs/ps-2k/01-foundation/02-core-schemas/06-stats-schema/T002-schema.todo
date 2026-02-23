@@ -1,0 +1,229 @@
+---
+id: P1.M2.E6.T002
+title: Create Stats schema module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P1.M2.E6.T001
+tags:
+- schema
+- ecto
+- stats
+- associations
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:28:16.355139'
+started_at: '2026-02-05T08:28:16.355139'
+completed_at: '2026-02-05T08:30:25.073250'
+---
+
+# Create Stats schema module
+
+Create the Ecto schema for the Stats model with associations, validations, and cost calculation helpers.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/stats.ex`
+- [ ] Define schema with all fields from migration
+- [ ] Add associations to Agent and Session
+- [ ] Create period type enum validation
+- [ ] Implement cost calculation helper functions
+- [ ] Add changeset validation logic
+- [ ] Write basic unit tests in `test/pag_server/schema/stats_test.exs`
+- [ ] Run tests: `mix test test/pag_server/schema/stats_test.exs`
+
+## Schema Structure
+
+```elixir
+defmodule PagServer.Schema.Stats do
+  use Ecto.Schema
+  import Ecto.Changeset
+  
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+  
+  @period_types ~w(request session hourly daily)
+  
+  schema "stats" do
+    # Associations
+    belongs_to :agent, PagServer.Schema.Agent
+    belongs_to :session, PagServer.Schema.Session
+    
+    # Period tracking
+    field :period_start, :utc_datetime_usec
+    field :period_end, :utc_datetime_usec
+    field :period_type, :string
+    
+    # Token counts
+    field :prompt_tokens, :integer, default: 0
+    field :completion_tokens, :integer, default: 0
+    field :cached_tokens, :integer, default: 0
+    
+    # Costs (millicents)
+    field :prompt_cost_millicents, :integer, default: 0
+    field :completion_cost_millicents, :integer, default: 0
+    field :cached_cost_millicents, :integer, default: 0
+    field :total_cost_millicents, :integer, default: 0
+    
+    # Operational metrics
+    field :llm_requests, :integer, default: 0
+    field :tool_calls, :integer, default: 0
+    field :total_latency_ms, :integer, default: 0
+    field :errors, :integer, default: 0
+    
+    timestamps(type: :utc_datetime_usec)
+  end
+  
+  # Helpers
+  def period_types, do: @period_types
+  
+  def total_tokens(%__MODULE__{} = stats) do
+    stats.prompt_tokens + stats.completion_tokens + stats.cached_tokens
+  end
+  
+  def cost_in_dollars(%__MODULE__{} = stats) do
+    stats.total_cost_millicents / 100_000.0
+  end
+  
+  def average_latency_ms(%__MODULE__{} = stats) do
+    if stats.llm_requests > 0 do
+      stats.total_latency_ms / stats.llm_requests
+    else
+      0
+    end
+  end
+end
+```
+
+## Changeset Logic
+
+```elixir
+def changeset(stats \\ %__MODULE__{}, attrs) do
+  stats
+  |> cast(attrs, [
+    :agent_id, :session_id, :period_start, :period_end, :period_type,
+    :prompt_tokens, :completion_tokens, :cached_tokens,
+    :prompt_cost_millicents, :completion_cost_millicents, 
+    :cached_cost_millicents, :total_cost_millicents,
+    :llm_requests, :tool_calls, :total_latency_ms, :errors
+  ])
+  |> validate_required([:period_start, :period_end, :period_type])
+  |> validate_inclusion(:period_type, @period_types)
+  |> validate_number(:prompt_tokens, greater_than_or_equal_to: 0)
+  |> validate_number(:completion_tokens, greater_than_or_equal_to: 0)
+  |> validate_number(:cached_tokens, greater_than_or_equal_to: 0)
+  |> validate_number(:llm_requests, greater_than_or_equal_to: 0)
+  |> validate_period_order()
+  |> calculate_total_cost()
+end
+
+defp validate_period_order(changeset) do
+  period_start = get_field(changeset, :period_start)
+  period_end = get_field(changeset, :period_end)
+  
+  if period_start && period_end && DateTime.compare(period_start, period_end) == :gt do
+    add_error(changeset, :period_end, "must be after period_start")
+  else
+    changeset
+  end
+end
+
+defp calculate_total_cost(changeset) do
+  prompt = get_field(changeset, :prompt_cost_millicents) || 0
+  completion = get_field(changeset, :completion_cost_millicents) || 0
+  cached = get_field(changeset, :cached_cost_millicents) || 0
+  
+  put_change(changeset, :total_cost_millicents, prompt + completion + cached)
+end
+```
+
+## Tests
+
+Create `test/pag_server/schema/stats_test.exs`:
+
+```elixir
+defmodule PagServer.Schema.StatsTest do
+  use PagServer.DataCase, async: true
+  alias PagServer.Schema.Stats
+  
+  describe "changeset/2" do
+    test "valid stats record"
+    test "validates period_type inclusion"
+    test "validates period_end after period_start"
+    test "calculates total_cost_millicents"
+    test "validates non-negative token counts"
+  end
+  
+  describe "helpers" do
+    test "total_tokens/1 sums all token types"
+    test "cost_in_dollars/1 converts millicents"
+    test "average_latency_ms/1 calculates average"
+    test "average_latency_ms/1 handles zero requests"
+  end
+end
+```
+
+## Acceptance Criteria
+
+- [ ] Schema module created with all fields
+- [ ] Associations to Agent and Session defined
+- [ ] Period type validated against allowed values
+- [ ] Changeset validates period_end > period_start
+- [ ] Changeset auto-calculates total_cost_millicents
+- [ ] Helper functions: `total_tokens/1`, `cost_in_dollars/1`, `average_latency_ms/1`
+- [ ] Can create stats records via `Repo.insert/1`
+- [ ] Can query stats by agent_id, session_id, period_type
+- [ ] All unit tests pass
+- [ ] Cost display correctly formats millicents to dollars
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 269-296 (Stats Schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 3.3 (Stats Tracking)
+
+**Key Points**:
+- **Period type enum**: Enforced at changeset level, prevents invalid types
+- **Auto-calculate total**: Changeset always recomputes total from components
+- **Cost helpers**: Provide dollar formatting for display/reporting
+- **Associations**: Enable `stats.agent` and `stats.session` preloading
+
+## Notes
+
+### Helper Function Examples
+
+```elixir
+iex> stats = %Stats{
+  prompt_tokens: 1000,
+  completion_tokens: 500,
+  cached_tokens: 200,
+  total_cost_millicents: 15_000
+}
+
+iex> Stats.total_tokens(stats)
+1700
+
+iex> Stats.cost_in_dollars(stats)
+0.15
+
+iex> stats = %Stats{llm_requests: 5, total_latency_ms: 2500}
+iex> Stats.average_latency_ms(stats)
+500.0
+```
+
+### Period Type Usage
+
+```elixir
+# Request-level (single API call)
+%Stats{period_type: "request", ...}
+
+# Session-level (full conversation)
+%Stats{period_type: "session", ...}
+
+# Hourly rollup (aggregated)
+%Stats{period_type: "hourly", period_start: ~U[2026-02-05 14:00:00Z], ...}
+
+# Daily rollup
+%Stats{period_type: "daily", period_start: ~U[2026-02-05 00:00:00Z], ...}
+```

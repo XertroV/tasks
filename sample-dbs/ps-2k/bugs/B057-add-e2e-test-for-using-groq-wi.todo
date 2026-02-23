@@ -1,0 +1,17 @@
+---
+id: B057
+title: add e2e test for using groq with openai/gpt-oss-120b
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T05:10:57.253270+00:00'
+started_at: '2026-02-16T05:10:57.253270+00:00'
+completed_at: '2026-02-16T05:25:17.514202+00:00'
+duration_minutes: 14.337681933333332
+---
+
+add e2e test for using groq with openai/gpt-oss-120b

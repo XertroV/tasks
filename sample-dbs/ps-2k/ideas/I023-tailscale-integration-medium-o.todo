@@ -1,0 +1,47 @@
+---
+id: I023
+title: Tailscale Integration | MEDIUM | One-command secure remote access. Competes
+  with OpenClaw's remote gateway.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:13:35.405938+00:00'
+started_at: '2026-02-18T22:13:35.405938+00:00'
+completed_at: '2026-02-18T22:13:37.334973+00:00'
+duration_minutes: 0.0321504
+---
+
+# Idea Intake: Tailscale Integration | MEDIUM | One-command secure remote access. Competes with OpenClaw's remote gateway.
+
+## Original Idea
+
+Tailscale Integration | MEDIUM | One-command secure remote access. Competes with OpenClaw's remote gateway.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Tailscale Integration | MEDIUM | One-command secure remote access. Competes with OpenClaw's remote gateway."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P29.M2 (Tailscale Integration)
+- P29.M2.E1 (Tailscale Connection Management — tasks not yet created)
+- P29.M2.E2 (Tailscale MCP Tools & REST API — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,57 @@
+---
+id: I019
+title: When agents are spawned eg for a cron job, we should either target them at
+  a session, or if no session then we spawn an ephemeral session for them (using a
+  given agent)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+work_items:
+- P27.M1.E1.T001
+- P27.M1.E1.T002
+- P27.M2.E1.T001
+- P27.M2.E1.T002
+- P27.M3.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:59:00.985119+00:00'
+started_at: '2026-02-18T19:59:00.985119+00:00'
+completed_at: '2026-02-18T19:59:02.488458+00:00'
+duration_minutes: 0.0250555
+---
+
+# Idea Intake: When agents are spawned eg for a cron job, we should either target them at a session, or if no session then we spawn an ephemeral session for them (using a given agent)
+
+## Original Idea
+
+When agents are spawned eg for a cron job, we should either target them at a session, or if no session then we spawn an ephemeral session for them (using a given agent)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "When agents are spawned eg for a cron job, we should either target them at a session, or if no session then we spawn an ephemeral session for them (using a given agent)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P27 (phase): Ephemeral Session Spawning (.tasks/27-ephemeral-session-spawning/)
+- P27.M1.E1.T001: Add ephemeral boolean flag to session schema and migration
+- P27.M1.E1.T002: Auto-cleanup GenServer that destroys ephemeral sessions after completion
+- P27.M2.E1.T001: Update agent spawn logic to accept session_id or create ephemeral session
+- P27.M2.E1.T002: Cron job actions use ephemeral sessions when no session_id provided
+- P27.M3.E1.T001: Ephemeral session lifecycle tests
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

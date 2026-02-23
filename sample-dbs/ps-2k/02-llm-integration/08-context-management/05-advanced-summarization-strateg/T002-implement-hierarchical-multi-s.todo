@@ -1,0 +1,63 @@
+---
+id: P2.M8.E5.T002
+title: Implement hierarchical multi-stage summarization
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- context
+- summarization
+- hierarchical
+- openclaw
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:42:10.308251'
+started_at: '2026-02-06T02:42:10.308251'
+completed_at: '2026-02-06T02:53:22.542069'
+duration_minutes: 11.203896799999999
+---
+
+# Implement hierarchical multi-stage summarization
+
+Split messages into N parts, summarize each independently, then merge partial summaries into final summary. Handles very long conversations and enables parallelization.
+
+**Reference**: `ref-projects/openclaw/src/agents/compaction.ts:243-304`
+
+## Requirements
+
+1. Split messages into N parts by token share (default: 2 parts)
+2. Summarize each part independently → partial summaries
+3. Merge partial summaries with custom instructions:
+   - "Merge these partial summaries into a single cohesive summary."
+   - "Preserve decisions, TODOs, open questions, and constraints."
+4. Only use multi-stage if:
+   - `parts > 1`
+   - `message_count >= min_messages_for_split` (default: 4)
+   - `total_tokens > max_chunk_tokens`
+
+## Acceptance Criteria
+
+- [x] Token-share splitting
+  - [x] Split messages into N equal token-share chunks
+  - [x] Minimum 1 part, maximum message_count parts
+
+- [x] Multi-stage summarization
+  - [x] Summarize each chunk independently
+  - [x] Create summary messages from partial summaries
+  - [x] Merge summaries with custom merge instructions
+
+- [x] Fallback to single-stage
+  - [x] If parts <= 1, use regular summarization
+  - [x] If too few messages, use regular summarization
+  - [x] If total tokens small, use regular summarization
+
+- [x] Configuration
+  - [x] Configurable parts (default: 2)
+  - [x] Configurable min_messages_for_split (default: 4)
+  - [x] Merge instructions customizable
+
+- [x] Tests
+  - [x] Unit test: message splitting by token share
+  - [x] Integration test: multi-stage produces merged summary
+  - [x] Test: fallback to single-stage when appropriate

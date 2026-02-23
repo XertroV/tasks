@@ -1,0 +1,21 @@
+---
+id: P32.M1.E2.T003
+title: Add MCP tool for listing and responding to pending votes
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P32.M1.E1.T002
+tags:
+- mcp
+- tools
+- voting
+- agent-interface
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.292702+00:00'
+started_at: '2026-02-18T20:03:22.292702+00:00'
+completed_at: '2026-02-18T22:09:34.676378+00:00'
+duration_minutes: 126.20639436666667
+---
+Expose pending votes to agents via MCP tools so they can respond to vote requests programmatically.\n\nTools to add:\n- list_pending_votes/0 - returns list of pending ConsensusVote records for the calling agent's session\n- cast_vote/2(vote_id, decision) - casts yes/no vote for the calling agent\n\nEach pending vote in list should include:\n- vote_id\n- operation_type\n- requesting_agent_id\n- context (e.g. file path being deleted)\n- expires_at\n- current tally (votes cast so far)\n\nAcceptance criteria:\n- [ ] list_pending_votes returns only votes for current session\n- [ ] cast_vote correctly records decision via ConsensusManager.cast_vote/3\n- [ ] Both tools available in MCP tool registry\n- [ ] Calling cast_vote with invalid vote_id returns clear error\n- [ ] Calling cast_vote after vote expired returns clear error

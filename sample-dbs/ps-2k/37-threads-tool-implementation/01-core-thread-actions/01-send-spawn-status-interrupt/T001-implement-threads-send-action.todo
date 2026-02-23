@@ -1,0 +1,32 @@
+---
+id: P37.M1.E1.T001
+title: Implement threads send action
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.863519+00:00'
+started_at: '2026-02-19T04:21:05.863519+00:00'
+completed_at: '2026-02-19T04:43:23.725385+00:00'
+duration_minutes: 22.297697516666666
+---
+Implement action_send/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "send", hint: "Send implementation pending"}
+
+Required args: thread_id (existing), message (string to inject)
+Optional args: role (default "user"), resume (boolean, default false — if true, triggers the agent to process the queue)
+
+Behaviour:
+- Look up the session by thread_id (already done via with_thread/3)
+- Inject the message into the session's message queue using the appropriate context/messaging module (see lib/pag_server/agents/message_dispatcher.ex and lib/pag_server/agents/directive/executor/send_message_impl.ex)
+- If the session has an active agent, route the message to it via AgentServer
+- Return: %{action: "send", thread_id: id, message_id: id, status: "delivered" | "queued"}
+
+Also note: this is the real backend for B148 (resume existing thread). The spawn_subagent session_id param passes resume_session_id in the directive — make sure the Coordinator or directive executor actually calls action_send logic when it sees resume_session_id.
+
+Tests: delivered to active agent, queued when no agent running, invalid thread_id error
+File: lib/pag_server/plugins/agent_tools/threads.ex + test/pag_server/plugins/agent_tools/threads_test.exs

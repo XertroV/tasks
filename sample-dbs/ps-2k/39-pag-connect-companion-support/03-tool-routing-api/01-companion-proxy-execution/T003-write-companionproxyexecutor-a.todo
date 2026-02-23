@@ -1,0 +1,43 @@
+---
+id: P39.M3.E1.T003
+title: Write CompanionProxyExecutor and ToolRunner routing tests
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P39.M3.E1.T001
+- P39.M3.E1.T002
+tags:
+- companion
+- tests
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.837172+00:00'
+started_at: '2026-02-19T11:40:33.837172+00:00'
+completed_at: '2026-02-19T11:45:09.074045+00:00'
+duration_minutes: 4.587281066666667
+---
+Write tests for CompanionProxyExecutor and the new ToolRunner companion routing logic.
+
+## New files
+- test/pag_server/companions/companion_proxy_executor_test.exs
+- test/pag_server/agents/tool_runner_companion_routing_test.exs
+
+## CompanionProxyExecutor test cases
+- When companion connected + tool registered: sends tool_call, receives result
+- When companion not connected: returns {:error, :companion_not_connected}
+- Timeout: after timeout period, returns error execution with appropriate message
+- Correct execution map structure in both success and error cases
+
+## ToolRunner routing test cases
+- When companion connected + tool in list: use_companion? returns true
+- When companion not connected: falls through to ToolExecutor
+- When companion connected but tool not registered: falls through to ToolExecutor
+- Companion-routed calls don't get retried
+
+## Acceptance criteria
+- [ ] All test cases listed above are implemented and pass
+- [ ] Tests are async: true
+- [ ] Tests mock CompanionRegistry/PendingCalls appropriately
+- [ ] No test contamination (proper cleanup in on_exit)

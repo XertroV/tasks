@@ -1,0 +1,38 @@
+id: P55.M4.E1
+name: UI Polish
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-empty-states-loading-spinners.todo
+  title: Empty states, loading spinners, and error alerts
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-responsive-layout-with-mobile.todo
+  title: Responsive layout with mobile sidebar toggle
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T003
+  file: T003-dark-mode-first-aesthetic-tuni.todo
+  title: Dark-mode-first aesthetic tuning and streaming cursor
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

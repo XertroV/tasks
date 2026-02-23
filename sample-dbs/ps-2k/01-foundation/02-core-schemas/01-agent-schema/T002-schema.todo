@@ -1,0 +1,150 @@
+---
+id: P1.M2.E1.T002
+title: Create Agent Ecto schema module
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M2.E1.T001
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:12:10.218663'
+started_at: '2026-02-05T08:12:10.218663'
+completed_at: '2026-02-05T08:14:57.578432'
+tags:
+- schema
+- ecto
+- agents
+- validation
+---
+
+# Create Agent Ecto schema module
+
+Create the Ecto schema module for agents with changesets and validations.
+
+## Requirements
+
+- [ ] Create file `lib/pag_server/schema/agent.ex`
+- [ ] Define Ecto schema matching migration fields
+- [ ] Add `create_changeset/1` for new agents
+- [ ] Add `update_changeset/2` for updates
+- [ ] Add field validations (required fields, formats)
+- [ ] Define embedded schema for capabilities if needed
+- [ ] Add relationship definition for `parent_agent_id`
+- [ ] Run tests: `mix test test/pag_server/schema/agent_test.exs`
+- [ ] Verify compilation: `mix compile --force`
+- [ ] Commit with message "Add Agent Ecto schema module"
+
+## Acceptance Criteria
+
+- [ ] Schema module created at `lib/pag_server/schema/agent.ex`
+- [ ] All fields from migration are defined in schema
+- [ ] Primary key configured as `:binary_id`
+- [ ] Timestamps configured with `type: :utc_datetime_usec`
+- [ ] `create_changeset/1` validates:
+  - [ ] `:name` is required and not empty
+  - [ ] `:model_provider` is required
+  - [ ] `:model_name` is required
+  - [ ] `:status` is one of allowed values
+  - [ ] `:capabilities` is a valid map
+  - [ ] `:metadata` is a valid map
+- [ ] `update_changeset/2` validates same fields but allows partial updates
+- [ ] Relationship to parent agent works correctly
+- [ ] Can insert and query agents using Repo
+- [ ] No compilation warnings
+- [ ] All validations work as expected
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 192-208 (agents table schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 3.2 (Schema patterns)
+
+**Key Points**:
+- Use `@primary_key {:id, :binary_id, autogenerate: true}`
+- Use `@foreign_key_type :binary_id` for consistency
+- Capabilities map structure: `%{tools: [], file_access: bool, network_access: bool}`
+- Status enum: "idle", "active", "paused", "error", "archived"
+
+## Notes
+
+### Schema Template
+
+```elixir
+defmodule PagServer.Schema.Agent do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  schema "agents" do
+    field :name, :string
+    field :display_name, :string
+    field :system_prompt, :string
+    field :model_provider, :string, default: "anthropic"
+    field :model_name, :string, default: "claude-sonnet-4"
+    field :project, :string
+    field :capabilities, :map, default: %{}
+    field :metadata, :map, default: %{}
+    field :status, :string, default: "idle"
+    field :archived_at, :utc_datetime_usec
+
+    belongs_to :parent_agent, __MODULE__, foreign_key: :parent_agent_id, type: :binary_id
+
+    timestamps(type: :utc_datetime_usec)
+  end
+
+  @valid_statuses ~w(idle active paused error archived)
+
+  def create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [
+      :name, :display_name, :system_prompt,
+      :model_provider, :model_name, :project,
+      :capabilities, :metadata, :parent_agent_id,
+      :status, :archived_at
+    ])
+    |> validate_required([:name, :model_provider, :model_name])
+    |> validate_length(:name, min: 1, max: 255)
+    |> validate_inclusion(:status, @valid_statuses)
+    |> foreign_key_constraint(:parent_agent_id)
+  end
+
+  def update_changeset(agent, attrs) do
+    agent
+    |> cast(attrs, [
+      :name, :display_name, :system_prompt,
+      :model_provider, :model_name, :project,
+      :capabilities, :metadata, :parent_agent_id,
+      :status, :archived_at
+    ])
+    |> validate_length(:name, min: 1, max: 255)
+    |> validate_inclusion(:status, @valid_statuses)
+    |> foreign_key_constraint(:parent_agent_id)
+  end
+end
+```
+
+### Testing
+
+```elixir
+# In IEx
+iex -S mix
+
+alias PagServer.Schema.Agent
+alias PagServer.Repo
+
+# Create agent
+changeset = Agent.create_changeset(%{
+  name: "test-agent",
+  display_name: "Test Agent",
+  system_prompt: "You are a helpful assistant."
+})
+
+{:ok, agent} = Repo.insert(changeset)
+
+# Query agent
+Repo.get(Agent, agent.id)
+Repo.all(Agent)
+```

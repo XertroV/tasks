@@ -1,0 +1,44 @@
+# Epic: Server Connection
+# Phase 4, Milestone 3, Epic 2 (P4.M3.E2)
+
+id: P4.M3.E2
+name: Server Connection
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-spawn-server.todo
+    title: Spawn MCP server processes
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-stdio-comms.todo
+    title: Stdio communication handling
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-lifecycle-mgmt.todo
+    title: Server lifecycle management
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: medium
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

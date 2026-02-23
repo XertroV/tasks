@@ -1,0 +1,56 @@
+---
+id: P4.M4.E3.T002
+title: CPU and memory limits
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- sandboxing
+- limits
+- resources
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:42:28.976176'
+started_at: '2026-02-05T23:42:28.976176'
+completed_at: '2026-02-05T23:54:19.947036'
+duration_minutes: 11.849514133333335
+---
+
+# CPU and memory limits
+
+Set CPU and memory limits for sandboxed execution.
+
+## Requirements
+
+- [ ] Set memory limits (default 512MB)
+- [ ] Set CPU limits (default 1 core)
+- [ ] Enforce limits via Docker or cgroups
+- [ ] Kill processes exceeding limits
+- [ ] Return resource limit errors
+
+## Acceptance Criteria
+
+- [ ] Memory limits enforced
+- [ ] CPU limits enforced
+- [ ] Processes killed when limit exceeded
+- [ ] Error messages indicate limit type
+- [ ] Test limit enforcement
+
+## Context
+
+Docker resource limits:
+```bash
+docker run --memory=512m --cpus=1.0 image cmd
+```
+
+## Notes
+
+Resource configuration:
+```elixir
+host_config: %{
+  Memory: 512 * 1024 * 1024,  # 512MB
+  NanoCpus: 1_000_000_000,    # 1.0 CPU
+  MemorySwap: 512 * 1024 * 1024
+}
+```

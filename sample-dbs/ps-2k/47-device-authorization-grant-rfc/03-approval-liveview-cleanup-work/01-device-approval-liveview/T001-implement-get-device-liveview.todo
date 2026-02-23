@@ -1,0 +1,34 @@
+---
+id: P47.M3.E1.T001
+title: Implement GET /device LiveView approval page
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P47.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:28:27.210354+00:00'
+started_at: '2026-02-20T06:28:27.210354+00:00'
+completed_at: '2026-02-20T06:37:05.329994+00:00'
+duration_minutes: 8.635327
+---
+Create lib/pag_server_web/live/device_live/approval_live.ex. Requires browser session (use P46.M3 RequireAuth on_mount hook — hard dependency). Route: GET /device. Behavior: (1) if user_code query param present, auto-populate the input field; (2) user enters user_code (if not pre-filled) and clicks Continue; (3) look up device code via DeviceCodes.get_by_user_code/1; (4) if not found or expired: show error message; (5) if found: transition to confirmation view showing: client name + description (from oauth_clients), scope description ('pag-connect will act as you, accessing all your workspaces via the companion protocol. It cannot access the REST API.'), user_code displayed prominently with instruction 'Confirm this code matches what you see in your terminal', Approve and Deny buttons; (6) on Approve: call DeviceController.approve/2; (7) on Deny: call DeviceController.deny/2. CSRF protection via standard Phoenix LiveView mechanisms. Add route to router under :browser + :require_auth pipeline.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P47.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-20 06:28 UTC
+**Sibling tasks**: P47.M3.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P47.M3.E1.T001 → P47.M3.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P47.M3.E1.T001: .tasks/47-device-authorization-grant-rfc/03-approval-liveview-cleanup-work/01-device-approval-liveview/T001-implement-get-device-liveview.todo
+- P47.M3.E1.T002: .tasks/47-device-authorization-grant-rfc/03-approval-liveview-cleanup-work/01-device-approval-liveview/T002-implement-post-device-approve.todo

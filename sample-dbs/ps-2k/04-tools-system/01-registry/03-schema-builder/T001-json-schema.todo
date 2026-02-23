@@ -1,0 +1,110 @@
+---
+id: P4.M1.E3.T001
+title: Build JSON Schema for LLM
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- tools
+- schema
+- llm
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:24:25.309820'
+started_at: '2026-02-05T22:24:25.309820'
+completed_at: '2026-02-05T22:24:43.460978'
+duration_minutes: 0.3025191166666667
+---
+
+# Build JSON Schema for LLM
+
+Create the schema builder module to convert ToolSchema to LLM-compatible JSON Schema format.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/schema_builder.ex`
+- [ ] Add `to_json_schema(tool_schema)` function
+- [ ] Convert ToolSchema struct to standard JSON Schema object
+- [ ] Include tool name, description, and parameters
+- [ ] Handle nested object and array types
+
+## Acceptance Criteria
+
+- [ ] Generates valid JSON Schema Draft 7 compatible output
+- [ ] Includes all required fields (type, properties, description)
+- [ ] Handles complex parameter types (objects, arrays, nested structures)
+- [ ] Test coverage for various parameter types
+- [ ] Output can be parsed by standard JSON Schema validators
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 333-336 (Registry list_schemas)
+
+**Key Points**:
+- JSON Schema is the common format before provider-specific conversion
+- Used by Anthropic and OpenAI with minor variations
+- Must preserve all type information and constraints
+- Follows JSON Schema Draft 7 specification
+
+## Notes
+
+Schema builder converts ToolSchema to JSON:
+```elixir
+defmodule PAGServer.Tools.SchemaBuilder do
+  def to_json_schema(%ToolSchema{} = schema) do
+    %{
+      name: schema.name,
+      description: schema.description,
+      input_schema: schema.parameters
+    }
+  end
+  
+  def to_json_schema_list(tools) do
+    Enum.map(tools, &to_json_schema/1)
+  end
+end
+```
+
+Example output:
+```json
+{
+  "name": "read_file",
+  "description": "Read contents of a file",
+  "input_schema": {
+    "type": "object",
+    "properties": {
+      "path": {
+        "type": "string",
+        "description": "Path to the file"
+      }
+    },
+    "required": ["path"]
+  }
+}
+```
+
+This intermediate format is then converted to provider-specific formats in the next tasks.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:24 UTC
+**Primary task**: P2.M8.E5.T004 - Implement metadata extraction (tool failures, file ops)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E3 vs P2.M8.E5)
+- No dependency chain: ✓ (verified at claim time)

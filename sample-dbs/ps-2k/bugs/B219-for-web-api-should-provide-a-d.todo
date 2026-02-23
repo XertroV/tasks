@@ -1,0 +1,40 @@
+---
+id: B219
+title: for web, /api/ should provide a description of all the API methods; should
+  be self-describing in that way
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:05:27.343098+00:00'
+started_at: '2026-02-22T12:05:27.343098+00:00'
+completed_at: '2026-02-22T12:15:17.198728+00:00'
+duration_minutes: 9.830926966666668
+---
+
+for web, /api/ should provide a description of all the API methods; should be self-describing in that way
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-22 06:21 UTC
+**Primary task**: P55.M1.E2.T001 - Thread list and workspace loading queries on mount
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs P55.M1.E2)
+- No dependency chain: ✓ (verified at claim time)

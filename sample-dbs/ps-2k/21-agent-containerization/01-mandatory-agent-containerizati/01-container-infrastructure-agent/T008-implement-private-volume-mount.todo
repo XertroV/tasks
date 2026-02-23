@@ -1,0 +1,39 @@
+---
+id: P21.M1.E1.T008
+title: Implement private volume mounting with agent isolation
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T006
+tags:
+- volumes
+- isolation
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.556812+00:00'
+started_at: '2026-02-18T12:21:44.556812+00:00'
+completed_at: '2026-02-18T13:12:15.633093+00:00'
+duration_minutes: 50.517937716666665
+---
+
+# Implement private volume mounting with agent isolation
+
+Implement the private volume that is unique to each agent.
+
+## Requirements
+
+- Mount private area at `/private` in container
+- Private path: `<workspace_root>/.agents/<agent_id>/private`
+- Isolated per-agent - not shared by default
+- Created on-demand when agent starts
+
+## Acceptance Criteria
+
+- [ ] Private volume mounts to `/private` in container
+- [ ] Host path: `<workspace>/.agents/<agent_id>/private`
+- [ ] Directory created if doesn't exist
+- [ ] Proper file permissions (agent-owned)
+- [ ] Not accessible by other agents unless sibling sharing enabled
+- [ ] Cleanup on agent stop is configurable
+- [ ] Unit tests for private mount computation

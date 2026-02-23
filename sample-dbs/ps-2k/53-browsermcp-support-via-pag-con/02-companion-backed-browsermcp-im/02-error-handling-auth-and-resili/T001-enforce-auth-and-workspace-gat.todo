@@ -1,0 +1,51 @@
+---
+id: P53.M2.E2.T001
+title: Enforce auth and workspace gating for browsermcp actions
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P53.M2.E1.T001
+tags:
+- browsermcp
+- auth
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:51:03.390449+00:00'
+started_at: '2026-02-21T05:51:03.390449+00:00'
+completed_at: '2026-02-21T05:52:10.206274+00:00'
+duration_minutes: 1.1135969166666666
+---
+
+# Enforce auth and workspace gating for browsermcp actions
+
+
+
+## Requirements
+
+- Require authenticated workspace context before executing browsermcp actions.
+- Enforce that companion target selection respects workspace ownership and permissions.
+- Ensure denied operations return explicit authorization errors.
+
+## Acceptance Criteria
+
+- Unauthorized browsermcp requests are rejected with deterministic error codes.
+- Cross-workspace companion targeting is blocked and covered by tests.
+- Audit-safe log context is emitted for denied actions without leaking secrets.
+
+## Execution Notes (2026-02-21)
+
+- Added BrowserMCP authorization gate in companion proxy requiring workspace and
+  session context before dispatch.
+- Added explicit cross-workspace block when requested `workspace_id` in
+  BrowserMCP arguments does not match authenticated context workspace.
+- Denied requests now return deterministic authorization error codes
+  (`browsermcp.auth_denied`, `browsermcp.workspace_forbidden`) and emit
+  audit-safe warning logs with scoped context only.
+
+## Evidence Artifacts
+
+- `lib/pag_server/companions/companion_proxy_executor.ex`
+- `test/pag_server/companions/companion_proxy_executor_test.exs`
+- `recent-mix-tests.log`

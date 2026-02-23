@@ -1,0 +1,60 @@
+---
+id: P7.M7.E1.T023
+title: Document web channels/controllers/plugs contracts
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- web
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:47:01.604464+00:00'
+started_at: '2026-02-08T06:47:01.604464+00:00'
+completed_at: '2026-02-08T06:52:03.181690+00:00'
+duration_minutes: 5.026286916666667
+---
+
+# Document web channels/controllers/plugs contracts
+
+Document user-facing web runtime contracts for channels, controllers, and plugs,
+including payload shape expectations and common error paths.
+
+
+## Requirements
+
+- [x] Add or improve `@doc/@spec` for channel/socket modules:
+  - [x] `lib/pag_server_web/channels/agent_channel.ex`
+  - [x] `lib/pag_server_web/channels/user_socket.ex`
+- [x] Add or improve controller action `@doc/@spec` coverage in:
+  - [x] `lib/pag_server_web/controllers/agent_controller.ex`
+  - [x] `lib/pag_server_web/controllers/session_controller.ex`
+  - [x] `lib/pag_server_web/controllers/fallback_controller.ex`
+  - [x] `lib/pag_server_web/controllers/openai_chat_completions_controller.ex`
+  - [x] `lib/pag_server_web/controllers/stats_controller.ex`
+- [x] Add baseline `@moduledoc` for missing web support modules:
+  - [x] `lib/pag_server_web/telemetry.ex`
+  - [x] `lib/pag_server_web/endpoint.ex`
+- [x] Add or improve docs/specs for core plugs:
+  - [x] `lib/pag_server_web/plugs/api_key_auth.ex`
+  - [x] `lib/pag_server_web/plugs/admin_auth.ex`
+  - [x] `lib/pag_server_web/plugs/require_auth.ex`
+  - [x] `lib/pag_server_web/plugs/require_bearer_token.ex`
+  - [x] `lib/pag_server_web/plugs/require_permissions.ex`
+  - [x] `lib/pag_server_web/plugs/authorize_resource.ex`
+  - [x] `lib/pag_server_web/plugs/rate_limiter.ex`
+  - [x] `lib/pag_server_web/plugs/api_version.ex`
+  - [x] `lib/pag_server_web/plugs/correlation_id.ex`
+  - [x] `lib/pag_server_web/plugs/prometheus_exporter.ex`
+- [x] Improve `ErrorCodes` function docs/specs for public lookup helpers:
+  - [x] `lib/pag_server_web/error_codes.ex`
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] Scoped web channel/controller/plug/support modules have complete public docs
+- [x] Public function `@spec` coverage is complete for scoped modules
+- [x] Missing web support module `@moduledoc` entries are added
+- [x] `mix docs` completes without new warnings from scoped modules

@@ -1,0 +1,40 @@
+---
+id: P11.M2.E1.T002
+title: Add tool schema introspection
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T07:40:51.783136+00:00'
+started_at: '2026-02-12T07:40:51.783136+00:00'
+completed_at: '2026-02-12T07:51:22.347419+00:00'
+duration_minutes: 10.509404516666667
+---
+
+# Add tool schema introspection
+
+
+
+## Requirements
+
+- [ ] Add `GET /api/v1/tools/:id/schema` endpoint for tool schema introspection
+- [ ] Return complete tool definition: parameters, input/output schemas, constraints
+- [ ] Support JSON Schema format for parameter definitions
+- [ ] Include examples for input parameters and expected outputs
+- [ ] Document parameter types, required fields, and validation rules
+- [ ] Support nested object and array parameters
+- [ ] Include metadata: version, deprecation status, alternative tools
+
+## Acceptance Criteria
+
+- [ ] Endpoint returns 200 with complete schema for valid tool ID
+- [ ] Response includes JSON Schema for all parameters with descriptions
+- [ ] Output schema is well-documented with examples
+- [ ] Returns 404 if tool doesn't exist
+- [ ] Schema shows parameter constraints (min/max length, allowed values, etc.)
+- [ ] Examples demonstrate realistic input/output combinations
+- [ ] Supports schema retrieval for all registered tool types
+- [ ] Tests validate schema structure against JSON Schema spec

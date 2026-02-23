@@ -1,0 +1,44 @@
+---
+id: P15.M6.E4.T001
+title: Define and implement main-agent-first routing policy
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M6.E2.T002
+tags:
+- architecture
+- routing
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:41:26.757385+00:00'
+started_at: '2026-02-17T17:41:26.757385+00:00'
+completed_at: '2026-02-17T17:50:43.246170+00:00'
+duration_minutes: 9.274812766666667
+---
+
+# Define and implement main-agent-first routing policy
+
+## Owner Outcome
+- I can rely on one primary agent entrypoint while still enabling delegated specialist agents.
+
+## Implementation Notes
+Routing policy implemented in `lib/pag_server/integrations/telegram/session_mapper.ex`:
+- Deterministic fallback chain: workspace default -> fallback -> workspace oldest -> create new
+- Tests in `test/pag_server/integrations/telegram/session_mapper_test.exs` covering
+  primary routing and fallback behavior
+
+Still missing: routing policy documented as architecture note, examples for
+API and Telegram flows, and validation that policy supports <10 minute onboarding.
+
+## Acceptance Criteria
+- [x] Define routing policy contract: inbound user message -> workspace main agent -> optional delegation to specialist agents.
+  - `RoutingPolicy` behaviour at `lib/pag_server/routing/routing_policy.ex` with `resolve_agent/2` and `dispatch/3` callbacks. `MainAgentPolicy` implements the behaviour.
+- [x] Implement deterministic fallback behavior when main agent unavailable.
+- [x] Capture policy in architecture note with examples for API and Telegram flows.
+  - Design doc at `docs/design/main-agent-routing.md` with resolution order, flow diagrams for REST/Telegram/other integrations, delegation model.
+- [x] Add tests covering primary routing and fallback behavior.
+  - 4 new tests in `test/pag_server/routing/routing_policy_test.exs` plus existing session_mapper tests.
+- [x] Ensure policy supports <10 minute onboarding by minimizing required configuration choices.
+  - Zero-config semantics: Tier 3 fallback (oldest active agent) means bootstrap_workspace is sufficient with no additional routing config.

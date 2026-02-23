@@ -1,0 +1,49 @@
+id: P25
+name: MCP Tool Interface Enhancement
+status: done
+locked: true
+weeks: 3
+estimate_hours: 48.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Research & Audit
+  path: 01-research-audit
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: Audit MCP tool interfaces from opencode, codex, crush and other coding
+    CLIs in ref-projects/. Document best patterns for tool argument shapes, descriptions,
+    and UX across bash/exec, file editing, glob, read, write, and agent spawning tools.
+  locked: false
+- id: M2
+  name: Core Tool Improvements
+  path: 02-core-tool-improvements
+  status: done
+  estimate_hours: 28.0
+  complexity: high
+  depends_on:
+  - P25.M1
+  description: Implement improved MCP tool interfaces combining the best patterns
+    from the audit. Covers shell/execute, file editing (edit/glob/read/write), and
+    agent spawning tools.
+  locked: false
+- id: M3
+  name: Integration Tests
+  path: 03-integration-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P25.M2
+  description: Integration tests verifying the improved MCP tool interfaces work correctly
+    end-to-end.
+  locked: false
+stats:
+  total_tasks: 15
+  done: 15
+  in_progress: 0
+  blocked: 0
+  pending: 0

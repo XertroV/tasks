@@ -1,0 +1,105 @@
+id: P15.M12.E4
+name: 'Connections Tab: LiveView UI'
+status: pending
+estimate_hours: 14.0
+complexity: high
+depends_on:
+- P15.M12.E2
+- P15.M12.E3
+locked: false
+tasks:
+- id: T001
+  file: T001-add-connections-tab-to-workspa.todo
+  title: Add :connections tab to WorkspaceBrowserLive assigns and tab bar
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-render-connections-tab-connect.todo
+  title: 'Render connections tab: connector table with all columns'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E4.T001
+- id: T003
+  file: T003-implement-connector-slide-out.todo
+  title: Implement connector slide-out drawer component
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M12.E4.T002
+- id: T004
+  file: T004-implement-handle-event-handler.todo
+  title: 'Implement handle_event handlers for connector drawer: open, save, delete'
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M12.E4.T003
+- id: T005
+  file: T005-implement-connector-verify-con.todo
+  title: Implement connector verify connectivity event and async result
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E4.T004
+- id: T006
+  file: T006-implement-connector-status-tog.todo
+  title: Implement connector status toggle and poller start/stop
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E4.T004
+- id: T007
+  file: T007-session-selector-load-workspac.todo
+  title: 'Session selector: load workspace sessions and agents into drawer assigns'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E4.T003
+- id: T008
+  file: T008-add-sessions-list-sessions-for.todo
+  title: Add Sessions.list_sessions_for_workspace/1 to Sessions context
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P15.M12.E4.T007
+- id: T009
+  file: T009-update-telegram-overview-statu.todo
+  title: Update Telegram overview status cell and add connections badge to workspace
+    card
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T010
+  file: T010-liveview-integration-tests-for.todo
+  title: LiveView integration tests for connections tab
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E4.T006
+stats:
+  total: 10
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 10

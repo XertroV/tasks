@@ -1,0 +1,56 @@
+---
+id: P9.M5.E3.T001
+title: Implement plugin MCP tool registration into Tools.Registry
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- mcp
+- tools
+- registry
+claimed_by: cli-user
+claimed_at: '2026-02-07T04:47:19.328606+00:00'
+started_at: '2026-02-07T04:47:19.328606+00:00'
+completed_at: '2026-02-07T04:52:36.127644+00:00'
+duration_minutes: 5.279983783333334
+---
+
+# Implement plugin MCP tool registration into Tools.Registry
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/tool_registrar.ex` module
+- [x] When a plugin is enabled, register its declared tools into `Tools.Registry`:
+  - [x] Namespace tool names with plugin prefix: `"<plugin_name>.<tool_name>"`
+  - [x] Use existing `Tools.Registry.register_with_schema/2` for dynamic registration
+  - [x] Map plugin tool definitions to `PagServer.Tools.Tool` behaviour format
+- [x] For external (MCP) plugins, discover tools via MCP `tools/list` method:
+  - [x] Use existing `PagServer.Tools.MCP.Discovery` to enumerate available tools
+  - [x] Create proxy tool wrappers using `PagServer.Tools.MCP.ProxyTool` pattern
+- [x] Handle tool name conflicts:
+  - [x] Reject registration if non-namespaced tool name already exists
+  - [x] Log warning and skip conflicting tools (don't crash plugin loading)
+- [x] On plugin disable, unregister all tools with the plugin's namespace prefix
+- [x] Track registered tools per plugin for clean teardown
+
+## Acceptance Criteria
+
+- [x] Plugin tools are registered in `Tools.Registry` with namespace prefix (e.g., "myplugin.search")
+- [x] External plugin tools are discovered via MCP and registered as proxy tools
+- [x] Tool name conflicts are detected and handled gracefully (logged, skipped)
+- [x] Disabling a plugin removes all its tools from the registry
+- [x] Re-enabling a plugin re-registers its tools
+- [x] Unit tests cover: tool registration, namespace prefixing, conflict handling, unregistration
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/tool_registrar.ex`
+- **Integrates with**: `PagServer.Tools.Registry` (register_with_schema/2), `PagServer.Tools.MCP.Discovery`, `PagServer.Tools.MCP.ProxyTool`
+- **Called by**: `PagServer.Plugins.Lifecycle` (T006) on enable/disable
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004)
+- **Namespace convention**: `<plugin_name>.<tool_name>` prevents collisions between plugins

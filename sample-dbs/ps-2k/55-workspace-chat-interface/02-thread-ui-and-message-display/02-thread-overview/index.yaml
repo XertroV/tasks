@@ -1,0 +1,30 @@
+id: P55.M2.E2
+name: Thread Overview
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-thread-overview-cards-with-sta.todo
+  title: Thread overview cards with status, agent badge, and preview
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-workspace-summary-stats-and-ne.todo
+  title: Workspace summary stats and New Thread CTA
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

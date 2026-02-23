@@ -1,0 +1,64 @@
+---
+id: I022
+title: Live Model Discovery | MEDIUM | Fetch available models from providers dynamically.
+  No more hardcoding model lists.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:40:23.171495+00:00'
+started_at: '2026-02-18T14:40:23.171495+00:00'
+completed_at: '2026-02-18T14:40:24.945090+00:00'
+duration_minutes: 0.029559600000000002
+---
+
+# Idea Intake: Live Model Discovery | MEDIUM | Fetch available models from providers dynamically. No more hardcoding model lists.
+
+## Original Idea
+
+Live Model Discovery | MEDIUM | Fetch available models from providers dynamically. No more hardcoding model lists.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Live Model Discovery | MEDIUM | Fetch available models from providers dynamically. No more hardcoding model lists."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+Phase: P22 - LLM Provider & Session Enhancements
+Milestone: P22.M2 - Live Model Discovery
+
+Epics:
+- P22.M2.E1 - Provider Behaviour: fetch_models/1 callback
+- P22.M2.E2 - ModelDiscoveryCache GenServer
+- P22.M2.E3 - ModelCatalog: merge static + live models
+- P22.M2.E4 - API: model refresh endpoint + tests
+
+Tasks:
+- P22.M2.E1.T001 - Add fetch_models/1 callback to Provider behaviour
+- P22.M2.E1.T002 - Implement fetch_models/1 for Anthropic provider
+- P22.M2.E1.T003 - Implement fetch_models/1 for OpenAI provider
+- P22.M2.E1.T004 - Implement fetch_models/1 for Ollama, Groq, and OpenRouter providers
+- P22.M2.E2.T001 - Create ModelDiscoveryCache GenServer with per-provider TTL and on-demand refresh
+- P22.M2.E2.T002 - Add ModelDiscoveryCache to application supervisor tree
+- P22.M2.E3.T001 - Update ModelCatalog to merge static models with live models from cache
+- P22.M2.E3.T002 - Extend model_info structs to include source field (:static | :live | :both)
+- P22.M2.E4.T001 - API: GET /api/v1/providers/:provider/models/refresh endpoint
+- P22.M2.E4.T002 - Tests: ModelDiscoveryCache TTL, refresh logic, and ModelCatalog merge
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

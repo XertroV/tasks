@@ -1,0 +1,54 @@
+---
+id: P52.M3.E1.T002
+title: Document setup, auth, and example client wiring
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P52.M2.E2.T001
+tags:
+- docs
+- mcp
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:00:59.328590+00:00'
+started_at: '2026-02-21T05:00:59.328590+00:00'
+completed_at: '2026-02-21T05:01:39.209268+00:00'
+duration_minutes: 0.6646778
+---
+
+# Document setup, auth, and example client wiring
+
+## Implementation Notes
+
+- Added guide: `docs/guides/mcp-stdio-bridge.md`.
+- Documented:
+  - startup commands (`mix pag.mcp.stdio`)
+  - auth + runtime config (CLI/env/config-file)
+  - deterministic config precedence rules
+  - default workspace/session targeting behavior
+  - concrete MCP client wiring example (Claude Desktop style)
+  - initialize and `tools/call` request/response snippets
+  - troubleshooting for auth, target validation, and transport/API failures
+
+## Verification Notes
+
+- Command examples and env variables were validated against current runtime implementation in:
+  - `lib/mix/tasks/pag.mcp.stdio.ex`
+  - `lib/pag_server/mcp/stdio_runtime_config.ex`
+  - `lib/pag_server/mcp/api_bridge.ex`
+  - `lib/pag_server/mcp/target_resolver.ex`
+
+
+
+## Requirements
+
+- Document local setup, required environment variables, and startup commands.
+- Provide at least one concrete MCP client wiring example (CLI/editor integration).
+- Include troubleshooting notes for common auth/config and transport failures.
+
+## Acceptance Criteria
+
+- Documentation lives in repo docs with command examples that match implemented runtime.
+- Example request/response snippets are included for initialize and at least one tool call.
+- Troubleshooting section covers top failure modes discovered during testing.

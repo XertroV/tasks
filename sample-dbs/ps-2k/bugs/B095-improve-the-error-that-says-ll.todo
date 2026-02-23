@@ -1,0 +1,19 @@
+---
+id: B095
+title: Improve the error that says 'LLM API key is not configured or invalid'. It
+  should mention what has failed (provider, model, ideally the last part of the chat,
+  too). It should be more descriptive about the failure
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T12:06:54.333676+00:00'
+started_at: '2026-02-17T12:06:54.333676+00:00'
+completed_at: '2026-02-17T12:52:07.758560+00:00'
+duration_minutes: 45.22374783333333
+---
+
+Improve the error that says 'LLM API key is not configured or invalid'. It should mention what has failed (provider, model, ideally the last part of the chat, too). It should be more descriptive about the failure

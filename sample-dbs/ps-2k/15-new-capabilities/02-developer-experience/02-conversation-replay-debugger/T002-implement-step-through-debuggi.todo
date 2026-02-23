@@ -1,0 +1,37 @@
+---
+id: P15.M2.E2.T002
+title: Implement step-through debugging
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T00:24:19.366445+00:00'
+started_at: '2026-02-14T00:24:19.366445+00:00'
+completed_at: '2026-02-14T00:56:13.990245+00:00'
+duration_minutes: 31.910396416666668
+---
+
+# Implement step-through debugging
+
+## Description
+Build a step-through debugger that allows replaying events one at a time, showing state changes at each step. Enable developers to understand how agent state evolved during a conversation.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Events.Stepper` module for sequential event replay
+- [ ] Implement step forward/backward navigation
+- [ ] Show state snapshot at each event step
+- [ ] Highlight what changed between steps
+- [ ] Add "run to event" functionality (jump to specific event)
+- [ ] Display tool calls and their results at each step
+- [ ] Support breakpoint-like markers on event types
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/events/replay.ex`, `lib/pag_server/events/state_builder.ex`, `lib/pag_server/schema/event.ex`
+- Part of epic: Conversation Replay Debugger
+- Build on existing Events.Replay infrastructure

@@ -1,0 +1,52 @@
+id: P15.M10.E2
+name: Native API Providers (Brave, ZAI, DuckDuckGo)
+status: pending
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-brave-search-adapter.todo
+  title: Implement Brave Search adapter with API-key config and error mapping
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M10.E1.T001
+- id: T002
+  file: T002-implement-zai-web-search-adapt.todo
+  title: Implement ZAI web search adapter and key-based activation
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M10.E1.T001
+- id: T003
+  file: T003-extract-duckduckgo-logic-into.todo
+  title: Extract DuckDuckGo logic into adapter and keep as no-key fallback
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M10.E1.T001
+- id: T004
+  file: T004-add-provider-capability-detect.todo
+  title: Add provider capability detection and default priority ordering
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M10.E2.T001
+  - P15.M10.E2.T002
+  - P15.M10.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

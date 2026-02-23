@@ -1,0 +1,38 @@
+---
+id: P16.M2.E1.T002
+title: Add OpenRouter chat completion test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T004
+tags:
+- integration
+- openrouter
+- chat
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:51:31.605102+00:00'
+started_at: '2026-02-14T02:51:31.605102+00:00'
+completed_at: '2026-02-14T02:54:57.884388+00:00'
+duration_minutes: 3.437987816666667
+---
+
+# Add OpenRouter chat completion test
+
+Add integration test for basic chat completion with OpenRouter.
+
+## Requirements
+
+- Create test file `test/integration/llm/openrouter_chat_test.exs`
+- Test requires `OPENROUTER_API_KEY` environment variable
+- Use free tier model like `openrouter:meta-llama/llama-3.1-8b-instruct`
+- Use `@tag :integration` to allow filtering
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists
+- [ ] Test sends simple message and receives response
+- [ ] Test validates response structure (content, usage, model)
+- [ ] Test skips gracefully if `OPENROUTER_API_KEY` not set
+- [ ] Test can be run with `mix test --only integration`

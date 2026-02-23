@@ -1,0 +1,35 @@
+id: P30
+name: Plugin Marketplace & SDK
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 20.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Marketplace Registry API
+  path: 01-marketplace-registry-api
+  status: pending
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: REST endpoints for listing, searching, and fetching plugin details
+    from the public plugin registry.
+  locked: false
+- id: M2
+  name: Plugin Development Skill
+  path: 02-plugin-development-skill
+  status: pending
+  estimate_hours: 10.0
+  complexity: low
+  depends_on: []
+  description: An OpenCode skill and developer guide for writing plugins. Makes plugin
+    creation guided and self-contained.
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

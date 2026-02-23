@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T008
+title: Add Sessions.list_sessions_for_workspace/1 to Sessions context
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P15.M12.E4.T007
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.186400+00:00'
+started_at: '2026-02-18T07:31:33.186400+00:00'
+completed_at: '2026-02-18T07:51:12.282430+00:00'
+duration_minutes: 19.65160025
+---
+Find or create a Sessions context module (likely lib/pag_server/sessions.ex). Add list_sessions_for_workspace(workspace_id, opts \\ []) :: [Session.t()] that queries sessions by workspace_id with optional filters: status (default [:active, :paused]), limit (default 50), preload :agent. Order by last_activity_at desc nulls last. If the Sessions context does not exist, create it with just this function and list_agent_sessions/1 (sessions by agent_id). Do not create a separate module just for this function — check lib/pag_server/sessions/ or lib/pag_server/sessions.ex first.

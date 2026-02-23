@@ -1,0 +1,21 @@
+---
+id: P32.M1.E2.T001
+title: Add consensus check to file_delete tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P32.M1.E1.T003
+tags:
+- tools
+- file-delete
+- consensus
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.290732+00:00'
+started_at: '2026-02-18T20:03:22.290732+00:00'
+completed_at: '2026-02-18T22:09:30.771823+00:00'
+duration_minutes: 126.1413513
+---
+Integrate consensus voting into the file_delete built-in tool.\n\nLocation: lib/pag_server/tools/builtin/file_delete.ex (or equivalent)\n\nBehavior:\n- Before executing delete, check workspace config enable_delete_consensus\n- If enabled, count active agents in the session\n- If active agent count >= min_agents_for_consensus (default 2), call ConsensusManager.start_vote/3\n- Block execution pending vote result\n- If approved => proceed with delete\n- If rejected or timeout => return {:error, :consensus_rejected} with a user-friendly message\n- If only one agent in session => skip consensus (auto-approve)\n\nAcceptance criteria:\n- [ ] File delete blocked when consensus required and pending\n- [ ] File delete proceeds after majority approval\n- [ ] File delete rejected with clear error on majority no\n- [ ] File delete auto-proceeds when only one agent in session\n- [ ] No regression when enable_delete_consensus is false

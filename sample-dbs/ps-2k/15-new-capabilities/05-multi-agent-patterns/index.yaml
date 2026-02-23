@@ -1,0 +1,37 @@
+id: P15.M5
+name: Multi-Agent Patterns
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Blackboard Pattern
+  path: 01-blackboard-pattern
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Contract Net Protocol
+  path: 02-contract-net-protocol
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Consensus Mechanisms
+  path: 03-consensus-mechanisms
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

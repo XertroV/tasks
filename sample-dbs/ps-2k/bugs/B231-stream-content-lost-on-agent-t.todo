@@ -1,0 +1,18 @@
+---
+id: B231
+title: Stream content lost on agent termination
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- agent
+- data-loss
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.097172+00:00'
+started_at: '2026-02-23T07:29:02.097172+00:00'
+completed_at: '2026-02-23T07:43:45.668216+00:00'
+duration_minutes: 14.726183933333335
+---
+agent_server.ex:3298-3306 - Agent dies mid-stream, all accumulated content replaced with empty accumulator

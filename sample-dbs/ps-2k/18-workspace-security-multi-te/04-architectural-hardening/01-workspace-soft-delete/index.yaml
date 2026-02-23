@@ -1,0 +1,57 @@
+id: P18.M4.E1
+name: Workspace Soft-Delete
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-archived-columns-migration.todo
+  title: Add archived_at and archived_by columns to workspaces
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-soft-delete-context.todo
+  title: Update Workspaces context for soft-delete behavior
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P18.M4.E1.T001
+- id: T003
+  file: T003-restore-workspace.todo
+  title: Add restore_workspace function and API endpoint
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P18.M4.E1.T002
+- id: T004
+  file: T004-filter-archived-queries.todo
+  title: Filter archived workspaces from default queries
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P18.M4.E1.T002
+- id: T005
+  file: T005-soft-delete-tests.todo
+  title: Add tests for soft-delete, restore, and archived filtering
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P18.M4.E1.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

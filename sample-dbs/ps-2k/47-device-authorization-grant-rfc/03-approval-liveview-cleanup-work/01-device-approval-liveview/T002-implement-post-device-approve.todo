@@ -1,0 +1,17 @@
+---
+id: P47.M3.E1.T002
+title: Implement POST /device/approve and /device/deny actions
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P47.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:28:27.212339+00:00'
+started_at: '2026-02-20T06:28:27.212339+00:00'
+completed_at: '2026-02-20T06:37:11.553203+00:00'
+duration_minutes: 8.739014150000001
+---
+Add approve/deny handlers (can be LiveView handle_event callbacks or a separate DeviceApprovalController). Approve: validate user_code not expired, validate fail_count < 5, call DeviceCodes.mark_authorized/3 with current_user.id (no api_key_id yet — key is created at poll time). Deny: transition device_code to expired/denied, show 'You denied the request. Return to your terminal.' Redirect to confirmation page on approve. Standard Phoenix CSRF protection. On approve: show success message 'Authorization complete. Return to your terminal — it will connect automatically.'

@@ -1,0 +1,44 @@
+---
+id: B098
+title: There are integration tests for at least z.ai atm to ensure our API code works.
+  We will need these tests for all providers, ideally. This means there is probably
+  going to be a lot of overlapping code. Look for opportunities to refactor these
+  integration tests so that all providers are automatically tested (ideally we can
+  loop over the provider enum or something). Suggest the best path forward if any
+  issues arise
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T12:52:23.448593+00:00'
+started_at: '2026-02-17T12:52:23.448593+00:00'
+completed_at: '2026-02-17T13:23:41.924231+00:00'
+duration_minutes: 31.307927033333332
+---
+
+There are integration tests for at least z.ai atm to ensure our API code works. We will need these tests for all providers, ideally. This means there is probably going to be a lot of overlapping code. Look for opportunities to refactor these integration tests so that all providers are automatically tested (ideally we can loop over the provider enum or something). Suggest the best path forward if any issues arise
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 12:52 UTC
+**Primary task**: B097 - When expanding or contracting the sidebar boxes in validaiton console, they should animate open and closed over 200ms to indicate what's happening to the user
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

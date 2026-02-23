@@ -1,0 +1,18 @@
+---
+id: B227
+title: Hash chain broken on crash between persist and metadata update
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- agent
+- data-integrity
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.091895+00:00'
+started_at: '2026-02-23T07:29:02.091895+00:00'
+completed_at: '2026-02-23T07:43:45.484112+00:00'
+duration_minutes: 14.72320345
+---
+agent_server.ex:2821, 2859 - last_message_id stored only in memory; crash between persist and update breaks chain

@@ -1,0 +1,29 @@
+---
+id: P12.M1.E4.T002
+title: Add tests for stream cancellation during active streaming
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:00:17.803308+00:00'
+started_at: '2026-02-13T10:00:17.803308+00:00'
+completed_at: '2026-02-13T10:17:01.457764+00:00'
+duration_minutes: 16.72757405
+---
+
+# Add tests for stream cancellation during active streaming
+
+## Description
+Add tests to verify proper handling of stream cancellation during active LLM streaming, including resource cleanup and client notification.
+
+## Acceptance Criteria
+- [ ] Tests cover stream cancellation scenarios
+- [ ] Tests verify resources are properly cleaned up
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/llm/openai/stream_handler_test.exs`, `test/pag_server/llm/providers/anthropic/stream_handler_test.exs`, `test/pag_server_web/channels/agent_channel_streaming_test.exs`

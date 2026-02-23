@@ -1,0 +1,37 @@
+---
+id: P39.M2.E1.T003
+title: Implement CompanionSupervisor and wire into application.ex
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P39.M2.E1.T001
+- P39.M2.E1.T002
+tags:
+- companion
+- infrastructure
+- supervisor
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:28:22.460302+00:00'
+started_at: '2026-02-19T11:28:22.460302+00:00'
+completed_at: '2026-02-19T11:32:00.921837+00:00'
+duration_minutes: 3.641025433333333
+---
+Create the CompanionSupervisor and add it to the application supervision tree.
+
+## New file
+lib/pag_server/companions/companion_supervisor.ex
+
+## Design (from companion-support plan §1)
+- Supervisor with strategy :one_for_one
+- Children: CompanionRegistry, PendingCalls
+- Name: __MODULE__
+
+## Modified file
+lib/pag_server/application.ex — add PagServer.Companions.CompanionSupervisor to children list, after the tools/plugin supervisors and before the web endpoint.
+
+## Acceptance criteria
+- [ ] Supervisor starts successfully with both children
+- [ ] Application boots cleanly with the new supervisor
+- [ ] mix test passes (no regressions from adding supervisor)

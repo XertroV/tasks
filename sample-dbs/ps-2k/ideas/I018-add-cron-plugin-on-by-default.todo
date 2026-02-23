@@ -1,0 +1,49 @@
+---
+id: I018
+title: Add cron plugin (on by default) that allows scheduling agent callbacks or CLI
+  commands (with optional forwarding to an agent after that)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:50:14.955834+00:00'
+started_at: '2026-02-18T14:50:14.955834+00:00'
+completed_at: '2026-02-18T14:50:16.618139+00:00'
+duration_minutes: 0.02770495
+---
+
+# Idea Intake: Add cron plugin (on by default) that allows scheduling agent callbacks or CLI commands (with optional forwarding to an agent after that)
+
+## Original Idea
+
+Add cron plugin (on by default) that allows scheduling agent callbacks or CLI commands (with optional forwarding to an agent after that)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add cron plugin (on by default) that allows scheduling agent callbacks or CLI commands (with optional forwarding to an agent after that)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P23.M2 (Cron Plugin)
+- P23.M2.E1 (CronSchedule Schema & Storage — tasks not yet created)
+- P23.M2.E2 (Scheduler GenServer — tasks not yet created)
+- P23.M2.E3 (MCP Tools & Plugin Module — tasks not yet created)
+- P23.M2.E4 (Cron Plugin Tests — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

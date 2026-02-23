@@ -1,0 +1,40 @@
+id: P15.M9.E4
+name: Schema & Format Safety
+status: pending
+estimate_hours: 2.0
+complexity: low
+depends_on:
+- P15.M9.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-uuid-fallback-for-nil-tool-cal.todo
+  title: Add UUID fallback for nil tool_call_id in tool_executor format_results
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-schema-validation-tool-result-.todo
+  title: Add conditional schema validation requiring tool_call_id on tool_result messages
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M9.E1.T002
+- id: T003
+  file: T003-format-results-catch-all-warni.todo
+  title: Change format_results catch-all to raise or log warning instead of silent passthrough
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

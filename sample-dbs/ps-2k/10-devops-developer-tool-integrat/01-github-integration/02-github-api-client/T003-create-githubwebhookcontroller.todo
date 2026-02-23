@@ -1,0 +1,42 @@
+---
+id: P10.M1.E2.T003
+title: Create GitHubWebhookController
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:32:41.662687+00:00'
+started_at: '2026-02-11T20:32:41.662687+00:00'
+completed_at: '2026-02-12T00:12:13.704515+00:00'
+duration_minutes: 219.53402995
+---
+
+# Create GitHubWebhookController
+
+
+
+## Requirements
+
+- [ ] Create `PagServerWeb.GitHubWebhookController` Phoenix controller
+- [ ] Add webhook endpoint `POST /github/events` to receive GitHub webhook events
+- [ ] Verify webhook signature using `Client.verify_signature/4`
+- [ ] Extract `X-GitHub-Delivery` header for idempotency/deduplication
+- [ ] Extract event type from `X-GitHub-Event` header
+- [ ] Respond immediately with 200 OK (async processing pattern)
+- [ ] Spawn async task to process event via `PagServer.Integrations.GitHub` module
+- [ ] Log errors with delivery ID and event type for debugging
+- [ ] Return 401 for invalid signatures, 400 for malformed requests
+
+## Acceptance Criteria
+
+- [ ] Controller module created with `create/2` action
+- [ ] Signature verification blocks unsigned or tampered requests
+- [ ] Controller responds within 3 seconds (async processing)
+- [ ] Event type extracted and passed to handler
+- [ ] Delivery ID extracted for idempotency tracking
+- [ ] Errors logged with proper context (delivery_id, event_type, team/repo)
+- [ ] Follows Slack/Telegram controller patterns
+- [ ] Tests cover valid/invalid signatures, missing headers

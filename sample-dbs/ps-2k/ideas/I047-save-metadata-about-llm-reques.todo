@@ -1,0 +1,50 @@
+---
+id: I047
+title: Save metadata about LLM requests linked to session. Particularly size would
+  be useful to debug, but other metadata too. We can use this to check that parallelization
+  works correctly recombining asnwers, for example. We can also have a live dashboard
+  showing requests happening (no content, just metadata). These entries can be linked
+  back to the chat message too. (Though we want to save them to DB when the request
+  starts so that we have a record if the response doesn't complete)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-19T16:55:20.555221+00:00'
+started_at: '2026-02-19T16:55:20.555221+00:00'
+completed_at: '2026-02-19T17:23:57.821926+00:00'
+duration_minutes: 28.621111566666666
+---
+
+# Idea Intake: Save metadata about LLM requests linked to session. Particularly size would be useful to debug, but other metadata too. We can use this to check that parallelization works correctly recombining asnwers, for example. We can also have a live dashboard showing requests happening (no content, just metadata). These entries can be linked back to the chat message too. (Though we want to save them to DB when the request starts so that we have a record if the response doesn't complete)
+
+## Original Idea
+
+Save metadata about LLM requests linked to session. Particularly size would be useful to debug, but other metadata too. We can use this to check that parallelization works correctly recombining asnwers, for example. We can also have a live dashboard showing requests happening (no content, just metadata). These entries can be linked back to the chat message too. (Though we want to save them to DB when the request starts so that we have a record if the response doesn't complete)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Save metadata about LLM requests linked to session. Particularly size would be useful to debug, but other metadata too. We can use this to check that parallelization works correctly recombining asnwers, for example. We can also have a live dashboard showing requests happening (no content, just metadata). These entries can be linked back to the chat message too. (Though we want to save them to DB when the request starts so that we have a record if the response doesn't complete)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

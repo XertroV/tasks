@@ -1,0 +1,42 @@
+id: P22.M1.E4
+name: 'Tests: Multi-Credential Auth'
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on:
+- P22.M1.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-unit-tests-credentialselector.todo
+  title: 'Unit tests: CredentialSelector ordering and cooldown filtering'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M1.E2.T001
+- id: T002
+  file: T002-integration-tests-credential-r.todo
+  title: 'Integration tests: credential rotation on 429/401/403/timeout responses'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M1.E2.T002
+- id: T003
+  file: T003-api-controller-tests-credentia.todo
+  title: 'API controller tests: credential CRUD and reset-cooldown endpoints'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M1.E3.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

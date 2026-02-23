@@ -1,0 +1,46 @@
+---
+id: P10.M4.E3.T002
+title: Build Drone webhook handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P10.M4.E3.T001
+tags:
+- webhooks
+- drone
+- event-handling
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:55:46.195509+00:00'
+started_at: '2026-02-12T04:55:46.195509+00:00'
+completed_at: '2026-02-12T05:07:32.834510+00:00'
+duration_minutes: 11.777316533333334
+---
+
+# Build Drone webhook handler
+
+Implement webhook receiver and event processor for Drone CI build events.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/drone/webhook_handler.ex` module
+- [ ] Define webhook event parsing for Drone events:
+  - [ ] Build started events
+  - [ ] Build completed events
+  - [ ] Step events
+- [ ] Implement event signature verification (Drone HMAC)
+- [ ] Route events to appropriate handler functions
+- [ ] Implement idempotent event processing
+- [ ] Add comprehensive logging
+- [ ] Write tests for valid and invalid webhook signatures
+
+## Acceptance Criteria
+
+- [ ] Webhook receiver validates Drone signatures correctly
+- [ ] Event parsing handles all documented Drone event types
+- [ ] Invalid signatures rejected with 403 response
+- [ ] Webhook events trigger appropriate handlers
+- [ ] All events logged with build ID and status
+- [ ] `mix test` passes for all webhook tests
+- [ ] `mix lint` passes without warnings

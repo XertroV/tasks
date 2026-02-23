@@ -1,0 +1,53 @@
+# Epic: Cluster Configuration
+# Phase 9, Milestone 4, Epic 2 (P9.M4.E2)
+
+id: P9.M4.E2
+name: Cluster Configuration
+status: pending
+estimate_hours: 5
+complexity: high
+depends_on: [P9.M4.E1]
+
+tasks:
+  - id: T001
+    file: T001-libcluster-setup.todo
+    title: Configure libcluster for auto-discovery
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-cluster-telemetry.todo
+    title: Add cluster-aware telemetry
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-session-persistence.todo
+    title: Ensure session persistence across nodes
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: low
+    depends_on: [T001]
+    
+  - id: T004
+    file: T004-cluster-docs.todo
+    title: Document cluster deployment
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: low
+    depends_on: [T001, T002, T003]
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

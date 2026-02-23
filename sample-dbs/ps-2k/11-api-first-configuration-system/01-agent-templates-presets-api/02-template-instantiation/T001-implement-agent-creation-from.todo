@@ -1,0 +1,148 @@
+---
+id: P11.M1.E2.T001
+title: Implement agent creation from template
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P11.M1.E1.T004
+tags:
+- instantiation
+- agents
+- templates
+claimed_by: cli-user
+claimed_at: '2026-02-12T10:05:29.521534+00:00'
+started_at: '2026-02-12T10:05:29.521534+00:00'
+completed_at: '2026-02-12T10:27:56.480572+00:00'
+duration_minutes: 22.449317150000002
+---
+
+# Implement agent creation from template
+
+Create service module to instantiate agents from templates, copying configuration and applying overrides.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/templates/instantiator.ex` module with:
+  - [ ] `create_agent_from_template/3` function (template_id, agent_attrs, user_id)
+  - [ ] Copy base_config from template to new agent
+  - [ ] Allow overrides to template configuration
+  - [ ] Generate unique agent name (with template name prefix)
+  - [ ] Preserve template metadata and tools list
+  - [ ] Track template_id on created agent (for audit)
+- [ ] Create agent via existing Agent creation path
+  - [ ] Use PagServer.Agents.create_agent/2
+  - [ ] Inject template configuration into agent config
+  - [ ] Merge user-provided overrides with template defaults
+- [ ] Handle edge cases:
+  - [ ] Template not found -> error
+  - [ ] User lacks permission to use template -> error
+  - [ ] Agent creation fails -> rollback
+  - [ ] Invalid overrides -> reject with validation errors
+- [ ] Add helper functions:
+  - [ ] `merge_config/3` - Deep merge template + overrides + defaults
+  - [ ] `validate_overrides/2` - Check overrides don't violate constraints
+- [ ] Create integration tests verifying:
+  - [ ] Agents created from templates have correct config
+  - [ ] Overrides properly applied
+  - [ ] Template metadata preserved
+  - [ ] Permissions enforced
+
+## Acceptance Criteria
+
+- [ ] Agent can be created from public template without authentication
+- [ ] Agent can be created from private template by owner
+- [ ] Agent cannot be created from private template by non-owner
+- [ ] Template configuration is copied to agent
+- [ ] User overrides merge correctly with template defaults
+- [ ] Agent tracks which template it was created from
+- [ ] Error messages are clear for invalid overrides
+- [ ] Multiple agents can be created from same template
+- [ ] Invalid template_id returns 404
+
+## Context
+
+**Key Points**:
+- Instantiation is the core feature: templates are reusable blueprints
+- Overrides enable customization without template modification
+- Template_id tracking enables template update/version management
+- Merging handles both shallow and deep config structures
+- Permission check mirrors template viewing permissions
+
+## Notes
+
+### Service Usage Pattern
+
+```elixir
+{:ok, agent} = Instantiator.create_agent_from_template(
+  template_id,
+  %{
+    name: "My Research Agent",
+    overrides: %{
+      "temperature" => 0.5,
+      "max_tokens" => 2048
+    }
+  },
+  user_id
+)
+```
+
+### Config Merging
+
+Template config:
+```json
+{
+  "model": "claude-3-sonnet",
+  "temperature": 0.7,
+  "max_tokens": 4096,
+  "system_prompt": "Be helpful"
+}
+```
+
+User overrides:
+```json
+{
+  "temperature": 0.5
+}
+```
+
+Merged result:
+```json
+{
+  "model": "claude-3-sonnet",
+  "temperature": 0.5,
+  "max_tokens": 4096,
+  "system_prompt": "Be helpful"
+}
+```
+
+### Error Handling
+
+```elixir
+case Instantiator.create_agent_from_template(template_id, attrs, user_id) do
+  {:ok, agent} -> {:ok, agent}
+  {:error, :not_found} -> {:error, :template_not_found}
+  {:error, :forbidden} -> {:error, :no_permission}
+  {:error, changeset} -> {:error, changeset}
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-12 10:05 UTC
+**Sibling tasks**: P11.M1.E2.T002, P11.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M1.E2.T001 → P11.M1.E2.T002 → P11.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M1.E2.T001: .tasks/11-api-first-configuration-system/01-agent-templates-presets-api/02-template-instantiation/T001-implement-agent-creation-from.todo
+- P11.M1.E2.T002: .tasks/11-api-first-configuration-system/01-agent-templates-presets-api/02-template-instantiation/T002-add-template-variable-substitu.todo
+- P11.M1.E2.T003: .tasks/11-api-first-configuration-system/01-agent-templates-presets-api/02-template-instantiation/T003-write-template-instantiation-t.todo

@@ -1,0 +1,113 @@
+---
+id: P10.M3.E1.T002
+title: Build Jira webhook handler with verification
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T02:33:32.511204+00:00'
+started_at: '2026-02-12T02:33:32.511204+00:00'
+completed_at: '2026-02-12T02:59:07.802195+00:00'
+duration_minutes: 25.588182333333336
+---
+
+# Build Jira webhook handler with verification
+
+Implement webhook signature verification and event parsing for real-time issue updates from Jira.
+
+## Requirements
+
+### Webhook Signature Verification
+- [ ] Create `lib/pag_server/integrations/jira/webhook.ex` module
+- [ ] Implement SHA256 HMAC signature verification based on request body and shared secret
+- [ ] Extract signature from X-Atlassian-Webhook-Signature header
+- [ ] Reject requests with missing or invalid signatures (403 Forbidden)
+- [ ] Support both single and multiple webhooks with different secrets
+
+### Event Parsing
+- [ ] Parse Jira webhook JSON payload (issue events)
+- [ ] Extract issue data: key, id, summary, description, status, assignee, priority, labels, created, updated
+- [ ] Support event types: issue.created, issue.updated, issue.deleted, comment.created
+- [ ] Handle transition events (status changes) with changelog info
+- [ ] Map Jira field IDs to standard field names
+
+### Idempotency and Deduplication
+- [ ] Track webhook event IDs (webhookId + event timestamp) to detect duplicates
+- [ ] Use ETS or cache to store recent event IDs (TTL: 1 hour)
+- [ ] Return 200 OK immediately after validation, process async in background
+- [ ] Log duplicate detections at info level
+
+### Webhook Management
+- [ ] Provide utility to register webhook with Jira Cloud (POST /rest/api/3/webhooks)
+- [ ] Support webhook configuration: events, filters, URL
+- [ ] Store webhook registration IDs for future management
+
+## Acceptance Criteria
+
+- [ ] Valid signatures verify successfully, invalid ones rejected
+- [ ] Parsed events contain all required issue fields
+- [ ] Transitions include changelog with field changes
+- [ ] Duplicate events (same webhook ID within 1 hour) are skipped
+- [ ] Handler returns 200 immediately; processing happens async
+- [ ] Webhook registration creates webhook in Jira with correct events
+- [ ] Unit tests cover signature verification, event parsing, deduplication
+- [ ] Integration test verifies webhook receipt from Jira sandbox
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Jira Webhook Signature**:
+```
+X-Atlassian-Webhook-Signature: sha256=<hmac_hex>
+hmac_hex = HMAC-SHA256(request_body, webhook_secret)
+```
+
+**Event Example**:
+```json
+{
+  "webhookId": 123,
+  "timestamp": 1234567890,
+  "issue": {
+    "key": "PROJ-123",
+    "id": "10000",
+    "fields": {
+      "summary": "Bug fix",
+      "status": {"name": "In Progress"},
+      "assignee": {"name": "user@example.com"}
+    }
+  },
+  "changelog": {
+    "items": [{"field": "status", "fromString": "Open", "toString": "In Progress"}]
+  }
+}
+```
+
+**Configuration**:
+```elixir
+config :pag_server, :jira_webhook,
+  shared_secret: System.get_env("JIRA_WEBHOOK_SECRET"),
+  webhook_url: "http://localhost:4000/integrations/jira/webhooks/events"
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/jira/webhook_test.exs
+
+# Test with mock payload
+mix test test/pag_server/integrations/jira/webhook_test.exs --include payload
+```
+
+## Verification
+
+```bash
+# Verify signatures are computed correctly
+mix test test/pag_server/integrations/jira/webhook_test.exs -k "signature"
+
+# Check file size
+wc -l lib/pag_server/integrations/jira/webhook.ex
+```

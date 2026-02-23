@@ -1,0 +1,60 @@
+---
+id: P7.M7.E3.T001
+title: Basic agent example
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:11:09.633610+00:00'
+started_at: '2026-02-08T06:11:09.633610+00:00'
+completed_at: '2026-02-08T06:27:46.883561+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 16.620832333333333
+---
+
+# Basic agent example
+
+Create simple usage example
+
+## Requirements
+
+- [ ] Implement core functionality
+- [ ] Add tests
+- [ ] Update documentation
+
+## Acceptance Criteria
+
+- [ ] Feature works as specified
+- [ ] Tests pass
+- [ ] Documentation updated
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E3)
+**Agent**: cli-user
+**Date**: 2026-02-08 06:11 UTC
+**Sibling tasks**: P7.M7.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E3.T001 → P7.M7.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E3.T001: .tasks/07-production/07-documentation/03-examples/T001-basic.todo
+- P7.M7.E3.T002: .tasks/07-production/07-documentation/03-examples/T002-production.todo

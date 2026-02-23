@@ -1,0 +1,31 @@
+---
+id: P49.M3.E1.T003
+title: Add compatibility gates for install and update operations
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:57:25.216307+00:00'
+started_at: '2026-02-20T09:57:25.216307+00:00'
+completed_at: '2026-02-20T10:04:45.658179+00:00'
+duration_minutes: 7.340697700000001
+---
+
+# Add compatibility gates for install and update operations
+
+
+
+## Requirements
+
+- Add compatibility gates for install/update using host/plugin version and feature constraints.
+- Fail early with structured compatibility diagnostics before mutating runtime state.
+- Add tests covering compatible and incompatible plugin versions.
+
+## Acceptance Criteria
+
+- Install/update operations reject incompatible plugins before runtime changes.
+- Compatibility error messages include failing constraints and remediation hints.
+- Tests validate both accepted and rejected compatibility scenarios.

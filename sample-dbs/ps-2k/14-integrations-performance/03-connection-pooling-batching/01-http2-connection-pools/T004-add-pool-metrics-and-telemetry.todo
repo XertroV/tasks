@@ -1,0 +1,30 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:32:18.655867+00:00'
+started_at: '2026-02-13T06:32:18.655867+00:00'
+completed_at: '2026-02-13T06:50:12.956581+00:00'
+duration_minutes: 17.905011633333334
+---
+# Add pool metrics and telemetry
+
+## Description
+Implement comprehensive metrics collection for connection pools including utilization, latency, error rates, and integrate with the application's telemetry system for monitoring and alerting.
+
+## Acceptance Criteria
+- [ ] `PagServer.LLM.Pool.Metrics` module created
+- [ ] Metrics: active_connections, idle_connections, checkout_latency
+- [ ] Metrics: request_count, error_count, timeout_count
+- [ ] Metrics: pool_utilization_percent, queue_length
+- [ ] Telemetry events: `[:pag_server, :llm, :pool, :checkout]`
+- [ ] Telemetry events: `[:pag_server, :llm, :pool, :checkin]`
+- [ ] Telemetry events: `[:pag_server, :llm, :pool, :error]`
+- [ ] Periodic metrics emission (configurable interval)
+- [ ] Prometheus-compatible metric names
+- [ ] Integration with existing telemetry infrastructure
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/pool/`, `lib/pag_server/telemetry.ex`
+- Part of epic: P14.M3.E1 - HTTP/2 Connection Pools

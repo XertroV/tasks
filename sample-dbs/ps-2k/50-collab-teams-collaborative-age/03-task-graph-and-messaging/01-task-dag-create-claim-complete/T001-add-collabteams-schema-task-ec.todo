@@ -1,0 +1,25 @@
+---
+id: P50.M3.E1.T001
+title: Add CollabTeams.Schema.Task Ecto schema and changeset
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E2.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:19:26.304764+00:00'
+started_at: '2026-02-23T02:19:26.304764+00:00'
+completed_at: '2026-02-23T02:19:28.906608+00:00'
+duration_minutes: 0.04336375
+---
+## Description
+Create CollabTeams.Schema.Task with all fields from migration V2. Changeset validates: team_id required, title required non-empty, state in valid list, depends_on is list of UUIDs (validate_subset or custom validator). Add @valid_states and state transition validation (no arbitrary state jumps -- only valid transitions accepted in changeset). Schema already backed by migration from M1.E2.T002.
+
+## Acceptance Criteria
+- Schema compiles
+- changeset rejects missing title
+- changeset rejects invalid state
+- changeset validates depends_on is list
+- state transition validation blocks pending->completed direct jump

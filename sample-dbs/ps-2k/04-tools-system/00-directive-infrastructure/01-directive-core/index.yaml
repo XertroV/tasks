@@ -1,0 +1,36 @@
+# Epic: Directive Core
+# Phase 4, Milestone 0, Epic 1 (P4.M0.E1)
+
+id: P4.M0.E1
+name: Directive Core
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-behaviour-structs.todo
+    title: Define Directive behaviour and core structs
+    status: pending
+    estimate_hours: 4
+    complexity: medium
+    priority: critical
+    depends_on: []
+    
+  - id: T002
+    file: T002-executor-protocol.todo
+    title: Implement Directive.Executor protocol
+    status: pending
+    estimate_hours: 4
+    complexity: medium
+    priority: critical
+    depends_on:
+      - T001
+
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

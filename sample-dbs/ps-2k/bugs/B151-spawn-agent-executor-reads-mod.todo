@@ -1,0 +1,35 @@
+---
+id: B151
+title: "spawn_agent executor reads :mode not :spawn_mode \u2014 sibling mode silently\
+  \ ignored"
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- threads
+- spawn_subagent
+- coordinator
+- directive
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.837775+00:00'
+started_at: '2026-02-19T04:21:05.837775+00:00'
+completed_at: '2026-02-19T04:43:03.564596+00:00'
+duration_minutes: 21.962113466666665
+---
+B146 added spawn_mode: :child | :sibling to SpawnAgent directive opts, but the executor reads the wrong key.
+
+spawn_agent_impl.ex line 57 reads: Map.get(directive.opts, :mode, :async)
+This :mode key is the executor's internal async/blocking dispatch mode — a completely different concept.
+The tool sets opts[:spawn_mode], which is never read anywhere.
+
+Additionally, coordinator.ex do_spawn_child/2 always:
+- Sets parent_agent_id: parent_id (line 191) regardless of spawn_mode
+- Registers in @hierarchy_registry and @children_registry (lines 214–217) regardless of spawn_mode
+
+Fix required:
+- spawn_agent_impl.ex: read opts[:spawn_mode] (not opts[:mode]) and pass it through to the coordinator
+- coordinator.ex do_spawn_child/2: when spawn_mode == :sibling, skip setting parent_agent_id in the DB record and skip hierarchy/children registry registration
+- coordinator.ex: add a :sibling_registry (or equivalent) to track siblings separately for audit/cleanup if needed
+- Add tests covering sibling lifecycle: spawned agent has no parent_agent_id, not in children registry

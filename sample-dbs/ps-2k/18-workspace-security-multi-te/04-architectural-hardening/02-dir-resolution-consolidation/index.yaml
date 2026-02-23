@@ -1,0 +1,57 @@
+id: P18.M4.E2
+name: Directory Resolution Consolidation
+status: pending
+estimate_hours: 5.5
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-extract-workspace-paths.todo
+  title: Extract WorkspacePaths module as single source of truth
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-refactor-workspaces.todo
+  title: Refactor Workspaces to use WorkspacePaths
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P18.M4.E2.T001
+- id: T003
+  file: T003-refactor-workspace-files.todo
+  title: Refactor WorkspaceFiles to use WorkspacePaths
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P18.M4.E2.T001
+- id: T004
+  file: T004-refactor-file-tracker.todo
+  title: Refactor FileTracker to use WorkspacePaths
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P18.M4.E2.T001
+- id: T005
+  file: T005-workspace-paths-tests.todo
+  title: Add tests for WorkspacePaths edge cases
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P18.M4.E2.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

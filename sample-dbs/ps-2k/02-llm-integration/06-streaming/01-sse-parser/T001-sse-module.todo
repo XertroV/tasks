@@ -1,0 +1,87 @@
+---
+id: P2.M6.E1.T001
+title: Create SSE parsing module
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- streaming
+- sse
+- parser
+- llm-integration
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:06:06.564609'
+started_at: '2026-02-05T17:06:06.564609'
+completed_at: '2026-02-05T17:10:02.656290'
+duration_minutes: 3.9348611666666664
+---
+
+# Create SSE parsing module
+
+Implement a module to parse Server-Sent Events (SSE) from LLM provider HTTP streams.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/sse_parser.ex` module
+- [ ] Implement `parse_stream/1` function that takes a binary stream
+- [ ] Handle SSE format: `event:`, `data:`, `id:`, and empty line delimiters
+- [ ] Support multi-line data fields (continuation lines)
+- [ ] Handle incomplete chunks (buffering between receives)
+- [ ] Emit parsed events as `%{event: String.t(), data: String.t(), id: String.t() | nil}`
+- [ ] Handle edge cases:
+  - [ ] Empty events
+  - [ ] Events without data
+  - [ ] Malformed SSE (graceful degradation)
+  - [ ] Very long data fields (streaming support)
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] `parse_stream/1` correctly parses standard SSE format
+- [ ] Handles incomplete chunks correctly (buffers state)
+- [ ] Supports multi-line data fields per SSE spec
+- [ ] Returns structured event maps with `:event`, `:data`, `:id` keys
+- [ ] Gracefully handles malformed input
+- [ ] Memory-efficient for large streams (no full buffering)
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` Line 1121-1124 (P2.M6 Stream Processing)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section on LLM streaming
+
+**Key Points**:
+- SSE is the transport format used by Anthropic, OpenAI, and OpenRouter APIs
+- Format spec: `event: <type>\ndata: <payload>\nid: <optional>\n\n`
+- Data fields can span multiple lines (each prefixed with `data: `)
+- Empty line (`\n\n`) marks end of event
+- Must handle partial chunks from HTTP stream
+
+**SSE Format Example**:
+```
+event: message_start
+data: {"type":"message_start","message":{"id":"msg_123"}}
+
+event: content_block_delta
+data: {"type":"content_block_delta","index":0,
+data: "delta":{"type":"text_delta","text":"Hello"}}
+
+event: message_stop
+data: {"type":"message_stop"}
+
+```
+
+## Notes
+
+Reference implementations:
+- `ref-projects/anthropix/lib/anthropix/sse.ex` (if available)
+- `ref-projects/openai_ex/lib/openai/sse.ex` (if available)
+
+Consider using a state machine approach:
+1. `:field_name` - reading field name
+2. `:field_value` - reading field value
+3. `:emit` - complete event, emit and reset
+
+The parser should work incrementally on chunks as they arrive from the HTTP stream.

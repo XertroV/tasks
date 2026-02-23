@@ -1,0 +1,79 @@
+---
+id: P5.M4.E6.T002
+title: Add conversation export tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P5.M4.E6.T001
+tags:
+- testing
+- export
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:58:42.668634+00:00'
+started_at: '2026-02-07T14:58:42.668634+00:00'
+completed_at: '2026-02-07T14:59:41.298542+00:00'
+duration_minutes: 0.9771649833333333
+---
+
+# Add conversation export tests
+
+Comprehensive test suite for the `PagServer.Context.Export` module, covering
+JSON and Markdown export formats, streaming behavior, edge cases, and
+options handling.
+
+## Requirements
+
+- [ ] Create test file `test/pag_server/context/export_test.exs`
+- [ ] Test JSON export
+  - Verify valid JSON output with Jason.decode!
+  - Verify session metadata included (session_id, exported_at, message_count)
+  - Verify messages array with correct fields (role, content, timestamp, sequence_num)
+  - Verify hash chain summary included
+  - Test `include_thinking: true` includes thinking content
+  - Test `include_tool_calls: true` includes tool call data
+  - Test default excludes thinking and tool calls
+- [ ] Test Markdown export
+  - Verify output contains session header
+  - Verify messages formatted with role headers
+  - Verify timestamps included on each message
+  - Verify code blocks in content are preserved
+  - Test thinking content in `<details>` blocks when included
+- [ ] Test streaming export
+  - Verify stream yields chunks lazily
+  - Verify all messages included when stream is consumed
+  - Verify stream works with both JSON and Markdown formats
+- [ ] Test `export_to_file/3`
+  - Write to tmp file and verify contents match in-memory export
+  - Verify byte count returned
+  - Test error handling for invalid file paths
+- [ ] Test edge cases
+  - Empty session (zero messages) produces valid output
+  - Session with single message exports correctly
+  - Messages with nil thinking_content/tool_calls handled gracefully
+  - Very long message content doesn't cause issues
+- [ ] Test large conversation handling
+  - Create 500+ messages in a session
+  - Verify stream-based export processes them in batches
+  - Verify memory usage stays bounded (no full list materialization)
+
+## Acceptance Criteria
+
+- [ ] JSON export produces valid, parseable JSON in all cases
+- [ ] Markdown export produces readable, well-formatted output
+- [ ] Streaming export works correctly with batched loading
+- [ ] File export writes correct content and returns byte count
+- [ ] All edge cases handled without errors
+- [ ] Tests pass in both development and CI environments
+
+## Context
+
+Test companion for T001. Identified in architecture audit as part of
+the MINOR priority conversation export gap.
+
+## Reference Files
+
+- `lib/pag_server/context/export.ex` - Module under test (created in T001)
+- `test/pag_server/context/` - Existing test directory
+- `test/support/data_case.ex` - DataCase test helper

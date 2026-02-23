@@ -1,0 +1,41 @@
+id: P48.M3.E4
+name: 'C4: LSP Domain Tool and Auto-Diagnostics'
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P48.M3.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-lsptool-domain-tool-with-actio.todo
+  title: 'LspTool: domain tool with action dispatch (diagnostics, hover, goto_def,
+    refs, symbols)'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-auto-diagnostics-post-write-ho.todo
+  title: 'Auto-diagnostics post-write hook: inject LSP diagnostics into write_file/file_edit
+    results'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-lsp-tool-and-hook-registration.todo
+  title: LSP tool and hook registration in plugin lifecycle
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

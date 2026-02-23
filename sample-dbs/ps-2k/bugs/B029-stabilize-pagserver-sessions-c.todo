@@ -1,0 +1,19 @@
+---
+id: B029
+title: stabilize PagServer.Sessions.ConcurrentAccessTest under full-suite execution
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- sessions
+- concurrency
+- tests
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:48:48.630867+00:00'
+started_at: '2026-02-15T17:48:48.630867+00:00'
+completed_at: '2026-02-15T17:52:44.191861+00:00'
+duration_minutes: 3.9260164333333334
+---
+Full suite still reports 8 failures in PagServer.Sessions.ConcurrentAccessTest. Investigate sandbox ownership/async interaction and race windows in concurrent writes/forks/deletes. Make tests deterministic and preserve intended concurrency coverage.

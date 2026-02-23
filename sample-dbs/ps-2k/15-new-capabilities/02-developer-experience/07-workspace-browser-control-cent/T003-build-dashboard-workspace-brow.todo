@@ -1,0 +1,27 @@
+---
+id: P15.M2.E7.T003
+title: Build dashboard workspace browser with search and status lanes
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E7.T002
+tags:
+- liveview
+- ui
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:06:20.899241+00:00'
+started_at: '2026-02-18T04:06:20.899241+00:00'
+completed_at: '2026-02-18T04:27:41.285177+00:00'
+duration_minutes: 21.339765366666665
+---
+## Goal
+Implement a responsive workspace browser in the dashboard with fast scanning and filtering.
+
+## Acceptance Criteria
+- Adds workspace cards/table with search, sort, and status grouping (active, needs attention, archived).
+- Shows key badges (owner, member count, plugin count, last activity) with clear visual hierarchy.
+- Supports mobile and desktop layouts without losing critical controls.
+- Handles loading, empty, and failure states with actionable recovery options.

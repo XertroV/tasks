@@ -1,0 +1,34 @@
+---
+id: P12.M1.E5.T001
+title: Add Groq provider integration test module
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T18:46:45.504907+00:00'
+started_at: '2026-02-13T18:46:45.504907+00:00'
+completed_at: '2026-02-13T18:49:23.374491+00:00'
+duration_minutes: 2.63115955
+---
+
+# Add Groq provider integration test module
+
+## Requirements
+
+Create an integration test module for Groq provider that:
+1. Follows existing patterns from Ollama and OpenAI integration tests
+2. Tags tests with `:integration` and `:requires_groq`
+3. Checks for GROQ_API_KEY environment variable before running
+4. Tests basic chat functionality with gpt-oss-120 model
+
+## Acceptance Criteria
+
+- [ ] Create `test/pag_server/llm/providers/groq_test.exs`
+- [ ] Test module follows existing patterns (Ollama, OpenAI)
+- [ ] Tests tagged with `:integration` and `:requires_groq`
+- [ ] Skip tests gracefully if GROQ_API_KEY not set
+- [ ] Basic health check test validates Groq API connectivity
+- [ ] Tests pass when run with `mix test --include integration`

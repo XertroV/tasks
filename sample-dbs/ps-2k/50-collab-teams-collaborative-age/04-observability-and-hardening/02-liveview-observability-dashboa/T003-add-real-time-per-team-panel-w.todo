@@ -1,0 +1,25 @@
+---
+id: P50.M4.E2.T003
+title: Add real-time per-team panel with worker states and task board
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:43:17.837646+00:00'
+started_at: '2026-02-23T02:43:17.837646+00:00'
+completed_at: '2026-02-23T02:43:20.391095+00:00'
+duration_minutes: 0.042557199999999996
+---
+## Description
+Selecting a team subscribes to collab_teams:#{team_id} PubSub and renders expanded panel. Panel shows: worker list with state badges (starting/active/idle/shutting_down/stopped), task counts per state (pending/in_progress/completed/failed/blocked). PubSub handle_info refreshes assigns when events arrive. No full re-render -- only affected assigns updated.
+
+## Acceptance Criteria
+- Clicking team shows expanded panel
+- worker states display correctly
+- task counts correct
+- PubSub update reflected without page reload
+- state badge labels human-readable

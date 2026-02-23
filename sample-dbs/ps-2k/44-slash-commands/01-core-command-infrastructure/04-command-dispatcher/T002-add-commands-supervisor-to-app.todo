@@ -1,0 +1,23 @@
+---
+id: P44.M1.E4.T002
+title: Add Commands.Supervisor to application supervision tree
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:43:40.528156+00:00'
+started_at: '2026-02-19T18:43:40.528156+00:00'
+completed_at: '2026-02-19T18:46:26.006886+00:00'
+duration_minutes: 2.757978633333333
+---
+## Summary
+Add a Commands.Supervisor that starts Registry and any needed workers.
+
+## Acceptance Criteria
+- [ ] `PagServer.Commands.Supervisor` defined as a Supervisor
+- [ ] Started in `PagServer.Application` supervision tree (before connectors start)
+- [ ] Supervises: Commands.Registry
+- [ ] Application boots cleanly with the new supervisor

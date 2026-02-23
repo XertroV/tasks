@@ -1,0 +1,30 @@
+id: P24.M3.E1
+name: Config Schema
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-heartbeat-config-fields-in-plu.todo
+  title: Heartbeat config fields in plugin KV store
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-workspace-type-aware-defaults.todo
+  title: Workspace-type-aware defaults for heartbeat plugin
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

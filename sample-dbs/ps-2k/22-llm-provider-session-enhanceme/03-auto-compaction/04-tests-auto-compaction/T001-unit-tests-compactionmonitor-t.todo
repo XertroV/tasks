@@ -1,0 +1,17 @@
+---
+id: P22.M3.E4.T001
+title: 'Unit tests: CompactionMonitor threshold detection and debounce'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:44.515268+00:00'
+started_at: '2026-02-18T17:04:44.515268+00:00'
+completed_at: '2026-02-18T17:17:40.307791+00:00'
+duration_minutes: 12.929875233333332
+---
+Write ExUnit tests for CompactionMonitor: - At 79% token usage (below threshold 80%), no compaction triggered - At 80% token usage, compaction is triggered - Second trigger within 1 minute is debounced (no double compaction) - Compaction with failed summarization doesn't crash the GenServer - auto_compact_enabled: false prevents any compaction Acceptance criteria: - sleep_fn pattern for debounce timing - Mox for Summarization module calls - async: true, no global state - Tests complete in <3s

@@ -1,0 +1,21 @@
+---
+id: P32.M1.E1.T003
+title: Implement VoteForker - fork agents for voting
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P32.M1.E1.T002
+tags:
+- forking
+- agents
+- voting
+- interruption
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.288307+00:00'
+started_at: '2026-02-18T20:03:22.288307+00:00'
+completed_at: '2026-02-18T22:09:20.628701+00:00'
+duration_minutes: 125.97233966666666
+---
+Implement PagServer.Consensus.VoteForker.\n\nResponsibility: given a vote_id and list of active agents in a session, fork each agent and inject a structured interruption message, then collect their yes/no responses.\n\nInterruption message format (injected as user turn):\n  ------ INTERRUPTION -------\n  Agent <name> wants to delete <path>.\n  Vote yes or no for whether to allow this.\n  Respond with exactly: VOTE YES or VOTE NO\n\nBehavior:\n- Use SessionForker to insta-fork each active agent\n- Send interruption as a high-priority injected message\n- Parse agent response for VOTE YES / VOTE NO\n- Call ConsensusManager.cast_vote/3 with result\n- Forked agents are ephemeral and discarded after voting\n\nAcceptance criteria:\n- [ ] Each active agent in session is forked exactly once per vote\n- [ ] Interruption message injected correctly\n- [ ] VOTE YES / VOTE NO parsed case-insensitively\n- [ ] Ambiguous responses treated as abstain (no effect on tally)\n- [ ] Forked agents cleaned up after vote concludes

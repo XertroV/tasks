@@ -1,0 +1,43 @@
+---
+id: P15.M7.E2.T003
+title: MCP tool wrapper for tracked file edit detection
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M7.E2.T002
+tags:
+- mcp
+- files
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:56:51.442643+00:00'
+started_at: '2026-02-17T08:56:51.442643+00:00'
+completed_at: '2026-02-17T09:04:23.874144+00:00'
+duration_minutes: 7.54052485
+---
+## Description
+Intercept MCP file_write/file_edit tool calls to automatically track changes to monitored workspace files. Also implement periodic sync for out-of-band changes.
+
+## MCP Tool Wrapper
+- Hook into the MCP tool execution pipeline (PagServer.Tools module)
+- When file_write or file_edit targets a path within a workspace directory that matches a tracked file, automatically create a WorkspaceFileRevision with change_source: :mcp_edit
+- Extract the agent_id from the tool execution context for changed_by
+- Non-tracked files pass through unmodified
+
+## Periodic Sync Task
+- GenServer or periodic task (using Process.send_after or similar)
+- Configurable interval (default 5 minutes, stored in workspace settings)
+- Calls WorkspaceFiles.sync_from_disk/1 for each active workspace
+- Creates revisions with change_source: :sync for detected changes
+- Logs drift events for observability
+
+## Acceptance Criteria
+- [ ] MCP tool wrapper intercepts writes to tracked files
+- [ ] Revisions created with correct change_source and changed_by
+- [ ] Non-tracked file writes unaffected
+- [ ] Periodic sync task runs at configurable interval
+- [ ] Sync detects and records out-of-band changes
+- [ ] Tests for both MCP interception and periodic sync
+- [ ] Sync task can be disabled per workspace

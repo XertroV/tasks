@@ -1,0 +1,43 @@
+id: P46.M1.E3
+name: Accounts Context & Username Utilities
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-accounts-context-module.todo
+  title: Create Accounts context module
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M1.E2.T001
+  - P46.M1.E2.T002
+  - P46.M1.E2.T003
+- id: T002
+  file: T002-create-username-derivation-and.todo
+  title: Create Username derivation and validation utility
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P46.M1.E2.T001
+- id: T003
+  file: T003-update-seeds-exs-for-dev-auto.todo
+  title: Update seeds.exs for dev auto-login and test users
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P46.M1.E3.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

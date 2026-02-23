@@ -1,0 +1,23 @@
+---
+id: P23.M2.E1.T002
+title: Implement CronSchedules context (CRUD functions)
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on:
+- P23.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:58:49.802160+00:00'
+started_at: '2026-02-18T14:58:49.802160+00:00'
+completed_at: '2026-02-18T17:03:18.665036+00:00'
+duration_minutes: 124.48104775
+---
+Context module for schedule persistence.
+
+## Acceptance Criteria
+- [ ] `PagServer.Plugins.Cron.CronSchedules` context with: `list_schedules/1` (by workspace_id), `get_schedule/2`, `create_schedule/2`, `update_schedule/3`, `delete_schedule/2`, `pause_schedule/2`, `resume_schedule/2`
+- [ ] `pause_schedule` sets `enabled: false`; `resume_schedule` sets `enabled: true`
+- [ ] Max schedules per workspace enforced (configurable plugin setting, default 50)
+- [ ] Context tests with DataCase

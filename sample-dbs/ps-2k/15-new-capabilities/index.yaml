@@ -1,0 +1,160 @@
+id: P15
+name: New Capabilities
+status: done
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Agent Memory & Learning
+  path: 01-agent-memory-learning
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M2
+  name: Developer Experience
+  path: 02-developer-experience
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M3
+  name: Response Caching
+  path: 03-response-caching
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M4
+  name: Goal Management
+  path: 04-goal-management
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M5
+  name: Multi-Agent Patterns
+  path: 05-multi-agent-patterns
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M6
+  name: Workspace & Onboarding
+  path: 06-workspace-onboarding
+  status: pending
+  estimate_hours: 28.0
+  complexity: high
+  depends_on: []
+  description: null
+- id: M7
+  name: Workspace Template Bootstrapping
+  path: 07-workspace-template-bootstrappi
+  status: pending
+  estimate_hours: 40.0
+  complexity: high
+  depends_on: []
+  description: 'Workspace templates with conversational bootstrap questionnaires,
+    tracked workspace files (SOUL.md, IDENTITY.md, etc.), and append-only changelog.
+    Templates ship with bootstrap system prompts that guide the agent through rich
+    multi-step onboarding to customize the workspace. Two initial templates: Personal
+    Assistant and Software PM & Architect.'
+  locked: false
+- id: M8
+  name: M7 Audit Remediation
+  path: 08-m7-audit-remediation
+  status: pending
+  estimate_hours: 24.0
+  complexity: medium
+  depends_on: []
+  description: Address findings from the detailed technical audit of M7 (Workspace
+    Template Bootstrapping). Covers template validation hardening, data integrity
+    fixes, bootstrap engine reliability improvements, and LiveView/API quality enhancements.
+  locked: false
+- id: M9
+  name: Tool Call Resilience
+  path: 09-tool-call-resilience
+  status: pending
+  estimate_hours: 24.0
+  complexity: high
+  depends_on: []
+  description: Prevent and recover from session poisoning caused by orphaned/malformed
+    tool_result messages. Runtime crash safety, context sanitization before LLM submission,
+    session fork recovery, DB repair, and schema-level defense in depth. See .plan/tool-call-resilience.md
+    for full background.
+  locked: false
+- id: M10
+  name: Multi-Provider Web Search
+  path: 10-multi-provider-web-search
+  status: pending
+  estimate_hours: 32.0
+  complexity: high
+  depends_on: []
+  description: Expand web_search with API and external providers, orchestration, cooldowns,
+    and observability.
+  locked: false
+- id: M11
+  name: Pair Programming Agents
+  path: 11-pair-programming-agents
+  status: pending
+  estimate_hours: 48.0
+  complexity: high
+  depends_on: []
+  description: 'Two agents collaborate on coding tasks: one codes, one observes. The
+    observer takes notes, can interrupt, and they review together. Pure plugin architecture
+    with zero core changes (except 3 small prerequisites). See .plan/pair-programming-agents.md
+    for full design.'
+  locked: false
+- id: M12
+  name: Connector Management UI
+  path: 12-connector-management-ui
+  status: pending
+  estimate_hours: 32.0
+  complexity: high
+  depends_on: []
+  description: Connections tab in workspace browser, per-connector session binding,
+    create workspace flow, and all related backend changes.
+  locked: false
+- id: M13
+  name: Graphiti Wall Plugin
+  path: 13-graphiti-wall-plugin
+  status: pending
+  estimate_hours: 16.0
+  complexity: medium
+  depends_on: []
+  description: Plugin for agent registration on graphiti wall, inter-agent messaging,
+    4-hour notification cycles, and vecnet-ai integration foundation
+  locked: false
+- id: M14
+  name: Response Pipeline Processing
+  path: 14-response-pipeline-processing
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Post-processing pipeline for agent responses including tag parsing,
+    content filtering, and surface-specific formatting
+  locked: false
+- id: M15
+  name: LivePromptResolver Enhancements
+  path: 15-livepromptresolver-enhancement
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+stats:
+  total_tasks: 246
+  done: 246
+  in_progress: 0
+  blocked: 0
+  pending: 0
+locked: true

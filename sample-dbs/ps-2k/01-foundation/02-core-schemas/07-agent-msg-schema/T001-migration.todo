@@ -1,0 +1,87 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:36:08.051311'
+started_at: '2026-02-05T08:36:08.051311'
+completed_at: '2026-02-05T08:37:16.834823'
+---
+# T001: Create agent_messages table migration
+# Epic: P1.M2.E7 - AgentMessage Schema
+# Estimate: 1.5h, Complexity: low
+
+## Context
+Create the `agent_messages` table to enable inter-agent communication.
+Agents can send messages to each other with threading, priority levels, and read tracking.
+
+Reference: `.plan/2026-02-05-velvet-cascade/index.md` lines 298-310
+
+## Dependencies
+- [P1.M2.E1] Agent schema must exist (for FK constraints)
+
+## Task
+Create migration file: `priv/repo/migrations/YYYYMMDDHHMMSS_create_agent_messages.exs`
+
+### Fields
+- `id` - binary_id, primary key
+- `from_agent_id` - references :agents, type :binary_id, null: true (nullable for system messages)
+- `to_agent_id` - references :agents, type :binary_id, null: false
+- `subject` - string (optional message subject)
+- `content` - text, null: false (message body)
+- `thread_id` - binary_id (for message threading/grouping)
+- `read` - boolean, default: false
+- `priority` - string, default: "normal" (values: "normal", "high", "blocking")
+- `inserted_at` - naive_datetime
+- `updated_at` - naive_datetime
+
+### Indexes
+```elixir
+create index(:agent_messages, [:to_agent_id, :read])
+create index(:agent_messages, [:thread_id])
+```
+
+### Foreign Keys
+- `from_agent_id` references `agents.id` on_delete: :nilify_all (preserve messages if sender deleted)
+- `to_agent_id` references `agents.id` on_delete: :delete_all (delete messages if recipient deleted)
+
+## Acceptance Criteria
+- [ ] Migration file created with correct schema
+- [ ] All fields have proper types and constraints
+- [ ] Indexes created for query performance
+- [ ] Foreign key constraints properly set
+- [ ] Migration runs successfully: `mix ecto.migrate`
+- [ ] Migration rollback works: `mix ecto.rollback`
+- [ ] Can insert test message: `Repo.insert!(%{to_agent_id: id, content: "test"})`
+
+## Implementation Notes
+- Use `binary_id` for id, from_agent_id, to_agent_id, thread_id
+- `from_agent_id` nullable to support system-generated messages
+- `to_agent_id` not null (every message must have recipient)
+- `read` boolean for tracking unread messages
+- Priority levels enable urgent message handling
+- Thread ID enables conversation grouping
+
+## Testing
+```elixir
+# After migration, test in iex -S mix:
+alias PAGServer.Repo
+alias PAGServer.Schema.Agent
+
+# Create test agents
+{:ok, agent1} = Repo.insert(%Agent{name: "agent1", status: "idle"})
+{:ok, agent2} = Repo.insert(%Agent{name: "agent2", status: "idle"})
+
+# Insert test message
+{:ok, _msg} = Repo.insert(%{
+  __struct__: PAGServer.Schema.AgentMessage,
+  from_agent_id: agent1.id,
+  to_agent_id: agent2.id,
+  content: "Hello from agent1",
+  priority: "normal"
+})
+```
+
+## Status
+- [ ] Not started
+- [ ] In progress
+- [ ] Blocked (reason: _______)
+- [ ] Done

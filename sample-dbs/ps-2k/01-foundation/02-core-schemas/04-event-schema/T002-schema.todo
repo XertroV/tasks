@@ -1,0 +1,157 @@
+---
+id: P1.M2.E4.T002
+title: Create Event schema
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M2.E4.T001
+tags:
+- schema
+- ecto
+- event-sourcing
+- core-schema
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:45:36.484553'
+started_at: '2026-02-05T08:45:36.484553'
+completed_at: '2026-02-05T08:47:44.774531'
+---
+
+# Create Event schema
+
+Define the Ecto schema for events with associations, validations, and JSON payload handling.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/event.ex`
+- [ ] Define Event schema with fields:
+  - [ ] `id` - auto-generated bigint primary key
+  - [ ] `event_type` - string
+  - [ ] `agent_id` - bigint foreign key
+  - [ ] `session_id` - bigint foreign key
+  - [ ] `payload` - map
+  - [ ] `payload_compressed` - binary
+  - [ ] `inserted_at` - naive datetime (NO `updated_at`)
+- [ ] Define associations:
+  - [ ] `belongs_to :agent, PAGServer.Schema.Agent`
+  - [ ] `belongs_to :session, PAGServer.Schema.Session`
+- [ ] Create changeset function with validations:
+  - [ ] `event_type` required, must be non-empty string
+  - [ ] `payload` required, must be valid map
+  - [ ] Validate event_type against known types (if enum defined)
+  - [ ] Allow nullable agent_id and session_id
+- [ ] Add helper functions:
+  - [ ] `compressed?/1` - check if event has compressed payload
+  - [ ] `payload_size/1` - calculate payload byte size
+- [ ] Add `@derive {Jason.Encoder, only: [...]}` for JSON serialization
+- [ ] Add module documentation with examples
+
+## Acceptance Criteria
+
+- [ ] Schema file created in `lib/pag_server/schema/event.ex`
+- [ ] Can create events with valid data:
+  ```elixir
+  %Event{}
+  |> Event.changeset(%{
+    event_type: "message_added",
+    payload: %{role: "user", content: "Hello"}
+  })
+  |> Repo.insert()
+  ```
+- [ ] Can query events by type:
+  ```elixir
+  Event |> where(event_type: "message_added") |> Repo.all()
+  ```
+- [ ] Can query events by session:
+  ```elixir
+  Event |> where(session_id: 123) |> Repo.all()
+  ```
+- [ ] Can preload associations:
+  ```elixir
+  Event |> preload([:agent, :session]) |> Repo.all()
+  ```
+- [ ] Payload serialization works correctly (JSON encode/decode)
+- [ ] Validation catches invalid data:
+  - [ ] Missing event_type fails
+  - [ ] Missing payload fails
+  - [ ] Empty event_type fails
+- [ ] Helper functions work:
+  - [ ] `compressed?/1` returns true for events with payload_compressed
+  - [ ] `payload_size/1` calculates correct byte size
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 242-250 (Events schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 3.2 (Event Sourcing)
+
+**Key Points**:
+- **Immutable events**: Schema has no `updated_at`, reinforcing append-only nature
+- **Flexible payload**: Map type allows arbitrary event data
+- **Optional compression**: Binary field for large payloads (implement compression later)
+- **Association flexibility**: Nullable FKs allow system-level events
+
+**Dependencies**:
+- Requires `PAGServer.Schema.Agent` from P1.M2.E1
+- Requires `PAGServer.Schema.Session` from P1.M2.E2
+- Requires events table migration from T001
+
+## Notes
+
+Example schema structure:
+```elixir
+defmodule PAGServer.Schema.Event do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @derive {Jason.Encoder, only: [:id, :event_type, :payload, :inserted_at, :agent_id, :session_id]}
+  
+  schema "events" do
+    field :event_type, :string
+    field :payload, :map
+    field :payload_compressed, :binary
+    
+    belongs_to :agent, PAGServer.Schema.Agent
+    belongs_to :session, PAGServer.Schema.Session
+    
+    timestamps(updated_at: false)
+  end
+
+  @doc """
+  Creates a changeset for an event.
+  
+  ## Examples
+  
+      iex> changeset(%Event{}, %{event_type: "message_added", payload: %{content: "hi"}})
+      %Ecto.Changeset{valid?: true}
+  """
+  def changeset(event, attrs) do
+    event
+    |> cast(attrs, [:event_type, :payload, :payload_compressed, :agent_id, :session_id])
+    |> validate_required([:event_type, :payload])
+    |> validate_length(:event_type, min: 1)
+    |> foreign_key_constraint(:agent_id)
+    |> foreign_key_constraint(:session_id)
+  end
+
+  @doc "Check if event has compressed payload"
+  def compressed?(%__MODULE__{payload_compressed: nil}), do: false
+  def compressed?(%__MODULE__{payload_compressed: _}), do: true
+
+  @doc "Calculate payload size in bytes"
+  def payload_size(%__MODULE__{payload: payload}) do
+    payload |> Jason.encode!() |> byte_size()
+  end
+end
+```
+
+**Event Type Examples**:
+- `"message_added"` - user/assistant message added to session
+- `"context_built"` - context window constructed
+- `"llm_request_started"` - LLM API call initiated
+- `"llm_chunk_received"` - streaming token chunk received
+- `"tool_call_executed"` - tool execution completed
+- `"session_forked"` - session branched for parallel exploration
+
+Consider defining event types as a module constant or separate enum module for better type safety in future iterations.

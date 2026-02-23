@@ -1,0 +1,58 @@
+---
+id: P6.M1.E2.T002
+title: Write aggregation tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+tags:
+- observability
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:56:21.249918+00:00'
+started_at: '2026-02-07T00:56:21.249918+00:00'
+completed_at: '2026-02-07T01:03:22.215380+00:00'
+duration_minutes: 7.016090733333333
+---
+
+# Write aggregation tests
+
+Test Stats.Aggregator functions for correctness and edge cases.
+
+## Requirements
+
+- [ ] Create `test/pag_server/stats/aggregator_test.exs`
+- [ ] Test time period aggregation (hour/day/week)
+- [ ] Test model aggregation
+- [ ] Test agent aggregation
+- [ ] Test global aggregation
+- [ ] Test derived metrics calculations
+- [ ] Test empty data handling
+- [ ] Test date range filtering
+- [ ] Use ExUnit async: true
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Coverage >80%
+- [ ] Tests run in <500ms
+- [ ] Edge cases covered (empty, single entry, large dataset)
+
+## Notes
+
+**Example Test**:
+```elixir
+test "aggregate_by_time_period groups by hour" do
+  stats = [
+    %{timestamp: ~U[2026-02-05 14:30:00Z], tokens_in: 100},
+    %{timestamp: ~U[2026-02-05 14:45:00Z], tokens_in: 150},
+    %{timestamp: ~U[2026-02-05 15:10:00Z], tokens_in: 200}
+  ]
+  
+  result = Aggregator.aggregate_by_time_period(stats, :hour)
+  
+  assert length(result) == 2
+  assert Enum.find(result, & &1.period == ~U[2026-02-05 14:00:00Z]).tokens_in == 250
+  assert Enum.find(result, & &1.period == ~U[2026-02-05 15:00:00Z]).tokens_in == 200
+end
+```

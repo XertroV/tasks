@@ -1,0 +1,32 @@
+id: P23.M1.E3
+name: Phoenix Channel Integration
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-approval-required-approve.todo
+  title: Add approval_required / approve / deny channel events
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M1.E2.T001
+- id: T002
+  file: T002-broadcast-pending-approvals-on.todo
+  title: Broadcast pending approvals on agent channel join
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P23.M1.E3.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

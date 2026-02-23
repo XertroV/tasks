@@ -1,0 +1,27 @@
+---
+id: P15.M2.E7.T006
+title: Add workspace command palette and quick actions
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E7.T003
+tags:
+- ux
+- productivity
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:06:20.902262+00:00'
+started_at: '2026-02-18T04:06:20.902262+00:00'
+completed_at: '2026-02-18T04:28:38.118428+00:00'
+duration_minutes: 22.286935883333335
+---
+## Goal
+Introduce a keyboard-first command palette for common workspace actions.
+
+## Acceptance Criteria
+- Command palette supports jump-to-workspace, open settings section, and toggle common controls.
+- Includes contextual quick actions from workspace cards (open logs, copy id, open members).
+- Actions respect permissions and surface clear disabled reasons.
+- User interactions are instrumented for feature adoption analytics.

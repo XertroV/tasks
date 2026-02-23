@@ -1,0 +1,55 @@
+---
+id: I036
+title: 'Plugin to handle cross-workspace communication, allows broadcasting to all,
+  to a scope/group, email/DMs. Allows agents to communicate between each other live.
+  Note: needs to have wake options and things, like if a message is broadcast, does
+  that wake up agents to respond, or is it just there passively for when they next
+  wake up and have something to do. Each session should have an inbox. Sessions in
+  a workspace where the plugin is enabled should auto-register a mailbox. An MCP tool
+  (or tools) should be available to interface with the mail system.'
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:58:01.554641+00:00'
+started_at: '2026-02-18T19:58:01.554641+00:00'
+completed_at: '2026-02-18T19:58:03.169837+00:00'
+duration_minutes: 0.026919783333333332
+---
+
+# Idea Intake: Plugin to handle cross-workspace communication, allows broadcasting to all, to a scope/group, email/DMs. Allows agents to communicate between each other live. Note: needs to have wake options and things, like if a message is broadcast, does that wake up agents to respond, or is it just there passively for when they next wake up and have something to do. Each session should have an inbox. Sessions in a workspace where the plugin is enabled should auto-register a mailbox. An MCP tool (or tools) should be available to interface with the mail system.
+
+## Original Idea
+
+Plugin to handle cross-workspace communication, allows broadcasting to all, to a scope/group, email/DMs. Allows agents to communicate between each other live. Note: needs to have wake options and things, like if a message is broadcast, does that wake up agents to respond, or is it just there passively for when they next wake up and have something to do. Each session should have an inbox. Sessions in a workspace where the plugin is enabled should auto-register a mailbox. An MCP tool (or tools) should be available to interface with the mail system.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Plugin to handle cross-workspace communication, allows broadcasting to all, to a scope/group, email/DMs. Allows agents to communicate between each other live. Note: needs to have wake options and things, like if a message is broadcast, does that wake up agents to respond, or is it just there passively for when they next wake up and have something to do. Each session should have an inbox. Sessions in a workspace where the plugin is enabled should auto-register a mailbox. An MCP tool (or tools) should be available to interface with the mail system."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P24.M1 (Cross-Workspace Communication Plugin)
+- P24.M1.E1 (Mailbox Schema — tasks not yet created)
+- P24.M1.E2 (Message Delivery Engine — tasks not yet created)
+- P24.M1.E3 (MCP Tools — tasks not yet created)
+- P24.M1.E4 (Plugin and Wake Integration — tasks not yet created)
+- P24.M1.E5 (Tests — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

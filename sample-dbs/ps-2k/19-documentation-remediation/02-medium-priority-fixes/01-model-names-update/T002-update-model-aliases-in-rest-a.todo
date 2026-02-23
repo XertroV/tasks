@@ -1,0 +1,19 @@
+---
+id: P19.M2.E1.T002
+title: Update model aliases in REST API docs
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- rest-api
+- models
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:42:38.834073+00:00'
+started_at: '2026-02-18T01:42:38.834073+00:00'
+completed_at: '2026-02-18T02:03:14.142258+00:00'
+duration_minutes: 20.588469566666667
+---
+Sync docs/rest-api.md model aliases with ModelMapper.@default_openai_compat_aliases. Update gpt-4 → gpt-5.2 mappings.

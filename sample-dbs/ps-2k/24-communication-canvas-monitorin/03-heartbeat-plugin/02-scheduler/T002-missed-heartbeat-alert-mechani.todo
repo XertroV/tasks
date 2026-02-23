@@ -1,0 +1,27 @@
+---
+id: P24.M3.E2.T002
+title: Missed heartbeat alert mechanism via PubSub
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:22:23.960750+00:00'
+started_at: '2026-02-18T16:22:23.960750+00:00'
+completed_at: '2026-02-18T16:33:49.834501+00:00'
+duration_minutes: 11.431229016666666
+---
+
+# Missed heartbeat alert mechanism via PubSub
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

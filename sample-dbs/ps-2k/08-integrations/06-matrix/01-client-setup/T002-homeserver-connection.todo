@@ -1,0 +1,137 @@
+---
+id: P8.M6.E1.T002
+title: Establish Matrix homeserver connection
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P8.M6.E1.T001
+tags:
+- matrix
+- connection
+- authentication
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:40:18.420530+00:00'
+started_at: '2026-02-08T10:40:18.420530+00:00'
+completed_at: '2026-02-08T10:50:00+0000'
+---
+
+# Establish Matrix homeserver connection
+
+Create supervised Matrix client process and establish persistent connection.
+
+## Requirements
+
+- [x] Create `lib/pag_server/integrations/matrix/client.ex` GenServer (~100 LoC)
+- [x] Add to supervision tree under Integrations.Supervisor
+- [x] Implement connection with automatic reconnection
+- [x] Handle sync token persistence for resuming sync
+- [x] Add health check for connection status
+- [x] Support both password and access token auth
+
+## Acceptance Criteria
+
+- [x] Client connects successfully to homeserver on startup
+- [x] Connection survives homeserver restarts (auto-reconnect)
+- [x] Sync token is persisted to avoid duplicate events
+- [x] Can switch between multiple homeservers via config
+- [x] Health check endpoint shows Matrix connection status
+- [x] Graceful shutdown sends presence: offline
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 420-434 (Matrix client setup)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 107-136 (supervision tree)
+
+**Key Points**:
+- Matrix uses long-polling sync for real-time updates
+- Sync token tracks position in event stream
+- Must handle network interruptions gracefully
+- Presence updates (online/offline) are automatic
+
+## Notes
+
+Client GenServer structure:
+```elixir
+defmodule PAGServer.Integrations.Matrix.Client do
+  use GenServer
+  
+  def start_link(opts) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+  
+  def init(opts) do
+    config = Application.get_env(:pag_server, __MODULE__)
+    
+    {:ok, client} = Polyjuice.Client.start_link(
+      base_url: config[:homeserver],
+      user_id: config[:user_id],
+      access_token: config[:access_token]
+    )
+    
+    # Start sync loop
+    :ok = Polyjuice.Client.start_sync(client, 
+      filter: event_filter(),
+      since: load_sync_token()
+    )
+    
+    {:ok, %{client: client, status: :connected}}
+  end
+  
+  def handle_info({:sync_update, token, events}, state) do
+    # Save token for resume
+    save_sync_token(token)
+    
+    # Dispatch events
+    for event <- events do
+      EventHandler.handle(event)
+    end
+    
+    {:noreply, state}
+  end
+end
+```
+
+Sync token persistence:
+- Store in database or persistent ETS table
+- Format: opaque string like `s123456_789_0_1_1_1`
+- Critical for avoiding duplicate message processing
+
+Event filter (reduces bandwidth):
+```elixir
+def event_filter do
+  %{
+    room: %{
+      timeline: %{
+        types: ["m.room.message", "m.room.member"],
+        limit: 50
+      }
+    }
+  }
+end
+```
+
+Reconnection strategy:
+- Polyjuice handles reconnection automatically
+- Log connection state changes
+- Alert on repeated failures (>5 in 5 minutes)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M6.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 10:40 UTC
+**Sibling tasks**: P8.M6.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M6.E1.T002 → P8.M6.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M6.E1.T002: .tasks/08-integrations/06-matrix/01-client-setup/T002-homeserver-connection.todo
+- P8.M6.E1.T003: .tasks/08-integrations/06-matrix/01-client-setup/T003-e2ee-support.todo

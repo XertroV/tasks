@@ -1,0 +1,73 @@
+id: P50.M2.E2
+name: Worker Lifecycle Actions and Spawn Integration
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-collabteams-lifecycl.todo
+  title: Implement CollabTeams.Lifecycle pure state machine module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-add-worker-action-wi.todo
+  title: Implement add_worker action with agent spawn integration
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E2.T001
+  - P50.M2.E1.T001
+- id: T003
+  file: T003-implement-remove-worker-and-se.todo
+  title: Implement remove_worker and set_worker_state actions
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E2.T002
+- id: T004
+  file: T004-implement-list-workers-and-int.todo
+  title: Implement list_workers and integrate cleanup_team worker guard
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E2.T003
+  - P50.M2.E1.T004
+- id: T005
+  file: T005-implement-collabteams-systempr.todo
+  title: Implement CollabTeams.SystemPrompt and wire into plugin.json
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E2.T002
+- id: T006
+  file: T006-add-worker-lifecycle-integrati.todo
+  title: Add worker lifecycle integration tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M2.E2.T001
+  - P50.M2.E2.T002
+  - P50.M2.E2.T003
+  - P50.M2.E2.T004
+  - P50.M2.E2.T005
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

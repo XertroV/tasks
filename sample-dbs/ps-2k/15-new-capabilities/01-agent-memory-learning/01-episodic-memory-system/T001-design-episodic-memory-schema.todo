@@ -1,0 +1,76 @@
+---
+id: P15.M1.E1.T001
+title: Design episodic memory schema
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:34:48.015076+00:00'
+started_at: '2026-02-13T19:34:48.015076+00:00'
+completed_at: '2026-02-13T20:13:13.363825+00:00'
+duration_minutes: 38.422478700000006
+---
+
+# Design episodic memory schema
+
+## Description
+Design a schema for episodic memories that captures conversation episodes, user interactions, and contextual information. This extends the existing Memory schema to support episodic organization with temporal and semantic indexing.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Schema.EpisodicMemory` with fields for episode_id, timestamp, participants, summary, embedding, and metadata
+- [ ] Add episode_id field to existing Memory schema or create join table for memory-episode relationships
+- [ ] Include temporal indexing fields (occurred_at, sequence_number)
+- [ ] Add semantic fields for retrieval (keywords, entities, embedding)
+- [ ] Database migration created and tested
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/memory.ex`, `lib/pag_server/schema/event.ex`
+- Part of epic: Episodic Memory System
+- Reference existing Memory schema for patterns and field types
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-13 09:38 UTC
+**Primary task**: P12.M1.E3.T001 - Fix dialyzer warnings in deployment_guide_test.exs
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P15.M1.E1 vs P12.M1.E3)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 19:34 UTC
+**Sibling tasks**: P15.M1.E1.T002, P15.M1.E1.T003, P15.M1.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M1.E1.T001 → P15.M1.E1.T002 → P15.M1.E1.T003 → P15.M1.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M1.E1.T001: .tasks/15-new-capabilities/01-agent-memory-learning/01-episodic-memory-system/T001-design-episodic-memory-schema.todo
+- P15.M1.E1.T002: .tasks/15-new-capabilities/01-agent-memory-learning/01-episodic-memory-system/T002-implement-conversation-history.todo
+- P15.M1.E1.T003: .tasks/15-new-capabilities/01-agent-memory-learning/01-episodic-memory-system/T003-add-cross-session-knowledge-pe.todo
+- P15.M1.E1.T004: .tasks/15-new-capabilities/01-agent-memory-learning/01-episodic-memory-system/T004-create-memory-retrieval-api.todo

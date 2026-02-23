@@ -1,0 +1,19 @@
+---
+id: P19.M1.E3.T005
+title: Remove slack.md non-existent env vars
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- docs
+- integrations
+- slack
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:35:54.374437+00:00'
+started_at: '2026-02-18T01:35:54.374437+00:00'
+completed_at: '2026-02-18T01:38:27.489411+00:00'
+duration_minutes: 2.5519160666666663
+---
+Remove SLACK_VERIFY_SIGNATURES env var and verify_signatures config option - signature verification is always enabled. Lines 46, 165-171.

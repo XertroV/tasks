@@ -1,0 +1,23 @@
+---
+id: P23.M1.E2.T002
+title: Implement approval audit log (Ecto schema + migration)
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P23.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:33:27.373705+00:00'
+started_at: '2026-02-18T15:33:27.373705+00:00'
+completed_at: '2026-02-18T15:48:50.321615+00:00'
+duration_minutes: 15.382464883333334
+---
+Persist approval decisions for audit trail.
+
+## Acceptance Criteria
+- [ ] Ecto schema `PagServer.Schema.ApprovalRecord` with fields: id, workspace_id, agent_id, command, decision (`approved|denied|timed_out`), decided_by, requested_at, decided_at
+- [ ] Migration creates `approval_records` table with appropriate indexes (workspace_id, agent_id, requested_at)
+- [ ] `ApprovalManager` writes a record on each approval resolution
+- [ ] Schema validation tests pass

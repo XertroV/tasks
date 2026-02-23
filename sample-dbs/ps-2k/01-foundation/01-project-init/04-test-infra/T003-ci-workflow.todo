@@ -1,0 +1,187 @@
+---
+id: P1.M1.E4.T003
+title: Create GitHub Actions CI pipeline
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on: []
+tags:
+- ci
+- github-actions
+- automation
+- foundation
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:03:13.013224'
+started_at: '2026-02-05T08:03:13.013224'
+completed_at: '2026-02-05T08:04:18.734610'
+---
+
+# Create GitHub Actions CI pipeline
+
+Set up GitHub Actions workflow for continuous integration with comprehensive checks and caching.
+
+## Requirements
+
+- [ ] Create `.github/workflows/test.yml` with full CI pipeline
+- [ ] Configure PostgreSQL service for database tests
+- [ ] Set up dependency caching for faster builds
+- [ ] Add all quality checks:
+  - [ ] Format check (`mix format --check-formatted`)
+  - [ ] Static analysis (`mix credo --strict`)
+  - [ ] Unused dependencies check
+  - [ ] Compilation with warnings as errors
+  - [ ] Test suite with coverage
+- [ ] Separate job for Dialyzer with PLT caching
+- [ ] Configure correct Elixir/OTP versions (1.18/27.0)
+- [ ] Add triggers for push and pull requests
+
+## Acceptance Criteria
+
+- [ ] `.github/workflows/test.yml` exists and is valid YAML
+- [ ] Workflow runs on:
+  - [ ] Push to `main` branch
+  - [ ] Push to `develop` branch
+  - [ ] All pull requests to `main` or `develop`
+- [ ] PostgreSQL service configured:
+  - [ ] Version: postgres:16
+  - [ ] Health checks enabled
+  - [ ] Port 5432 exposed
+- [ ] Main test job includes steps:
+  - [ ] Checkout code
+  - [ ] Set up Elixir 1.18 + OTP 27.0
+  - [ ] Restore dependencies cache
+  - [ ] Install dependencies
+  - [ ] Check formatting
+  - [ ] Run Credo strict mode
+  - [ ] Check unused dependencies
+  - [ ] Compile with warnings as errors
+  - [ ] Run tests with coverage
+- [ ] Dialyzer job configured:
+  - [ ] Separate job for faster parallel execution
+  - [ ] PLT cache for performance
+  - [ ] Runs `mix dialyzer`
+- [ ] Caching configured:
+  - [ ] `deps/` and `_build/` cached by mix.lock hash
+  - [ ] PLT cached by mix.lock hash
+- [ ] CI passes on clean repository
+- [ ] All checks visible in GitHub PR interface
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md` Section 4.1 (GitHub Actions Workflow)
+
+**Key Points**:
+- CI runs on every push and PR to catch issues early
+- Caching dramatically improves build times (2-5x faster)
+- Separate Dialyzer job allows parallel execution
+- PostgreSQL service ensures database tests work
+- Warnings as errors enforces code quality
+- Coverage tracking prevents regressions
+
+## Implementation Guide
+
+```yaml
+# .github/workflows/test.yml
+name: Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: pag_server_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MIX_ENV: test
+      DATABASE_URL: postgresql://postgres:postgres@localhost/pag_server_test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27.0'
+          elixir-version: '1.18'
+
+      - name: Restore dependencies cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: ${{ runner.os }}-mix-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-mix-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Check formatting
+        run: mix format --check-formatted
+
+      - name: Run Credo (static analysis)
+        run: mix credo --strict
+
+      - name: Check for unused dependencies
+        run: mix deps.unlock --check-unused
+
+      - name: Compile (warnings as errors)
+        run: mix compile --warnings-as-errors
+
+      - name: Run tests
+        run: mix test --cover
+
+  dialyzer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: '27.0'
+          elixir-version: '1.18'
+
+      - name: Restore PLT cache
+        uses: actions/cache@v4
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-plt-${{ hashFiles('**/mix.lock') }}
+          restore-keys: ${{ runner.os }}-plt-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Run Dialyzer
+        run: mix dialyzer
+```
+
+## Notes
+
+- GitHub Actions runs in isolated containers - no state between runs
+- Caching is critical: reduces 5-minute builds to 1-2 minutes
+- PostgreSQL health checks prevent race conditions in tests
+- Separate Dialyzer job allows tests to run in parallel
+- Can add code coverage upload (Codecov) in later iterations
+- Format check before compilation saves time on failures
+- CI configuration should mirror local development workflow

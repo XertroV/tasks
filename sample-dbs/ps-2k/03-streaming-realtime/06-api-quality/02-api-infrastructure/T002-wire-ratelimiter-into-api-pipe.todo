@@ -1,0 +1,51 @@
+---
+completed_at: '2026-02-07T00:56:11.988102+00:00'
+complexity: low
+depends_on: []
+estimate_hours: 0.5
+id: P3.M6.E2.T002
+priority: high
+status: done
+tags:
+- rate-limiting
+- middleware
+title: Wire RateLimiter into API pipelines
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:56:11.054577+00:00'
+started_at: '2026-02-07T00:56:11.054577+00:00'
+duration_minutes: 0.015558566666666666
+---
+
+# Wire RateLimiter into API pipelines
+
+## Context
+
+The `PagServerWeb.Plugs.RateLimiter` plug is fully implemented with token bucket algorithm, Cachex caching, telemetry, and response headers (`x-ratelimit-limit`, `x-ratelimit-remaining`, `x-ratelimit-reset`, `retry-after`). It supports per-user/per-IP identification and graceful degradation. However, it is not wired into any router pipeline -- it is dead code.
+
+## Requirements
+
+- [ ] Add `RateLimiter` to the `:api_auth` pipeline in `router.ex`
+  - Place after `ApiKeyAuth` so rate limiting can identify by API key
+- [ ] Add `RateLimiter` to the `:api_optional_auth` pipeline
+- [ ] Consider adding to `:admin_api` pipeline with higher limits
+- [ ] Add runtime configuration for rate limit values
+  - [ ] `RATE_LIMIT_RPS` env var for `requests_per_second` (default 10)
+  - [ ] `RATE_LIMIT_BURST` env var for `bucket_size` (default 100)
+- [ ] Verify existing `RateLimiter` tests still pass when wired in
+- [ ] Add integration test: authenticated request returns rate limit headers
+- [ ] Add integration test: exceeding rate limit returns 429 with `retry-after`
+
+## Acceptance Criteria
+
+- [ ] Rate limit headers (`x-ratelimit-*`) appear on all authenticated API responses
+- [ ] Exceeding the rate limit returns 429 with proper error format
+- [ ] Rate limits are configurable via environment variables
+- [ ] Existing rate limiter tests pass
+- [ ] `mix lint` passes
+- [ ] No performance regression (Cachex handles state)
+
+## Files to Modify
+
+- `lib/pag_server_web/router.ex` (add plug to pipelines)
+- `config/runtime.exs` (add rate limit env vars)
+- Tests: integration test for rate limit headers

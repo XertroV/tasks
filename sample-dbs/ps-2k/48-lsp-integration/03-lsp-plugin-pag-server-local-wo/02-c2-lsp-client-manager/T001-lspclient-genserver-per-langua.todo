@@ -1,0 +1,16 @@
+---
+id: P48.M3.E2.T001
+title: 'LspClient GenServer: per-(language, effective_root) client'
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:21.380330+00:00'
+started_at: '2026-02-20T08:51:21.380330+00:00'
+completed_at: '2026-02-20T09:06:05.033317+00:00'
+duration_minutes: 14.727549633333332
+---
+Wraps LspServerLifecycle. State: pid, root, lang, diagnostics cache Map<path,[Diagnostic]>, open_files map, status (:initializing|:ready|:broken). Operations: touch_file, get_diagnostics, wait_for_diagnostics (150ms debounce, 3s hard timeout), hover, go_to_definition, find_references, document_symbols, workspace_symbols. Diagnostics cache updated on every publishDiagnostics notification. Broken state: permanent exclusion on server failure. TypeScript quirk: ignore first publishDiagnostics (empty).

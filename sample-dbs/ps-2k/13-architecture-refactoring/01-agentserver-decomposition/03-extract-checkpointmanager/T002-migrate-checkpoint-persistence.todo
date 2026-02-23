@@ -1,0 +1,38 @@
+---
+id: P13.M1.E3.T002
+title: Migrate checkpoint persistence logic
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T11:13:02.267557+00:00'
+started_at: '2026-02-13T11:13:02.267557+00:00'
+completed_at: '2026-02-13T11:27:24.072529+00:00'
+duration_minutes: 14.363415966666668
+---
+
+# Migrate checkpoint persistence logic
+
+## Description
+
+Migrate checkpoint-related logic from `AgentServer` to use the new `CheckpointManager`. This includes the scheduled checkpoint handler, termination checkpoint, and recovery orchestration.
+
+## Acceptance Criteria
+- [ ] Refactor `handle_info(:checkpoint, ...)` to use CheckpointManager
+- [ ] Refactor `maybe_persist_checkpoint/1` to delegate to CheckpointManager
+- [ ] Update `terminate/2` to use CheckpointManager for final checkpoint
+- [ ] Update checkpoint recovery in `init/1` to use CheckpointManager
+- [ ] Maintain backward compatibility with existing checkpoints
+- [ ] All existing checkpoint tests continue to pass
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex` (lines 451-487, 1653-1654)
+- Related files: `lib/pag_server/agents/checkpoint_manager.ex` (new)
+- Related files: `lib/pag_server/agents/checkpoint_store.ex`
+- Part of epic: P13.M1.E3 - Extract CheckpointManager

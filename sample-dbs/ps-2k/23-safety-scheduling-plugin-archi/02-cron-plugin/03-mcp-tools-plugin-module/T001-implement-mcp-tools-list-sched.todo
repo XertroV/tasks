@@ -1,0 +1,25 @@
+---
+id: P23.M2.E3.T001
+title: 'Implement MCP tools: list_schedules, add_schedule, remove_schedule'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.793314+00:00'
+started_at: '2026-02-18T17:03:35.793314+00:00'
+completed_at: '2026-02-18T17:03:43.236262+00:00'
+duration_minutes: 0.12404894999999999
+---
+MCP tool definitions for schedule management (read + write).
+
+## Acceptance Criteria
+- [ ] `list_schedules` tool: returns all schedules for current workspace, formatted as JSON
+- [ ] `add_schedule` tool: accepts name, cron_expression, action_type, action_payload; validates and creates schedule; returns created schedule ID
+- [ ] `remove_schedule` tool: accepts schedule_id; deletes if owned by current workspace
+- [ ] Each tool implements `@behaviour PagServer.Tools.Tool`
+- [ ] Tools handle validation errors and return structured error responses
+- [ ] Tool tests covering success and error cases

@@ -1,0 +1,47 @@
+---
+id: P18.M1.E1.T006
+title: Add tests for membership CRUD and queries
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P18.M1.E1.T004
+tags:
+- security
+- workspace
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:59:16.265400+00:00'
+started_at: '2026-02-17T16:59:16.265400+00:00'
+completed_at: '2026-02-17T16:59:53.871835+00:00'
+duration_minutes: 0.6267737166666667
+---
+
+# Add tests for membership CRUD and queries
+
+## Description
+
+Comprehensive tests for `PagServer.WorkspaceMembers` context module and the `WorkspaceMember` schema.
+
+## Requirements
+
+- [ ] Test `add_member/4` — happy path, duplicate rejection, invalid role
+- [ ] Test `remove_member/2` — happy path, last owner rejection
+- [ ] Test `update_role/3` — happy path, last owner demotion rejection
+- [ ] Test `list_members/2` — all members, filtered by role
+- [ ] Test `get_member/2` and `member?/2` — found and not found
+- [ ] Test `get_role/2` — returns correct role, nil for non-members
+- [ ] Test `list_workspace_ids/1` — returns correct workspace IDs
+- [ ] Test schema changesets — required fields, role validation
+- [ ] Test auto-creation of owner membership on workspace creation
+
+## Acceptance Criteria
+
+- [ ] All tests pass with `async: true`
+- [ ] Tests use unique names/identifiers to prevent contamination
+- [ ] Coverage of edge cases: empty workspace, multiple workspaces per user
+
+## Context
+
+**Files affected**: `test/pag_server/workspace_members_test.exs`, `test/pag_server/schema/workspace_member_test.exs`

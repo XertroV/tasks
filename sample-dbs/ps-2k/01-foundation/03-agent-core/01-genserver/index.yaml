@@ -1,0 +1,58 @@
+id: P1.M3.E1
+name: Agent GenServer
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-define-state.todo
+    title: Define Agent state struct
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    
+  - id: T002
+    file: T002-genserver-callbacks.todo
+    title: Implement core GenServer callbacks
+    status: pending
+    estimate_hours: 3.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-client-api.todo
+    title: Implement client API functions
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-broadcasting.todo
+    title: Add PubSub broadcasting
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: medium
+    depends_on: [T002]
+    
+  - id: T005
+    file: T005-tests.todo
+    title: Write Agent GenServer tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T003, T004]
+
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

@@ -1,0 +1,34 @@
+---
+id: P15.M10.E1.T001
+title: Define web search provider behaviour and normalized result schema
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- web-search
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:44:04.767493+00:00'
+started_at: '2026-02-17T14:44:04.767493+00:00'
+completed_at: '2026-02-17T14:54:23.891873+00:00'
+duration_minutes: 10.318739416666666
+---
+
+# Define web search provider behaviour and normalized result schema
+
+
+
+## Requirements
+
+- Define a `PagServer.Tools.WebSearch.Provider` behaviour with callback contract for `search/2` and provider metadata.
+- Define normalized result schema (`title`, `url`, `snippet`, optional metadata fields) and shared error taxonomy.
+- Define reusable provider-orchestration interfaces that can be adopted by future multi-provider tools.
+
+## Acceptance Criteria
+
+- Behaviour module and typespecs are added, referenced by all search providers.
+- Normalized schema and error mapping rules are documented in module docs and validated by unit tests.
+- Reusable orchestration interfaces are documented separately from web-search-specific provider payload details.

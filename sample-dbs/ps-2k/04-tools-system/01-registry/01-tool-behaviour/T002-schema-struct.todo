@@ -1,0 +1,106 @@
+---
+id: P4.M1.E1.T002
+title: Create ToolSchema struct
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P4.M1.E1.T001
+tags:
+- tools
+- schema
+- registry
+claimed_by: claude-1
+claimed_at: '2026-02-05T20:28:15.592534'
+started_at: '2026-02-05T20:28:15.592534'
+completed_at: '2026-02-05T20:31:02.716304'
+duration_minutes: 2.7853959833333333
+---
+
+# Create ToolSchema struct
+
+Define the `PAGServer.Tools.ToolSchema` struct for representing tool metadata and JSON schemas.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/tool_schema.ex`
+- [ ] Define struct with fields: `name`, `description`, `parameters` (JSON Schema), `returns` (optional)
+- [ ] Add `new/1` constructor function with validation
+- [ ] Add `@type t()` typespec
+- [ ] Include examples in module documentation
+
+## Acceptance Criteria
+
+- [ ] Struct compiles and has proper typespec
+- [ ] Constructor validates required fields (name, description, parameters)
+- [ ] Parameters field accepts valid JSON Schema objects
+- [ ] Documentation includes examples for common parameter types (string, number, object, array)
+- [ ] Test coverage for struct creation and validation
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 327-336 (Tool registry structure)
+
+**Key Points**:
+- ToolSchema wraps JSON Schema for tool parameters
+- Used by both builtin and MCP tools
+- Converted to provider-specific formats (Anthropic, OpenAI) later
+- Validation happens at schema creation, not execution time
+
+## Notes
+
+ToolSchema struct:
+```elixir
+defmodule PAGServer.Tools.ToolSchema do
+  @type t :: %__MODULE__{
+    name: String.t(),
+    description: String.t(),
+    parameters: map(),  # JSON Schema object
+    returns: map() | nil  # Optional return schema
+  }
+
+  defstruct [:name, :description, :parameters, :returns]
+
+  def new(attrs) do
+    # Validate and construct
+  end
+end
+```
+
+JSON Schema parameters example:
+```elixir
+%{
+  type: "object",
+  properties: %{
+    path: %{type: "string", description: "File path"},
+    content: %{type: "string", description: "File content"}
+  },
+  required: ["path", "content"]
+}
+```
+
+The schema builder (next epic) will convert this to provider formats.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 07:28 UTC
+**Primary task**: P2.M8.E3.T003 - Create configurable pruning policy
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E1 vs P2.M8.E3)
+- No dependency chain: ✓ (verified at claim time)

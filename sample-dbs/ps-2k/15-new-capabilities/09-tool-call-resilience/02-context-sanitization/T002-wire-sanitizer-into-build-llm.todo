@@ -1,0 +1,36 @@
+---
+id: P15.M9.E2.T002
+title: Wire sanitizer into build_llm_messages in agent_server
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P15.M9.E2.T001
+tags:
+- agent-server
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:52:22.076915+00:00'
+started_at: '2026-02-17T13:52:22.076915+00:00'
+completed_at: '2026-02-17T13:57:27.411019+00:00'
+duration_minutes: 5.088901566666666
+---
+Integrate `PagServer.Context.Sanitizer.sanitize/2` into the `build_llm_messages/1`
+function in agent_server.ex. The sanitizer should run on the context before
+messages are formatted for the LLM provider.
+
+Log a warning when sanitization makes any changes (inserted_synthetic > 0 or
+dropped_orphans > 0) to aid debugging.
+
+Source: .plan/tool-call-resilience.md — Gap 4 (wiring section)
+
+Files to modify:
+- lib/pag_server/agents/agent_server.ex (build_llm_messages/1, ~line 2800)
+
+## Acceptance Criteria
+- [ ] `build_llm_messages/1` calls `Sanitizer.sanitize/2` before formatting
+- [ ] Warning logged when sanitization modifies the context
+- [ ] Log includes agent_id and sanitization report
+- [ ] Existing message formatting behavior is preserved for clean contexts
+- [ ] No performance regression for the common case (clean context passes through fast)

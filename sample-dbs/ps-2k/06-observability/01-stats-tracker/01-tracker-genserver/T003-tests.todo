@@ -1,0 +1,86 @@
+---
+id: P6.M1.E1.T003
+title: Write tracker tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- observability
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:12:36.628624+00:00'
+started_at: '2026-02-06T19:12:36.628624+00:00'
+completed_at: '2026-02-06T19:33:02.638634+00:00'
+duration_minutes: 20.433499933333334
+---
+
+# Write tracker tests
+
+Comprehensive tests for Stats.Tracker GenServer and telemetry handlers.
+
+## Requirements
+
+- [ ] Create `test/pag_server/stats/tracker_test.exs`
+- [ ] Test Stats.Tracker GenServer:
+  - [ ] `start_link/1` initializes correctly
+  - [ ] `record_usage/6` updates agent stats
+  - [ ] `record_usage/6` updates session stats
+  - [ ] `record_usage/6` updates model stats
+  - [ ] `record_usage/6` updates global stats
+  - [ ] `get_agent_stats/1` returns correct data
+  - [ ] `get_session_stats/1` returns correct data
+  - [ ] `get_model_stats/1` returns correct data
+  - [ ] `get_global_stats/0` aggregates correctly
+- [ ] Create `test/pag_server/stats/telemetry_test.exs`
+- [ ] Test telemetry handlers:
+  - [ ] LLM events trigger stats recording
+  - [ ] Tool events tracked
+  - [ ] Missing metadata handled gracefully
+- [ ] Use ExUnit async: true where safe
+- [ ] Mock LLM.Pricing for cost calculations
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Coverage >80% for Stats.Tracker
+- [ ] Coverage >80% for Stats.Telemetry
+- [ ] Tests run in <1 second
+- [ ] No flaky tests (run 10x to verify)
+
+## Context
+
+**Testing Strategy**:
+- Unit test GenServer directly (bypass telemetry)
+- Integration test telemetry flow end-to-end
+- Mock LLM and tool events with `:telemetry.execute/3`
+
+## Notes
+
+**Example Test**:
+```elixir
+defmodule PagServer.Stats.TrackerTest do
+  use ExUnit.Case, async: true
+
+  alias PagServer.Stats.Tracker
+
+  setup do
+    {:ok, pid} = start_supervised(Tracker)
+    %{tracker: pid}
+  end
+
+  test "record_usage updates agent stats" do
+    Tracker.record_usage("agent-1", "session-1", "claude-3-5-sonnet", 100, 50, 0.01)
+    
+    stats = Tracker.get_agent_stats("agent-1")
+    
+    assert stats.tokens_in == 100
+    assert stats.tokens_out == 50
+    assert stats.total_cost == 0.01
+    assert stats.request_count == 1
+  end
+end
+```
+
+Use `:telemetry.execute/3` to simulate events in tests.

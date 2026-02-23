@@ -1,0 +1,80 @@
+---
+id: P6.M2.E2.T003
+title: Add spans for agent operations
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- opentelemetry
+- agents
+- tracing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:00:46.887376+00:00'
+started_at: '2026-02-06T20:00:46.887376+00:00'
+completed_at: '2026-02-06T20:11:35.864235+00:00'
+duration_minutes: 10.8162808
+---
+
+# Add spans for agent operations
+
+Instrument agent lifecycle and message processing with spans for end-to-end visibility.
+
+## Requirements
+
+- [ ] Add spans for agent operations:
+  - [ ] `agent.create` - Agent initialization
+  - [ ] `agent.message` - Processing user message
+  - [ ] `agent.think` - Internal reasoning
+  - [ ] `agent.respond` - Generating response
+- [ ] Add attributes:
+  - [ ] `agent.id`, `agent.type`
+  - [ ] `session.id`
+  - [ ] `message.index`
+- [ ] Span context for multi-turn conversations
+- [ ] Trace agent forking operations
+
+## Acceptance Criteria
+
+- [ ] Agent operations create spans
+- [ ] Multi-turn conversations linked by trace
+- [ ] Fork operations traced
+- [ ] Attributes identify agent and session
+- [ ] Complete trace from user input to response
+
+## Context
+
+**Key Points**:
+- Agent GenServer already processes messages
+- Add instrumentation to Agent.handle_call
+- Link message turns via trace context
+
+## Notes
+
+**Example**:
+```elixir
+defmodule PagServer.Agents.Agent do
+  require OpenTelemetry.Tracer, as: Tracer
+
+  def handle_call({:process_message, message}, _from, state) do
+    Tracer.with_span "agent.message", %{
+      "agent.id" => state.id,
+      "agent.type" => state.type,
+      "session.id" => state.session_id,
+      "message.index" => length(state.messages)
+    } do
+      # Process message...
+      result = process(message, state)
+      {:reply, result, new_state}
+    end
+  end
+
+  defp process(message, state) do
+    Tracer.with_span "agent.think" do
+      # Generate context, call LLM, etc.
+    end
+  end
+end
+```

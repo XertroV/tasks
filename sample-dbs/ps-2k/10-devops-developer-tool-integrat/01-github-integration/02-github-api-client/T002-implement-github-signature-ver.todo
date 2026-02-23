@@ -1,0 +1,40 @@
+---
+id: P10.M1.E2.T002
+title: Implement GitHub signature verification
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:32:41.660878+00:00'
+started_at: '2026-02-11T20:32:41.660878+00:00'
+completed_at: '2026-02-12T00:12:11.756817+00:00'
+duration_minutes: 219.50159861666668
+---
+
+# Implement GitHub signature verification
+
+
+
+## Requirements
+
+- [ ] Implement signature verification for GitHub webhooks using HMAC-SHA256
+- [ ] Verify `X-Hub-Signature-256` header format: `sha256=<hex_digest>`
+- [ ] Compute HMAC-SHA256(webhook_secret, raw_request_body)
+- [ ] Compare using constant-time comparison to prevent timing attacks
+- [ ] Add function to `PagServer.Integrations.GitHub.Client` module
+- [ ] Validate timestamp freshness: reject events older than 5 minutes
+- [ ] Reference: GitHub documentation on webhook signature verification
+
+## Acceptance Criteria
+
+- [ ] `Client.verify_signature/4` accepts (client, timestamp, body, signature)
+- [ ] Returns `true` for valid signatures, `false` for invalid
+- [ ] Uses constant-time comparison (crypto:mac with hmac-sha256)
+- [ ] Validates timestamp is within 5 minute window
+- [ ] Handles missing or nil webhook_secret gracefully
+- [ ] All tests pass with mock webhooks
+- [ ] Prevents replay attacks via timestamp validation
+- [ ] Compatible with GitHub's webhook signature format

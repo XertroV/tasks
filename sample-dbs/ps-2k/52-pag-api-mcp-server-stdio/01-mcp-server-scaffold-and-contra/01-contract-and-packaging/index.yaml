@@ -1,0 +1,38 @@
+id: P52.M1.E1
+name: Contract and packaging
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-write-mcp-stdio-contract-and-c.todo
+  title: Write MCP stdio contract and capability matrix
+  status: done
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-decide-package-layout-and-boot.todo
+  title: Decide package layout and bootstrap command
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-scaffold-server-entrypoint-and.todo
+  title: Scaffold server entrypoint and baseline config
+  status: done
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

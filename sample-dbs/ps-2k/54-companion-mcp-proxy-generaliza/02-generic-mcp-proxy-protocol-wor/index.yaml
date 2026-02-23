@@ -1,0 +1,26 @@
+id: P54.M2
+name: Generic MCP Proxy Protocol & Workspace Scoping
+status: done
+estimate_hours: 19.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Companion MCP registry, wire protocol, and proxy executor
+  path: 01-companion-mcp-registry-wire-pr
+  status: done
+  estimate_hours: 19.0
+  complexity: high
+  depends_on: []
+  description: 'All new pag-server infrastructure for generic companion MCP proxying:
+    CompanionMCPRegistry, PendingCalls extensions, mcp_register/mcp_tool_call/mcp_tool_result
+    channel events, CompanionMCPProxy executor, workspace-scoped schema listing, and
+    ToolRunner routing.'
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

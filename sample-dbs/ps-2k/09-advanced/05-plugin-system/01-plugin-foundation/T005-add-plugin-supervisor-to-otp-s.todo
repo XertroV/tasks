@@ -1,0 +1,51 @@
+---
+id: P9.M5.E1.T005
+title: Add plugin supervisor to OTP supervision tree
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- otp
+- supervisor
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:33.812152'
+started_at: '2026-02-06T17:07:33.812152'
+completed_at: '2026-02-06T17:07:34.554449'
+duration_minutes: 0.01237145
+---
+
+# Add plugin supervisor to OTP supervision tree
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/supervisor.ex` as a `DynamicSupervisor`
+- [ ] Add `PagServer.Plugins.Supervisor` to the application supervision tree in `application.ex`
+- [ ] Add `PagServer.Plugins.Registry` as a named child under the plugin supervisor
+- [ ] Ensure startup ordering in the application supervision tree:
+  - [ ] After: `PagServer.Tools.Registry`, `PagServer.Events.Persistence`
+  - [ ] Before: `PagServer.Agents.Supervisor` (agents may need plugins at startup)
+- [ ] Configure DynamicSupervisor with `:one_for_one` strategy for plugin processes
+- [ ] Add `start_child/1` and `terminate_child/1` convenience functions for plugin processes
+- [ ] Set max_restarts/max_seconds appropriate for plugin processes (e.g., 3 restarts in 5 seconds)
+
+## Acceptance Criteria
+
+- [ ] Application starts successfully with plugin supervisor in the tree
+- [ ] `PagServer.Plugins.Registry` starts as a child and is accessible via name
+- [ ] DynamicSupervisor can start and stop child processes for plugins
+- [ ] Startup ordering is correct (plugin supervisor starts after Tools.Registry)
+- [ ] Supervisor restart strategy handles plugin crashes without cascading
+- [ ] Existing tests still pass (no regression from supervision tree changes)
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/supervisor.ex`
+- **Modify**: `lib/pag_server/application.ex` to add supervisor to children list
+- **Pattern reference**: Follow existing `PagServer.Agents.Supervisor` DynamicSupervisor pattern
+- **Children**: Registry (static), plugin processes (dynamic via start_child)
+- **Used by**: External plugin process management (T007), plugin lifecycle (T006)

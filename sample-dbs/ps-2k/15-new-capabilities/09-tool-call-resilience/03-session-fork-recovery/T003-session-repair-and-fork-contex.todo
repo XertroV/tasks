@@ -1,0 +1,43 @@
+---
+id: P15.M9.E3.T003
+title: Session repair and fork context loading tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M9.E3.T001
+- P15.M9.E3.T002
+tags:
+- testing
+- session
+- repair
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:57:38.241079+00:00'
+started_at: '2026-02-17T13:57:38.241079+00:00'
+completed_at: '2026-02-17T14:03:22.707442+00:00'
+duration_minutes: 5.741105783333333
+---
+Tests for both the session repair module and the fork context loading changes.
+
+Session repair tests:
+1. Repair session with orphaned tool_calls — synthetic results inserted
+2. Repair session with orphaned tool_results — results archived
+3. Repair clean session — no changes, report all zeros
+4. Repair session with mixed issues — correct counts in report
+5. Transaction rollback on error
+
+Fork context loading tests:
+6. Load messages for non-forked session — works as before
+7. Load messages for forked session — inherits parent context
+8. Fork from session with poisoned tail — forked context is clean
+9. Fallback to direct load when build_context fails
+
+Files to create:
+- test/pag_server/context/session_repair_test.exs
+
+## Acceptance Criteria
+- [ ] All 9 test scenarios have passing tests
+- [ ] Tests use the sandbox for DB isolation
+- [ ] Fork tests create real parent/child sessions in DB
+- [ ] No flaky tests or timing dependencies

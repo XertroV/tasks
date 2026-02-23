@@ -1,0 +1,24 @@
+---
+id: P23.M2.E1.T003
+title: Add cron_expression validation helper
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P23.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:58:49.803433+00:00'
+started_at: '2026-02-18T14:58:49.803433+00:00'
+completed_at: '2026-02-18T17:03:20.184844+00:00'
+duration_minutes: 124.50635663333334
+---
+Validate and parse cron expressions to prevent bad schedules from being stored.
+
+## Acceptance Criteria
+- [ ] `PagServer.Plugins.Cron.CronExpression.valid?/1` returns true/false for 5-field cron strings
+- [ ] Validates ranges, wildcards, step values, and named days/months
+- [ ] `next_fire_at/2` computes the next DateTime for a cron expression after a given DateTime
+- [ ] Used in CronSchedule changeset validation
+- [ ] Unit tests for valid/invalid expressions and next_fire_at

@@ -1,0 +1,48 @@
+---
+id: P15.M2.E4.T005
+title: Add quick action buttons for tool invocation and test presets
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E4.T003
+tags:
+- tools
+- devex
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:37:33.073327+00:00'
+started_at: '2026-02-14T12:37:33.073327+00:00'
+completed_at: '2026-02-14T12:45:49.569114+00:00'
+duration_minutes: 8.27492955
+---
+
+# Add quick action buttons for tool invocation and test presets
+
+
+
+## Requirements
+
+- Add a quick-actions area with one-click buttons for frequent testing flows (run tool loop, replay latest, seed prompt presets).
+- Ensure each action is wired to explicit backend operations and surfaces progress/result feedback.
+- Provide guardrails so destructive or unsupported actions are hidden/disabled.
+- Keep presets configurable from code constants to simplify maintenance.
+
+## Acceptance Criteria
+
+- At least three useful quick actions are implemented and executable from the UI.
+- Triggering an action shows pending, success, and error feedback in context.
+- Action handlers use backend APIs/channels documented in T001 without ad hoc contracts.
+- Disabled/unsupported actions are visibly non-interactive with explanatory text.
+
+## Implementation Notes
+
+- Quick-actions panel includes:
+  - `Scan tool registry` -> `PagServer.Tools.Registry.list_schemas/0`
+  - `Fork active session` -> `PagServer.Sessions.Session.fork/2`
+  - `Replay latest prompt` -> pulls latest user message and replays send flow
+  - prompt preset loaders (`Smoke prompt`, `Tool loop`, `Error drill`)
+- Contextual feedback states implemented as `pending`, `ok`, `error` banners (`action_feedback`).
+- Actions requiring active session are disabled when no session is selected.
+- Presets are maintained in LiveView module constants (`@quick_presets`) for easy edits.

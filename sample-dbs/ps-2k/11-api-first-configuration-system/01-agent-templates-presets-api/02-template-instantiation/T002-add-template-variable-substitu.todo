@@ -1,0 +1,145 @@
+---
+id: P11.M1.E2.T002
+title: Add template variable substitution
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P11.M1.E2.T001
+tags:
+- templates
+- variables
+- substitution
+claimed_by: cli-user
+claimed_at: '2026-02-12T10:05:29.522702+00:00'
+started_at: '2026-02-12T10:05:29.522702+00:00'
+completed_at: '2026-02-12T10:27:57.403400+00:00'
+duration_minutes: 22.46467815
+---
+
+# Add template variable substitution
+
+Implement variable placeholder substitution system for template configurations, enabling dynamic templates.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/templates/variables.ex` module with:
+  - [ ] `substitute/2` function (config_map, variables_map)
+  - [ ] Support placeholder syntax: `${var_name}` or `{{var_name}}`
+  - [ ] Recursive substitution in nested maps and lists
+  - [ ] Type preservation (string, number, boolean stay their types)
+- [ ] Add variable validation:
+  - [ ] `validate_variables/2` - Check all required placeholders have values
+  - [ ] `list_placeholders/1` - Extract all placeholder names from config
+  - [ ] `required_variables/1` - Get list of required variable names
+- [ ] Define variable types:
+  - [ ] String variables
+  - [ ] Numeric variables (with range validation)
+  - [ ] Boolean variables
+  - [ ] Enum variables (restricted choices)
+  - [ ] List variables
+  - [ ] Optional variables (with defaults)
+- [ ] Add to AgentTemplate schema:
+  - [ ] `variables` field - JSONB storing variable definitions
+  - [ ] Example: `[{name: "model", type: "enum", values: [...], required: true}]`
+- [ ] Create `lib/pag_server/templates/variable_validator.ex`:
+  - [ ] Validate provided values against variable definitions
+  - [ ] Type checking and coercion
+  - [ ] Enum constraint checking
+  - [ ] Range validation for numerics
+- [ ] Update instantiator to support variables
+  - [ ] Accept `variables` parameter in create_agent_from_template
+  - [ ] Apply substitution to template config
+  - [ ] Reject if required variables missing
+
+## Acceptance Criteria
+
+- [ ] Placeholders in config strings are replaced with variable values
+- [ ] Substitution works in nested maps and arrays
+- [ ] Type is preserved (string stays string, etc.)
+- [ ] Missing required variables cause error with clear message
+- [ ] Optional variables use defaults when not provided
+- [ ] Enum variables only accept valid values
+- [ ] Numeric variables accept range constraints
+- [ ] Nested placeholder substitution works (e.g., nested maps)
+- [ ] All variable validation tests pass
+
+## Context
+
+**Key Points**:
+- Variables enable single template for multiple use cases
+- Placeholder syntax must be clear and unambiguous
+- Type system prevents invalid configurations
+- Optional defaults reduce required variable count
+- Validation happens before agent creation
+
+## Notes
+
+### Variable Definition Example
+
+```json
+{
+  "variables": [
+    {
+      "name": "model",
+      "type": "enum",
+      "values": ["claude-3-sonnet", "claude-3-opus"],
+      "required": true,
+      "description": "LLM model to use"
+    },
+    {
+      "name": "temperature",
+      "type": "number",
+      "min": 0.0,
+      "max": 2.0,
+      "default": 0.7,
+      "description": "Sampling temperature"
+    },
+    {
+      "name": "custom_prompt",
+      "type": "string",
+      "required": false,
+      "description": "Custom system prompt"
+    }
+  ]
+}
+```
+
+### Template Config with Placeholders
+
+```json
+{
+  "model": "${model}",
+  "temperature": ${temperature},
+  "system_prompt": "Be helpful. ${custom_prompt}",
+  "tools": {
+    "web_search": true,
+    "max_results": 10
+  }
+}
+```
+
+### Substitution Example
+
+Input variables:
+```json
+{
+  "model": "claude-3-sonnet",
+  "temperature": 0.5,
+  "custom_prompt": "Focus on accuracy."
+}
+```
+
+Result:
+```json
+{
+  "model": "claude-3-sonnet",
+  "temperature": 0.5,
+  "system_prompt": "Be helpful. Focus on accuracy.",
+  "tools": {
+    "web_search": true,
+    "max_results": 10
+  }
+}
+```

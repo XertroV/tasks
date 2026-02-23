@@ -1,0 +1,41 @@
+id: P22.M3.E1
+name: CompactionMonitor GenServer
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-compactionmonitor-gense.todo
+  title: Create CompactionMonitor GenServer that tracks session token usage
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-integrate-compactionmonitor-wi.todo
+  title: Integrate CompactionMonitor with existing AutoTruncation and Summarization
+    modules
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M3.E1.T001
+- id: T003
+  file: T003-add-compactionmonitor-to-sessi.todo
+  title: Add CompactionMonitor to SessionSupervisor startup
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M3.E1.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

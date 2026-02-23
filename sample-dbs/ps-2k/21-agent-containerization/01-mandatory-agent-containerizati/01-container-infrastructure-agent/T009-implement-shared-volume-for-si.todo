@@ -1,0 +1,41 @@
+---
+id: P21.M1.E1.T009
+title: Implement shared volume for sibling agent coordination
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T006
+- P21.M1.E1.T004
+tags:
+- volumes
+- coordination
+- multi-agent
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.558430+00:00'
+started_at: '2026-02-18T12:21:44.558430+00:00'
+completed_at: '2026-02-18T13:12:17.916353+00:00'
+duration_minutes: 50.55596498333333
+---
+
+# Implement shared volume for sibling agent coordination
+
+Implement shared volume that sibling agents can access for coordination.
+
+## Requirements
+
+- Shared volume path: `<workspace_root>/.agents/<parent_session_id>/shared`
+- Mounted at `/shared` in container
+- Only shared when sibling sharing is enabled
+- Based on session type: ephemeral sessions share by default, persistent don't
+
+## Acceptance Criteria
+
+- [ ] Shared volume mounts to `/shared` in container when enabled
+- [ ] `should_share_with_siblings?/1` determines sharing based on session type
+- [ ] Uses parent_session_id for shared directory name
+- [ ] Ephemeral sessions: shared by default (as per user decision)
+- [ ] Persistent sessions: private by default (as per user decision)
+- [ ] `list_sibling_agents/1` finds agents sharing same parent session
+- [ ] Unit tests for sibling sharing logic

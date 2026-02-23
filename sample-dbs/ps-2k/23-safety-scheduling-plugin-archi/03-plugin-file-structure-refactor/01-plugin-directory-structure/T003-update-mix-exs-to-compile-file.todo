@@ -1,0 +1,23 @@
+---
+id: P23.M3.E1.T003
+title: Update mix.exs to compile files from plugins/ directory
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:50:53.778197+00:00'
+started_at: '2026-02-18T14:50:53.778197+00:00'
+completed_at: '2026-02-18T14:57:27.706836+00:00'
+duration_minutes: 6.56547715
+---
+Make Mix aware of the new plugins/ source tree.
+
+## Acceptance Criteria
+- [ ] Add `plugins/*/` (or a glob that covers all plugin subdirs) to the `:elixirc_paths` in `mix.exs` for `:dev`, `:test`, and `:prod` environments
+- [ ] `mix compile` succeeds with the new paths configured
+- [ ] `mix test` continues to pass after path change
+- [ ] No duplicate module warnings from having modules in both old and new locations

@@ -1,0 +1,30 @@
+id: P55.M2.E1
+name: Thread Sidebar
+status: done
+estimate_hours: 3.5
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-thread-sidebar-component-with.todo
+  title: Thread sidebar component with list rendering and active highlight
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-thread-search-filtering-and-ne.todo
+  title: Thread search filtering and new thread creation flow
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

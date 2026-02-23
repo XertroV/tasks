@@ -1,0 +1,54 @@
+---
+id: P10.M1.E1.T005
+title: Implement webhook filter matching engine
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T19:55:09.624890+00:00'
+started_at: '2026-02-11T19:55:09.624890+00:00'
+completed_at: '2026-02-11T20:09:29.366923+00:00'
+duration_minutes: 14.3290337
+---
+
+# Implement webhook filter matching engine
+
+
+
+## Requirements
+
+Implement a webhook filter matching engine that evaluates GitHub webhook payloads against stored filter rules using glob patterns and branch/path matching.
+
+## Description
+
+The filter engine determines which webhook subscriptions should receive a GitHub event based on stored filter rules. Supports branch name globbing (e.g., `release/*`), file path patterns (e.g., `src/**`), event type filtering, and custom expressions. This enables fine-grained control over which webhooks trigger without making multiple GitHub webhook registrations.
+
+## Acceptance Criteria
+
+- [ ] Module `PagServer.Webhooks.FilterMatcher` with `matches?/2` function
+- [ ] `matches?(subscription, payload)` returns boolean
+- [ ] Branch filtering: exact match and glob patterns (e.g., `main`, `release/*`, `hotfix-*`)
+- [ ] File path filtering: glob patterns (e.g., `src/**`, `*.md`, `test/**/*.exs`)
+- [ ] Event type filtering: exact match in subscription's events list
+- [ ] Handle missing fields gracefully (no match if required filter field missing from payload)
+- [ ] Performance: support fast matching for 100+ subscriptions per webhook
+- [ ] Unit tests for all filter types with edge cases (empty filters, wildcard-only, multiple filters)
+
+## Implementation Notes
+
+- Location: `lib/pag_server/webhooks/filter_matcher.ex`
+- Module function: `matches?(subscription, payload) :: boolean()`
+- Branch filter field: `filters["branches"]` (array of strings or glob patterns)
+- Path filter field: `filters["paths"]` (array of glob patterns, e.g. `["src/**", "*.md"]`)
+- Event type: check against `subscription.events` array (e.g. `["push", "pull_request"]`)
+- Glob matching: implement custom glob with `*` (single level) and `**` (recursive) support, or use `String.match?/2` with pattern conversion
+- Filter matching order: event type first → branch → paths (early exit on mismatch for performance)
+- Returns `true` only if ALL non-empty filters match (AND logic), `true` if no filters defined
+- Extract payload fields based on event type:
+  - `push`: branch = `payload["ref"]` (e.g., "refs/heads/main"), files = `payload["commits"][0]["modified"]`
+  - `pull_request`: branch = `payload["pull_request"]["head"]["ref"]`, files = use GitHub API
+- Handle missing fields gracefully: return `false` if required field missing from payload
+- Add telemetry logging at `:debug` level with subscription ID and filter evaluation results

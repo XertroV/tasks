@@ -1,0 +1,54 @@
+---
+id: P40.M1.E1.T003
+title: Container volume mounting for team directories
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P40.M1.E1.T001
+- P40.M1.E1.T002
+tags:
+- containers
+- multi-agent
+- teams
+- filesystem
+- docker
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:32:16.089031+00:00'
+started_at: '2026-02-19T14:32:16.089031+00:00'
+completed_at: '2026-02-19T15:35:22.562860+00:00'
+duration_minutes: 63.10789686666667
+---
+## Description
+Implement Docker container volume mounting so hierarchical team directories are correctly mounted into agent containers. Each agent's container sees their team directory at `/team-<name>/` (root level), with descendant subteams nested inside. The physical host path maps to the full nested hierarchy.
+
+## Mount Logic
+- For each team an agent belongs to, mount the physical nested directory as `/team-<name>/` in the container
+- Team leaders: mount includes all descendant subteam subdirectories (they're physically nested, so this happens naturally)
+- Non-leader members: mount only their own team directory at `/team-<name>/`
+- Agents on multiple teams get multiple mounts (one per team membership)
+- Physical host path: `<workspace-root>/team-root/team-web/team-frontend/` → container path: `/team-frontend/` (for a frontend team member)
+- Root leader: `<workspace-root>/team-root/` → container path: `/team-root/` (sees all descendants nested within)
+
+## Requirements
+- Extend VolumeManager to compute per-agent team volume mounts based on team membership and hierarchy
+- Map physical nested host paths to flat `/team-<name>/` container mount points
+- Team member containers get read-write mounts for their team directory
+- Ancestor team leaders see descendant dirs nested inside their own mount (natural from directory nesting)
+- Do NOT mount team directories for agents with no membership in that team or its ancestors
+- Support dynamic subteam creation by team leaders at runtime
+
+## Integration Points
+- containers/volume_manager.ex — add team volume type alongside existing /workspace, /private, /shared; compute host↔container path mapping
+- containers/container_config.ex — include team volumes in container configuration
+- containers/container_manager.ex — ensure team volumes are mounted at container start; support remounting when teams change
+
+## Acceptance Criteria
+- Each agent's container has their team dir(s) mounted at `/team-<name>/` (root level)
+- Root leader's container mounts `/team-root/` with all descendant subteam dirs nested inside
+- Subteam leader's container mounts `/team-<subteam>/` with their descendants nested inside
+- Regular team members see only their own team directory
+- Agents on multiple teams get multiple root-level mounts
+- Unrelated agent containers do NOT have the team directory mounted
+- Physical-to-container path mapping is correct for all hierarchy depths

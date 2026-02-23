@@ -1,0 +1,57 @@
+---
+id: I051
+title: "Add coding-assistant workspace template \u2014 default template for pag-connect:\
+  \ workspace + pre-configured agent with code-assistance system prompt, all local\
+  \ tools enabled, anthropic/claude-sonnet-4 model. Used when pag-connect bootstraps\
+  \ a new workspace for a user."
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: Add coding-assistant workspace template — default template for pag-connect: workspace + pre-configured agent with code-assistance system prompt, all local tools enabled, anthropic/claude-sonnet-4 model. Used when pag-connect bootstraps a new workspace for a user.
+
+## Original Idea
+
+Add coding-assistant workspace template — default template for pag-connect: workspace + pre-configured agent with code-assistance system prompt, all local tools enabled, anthropic/claude-sonnet-4 model. Used when pag-connect bootstraps a new workspace for a user.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add coding-assistant workspace template — default template for pag-connect: workspace + pre-configured agent with code-assistance system prompt, all local tools enabled, anthropic/claude-sonnet-4 model. Used when pag-connect bootstraps a new workspace for a user."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+Placed in **P39.M5** (new milestone unlocked in pag-connect Companion Support phase):
+
+### E1: coding-assistant Workspace Template YAML
+- P39.M5.E1.T001 — Create coding-assistant workspace template YAML
+- P39.M5.E1.T002 — Verify coding-assistant workspace template schema compatibility
+
+### E2: Non-Interactive Bootstrap Endpoint
+- P39.M5.E2.T001 — Add template param to Workspaces.bootstrap_workspace/3
+- P39.M5.E2.T002 — Extend POST /api/v1/workspaces/bootstrap to accept template param
+- P39.M5.E2.T003 — Integration test: pag-connect non-interactive workspace provisioning
+
+Design decisions recorded:
+- No bootstrap questionnaire (workspace is immediately ready)
+- All built-in local tools enabled
+- Model: anthropic/claude-sonnet-4-5
+- template param added to existing bootstrap endpoint (not a new endpoint)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

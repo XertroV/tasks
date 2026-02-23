@@ -1,0 +1,42 @@
+---
+id: P18.M3.E2.T002
+title: Validate workspace_id in invitation delete matches invitation
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P18.M3.E2.T001
+tags:
+- security
+- workspace
+- invitations
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.644349+00:00'
+started_at: '2026-02-17T20:48:56.644349+00:00'
+completed_at: '2026-02-17T20:55:31.895853+00:00'
+duration_minutes: 6.587524650000001
+---
+
+# Validate workspace_id in invitation delete matches invitation
+
+## Description
+
+The invitation delete endpoint currently ignores the workspace_id from the URL (bound to `_workspace_id`). Fix this to validate the invitation belongs to the workspace in the URL.
+
+## Requirements
+
+- [ ] Update `WorkspaceInvitationsController.delete/2` to use `workspace_id` from URL params
+- [ ] After fetching the invitation, verify `invitation.workspace_id == workspace_id`
+- [ ] Return 404 if the invitation does not belong to the URL workspace
+- [ ] This prevents using any valid workspace_id in the URL to delete invitations from other workspaces
+
+## Acceptance Criteria
+
+- [ ] DELETE with correct workspace_id works as before
+- [ ] DELETE with mismatched workspace_id returns 404
+- [ ] The `_workspace_id` unused variable is removed
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/workspace_invitations_controller.ex` (~line 109)

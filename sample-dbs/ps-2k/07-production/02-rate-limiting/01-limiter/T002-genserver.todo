@@ -1,0 +1,101 @@
+---
+id: P7.M2.E1.T002
+title: Rate limiter GenServer
+status: done
+estimate_hours: 2
+complexity: medium
+priority: medium
+depends_on:
+- P7.M2.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:19:22.898162+00:00'
+started_at: '2026-02-07T06:19:22.898162+00:00'
+completed_at: '2026-02-07T06:21:54.257083+00:00'
+tags:
+- rate-limiting
+- genserver
+- otp
+duration_minutes: 2.5226482
+---
+
+# Rate limiter GenServer
+
+Create GenServer wrapper for token bucket with per-provider state.
+
+## Requirements
+
+- [x] Create `lib/pag_server/rate_limiter.ex` GenServer
+- [x] Store map of provider => token_bucket
+- [x] Implement `check_rate/3` (provider, type, amount)
+- [x] Implement `consume/3` (provider, type, amount)
+- [x] Add configuration for per-provider limits
+- [x] Handle unknown providers gracefully
+- [x] Add telemetry for rate limit hits
+
+## Acceptance Criteria
+
+- [x] GenServer starts with supervision tree
+- [x] Per-provider buckets initialized from config
+- [x] Concurrent requests handled correctly
+- [x] Rate limit exceeded returns {:error, :rate_limited}
+- [x] Telemetry events emitted on limit hits
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M2 (Rate Limiting)
+- Production hardening for LLM API stability
+
+**Key Points**:
+- Separate buckets for :requests and :tokens
+- Anthropic: 50 req/min, 100k tokens/min
+- OpenAI: 60 req/min, 150k tokens/min
+- Store in ETS for performance
+
+## Notes
+
+GenServer structure:
+```elixir
+defmodule PagServer.RateLimiter do
+  use GenServer
+  alias PagServer.RateLimiter.TokenBucket
+  
+  def start_link(_opts) do
+    GenServer.start_link(__MODULE__, :ok, name: __MODULE__)
+  end
+  
+  def check_rate(provider, type, amount) do
+    GenServer.call(__MODULE__, {:check, provider, type, amount})
+  end
+  
+  def consume(provider, type, amount) do
+    GenServer.call(__MODULE__, {:consume, provider, type, amount})
+  end
+  
+  def init(:ok) do
+    buckets = %{
+      anthropic: %{
+        requests: TokenBucket.new(50, 50 / 60),
+        tokens: TokenBucket.new(100_000, 100_000 / 60)
+      },
+      openai: %{
+        requests: TokenBucket.new(60, 60 / 60),
+        tokens: TokenBucket.new(150_000, 150_000 / 60)
+      }
+    }
+    {:ok, buckets}
+  end
+  
+  def handle_call({:consume, provider, type, amount}, _from, buckets) do
+    bucket = get_in(buckets, [provider, type])
+    case TokenBucket.take(bucket, amount) do
+      {:ok, new_bucket} ->
+        new_buckets = put_in(buckets, [provider, type], new_bucket)
+        {:reply, :ok, new_buckets}
+      {:error, :rate_limited, _} ->
+        :telemetry.execute([:pag, :rate_limit, :hit], %{}, %{provider: provider})
+        {:reply, {:error, :rate_limited}, buckets}
+    end
+  end
+end
+```

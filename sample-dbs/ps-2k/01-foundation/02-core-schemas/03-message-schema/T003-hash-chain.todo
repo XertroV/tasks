@@ -1,0 +1,192 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:42:10.087785'
+started_at: '2026-02-05T08:42:10.087785'
+completed_at: '2026-02-05T08:45:08.948572'
+reviewed_at: '2026-02-05T12:00:00.000000'
+review_notes: |
+  Original implementation used parent_message_id instead of parent_message.content_hash.
+  This broke the cryptographic chain - modifying a parent wouldn't invalidate child hashes.
+  Fixed to include parent.content_hash in hash calculation, creating true tamper-evident chain.
+---
+# Task: Implement content hash verification
+# ID: P1.M2.E3.T003
+# Status: pending
+# Estimate: 1h
+# Complexity: low
+# Priority: high
+
+## Description
+Implement the MessageChain module with functions to calculate SHA-256 content hashes and verify the integrity of message chains. This enables tamper detection and ensures deterministic replay.
+
+## Context
+Messages form an immutable linked list with content hashes for integrity verification. Each message's hash is computed from its content, role, and parent hash, creating a blockchain-like chain where tampering with any message invalidates all subsequent hashes.
+
+## Requirements
+
+### Module Location
+`lib/pag_server/context/message_chain.ex`
+
+### Core Functions
+
+```elixir
+defmodule PAGServer.Context.MessageChain do
+  @moduledoc """
+  Functions for calculating and verifying message content hashes.
+  
+  Messages form an immutable chain where each hash depends on:
+  - Message content
+  - Message role
+  - Parent message hash (if present)
+  
+  This creates a tamper-evident chain similar to blockchain.
+  """
+
+  alias PAGServer.Schema.Message
+
+  @doc """
+  Calculate SHA-256 hash for a message.
+  
+  Hash is computed from:
+  - role
+  - content
+  - parent_message_id (if present)
+  - thinking_content (if present)
+  - tool_calls (if present)
+  
+  ## Examples
+  
+      iex> message = %Message{role: "user", content: "Hello"}
+      iex> MessageChain.calculate_hash(message)
+      "a1b2c3d4..."
+  """
+  def calculate_hash(%Message{} = message) do
+    hash_input = build_hash_input(message)
+    
+    :crypto.hash(:sha256, hash_input)
+    |> Base.encode16(case: :lower)
+  end
+
+  @doc """
+  Verify the integrity of a message chain.
+  
+  Walks the chain from the given message back to the root,
+  recalculating and verifying each hash.
+  
+  Returns {:ok, message_count} if chain is valid.
+  Returns {:error, reason} if tampering detected.
+  
+  ## Examples
+  
+      iex> MessageChain.verify_chain(message)
+      {:ok, 5}
+      
+      iex> MessageChain.verify_chain(tampered_message)
+      {:error, "Hash mismatch at message abc123"}
+  """
+  def verify_chain(%Message{} = message) do
+    verify_chain_recursive(message, 0)
+  end
+
+  # Private functions
+
+  defp build_hash_input(%Message{} = message) do
+    parts = [
+      message.role,
+      message.content,
+      message.parent_message_id || "",
+      message.thinking_content || "",
+      encode_tool_calls(message.tool_calls)
+    ]
+    
+    Enum.join(parts, "|")
+  end
+
+  defp encode_tool_calls(nil), do: ""
+  defp encode_tool_calls(tool_calls) when is_map(tool_calls) do
+    Jason.encode!(tool_calls)
+  end
+
+  defp verify_chain_recursive(nil, count), do: {:ok, count}
+  
+  defp verify_chain_recursive(%Message{} = message, count) do
+    expected_hash = calculate_hash(message)
+    
+    case message.content_hash do
+      ^expected_hash ->
+        # Load parent and continue verification
+        parent = load_parent(message)
+        verify_chain_recursive(parent, count + 1)
+        
+      actual_hash ->
+        {:error, "Hash mismatch at message #{message.id}. Expected: #{expected_hash}, Got: #{actual_hash}"}
+    end
+  end
+
+  defp load_parent(%Message{parent_message_id: nil}), do: nil
+  defp load_parent(%Message{parent_message_id: parent_id}) do
+    PAGServer.Repo.get(Message, parent_id)
+  end
+end
+```
+
+### Hash Calculation Algorithm
+1. Build input string from: `role|content|parent_id|thinking_content|tool_calls_json`
+2. Compute SHA-256 hash
+3. Encode as lowercase hex string
+
+### Chain Verification Algorithm
+1. Start with given message
+2. Recalculate hash and compare with stored `content_hash`
+3. If mismatch, return error with message ID
+4. If match, load parent and repeat
+5. Continue until root message (no parent)
+6. Return count of verified messages
+
+## Implementation Steps
+1. Create `lib/pag_server/context/` directory if it doesn't exist
+2. Create `message_chain.ex` module
+3. Implement `calculate_hash/1` using `:crypto.hash(:sha256, ...)`
+4. Implement `build_hash_input/1` helper to construct deterministic input
+5. Implement `verify_chain/1` with recursive chain walking
+6. Add proper error handling and descriptive error messages
+
+## Testing Plan
+Create `test/pag_server/context/message_chain_test.exs`:
+- Test `calculate_hash/1` with various message types
+- Test hash determinism (same input = same hash)
+- Test hash uniqueness (different content = different hash)
+- Test parent hash inclusion in child hash
+- Test `verify_chain/1` with valid chain
+- Test `verify_chain/1` detects tampering
+- Test chain verification counts messages correctly
+- Test with and without thinking_content
+- Test with and without tool_calls
+
+## Acceptance Criteria
+- [ ] Module created at `lib/pag_server/context/message_chain.ex`
+- [ ] `calculate_hash/1` correctly computes SHA-256 hashes
+- [ ] Hashes are deterministic (same message = same hash)
+- [ ] Hashes include parent_message_id in calculation
+- [ ] `verify_chain/1` validates entire message chain
+- [ ] Tampering detection works (modified content detected)
+- [ ] Chain verification works for messages with/without parents
+- [ ] Proper error messages returned on verification failure
+- [ ] Tests pass with >90% coverage
+
+## Dependencies
+- Requires T002 (Message schema) to be complete
+- Requires `:crypto` (built-in Erlang library)
+- Requires Jason for JSON encoding (already in deps)
+
+## References
+- Message chain architecture: `.plan/2026-02-05-velvet-cascade/index.md:331-361`
+- Hash chain diagram shows how messages link together
+
+## Notes
+- SHA-256 provides strong collision resistance for integrity verification
+- Including parent hash in child hash calculation creates tamper-evident chain
+- This enables deterministic replay validation and fork point verification
+- Hash verification can be run periodically or on session load to detect corruption
+- The hash chain is similar to blockchain but optimized for message integrity, not consensus

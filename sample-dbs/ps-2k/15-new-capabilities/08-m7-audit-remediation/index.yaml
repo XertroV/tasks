@@ -1,0 +1,50 @@
+id: P15.M8
+name: M7 Audit Remediation
+status: pending
+estimate_hours: 24.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Template Validation Hardening
+  path: 01-template-validation-hardening
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Data Integrity & Infrastructure
+  path: 02-data-integrity-infrastructure
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Bootstrap Engine Reliability
+  path: 03-bootstrap-engine-reliability
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: LiveView & API Quality
+  path: 04-liveview-api-quality
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 15
+  done: 15
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,51 @@
+id: P15.M10.E3
+name: External Service Providers (CLI/MCP)
+status: pending
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-plugin-facing-external.todo
+  title: Define plugin-facing external provider contract for CLI and MCP search
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P15.M10.E1.T001
+- id: T002
+  file: T002-implement-cli-provider-adapter.todo
+  title: Implement CLI provider adapter with strict timeout and output normalization
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P15.M10.E3.T001
+- id: T003
+  file: T003-implement-mcp-provider-adapter.todo
+  title: Implement MCP provider adapter for hosted search tools
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P15.M10.E3.T001
+- id: T004
+  file: T004-add-feature-flags-and-permissi.todo
+  title: Add feature flags and permission gates for external providers
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M10.E3.T002
+  - P15.M10.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

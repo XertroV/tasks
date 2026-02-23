@@ -1,0 +1,53 @@
+# Epic: Message Chain
+# Phase 5, Milestone 04, Epic 1 (P5.M04.E1)
+
+id: P5.M04.E1
+name: Message Chain
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-add-previous_hash-to-messages.todo
+    title: Add previous_hash to messages
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-implement-calculate_hash-funct.todo
+    title: Implement calculate_hash function
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-verify-chain-integrity.todo
+    title: Verify chain integrity
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-test-message-chain.todo
+    title: Test message chain
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T003]
+    
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

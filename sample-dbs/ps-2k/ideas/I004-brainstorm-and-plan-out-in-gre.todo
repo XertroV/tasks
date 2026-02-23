@@ -1,0 +1,60 @@
+---
+id: I004
+title: Brainstorm and plan out in great detail a simple web app that acts as a frontend
+  for pag-server, useful for testing and quick validation, running agents quickly
+  for testing, etc. Needs a chat interface and some buttons for tool stuff, some simple
+  settings to configure things, a browser to list sessions or whatever agents are
+  grouped by, etc.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:33:05.465350+00:00'
+started_at: '2026-02-14T12:33:05.465350+00:00'
+completed_at: '2026-02-14T12:45:00+00:00'
+---
+
+# Idea Intake: Brainstorm and plan out in great detail a simple web app that acts as a frontend for pag-server, useful for testing and quick validation, running agents quickly for testing, etc. Needs a chat interface and some buttons for tool stuff, some simple settings to configure things, a browser to list sessions or whatever agents are grouped by, etc.
+
+## Original Idea
+
+Brainstorm and plan out in great detail a simple web app that acts as a frontend for pag-server, useful for testing and quick validation, running agents quickly for testing, etc. Needs a chat interface and some buttons for tool stuff, some simple settings to configure things, a browser to list sessions or whatever agents are grouped by, etc.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Brainstorm and plan out in great detail a simple web app that acts as a frontend for pag-server, useful for testing and quick validation, running agents quickly for testing, etc. Needs a chat interface and some buttons for tool stuff, some simple settings to configure things, a browser to list sessions or whatever agents are grouped by, etc."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Epic: P15.M2.E4 (Rapid Validation Web Console)
+- Tasks:
+  - P15.M2.E4.T001 Define validation console scope and API interaction map
+  - P15.M2.E4.T002 Scaffold Phoenix LiveView console shell with responsive layout
+  - P15.M2.E4.T003 Implement chat workspace with streaming transcript and input composer
+  - P15.M2.E4.T004 Build sessions and agents browser with filtering and grouping
+  - P15.M2.E4.T005 Add quick action buttons for tool invocation and test presets
+  - P15.M2.E4.T006 Create settings panel for provider, model, and runtime options
+  - P15.M2.E4.T007 Implement run controls for new session, fork, stop, and retry flows
+  - P15.M2.E4.T008 Add lightweight event timeline for messages and tool activity
+  - P15.M2.E4.T009 Harden UX with loading, error handling, and empty states
+  - P15.M2.E4.T010 Cover console with integration tests and rapid validation smoke script
+  - P15.M2.E4.T011 Document local usage workflows for quick validation sessions
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

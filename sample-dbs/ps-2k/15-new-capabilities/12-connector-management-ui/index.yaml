@@ -1,0 +1,63 @@
+id: P15.M12
+name: Connector Management UI
+status: pending
+estimate_hours: 32.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Connector-Session Binding: Schema & Migration'
+  path: 01-connector-session-binding-sche
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'Connector Routing: SessionMapper & Reply Dispatch'
+  path: 02-connector-routing-sessionmappe
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P15.M12.E1
+  description: ''
+  locked: false
+- id: E3
+  name: 'BotConfigs Context: Public API Enhancements'
+  path: 03-botconfigs-context-public-api
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  depends_on:
+  - P15.M12.E1
+  description: ''
+  locked: false
+- id: E4
+  name: 'Connections Tab: LiveView UI'
+  path: 04-connections-tab-liveview-ui
+  status: pending
+  estimate_hours: 14.0
+  complexity: high
+  depends_on:
+  - P15.M12.E2
+  - P15.M12.E3
+  description: ''
+  locked: false
+- id: E5
+  name: 'Workspace Browser QoL: Create Button & Navigation Shortcuts'
+  path: 05-workspace-browser-qol-create-b
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 24
+  done: 24
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,44 @@
+# Epic: Stats Schema
+# Phase 1, Milestone 2, Epic 6 (P1.M2.E6)
+
+id: P1.M2.E6
+name: Stats Schema
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: [P1.M2.E2]
+
+tasks:
+  - id: T001
+    file: T001-migration.todo
+    title: Create stats table migration
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-schema.todo
+    title: Create Stats schema module
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-aggregation.todo
+    title: Create stats aggregation helpers
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: medium
+    depends_on: [T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

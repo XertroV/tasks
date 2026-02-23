@@ -1,0 +1,35 @@
+id: P29
+name: Crypto Identity & Remote Access
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 30.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Crypto Identity Plugin
+  path: 01-crypto-identity-plugin
+  status: pending
+  estimate_hours: 15.0
+  complexity: medium
+  depends_on: []
+  description: Ed25519 key generation, workspace identity signing, and MCP tools for
+    identity operations.
+  locked: false
+- id: M2
+  name: Tailscale Integration
+  path: 02-tailscale-integration
+  status: pending
+  estimate_hours: 15.0
+  complexity: medium
+  depends_on: []
+  description: One-command secure remote access via Tailscale. Allows connecting remote
+    agents and tools over a managed VPN overlay.
+  locked: false
+stats:
+  total_tasks: 18
+  done: 18
+  in_progress: 0
+  blocked: 0
+  pending: 0

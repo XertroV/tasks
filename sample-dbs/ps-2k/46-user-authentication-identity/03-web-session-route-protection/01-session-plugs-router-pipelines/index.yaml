@@ -1,0 +1,43 @@
+id: P46.M3.E1
+name: Session Plugs & Router Pipelines
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-requirelogin-plug-for-c.todo
+  title: Create RequireLogin plug for cookie-session auth
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M1.E1.T004
+  - P46.M1.E3.T001
+- id: T002
+  file: T002-update-router-ex-with-web-auth.todo
+  title: Update router.ex with :web_authenticated and :web_admin pipelines
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M3.E1.T001
+  - P46.M2.E3.T002
+- id: T003
+  file: T003-bridge-current-user-into-exist.todo
+  title: Bridge current_user into existing API capability system
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M3.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

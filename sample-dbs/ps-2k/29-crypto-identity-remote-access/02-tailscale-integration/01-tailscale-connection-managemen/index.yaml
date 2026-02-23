@@ -1,0 +1,49 @@
+id: P29.M2.E1
+name: Tailscale Connection Management
+status: pending
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-workspace-tailscale-config.todo
+  title: Add workspace_tailscale_config schema and migration
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-tailscalemanager-gen.todo
+  title: Implement TailscaleManager GenServer
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P29.M2.E1.T001
+- id: T003
+  file: T003-implement-tailscalesupervisor.todo
+  title: Implement TailscaleSupervisor
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P29.M2.E1.T002
+- id: T004
+  file: T004-write-tailscalemanager-tests-w.todo
+  title: Write TailscaleManager tests with mock system calls
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P29.M2.E1.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

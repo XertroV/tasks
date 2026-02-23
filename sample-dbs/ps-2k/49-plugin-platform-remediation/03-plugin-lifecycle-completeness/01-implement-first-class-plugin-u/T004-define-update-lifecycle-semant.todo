@@ -1,0 +1,31 @@
+---
+id: P49.M3.E1.T004
+title: Define update lifecycle semantics with preflight health checks and rollback
+status: done
+estimate_hours: 3.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T10:06:15.627933+00:00'
+started_at: '2026-02-20T10:06:15.627933+00:00'
+completed_at: '2026-02-20T10:53:58.999031+00:00'
+duration_minutes: 47.72285135
+---
+
+# Define update lifecycle semantics with preflight health checks and rollback
+
+
+
+## Requirements
+
+- Define first-class plugin update lifecycle with preflight validation, staged apply, post-update health checks, and rollback.
+- Implement update orchestration so plugin `update` is distinct from simple config mutation.
+- Add tests for successful update and rollback-on-health-check-failure.
+
+## Acceptance Criteria
+
+- Update lifecycle API exists with explicit pre, apply, verify, and rollback semantics.
+- Failed post-update validation triggers rollback to prior stable state.
+- Tests prove deterministic behavior across success and failure update paths.

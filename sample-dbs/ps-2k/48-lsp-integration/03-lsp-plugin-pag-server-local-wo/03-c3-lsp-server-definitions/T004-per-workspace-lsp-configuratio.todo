@@ -1,0 +1,16 @@
+---
+id: P48.M3.E3.T004
+title: Per-workspace LSP configuration storage and merge logic
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:21.652744+00:00'
+started_at: '2026-02-20T08:37:21.652744+00:00'
+completed_at: '2026-02-20T08:50:44.936870+00:00'
+duration_minutes: 13.3880686
+---
+Store LSP config in workspace metadata (JSONB): per-server enable/disable, command override, custom servers (require extensions+command). Merge: built-in defaults + workspace overrides. Custom servers without built-in match require extensions. API: Workspace.lsp_config/1 returns merged config.

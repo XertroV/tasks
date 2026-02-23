@@ -1,0 +1,38 @@
+id: P3.M6.E2
+name: API Infrastructure
+status: pending
+estimate_hours: 2.5
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-cors-middleware.todo
+  title: Add CORS middleware
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-wire-ratelimiter-into-api-pipe.todo
+  title: Wire RateLimiter into API pipelines
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-wire-auth-plugs-for-new-endpoi.todo
+  title: Wire auth plugs for new endpoints
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

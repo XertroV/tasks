@@ -1,0 +1,16 @@
+---
+id: P48.M4.E1.T002
+title: 'PagConnect.Lsp.Client GenServer: per-(language, root_path)'
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:26.200004+00:00'
+started_at: '2026-02-20T08:37:26.200004+00:00'
+completed_at: '2026-02-20T08:50:55.870283+00:00'
+duration_minutes: 13.494504483333333
+---
+Same operations as pag-server LspClient. Manages file sync state and diagnostics cache. Broken state: permanent exclusion on server failure. Operations: touch_file, get_diagnostics, wait_for_diagnostics, hover, go_to_definition, find_references, document_symbols, workspace_symbols.

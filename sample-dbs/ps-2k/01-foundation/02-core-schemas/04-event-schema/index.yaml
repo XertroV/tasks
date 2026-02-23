@@ -1,0 +1,35 @@
+# Epic: Event Schema
+# Phase 1, Milestone 2, Epic 4 (P1.M2.E4)
+
+id: P1.M2.E4
+name: Event Schema
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: [P1.M2.E2]
+
+tasks:
+  - id: T001
+    file: T001-migration.todo
+    title: Create events table migration
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-schema.todo
+    title: Create Event schema
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,18 @@
+---
+id: B102
+title: Tests are taking a long time again, see if you can optimize them. Start by
+  investigating the slowest ones
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:43:29.834180+00:00'
+started_at: '2026-02-17T13:43:29.834180+00:00'
+completed_at: '2026-02-17T13:47:05.091400+00:00'
+duration_minutes: 3.587620133333333
+---
+
+Tests are taking a long time again, see if you can optimize them. Start by investigating the slowest ones

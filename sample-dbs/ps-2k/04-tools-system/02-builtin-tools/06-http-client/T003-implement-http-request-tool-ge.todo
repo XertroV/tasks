@@ -1,0 +1,217 @@
+---
+id: P4.M2.E6.T003
+title: Implement http_request tool (generic)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- http
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:58:35.638410'
+started_at: '2026-02-06T02:58:35.638410'
+completed_at: '2026-02-06T03:00:14.598772'
+duration_minutes: 1.6493392
+---
+
+# Implement http_request tool (generic)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/http_request.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support all HTTP methods: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS
+- [ ] Support URL, headers, body, query parameters
+- [ ] Use HTTP client library (Req or Finch)
+- [ ] Unify http_get and http_post functionality into general-purpose tool
+- [ ] Validate method and URL
+
+## Acceptance Criteria
+
+- [ ] Accepts `method` parameter (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS)
+- [ ] Accepts `url`, `headers`, `params`, `body` (optional based on method)
+- [ ] Makes HTTP request with specified method
+- [ ] Returns response status, headers, and body
+- [ ] Validates method is one of allowed values
+- [ ] Body optional for GET/HEAD/DELETE, required for POST/PUT/PATCH
+- [ ] Handles all error cases: timeout, invalid method, invalid URL, network failure
+- [ ] Validates URL is http:// or https:// only
+- [ ] Truncates response body at 512KB limit
+- [ ] Test coverage: all methods, with/without body, headers, params, errors
+- [ ] Security: SSRF protection for all methods
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- General-purpose HTTP tool (can replace http_get and http_post)
+- Method validation important for security
+- Some methods don't accept body (GET, HEAD)
+- Reuse validation logic from other HTTP tools
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.HttpRequest do
+  @behaviour PAGServer.Tools.Tool
+  @max_response_bytes 512_000
+  @default_timeout 30_000
+  @allowed_methods ~w(GET POST PUT PATCH DELETE HEAD OPTIONS)
+
+  @impl true
+  def name, do: "http_request"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "http_request",
+      description: "Make HTTP request with any method",
+      parameters: %{
+        type: "object",
+        properties: %{
+          method: %{
+            type: "string",
+            enum: @allowed_methods,
+            description: "HTTP method to use"
+          },
+          url: %{
+            type: "string",
+            description: "URL to request (http:// or https://)"
+          },
+          headers: %{
+            type: "object",
+            description: "Optional HTTP headers",
+            additionalProperties: %{type: "string"}
+          },
+          params: %{
+            type: "object",
+            description: "Optional query parameters",
+            additionalProperties: %{type: "string"}
+          },
+          body: %{
+            oneOf: [
+              %{type: "object", description: "JSON object"},
+              %{type: "string", description: "Raw body"}
+            ],
+            description: "Request body (for POST/PUT/PATCH)"
+          },
+          timeout_ms: %{
+            type: "integer",
+            description: "Timeout in milliseconds (default: 30000)"
+          }
+        },
+        required: ["method", "url"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"method" => method, "url" => url} = args, _context) do
+    with :ok <- validate_method(method),
+         :ok <- validate_url(url),
+         :ok <- validate_ssrf(url),
+         :ok <- validate_body_for_method(method, args),
+         {:ok, response} <- make_request(method, url, args) do
+      {:ok, %{
+        status: response.status,
+        headers: response.headers,
+        body: truncate_body(response.body)
+      }}
+    else
+      {:error, reason} -> {:error, "HTTP request failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_method(method) do
+    if String.upcase(method) in @allowed_methods do
+      :ok
+    else
+      {:error, "Invalid HTTP method: #{method}"}
+    end
+  end
+
+  defp validate_body_for_method(method, args) when method in ~w(GET HEAD DELETE) do
+    if Map.has_key?(args, "body") do
+      {:error, "#{method} requests cannot have a body"}
+    else
+      :ok
+    end
+  end
+  defp validate_body_for_method(_method, _args), do: :ok
+
+  defp make_request(method, url, args) do
+    opts = [
+      method: String.downcase(method) |> String.to_atom(),
+      url: url,
+      headers: Map.get(args, "headers", %{}),
+      params: Map.get(args, "params", %{}),
+      receive_timeout: Map.get(args, "timeout_ms", @default_timeout)
+    ]
+    
+    opts = if body = Map.get(args, "body") do
+      {encoded, content_type} = prepare_body(body, args)
+      [body: encoded, headers: Map.put(opts[:headers], "content-type", content_type)] ++ opts
+    else
+      opts
+    end
+    
+    Req.request(opts)
+  end
+
+  defp prepare_body(body, args) when is_map(body) do
+    headers = Map.get(args, "headers", %{})
+    content_type = Map.get(headers, "content-type", "application/json")
+    {Jason.encode!(body), content_type}
+  end
+
+  defp prepare_body(body, args) when is_binary(body) do
+    headers = Map.get(args, "headers", %{})
+    content_type = Map.get(headers, "content-type", "text/plain")
+    {body, content_type}
+  end
+
+  # Reuse from HttpGet
+  defp validate_url(url), do: PAGServer.Tools.Builtin.HttpGet.validate_url(url)
+  defp validate_ssrf(url), do: PAGServer.Tools.Builtin.HttpGet.validate_ssrf(url)
+  defp truncate_body(body), do: PAGServer.Tools.Builtin.HttpGet.truncate_body(body)
+end
+```
+
+Example usage (PUT):
+```json
+{
+  "method": "PUT",
+  "url": "https://api.example.com/resource/123",
+  "body": {
+    "status": "updated"
+  },
+  "headers": {
+    "Authorization": "Bearer token"
+  }
+}
+```
+
+Example usage (DELETE):
+```json
+{
+  "method": "DELETE",
+  "url": "https://api.example.com/resource/123",
+  "headers": {
+    "Authorization": "Bearer token"
+  }
+}
+```
+
+Future enhancements:
+- Custom redirect handling per method
+- Request/response middleware
+- Retry logic with backoff
+- Connection pooling configuration

@@ -1,0 +1,48 @@
+---
+id: P15.M2.E4.T009
+title: Harden UX with loading, error handling, and empty states
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E4.T003
+- P15.M2.E4.T004
+- P15.M2.E4.T006
+tags:
+- ux
+- reliability
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:45:57.668301+00:00'
+started_at: '2026-02-14T12:45:57.668301+00:00'
+completed_at: '2026-02-14T14:36:13.543433+00:00'
+duration_minutes: 110.2645852
+---
+
+# Harden UX with loading, error handling, and empty states
+
+
+
+## Requirements
+
+- Standardize loading indicators, disabled states, and retries across chat, browser, controls, and settings.
+- Implement clear empty states with suggested next actions when no sessions, agents, or messages exist.
+- Add robust error handling for transport failures, backend validation errors, and timeout conditions.
+- Ensure state recovery works after transient failures (retry without full page reload).
+
+## Acceptance Criteria
+
+- Every primary panel has explicit loading, empty, success, and error UI states.
+- Error messages distinguish recoverable vs non-recoverable conditions and suggest follow-up action.
+- Retry paths are available where safe and restore normal behavior after transient failures.
+- No uncaught frontend exceptions occur during common failure scenarios.
+
+## Implementation Notes (2026-02-15)
+
+- Added explicit per-panel state machines (`browser_state`, `chat_state`, `controls_state`, `settings_state`) with `loading|empty|success|error` status badges and status copy in the LiveView UI.
+- Standardized disabled/loading affordances with `phx-disable-with` + guarded `disabled` attributes across prompt send, browser refresh, quick actions, and settings save.
+- Added structured error classification in LiveView (`recoverable` vs `non-recoverable`) with actionable hints and retry affordances (`retry_chat`, `retry_controls`, `retry_settings`, `refresh_browser`).
+- Added timeout/transport/error protection wrappers (`run_with_timeout/2`, `create_message_with_timeout/2`) and defensive mapping to user-safe UX messages.
+- Added deterministic failure-mode hooks via query params (`fail_browser`, `fail_chat`, `fail_controls`, `fail_settings`) to exercise timeout/transport/fatal paths and verify transient recovery via `live_patch` + retry (no full reload).
+- Expanded LiveView test coverage for empty states, recoverable timeout + retry, non-recoverable controls failure, and recoverable settings transport failure + retry.

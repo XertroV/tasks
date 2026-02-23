@@ -1,0 +1,53 @@
+---
+id: I033
+title: Investigate opencode, codex, crush, etc, and look at their MCP tool call arguments,
+  description, etc for tools like edit, glob, find, read, list, spawnSubagent, etc.
+  Take all the best parts from all of them and combine it into the best damn MCP interfaces
+  the world has ever seen.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:58:44.575329+00:00'
+started_at: '2026-02-18T19:58:44.575329+00:00'
+completed_at: '2026-02-18T19:58:46.115080+00:00'
+duration_minutes: 0.025662366666666665
+---
+
+# Idea Intake: Investigate opencode, codex, crush, etc, and look at their MCP tool call arguments, description, etc for tools like edit, glob, find, read, list, spawnSubagent, etc. Take all the best parts from all of them and combine it into the best damn MCP interfaces the world has ever seen.
+
+## Original Idea
+
+Investigate opencode, codex, crush, etc, and look at their MCP tool call arguments, description, etc for tools like edit, glob, find, read, list, spawnSubagent, etc. Take all the best parts from all of them and combine it into the best damn MCP interfaces the world has ever seen.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Investigate opencode, codex, crush, etc, and look at their MCP tool call arguments, description, etc for tools like edit, glob, find, read, list, spawnSubagent, etc. Take all the best parts from all of them and combine it into the best damn MCP interfaces the world has ever seen."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P25 (Phase): MCP Tool Interface Enhancement
+  - P25.M1.E1.T001: Audit opencode/codex/crush MCP tool interfaces from ref-projects/
+  - P25.M1.E1.T002: Document best patterns from each CLI tool interface audit
+  - P25.M2.E1.T001: Improve bash_tool/execute_shell MCP interface
+  - P25.M2.E2.T001: Improve file editing MCP tools (edit, glob, read, write, list)
+  - P25.M2.E3.T001: Improve spawn_subagent MCP tool interface
+  - P25.M3.E1.T001: Integration tests for improved MCP tool interfaces
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

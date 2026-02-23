@@ -1,0 +1,17 @@
+---
+id: P15.M7.E5.T022
+title: 'T22: Runtime Orchestration'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M7.E5.T021
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:03:53.570490+00:00'
+started_at: '2026-02-18T09:03:53.570490+00:00'
+completed_at: '2026-02-18T10:32:05.050850+00:00'
+duration_minutes: 88.19133913333333
+---
+Persona activation/deactivation. Subordinate scaling. Health monitoring.

@@ -1,0 +1,44 @@
+---
+id: P18.M1.E1.T005
+title: Write backfill migration for existing workspace owners
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P18.M1.E1.T003
+tags:
+- security
+- workspace
+- migration
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:57:37.285097+00:00'
+started_at: '2026-02-17T16:57:37.285097+00:00'
+completed_at: '2026-02-17T16:58:51.049860+00:00'
+duration_minutes: 1.2294124666666666
+---
+
+# Write backfill migration for existing workspace owners
+
+## Description
+
+Create a data migration that inserts `owner` membership records for all existing workspaces that don't already have one.
+
+## Requirements
+
+- [ ] Create a new migration that runs after the workspace_members table exists
+- [ ] Query all workspaces and insert owner membership for each workspace.owner_id
+- [ ] Skip workspaces that already have a membership record for the owner (idempotent)
+- [ ] Set `joined_at` to the workspace's `inserted_at` timestamp
+- [ ] Handle large datasets efficiently (batch if necessary)
+
+## Acceptance Criteria
+
+- [ ] Migration runs cleanly on databases with existing workspaces
+- [ ] Migration is idempotent — safe to run multiple times
+- [ ] Every workspace has exactly one owner membership after migration
+- [ ] Migration works on empty databases (no-op)
+
+## Context
+
+**Files affected**: `priv/repo/migrations/`

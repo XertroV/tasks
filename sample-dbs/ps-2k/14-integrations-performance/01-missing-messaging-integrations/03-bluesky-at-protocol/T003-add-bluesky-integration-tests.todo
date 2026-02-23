@@ -1,0 +1,28 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T09:17:06.904659+00:00'
+started_at: '2026-02-13T09:17:06.904659+00:00'
+completed_at: '2026-02-13T09:36:17.179044+00:00'
+duration_minutes: 19.171238966666667
+---
+# Add Bluesky integration tests
+
+## Description
+Create comprehensive test coverage for the Bluesky integration modules covering client authentication, message handling, firehose processing, and session management.
+
+## Acceptance Criteria
+- [ ] `test/pag_server/integrations/bluesky/client_test.exs` with auth tests
+- [ ] `test/pag_server/integrations/bluesky/messages_test.exs` with post/reply tests
+- [ ] `test/pag_server/integrations/bluesky/firehose_test.exs` with event parsing tests
+- [ ] Mock HTTP responses for Bluesky API (bsky.social)
+- [ ] Mock WebSocket for firehose events
+- [ ] Tests cover DID resolution, facet parsing, rate limiting
+- [ ] Tests cover error scenarios (auth failure, rate limits)
+- [ ] All tests pass under 1 second each
+- [ ] `mix test` passes
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/integrations/telegram/`, `test/pag_server/integrations/matrix/`
+- Part of epic: P14.M1.E3 - Bluesky/AT Protocol Integration

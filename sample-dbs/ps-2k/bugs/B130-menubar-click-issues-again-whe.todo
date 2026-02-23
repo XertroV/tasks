@@ -1,0 +1,20 @@
+---
+id: B130
+title: menubar click issues again, when i open a menu (validation/agents/platform),
+  it should close when i click outside it. Also, wherever you implement this, make
+  sure to leave comments around there explaining the important things to maintain
+  this feature. It keeps getting broken accidentally.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:59:31.740312+00:00'
+started_at: '2026-02-18T02:59:31.740312+00:00'
+completed_at: '2026-02-18T03:01:22.740895+00:00'
+duration_minutes: 1.85000955
+---
+
+menubar click issues again, when i open a menu (validation/agents/platform), it should close when i click outside it. Also, wherever you implement this, make sure to leave comments around there explaining the important things to maintain this feature. It keeps getting broken accidentally.

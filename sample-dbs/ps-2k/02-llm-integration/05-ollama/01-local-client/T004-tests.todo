@@ -1,0 +1,38 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-07T10:13:22.472363+00:00'
+started_at: '2026-02-07T10:13:22.472363+00:00'
+completed_at: '2026-02-07T10:20:44.115434+00:00'
+duration_minutes: 7.360717683333333
+---
+id: P2.M5.E1.T004
+title: Write Ollama client tests
+status: pending
+priority: high
+estimate_hours: 0.5
+complexity: low
+depends_on: [P2.M5.E1.T003]
+
+description: |
+  Write comprehensive tests for Ollama HTTP client.
+
+acceptance_criteria:
+  - [ ] Test chat/3 with mock responses
+  - [ ] Test chat_stream/3 with mock SSE
+  - [ ] Test connection error handling
+  - [ ] Test timeout scenarios
+  - [ ] Test message formatting
+  - [ ] Test tool_calls in responses
+  - [ ] Mock HTTP requests with Mox/Bypass
+
+files:
+  - test/pag_server/llm/ollama_test.exs
+
+references:
+  - ExUnit async tests
+  - Bypass for HTTP mocking
+
+notes: |
+  Use Bypass to mock Ollama server responses.
+  Test both streaming and non-streaming modes.

@@ -1,0 +1,39 @@
+---
+id: B018
+title: plugin lifecycle disable/uninstall should not crash when AgentSpawner is unavailable
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- plugins
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:26:00.811319+00:00'
+started_at: '2026-02-15T17:26:00.811319+00:00'
+completed_at: '2026-02-15T17:28:48.102866+00:00'
+duration_minutes: 2.7881923166666667
+---
+PagServer.Plugins.Lifecycle disable/uninstall paths can crash with GenServer no process when PagServer.Plugins.AgentSpawner is not running. Handle unavailable process gracefully and keep lifecycle operations idempotent. Add regression tests for disable/uninstall with unavailable spawner.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:26 UTC
+**Primary task**: B017 - docs endpoint /api/openapi.json returns 500 due missing GenericResponse schema
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

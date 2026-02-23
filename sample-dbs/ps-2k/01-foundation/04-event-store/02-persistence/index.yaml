@@ -1,0 +1,53 @@
+# Epic: Event Persistence
+# Phase 1, Milestone 4, Epic 2 (P1.M4.E2)
+
+id: P1.M4.E2
+name: Event Persistence
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: [P1.M4.E1]
+
+tasks:
+  - id: T001
+    file: T001-persistence-layer.todo
+    title: Implement database persistence layer
+    status: pending
+    estimate_hours: 2.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-compression.todo
+    title: Add event compression (zstd)
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-query-helpers.todo
+    title: Create query helpers (by session, by agent, by type)
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T004
+    file: T004-persistence-tests.todo
+    title: Write persistence tests
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    # Implicit dependency on T001, T002, T003
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

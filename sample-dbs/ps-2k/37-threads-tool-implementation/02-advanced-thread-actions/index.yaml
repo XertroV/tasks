@@ -1,0 +1,23 @@
+id: P37.M2
+name: Advanced Thread Actions
+status: done
+estimate_hours: 20.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: fork, read, export, switch_model, parallel
+  path: 01-fork-read-export-switch-model
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

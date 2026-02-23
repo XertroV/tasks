@@ -1,0 +1,94 @@
+id: P48.M4.E1
+name: 'Epic C'': LSP in pag-connect'
+status: done
+estimate_hours: 15.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-pagconnect-lsp-transport-conte.todo
+  title: 'PagConnect.Lsp.Transport: Content-Length JSON-RPC over stdio'
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-pagconnect-lsp-client-genserve.todo
+  title: 'PagConnect.Lsp.Client GenServer: per-(language, root_path)'
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-pagconnect-lsp-registry-ets-ba.todo
+  title: 'PagConnect.Lsp.Registry: ETS-backed (language, root_path) -> client pid'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-pagconnect-lsp-serverdefs-11-b.todo
+  title: 'PagConnect.Lsp.ServerDefs: 11 built-in server definitions'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-pagconnect-lsp-supervisor-dyna.todo
+  title: 'PagConnect.Lsp.Supervisor: DynamicSupervisor for LspClient processes'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-pagconnect-lsp-executor-handle.todo
+  title: 'PagConnect.Lsp.Executor: handle ''lsp'' tool calls from pag-server'
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T007
+  file: T007-register-lsp-tool-with-pag-ser.todo
+  title: Register 'lsp' tool with pag-server via companion channel on connect
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T008
+  file: T008-working-directory-anchor-lsp-t.todo
+  title: 'Working directory: anchor LSP to session.working_directory from tool context'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-pag-connect-config-lsp-section.todo
+  title: 'pag-connect config: [lsp] section in config.toml'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T010
+  file: T010-tests-for-pag-connect-lsp-subs.todo
+  title: Tests for pag-connect LSP subsystem
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 10
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 10

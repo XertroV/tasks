@@ -1,0 +1,30 @@
+id: P52.M2.E2
+name: Authentication and session routing
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-auth-config-loading.todo
+  title: Implement auth/config loading for stdio runtime
+  status: done
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-workspace-and-session-targ.todo
+  title: Add workspace and session target resolution
+  status: done
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

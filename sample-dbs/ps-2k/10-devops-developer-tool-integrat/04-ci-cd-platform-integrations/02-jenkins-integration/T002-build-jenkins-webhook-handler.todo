@@ -1,0 +1,47 @@
+---
+id: P10.M4.E2.T002
+title: Build Jenkins webhook handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P10.M4.E2.T001
+tags:
+- webhooks
+- jenkins
+- event-handling
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:30:27.126061+00:00'
+started_at: '2026-02-12T04:30:27.126061+00:00'
+completed_at: '2026-02-12T04:42:38.040298+00:00'
+duration_minutes: 12.18190365
+---
+
+# Build Jenkins webhook handler
+
+Implement webhook receiver and event processor for Jenkins build events.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/jenkins/webhook_handler.ex` module
+- [ ] Define webhook event parsing for Jenkins events:
+  - [ ] Build started events
+  - [ ] Build completed events
+  - [ ] Build result changed events
+- [ ] Implement event signature verification (Jenkins webhook token)
+- [ ] Route events to appropriate handler functions
+- [ ] Implement idempotent event processing using build ID deduplication
+- [ ] Add comprehensive logging for webhook lifecycle
+- [ ] Write tests for valid and invalid webhook payloads
+
+## Acceptance Criteria
+
+- [ ] Webhook receiver validates Jenkins token correctly
+- [ ] Event parsing handles all documented Jenkins event types
+- [ ] Duplicate webhook events are deduplicated by build ID
+- [ ] Invalid tokens are rejected with 403 response
+- [ ] Webhook events trigger appropriate downstream handlers
+- [ ] All events logged with job name, build number, and status
+- [ ] `mix test` passes for all webhook tests
+- [ ] `mix lint` passes without warnings

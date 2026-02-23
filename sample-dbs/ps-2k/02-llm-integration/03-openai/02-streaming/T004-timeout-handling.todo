@@ -1,0 +1,97 @@
+---
+id: P2.M3.E2.T004
+title: Implement stream timeout handling
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- streaming
+- timeout
+- error-handling
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:49:01.006654'
+started_at: '2026-02-05T15:49:01.006654'
+completed_at: '2026-02-05T15:50:28.500385'
+duration_minutes: 1.4582286833333333
+---
+
+# Implement stream timeout handling
+
+Add timeout handling for streaming connections to prevent hanging.
+
+## Requirements
+
+- [ ] Support configurable `stream_timeout` (default: `:infinity`)
+- [ ] Timeout waiting for initial connection (:status, :headers)
+- [ ] Optional timeout between stream chunks
+- [ ] Raise clear timeout errors with context
+- [ ] Clean up resources on timeout
+- [ ] Allow different timeouts for connection vs streaming
+
+## Acceptance Criteria
+
+- [ ] `receive_timeout` controls connection establishment timeout
+- [ ] `stream_timeout` controls per-chunk timeout
+- [ ] Timeout errors include helpful context
+- [ ] Resources are cleaned up on timeout
+- [ ] Both timeouts are configurable
+- [ ] Tests verify timeout behavior
+- [ ] Default streaming timeout is `:infinity` (for long responses)
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex.ex` Lines 15-16 (timeout config)
+- `ref-projects/openai_ex/lib/openai_ex/http_sse.ex` (receive_with_timeout)
+
+**Key Points**:
+- Connection timeout (receive_timeout): 15s default
+- Stream timeout (stream_timeout): :infinity default (long generations)
+- OpenAI can take minutes for long responses
+- Timeout during connection != timeout during streaming
+- Must clean up Finch connection on timeout
+
+## Implementation Notes
+
+Timeout configuration:
+```elixir
+defstruct [
+  # ... other fields
+  receive_timeout: 15_000,      # Connection timeout (ms)
+  stream_timeout: :infinity      # Per-chunk timeout
+]
+```
+
+Receive with timeout helper:
+```elixir
+defp receive_with_timeout(ref, message_type, timeout) do
+  receive do
+    {^ref, ^message_type, value} -> {:ok, value}
+    {^ref, :error, error} -> {:error, error}
+  after
+    timeout -> :error  # Timeout error
+  end
+end
+```
+
+Stream chunk timeout:
+```elixir
+stream_receiver = fn acc ->
+  receive do
+    {^ref, :data, chunk} -> {[chunk], acc}
+    {^ref, :done} -> {:halt, acc}
+  after
+    stream_timeout -> {:halt, :timeout}
+  end
+end
+```
+
+Error handling:
+```elixir
+case receive_with_timeout(ref, :status, client.receive_timeout) do
+  {:ok, status} -> # Continue
+  :error -> {:error, Error.api_timeout_error(request)}
+end
+```

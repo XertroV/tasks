@@ -1,0 +1,17 @@
+---
+id: P45.M4.E1.T003
+title: Write rate limiter tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P45.M4.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.197536+00:00'
+started_at: '2026-02-19T19:17:35.197536+00:00'
+completed_at: '2026-02-19T19:51:10.403520+00:00'
+duration_minutes: 33.5867662
+---
+Unit tests for RateLimiter GenServer. Use unique_integer for agent IDs to avoid contamination. Cover: first 3 consecutive fetches succeed, 4th returns :rate_limited, after 30s (mocked via Process.send after or sleep_fn pattern) a token is refilled and next fetch succeeds. Test that different agent_ids have independent buckets.

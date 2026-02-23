@@ -1,0 +1,33 @@
+id: P47.M2
+name: Device Code State Machine & Polling Endpoints
+status: done
+estimate_hours: 8.0
+complexity: high
+depends_on:
+- P47.M1
+locked: false
+epics:
+- id: E1
+  name: DeviceCode Schema & State Machine
+  path: 01-devicecode-schema-state-machin
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Device Flow HTTP Endpoints
+  path: 02-device-flow-http-endpoints
+  status: done
+  estimate_hours: 5.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

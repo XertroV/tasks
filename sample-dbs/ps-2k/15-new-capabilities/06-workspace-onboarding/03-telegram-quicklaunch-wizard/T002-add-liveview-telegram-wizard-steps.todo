@@ -1,0 +1,46 @@
+---
+id: P15.M6.E3.T002
+title: Add LiveView Telegram wizard steps and connection checks
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M6.E3.T001
+- P15.M6.E2.T003
+tags:
+- liveview
+- telegram
+- onboarding
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:50:51.230706+00:00'
+started_at: '2026-02-17T17:50:51.230706+00:00'
+completed_at: '2026-02-17T18:09:17.935093+00:00'
+duration_minutes: 18.445072916666668
+---
+
+# Add LiveView Telegram wizard steps and connection checks
+
+## Owner Outcome
+- I can connect Telegram from the UI and immediately see whether chat is ready.
+
+## Implementation Notes
+Setup wizard exists at `lib/pag_server_web/live/setup_wizard.ex` with:
+- `telegram_config` step and `connectivity_check` step
+- HTML template at `lib/pag_server_web/live/setup_wizard.html.heex`
+- Bot token input field, mode select (polling/webhook), webhook URL input
+
+Still missing: real-time status badges (validating/connected/failed/retry),
+guided remediation text on failure, LiveView tests, and UX copy
+promising <10 minutes.
+
+## Acceptance Criteria
+- [x] Add Telegram step to onboarding LiveView collecting bot token, webhook URL, and confirmation action.
+- [x] Show real-time status badges for validating, connected, failed, and retry-needed states.
+  - `status_pill` component with 5 states. Badges shown on both telegram_config and connectivity_check steps.
+- [x] Provide guided remediation text when connection checks fail.
+  - `remediation_for/1` provides specific guidance for token/webhook/network errors. Improved to reference BotFather and HTTPS requirements.
+- [x] Add LiveView tests covering successful connect and common failure scenarios.
+  - 5 new tests: token-specific remediation, network remediation, badge transitions (validating->connected, validating->retry), badge visibility on config step.
+- [x] Confirm wizard copy references target outcome: owner can reach first Telegram chat in under 10 minutes.
+  - Header and checklist include "<10 minutes" copy. Per-step time estimates in navigation pills.

@@ -1,0 +1,295 @@
+---
+id: P2.M8.E2.T002
+title: Emit overflow warning telemetry event
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- context
+- telemetry
+- warnings
+claimed_by: claude-1
+claimed_at: '2026-02-05T19:02:32.530819'
+started_at: '2026-02-05T19:02:32.530819'
+completed_at: '2026-02-05T19:14:23.663900'
+duration_minutes: 11.852217866666667
+---
+
+# Emit overflow warning telemetry event
+
+
+
+## Requirements
+
+- [ ] Define telemetry event structure for context overflow warnings
+- [ ] Emit event with measurements (count: 1, overflow_tokens: excess)
+- [ ] Include comprehensive metadata (agent_id, session_id, model, provider, limits)
+- [ ] Emit event from `check_context_overflow/1` function when overflow detected
+- [ ] Emit event from auto-truncation fallback when reactive overflow occurs
+- [ ] Calculate overflow magnitude (tokens over limit)
+- [ ] Include model_spec details (provider, model name, version if available)
+- [ ] Follow existing telemetry naming convention: `[:pag_server, :agent, :context_overflow]`
+- [ ] Ensure event is emitted before returning error to caller
+- [ ] Add helper function to emit telemetry consistently
+
+## Acceptance Criteria
+
+- [ ] Telemetry event follows pattern:
+  ```elixir
+  :telemetry.execute(
+    [:pag_server, :agent, :context_overflow],
+    %{count: 1, overflow_tokens: token_count - limit},
+    %{
+      agent_id: agent_id,
+      session_id: session_id,
+      model: model_spec.model,
+      provider: model_spec.provider,
+      limit: limit,
+      token_count: token_count,
+      detection_method: :proactive | :reactive
+    }
+  )
+  ```
+- [ ] Helper function `emit_context_overflow_telemetry/4` exists:
+  ```elixir
+  defp emit_context_overflow_telemetry(state, model_spec, limit, token_count, opts \\ [])
+  ```
+- [ ] Event emitted from proactive overflow detection (`check_context_overflow/1`)
+- [ ] Event can be emitted from reactive overflow detection (auto-truncation, T003)
+- [ ] Includes `detection_method` to distinguish proactive vs reactive
+- [ ] Metadata includes all required fields (no nil values for required fields)
+- [ ] Overflow magnitude calculated correctly: `token_count - limit`
+- [ ] Model spec properly structured with provider and model name
+- [ ] Event emitted atomically (no partial emission on error)
+- [ ] Tests verify event emission with correct measurements
+- [ ] Tests verify event emission with correct metadata
+- [ ] Tests verify event emitted before error returned
+- [ ] Tests verify event emitted from multiple call sites
+- [ ] Tests use `:telemetry.attach/4` to capture events
+- [ ] Integration test verifies event visible to telemetry handlers
+- [ ] Documentation includes example telemetry handler:
+  ```elixir
+  :telemetry.attach(
+    "context-overflow-logger",
+    [:pag_server, :agent, :context_overflow],
+    fn event_name, measurements, metadata, _config ->
+      Logger.warning("""
+      Context overflow detected:
+        Agent: #{metadata.agent_id}
+        Session: #{metadata.session_id}
+        Model: #{metadata.provider}/#{metadata.model}
+        Token count: #{metadata.token_count}/#{metadata.limit}
+        Overflow: #{measurements.overflow_tokens} tokens
+        Detection: #{metadata.detection_method}
+      """)
+    end,
+    nil
+  )
+  ```
+- [ ] No compilation warnings after `mix lint`
+
+## Context
+
+**Plan References**:
+- Telemetry strategy: `.plan/2026-02-05-velvet-cascade/telemetry.md`
+- Agent telemetry: `lib/pag_server/agents/agent_server.ex:1968-1980`
+
+**Key Points**:
+- Telemetry events enable real-time monitoring and alerting
+- Distinguish between proactive (before request) and reactive (after error) detection
+- Overflow magnitude helps identify how far over limit requests are
+- Events feed into dashboards, logs, and alerting systems
+- Consistent event structure enables aggregation across sessions/agents
+
+**Existing Telemetry Events (for reference)**:
+```elixir
+# Agent lifecycle
+[:pag_server, :agent, :started]
+[:pag_server, :agent, :shutdown]
+[:pag_server, :agent, :invalid_transition]
+
+# LLM operations
+[:pag_server, :llm, :routing]
+[:pag_server, :llm, :failover]
+[:pag_server, :llm, :anthropic, :error]
+[:pag_server, :llm, :anthropic, :cache, :usage]
+[:pag_server, :llm, :anthropic, :cache, :savings]
+```
+
+## Implementation Notes
+
+### Event Structure Design
+
+**Measurements** (numeric data for aggregation):
+- `count: 1` - Enables counting overflow events
+- `overflow_tokens: integer()` - Magnitude of overflow (for percentile analysis)
+
+**Metadata** (dimensions for filtering/grouping):
+- `agent_id` - Which agent hit overflow
+- `session_id` - Which session (enables session-level analysis)
+- `model` - Model name (e.g., "claude-sonnet-4")
+- `provider` - Provider name (e.g., "anthropic")
+- `limit` - Configured context limit
+- `token_count` - Actual token count
+- `detection_method` - `:proactive` or `:reactive`
+
+### Helper Function Pattern
+```elixir
+defp emit_context_overflow_telemetry(state, model_spec, limit, token_count, opts \\ []) do
+  detection_method = Keyword.get(opts, :detection_method, :proactive)
+  overflow_tokens = token_count - limit
+  
+  :telemetry.execute(
+    [:pag_server, :agent, :context_overflow],
+    %{count: 1, overflow_tokens: overflow_tokens},
+    %{
+      agent_id: state.id,
+      session_id: state.session_id,
+      model: model_spec.model,
+      provider: model_spec.provider,
+      limit: limit,
+      token_count: token_count,
+      detection_method: detection_method
+    }
+  )
+end
+```
+
+### Call Sites
+
+**Proactive Detection** (T001):
+```elixir
+defp check_context_overflow(state) do
+  # ... token counting ...
+  
+  case LLMRegistry.count_tokens(model_spec, messages) do
+    {:ok, token_count} when token_count > limit ->
+      emit_context_overflow_telemetry(state, model_spec, limit, token_count, 
+        detection_method: :proactive)
+      {:error, %{reason: :context_overflow, token_count: token_count, limit: limit}}
+    # ...
+  end
+end
+```
+
+**Reactive Detection** (T003 - Auto-truncation):
+```elixir
+defp handle_overflow_error(state, error, token_count, limit) do
+  model_spec = build_model_spec(state.config)
+  emit_context_overflow_telemetry(state, model_spec, limit, token_count,
+    detection_method: :reactive)
+  # ... proceed with truncation ...
+end
+```
+
+### Testing Pattern
+```elixir
+defmodule PagServer.Agents.AgentServerTelemetryTest do
+  use ExUnit.Case, async: true
+  
+  setup do
+    # Attach telemetry handler to capture events
+    ref = make_ref()
+    test_pid = self()
+    
+    :telemetry.attach(
+      "test-#{inspect(ref)}",
+      [:pag_server, :agent, :context_overflow],
+      fn event_name, measurements, metadata, _config ->
+        send(test_pid, {:telemetry_event, event_name, measurements, metadata})
+      end,
+      nil
+    )
+    
+    on_exit(fn -> :telemetry.detach("test-#{inspect(ref)}") end)
+    
+    :ok
+  end
+  
+  test "emits context overflow event with correct measurements" do
+    # ... trigger overflow ...
+    
+    assert_receive {:telemetry_event, [:pag_server, :agent, :context_overflow], 
+                    measurements, metadata}
+    
+    assert measurements.count == 1
+    assert measurements.overflow_tokens > 0
+    assert metadata.detection_method == :proactive
+    assert metadata.token_count > metadata.limit
+  end
+end
+```
+
+### Example Telemetry Handlers
+
+**Logger Handler** (development):
+```elixir
+:telemetry.attach(
+  "context-overflow-logger",
+  [:pag_server, :agent, :context_overflow],
+  &__MODULE__.handle_overflow_event/4,
+  nil
+)
+
+def handle_overflow_event(_event, %{overflow_tokens: overflow}, metadata, _config) do
+  Logger.warning("""
+  Context overflow (#{metadata.detection_method}):
+    Model: #{metadata.provider}/#{metadata.model}
+    Overflow: #{overflow} tokens (#{metadata.token_count}/#{metadata.limit})
+    Agent: #{metadata.agent_id}, Session: #{metadata.session_id}
+  """)
+end
+```
+
+**Metrics Handler** (production):
+```elixir
+:telemetry.attach(
+  "context-overflow-metrics",
+  [:pag_server, :agent, :context_overflow],
+  &__MODULE__.record_overflow_metric/4,
+  nil
+)
+
+def record_overflow_metric(_event, measurements, metadata, _config) do
+  # Send to Prometheus/StatsD/etc
+  :telemetry_metrics.increment("pag_server.context_overflow.count", 
+    tags: [provider: metadata.provider, model: metadata.model])
+  
+  :telemetry_metrics.observe("pag_server.context_overflow.magnitude",
+    measurements.overflow_tokens,
+    tags: [provider: metadata.provider])
+end
+```
+
+## Notes
+
+- This task appears to already be implemented (status: done). Requirements document expected functionality.
+- Telemetry events are fire-and-forget (don't affect request flow)
+- Multiple handlers can attach to same event (logging, metrics, alerting)
+- Events enable observability without modifying core logic
+- The `detection_method` field enables analysis of proactive vs reactive overflow patterns
+- Future enhancement: Add `truncation_strategy` metadata when auto-truncation is applied
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 06:02 UTC
+**Primary task**: P2.M7.E3.T001 - Integrate tokenizer and pricing
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E2 vs P2.M7.E3)
+- No dependency chain: ✓ (verified at claim time)

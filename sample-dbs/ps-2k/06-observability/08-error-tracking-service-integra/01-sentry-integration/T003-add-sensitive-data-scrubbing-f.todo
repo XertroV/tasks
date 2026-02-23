@@ -1,0 +1,129 @@
+---
+id: P6.M8.E1.T003
+title: Add sensitive data scrubbing for error reports
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P6.M8.E1.T002
+tags:
+- observability
+- error-tracking
+- sentry
+- security
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:38:57.326220+00:00'
+started_at: '2026-02-07T06:38:57.326220+00:00'
+completed_at: '2026-02-07T06:46:22.758302+00:00'
+duration_minutes: 7.423867833333333
+---
+
+# Add sensitive data scrubbing for error reports
+
+Implement sensitive data scrubbing in the Sentry `before_send` pipeline to ensure API keys,
+user messages, authentication tokens, and other sensitive data are never sent to the external
+error tracking service. This is critical for security compliance.
+
+## Requirements
+
+- [ ] Extend the `before_send` callback (from T002) with scrubbing logic
+- [ ] Scrub from Sentry event `extra` context:
+  - [ ] Any key matching `*_key`, `*_token`, `*_secret`, `*_password`
+  - [ ] API keys (Anthropic, OpenAI, OpenRouter API keys)
+  - [ ] Bearer tokens and session tokens
+- [ ] Scrub from request data:
+  - [ ] Authorization headers
+  - [ ] Cookie headers
+  - [ ] Request body containing user messages (may include PII)
+- [ ] Scrub from exception messages:
+  - [ ] Detect and redact API keys in error messages (e.g., "Invalid API key: sk-ant-...")
+  - [ ] Redact URLs containing credentials
+- [ ] Scrub from breadcrumb data:
+  - [ ] User message content (replace with "[REDACTED - user message]")
+  - [ ] LLM response content (replace with "[REDACTED - LLM response]")
+- [ ] Implement scrubbing as composable functions (easy to add new patterns):
+  ```elixir
+  @scrub_patterns [
+    ~r/sk-ant-[a-zA-Z0-9_-]+/,          # Anthropic API keys
+    ~r/sk-[a-zA-Z0-9_-]{20,}/,           # OpenAI API keys
+    ~r/Bearer [a-zA-Z0-9_.-]+/,          # Bearer tokens
+    ~r/[a-zA-Z0-9+\/]{40,}={0,2}/        # Base64 encoded secrets
+  ]
+  ```
+- [ ] Add comprehensive tests that verify scrubbing works for each sensitive data type
+- [ ] Test that scrubbed events still contain useful debugging information
+
+## Acceptance Criteria
+
+- [ ] API keys are never present in Sentry events (test with known key patterns)
+- [ ] Authorization headers are scrubbed from request context
+- [ ] User message content is not sent to Sentry
+- [ ] LLM response content is not sent to Sentry
+- [ ] Scrubbed events still contain stack traces, agent_id, session_id (non-sensitive context)
+- [ ] Tests verify scrubbing for each pattern
+- [ ] No false positives scrubbing legitimate error context (e.g., don't scrub "session_id")
+
+## Context
+
+**Source**: Architecture audit flagged that without scrubbing, error reports sent to external
+Sentry servers could leak API keys (from error messages mentioning invalid keys), user PII
+(from agent conversation content), and authentication tokens.
+
+**Security**: This is a compliance requirement. Error tracking services are typically SaaS --
+sending sensitive data to them is a data breach risk.
+
+## Notes
+
+**Scrubbing Module**:
+```elixir
+defmodule PagServer.Observability.SentryScrubber do
+  @sensitive_keys ~w(api_key secret token password authorization cookie)a
+
+  @sensitive_patterns [
+    ~r/sk-ant-api\d{2}-[a-zA-Z0-9_-]+/,    # Anthropic keys
+    ~r/sk-[a-zA-Z0-9]{20,}/,                 # OpenAI keys
+    ~r/Bearer\s+[^\s]+/i                      # Bearer tokens
+  ]
+
+  def scrub_event(event) do
+    event
+    |> scrub_extra()
+    |> scrub_request()
+    |> scrub_breadcrumbs()
+    |> scrub_exception_messages()
+  end
+
+  defp scrub_extra(%{extra: extra} = event) do
+    scrubbed = extra
+    |> Enum.map(fn {k, v} ->
+      if sensitive_key?(k), do: {k, "[REDACTED]"}, else: {k, scrub_value(v)}
+    end)
+    |> Map.new()
+
+    %{event | extra: scrubbed}
+  end
+
+  defp sensitive_key?(key) when is_atom(key) do
+    key_str = Atom.to_string(key)
+    Enum.any?(@sensitive_keys, &String.contains?(key_str, Atom.to_string(&1)))
+  end
+
+  defp scrub_value(value) when is_binary(value) do
+    Enum.reduce(@sensitive_patterns, value, fn pattern, acc ->
+      Regex.replace(pattern, acc, "[REDACTED]")
+    end)
+  end
+  defp scrub_value(value), do: value
+end
+```
+
+**Integration in before_send**:
+```elixir
+def before_send(event) do
+  event
+  |> add_context()      # from T002
+  |> SentryScrubber.scrub_event()  # this task
+end
+```

@@ -1,0 +1,27 @@
+---
+id: P23.M2.E2.T001
+title: Implement CronScheduler GenServer
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P23.M2.E1.T002
+- P23.M2.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.789110+00:00'
+started_at: '2026-02-18T17:03:35.789110+00:00'
+completed_at: '2026-02-18T17:03:40.252692+00:00'
+duration_minutes: 0.07439288333333334
+---
+Core scheduler that fires actions when cron schedules trigger.
+
+## Acceptance Criteria
+- [ ] `PagServer.Plugins.Cron.CronScheduler` GenServer loads all enabled schedules from DB on start
+- [ ] Uses `Process.send_after/3` (not Quantum) to tick at next fire time; avoids external dependencies
+- [ ] On each tick: fires the action, updates `last_fired_at`, schedules next tick
+- [ ] Handles missed fires gracefully (schedule fires at next future occurrence if server was down)
+- [ ] Reloads schedules when notified via `reload/0` (called after CRUD operations)
+- [ ] Supervised under the cron plugin supervisor tree
+- [ ] Supports mockable sleep_fn for test performance

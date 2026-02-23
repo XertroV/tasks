@@ -1,0 +1,62 @@
+id: P48.M5.E1
+name: 'Epic D: LSP Auto-download and Follow-ons'
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-lspbinarymanager-auto-download.todo
+  title: 'LspBinaryManager: auto-download LSP server binaries on first use'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-per-workspace-download-cache-a.todo
+  title: Per-workspace download cache and version management
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T003
+  file: T003-download-progress-reporting-vi.todo
+  title: Download progress reporting via PubSub
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T004
+  file: T004-elixirls-git-config-corruption.todo
+  title: ElixirLS git/config corruption workaround
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-pag-connect-auto-download-mirr.todo
+  title: 'pag-connect auto-download: mirror LspBinaryManager in pag-connect'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T006
+  file: T006-integration-tests-for-auto-dow.todo
+  title: Integration tests for auto-download flow
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

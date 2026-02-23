@@ -1,0 +1,30 @@
+---
+id: P15.M15.E1.T002
+title: 'Extend LivePromptResolver: {{tools:summaries}}, {{runtime:*}}, {{var:*}} placeholder
+  families'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- persona
+- prompts
+- resolver
+claimed_by: cli-user
+claimed_at: '2026-02-19T13:52:33.346161+00:00'
+started_at: '2026-02-19T13:52:33.346161+00:00'
+completed_at: '2026-02-19T13:54:35.538953+00:00'
+duration_minutes: 2.0365463666666668
+---
+LivePromptResolver currently handles {{file:X}} placeholders. Extend it to also resolve:
+- {{tools:summaries}} — capability-filtered tool list with one-line descriptions
+- {{runtime:model}}, {{runtime:home}}, {{runtime:workspace}}, {{runtime:capabilities}} — runtime metadata
+- {{var:birth_words}} — agent variables stored in config
+
+The resolver needs to accept a context map with runtime info and tool registry access.
+
+Acceptance criteria:
+- All new placeholder types resolve correctly
+- Unknown placeholders pass through unchanged
+- Tests cover all variants

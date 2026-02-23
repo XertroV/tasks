@@ -1,0 +1,74 @@
+id: P48.M3
+name: LSP Plugin (pag-server, local workspaces)
+status: done
+estimate_hours: 30.0
+complexity: critical
+depends_on:
+- P48.M1
+locked: false
+epics:
+- id: E1
+  name: 'C1: LSP Transport Layer'
+  path: 01-c1-lsp-transport-layer
+  status: done
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: 'C2: LSP Client Manager'
+  path: 02-c2-lsp-client-manager
+  status: done
+  estimate_hours: 7.0
+  complexity: high
+  depends_on:
+  - P48.M3.E1
+  description: ''
+  locked: false
+- id: E3
+  name: 'C3: LSP Server Definitions'
+  path: 03-c3-lsp-server-definitions
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: 'C4: LSP Domain Tool and Auto-Diagnostics'
+  path: 04-c4-lsp-domain-tool-and-auto-di
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P48.M3.E2
+  description: ''
+  locked: false
+- id: E5
+  name: 'C5: LSP Plugin Structure and Configuration'
+  path: 05-c5-lsp-plugin-structure-and-co
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on:
+  - P48.M3.E1
+  description: ''
+  locked: false
+- id: E6
+  name: 'C6: LSP Plugin Tests'
+  path: 06-c6-lsp-plugin-tests
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on:
+  - P48.M3.E4
+  - P48.M3.E5
+  description: ''
+  locked: false
+stats:
+  total_tasks: 18
+  done: 18
+  in_progress: 0
+  blocked: 0
+  pending: 0

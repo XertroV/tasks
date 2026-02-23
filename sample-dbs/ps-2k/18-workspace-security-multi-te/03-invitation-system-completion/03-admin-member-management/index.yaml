@@ -1,0 +1,48 @@
+id: P18.M3.E3
+name: Admin Invitation & Member Management
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on:
+- P18.M3.E1
+tasks:
+- id: T001
+  file: T001-admin-invitation-perms.todo
+  title: Allow admin role to create and revoke invitations
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-member-listing-endpoint.todo
+  title: Add workspace member listing endpoint
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-member-update-removal.todo
+  title: Add member role update and removal endpoints
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P18.M3.E3.T002
+- id: T004
+  file: T004-admin-management-tests.todo
+  title: Add tests for admin and member management endpoints
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P18.M3.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

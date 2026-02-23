@@ -1,0 +1,26 @@
+---
+id: P55.M2.E3.T005
+title: Composer and toolbar components
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- component
+- composer
+- toolbar
+claimed_by: cli-user
+claimed_at: '2026-02-22T09:12:00.811571+00:00'
+started_at: '2026-02-22T09:12:00.811571+00:00'
+completed_at: '2026-02-22T10:51:37.158802+00:00'
+duration_minutes: 99.60578701666667
+---
+Create lib/pag_server_web/live/workspace_chat/composer.ex: textarea with phx-hook='ComposerTextarea' for Ctrl+Enter submit, send button (.btn variant primary). Disabled when agent_status is :processing or no active thread. Shows status text ('Processing...' / 'Ready'). Clear via push_event('clear_composer'). Create lib/pag_server_web/live/workspace_chat/toolbar.ex: agent name + status badge (.status_badge), model name, thread name. Both are function components receiving assigns.
+
+## Acceptance Criteria
+- Composer textarea with Ctrl+Enter submit hook
+- Send button disabled during processing or no active thread
+- Agent status text shown
+- Toolbar displays agent name, status badge, model
+- Send event calls AgentServer.queue_message_by_id/3

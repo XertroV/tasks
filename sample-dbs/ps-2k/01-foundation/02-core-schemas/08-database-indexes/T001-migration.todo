@@ -1,0 +1,38 @@
+---
+id: P1.M2.E8.T001
+title: Create index migration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:42:00.000000'
+started_at: '2026-02-05T23:42:00.000000'
+completed_at: '2026-02-05T23:42:30.000000'
+tags: [database, indexes, performance]
+---
+
+# Create index migration
+
+Create a migration to add the 5 missing performance indexes identified in the architectural review.
+
+## Requirements
+- [x] `stats(period_type, period_start, period_end)` - aggregator queries both boundaries
+- [x] `messages(content_hash)` - chain verification queries by hash
+- [x] `events(event_type, inserted_at)` - common filtering pattern
+- [x] `tool_calls(session_id, status)` - "find pending tools" query
+- [x] `sessions(fork_point_message_id)` - fork queries
+
+## Acceptance Criteria
+- [x] Migration file created at `priv/repo/migrations/20260205234200_add_missing_indexes.exs`
+- [x] All 5 indexes defined with appropriate names
+- [x] Partial indexes used where appropriate (WHERE clauses)
+- [x] Migration is reversible
+
+## Implementation Notes
+Created migration that adds:
+- `messages_content_hash_idx` - partial index where content_hash IS NOT NULL
+- `events_type_inserted_at_idx` - composite for event filtering
+- `tool_calls_session_status_idx` - composite for pending tool queries
+- `sessions_fork_point_idx` - partial index where fork_point_message_id IS NOT NULL

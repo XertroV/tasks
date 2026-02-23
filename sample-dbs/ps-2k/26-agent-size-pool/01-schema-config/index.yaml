@@ -1,0 +1,25 @@
+id: P26.M1
+name: Schema & Config
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Workspace Size Pool Config
+  path: 01-workspace-size-pool-config
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: Add size pool config to workspace schema and agent spawn request structs.
+    Defines the small/medium/large model pool settings and the size field on agent
+    spawn.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

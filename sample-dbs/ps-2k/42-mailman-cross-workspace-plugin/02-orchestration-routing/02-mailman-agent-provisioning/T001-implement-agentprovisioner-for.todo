@@ -1,0 +1,30 @@
+---
+id: P42.M2.E2.T001
+title: Implement AgentProvisioner for lazy mailman agent creation
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:19:28.857849+00:00'
+started_at: '2026-02-19T17:19:28.857849+00:00'
+completed_at: '2026-02-19T17:29:54.894506+00:00'
+duration_minutes: 10.433944133333334
+---
+## Context
+plugins/mailman/lib/agent_provisioner.ex
+Mailman agent is NOT created when plugin is enabled. It is lazily created on first incoming message.
+
+## Acceptance Criteria
+- [ ] ensure_mailman_agent/1 (workspace_id) - idempotent: returns existing agent_id from mailbox record or creates new one
+- [ ] Creates agent via Plugins.Api.spawn_agent with:
+  - name: __mailman__ (unique reserved name per workspace)
+  - system_prompt: routing instructions (see below)
+  - execution_mode: :transient
+  - model resolved from workspace small pool (WorkspaceModelPools.small field, first entry)
+  - capabilities restricted to workspace_mail tool only
+- [ ] System prompt instructs agent to: read routing rules from memory, identify message type, return structured RoutingDecision JSON
+- [ ] After creation: call Mailbox.update_mailman_agent/2 to persist agent_id on mailbox
+- [ ] get_system_prompt/0 - returns the mailman system prompt string (testable in isolation)

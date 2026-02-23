@@ -1,0 +1,40 @@
+---
+id: P10.M1.E4.T004
+title: Add PR review submission and inline comments
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- github
+- api
+- reviews
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:36:08.096504+00:00'
+started_at: '2026-02-12T00:36:08.096504+00:00'
+completed_at: '2026-02-12T01:16:30.977635+00:00'
+duration_minutes: 40.38135173333333
+---
+
+# Add PR review submission and inline comments
+
+Add agent-accessible actions for PR reviews with inline code comments and review submission.
+
+## Requirements
+
+- [ ] Add `create_pr_review_comment(repo, number, commit_id, path, position, body)` method
+- [ ] Add `reply_to_review_comment(repo, number, comment_id, body)` method
+- [ ] Create tool definitions: `github.pr_review_approve`, `github.pr_review_request_changes`, `github.pr_review_comment`
+- [ ] Tool definitions follow `Tools` behavior pattern with proper validation
+- [ ] Inline comment tools validate file path exists in PR diff
+- [ ] Review submission polls for completion and handles eventual consistency
+- [ ] Tool execute/3 returns appropriate `:ok`/`:error` responses
+
+## Acceptance Criteria
+
+- [ ] All API methods implemented and callable
+- [ ] Tool definitions are discoverable via `Tools.list/0`
+- [ ] Tool executor properly handles agent calls
+- [ ] Inline comments resolve to correct line numbers via commit/path
+- [ ] Error handling for invalid paths or commits

@@ -1,0 +1,57 @@
+id: P15.M9.E5
+name: Audit & Verification
+status: pending
+estimate_hours: 4.5
+complexity: medium
+depends_on:
+- P15.M9.E1
+- P15.M9.E2
+- P15.M9.E3
+- P15.M9.E4
+locked: false
+tasks:
+- id: T001
+  file: T001-audit-previously-completed-mes.todo
+  title: Audit previously completed MessageFormatter and related changes
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-audit-e1-e4-implementations.todo
+  title: Audit E1-E4 implementations for correctness and completeness
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M9.E1
+  - P15.M9.E2
+  - P15.M9.E3
+  - P15.M9.E4
+- id: T003
+  file: T003-verify-test-coverage-and-add-m.todo
+  title: Verify test coverage across all resilience code and add missing tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M9.E5.T001
+  - P15.M9.E5.T002
+- id: T004
+  file: T004-end-to-end-smoke-test-tool-cal.todo
+  title: End-to-end smoke test of tool call failure and recovery paths
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P15.M9.E5.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

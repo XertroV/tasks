@@ -1,0 +1,74 @@
+id: P15.M7.E6
+name: Agent Template Wiring & Bootstrap
+status: pending
+estimate_hours: 16.0
+complexity: high
+depends_on: []
+locked: false
+description: |
+  Wire the agent-persona workspace template through the system with proper agent template,
+  dramatic awakening initial message, temperature progression, and history redaction.
+  Addresses B140 (initial message injection) and agent template system gap.
+tasks:
+- id: T001
+  file: T001-schema-changes-workspace-template.todo
+  title: 'Schema Changes - WorkspaceTemplate Fields'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-agent-persona-template.todo
+  title: 'Create Agent-Persona Template File'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: [T001]
+- id: T003
+  file: T003-rewrite-agent-persona-workspace-template.todo
+  title: 'Rewrite Agent-Persona Workspace Template'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: [T001, T002]
+- id: T004
+  file: T004-bootstrap-prompt-layering-refactor.todo
+  title: 'Bootstrap Prompt Layering Refactor'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: [T003]
+- id: T005
+  file: T005-temperature-progression-history-redaction.todo
+  title: 'Temperature Progression & History Redaction'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: [T001]
+- id: T006
+  file: T006-setup-wiring-agent-creation.todo
+  title: 'Wiring - Setup Wizard & Agent Creation'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: [T001, T002, T003, T004]
+- id: T007
+  file: T007-agent-system-prompt-resolution.todo
+  title: 'agent_system_prompt Variable Resolution'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: [T002, T003]
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

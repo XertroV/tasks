@@ -1,0 +1,48 @@
+id: P18.M2.E2
+name: Agent Workspace Boundary Enforcement
+status: pending
+estimate_hours: 9.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-agent-workspace-scope.todo
+  title: Add workspace_id scope to Agents context queries
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-scope-flat-agent-routes.todo
+  title: Scope flat /api/v1/agents by user workspace memberships
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E2.T001
+- id: T003
+  file: T003-nested-agent-routes.todo
+  title: Add workspace-nested agent routes and controller delegation
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E2.T001
+- id: T004
+  file: T004-agent-isolation-tests.todo
+  title: Add tests for cross-workspace agent isolation
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

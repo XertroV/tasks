@@ -1,0 +1,73 @@
+---
+id: P9.M2.E2.T001
+title: Build RAG retrieval pipeline
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: low
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T06:48:48.897958+00:00'
+tags:
+- advanced
+- future
+- phase9
+started_at: '2026-02-11T06:48:48.897958+00:00'
+completed_at: '2026-02-11T07:01:47.563142+00:00'
+duration_minutes: 12.977752916666667
+---
+
+# Build RAG retrieval pipeline
+
+Implement retrieval-augmented generation pipeline.
+
+## Requirements
+
+- [ ] Query understanding (extract intent)
+- [ ] Hybrid search (vector + keyword)
+- [ ] Re-ranking retrieved results
+- [ ] Context injection with citations
+- [ ] Evaluate retrieval quality
+
+## Acceptance Criteria
+
+- [ ] Implementation complete
+- [ ] Unit tests pass (>80% coverage)
+- [ ] Integration tests pass
+- [ ] Documentation updated
+- [ ] No compilation warnings
+- [ ] Passes `mix credo --strict`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md`
+- `.plan/2026-02-05-velvet-cascade/architecture.md`
+
+**Key Points**:
+- Phase 9 is low priority - implement after core features
+- Memory efficiency: <512MB per session, <4GB total
+- All advanced features should be optional/configurable
+
+## Notes
+
+This is an advanced feature for Phase 9. Focus on core functionality first (Phases 1-6) before implementing.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-11 06:48 UTC
+**Sibling tasks**: P9.M2.E2.T002, P9.M2.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M2.E2.T001 → P9.M2.E2.T002 → P9.M2.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M2.E2.T001: .tasks/09-advanced/02-long-term-memory/02-retrieval/T001-rag-pipeline.todo
+- P9.M2.E2.T002: .tasks/09-advanced/02-long-term-memory/02-retrieval/T002-doc-indexing.todo
+- P9.M2.E2.T003: .tasks/09-advanced/02-long-term-memory/02-retrieval/T003-citation-tracking.todo

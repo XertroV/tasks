@@ -1,0 +1,76 @@
+id: P5.M01.E1
+name: Queue Manager
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-queuemanager-module.todo
+  title: Create QueueManager module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-enqueue-function.todo
+  title: Implement enqueue function
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-implement-should_interrupt?-lo.todo
+  title: Implement should_interrupt? logic
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T002
+- id: T004
+  file: T004-implement-pop_ready-function.todo
+  title: Implement pop_ready function
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T003
+- id: T005
+  file: T005-add-session-activity-tracking.todo
+  title: Add session activity tracking and idle timeout config
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P1.M2.E2.T002
+- id: T006
+  file: T006-implement-sessionjanitor-to-cl.todo
+  title: Implement SessionJanitor to close idle sessions and stop agents
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P5.M1.E1.T005
+  - P1.M3.E2.T001
+- id: T007
+  file: T007-add-tests-for-session-timeout.todo
+  title: Add tests for session timeout and cleanup
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P5.M1.E1.T006
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

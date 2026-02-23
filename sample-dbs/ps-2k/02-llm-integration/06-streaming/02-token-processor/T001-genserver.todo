@@ -1,0 +1,103 @@
+---
+id: P2.M6.E2.T001
+title: Create token processor GenServer
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- streaming
+- genserver
+- token-processing
+- otp
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:17:51.189923'
+started_at: '2026-02-05T17:17:51.189923'
+completed_at: '2026-02-05T17:21:01.752844'
+duration_minutes: 3.176048366666667
+---
+
+# Create token processor GenServer
+
+Implement a GenServer that processes LLM tokens as they arrive from the stream.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/token_processor.ex` GenServer module
+- [ ] Initialize with agent ID and callback function
+- [ ] Implement `handle_cast(:process_token, state)` for incoming tokens
+- [ ] Maintain state:
+  - [ ] Current message buffer (accumulating tokens)
+  - [ ] Agent ID reference
+  - [ ] Callback PID for notifications
+  - [ ] Token count
+  - [ ] Timestamp of first/last token
+- [ ] Process decoded SSE events:
+  - [ ] Extract text deltas from events
+  - [ ] Accumulate into message buffer
+  - [ ] Notify callback on each token
+  - [ ] Detect message boundaries (start/stop events)
+- [ ] Handle GenServer lifecycle:
+  - [ ] Clean initialization
+  - [ ] Graceful termination
+  - [ ] Crash recovery (linked to agent)
+
+## Acceptance Criteria
+
+- [ ] GenServer starts successfully with `GenServer.start_link/2`
+- [ ] Processes tokens via `GenServer.cast/2`
+- [ ] Accumulates tokens correctly in order
+- [ ] Invokes callback function for each token
+- [ ] Maintains accurate token count
+- [ ] Handles message start/stop events
+- [ ] No memory leaks (buffer cleared after message completion)
+- [ ] Compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` Line 1121-1124 (P2.M6 Stream Processing)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section on streaming architecture
+
+**Key Points**:
+- One TokenProcessor per active streaming request
+- Processes tokens as they arrive (cast, not call)
+- Notifies agent GenServer for each token (Phoenix Channel broadcast)
+- Must be fast to avoid backpressure on HTTP stream
+- Linked to agent GenServer for crash recovery
+
+**Token Processing Flow**:
+```
+SSEParser → SSEDecoder → TokenProcessor → Agent GenServer → Phoenix Channel
+```
+
+## Notes
+
+**Example Usage**:
+```elixir
+{:ok, processor} = TokenProcessor.start_link(
+  agent_id: "agent_123",
+  callback: fn token ->
+    # Broadcast to Phoenix Channel
+    PAGServerWeb.Endpoint.broadcast("agent:agent_123", "token", %{text: token})
+  end
+)
+
+# From HTTP stream handler
+GenServer.cast(processor, {:process_event, %ContentBlockDelta{text: "Hello"}})
+```
+
+**State Structure**:
+```elixir
+%{
+  agent_id: "agent_123",
+  callback: #Function<...>,
+  buffer: "",
+  token_count: 0,
+  started_at: ~U[2026-02-05 12:00:00Z],
+  last_token_at: ~U[2026-02-05 12:00:01Z]
+}
+```
+
+Consider using `GenStage` if backpressure becomes an issue (future optimization).

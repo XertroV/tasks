@@ -1,0 +1,75 @@
+---
+id: P9.M1.E2.T001
+title: Integrate HNSWLib NIF
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:49:08.325499+00:00'
+tags:
+- advanced
+- future
+- phase9
+started_at: '2026-02-11T02:49:08.325499+00:00'
+completed_at: '2026-02-11T03:15:00.000000+00:00'
+---
+
+# Integrate HNSWLib NIF
+
+Add Elixir NIF bindings for HNSWLib in-memory vector index.
+
+## Requirements
+
+- [x] Add hnswlib dependency (optional, v0.1.7)
+- [x] Configure NIF compilation (handled by hnswlib hex package)
+- [x] Implement index creation API
+- [x] Add/search vectors in memory
+- [x] Handle index serialization/deserialization
+
+## Acceptance Criteria
+
+- [x] Implementation complete
+- [x] Unit tests pass (31 tests, 0 failures)
+- [x] Integration tests pass (hnswlib NIF backend tests included)
+- [x] Documentation updated (comprehensive @moduledoc and @doc)
+- [x] No compilation warnings
+- [ ] Passes `mix credo --strict` (not verified)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md`
+- `.plan/2026-02-05-velvet-cascade/architecture.md`
+
+**Key Points**:
+- Phase 9 is low priority - implement after core features
+- Memory efficiency: <512MB per session, <4GB total
+- All advanced features should be optional/configurable
+
+## Notes
+
+This is an advanced feature for Phase 9. Focus on core functionality first (Phases 1-6) before implementing.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:49 UTC
+**Primary task**: P9.M5.E4.T005 - Implement LLM provider registration from plugins
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P9.M1.E2 vs P9.M5.E4)
+- No dependency chain: ✓ (verified at claim time)

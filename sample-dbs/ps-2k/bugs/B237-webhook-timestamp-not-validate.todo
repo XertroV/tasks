@@ -1,0 +1,18 @@
+---
+id: B237
+title: Webhook timestamp not validated - replay attacks possible
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- security
+- webhook
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.683649+00:00'
+started_at: '2026-02-23T05:59:32.683649+00:00'
+completed_at: '2026-02-23T05:59:50.165486+00:00'
+duration_minutes: 0.29136368333333335
+---
+github_webhook_controller.ex:85-91 - Signature verified but timestamp freshness not checked

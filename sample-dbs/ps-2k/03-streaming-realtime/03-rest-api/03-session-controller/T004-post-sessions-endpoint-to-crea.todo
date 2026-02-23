@@ -1,0 +1,154 @@
+---
+id: P3.M3.E3.T004
+title: POST /sessions endpoint to create session
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- rest
+- crud
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:25:35.405803+00:00'
+started_at: '2026-02-08T04:25:35.405803+00:00'
+completed_at: '2026-02-08T04:33:49.298526+00:00'
+duration_minutes: 8.231545233333334
+---
+
+# POST /sessions endpoint to create session
+
+
+
+## Requirements
+
+- [ ] Create `POST /sessions` endpoint in `lib/pag_server_web/controllers/session_controller.ex`
+- [ ] Implement `create/2` action following Phoenix controller patterns
+- [ ] Accept JSON request body with session configuration
+- [ ] Validate required field (agent_id)
+- [ ] Verify agent exists before creating session
+- [ ] Create session record with initial context
+- [ ] Initialize message chain for event sourcing
+- [ ] Return 201 Created with session details on success
+- [ ] Return 422 Unprocessable Entity on validation errors
+- [ ] Return 404 if agent doesn't exist
+
+## Acceptance Criteria
+
+- [ ] Accepts JSON body with `agent_id` (required), and optional `parent_session_id`, `initial_context`, `metadata` fields
+- [ ] Validates `agent_id` is valid UUID and agent exists
+- [ ] Generates UUID for session_id
+- [ ] Creates session record in database with status "active"
+- [ ] If `parent_session_id` provided, validates parent exists and copies context
+- [ ] Initializes empty message chain with genesis hash
+- [ ] Returns 201 with JSON response: `{id, agent_id, status, created_at, parent_session_id, metadata}`
+- [ ] Returns 404 if agent_id doesn't exist
+- [ ] Returns 422 if parent_session_id invalid or doesn't exist
+- [ ] Returns 422 for validation errors (missing agent_id, invalid UUIDs)
+- [ ] Test coverage: valid creation, missing agent_id, invalid agent, with parent session, without parent, invalid parent
+- [ ] Handles concurrent session creation for same agent
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 245-267 (Sessions domain)
+- Event sourcing with hash-linked message chains
+
+**Key Points**:
+- Session links to agent, not vice versa (one agent, many sessions)
+- Parent session enables forking for parallel queries
+- Initialize with genesis hash for event chain integrity
+- Session creation doesn't start agent processing
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PagServerWeb.SessionController do
+  use PagServerWeb, :controller
+  alias PagServer.Sessions.Session
+  alias PagServer.Schema.Session, as: SessionSchema
+
+  def create(conn, params) do
+    with {:ok, attrs} <- validate_params(params),
+         {:ok, agent} <- verify_agent_exists(attrs.agent_id),
+         {:ok, initial_context} <- maybe_copy_parent_context(attrs),
+         {:ok, session} <- Session.create(attrs, initial_context) do
+      conn
+      |> put_status(:created)
+      |> put_resp_header("location", ~p"/api/sessions/#{session.id}")
+      |> json(%{
+        id: session.id,
+        agent_id: session.agent_id,
+        parent_session_id: session.parent_session_id,
+        status: session.status,
+        created_at: session.inserted_at,
+        metadata: session.metadata,
+        message_count: 0,
+        context_hash: session.genesis_hash
+      })
+    else
+      {:error, :agent_not_found} ->
+        conn |> put_status(:not_found) |> json(%{error: "Agent not found"})
+      
+      {:error, :parent_not_found} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{error: "Parent session not found"})
+      
+      {:error, %Ecto.Changeset{} = changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: translate_errors(changeset)})
+    end
+  end
+
+  defp maybe_copy_parent_context(%{parent_session_id: nil}), do: {:ok, []}
+  defp maybe_copy_parent_context(%{parent_session_id: parent_id}) do
+    case Session.get_context(parent_id) do
+      {:ok, context} -> {:ok, context}
+      {:error, _} -> {:error, :parent_not_found}
+    end
+  end
+end
+```
+
+Request example (new session):
+```json
+POST /api/sessions
+{
+  "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "metadata": {"purpose": "code_review", "branch": "feature-x"}
+}
+```
+
+Request example (forked session):
+```json
+POST /api/sessions
+{
+  "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "parent_session_id": "parent-uuid-here",
+  "metadata": {"fork_reason": "parallel_query"}
+}
+```
+
+Response example (201 Created):
+```json
+{
+  "id": "session-uuid",
+  "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "parent_session_id": null,
+  "status": "active",
+  "created_at": "2026-02-06T10:30:00Z",
+  "metadata": {"purpose": "code_review"},
+  "message_count": 0,
+  "context_hash": "genesis-hash-abc123"
+}
+```
+
+Edge cases:
+- Parent session from different agent - allow or reject?
+- Very deep fork chains - validate max depth?
+- Parent session marked deleted - reject
+- Circular parent references - validate

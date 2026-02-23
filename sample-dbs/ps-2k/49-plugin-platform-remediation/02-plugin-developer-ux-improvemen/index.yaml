@@ -1,0 +1,24 @@
+id: P49.M2
+name: Plugin Developer UX Improvements
+status: done
+estimate_hours: 16.0
+complexity: high
+depends_on:
+- P49.M1
+locked: false
+epics:
+- id: E1
+  name: Unify plugin authoring contract and developer ergonomics
+  path: 01-unify-plugin-authoring-contrac
+  status: done
+  estimate_hours: 16.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

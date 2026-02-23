@@ -1,0 +1,405 @@
+---
+id: P1.M3.E1.T004
+title: Add PubSub broadcasting
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P1.M3.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:54:09.533412'
+started_at: '2026-02-05T08:54:09.533412'
+completed_at: '2026-02-05T08:57:42.521602'
+tags:
+- agent
+- pubsub
+- broadcasting
+- events
+- foundation
+---
+
+# Add PubSub broadcasting
+
+Implement Phoenix.PubSub broadcasting for agent events to enable real-time UI updates and monitoring.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/broadcaster.ex` module
+- [ ] Implement `broadcast_started/1` function
+  - [ ] Event: `agent_started`
+  - [ ] Payload: `%{agent_id: ..., timestamp: ...}`
+  
+- [ ] Implement `broadcast_stopped/1` function
+  - [ ] Event: `agent_stopped`
+  - [ ] Payload: `%{agent_id: ..., reason: ..., timestamp: ...}`
+  
+- [ ] Implement `broadcast_token/2` function
+  - [ ] Event: `llm_token`
+  - [ ] Payload: `%{agent_id: ..., token: ..., index: ...}`
+  
+- [ ] Implement `broadcast_state_changed/2` function
+  - [ ] Event: `state_changed`
+  - [ ] Payload: `%{agent_id: ..., from: ..., to: ..., timestamp: ...}`
+  
+- [ ] Implement `broadcast_tool_start/2` function
+  - [ ] Event: `tool_start`
+  - [ ] Payload: `%{agent_id: ..., tool: ..., args: ...}`
+  
+- [ ] Implement `broadcast_tool_complete/3` function
+  - [ ] Event: `tool_complete`
+  - [ ] Payload: `%{agent_id: ..., tool: ..., result: ...}`
+  
+- [ ] Use topic pattern: `"agents:#{agent_id}"`
+- [ ] Add module documentation with subscription examples
+- [ ] Integrate broadcasting into Agent GenServer callbacks
+
+## Acceptance Criteria
+
+- [ ] File `lib/pag_server/agents/broadcaster.ex` exists
+- [ ] All 6 broadcast functions implemented
+- [ ] Functions use Phoenix.PubSub.broadcast
+- [ ] Topic format: `"agents:#{agent_id}"`
+- [ ] Events include timestamps
+- [ ] Agent GenServer calls broadcaster on state changes
+- [ ] Code compiles without warnings
+- [ ] Module follows architecture.md guidelines (<100 LoC target)
+- [ ] Documentation includes subscription examples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain - Broadcaster)
+- Phoenix.PubSub documentation for real-time events
+
+**Key Design Points**:
+- **Topic per agent**: `"agents:#{agent_id}"` allows subscribing to specific agents
+- **Lightweight events**: Broadcast only essential data, not full state
+- **Real-time UI**: Enables streaming tokens to web UI, Telegram, etc.
+- **Monitoring**: External processes can monitor agent health
+
+## Implementation Guide
+
+### Broadcaster Module
+
+```elixir
+defmodule PagServer.Agents.Broadcaster do
+  @moduledoc """
+  Phoenix.PubSub broadcasting for agent events.
+  
+  Agents broadcast events to topic `"agents:#{agent_id}"` for real-time
+  updates to connected clients (web UI, Telegram, etc.).
+  
+  ## Available Events
+  
+  - `agent_started` - Agent process started
+  - `agent_stopped` - Agent process terminated
+  - `llm_token` - Streaming token from LLM
+  - `state_changed` - Agent state transition
+  - `tool_start` - Tool execution started
+  - `tool_complete` - Tool execution completed
+  
+  ## Subscribing to Events
+  
+      # Subscribe to all events for an agent
+      Phoenix.PubSub.subscribe(PagServer.PubSub, "agents:abc123")
+      
+      # Handle events
+      def handle_info({:agent_event, "llm_token", payload}, state) do
+        IO.puts(payload.token)
+        {:noreply, state}
+      end
+  
+  ## Broadcasting from Agent
+  
+      # In Agent GenServer
+      alias PagServer.Agents.Broadcaster
+      
+      def init(opts) do
+        state = # ... initialize state
+        Broadcaster.broadcast_started(state.id)
+        {:ok, state}
+      end
+  """
+  
+  @pubsub PagServer.PubSub
+  
+  @doc """
+  Broadcast that an agent process has started.
+  
+  ## Examples
+  
+      Broadcaster.broadcast_started("abc123")
+  """
+  @spec broadcast_started(binary()) :: :ok | {:error, term()}
+  def broadcast_started(agent_id) do
+    broadcast(agent_id, "agent_started", %{
+      agent_id: agent_id,
+      timestamp: DateTime.utc_now()
+    })
+  end
+  
+  @doc """
+  Broadcast that an agent process has stopped.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `reason` - Termination reason (atom)
+  
+  ## Examples
+  
+      Broadcaster.broadcast_stopped("abc123", :normal)
+      Broadcaster.broadcast_stopped("abc123", :shutdown)
+  """
+  @spec broadcast_stopped(binary(), atom()) :: :ok | {:error, term()}
+  def broadcast_stopped(agent_id, reason) do
+    broadcast(agent_id, "agent_stopped", %{
+      agent_id: agent_id,
+      reason: reason,
+      timestamp: DateTime.utc_now()
+    })
+  end
+  
+  @doc """
+  Broadcast a streaming token from the LLM.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `token` - Text token string
+  
+  ## Examples
+  
+      Broadcaster.broadcast_token("abc123", "Hello")
+      Broadcaster.broadcast_token("abc123", " world")
+  """
+  @spec broadcast_token(binary(), binary()) :: :ok | {:error, term()}
+  def broadcast_token(agent_id, token) do
+    broadcast(agent_id, "llm_token", %{
+      agent_id: agent_id,
+      token: token
+    })
+  end
+  
+  @doc """
+  Broadcast an agent state transition.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `transition` - Map with `:from` and `:to` status
+  
+  ## Examples
+  
+      Broadcaster.broadcast_state_changed("abc123", %{
+        from: :idle,
+        to: :processing
+      })
+  """
+  @spec broadcast_state_changed(binary(), map()) :: :ok | {:error, term()}
+  def broadcast_state_changed(agent_id, %{from: from_status, to: to_status}) do
+    broadcast(agent_id, "state_changed", %{
+      agent_id: agent_id,
+      from: from_status,
+      to: to_status,
+      timestamp: DateTime.utc_now()
+    })
+  end
+  
+  @doc """
+  Broadcast that a tool execution has started.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `tool_call` - Map with `:name` and `:args`
+  
+  ## Examples
+  
+      Broadcaster.broadcast_tool_start("abc123", %{
+        name: "read_file",
+        args: %{path: "README.md"}
+      })
+  """
+  @spec broadcast_tool_start(binary(), map()) :: :ok | {:error, term()}
+  def broadcast_tool_start(agent_id, %{name: name, args: args}) do
+    broadcast(agent_id, "tool_start", %{
+      agent_id: agent_id,
+      tool: name,
+      args: args,
+      timestamp: DateTime.utc_now()
+    })
+  end
+  
+  @doc """
+  Broadcast that a tool execution has completed.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `tool_name` - Tool name string
+    - `result` - Tool execution result
+  
+  ## Examples
+  
+      Broadcaster.broadcast_tool_complete("abc123", "read_file", %{
+        content: "file contents..."
+      })
+  """
+  @spec broadcast_tool_complete(binary(), binary(), term()) ::
+          :ok | {:error, term()}
+  def broadcast_tool_complete(agent_id, tool_name, result) do
+    broadcast(agent_id, "tool_complete", %{
+      agent_id: agent_id,
+      tool: tool_name,
+      result: result,
+      timestamp: DateTime.utc_now()
+    })
+  end
+  
+  # Private Helpers
+  
+  defp broadcast(agent_id, event_type, payload) do
+    topic = topic_for(agent_id)
+    Phoenix.PubSub.broadcast(@pubsub, topic, {:agent_event, event_type, payload})
+  end
+  
+  defp topic_for(agent_id), do: "agents:#{agent_id}"
+end
+```
+
+### Integration with Agent GenServer
+
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  alias PagServer.Agents.Broadcaster
+  
+  @impl true
+  def init(opts) do
+    state = # ... initialize state
+    
+    # Broadcast agent started
+    Broadcaster.broadcast_started(state.id)
+    
+    {:ok, state}
+  end
+  
+  @impl true
+  def handle_info({:llm_token, token}, state) do
+    # Broadcast token
+    Broadcaster.broadcast_token(state.id, token)
+    
+    # Update state with token
+    {:noreply, state}
+  end
+  
+  @impl true
+  def terminate(reason, state) do
+    # Broadcast agent stopped
+    Broadcaster.broadcast_stopped(state.id, reason)
+    
+    :ok
+  end
+  
+  # Helper for state transitions
+  defp update_status(state, new_status) do
+    Broadcaster.broadcast_state_changed(state.id, %{
+      from: state.status,
+      to: new_status
+    })
+    
+    %{state | status: new_status}
+  end
+end
+```
+
+### Subscription Example (Web Channel)
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use Phoenix.Channel
+  
+  def join("agent:" <> agent_id, _params, socket) do
+    # Subscribe to agent events
+    Phoenix.PubSub.subscribe(PagServer.PubSub, "agents:#{agent_id}")
+    
+    {:ok, socket}
+  end
+  
+  def handle_info({:agent_event, "llm_token", payload}, socket) do
+    # Forward to client
+    push(socket, "llm_token", payload)
+    {:noreply, socket}
+  end
+  
+  def handle_info({:agent_event, "state_changed", payload}, socket) do
+    push(socket, "state_changed", payload)
+    {:noreply, socket}
+  end
+  
+  def handle_info({:agent_event, event_type, payload}, socket) do
+    push(socket, event_type, payload)
+    {:noreply, socket}
+  end
+end
+```
+
+## Notes
+
+### Event Types Summary
+
+| Event | When | Payload |
+|-------|------|---------|
+| `agent_started` | Agent init | `%{agent_id, timestamp}` |
+| `agent_stopped` | Agent terminate | `%{agent_id, reason, timestamp}` |
+| `llm_token` | LLM streams token | `%{agent_id, token}` |
+| `state_changed` | Status transition | `%{agent_id, from, to, timestamp}` |
+| `tool_start` | Tool execution starts | `%{agent_id, tool, args, timestamp}` |
+| `tool_complete` | Tool execution ends | `%{agent_id, tool, result, timestamp}` |
+
+### Topic Design
+
+```
+agents:abc-123-456-789  # Events for specific agent
+```
+
+Future topics (not in this task):
+```
+sessions:xyz-789        # Events for session (multi-agent)
+system:health           # System-wide health events
+```
+
+### Performance Considerations
+
+- PubSub is asynchronous (non-blocking)
+- Token broadcasting adds ~0.1ms overhead per token
+- Large tool results should be truncated in broadcast
+- Consider rate limiting for high-frequency tokens
+
+### Testing Strategy
+
+Tests (T005) will verify:
+- All broadcast functions publish to correct topic
+- Events include required fields
+- Agent GenServer integration works
+- Subscribers receive events
+- No errors on broadcast failure
+
+## Troubleshooting
+
+**Error**: PubSub not started
+- Ensure `PagServer.PubSub` is in application supervision tree
+- Check `config/config.exs` has PubSub configuration
+
+**Issue**: Events not received
+- Verify subscription: `Phoenix.PubSub.subscribe(PagServer.PubSub, "agents:#{id}")`
+- Check topic format matches: `"agents:#{agent_id}"`
+- Ensure handle_info pattern matches: `{:agent_event, event_type, payload}`
+
+**Issue**: Performance degradation
+- Too many subscribers to single agent
+- Large payloads in broadcasts (truncate tool results)
+- Consider batching high-frequency events

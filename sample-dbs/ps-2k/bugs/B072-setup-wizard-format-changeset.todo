@@ -1,0 +1,43 @@
+---
+id: B072
+title: Setup wizard format_changeset_errors crashes on non-changeset errors like :eacces
+  atom
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- bug
+- webui
+- setup-wizard
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:04:44.942253+00:00'
+started_at: '2026-02-17T09:04:44.942253+00:00'
+completed_at: '2026-02-17T09:29:29.001041+00:00'
+duration_minutes: 24.734312966666668
+---
+
+Setup wizard format_changeset_errors crashes on non-changeset errors like :eacces atom
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 09:04 UTC
+**Primary task**: B071 - Workspace creation fails with :eacces - default workspace_dir_root is /workspace (not writable in dev)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

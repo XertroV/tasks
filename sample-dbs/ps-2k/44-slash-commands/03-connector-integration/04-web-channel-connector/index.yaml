@@ -1,0 +1,30 @@
+id: P44.M3.E4
+name: Web Channel Connector
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-command-interception-to-ag.todo
+  title: Add command interception to AgentChannel WebSocket handler
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-command-interception-to-re.todo
+  title: Add command interception to REST API message endpoint
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

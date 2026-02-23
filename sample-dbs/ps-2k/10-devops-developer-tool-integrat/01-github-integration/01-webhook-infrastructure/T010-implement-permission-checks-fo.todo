@@ -1,0 +1,47 @@
+---
+id: P10.M1.E1.T010
+title: Implement permission checks for webhook management
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:10:15.052155+00:00'
+started_at: '2026-02-11T20:10:15.052155+00:00'
+completed_at: '2026-02-11T20:32:09.632943+00:00'
+duration_minutes: 21.909679583333332
+---
+
+# Implement permission checks for webhook management
+
+
+
+## Requirements
+
+Extend the permission system to support webhook and integration management permissions, ensuring users can only manage their own integrations and associated webhooks.
+
+## Description
+
+Permission checks must be added to the authentication system to control who can create, read, update, and delete GitHub integrations and their webhook subscriptions. This includes user-scoped access control where each user manages their own credentials.
+
+## Acceptance Criteria
+
+- [ ] Add webhook permissions to `PagServer.Auth.Permissions` module: `:manage_integrations`, `:manage_webhooks`
+- [ ] Create `PagServerWeb.Plugs.RequirePermissions` plug (if not existing) that validates capability permissions
+- [ ] IntegrationSettingsController operations scoped to current user_id via `conn.assigns[:current_user_id]`
+- [ ] WebhookSubscriptionController validates integration belongs to current user before allowing CRUD
+- [ ] DELETE operations check user ownership via FK traversal: subscription → integration → user
+- [ ] Return 404 (not 403) when user lacks access to resource (security best practice)
+- [ ] Permission checks applied at plug level in router, not repeated in controllers
+- [ ] All permission checks logged at `:debug` level with user_id and resource_id for audit trail
+
+## Implementation Notes
+
+- Update `lib/pag_server/auth/permissions.ex` to add new permission atoms to `@system_permissions`
+- Verify `PagServerWeb.Plugs.RequirePermissions` exists and works with the new atoms (reference: lines 40-100 of router.ex)
+- Controller access control: use pattern from ApiKeyController where `conn.assigns[:api_key].user_id` scopes results
+- Query constraint: `where(integration_id: ^id, user_id: ^user_id)` to prevent cross-user access
+- Use `FallbackController` to convert Ecto errors to HTTP 404 responses
+- Log permission denials at `:info` level (not `:debug`) for security monitoring

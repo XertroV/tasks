@@ -1,0 +1,33 @@
+---
+id: P15.M10.E3.T002
+title: Implement CLI provider adapter with strict timeout and output normalization
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on:
+- P15.M10.E3.T001
+tags:
+- plugin
+- web-search
+- cli
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:45:11.138929+00:00'
+started_at: '2026-02-17T15:45:11.138929+00:00'
+completed_at: '2026-02-17T15:52:36.701642+00:00'
+duration_minutes: 7.426044983333333
+---
+
+# Implement CLI provider adapter with strict timeout and output normalization
+
+
+
+## Requirements
+
+- Implement CLI-based provider adapter to execute external search CLIs with strict timeout and argument validation.
+- Normalize CLI output into shared result schema and map non-zero exit states to provider errors.
+
+## Acceptance Criteria
+
+- Adapter successfully parses expected JSON/text output into normalized result entries.
+- Timeout, malformed output, and command failure paths are covered by automated tests.

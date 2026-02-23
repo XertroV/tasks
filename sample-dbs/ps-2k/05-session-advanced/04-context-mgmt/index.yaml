@@ -1,0 +1,72 @@
+id: P5.M04
+name: Context Management
+status: pending
+estimate_hours: 10
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Message Chain
+  path: 01-message-chain
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+  description: Link messages with SHA256 hash chain
+- id: E2
+  name: Truncation Strategies
+  path: 02-truncation-strategies
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Keep most recent messages up to token limit
+- id: E3
+  name: Token Limits
+  path: 03-token-limits
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Use tiktoken for accurate token counting
+- id: E4
+  name: Session LLM Parameters
+  path: 04-session-llm-parameters
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Allow sessions to have additional LLM parameters (thinking, temperature,
+    etc.) that are settable per-session with defaults per model and quick aliases
+- id: E5
+  name: Message Search
+  path: 05-message-search
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E6
+  name: Conversation Export
+  path: 06-conversation-export
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E7
+  name: Message Archival
+  path: 07-message-archival
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 25
+  done: 25
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,31 @@
+---
+id: P49.M6.E1.T003
+title: Map signature identity claims into trust policy decisions
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:34:44.176688+00:00'
+started_at: '2026-02-20T14:34:44.176688+00:00'
+completed_at: '2026-02-20T14:46:51.337958+00:00'
+duration_minutes: 12.119354316666666
+---
+
+# Map signature identity claims into trust policy decisions
+
+
+
+## Requirements
+
+- Map verified signature identity claims to publisher trust policy decisions.
+- Define claim normalization so policy rules remain stable across verifier backends.
+- Reject ambiguous or missing claim mappings with explicit reason codes.
+
+## Acceptance Criteria
+
+- Signature identities map deterministically to policy publisher identities.
+- Policy decisions include identity mapping metadata for traceability.
+- Tests cover valid mapping, unknown identity, and ambiguous claim scenarios.

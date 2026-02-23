@@ -1,0 +1,38 @@
+id: P52.M2.E1
+name: Protocol handlers and API bridge
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-mcp-initialize-healt.todo
+  title: Implement MCP initialize, health, and list-tools handlers
+  status: done
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-tool-call-dispatch-t.todo
+  title: Implement tool-call dispatch to PAG API endpoints
+  status: done
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-normalize-api-and-transport-er.todo
+  title: Normalize API and transport errors into MCP responses
+  status: done
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

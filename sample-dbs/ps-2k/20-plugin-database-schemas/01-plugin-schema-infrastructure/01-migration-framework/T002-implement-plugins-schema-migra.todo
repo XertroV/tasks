@@ -1,0 +1,26 @@
+---
+id: P20.M1.E1.T002
+title: Implement Plugins.Schema.Migrator module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P20.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:10:43.068521+00:00'
+started_at: '2026-02-18T10:10:43.068521+00:00'
+completed_at: '2026-02-18T10:15:43.356198+00:00'
+duration_minutes: 5.004794316666667
+---
+## Acceptance Criteria
+- Module at lib/pag_server/plugins/schema/migrator.ex
+- Accepts a plugin name and list of migration modules
+- Each migration module implements up/0 and optionally down/0
+- Runs pending migrations in order using Ecto.Adapters.SQL.query/3 for DDL
+- Records completed migrations in plugin_schema_migrations
+- Wraps each migration in a transaction
+- Returns {:ok, ran_count} or {:error, reason}
+- Provides rollback/2 to run down migrations (for force_drop)
+- All table names validated via Plugins.Schema.Validator before execution

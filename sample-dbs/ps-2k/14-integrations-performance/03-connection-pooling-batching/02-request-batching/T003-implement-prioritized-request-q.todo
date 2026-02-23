@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:54:06.392852+00:00'
+started_at: '2026-02-13T06:54:06.392852+00:00'
+completed_at: '2026-02-13T07:36:36.920032+00:00'
+duration_minutes: 42.508785933333336
+---
+# Implement prioritized request queues
+
+## Description
+Create a priority queue system for LLM requests ensuring interactive user requests take precedence over background tasks while preventing starvation of lower-priority work.
+
+## Acceptance Criteria
+- [ ] `PagServer.LLM.Batching.PriorityQueue` module created
+- [ ] Priority levels: `:interactive`, `:background`, `:batch`
+- [ ] `enqueue/3` adds request with priority
+- [ ] `dequeue/1` returns highest priority available
+- [ ] Starvation prevention: lower priority gets chance after N high-priority
+- [ ] Queue depth limits per priority level
+- [ ] Request timeout tracking in queue
+- [ ] Telemetry events for queue depth/latency
+- [ ] Configurable priority weights
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/batching/`, `lib/pag_server/llm/pool/`
+- Part of epic: P14.M3.E2 - Request Batching

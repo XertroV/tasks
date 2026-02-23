@@ -1,0 +1,31 @@
+id: P48.M3.E5
+name: 'C5: LSP Plugin Structure and Configuration'
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on:
+- P48.M3.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-lsp-plugin-module-manifest-and.todo
+  title: LSP plugin module, manifest, and lifecycle
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-lsp-plugin-configuration-globa.todo
+  title: 'LSP plugin configuration: global flag and per-workspace config'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

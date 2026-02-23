@@ -1,0 +1,93 @@
+---
+id: P2.M6.E1.T003
+title: Add SSE parser tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P2.M6.E1.T002
+tags:
+- testing
+- streaming
+- sse
+- unit-tests
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:15:33.445649'
+started_at: '2026-02-05T17:15:33.445649'
+completed_at: '2026-02-05T17:15:47.276012'
+duration_minutes: 0.23050586666666667
+---
+
+# Add SSE parser tests
+
+Comprehensive test coverage for SSE parsing and event decoding.
+
+## Requirements
+
+- [ ] Create `test/pag_server/llm/sse_parser_test.exs`
+- [ ] Create `test/pag_server/llm/sse_decoder_test.exs`
+- [ ] Test SSE parser:
+  - [ ] Single complete event
+  - [ ] Multiple events in one chunk
+  - [ ] Event split across multiple chunks
+  - [ ] Multi-line data fields
+  - [ ] Events with and without `id` field
+  - [ ] Malformed SSE (missing delimiters)
+  - [ ] Empty events
+- [ ] Test event decoder:
+  - [ ] All Anthropic event types
+  - [ ] All OpenAI event types
+  - [ ] Invalid JSON handling
+  - [ ] Unknown event types
+  - [ ] Malformed event data
+
+## Acceptance Criteria
+
+- [ ] All tests pass with `mix test`
+- [ ] Test coverage >90% for both modules
+- [ ] Edge cases documented in test descriptions
+- [ ] No warnings from ExUnit
+- [ ] Tests run in <1 second
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md` (Testing strategy)
+- `.tasks/01-foundation/01-project-init/04-test-infra/` (Test infrastructure)
+
+**Key Points**:
+- Use property-based testing for chunked parsing (StreamData)
+- Mock provider responses for decoder tests
+- Test both happy path and error conditions
+- Verify memory efficiency (no leaks in long streams)
+
+## Notes
+
+**Example Test Structure**:
+```elixir
+defmodule PAGServer.LLM.SSEParserTest do
+  use ExUnit.Case, async: true
+
+  alias PAGServer.LLM.SSEParser
+
+  describe "parse_stream/1" do
+    test "parses single complete event" do
+      chunk = "event: test\ndata: {\"hello\":\"world\"}\n\n"
+      assert {:ok, events, ""} = SSEParser.parse_stream(chunk)
+      assert [%{event: "test", data: "{\"hello\":\"world\"}"}] = events
+    end
+
+    test "buffers incomplete event" do
+      chunk1 = "event: test\ndata: partial"
+      assert {:ok, [], buffer} = SSEParser.parse_stream(chunk1)
+      
+      chunk2 = " data\n\n"
+      assert {:ok, events, ""} = SSEParser.parse_stream(buffer <> chunk2)
+      assert [%{event: "test", data: "partial data"}] = events
+    end
+  end
+end
+```
+
+Use fixtures from `test/fixtures/sse_examples/` for realistic provider responses.

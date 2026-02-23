@@ -1,0 +1,18 @@
+---
+id: B055
+title: Do a thorough security review and fix all issues. Use subagents to review/fix
+  multiple aspects in parallel
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:55:00.076150+00:00'
+started_at: '2026-02-16T04:55:00.076150+00:00'
+completed_at: '2026-02-16T04:55:01.250999+00:00'
+duration_minutes: 0.019580649999999998
+---
+
+Do a thorough security review and fix all issues. Use subagents to review/fix multiple aspects in parallel

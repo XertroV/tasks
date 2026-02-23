@@ -1,0 +1,16 @@
+---
+id: P15.M12.E1.T001
+title: Add session_id FK column to bot_configs table
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:40:43.044512+00:00'
+started_at: '2026-02-18T06:40:43.044512+00:00'
+completed_at: '2026-02-18T06:45:02.309497+00:00'
+duration_minutes: 4.321082933333333
+---
+Write Ecto migration adding nullable session_id (binary_id FK) to bot_configs referencing sessions.id with on_delete: :nilify_all. Add DB index on session_id for reverse lookups. Migration file: priv/repo/migrations/<timestamp>_add_session_id_to_bot_configs.exs

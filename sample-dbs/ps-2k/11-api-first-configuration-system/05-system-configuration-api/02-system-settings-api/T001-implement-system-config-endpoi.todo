@@ -1,0 +1,74 @@
+---
+id: P11.M5.E2.T001
+title: Implement system config endpoints
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P11.M5.E1.T002
+tags:
+- api
+- http
+- system-configuration
+- admin
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:02:50.794945+00:00'
+started_at: '2026-02-12T23:02:50.794945+00:00'
+completed_at: '2026-02-12T23:23:37.783428+00:00'
+duration_minutes: 20.783141233333332
+---
+
+# Implement system config endpoints
+
+## Requirements
+
+- [ ] Create controller `PagServerWeb.SystemConfigController`
+- [ ] Implement GET `/api/v1/admin/config` - Retrieve current system configuration
+- [ ] Implement PUT `/api/v1/admin/config` - Update system configuration
+- [ ] Implement GET `/api/v1/admin/config/defaults` - Get configuration defaults
+- [ ] Implement GET `/api/v1/status` - Public status endpoint (no auth required)
+- [ ] Support config fields: api_version, max_agents, default_model, timeout_seconds, enable_streaming, log_level
+- [ ] Store system config in database or application environment
+- [ ] Add proper validation for all configurable fields
+- [ ] Include audit trail for config changes (who changed what, when)
+- [ ] Add feature flag support for experimental features
+
+## Acceptance Criteria
+
+- [ ] GET /config endpoint returns current config as JSON
+- [ ] GET /config endpoint accessible only to admins (401/403 if unauthorized)
+- [ ] PUT /config endpoint updates fields with validation
+- [ ] PUT /config endpoint only allows admins (401/403 if unauthorized)
+- [ ] PUT /config creates audit log entry with user, timestamp, and changes
+- [ ] GET /defaults endpoint returns hardcoded defaults
+- [ ] GET /status endpoint returns: status, version, uptime, provider_count, session_count
+- [ ] GET /status endpoint does NOT require authentication
+- [ ] Validation: max_agents > 0, timeout_seconds 5-300, log_level in [debug, info, warn, error]
+- [ ] Default model must match pattern "provider:model-name"
+- [ ] Field updates are independent (can change one field without others)
+- [ ] Telemetry events emitted on config change
+- [ ] Tests cover happy path, validation errors, authorization, audit logging
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 23:02 UTC
+**Primary task**: P11.M4.E2.T003 - Implement config validation per platform
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M5.E2 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

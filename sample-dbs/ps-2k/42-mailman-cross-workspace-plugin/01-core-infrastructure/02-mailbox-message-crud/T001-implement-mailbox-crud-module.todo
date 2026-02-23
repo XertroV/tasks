@@ -1,0 +1,16 @@
+---
+id: P42.M1.E2.T001
+title: Implement Mailbox CRUD module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:15:59.120134+00:00'
+started_at: '2026-02-19T17:15:59.120134+00:00'
+completed_at: '2026-02-19T17:19:12.835101+00:00'
+duration_minutes: 3.2285826166666665
+---
+## Context\nplugins/mailman/lib/mailbox.ex - all DB operations for mailboxes.\n\n## Acceptance Criteria\n- [ ] get_or_create_for_workspace/1 - idempotent upsert\n- [ ] get_by_workspace_id/1, get_by_address/1\n- [ ] update_mailman_agent/2 - set mailman_agent_id after lazy creation\n- [ ] set_default_recipient/2\n- [ ] deactivate/1, activate/1\n- [ ] All functions return {:ok, mailbox} | {:error, reason}

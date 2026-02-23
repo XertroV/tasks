@@ -1,0 +1,109 @@
+---
+completed_at: '2026-02-07T01:03:21.375919+00:00'
+complexity: low
+depends_on: []
+estimate_hours: 2.0
+id: P6.M1.E2.T001
+priority: medium
+status: done
+tags:
+- observability
+- stats
+- aggregation
+title: Implement Stats.Aggregator module
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:56:21.248733+00:00'
+started_at: '2026-02-07T00:56:21.248733+00:00'
+duration_minutes: 7.0021196
+---
+
+# Implement Stats.Aggregator module
+
+Create functions to aggregate stats across multiple dimensions (time, model, agent).
+
+## Requirements
+
+- [ ] Create `lib/pag_server/stats/aggregator.ex` module
+- [ ] Implement aggregation functions:
+  - [ ] `aggregate_by_time_period(stats, :hour | :day | :week)` → rollup stats
+  - [ ] `aggregate_by_model(stats)` → per-model totals
+  - [ ] `aggregate_by_agent(stats)` → per-agent totals
+  - [ ] `aggregate_global(stats)` → overall system totals
+- [ ] Support filtering by date range
+- [ ] Calculate derived metrics:
+  - [ ] Average tokens per request
+  - [ ] Average cost per request
+  - [ ] Requests per hour/day
+- [ ] Return aggregated stats in consistent format
+
+## Acceptance Criteria
+
+- [ ] Aggregation functions work with Stats.Tracker data
+- [ ] Time-based rollups accurate (hour/day/week)
+- [ ] Derived metrics calculated correctly
+- [ ] Handles empty/missing data gracefully
+- [ ] Performance: <100ms for 10k stat entries
+
+## Context
+
+**Key Points**:
+- Aggregate in-memory stats from Tracker GenServer
+- No database queries yet (persistence is next epic)
+- Use `Enum.group_by/2` and `Enum.reduce/3` for aggregation
+
+## Notes
+
+**Example Usage**:
+```elixir
+stats = Stats.Tracker.get_all_stats()
+hourly = Stats.Aggregator.aggregate_by_time_period(stats, :hour)
+by_model = Stats.Aggregator.aggregate_by_model(stats)
+```
+
+**Aggregated Stats Format**:
+```elixir
+%{
+  period: ~U[2026-02-05 15:00:00Z],
+  tokens_in: 12_500,
+  tokens_out: 5_800,
+  total_cost: 0.45,
+  request_count: 15,
+  avg_tokens_per_request: 1_220.0
+}
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 00:49 UTC
+**Sibling tasks**: P6.M1.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E2.T001 → P6.M1.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E2.T001: .tasks/06-observability/01-stats-tracker/02-aggregation/T001-aggregator.todo
+- P6.M1.E2.T002: .tasks/06-observability/01-stats-tracker/02-aggregation/T002-tests.todo
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 00:56 UTC
+**Sibling tasks**: P6.M1.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M1.E2.T001 → P6.M1.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M1.E2.T001: .tasks/06-observability/01-stats-tracker/02-aggregation/T001-aggregator.todo
+- P6.M1.E2.T002: .tasks/06-observability/01-stats-tracker/02-aggregation/T002-tests.todo

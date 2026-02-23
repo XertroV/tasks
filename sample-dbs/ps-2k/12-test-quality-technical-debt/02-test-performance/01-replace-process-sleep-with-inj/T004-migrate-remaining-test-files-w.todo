@@ -1,0 +1,36 @@
+---
+id: P12.M2.E1.T004
+title: Migrate remaining test files with sleeps
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:18:28.332390+00:00'
+started_at: '2026-02-13T20:18:28.332390+00:00'
+completed_at: '2026-02-13T20:50:51.886496+00:00'
+duration_minutes: 32.39256825
+---
+
+# Migrate remaining test files with sleeps
+
+## Description
+
+Audit and migrate all other test files that contain `Process.sleep` calls to use the injectable `sleep_fn` pattern or better synchronization.
+
+## Acceptance Criteria
+
+- [ ] Run `rg "Process.sleep" test/` to find all remaining occurrences
+- [ ] Prioritize files by number of sleeps
+- [ ] Migrate at least 3 additional test files
+- [ ] All tests pass
+- [ ] Overall test suite time reduced
+- [ ] Lint passes
+
+## Context
+
+- Related files: All files in `test/pag_server/` with `Process.sleep`
+- Pattern: `sleep_fn: fn _ -> :ok end` or `sleep_fn: fn ms -> :ok end`
+- Part of epic: Replace Process.sleep with Injectable Functions

@@ -1,0 +1,23 @@
+---
+id: P44.M4.E2.T001
+title: Call CommandRegistrar on plugin enable/disable
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:34:25.047439+00:00'
+started_at: '2026-02-19T19:34:25.047439+00:00'
+completed_at: '2026-02-19T19:34:31.206193+00:00'
+duration_minutes: 0.10264576666666667
+---
+## Summary
+Integrate command registration/unregistration into Plugins.Lifecycle.
+
+## Acceptance Criteria
+- [ ] Plugins.Lifecycle.enable/2 calls CommandRegistrar.register_plugin_commands/2 after tool registration
+- [ ] Plugins.Lifecycle.disable/2 calls CommandRegistrar.unregister_plugin_commands/1
+- [ ] Commands registered in on_enable/1 (via Plugins.Api.register_command) are also cleaned up on disable
+- [ ] Tests: plugin enable registers declared commands, plugin disable removes them, re-enable re-registers

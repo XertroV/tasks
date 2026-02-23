@@ -1,0 +1,41 @@
+id: P45.M7.E1
+name: Telemetry, Pruning & Tests
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-emit-telemetry-on-all-vault-op.todo
+  title: Emit telemetry on all vault operations
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P45.M3.E1.T003
+- id: T002
+  file: T002-implement-oban-worker-for-ttl.todo
+  title: Implement Oban worker for TTL-based version pruning
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on:
+  - P45.M1.E2.T002
+- id: T003
+  file: T003-end-to-end-smoke-test-and-mix.todo
+  title: End-to-end smoke test and mix lint cleanup
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P45.M6.E1.T004
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

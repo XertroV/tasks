@@ -1,0 +1,17 @@
+---
+id: P22.M1.E3.T002
+title: 'API: POST /api/v1/providers/:id/credentials/:cred_id/reset-cooldown endpoint'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:44.510744+00:00'
+started_at: '2026-02-18T17:04:44.510744+00:00'
+completed_at: '2026-02-18T17:17:37.364072+00:00'
+duration_minutes: 12.880888650000001
+---
+Add a manual reset endpoint to clear cooldown and reset status to :active for a specific credential. Useful for operators to manually unblock a credential after resolving the underlying issue. Acceptance criteria: - Sets status=:active, cooldown_until=nil - Returns updated credential status (without api_key) - Requires authentication - Returns 404 if credential not found

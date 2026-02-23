@@ -1,0 +1,42 @@
+---
+id: B108
+title: 'When we implement sending thoughts and tool calls to the agent over telegram
+  and other integrations, we should have a configuration option to hcoose between:
+  send only final message, send final msg + tool calls, send final + thinking, send
+  final + tools + thinking (everything)'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:24:18.250731+00:00'
+started_at: '2026-02-17T15:24:18.250731+00:00'
+completed_at: '2026-02-17T15:50:22.356934+00:00'
+duration_minutes: 26.068436433333332
+---
+
+When we implement sending thoughts and tool calls to the agent over telegram and other integrations, we should have a configuration option to hcoose between: send only final message, send final msg + tool calls, send final + thinking, send final + tools + thinking (everything)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 15:24 UTC
+**Primary task**: B107 - Sessions should have a model+provider associated with them. That model should be able to be changed after the agent has started. in the future (see I010) we'll have a slash command for this, but for now, update the validation console to support saving/updating this.
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

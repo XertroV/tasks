@@ -1,0 +1,46 @@
+---
+id: P27.M3.E1.T001
+title: Ephemeral session lifecycle tests
+status: done
+estimate_hours: 6.0
+complexity: low
+priority: high
+depends_on:
+- P27.M2.E1.T002
+tags:
+- test
+- session
+- ephemeral
+- lifecycle
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:51:07.429641+00:00'
+started_at: '2026-02-18T18:51:07.429641+00:00'
+completed_at: '2026-02-18T18:54:03.614051+00:00'
+duration_minutes: 2.936406666666667
+---
+
+# Ephemeral session lifecycle tests
+
+Write a comprehensive test suite covering the end-to-end lifecycle of ephemeral
+sessions: creation, agent association, auto-cleanup after completion, and exclusion
+from default listings.
+
+## Test Scenarios
+
+1. **Schema tests**: ephemeral flag defaults to false; changeset accepts `true`
+2. **Creation**: `Sessions.create_session(%{ephemeral: true})` persists an ephemeral session
+3. **Spawn path - no session_id**: `spawn_agent` creates an ephemeral session automatically
+4. **Spawn path - with session_id**: `spawn_agent` reuses the provided session, no new session created
+5. **Cleanup**: after agent completion, ephemeral session is deleted within grace period
+   (use `sleep_fn` option for mockable sleep to keep test fast)
+6. **Listing exclusion**: `list_sessions/1` excludes ephemeral sessions by default;
+   includes them with `include_ephemeral: true`
+7. **Cron integration**: cron dispatch with no session_id creates ephemeral session per invocation
+
+## Acceptance Criteria
+
+- [ ] All 7 scenarios above are covered by tests
+- [ ] Tests use `async: true` and unique identifiers to avoid contamination
+- [ ] No test uses `Process.sleep` directly; grace period is injected via option
+- [ ] Full test suite still runs under 20 seconds after addition of these tests
+- [ ] `mix test test/pag_server/sessions/ephemeral*` and related paths pass with no failures

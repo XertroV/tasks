@@ -1,0 +1,78 @@
+---
+id: P12.M2.E1.T001
+title: Create sleep-fn pattern documentation
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:18:28.329949+00:00'
+started_at: '2026-02-13T20:18:28.329949+00:00'
+completed_at: '2026-02-13T20:50:48.348577+00:00'
+duration_minutes: 32.33364361666666
+---
+
+# Create sleep-fn pattern documentation
+
+## Description
+
+Document the `sleep_fn` injection pattern used throughout the codebase for making `Process.sleep` calls mockable in tests. This pattern is already used in `Retry.with_retry/3` and embedding tests.
+
+## Acceptance Criteria
+
+- [ ] Document the pattern in `TEST_CONTAMINATION_INDEX.md` or a new guide
+- [ ] Include example code showing the pattern
+- [ ] Show how to use `sleep_fn: fn _ -> :ok end` in tests
+- [ ] Explain benefits: faster tests, deterministic timing
+- [ ] Reference existing implementations as examples
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/retry_test.exs`, `test/pag_server/embeddings/client_test.exs`
+- Existing examples: `Retry.with_retry/3` uses `sleep_fn` option
+- Part of epic: Replace Process.sleep with Injectable Functions
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-13 09:38 UTC
+**Primary task**: P12.M1.E3.T001 - Fix dialyzer warnings in deployment_guide_test.exs
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P12.M2.E1 vs P12.M1.E3)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 20:18 UTC
+**Sibling tasks**: P12.M2.E1.T002, P12.M2.E1.T003, P12.M2.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M2.E1.T001 → P12.M2.E1.T002 → P12.M2.E1.T003 → P12.M2.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M2.E1.T001: .tasks/12-test-quality-technical-debt/02-test-performance/01-replace-process-sleep-with-inj/T001-create-sleep-fn-pattern-docume.todo
+- P12.M2.E1.T002: .tasks/12-test-quality-technical-debt/02-test-performance/01-replace-process-sleep-with-inj/T002-migrate-agent-server-test-exs.todo
+- P12.M2.E1.T003: .tasks/12-test-quality-technical-debt/02-test-performance/01-replace-process-sleep-with-inj/T003-migrate-events-queries-test-ex.todo
+- P12.M2.E1.T004: .tasks/12-test-quality-technical-debt/02-test-performance/01-replace-process-sleep-with-inj/T004-migrate-remaining-test-files-w.todo

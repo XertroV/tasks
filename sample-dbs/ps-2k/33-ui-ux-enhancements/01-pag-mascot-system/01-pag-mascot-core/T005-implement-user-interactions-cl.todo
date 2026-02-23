@@ -1,0 +1,69 @@
+---
+id: P33.M1.E1.T005
+title: Implement user interactions (click, hover, pet)
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P33.M1.E1.T002
+tags:
+- interaction
+- ux
+- mascot
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:42:13.531722+00:00'
+started_at: '2026-02-18T22:42:13.531722+00:00'
+completed_at: '2026-02-18T22:49:32.588100+00:00'
+duration_minutes: 7.317606133333333
+---
+
+# Implement user interactions (click, hover, pet)
+
+Add interactive behaviors for users to engage with Pag mascot.
+
+## Interaction Types
+
+### Click/Tap
+- Triggers happy animation
+- Shows speech bubble with random message
+- Increases happiness +5
+
+### Double-Click (Pet)
+- Triggers special happy animation
+- Shows heart particles
+- Increases happiness +10
+
+### Hover
+- Shows tooltip with current mood
+- Mascot looks toward cursor
+- Slight bounce/greeting
+
+### Drag
+- User can drag mascot to new position
+- Position persists
+- Mascot reacts during drag
+
+### Context Menu (Right-click)
+- Feed option (restores hunger)
+- Play option (increases happiness)
+- Sleep option (starts sleep animation)
+
+## Speech Bubbles
+
+Random messages when clicked:
+- "Ribbit! Need help?"
+- "I'm watching your agents!"
+- "Everything looks great!"
+- "Have you fed me lately?"
+- "Working hard or hardly working?"
+
+## Acceptance Criteria
+
+- [ ] Click handler triggers happy animation
+- [ ] Hover shows tooltip with metrics
+- [ ] Double-click triggers pet animation
+- [ ] Drag functionality works smoothly
+- [ ] Context menu with feed/play/sleep options
+- [ ] Speech bubble appears on interaction
+- [ ] All interactions update metrics

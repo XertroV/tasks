@@ -1,0 +1,174 @@
+---
+id: P1.M3.E2.T002
+title: Add to application supervision tree
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M3.E2.T001
+claimed_by: claude
+claimed_at: '2026-02-05T09:10:28.052481'
+started_at: '2026-02-05T09:10:28.052481'
+completed_at: '2026-02-05T09:11:36.291985'
+tags:
+- supervision
+- otp
+- application
+- integration
+---
+
+# Add to application supervision tree
+
+Integrate `PagServer.Agents.Supervisor` into the main application supervision tree.
+
+## Requirements
+
+- [ ] Edit `lib/pag_server/application.ex`
+- [ ] Add `PagServer.Agents.Supervisor` to children list
+- [ ] Add `Registry` for agent lookup (`PagServer.AgentRegistry`)
+- [ ] Ensure correct ordering (Registry before Supervisor)
+- [ ] Verify application starts without errors
+- [ ] Verify supervisor is running after app start
+- [ ] Run `mix compile` to check for warnings
+- [ ] Commit changes with message "Add AgentSupervisor to application tree"
+
+## Acceptance Criteria
+
+- [ ] Application starts successfully with `mix phx.server`
+- [ ] `Supervisor.whereis(PagServer.Agents.Supervisor)` returns a PID
+- [ ] `Registry.whereis(PagServer.AgentRegistry)` returns a PID
+- [ ] No compilation warnings or errors
+- [ ] No runtime errors during startup
+- [ ] Application can be stopped cleanly (Ctrl+C)
+- [ ] Supervisor appears in `:observer.start()` supervision tree
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 1.2 (OTP Application Structure)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 2 (Project Structure)
+
+**Key Design Points**:
+- Registry must start before Supervisor (dependency ordering)
+- Registry provides O(1) agent lookup by ID
+- DynamicSupervisor manages agent process lifecycle
+- Both are critical infrastructure for agent system
+
+## Implementation Guide
+
+### Edit application.ex
+
+```elixir
+defmodule PagServer.Application do
+  use Application
+
+  @impl true
+  def start(_type, _args) do
+    children = [
+      # Database connection pool
+      PagServer.Repo,
+
+      # Registry for looking up agents by ID
+      {Registry, keys: :unique, name: PagServer.AgentRegistry},
+
+      # Dynamic supervisor for agent processes
+      {PagServer.Agents.Supervisor, name: PagServer.Agents.Supervisor},
+
+      # Phoenix PubSub for real-time updates
+      {Phoenix.PubSub, name: PagServer.PubSub},
+
+      # Phoenix Endpoint (HTTP + WebSocket)
+      PagServerWeb.Endpoint
+    ]
+
+    opts = [strategy: :one_for_one, name: PagServer.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+
+  # Tell Phoenix to update the endpoint configuration
+  # whenever the application is updated.
+  @impl true
+  def config_change(changed, _new, removed) do
+    PagServerWeb.Endpoint.config_change(changed, removed)
+    :ok
+  end
+end
+```
+
+### Child Ordering Rationale
+
+The order matters:
+1. **Repo** - Database must be available first
+2. **Registry** - Lookup service for agents
+3. **AgentSupervisor** - Needs Registry for agent registration
+4. **PubSub** - Broadcasting service
+5. **Endpoint** - HTTP/WebSocket server (depends on all above)
+
+## Testing Integration
+
+### Manual verification
+
+```bash
+# Start application
+mix phx.server
+
+# In another terminal, open IEx
+iex -S mix
+
+# Verify supervisor is running
+iex> Process.whereis(PagServer.Agents.Supervisor)
+#PID<0.xxx.0>
+
+# Verify registry is running
+iex> Process.whereis(PagServer.AgentRegistry)
+#PID<0.xxx.0>
+
+# Try listing agents (should be empty initially)
+iex> PagServer.Agents.Supervisor.list_agents()
+[]
+```
+
+### Observer inspection
+
+```bash
+iex -S mix phx.server
+iex> :observer.start()
+```
+
+Navigate to "Applications" tab and find `pag_server` to visualize the supervision tree.
+
+## Notes
+
+### Registry Configuration
+
+- `keys: :unique` - Each agent ID maps to exactly one PID
+- `name: PagServer.AgentRegistry` - Global name for lookup
+
+### Supervisor Strategy
+
+- `strategy: :one_for_one` - If Registry crashes, only Registry restarts
+- Children are independent; one failure doesn't cascade
+
+### Future Extensions
+
+Once this is working, we'll add:
+- `PagServer.EventStore` (event sourcing)
+- `PagServer.LLM.Supervisor` (LLM connection pools)
+- `PagServer.Tools.Registry` (tool definitions)
+- `PagServer.Stats.Aggregator` (metrics)
+
+## Troubleshooting
+
+**Error**: "no function clause matching in Registry.start_link/1"
+- Check Registry config has `keys:` and `name:` options
+- Verify syntax: `{Registry, keys: :unique, name: ...}`
+
+**Error**: "already started: #PID<...>"
+- Registry or Supervisor name collision
+- Ensure unique names across supervision tree
+
+**Error**: Application fails to start
+- Check child ordering (dependencies)
+- Verify all referenced modules exist and compile
+- Check logs for specific crash reason

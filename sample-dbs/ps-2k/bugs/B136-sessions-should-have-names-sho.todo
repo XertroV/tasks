@@ -1,0 +1,20 @@
+---
+id: B136
+title: Sessions should have names (shown in UI). only requirement is that they're
+  unique in that workspace. Main session should be called Main. For ephemeral agents
+  (that will have many sessions), the name should just count (EmailAgent run 389,
+  that sorta thing).
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T11:58:57.676277+00:00'
+started_at: '2026-02-18T11:58:57.676277+00:00'
+completed_at: '2026-02-18T11:59:03.045709+00:00'
+duration_minutes: 0.08949038333333334
+---
+
+Sessions should have names (shown in UI). only requirement is that they're unique in that workspace. Main session should be called Main. For ephemeral agents (that will have many sessions), the name should just count (EmailAgent run 389, that sorta thing).

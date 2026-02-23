@@ -1,0 +1,86 @@
+---
+id: P3.M6.E3.T002
+title: Fix content hash chain and add Agent-User association
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- schema
+- ecto
+- migration
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:21:10.748183+00:00'
+started_at: '2026-02-07T00:21:10.748183+00:00'
+completed_at: '2026-02-07T00:36:13.413507+00:00'
+duration_minutes: 15.0444219
+---
+
+# Fix content hash chain and add Agent-User association
+
+## Context
+
+Two structural issues need fixing before building REST API controllers:
+
+1. **Content hash chain is not actually linked**: The `Message` schema's `@moduledoc` says the hash "includes parent_content_hash" but `compute_content_hash/1` only hashes the content string. The hash chain provides no tamper detection across messages.
+
+2. **No Agent-to-User association**: Agents have no `user_id` foreign key. Without this, there is no way to scope agents to a user for authorization -- which is required for the REST API's user+project scoping model.
+
+## Requirements
+
+### Content Hash Chain Fix
+
+- [ ] Update `compute_content_hash/1` in `PagServer.Schema.Message` to incorporate:
+  - `parent_content_hash` (or empty string if nil/first message)
+  - `role`
+  - `content`
+  - `thinking_content` (if present)
+  - `tool_calls` (JSON-encoded if present)
+  - Use a deterministic serialization order
+- [ ] Update `MessageChain.compute_hash/1` if it exists separately from the schema
+- [ ] Add tests verifying:
+  - [ ] Same content with different parents produces different hashes
+  - [ ] Hash chain can be validated by recomputing from first message
+  - [ ] Nil parent_content_hash handled correctly for first message in session
+- [ ] Document the hash computation algorithm in `@moduledoc`
+
+### Agent-User Association
+
+- [ ] Create migration adding `user_id` column to `agents` table
+  - [ ] `references(:users, type: :binary_id, on_delete: :nilify_all)` -- nilify not cascade, so agents survive user deletion
+  - [ ] Column should be nullable (backward compatible with existing agents)
+  - [ ] Add index on `user_id`
+  - [ ] Consider composite index on `[:user_id, :project]` for common query pattern
+- [ ] Add `belongs_to :user, PagServer.Schema.User` to Agent schema
+- [ ] Add `has_many :agents, PagServer.Schema.Agent` to User schema
+- [ ] Add `user_id` to `Agent.create_changeset/1` cast list
+- [ ] Update `Agent.create_changeset/1` to accept optional `user_id`
+- [ ] Update `ResourcePolicy` to check user ownership when authorizing agent access
+  - [ ] If agent has `user_id`, require matching user unless admin
+  - [ ] If agent has no `user_id` (legacy), allow access based on project scope
+- [ ] Write tests for:
+  - [ ] Agent creation with user_id
+  - [ ] User has_many agents preloading
+  - [ ] ResourcePolicy user ownership check
+
+## Acceptance Criteria
+
+- [ ] Content hash incorporates parent_content_hash, role, content, thinking, and tool_calls
+- [ ] Hash chain is cryptographically linked (changing any message invalidates all subsequent hashes)
+- [ ] Agent schema has `user_id` FK to users table
+- [ ] User schema has `has_many :agents`
+- [ ] ResourcePolicy enforces user ownership for agent access
+- [ ] Migration is reversible
+- [ ] All existing tests pass
+- [ ] `mix lint` passes
+
+## Files to Modify
+
+- `lib/pag_server/schema/message.ex` (update `compute_content_hash/1`)
+- `lib/pag_server/context/message_chain.ex` (if hash computation duplicated)
+- `lib/pag_server/schema/agent.ex` (add `belongs_to :user`)
+- `lib/pag_server/schema/user.ex` (add `has_many :agents`)
+- `lib/pag_server/auth/resource_policy.ex` (add user ownership check)
+- `priv/repo/migrations/` (new migration for user_id FK)
+- Related test files

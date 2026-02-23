@@ -1,0 +1,52 @@
+---
+id: I041
+title: When we delete files, we could hold a vote with all the other agents as to
+  whether to allow it or not. To make it practical, we insta-fork the other agents,
+  and then send them '------ INTERRUPTION ------- Agent X wants to delete blah. Vote
+  yes or no for whether to allow this.' Then collect votes. these agents are cached
+  and have all the knowledge of the other agents, so it's ideal.
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+- blocked
+blocked_reason: "Was closed in ~4 seconds with no tasks created. Reset to pending.\
+  \ Blocked pending user review of feasibility \u2014 idea involves agent-fork consensus\
+  \ voting on file deletions which has interesting architecture implications."
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+---
+
+# Idea Intake: When we delete files, we could hold a vote with all the other agents as to whether to allow it or not. To make it practical, we insta-fork the other agents, and then send them '------ INTERRUPTION ------- Agent X wants to delete blah. Vote yes or no for whether to allow this.' Then collect votes. these agents are cached and have all the knowledge of the other agents, so it's ideal.
+
+## Original Idea
+
+When we delete files, we could hold a vote with all the other agents as to whether to allow it or not. To make it practical, we insta-fork the other agents, and then send them '------ INTERRUPTION ------- Agent X wants to delete blah. Vote yes or no for whether to allow this.' Then collect votes. these agents are cached and have all the knowledge of the other agents, so it's ideal.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "When we delete files, we could hold a vote with all the other agents as to whether to allow it or not. To make it practical, we insta-fork the other agents, and then send them '------ INTERRUPTION ------- Agent X wants to delete blah. Vote yes or no for whether to allow this.' Then collect votes. these agents are cached and have all the knowledge of the other agents, so it's ideal."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

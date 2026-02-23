@@ -1,0 +1,44 @@
+# Epic: Resource Limits
+# Phase 4, Milestone 4, Epic 3 (P4.M4.E3)
+
+id: P4.M4.E3
+name: Resource Limits
+status: pending
+estimate_hours: 3
+complexity: high
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-timeout-enforcement.todo
+    title: Enforce execution timeouts
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-cpu-memory-limits.todo
+    title: CPU and memory limits
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: critical
+    depends_on: []
+    
+  - id: T003
+    file: T003-monitoring.todo
+    title: Resource usage monitoring
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

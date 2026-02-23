@@ -1,0 +1,73 @@
+---
+id: P11.M3.E2.T004
+title: Write plugin lifecycle tests
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T08:13:38.481243+00:00'
+started_at: '2026-02-12T08:13:38.481243+00:00'
+completed_at: '2026-02-12T09:01:34.091494+00:00'
+duration_minutes: 47.92683733333333
+---
+
+# Write plugin lifecycle tests
+
+Comprehensive test suite for plugin installation, state management, and lifecycle operations.
+
+## Requirements
+
+- [ ] Create test fixtures in `test/support/plugin_fixtures.ex`:
+  - [ ] Factory functions for plugins (installed, available, disabled)
+  - [ ] Sample plugin.json manifests (simple, with dependencies, with conflicts)
+  - [ ] Mock registry responses
+
+- [ ] Write installation tests in `test/pag_server/plugins/installer_test.exs`:
+  - [ ] Registry installation succeeds
+  - [ ] URL installation succeeds (mocked HTTP)
+  - [ ] Checksum validation catches corrupted files
+  - [ ] Graceful failure on missing plugin
+  - [ ] Retry logic on transient failures (mocked with Process.sleep_fn)
+  - [ ] Plugin database record created after install
+
+- [ ] Write lifecycle tests in `test/pag_server/plugins/lifecycle_test.exs`:
+  - [ ] Enable plugin works
+  - [ ] Disable plugin works
+  - [ ] Uninstall removes all files and records
+  - [ ] Dependency check prevents disabling blocking plugin
+  - [ ] Force uninstall succeeds despite dependencies
+  - [ ] Plugin hooks execute on enable/disable
+
+- [ ] Write dependency tests in `test/pag_server/plugins/dependency_resolver_test.exs`:
+  - [ ] Simple dependency resolution works
+  - [ ] Transitive dependencies resolved correctly
+  - [ ] Circular dependencies detected
+  - [ ] Version conflicts identified
+  - [ ] Installation order respects dependencies
+  - [ ] Optional dependencies don't block installation
+
+- [ ] Write endpoint tests in `test/pag_server_web/controllers/`:
+  - [ ] Plugin installation endpoint tests
+  - [ ] Enable/disable/uninstall endpoint tests
+  - [ ] Dependency check endpoint tests
+  - [ ] Error cases (missing plugin, conflicts, etc.)
+  - [ ] HTTP status code verification
+
+- [ ] Test data cleanup:
+  - [ ] Use `on_exit` callbacks to clean test plugin directories
+  - [ ] Reset plugin cache between tests
+  - [ ] Use unique names to prevent test contamination
+
+## Acceptance Criteria
+
+- [ ] All installation scenarios covered (registry, URL, local)
+- [ ] All state transitions tested
+- [ ] All error conditions tested
+- [ ] Dependency resolution tested with 15+ scenarios
+- [ ] All endpoints tested with valid/invalid inputs
+- [ ] No test contamination (async: true works)
+- [ ] Test suite runs in <20s
+- [ ] >90% code coverage for plugins module

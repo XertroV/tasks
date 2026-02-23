@@ -1,0 +1,60 @@
+---
+id: P15.M7.E3.T001
+title: Build BootstrapSession GenServer for managing bootstrap state
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- genserver
+- bootstrap
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:47:03.666281+00:00'
+started_at: '2026-02-17T08:47:03.666281+00:00'
+completed_at: '2026-02-17T08:56:42.549303+00:00'
+duration_minutes: 9.6480502
+---
+## Description
+A GenServer that manages the lifecycle of a workspace bootstrap conversation. Tracks which questionnaire sections are completed, stores answers, and coordinates the bootstrap flow.
+
+## Module: PagServer.Bootstrap.Session
+
+### State
+- workspace_id
+- template (WorkspaceTemplate struct)
+- status: :awaiting_start | :in_progress | :generating_files | :complete | :failed
+- current_section_index (integer)
+- answers (map of section_id -> collected answers)
+- started_at, completed_at timestamps
+- channel (where bootstrap is happening: :liveview, :telegram, :api)
+
+### Public API
+- start_link(workspace_id, template, opts) - Start bootstrap session
+- current_section(pid) - Get current questionnaire section
+- record_answers(pid, section_id, answers) - Store answers for a section
+- advance(pid) - Move to next section
+- get_progress(pid) - Returns {completed_sections, total_sections, current_section}
+- complete(pid) - Trigger file generation and transition to :complete
+- get_answers(pid) - Get all collected answers
+- cancel(pid) - Cancel bootstrap
+
+### Registry
+- Use Registry for looking up bootstrap sessions by workspace_id
+- Only one bootstrap session per workspace at a time
+- Sessions timeout after configurable inactivity period (default 1 hour)
+
+### Persistence
+- Bootstrap state persisted to PlatformConfig so it survives restarts
+- On restart, can resume from last saved state
+- Final answers stored permanently for reference
+
+## Acceptance Criteria
+- [ ] GenServer with full lifecycle management
+- [ ] Registry-based lookup by workspace_id
+- [ ] State persistence to PlatformConfig
+- [ ] Inactivity timeout with configurable duration
+- [ ] Only one session per workspace enforced
+- [ ] Progress tracking (completed/total sections)
+- [ ] Unit tests for all state transitions
+- [ ] Test for restart recovery from persisted state

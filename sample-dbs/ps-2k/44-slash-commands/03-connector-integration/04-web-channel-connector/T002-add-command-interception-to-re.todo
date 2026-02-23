@@ -1,0 +1,24 @@
+---
+id: P44.M3.E4.T002
+title: Add command interception to REST API message endpoint
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.179006+00:00'
+started_at: '2026-02-19T19:33:54.179006+00:00'
+completed_at: '2026-02-19T19:34:14.764090+00:00'
+duration_minutes: 0.34308455000000004
+---
+## Summary
+Intercept slash commands in the REST API agent message endpoint.
+
+## Acceptance Criteria
+- [ ] In AgentController.queue_message/2, check if message content is a slash command before queuing
+- [ ] If matched: return 200 with command response body immediately (do not queue to agent)
+- [ ] If not: continue existing queue behavior
+- [ ] Context: agent_id from path param, platform: :api, sender from authenticated user
+- [ ] Tests: command returns immediate response, non-command goes through normal queue

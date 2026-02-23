@@ -1,0 +1,19 @@
+---
+id: P15.M7.E5.T004
+title: 'T4: Dynamic Template Generator'
+status: done
+estimate_hours: 5.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+- P15.M7.E5.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T08:52:43.583039+00:00'
+started_at: '2026-02-18T08:52:43.583039+00:00'
+completed_at: '2026-02-18T09:02:12.766367+00:00'
+duration_minutes: 9.4863886
+---
+Module to inject persona config into base template, variable substitution system integration, persona-specific questionnaire generation.

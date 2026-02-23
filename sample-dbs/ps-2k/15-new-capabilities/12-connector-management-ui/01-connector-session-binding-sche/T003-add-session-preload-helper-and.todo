@@ -1,0 +1,17 @@
+---
+id: P15.M12.E1.T003
+title: Add session preload helper and session_id to BotConfigs context
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P15.M12.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:40:43.049041+00:00'
+started_at: '2026-02-18T06:40:43.049041+00:00'
+completed_at: '2026-02-18T06:45:05.111018+00:00'
+duration_minutes: 4.367699433333333
+---
+In lib/pag_server/bot_configs.ex: add get_bot_config_with_session/1 that preloads the :session association (and agent via session). Update list_bot_configs/1 to accept an optional preload: [:session] opt. These are needed by the LiveView to display bound session info without N+1 queries.

@@ -1,0 +1,60 @@
+id: P15.M10.E1
+name: Provider Contract and Orchestrator
+status: pending
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-web-search-provider-beh.todo
+  title: Define web search provider behaviour and normalized result schema
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-refactor-builtin-web-search-to.todo
+  title: Refactor builtin web_search tool to delegate through orchestrator
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M10.E1.T001
+- id: T003
+  file: T003-implement-provider-selection-s.todo
+  title: Implement provider selection strategy with health-aware randomization
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M10.E1.T001
+- id: T004
+  file: T004-implement-global-provider-cool.todo
+  title: Implement global provider cooldown and backoff policy
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M10.E1.T003
+- id: T005
+  file: T005-document-reusable-multi-provid.todo
+  title: Document reusable multi-provider orchestrator pattern for future tools
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M10.E1.T001
+  - P15.M10.E1.T003
+  - P15.M10.E1.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

@@ -1,0 +1,16 @@
+---
+id: P48.M5.E1.T003
+title: Download progress reporting via PubSub
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T13:54:15.082803+00:00'
+started_at: '2026-02-20T13:54:15.082803+00:00'
+completed_at: '2026-02-20T13:54:27.007265+00:00'
+duration_minutes: 0.19874088333333334
+---
+Publish PubSub events: lsp.binary.download_started, lsp.binary.download_progress, lsp.binary.download_complete. Surface in workspace dashboard.

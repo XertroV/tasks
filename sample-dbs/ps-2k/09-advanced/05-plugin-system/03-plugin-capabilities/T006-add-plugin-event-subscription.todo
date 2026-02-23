@@ -1,0 +1,60 @@
+---
+id: P9.M5.E3.T006
+title: Add plugin event subscription via PubSub
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- pubsub
+- events
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:15:59.769902+00:00'
+started_at: '2026-02-07T05:15:59.769902+00:00'
+completed_at: '2026-02-07T05:23:07.557333+00:00'
+duration_minutes: 7.129790266666666
+---
+
+# Add plugin event subscription via PubSub
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/event_bridge.ex` module (GenServer)
+- [x] Subscribe to Phoenix PubSub topics on behalf of plugins:
+  - [x] Plugins declare event subscriptions in manifest: `events.subscribe` field
+  - [x] Supported topic patterns: `"agent:*"`, `"session:<id>"`, `"tools:*"`, etc.
+  - [x] Subscribe/unsubscribe on plugin enable/disable
+- [x] Deliver PubSub events to plugin handlers:
+  - [x] Route events to the plugin's registered handler function
+  - [x] Include event metadata (topic, timestamp, source)
+  - [x] For external plugins, serialize events and send via MCP transport
+- [x] Support event filtering:
+  - [x] Plugins can specify event type filters in subscription
+  - [x] Example: subscribe to `"agent:*"` but only `agent_started` events
+- [x] Implement batching for high-frequency events:
+  - [x] Configurable batch window (default 100ms)
+  - [x] Deliver accumulated events as a batch to reduce handler calls
+- [x] Backpressure handling for slow plugin handlers:
+  - [x] Configurable event queue max size per plugin (default 1000)
+  - [x] Drop oldest events when queue full (log warning)
+
+## Acceptance Criteria
+
+- [x] Plugins receive PubSub events matching their declared subscriptions
+- [x] Event subscriptions activate on plugin enable, deactivate on disable
+- [x] Event filtering correctly limits delivered events by type
+- [x] Batching accumulates events within the configured window
+- [x] Backpressure drops events for slow plugins without affecting other plugins
+- [x] Unit tests cover: subscription, filtering, batching, backpressure, enable/disable lifecycle
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/event_bridge.ex`
+- **Uses**: `Phoenix.PubSub` (existing PubSub infrastructure)
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004) for plugin handler lookup
+- **Supervision**: Started under `PagServer.Plugins.Supervisor`
+- **Pattern reference**: Similar to Phoenix.Channel subscription model but for plugin handlers

@@ -1,0 +1,49 @@
+id: P1.M3.E5
+name: Lifecycle Hooks
+status: pending
+estimate_hours: 7
+complexity: high
+depends_on: [E1, E4]
+
+tasks:
+  - id: T001
+    file: T001-lifecycle-behaviour.todo
+    title: Define lifecycle callback behaviour
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+    
+  - id: T002
+    file: T002-hook-execution.todo
+    title: Implement hook execution in Agent
+    status: pending
+    estimate_hours: 2.5
+    complexity: high
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-graceful-shutdown.todo
+    title: Add graceful shutdown handling
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-lifecycle-tests.todo
+    title: Write lifecycle hook tests
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T002, T003]
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

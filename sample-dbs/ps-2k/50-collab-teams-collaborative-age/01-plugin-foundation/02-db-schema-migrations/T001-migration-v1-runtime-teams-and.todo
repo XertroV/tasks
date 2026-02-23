@@ -1,0 +1,23 @@
+---
+id: P50.M1.E2.T001
+title: 'Migration V1: runtime_teams and runtime_workers tables'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:09:10.450390+00:00'
+started_at: '2026-02-23T02:09:10.450390+00:00'
+completed_at: '2026-02-23T02:09:13.426997+00:00'
+duration_minutes: 0.0496099
+---
+## Description
+CollabTeams.Migrations.V1 creates plugin_collab_teams_runtime_teams (id uuid PK, workspace_id uuid FK workspaces, name text, state text CHECK IN (active draining closed), lead_agent_id uuid FK agents nullable, root_session_id uuid FK sessions nullable, metadata jsonb DEFAULT {}, timestamps) and plugin_collab_teams_runtime_workers (id uuid PK, team_id uuid FK runtime_teams ON DELETE CASCADE, agent_id uuid FK agents nullable, session_id uuid FK sessions nullable, role text CHECK IN (lead worker), state text CHECK IN (starting active idle shutting_down stopped), lock_version integer DEFAULT 0, timestamps). Indexes: workspace_id on teams; team_id+state+agent_id on workers. down/0 drops workers then teams.
+
+## Acceptance Criteria
+- Migration applies and rolls back cleanly in test DB
+- Both tables exist after up/0; both dropped after down/0
+- FK constraints enforced

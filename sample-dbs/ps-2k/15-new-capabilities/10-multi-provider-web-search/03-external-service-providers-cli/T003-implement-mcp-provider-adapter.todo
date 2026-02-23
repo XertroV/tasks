@@ -1,0 +1,33 @@
+---
+id: P15.M10.E3.T003
+title: Implement MCP provider adapter for hosted search tools
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P15.M10.E3.T001
+tags:
+- plugin
+- web-search
+- mcp
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:52:53.827032+00:00'
+started_at: '2026-02-17T15:52:53.827032+00:00'
+completed_at: '2026-02-17T16:02:09.308476+00:00'
+duration_minutes: 9.258023783333334
+---
+
+# Implement MCP provider adapter for hosted search tools
+
+
+
+## Requirements
+
+- Implement MCP-backed provider adapter that calls configured hosted search tools.
+- Normalize MCP tool responses and map transport/tool errors into shared provider failures.
+
+## Acceptance Criteria
+
+- MCP adapter integrates with orchestrator via shared provider behaviour.
+- Adapter handles missing tool availability and malformed responses with tested error handling.

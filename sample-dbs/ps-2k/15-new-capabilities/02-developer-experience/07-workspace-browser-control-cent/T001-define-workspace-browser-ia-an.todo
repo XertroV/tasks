@@ -1,0 +1,49 @@
+---
+id: P15.M2.E7.T001
+title: Define workspace browser IA and permission model
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E6.T003
+- P18.M2.E1.T004
+tags:
+- webui
+- workspace
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:06:20.896195+00:00'
+started_at: '2026-02-18T04:06:20.896195+00:00'
+completed_at: '2026-02-18T04:17:01.274940+00:00'
+duration_minutes: 10.672978866666666
+---
+## Goal
+Define the information architecture for a workspace browser that supports fast navigation plus safe configuration editing.
+
+## Acceptance Criteria
+- Workspace list, detail pane, and edit affordances are mapped to concrete backend endpoints.
+- Workspace membership and RBAC constraints are documented for each UI action.
+- A clear distinction exists between global settings and workspace-scoped settings.
+- Includes a sketch of creative UX hooks (status chips, health badges, quick actions).
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M2.E7)
+**Agent**: cli-user
+**Date**: 2026-02-18 04:06 UTC
+**Sibling tasks**: P15.M2.E7.T002, P15.M2.E7.T003, P15.M2.E7.T004, P15.M2.E7.T005, P15.M2.E7.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M2.E7.T001 → P15.M2.E7.T002 → P15.M2.E7.T003 → P15.M2.E7.T004 → P15.M2.E7.T005 → P15.M2.E7.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M2.E7.T001: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T001-define-workspace-browser-ia-an.todo
+- P15.M2.E7.T002: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T002-create-workspace-browser-query.todo
+- P15.M2.E7.T003: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T003-build-dashboard-workspace-brow.todo
+- P15.M2.E7.T004: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T004-implement-inline-workspace-con.todo
+- P15.M2.E7.T005: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T005-add-plugin-and-skill-toggles-w.todo
+- P15.M2.E7.T006: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T006-add-workspace-command-palette.todo

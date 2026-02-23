@@ -1,0 +1,134 @@
+---
+id: P1.M3.E5.T002
+title: Implement hook execution in Agent
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P1.M3.E5.T001
+claimed_by: claude-1
+claimed_at: '2026-02-05T10:05:59.443619'
+started_at: '2026-02-05T10:05:59.443619'
+completed_at: '2026-02-05T10:10:30.062534'
+tags:
+- agent
+- lifecycle
+- genserver
+- hooks
+---
+
+# Implement hook execution in Agent
+
+Integrate lifecycle hook execution into the Agent GenServer at appropriate points.
+
+## Requirements
+
+- [ ] Add `:lifecycle_module` field to Agent state struct
+- [ ] Modify Agent.init/1 to call `on_start/1` hook if defined
+- [ ] Add helper function `invoke_hook/3` for safe hook execution
+- [ ] Integrate hooks into Agent GenServer callbacks:
+  - [ ] Call `on_message_received/2` in handle_cast for queued messages
+  - [ ] Call `on_turn_complete/2` after LLM response completes
+  - [ ] Call `on_error/3` in handle_info for error events
+- [ ] Add hook error handling (log and continue on hook failure)
+- [ ] Add telemetry events for hook execution
+- [ ] Update Agent configuration to accept optional lifecycle module
+
+## Acceptance Criteria
+
+- [ ] Agent state includes `:lifecycle_module` field
+- [ ] `invoke_hook/3` safely executes hooks with error handling
+- [ ] Hooks are called at correct lifecycle points
+- [ ] Hook failures don't crash the agent process
+- [ ] Telemetry emitted for hook start/stop/error
+- [ ] Agent config accepts `:lifecycle_module` option
+- [ ] All hooks execute in < 100ms (log warning if slower)
+- [ ] Dialyzer passes with no type errors
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agent module)
+- Hooks must not block agent operation - use Task for async work
+
+**Key Points**:
+- Hook execution must be defensive - catch all errors
+- Use `function_exported?/3` to check if hook is implemented
+- Telemetry enables monitoring hook performance
+- Hooks run synchronously but should be fast (<100ms)
+- For slow operations, hooks should spawn async tasks
+
+## Notes
+
+Example hook invocation:
+```elixir
+defmodule PagServer.Agents.Agent do
+  # In state struct
+  defstruct [
+    # ... existing fields
+    :lifecycle_module  # Optional module implementing Lifecycle behaviour
+  ]
+  
+  # Safe hook execution
+  defp invoke_hook(state, hook_name, args) do
+    case state.lifecycle_module do
+      nil -> :ok
+      module ->
+        if function_exported?(module, hook_name, length(args)) do
+          start_time = System.monotonic_time()
+          
+          try do
+            result = apply(module, hook_name, args)
+            duration = System.monotonic_time() - start_time
+            
+            :telemetry.execute(
+              [:pag, :agent, :hook],
+              %{duration: duration},
+              %{hook: hook_name, agent_id: state.id}
+            )
+            
+            if duration > :timer.seconds(0.1) do
+              Logger.warning("Slow lifecycle hook: #{hook_name} took #{duration}µs")
+            end
+            
+            result
+          rescue
+            error ->
+              Logger.error("Hook #{hook_name} failed: #{inspect(error)}")
+              :telemetry.execute(
+                [:pag, :agent, :hook, :error],
+                %{},
+                %{hook: hook_name, error: error}
+              )
+              :ok
+          end
+        else
+          :ok
+        end
+    end
+  end
+  
+  # Example integration in init
+  def init(args) do
+    state = build_initial_state(args)
+    
+    case invoke_hook(state, :on_start, [state]) do
+      {:ok, new_state} -> {:ok, new_state}
+      {:error, reason} -> {:stop, reason}
+      :ok -> {:ok, state}
+    end
+  end
+  
+  # Example integration in message handling
+  def handle_cast({:queue_message, message, mode}, state) do
+    invoke_hook(state, :on_message_received, [message, state])
+    # ... rest of message handling
+  end
+end
+```
+
+## Related
+
+- Depends on: T001 (Lifecycle behaviour definition)
+- Next: T003 (Graceful shutdown with cleanup hooks)

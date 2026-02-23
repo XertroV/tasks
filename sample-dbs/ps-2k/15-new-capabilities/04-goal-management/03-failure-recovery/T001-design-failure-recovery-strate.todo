@@ -1,0 +1,55 @@
+---
+id: P15.M4.E3.T001
+title: Design failure recovery strategies
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T15:40:16.596181+00:00'
+started_at: '2026-02-13T15:40:16.596181+00:00'
+completed_at: '2026-02-13T17:21:13.833203+00:00'
+duration_minutes: 100.9539502
+---
+
+# Design failure recovery strategies
+
+## Description
+Design a comprehensive failure recovery strategy system for goals. Define recovery actions: retry with backoff, alternative path, escalate to user, or mark failed.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Goals.Recovery` module
+- [ ] Define recovery strategy types: retry, alternative, escalate, abort
+- [ ] Design recovery configuration per goal type
+- [ ] Add failure classification (transient, permanent, resource)
+- [ ] Define escalation thresholds and actions
+- [ ] Add recovery history tracking
+- [ ] Document recovery strategy decision tree
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/goal.ex`, `lib/pag_server/agents/agent.ex`, `lib/pag_server/events/event.ex`
+- Part of epic: Failure Recovery
+- Reference existing error handling patterns
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M4.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 15:40 UTC
+**Sibling tasks**: P15.M4.E3.T002, P15.M4.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M4.E3.T001 → P15.M4.E3.T002 → P15.M4.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M4.E3.T001: .tasks/15-new-capabilities/04-goal-management/03-failure-recovery/T001-design-failure-recovery-strate.todo
+- P15.M4.E3.T002: .tasks/15-new-capabilities/04-goal-management/03-failure-recovery/T002-implement-retry-alternative-pa.todo
+- P15.M4.E3.T003: .tasks/15-new-capabilities/04-goal-management/03-failure-recovery/T003-add-failure-recovery-tests.todo

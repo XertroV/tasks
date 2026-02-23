@@ -1,0 +1,52 @@
+id: P24
+name: Communication, Canvas & Monitoring
+status: done
+locked: true
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Cross-Workspace Communication Plugin
+  path: 01-cross-workspace-communication
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M2
+  name: A2UI Canvas
+  path: 02-a2ui-canvas
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M3
+  name: Heartbeat Plugin
+  path: 03-heartbeat-plugin
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+- id: M4
+  name: Agent Core File Change Logging
+  path: 04-agent-core-file-change-logging
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Automatic tracking of changes to agent core files (EGO.md, IDENTITY.md,
+    USER.md, MY_TEAM.md, etc.) via companion .log files with git-log style entries
+  locked: false
+stats:
+  total_tasks: 29
+  done: 29
+  in_progress: 0
+  blocked: 0
+  pending: 0

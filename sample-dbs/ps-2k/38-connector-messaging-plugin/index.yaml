@@ -1,0 +1,25 @@
+id: P38
+name: Connector Messaging Plugin
+status: done
+locked: true
+weeks: 1
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Core Plugin
+  path: 01-core-plugin
+  status: done
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: "Plugin scaffold, connector registry query, and outbound message dispatch\
+    \ \u2014 everything needed for agents to list connectors and send messages"
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

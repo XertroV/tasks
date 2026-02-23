@@ -1,0 +1,75 @@
+id: P3
+name: Streaming & Real-Time
+status: pending
+weeks: 2
+estimate_hours: 36
+complexity: high
+depends_on:
+- P2
+milestones:
+- id: M1
+  name: Phoenix Channels
+  path: 01-phoenix-channels
+  status: pending
+  estimate_hours: 12
+  complexity: high
+  depends_on:
+  - P1.M1
+  description: WebSocket channels for real-time agent communication and token streaming
+- id: M2
+  name: PubSub Broadcasting
+  path: 02-pubsub-broadcast
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on:
+  - P1.M3
+  description: Phoenix PubSub for broadcasting agent events across processes
+- id: M3
+  name: REST API
+  path: 03-rest-api
+  status: pending
+  estimate_hours: 10
+  complexity: medium
+  depends_on:
+  - P1.M1
+  - P1.M2
+  - M6
+  description: HTTP REST endpoints for agent/session management and stats
+- id: M4
+  name: OpenAI-Compatible API
+  path: 04-openai-compat
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - P2.M1
+  - P3.M3
+  description: OpenAI-compatible /v1/chat/completions endpoint with streaming
+- id: M5
+  name: Authentication & Authorization
+  path: 05-authentication
+  status: pending
+  estimate_hours: 16
+  complexity: high
+  depends_on:
+  - P3.M3
+  description: API key auth, bearer tokens, and per-user rate limiting middleware
+- id: M6
+  name: API Quality
+  path: 06-api-quality
+  status: pending
+  estimate_hours: 13.0
+  complexity: high
+  depends_on:
+  - P1.M1
+  - P1.M2
+  description: 'Foundational API quality: error consistency, CORS, rate limiting,
+    auth plug wiring, and schema/data model fixes. Must be complete before REST API
+    controllers (P3.M3) and documentation (P7.M7).'
+stats:
+  total_tasks: 69
+  done: 69
+  in_progress: 0
+  blocked: 0
+  pending: 0

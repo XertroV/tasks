@@ -1,0 +1,262 @@
+---
+id: P4.M2.E9.T005
+title: Implement git_clone tool
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- tools
+- git
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:03:33.077501'
+started_at: '2026-02-06T03:03:33.077501'
+completed_at: '2026-02-06T03:05:04.548755'
+duration_minutes: 1.5245207166666668
+---
+
+# Implement git_clone tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/git_clone.ex` (~150 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Execute `git clone` safely with URL validation
+- [ ] Validate destination path is within allowed workspace
+- [ ] Use System.cmd for command execution
+- [ ] Support shallow clones and branch selection
+- [ ] Implement timeout for large repositories
+
+## Acceptance Criteria
+
+- [ ] Executes `git clone` with specified repository URL
+- [ ] Validates destination path is within allowed workspace boundaries
+- [ ] Prevents command injection through all parameters (URL, destination, branch)
+- [ ] Validates URL format (http://, https://, git://, ssh://)
+- [ ] Blocks cloning to paths outside workspace
+- [ ] Supports optional branch/tag selection (--branch flag)
+- [ ] Supports optional shallow clone depth (--depth flag)
+- [ ] Returns clone status, repository path, and initial commit hash
+- [ ] Handles errors: invalid URL, destination exists, network failure, timeout
+- [ ] Implements timeout (default 5 minutes for clone operation)
+- [ ] Validates repository URL doesn't point to local filesystem
+- [ ] Test coverage: successful clone, with branch, shallow clone, invalid URL, path outside workspace, timeout, destination exists
+- [ ] Security: validates URL scheme, blocks file:// URLs, validates destination path
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Clone operations can be long-running - need timeout
+- Validate URL to prevent local file access
+- Ensure destination is within workspace sandbox
+- Support common clone options (branch, depth)
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.GitClone do
+  @behaviour PAGServer.Tools.Tool
+  @default_timeout 300_000  # 5 minutes
+
+  @impl true
+  def name, do: "git_clone"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "git_clone",
+      description: "Clone a git repository",
+      parameters: %{
+        type: "object",
+        properties: %{
+          url: %{
+            type: "string",
+            description: "Repository URL (http://, https://, git://, or ssh://)"
+          },
+          destination: %{
+            type: "string",
+            description: "Destination directory path (must be within workspace)"
+          },
+          branch: %{
+            type: "string",
+            description: "Optional branch or tag to clone"
+          },
+          depth: %{
+            type: "integer",
+            description: "Optional shallow clone depth (number of commits)"
+          },
+          timeout_seconds: %{
+            type: "integer",
+            description: "Clone timeout in seconds (default: 300)",
+            default: 300
+          }
+        },
+        required: ["url", "destination"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"url" => url, "destination" => destination} = args, context) do
+    with :ok <- validate_url(url),
+         :ok <- validate_destination(destination, context.workspace_root),
+         :ok <- validate_clone_params(args),
+         {:ok, _} <- run_git_clone(url, destination, args) do
+      {:ok, %{
+        repository_path: destination,
+        url: url
+      }}
+    else
+      {:error, reason} -> {:error, "git clone failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_url(url) do
+    uri = URI.parse(url)
+    
+    cond do
+      uri.scheme not in ["http", "https", "git", "ssh"] ->
+        {:error, "Invalid URL scheme: must be http://, https://, git://, or ssh://"}
+      uri.scheme == "file" ->
+        {:error, "file:// URLs are not allowed for security"}
+      not uri.host or uri.host == "" ->
+        {:error, "URL must have a valid host"}
+      # Block local/private URLs to prevent abuse
+      is_private_host?(uri.host) ->
+        {:error, "Cannot clone from private/local addresses"}
+      true ->
+        :ok
+    end
+  end
+
+  defp is_private_host?(host) do
+    host = String.downcase(host)
+    
+    private_patterns = [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "::1",
+      ~r/^10\./,
+      ~r/^172\.(1[6-9]|2[0-9]|3[01])\./,
+      ~r/^192\.168\./,
+      ~r/^169\.254\./
+    ]
+    
+    Enum.any?(private_patterns, fn
+      pattern when is_binary(pattern) -> host == pattern
+      %Regex{} = regex -> Regex.match?(regex, host)
+    end)
+  end
+
+  defp validate_destination(destination, workspace_root) do
+    abs_dest = Path.expand(destination)
+    abs_root = Path.expand(workspace_root)
+    
+    cond do
+      not String.starts_with?(abs_dest, abs_root) ->
+        {:error, "Destination outside workspace"}
+      String.contains?(destination, "..") ->
+        {:error, "Path traversal not allowed"}
+      File.exists?(abs_dest) ->
+        {:error, "Destination already exists"}
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_clone_params(%{"depth" => depth}) when depth < 1 do
+    {:error, "Depth must be at least 1"}
+  end
+  defp validate_clone_params(%{"branch" => branch}) do
+    # Validate branch name doesn't contain dangerous characters
+    dangerous = ["../", "..\\", ";", "|", "&", "$", "`", "\n", "\r"]
+    
+    if Enum.any?(dangerous, &String.contains?(branch, &1)) do
+      {:error, "Invalid branch name: contains dangerous characters"}
+    else
+      :ok
+    end
+  end
+  defp validate_clone_params(_), do: :ok
+
+  defp run_git_clone(url, destination, args) do
+    timeout = Map.get(args, "timeout_seconds", 300) * 1000
+    
+    # Build safe argument list
+    cmd_args = build_clone_args(url, destination, args)
+    
+    # Create parent directory if it doesn't exist
+    parent_dir = Path.dirname(destination)
+    File.mkdir_p!(parent_dir)
+    
+    case System.cmd("git", cmd_args, 
+                    stderr_to_stdout: true,
+                    cd: parent_dir) do
+      {output, 0} -> {:ok, output}
+      {error, code} -> {:error, {code, error}}
+    end
+  end
+
+  defp build_clone_args(url, destination, args) do
+    base_args = ["clone", url, Path.basename(destination)]
+    
+    base_args
+    |> add_branch_arg(args)
+    |> add_depth_arg(args)
+  end
+
+  defp add_branch_arg(args, %{"branch" => branch}) do
+    args ++ ["--branch", branch]
+  end
+  defp add_branch_arg(args, _), do: args
+
+  defp add_depth_arg(args, %{"depth" => depth}) do
+    args ++ ["--depth", "#{depth}"]
+  end
+  defp add_depth_arg(args, _), do: args
+end
+```
+
+Example usage (basic clone):
+```json
+{
+  "url": "https://github.com/user/repo.git",
+  "destination": "/workspace/repos/my-project"
+}
+```
+
+Example usage (shallow clone with branch):
+```json
+{
+  "url": "https://github.com/user/repo.git",
+  "destination": "/workspace/repos/my-project",
+  "branch": "develop",
+  "depth": 1
+}
+```
+
+Example response:
+```json
+{
+  "repository_path": "/workspace/repos/my-project",
+  "url": "https://github.com/user/repo.git"
+}
+```
+
+Security considerations:
+- Block file:// URLs to prevent local filesystem access
+- Block private/local IP addresses (SSRF protection)
+- Validate destination is within workspace
+- Validate URL scheme is allowed (http/https/git/ssh only)
+- Timeout to prevent indefinite hangs
+- Use System.cmd with list arguments only
+- Validate branch names to prevent injection

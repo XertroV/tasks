@@ -1,0 +1,89 @@
+---
+id: P6.M2.E1.T003
+title: Set up OTLP exporter
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P6.M2.E1.T002
+tags:
+- observability
+- opentelemetry
+- exporter
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:53:05.226721+00:00'
+started_at: '2026-02-06T19:53:05.226721+00:00'
+completed_at: '2026-02-06T20:00:35.549318+00:00'
+duration_minutes: 7.505376433333334
+---
+
+# Set up OTLP exporter
+
+Configure OTLP exporter to send traces to local collector or observability backend.
+
+## Requirements
+
+- [ ] Configure OTLP HTTP exporter:
+  - [ ] Endpoint: `http://localhost:4318/v1/traces`
+  - [ ] Protocol: HTTP/protobuf
+  - [ ] Headers for auth (if needed)
+- [ ] Test exporter with local OTel Collector:
+  - [ ] Run collector in Docker
+  - [ ] Verify spans exported successfully
+- [ ] Document environment variables:
+  - [ ] `OTEL_EXPORTER_OTLP_ENDPOINT`
+  - [ ] `OTEL_EXPORTER_OTLP_HEADERS`
+- [ ] Add fallback/error handling for unreachable exporter
+
+## Acceptance Criteria
+
+- [ ] OTLP exporter configured correctly
+- [ ] Spans export to local collector
+- [ ] Environment variables documented
+- [ ] Exporter failures don't crash app
+- [ ] Logs show successful export
+
+## Context
+
+**Key Points**:
+- OTLP = OpenTelemetry Protocol (standard)
+- HTTP/protobuf more compatible than gRPC
+- Use local collector for dev, cloud backend for prod
+
+## Notes
+
+**Local OTel Collector (Docker)**:
+```bash
+docker run -p 4317:4317 -p 4318:4318 \
+  otel/opentelemetry-collector:latest
+```
+
+**Test Export**:
+```elixir
+require OpenTelemetry.Tracer, as: Tracer
+
+Tracer.with_span "test.span" do
+  Tracer.set_attribute(:test, "value")
+  :timer.sleep(100)
+end
+
+# Check collector logs for exported span
+```
+
+**Error Handling**:
+```elixir
+# In config, exporter failures are logged but don't crash
+config :opentelemetry_exporter,
+  otlp_protocol: :http_protobuf,
+  otlp_endpoint: "http://localhost:4318",
+  # Drop spans if exporter unavailable
+  otlp_compression: :gzip
+```
+
+**Environment Variables**:
+```bash
+# .env.example
+OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4318
+OTEL_EXPORTER_OTLP_HEADERS="x-api-key=your-key"
+```

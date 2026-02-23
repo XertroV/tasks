@@ -1,0 +1,39 @@
+---
+id: P13.M3.E1.T002
+title: Implement admission control with queue
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:08:36.484337+00:00'
+started_at: '2026-02-13T23:08:36.484337+00:00'
+completed_at: '2026-02-13T23:18:58.702155+00:00'
+duration_minutes: 10.370296783333334
+---
+
+# Implement admission control with queue
+
+## Description
+
+Implement the PoolLimiter with an admission queue that holds pending agent start requests when at capacity. Agents are started in FIFO order when slots become available.
+
+## Acceptance Criteria
+- [ ] Create `lib/pag_server/agents/pool_limiter.ex`
+- [ ] Implement `start_link/1` with configurable `:max_agents`
+- [ ] Implement `acquire_slot/1` that blocks until slot available
+- [ ] Implement `acquire_slot/1` with `:timeout` option
+- [ ] Implement `release_slot/0` that wakes next waiter
+- [ ] Add PoolLimiter to supervision tree (before Agents.Supervisor)
+- [ ] Integrate with `Agents.Supervisor.start_agent/1`
+- [ ] Handle graceful shutdown with pending requests
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/supervisor.ex`
+- Related files: `lib/pag_server/application.ex`
+- Part of epic: P13.M3.E1 - Agent Startup Backpressure

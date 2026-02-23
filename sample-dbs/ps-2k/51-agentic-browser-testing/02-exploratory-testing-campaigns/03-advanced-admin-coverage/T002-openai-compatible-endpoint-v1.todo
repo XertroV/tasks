@@ -1,0 +1,49 @@
+---
+id: P51.M2.E3.T002
+title: OpenAI-compatible endpoint (/v1/chat/completions)
+status: blocked
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:02:50.310266+00:00'
+started_at: '2026-02-20T18:02:50.310266+00:00'
+completed_at: null
+reason: Authenticated success/stream verification is blocked by missing upstream provider
+  credentials in this local environment; compatibility deviations tracked in B166
+  and B167.
+---
+## Campaign: Drop-in OpenAI compatibility
+
+PAG-Server exposes /v1/chat/completions as an OpenAI drop-in replacement. Test that it works and returns properly formatted responses.
+
+## Acceptance Criteria
+- [ ] Basic chat completions request succeeds
+- [ ] Streaming mode works (stream: true)
+- [ ] Error responses are OpenAI-format compatible
+- [x] Auth (API key) is enforced
+- [x] Bugs filed for any deviation from OpenAI spec
+
+## Test Sequence (simple → complex)
+1. GET /v1/models (if exists) — does it return a models list?
+2. POST /v1/chat/completions with basic payload:
+   { model: 'claude-haiku-4-5', messages: [{role: 'user', content: 'Say hi'}] }
+   Verify: 200 response, choices[0].message.content non-empty, usage.total_tokens > 0
+3. POST with stream: true — verify SSE stream of delta chunks arrives
+4. POST with invalid model — verify 400/404 in OpenAI error format
+5. POST with no auth — verify 401 in OpenAI error format
+6. POST with tool_calls in messages — verify tools pass through
+7. Compare response schema against OpenAI spec (id, object, created, model, choices, usage fields)
+
+## Notes
+This is a compatibility endpoint used by tools like OpenCode, Codex, etc. Regressions here break external integrations.
+
+## Execution Notes (2026-02-21)
+- `GET /v1/models` is not implemented in this branch (404 `NoRouteError`).
+- `POST /v1/chat/completions` without auth returns `401` with `{"error":"missing_api_key","message":"Missing API key"}` (auth enforcement confirmed).
+- Created personal API key via `/dashboard/api-keys` and re-tested authenticated requests.
+- Authenticated basic and `stream: true` requests both returned `502` due upstream provider credentials unavailable (`no_credentials`), preventing success-path and SSE chunk verification in this environment.
+- Invalid model (`not-a-real-model`) also returned provider-credential `502` instead of a validation-style error.
+- Filed bugs `B166` and `B167` for OpenAI-compatibility deviations (error envelope shape + invalid-model validation behavior).

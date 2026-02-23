@@ -1,0 +1,30 @@
+id: P42.M1.E2
+name: Mailbox & Message CRUD
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-mailbox-crud-module.todo
+  title: Implement Mailbox CRUD module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-messages-queue-opera.todo
+  title: Implement Messages queue operations module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

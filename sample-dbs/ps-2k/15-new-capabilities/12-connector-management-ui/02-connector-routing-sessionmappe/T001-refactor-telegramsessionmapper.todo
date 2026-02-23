@@ -1,0 +1,17 @@
+---
+id: P15.M12.E2.T001
+title: Refactor TelegramSessionMapper to route by bot_config.session_id
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- P15.M12.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.279357+00:00'
+started_at: '2026-02-18T06:45:12.279357+00:00'
+completed_at: '2026-02-18T07:51:56.940483+00:00'
+duration_minutes: 66.74435191666666
+---
+lib/pag_server/integrations/telegram/session_mapper.ex: Change get_or_create/3 to check bot_config.session_id first. If bot_config has a session_id: (1) fetch or create a TelegramChatMapping for (connector_instance_id, chat_id) pointing at that session; (2) do NOT create a new session — all chat_ids share the one bound session. If bot_config.session_id is nil: fall back to current behavior (resolve main agent, create per-chat session). Cache key remains (connector_instance_id, chat_id) for fast lookup. Preserve chat_id in TelegramChatMapping.metadata so reply dispatch can find the right chat.

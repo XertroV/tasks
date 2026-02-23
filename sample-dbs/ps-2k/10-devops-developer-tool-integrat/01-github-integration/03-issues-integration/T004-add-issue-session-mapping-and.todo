@@ -1,0 +1,39 @@
+---
+id: P10.M1.E3.T004
+title: Add issue session mapping and context building
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- github
+- issues
+- session
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:21:22.382548+00:00'
+started_at: '2026-02-12T00:21:22.382548+00:00'
+completed_at: '2026-02-12T00:35:45.279458+00:00'
+duration_minutes: 14.38161495
+---
+
+# Add issue session mapping and context building
+
+Map GitHub issues to agent sessions and build rich context from issue metadata and comments.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/github/issue_session.ex` module
+- [ ] Map issues to sessions: `{:github, repo, issue_number}` as session key
+- [ ] Build context from: issue title, description, labels, assignees, comments
+- [ ] Load issue comments via API and include in context
+- [ ] Truncate context if exceeds token limit (use existing Context module)
+- [ ] Add helper `get_issue_context(repo, issue_number)` returning context struct
+
+## Acceptance Criteria
+
+- [ ] Session mapping returns consistent keys for same issue
+- [ ] Context includes issue metadata and up to 5 most recent comments
+- [ ] Context building respects token limits
+- [ ] Module integrates with existing session router
+- [ ] No external API calls during session key creation (async only)

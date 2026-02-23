@@ -1,0 +1,33 @@
+---
+id: P15.M10.E1.T002
+title: Refactor builtin web_search tool to delegate through orchestrator
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M10.E1.T001
+tags:
+- tools
+- web-search
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:02:14.666597+00:00'
+started_at: '2026-02-17T15:02:14.666597+00:00'
+completed_at: '2026-02-17T15:04:11.262967+00:00'
+duration_minutes: 1.9432726166666667
+---
+
+# Refactor builtin web_search tool to delegate through orchestrator
+
+
+
+## Requirements
+
+- Split provider-agnostic orchestration from the current DuckDuckGo-specific implementation in builtin `web_search`.
+- Keep tool schema and response compatibility stable for existing callers.
+
+## Acceptance Criteria
+
+- `web_search` delegates through orchestrator/provider manager and no longer embeds provider-specific parsing logic.
+- Existing `web_search` tests remain green with compatibility assertions for request args and result shape.

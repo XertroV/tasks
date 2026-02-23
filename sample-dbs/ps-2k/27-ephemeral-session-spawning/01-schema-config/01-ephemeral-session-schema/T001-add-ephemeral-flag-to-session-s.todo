@@ -1,0 +1,43 @@
+---
+id: P27.M1.E1.T001
+title: Add ephemeral boolean flag to session schema and migration
+status: done
+estimate_hours: 3.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- session
+- schema
+- migration
+- ephemeral
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:05:54.540764+00:00'
+started_at: '2026-02-18T18:05:54.540764+00:00'
+completed_at: '2026-02-18T18:17:03.114550+00:00'
+duration_minutes: 11.142896266666666
+---
+
+# Add ephemeral boolean flag to session schema and migration
+
+Add an `ephemeral` boolean field to the `Session` Ecto schema so the system can
+distinguish ephemeral sessions (created on-demand for agent execution contexts with
+no persistent user session) from regular long-lived sessions.
+
+## Requirements
+
+- Add `ephemeral` boolean column to the sessions table via a migration (default `false`)
+- Update the `Session` Ecto schema to include the `ephemeral` field
+- Update the session changeset to cast and validate the `ephemeral` field
+- Ensure `Sessions.create_session/1` accepts an `ephemeral: true` option
+- Add a database index on `(ephemeral, status)` to enable efficient cleanup queries
+
+## Acceptance Criteria
+
+- [ ] Migration adds `ephemeral` boolean column with default `false` to sessions table
+- [ ] `Session` schema includes `ephemeral` field with correct type
+- [ ] Changeset casts `:ephemeral` and validates it is a boolean
+- [ ] `Sessions.create_session(%{ephemeral: true})` creates an ephemeral session
+- [ ] Database index on `(ephemeral, status)` exists after migration
+- [ ] Existing sessions default to `ephemeral: false` (non-breaking)
+- [ ] Unit tests for changeset with ephemeral flag present and absent

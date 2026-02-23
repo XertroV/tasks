@@ -1,0 +1,23 @@
+id: P21.M1
+name: Mandatory Agent Containerization
+status: pending
+estimate_hours: 60.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Container Infrastructure & Agent Integration
+  path: 01-container-infrastructure-agent
+  status: pending
+  estimate_hours: 60.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 18
+  done: 18
+  in_progress: 0
+  blocked: 0
+  pending: 0

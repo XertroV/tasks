@@ -1,0 +1,59 @@
+---
+id: P51.M2.E2.T003
+title: 'Level 5: Device authorization flow, LLM provider config, & tool approvals'
+status: pending
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+---
+## Campaign: Complex multi-step flows that cross system boundaries
+
+The most complex UI workflows. Requires multiple pages and external interactions.
+
+## Acceptance Criteria
+- [ ] Device authorization flow attempted end-to-end
+- [ ] LLM provider CRUD via API tested with UI reflection
+- [ ] Tool approval queue exercised
+- [ ] Context compaction UI tested
+
+## Test Sequence (simple → complex)
+
+### LLM Provider Configuration
+1. Navigate to /dashboard/settings — find provider configuration section
+2. Via API: GET /api/v1/llm/providers — list current providers
+3. Try adding a new provider via API (POST /api/v1/llm/providers) with a test key
+4. Verify it appears in the Settings dashboard
+5. Try editing the provider (PUT /api/v1/llm/providers/:id)
+6. Delete the test provider — verify it disappears from UI
+7. Check model pools: GET /api/v1/workspaces/:id/model_pools — is small/medium/large populated?
+
+### Tool Approvals
+1. In validation console: configure an agent to require tool approval
+2. Send a message that triggers a tool call
+3. Navigate to /api/v1/approvals/pending — verify request appears
+4. Approve the tool via API (POST /api/v1/approvals/:id/approve)
+5. Verify response arrives in validation console
+6. Repeat with deny — verify agent receives denial
+7. Check /api/v1/approvals/history — verify history populated
+
+### Session Compaction
+1. Build a long session (15+ messages)
+2. POST /api/v1/sessions/:id/compaction/trigger
+3. GET /api/v1/sessions/:session_id/compaction — verify status
+4. Check validation console — does compaction state show?
+
+### Device Authorization (RFC 8628)
+1. POST /oauth/device/code — get a device code
+2. Navigate to /device in browser — enter the user code
+3. Verify approval page renders with device info
+4. Approve the device
+5. Poll POST /oauth/device/token — verify token issued
+6. GET /.well-known/oauth-authorization-server — verify RFC 8414 metadata
+
+### Feedback System
+1. After receiving an LLM response in validation console
+2. Look for thumbs up/down UI on messages
+3. Click thumbs up — verify feedback recorded
+4. Via API: GET /api/v1/feedback/stats/:agent_id — verify count incremented

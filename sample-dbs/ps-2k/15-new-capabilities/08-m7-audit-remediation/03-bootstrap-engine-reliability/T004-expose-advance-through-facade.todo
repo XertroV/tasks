@@ -1,0 +1,37 @@
+---
+id: P15.M8.E3.T004
+title: Expose advance through facade, add complete_bootstrap test, fix answer parser
+  edge cases
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- bootstrap
+- testing
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:48:48.540163+00:00'
+started_at: '2026-02-17T15:48:48.540163+00:00'
+completed_at: '2026-02-17T16:08:40.504515+00:00'
+duration_minutes: 19.866072366666668
+---
+Three related improvements:
+
+1. No advance exposed through facade (E3 I5): Callers must reach into Session.advance/1 directly, breaking facade abstraction. Add Bootstrap.advance_section/1.
+
+2. complete_bootstrap not tested in facade suite (E3 I8): The most critical function has no test through the facade. Add tests covering full lifecycle including file generation.
+
+3. Answer parser namespace collision (E3 M3): If a variable is named 'section', extract_section_and_answers treats it as section identifier. Use a prefix or more structured format.
+
+4. flatten_answers silently overwrites on key collision (E3 M2): Two sections defining same variable name causes silent data loss.
+
+Source: E3 Audit I5, I8, M2, M3
+
+## Acceptance Criteria
+- [ ] Bootstrap.advance_section/1 exposed through facade
+- [ ] complete_bootstrap tested end-to-end in facade test suite
+- [ ] Answer parser handles 'section' as variable name without confusion
+- [ ] flatten_answers logs warning on key collision
+- [ ] Tests for each improvement

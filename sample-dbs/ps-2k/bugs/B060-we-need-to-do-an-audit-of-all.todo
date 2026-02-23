@@ -1,0 +1,40 @@
+---
+id: B060
+title: We need to do an audit of all configuration available to the user and make
+  sure it's exposed in the webui
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T12:36:40.165818+00:00'
+started_at: '2026-02-16T12:36:40.165818+00:00'
+completed_at: '2026-02-16T13:04:00.305768+00:00'
+duration_minutes: 27.335665666666667
+---
+
+We need to do an audit of all configuration available to the user and make sure it's exposed in the webui
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-16 12:36 UTC
+**Primary task**: B059 - Plugin settings should be exposed in the webui
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

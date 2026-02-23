@@ -1,0 +1,21 @@
+id: P6.M8
+name: Error Tracking Service Integration
+status: pending
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+epics:
+- id: E1
+  name: Sentry Integration
+  path: 01-sentry-integration
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

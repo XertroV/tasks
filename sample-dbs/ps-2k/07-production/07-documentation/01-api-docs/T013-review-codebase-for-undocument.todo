@@ -1,0 +1,93 @@
+---
+id: P7.M7.E1.T013
+title: Review codebase for undocumented modules and create documentation tasks
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- documentation
+- meta
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:29:26.582901+00:00'
+started_at: '2026-02-08T06:29:26.582901+00:00'
+completed_at: '2026-02-08T06:37:42.020676+00:00'
+duration_minutes: 8.25729595
+---
+
+# Review codebase for undocumented modules and create documentation tasks
+
+Systematic discovery pass over the codebase to identify modules and subsystems
+lacking adequate documentation. The output is **new tasks**, not new docs.
+
+For each gap found, use the `plan-task` skill to create properly scoped tasks
+under this epic (P7.M7.E1). This converts T012 from a monolithic "audit + fix
+everything" task into a final verification sweep.
+
+## Requirements
+
+- [x] Enumerate all public modules under `lib/pag_server/` and `lib/pag_server_web/`
+- [x] For each module, check for:
+  - [x] Presence and quality of `@moduledoc`
+  - [x] `@doc` coverage on public functions
+  - [x] `@spec` on public functions
+  - [x] `@typedoc` on public types
+- [x] Group findings by subsystem (agents, sessions, LLM, tools, events, etc.)
+- [x] For each subsystem with significant gaps, create a new task via `plan-task`
+  - [x] Task should be scoped to one module or closely related module group
+  - [x] Task should specify which functions/types need docs
+  - [x] Task should include a complexity estimate
+- [x] Update T012 description to reflect its new role as a final audit sweep
+
+## Acceptance Criteria
+
+- [x] Every public module has been reviewed
+- [x] New tasks created in P7.M7.E1 for each documentation gap area
+- [x] Each new task has clear scope (specific modules/functions listed)
+- [x] T012 depends_on all newly created tasks
+- [x] No module is left unaccounted for
+
+## Findings Snapshot
+
+- Public module inventory scanned in `lib/pag_server/` and `lib/pag_server_web/`
+- Requested subsystem slice covered 208 modules in scope for documentation-gap
+  planning (from 302 total modules across both trees)
+- Highest gap concentrations identified in typedoc coverage and function-level
+  docs/specs for tools, web contracts, and selected runtime modules
+
+## Module Accounting
+
+- Agents: 21 modules
+- Sessions: 5 modules
+- LLM: 50 modules
+- Tools: 66 modules
+- Events: 9 modules
+- Schema: 12 modules
+- Web controllers: 15 modules
+- Web channels: 4 modules
+- Web plugs: 10 modules
+- Web support/other: 16 modules
+
+## Gap-to-Task Mapping
+
+- Sessions gaps -> `P7.M7.E1.T016`
+- Agent runtime gaps -> `P7.M7.E1.T017`
+- LLM registry/streaming gaps -> `P7.M7.E1.T018`
+- Built-in tool docs/spec gaps -> `P7.M7.E1.T019`
+- MCP lifecycle/transport gaps -> `P7.M7.E1.T020`
+- Events query/replay gaps -> `P7.M7.E1.T021`
+- Schema typedoc gaps -> `P7.M7.E1.T022`
+- Web channels/controllers/plugs/support gaps -> `P7.M7.E1.T023`
+
+## Tasks Created From Gaps
+
+- `P7.M7.E1.T016` sessions public API docs and typedocs
+- `P7.M7.E1.T017` agent runtime API contract docs
+- `P7.M7.E1.T018` LLM registry and streaming docs/types
+- `P7.M7.E1.T019` built-in tool contract docs (batch 1)
+- `P7.M7.E1.T020` MCP lifecycle and transport docs
+- `P7.M7.E1.T021` events query/replay API docs
+- `P7.M7.E1.T022` schema typedoc sweep
+- `P7.M7.E1.T023` web channel/controller/plug contract docs

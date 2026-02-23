@@ -1,0 +1,37 @@
+id: P11.M1.E3
+name: Template Marketplace & Sharing
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-template-sharing-and-vi.todo
+  title: Design template sharing and visibility model
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-template-discovery-a.todo
+  title: Implement template discovery and search
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-template-ratings-and-versi.todo
+  title: Add template ratings and versioning
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: low
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

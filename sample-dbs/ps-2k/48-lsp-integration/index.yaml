@@ -1,0 +1,74 @@
+id: P48
+name: LSP Integration
+status: done
+locked: true
+weeks: 6
+estimate_hours: 75.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Per-Session Working Directory
+  path: 01-per-session-working-directory
+  status: done
+  estimate_hours: 10.0
+  complexity: high
+  depends_on: []
+  description: Add persisted working_directory and git_branch fields to sessions.
+    This is the prerequisite for coding agent worktree flow and LSP root anchoring.
+  locked: false
+- id: M2
+  name: Coding Agent Mode and Worktree-First Flow
+  path: 02-coding-agent-mode-and-worktree
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on:
+  - P48.M1
+  description: Agents with coding_mode=worktree automatically create an isolated git
+    worktree when a session starts on a git repo workspace. Depends on Epic A (per-session
+    working directory).
+  locked: false
+- id: M3
+  name: LSP Plugin (pag-server, local workspaces)
+  path: 03-lsp-plugin-pag-server-local-wo
+  status: done
+  estimate_hours: 30.0
+  complexity: critical
+  depends_on:
+  - P48.M1
+  description: 'On-by-default plugin managing LSP server processes on the pag-server
+    host. Exposes LSP as agent tools: diagnostics, hover, go_to_definition, find_references,
+    document_symbols, workspace_symbols. Auto-injects diagnostics after write_file/file_edit.
+    Supports 11 language servers. Depends on Epic A.'
+  locked: false
+- id: M4
+  name: LSP in pag-connect (remote workspaces)
+  path: 04-lsp-in-pag-connect-remote-work
+  status: done
+  estimate_hours: 15.0
+  complexity: high
+  depends_on:
+  - P48.M3
+  description: LSP subsystem in pag-connect daemon. Registers 'lsp' as a handled tool
+    via companion channel. pag-server routes LSP tool calls through CompanionProxyExecutor.
+    LSP servers run on the remote machine where pag-connect is installed. Depends
+    on Epic C (pag-server defines the tool interface).
+  locked: false
+- id: M5
+  name: LSP Auto-download and Follow-ons (Epic D)
+  path: 05-lsp-auto-download-and-follow-o
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: Auto-download LSP server binaries on first use. ElixirLS git/config
+    corruption workaround. pag-connect auto-download. All work deferred from Epics
+    A-C'.
+  locked: false
+stats:
+  total_tasks: 46
+  done: 46
+  in_progress: 0
+  blocked: 0
+  pending: 0

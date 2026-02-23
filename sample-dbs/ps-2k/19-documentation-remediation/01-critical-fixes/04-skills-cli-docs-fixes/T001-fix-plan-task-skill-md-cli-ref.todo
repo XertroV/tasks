@@ -1,0 +1,35 @@
+---
+id: P19.M1.E4.T001
+title: Fix plan-task/SKILL.md CLI references
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- skills
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:38:45.306825+00:00'
+started_at: '2026-02-18T01:38:45.306825+00:00'
+completed_at: '2026-02-18T01:42:10.785676+00:00'
+duration_minutes: 3.4246472666666667
+---
+Replace all ./tasks.py with tasks. Change --description to --body. Update allowed-tools to Bash(tasks *). Lines 6, 141-162.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M1.E4)
+**Agent**: cli-user
+**Date**: 2026-02-18 01:38 UTC
+**Sibling tasks**: P19.M1.E4.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M1.E4.T001 → P19.M1.E4.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M1.E4.T001: .tasks/19-documentation-remediation/01-critical-fixes/04-skills-cli-docs-fixes/T001-fix-plan-task-skill-md-cli-ref.todo
+- P19.M1.E4.T002: .tasks/19-documentation-remediation/01-critical-fixes/04-skills-cli-docs-fixes/T002-fix-tasks-readme-md-cli-refere.todo

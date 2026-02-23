@@ -1,0 +1,24 @@
+id: P54.M3
+name: BrowserMCP Plugin Migration
+status: done
+estimate_hours: 7.0
+complexity: medium
+depends_on:
+- P54.M2
+locked: false
+epics:
+- id: E1
+  name: Plugin scaffold, lifecycle, and config migration
+  path: 01-plugin-scaffold-lifecycle-and
+  status: done
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

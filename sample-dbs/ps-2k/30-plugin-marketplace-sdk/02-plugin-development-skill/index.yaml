@@ -1,0 +1,23 @@
+id: P30.M2
+name: Plugin Development Skill
+status: pending
+estimate_hours: 10.0
+complexity: low
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Plugin Dev Skill & Docs
+  path: 01-plugin-dev-skill-docs
+  status: pending
+  estimate_hours: 10.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

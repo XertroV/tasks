@@ -1,0 +1,49 @@
+id: P4.M1.E3
+name: Schema Builder
+status: pending
+estimate_hours: 2
+complexity: low
+depends_on:
+- E1
+tasks:
+- id: T001
+  file: T001-json-schema.todo
+  title: Build JSON Schema for LLM
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-anthropic-format.todo
+  title: Format for Anthropic tools
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-openai-format.todo
+  title: Format for OpenAI tools
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+- id: T004
+  file: T004-wire-registry-tool-schemas-int.todo
+  title: Wire registry tool schemas into LLM request builders
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P4.M1.E3.T002
+  - P4.M1.E3.T003
+  - P4.M1.E2.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

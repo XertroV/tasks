@@ -1,0 +1,49 @@
+id: P22.M2.E1
+name: 'Provider Behaviour: fetch_models/1 callback'
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-fetch-models-1-callback-to.todo
+  title: Add fetch_models/1 callback to Provider behaviour
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-fetch-models-1-for-a.todo
+  title: Implement fetch_models/1 for Anthropic provider (GET /v1/models)
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M2.E1.T001
+- id: T003
+  file: T003-implement-fetch-models-1-for-o.todo
+  title: Implement fetch_models/1 for OpenAI provider (GET /v1/models)
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M2.E1.T001
+- id: T004
+  file: T004-implement-fetch-models-1-for-o.todo
+  title: Implement fetch_models/1 for Ollama, Groq, and OpenRouter providers
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M2.E1.T001
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

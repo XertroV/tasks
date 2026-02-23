@@ -1,0 +1,362 @@
+---
+title: Define PubSub Topic Naming Convention
+epic: P3.M2.E1-broadcaster-module
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimate_hours: 1
+depends_on:
+- P3.M2.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:09:13.841220'
+started_at: '2026-02-06T16:09:13.841220'
+completed_at: '2026-02-06T16:19:20.181756'
+duration_minutes: 10.105675366666667
+id: P3.M2.E1.T002
+---
+
+# Task: Define PubSub Topic Naming Convention
+
+## Context
+Consistent topic naming is critical for routing events correctly, avoiding conflicts, and enabling efficient subscriptions. Establish clear conventions early.
+
+## Goal
+Document and enforce topic naming patterns for agents, sessions, and global broadcasts.
+
+## Requirements
+- `agent:#{agent_id}` - Agent-specific events
+- `session:#{session_id}` - Session-specific events  
+- `global` - System-wide broadcasts
+- Topic validation in Broadcaster
+- Documentation with examples
+
+## Implementation
+
+### File: `lib/pag_server/pubsub/topics.ex`
+
+```elixir
+defmodule PagServer.PubSub.Topics do
+  @moduledoc """
+  Topic naming conventions for Phoenix.PubSub broadcasts.
+  
+  ## Topic Patterns
+  
+  - `agent:#{agent_id}` - Events for a specific agent (tokens, errors, status)
+  - `session:#{session_id}` - Events for a session (messages, forks)
+  - `user:#{user_id}` - Events for all agents owned by user
+  - `global` - System-wide events (announcements, maintenance)
+  
+  ## Examples
+  
+      iex> Topics.agent_topic("agent-123")
+      "agent:agent-123"
+      
+      iex> Topics.session_topic("sess-456")
+      "session:sess-456"
+      
+      iex> Topics.global_topic()
+      "global"
+  """
+  
+  @type agent_id :: String.t()
+  @type session_id :: String.t()
+  @type user_id :: String.t()
+  @type topic :: String.t()
+  
+  @doc "Topic for agent-specific events"
+  @spec agent_topic(agent_id()) :: topic()
+  def agent_topic(agent_id), do: "agent:#{agent_id}"
+  
+  @doc "Topic for session-specific events"
+  @spec session_topic(session_id()) :: topic()
+  def session_topic(session_id), do: "session:#{session_id}"
+  
+  @doc "Topic for user-specific events (all their agents)"
+  @spec user_topic(user_id()) :: topic()
+  def user_topic(user_id), do: "user:#{user_id}"
+  
+  @doc "Global topic for system-wide events"
+  @spec global_topic() :: topic()
+  def global_topic, do: "global"
+  
+  @doc """
+  Validate topic format.
+  
+  Returns :ok if valid, {:error, reason} otherwise.
+  """
+  @spec validate_topic(topic()) :: :ok | {:error, atom()}
+  def validate_topic(topic) when is_binary(topic) do
+    cond do
+      topic == "global" ->
+        :ok
+      
+      topic =~ ~r/^agent:[a-z0-9\-]+$/ ->
+        :ok
+      
+      topic =~ ~r/^session:[a-z0-9\-]+$/ ->
+        :ok
+      
+      topic =~ ~r/^user:[a-z0-9\-]+$/ ->
+        :ok
+      
+      true ->
+        {:error, :invalid_topic_format}
+    end
+  end
+  
+  def validate_topic(_), do: {:error, :invalid_topic_type}
+  
+  @doc """
+  Parse topic to extract type and ID.
+  
+  ## Examples
+  
+      iex> Topics.parse_topic("agent:agent-123")
+      {:ok, :agent, "agent-123"}
+      
+      iex> Topics.parse_topic("global")
+      {:ok, :global, nil}
+  """
+  @spec parse_topic(topic()) :: {:ok, atom(), String.t() | nil} | {:error, atom()}
+  def parse_topic("global"), do: {:ok, :global, nil}
+  
+  def parse_topic(topic) when is_binary(topic) do
+    case String.split(topic, ":", parts: 2) do
+      [type, id] when type in ["agent", "session", "user"] ->
+        {:ok, String.to_existing_atom(type), id}
+      
+      _ ->
+        {:error, :invalid_topic_format}
+    end
+  end
+  
+  def parse_topic(_), do: {:error, :invalid_topic_type}
+end
+```
+
+### Update: `lib/pag_server/agents/broadcaster.ex`
+
+Use Topics module for validation:
+
+```elixir
+defmodule PagServer.Agents.Broadcaster do
+  # ... existing code ...
+  
+  alias PagServer.PubSub.Topics
+  
+  defp do_broadcast(topic, event) do
+    # Validate topic using Topics module
+    case Topics.validate_topic(topic) do
+      :ok ->
+        wrapped_event = wrap_event(event)
+        PubSub.broadcast(PubSubAdapter, topic, {:agent_event, wrapped_event})
+      
+      {:error, reason} ->
+        Logger.warning("Invalid topic: #{topic}, reason: #{reason}")
+        {:error, reason}
+    end
+  end
+end
+```
+
+### File: `docs/architecture/pubsub-topics.md`
+
+```markdown
+# PubSub Topic Architecture
+
+## Overview
+
+PAG-Server uses Phoenix.PubSub for real-time event distribution. Topics follow a hierarchical naming convention to enable efficient routing and subscription management.
+
+## Topic Hierarchy
+
+\`\`\`
+global                         # System-wide events
+├── agent:*                    # Agent-specific events
+│   ├── agent:agent-123
+│   ├── agent:agent-456
+│   └── ...
+├── session:*                  # Session-specific events
+│   ├── session:sess-abc
+│   └── ...
+└── user:*                     # User-specific events (all their agents)
+    ├── user:user-001
+    └── ...
+\`\`\`
+
+## Topic Patterns
+
+### Agent Topics: `agent:#{agent_id}`
+
+**Events**:
+- Token streaming
+- LLM errors
+- Tool execution start/complete
+- Agent status changes
+- Thinking blocks
+
+**Subscribers**:
+- AgentChannel (connected clients)
+- EventStore (for persistence)
+- Stats tracker
+
+**Example**:
+\`\`\`elixir
+Phoenix.PubSub.subscribe(PubSub, "agent:agent-123")
+\`\`\`
+
+### Session Topics: `session:#{session_id}`
+
+**Events**:
+- New messages
+- Session forked
+- Context truncation
+- Session archived
+
+**Subscribers**:
+- SessionChannel
+- Audit logger
+
+**Example**:
+\`\`\`elixir
+Phoenix.PubSub.subscribe(PubSub, "session:sess-abc")
+\`\`\`
+
+### User Topics: `user:#{user_id}`
+
+**Events**:
+- New agent created
+- Agent deleted
+- Usage limits reached
+- Billing events
+
+**Subscribers**:
+- UserChannel
+- Notification service
+
+**Example**:
+\`\`\`elixir
+Phoenix.PubSub.subscribe(PubSub, "user:user-001")
+\`\`\`
+
+### Global Topic: `global`
+
+**Events**:
+- System announcements
+- Maintenance windows
+- Version updates
+- Critical alerts
+
+**Subscribers**:
+- All connected channels (opt-in)
+- Admin dashboard
+
+**Example**:
+\`\`\`elixir
+Phoenix.PubSub.subscribe(PubSub, "global")
+\`\`\`
+
+## Topic Validation
+
+All topics are validated before broadcast:
+
+\`\`\`elixir
+alias PagServer.PubSub.Topics
+
+Topics.validate_topic("agent:agent-123")  # => :ok
+Topics.validate_topic("invalid")          # => {:error, :invalid_topic_format}
+\`\`\`
+
+## Best Practices
+
+1. **Subscribe early, unsubscribe on leave** - Avoid memory leaks
+2. **Use topic helpers** - Don't construct topics manually
+3. **Validate before broadcast** - Prevent routing errors
+4. **Monitor subscription counts** - Track resource usage
+
+## Monitoring
+
+Track PubSub metrics:
+
+\`\`\`elixir
+# Number of subscribers per topic
+Phoenix.PubSub.subscribers(PubSub, "agent:agent-123") |> length()
+
+# Total subscription count
+Registry.count(PubSub.PG2)
+\`\`\`
+\`\`\`
+
+## Acceptance Criteria
+- [ ] Topics module with helper functions
+- [ ] Topic validation enforced in Broadcaster
+- [ ] Documentation with examples
+- [ ] Tests for topic validation
+- [ ] Pattern matching for all topic types
+
+## Testing
+
+```elixir
+# test/pag_server/pubsub/topics_test.exs
+defmodule PagServer.PubSub.TopicsTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.PubSub.Topics
+  
+  describe "agent_topic/1" do
+    test "formats agent topic correctly" do
+      assert Topics.agent_topic("agent-123") == "agent:agent-123"
+    end
+  end
+  
+  describe "validate_topic/1" do
+    test "accepts valid agent topics" do
+      assert :ok = Topics.validate_topic("agent:agent-123")
+      assert :ok = Topics.validate_topic("agent:test-agent-abc")
+    end
+    
+    test "accepts valid session topics" do
+      assert :ok = Topics.validate_topic("session:sess-456")
+    end
+    
+    test "accepts global topic" do
+      assert :ok = Topics.validate_topic("global")
+    end
+    
+    test "rejects invalid formats" do
+      assert {:error, :invalid_topic_format} = Topics.validate_topic("invalid")
+      assert {:error, :invalid_topic_format} = Topics.validate_topic("agent:")
+      assert {:error, :invalid_topic_format} = Topics.validate_topic("agent:INVALID")
+    end
+  end
+  
+  describe "parse_topic/1" do
+    test "parses agent topics" do
+      assert {:ok, :agent, "agent-123"} = Topics.parse_topic("agent:agent-123")
+    end
+    
+    test "parses session topics" do
+      assert {:ok, :session, "sess-456"} = Topics.parse_topic("session:sess-456")
+    end
+    
+    test "parses global topic" do
+      assert {:ok, :global, nil} = Topics.parse_topic("global")
+    end
+    
+    test "returns error for invalid topics" do
+      assert {:error, :invalid_topic_format} = Topics.parse_topic("invalid:format")
+    end
+  end
+end
+```
+
+## References
+- Phoenix.PubSub: https://hexdocs.pm/phoenix_pubsub/Phoenix.PubSub.html
+- Topic-based pub-sub patterns
+- Distributed Erlang PG2
+
+## Notes
+- Keep topic names lowercase with hyphens
+- Avoid wildcard subscriptions (performance)
+- Future: Add topic permissions/ACL

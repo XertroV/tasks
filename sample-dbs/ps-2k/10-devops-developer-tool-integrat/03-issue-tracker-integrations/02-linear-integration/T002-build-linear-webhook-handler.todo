@@ -1,0 +1,133 @@
+---
+id: P10.M3.E2.T002
+title: Build Linear webhook handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:01:21.737294+00:00'
+started_at: '2026-02-12T03:01:21.737294+00:00'
+completed_at: '2026-02-12T03:15:22.398053+00:00'
+duration_minutes: 14.01101245
+---
+
+# Build Linear webhook handler
+
+Implement webhook signature verification and event parsing for Linear issue updates.
+
+## Requirements
+
+### Webhook Signature Verification
+- [ ] Create `lib/pag_server/integrations/linear/webhook.ex` module
+- [ ] Implement signature verification using SHA256 HMAC
+- [ ] Extract signature from X-Linear-Signature header
+- [ ] Verify with webhook signing secret from Linear workspace settings
+- [ ] Reject requests with missing/invalid signatures (403 Forbidden)
+- [ ] Support multiple webhooks with different signing secrets
+
+### Event Parsing
+- [ ] Parse Linear webhook JSON payload
+- [ ] Extract issue fields: id, identifier (PROJ-123), title, description, state, assignee, priority, labels
+- [ ] Support event types: Issue.created, Issue.updated, Issue.removed, Comment.created
+- [ ] Map Linear state names to standard status (Backlog, Todo, In Progress, In Review, Done)
+- [ ] Handle state transitions (stateChange field in updates)
+- [ ] Extract creator/actor information for audit trail
+
+### Idempotency and Deduplication
+- [ ] Track webhook event IDs to detect duplicates
+- [ ] Use cache/ETS with 1-hour TTL for duplicate detection
+- [ ] Return 200 OK immediately after validation
+- [ ] Process event async in background task
+- [ ] Log detected duplicates at info level
+
+### Webhook Management
+- [ ] Provide utility to register webhooks with Linear workspace
+- [ ] Support event subscriptions configuration
+- [ ] Store webhook registration data for management/debugging
+- [ ] Support webhook URL configuration
+
+## Acceptance Criteria
+
+- [ ] Valid signatures pass verification, invalid ones rejected
+- [ ] Parsed events contain all required fields
+- [ ] State transitions detected correctly (changelog included in response)
+- [ ] Comments are parsed with author information
+- [ ] Duplicate events (same ID within 1 hour) are skipped
+- [ ] Handler returns 200 immediately; processing is async
+- [ ] Webhook registration creates webhook in Linear with correct events
+- [ ] Unit tests cover signature verification, parsing, deduplication
+- [ ] Integration test verifies webhook delivery from Linear sandbox
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Linear Webhook Signature**:
+```
+X-Linear-Signature: sha256=<hmac_hex>
+hmac_hex = HMAC-SHA256(request_body, webhook_signing_secret)
+```
+
+**Event Payload Example**:
+```json
+{
+  "id": "webhook-123",
+  "createdAt": "2026-02-12T10:00:00Z",
+  "action": "create",
+  "type": "Issue",
+  "data": {
+    "id": "issue-123",
+    "identifier": "PROJ-1",
+    "title": "Bug fix",
+    "description": "Fix database query",
+    "state": {
+      "id": "state-123",
+      "name": "In Progress"
+    },
+    "assignee": {
+      "id": "user-123",
+      "email": "user@example.com",
+      "name": "John Doe"
+    },
+    "priority": 3,
+    "labels": ["bug", "urgent"],
+    "createdAt": "2026-02-12T09:00:00Z",
+    "updatedAt": "2026-02-12T10:00:00Z"
+  },
+  "updatedFrom": {
+    "state": {"name": "Backlog"}
+  }
+}
+```
+
+**Configuration**:
+```elixir
+config :pag_server, :linear_webhook,
+  signing_secret: System.get_env("LINEAR_WEBHOOK_SECRET"),
+  webhook_url: "http://localhost:4000/integrations/linear/webhooks"
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/linear/webhook_test.exs
+
+# Integration with Linear sandbox
+LINEAR_WEBHOOK_SECRET=... mix test test/pag_server/integrations/linear/webhook_test.exs --include integration
+```
+
+## Verification
+
+```bash
+# Verify signature computation
+mix test test/pag_server/integrations/linear/webhook_test.exs -k "signature"
+
+# Test event parsing
+mix test test/pag_server/integrations/linear/webhook_test.exs -k "parsing"
+
+# File size
+wc -l lib/pag_server/integrations/linear/webhook.ex
+```

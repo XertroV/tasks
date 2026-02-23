@@ -1,0 +1,34 @@
+id: P43
+name: LLM Call Records & Observability Dashboard
+status: done
+locked: true
+weeks: 2
+estimate_hours: 20.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Schema, Recorder & Registry Integration
+  path: 01-schema-recorder-registry-integ
+  status: done
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: DB schema, migration, CallRecorder module, and Registry integration
+  locked: false
+- id: M2
+  name: Call Site Updates, Dashboard & Tests
+  path: 02-call-site-updates-dashboard-te
+  status: done
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: Thread agent/session context into all call sites, build LiveView dashboard,
+    add tests
+  locked: false
+stats:
+  total_tasks: 21
+  done: 21
+  in_progress: 0
+  blocked: 0
+  pending: 0

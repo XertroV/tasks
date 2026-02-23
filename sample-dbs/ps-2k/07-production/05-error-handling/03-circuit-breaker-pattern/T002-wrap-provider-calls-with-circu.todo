@@ -1,0 +1,103 @@
+---
+id: P7.M5.E3.T002
+title: Wrap provider calls with circuit breaker
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- circuit-breaker
+- providers
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:22:22.881895+00:00'
+started_at: '2026-02-06T21:22:22.881895+00:00'
+completed_at: '2026-02-06T21:48:27.351535+00:00'
+duration_minutes: 26.074493816666667
+---
+
+# Wrap provider calls with circuit breaker
+
+Integrate the circuit breaker into `PagServer.LLM.Registry` so that every provider call
+goes through the circuit breaker check. When a provider's circuit is open (blown), requests
+should fail fast without hitting the provider, and the failover mechanism should route to
+the next available provider.
+
+## Requirements
+
+- [ ] Modify `PagServer.LLM.Registry.route_with_failover/6` to check circuit breaker state before calling each provider
+- [ ] Call `CircuitBreaker.available?/1` before `call_provider/5` in `attempt_provider_route/9`
+- [ ] When circuit is blown, skip the provider and try the next fallback (same as unhealthy provider path)
+- [ ] On successful provider response, do nothing (fuse auto-heals)
+- [ ] On provider failure (retryable errors), call `CircuitBreaker.record_failure/1` to melt the fuse
+- [ ] Classify which errors should trip the circuit breaker vs. pass through:
+  - Trip: rate_limited, timeout, network_error, server_error (5xx), service_unavailable
+  - Pass through: authentication_error, invalid_request, context_length_exceeded
+- [ ] Return `{:error, {:circuit_open, provider}}` when all providers are blown
+- [ ] Ensure circuit breaker checks are lightweight and don't add significant latency
+
+## Acceptance Criteria
+
+- [ ] Provider calls are gated by circuit breaker state
+- [ ] Blown circuits cause fast-fail (no network request made)
+- [ ] Transient failures (rate limit, timeout, 5xx) melt the fuse
+- [ ] Non-transient failures (auth, invalid request) do NOT melt the fuse
+- [ ] Failover chain respects circuit breaker state for each provider
+- [ ] Existing failover tests continue to pass
+- [ ] New tests verify circuit breaker integration with failover
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+The LLM Registry already has a failover mechanism (`route_with_failover`) that checks
+provider health. The circuit breaker adds a more sophisticated failure tracking layer
+that prevents sending requests to providers experiencing sustained outages.
+
+**Key Files**:
+- `lib/pag_server/llm/registry.ex` - Main integration point (lines 489-655)
+  - `route_with_failover/6` at line 489
+  - `attempt_provider_route/9` at line 513
+  - `should_failover?/2` at line 722
+- `lib/pag_server/llm/circuit_breaker.ex` - Created in T001
+
+## Notes
+
+Integration pattern in `attempt_provider_route`:
+```elixir
+defp attempt_provider_route(operation, [provider | rest], ...) do
+  case get_provider(provider, registry_opts) do
+    {:ok, module} ->
+      # Check circuit breaker BEFORE health check
+      if CircuitBreaker.available?(provider) do
+        case check_provider_health(module) do
+          {:ok, :healthy} ->
+            case call_provider(...) do
+              {:ok, _} = ok -> ok
+              {:error, reason} = error ->
+                # Record failure for circuit breaker
+                if circuit_breaker_error?(reason) do
+                  CircuitBreaker.record_failure(provider)
+                end
+                # Continue with existing failover logic...
+                maybe_failover(...)
+            end
+          {:error, reason} ->
+            # Provider unhealthy - existing logic
+        end
+      else
+        # Circuit is open - skip this provider
+        Logger.warning("Circuit breaker open for #{provider}, skipping")
+        emit_circuit_breaker_telemetry(:skipped, provider)
+        attempt_provider_route(operation, rest, ...)
+      end
+  end
+end
+
+defp circuit_breaker_error?(%{retryable?: true}), do: true
+defp circuit_breaker_error?({type, _}) when type in [
+  :rate_limited, :timeout, :network_error, :server_error, :service_unavailable
+], do: true
+defp circuit_breaker_error?(_), do: false
+```

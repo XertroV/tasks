@@ -1,0 +1,56 @@
+---
+id: P18.M2.E1.T004
+title: Add JSON view and tests for workspace config API
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E1.T003
+tags:
+- security
+- workspace
+- config
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:20:39.697044+00:00'
+started_at: '2026-02-17T20:20:39.697044+00:00'
+completed_at: '2026-02-17T20:47:46.908523+00:00'
+duration_minutes: 27.120191166666665
+---
+
+# Add JSON view and tests for workspace config API
+
+## Description
+
+Tests for the new workspace config API and the restricted flat config endpoint.
+
+## Requirements
+
+- [ ] Test WorkspaceConfigController CRUD:
+  - List configs for a workspace (returns only workspace-scoped keys)
+  - Get specific config key
+  - Set config value (admin only)
+  - Delete config key (admin only)
+- [ ] Test cross-workspace isolation:
+  - Config from workspace A not visible via workspace B's endpoint
+  - Member of workspace A cannot read workspace B's config
+- [ ] Test role enforcement:
+  - Member can read config
+  - Member cannot write config (403)
+  - Admin can read and write config
+- [ ] Test flat config restriction:
+  - GET /api/v1/config excludes workspace-scoped keys
+  - Direct access to workspace.* keys returns 400
+  - Non-workspace keys still work
+
+## Acceptance Criteria
+
+- [ ] All tests pass with async: true
+- [ ] Cross-workspace data isolation verified
+- [ ] Role-based access enforced
+- [ ] Flat endpoint properly restricted
+
+## Context
+
+**Files affected**: `test/pag_server_web/controllers/workspace_config_controller_test.exs`, `test/pag_server_web/controllers/platform_config_controller_test.exs` (update)

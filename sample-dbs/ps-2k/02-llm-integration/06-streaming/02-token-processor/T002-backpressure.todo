@@ -1,0 +1,111 @@
+---
+id: P2.M6.E2.T002
+title: Implement backpressure handling
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P2.M6.E2.T001
+tags:
+- streaming
+- backpressure
+- genserver
+- performance
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:17:51.742638'
+started_at: '2026-02-05T17:17:51.742638'
+completed_at: '2026-02-05T17:30:35.028143'
+duration_minutes: 12.721424866666666
+---
+
+# Implement backpressure handling
+
+Add backpressure mechanisms to prevent TokenProcessor mailbox overflow.
+
+## Requirements
+
+- [ ] Monitor mailbox size in TokenProcessor GenServer
+- [ ] Implement `handle_info(:check_mailbox, state)` periodic check
+- [ ] Add state field: `:backpressure_active` (boolean)
+- [ ] When mailbox exceeds threshold (e.g., 1000 messages):
+  - [ ] Set `:backpressure_active` to `true`
+  - [ ] Send backpressure signal to HTTP stream handler
+  - [ ] Log warning with mailbox size
+- [ ] When mailbox drains below threshold (e.g., 100 messages):
+  - [ ] Set `:backpressure_active` to `false`
+  - [ ] Send resume signal to HTTP stream handler
+  - [ ] Log info about recovery
+- [ ] Add `:max_buffer_size` config option (default 10KB)
+- [ ] Reject tokens if buffer exceeds max size (protection)
+
+## Acceptance Criteria
+
+- [ ] Mailbox size checked every 100ms
+- [ ] Backpressure activated when mailbox > 1000 messages
+- [ ] Backpressure deactivated when mailbox < 100 messages
+- [ ] HTTP stream handler receives backpressure signals
+- [ ] Buffer size limited to prevent memory exhaustion
+- [ ] Logs backpressure events at appropriate levels
+- [ ] Performance impact <1% in normal operation
+- [ ] Module compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section on backpressure
+- `AGENTS.md` Memory efficiency requirements (<512MB per session)
+
+**Key Points**:
+- GenServer mailbox can grow unbounded without backpressure
+- HTTP stream should pause when mailbox is full
+- Need to balance throughput vs memory usage
+- Critical for handling fast LLM responses (e.g., Claude 3.5 Sonnet)
+
+**Backpressure Flow**:
+```
+TokenProcessor (mailbox full) 
+  → Signal HTTP handler
+    → Pause reading from socket
+      → TCP backpressure to LLM provider
+        → Provider slows/pauses streaming
+```
+
+## Notes
+
+**Implementation Strategy**:
+```elixir
+defmodule TokenProcessor do
+  def handle_info(:check_mailbox, state) do
+    {:message_queue_len, mailbox_size} = Process.info(self(), :message_queue_len)
+    
+    state = cond do
+      mailbox_size > 1000 and not state.backpressure_active ->
+        notify_backpressure(state, :activate)
+        %{state | backpressure_active: true}
+        
+      mailbox_size < 100 and state.backpressure_active ->
+        notify_backpressure(state, :deactivate)
+        %{state | backpressure_active: false}
+        
+      true ->
+        state
+    end
+    
+    # Schedule next check
+    Process.send_after(self(), :check_mailbox, 100)
+    {:noreply, state}
+  end
+end
+```
+
+**Config Options** (in `config/config.exs`):
+```elixir
+config :pag_server, PAGServer.LLM.TokenProcessor,
+  backpressure_high: 1000,    # Activate backpressure
+  backpressure_low: 100,      # Deactivate backpressure
+  max_buffer_size: 10_240,    # 10KB
+  check_interval_ms: 100
+```
+
+Consider future migration to `GenStage` with demand-based flow control.

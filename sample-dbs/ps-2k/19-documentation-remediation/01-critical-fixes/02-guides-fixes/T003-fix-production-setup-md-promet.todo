@@ -1,0 +1,18 @@
+---
+id: P19.M1.E2.T003
+title: Fix production-setup.md PrometheusMetrics config
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- guides
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:33:44.686883+00:00'
+started_at: '2026-02-18T01:33:44.686883+00:00'
+completed_at: '2026-02-18T01:35:36.860029+00:00'
+duration_minutes: 1.8695522166666667
+---
+Remove non-existent port/path options from PrometheusMetrics config. Metrics are served at /metrics on main endpoint, not separate port. Lines 207-210.

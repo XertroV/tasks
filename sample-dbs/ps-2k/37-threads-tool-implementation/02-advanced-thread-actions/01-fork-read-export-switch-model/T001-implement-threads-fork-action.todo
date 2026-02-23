@@ -1,0 +1,36 @@
+---
+id: P37.M2.E1.T001
+title: Implement threads fork action
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.874070+00:00'
+started_at: '2026-02-19T04:21:05.874070+00:00'
+completed_at: '2026-02-19T04:43:41.424519+00:00'
+duration_minutes: 22.592507166666667
+---
+Implement action_fork/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "fork", hint: "Fork implementation pending"}
+
+The fork infrastructure already exists: lib/pag_server/sessions/session.ex has fork/2, and Session schema has fork_changeset/2. Wire it up.
+
+Required args: thread_id (session to fork from)
+Optional args:
+  - message_id (fork point; defaults to latest message in the session)
+  - name (name for the forked session)
+  - system_prompt (override system prompt for the fork)
+
+Behaviour:
+- Look up the session
+- Resolve fork_point_message_id (latest message if not specified)
+- Call PagServer.Sessions.Session.fork/2 (or equivalent context function) to create the child session
+- Optionally spawn an agent into the forked session if system_prompt provided
+- Return: %{action: "fork", thread_id: new_session_id, parent_thread_id: original_id, fork_point_message_id: id, status: "created"}
+
+Tests: fork from latest, fork from specific message_id, fork with system_prompt (spawns agent), unknown thread_id
+File: lib/pag_server/plugins/agent_tools/threads.ex

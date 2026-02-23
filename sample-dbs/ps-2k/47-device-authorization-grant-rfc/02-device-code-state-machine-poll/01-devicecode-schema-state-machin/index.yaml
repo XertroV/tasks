@@ -1,0 +1,32 @@
+id: P47.M2.E1
+name: DeviceCode Schema & State Machine
+status: done
+estimate_hours: 3.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-device-codes-migration.todo
+  title: Create device_codes migration and DeviceCode Ecto schema
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P47.M1.E1.T001
+- id: T002
+  file: T002-implement-devicecodes-context.todo
+  title: Implement DeviceCodes context module with state machine logic
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P47.M2.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

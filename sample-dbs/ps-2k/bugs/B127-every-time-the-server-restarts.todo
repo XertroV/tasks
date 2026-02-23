@@ -1,0 +1,18 @@
+---
+id: B127
+title: Every time the server restarts, telegram is connected to a new session. But
+  it should restore the existing session so that conversations persist across a restart.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:03:33.568869+00:00'
+started_at: '2026-02-18T02:03:33.568869+00:00'
+completed_at: '2026-02-18T02:18:17.750844+00:00'
+duration_minutes: 14.736365916666667
+---
+
+Every time the server restarts, telegram is connected to a new session. But it should restore the existing session so that conversations persist across a restart.

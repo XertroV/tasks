@@ -1,0 +1,90 @@
+---
+id: B128
+title: Refactor connector/channel integration model for multi-workspace, multi-bot
+  support
+status: done
+estimate_hours: 16.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- connectors
+- telegram
+- architecture
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:18:37.602066+00:00'
+started_at: '2026-02-18T02:18:37.602066+00:00'
+completed_at: '2026-02-18T02:23:38.177581+00:00'
+duration_minutes: 5.009591733333334
+---
+
+Refactor the connector/channel integration model so that:
+- Each workspace can have its own bot token per channel (e.g. separate Telegram bots per workspace)
+- Multiple bots can be configured per workspace (e.g. two Telegram bots with different sessions/personas)
+- Per-connector config flags (e.g. `send_thinking`, `send_tool_calls`) live on the connector instance, not on the workspace globally
+- Channel associations are properly isolated (no global env vars, no single-instance pollers)
+
+## Current Problems (as investigated)
+
+### Telegram
+
+- `PollerSupervisor` is a **single named global GenServer** — only one workspace can be polled at a time. Starting a second bot overwrites the first (`stop_existing_poller/1` is called on each `start_polling`).
+- `Application.put_env(:telegex, :token, bot_token)` is set globally — Telegex uses one token at a time. This is the **fundamental blocker** for concurrent multi-workspace polling.
+- `Application.put_env(:pag_server, :telegram_poller_workspace_id, workspace_id)` — workspace routing is a global atom, not per-process state.
+- `TelegramChatMapping` schema has **no `workspace_id` or `connector_instance_id` FK** — chat_id is unique globally, so the same Telegram user cannot chat with two different workspace bots.
+- Session cache key is `"telegram:<chat_id>"` — not namespaced by bot/workspace, so cross-workspace collisions are silent.
+- `fallback_agent_id` and `default_agent_model` are read from global `Application.get_env(:pag_server, :telegram, [])` — not workspace-scoped.
+
+### Matrix / Discord
+
+- **Fully global** — no workspace routing at all. All messages from all users go to one agent.
+
+### General
+
+- `BotConfig` schema (`bot_configs` table) exists with `workspace_id` FK + `platform` + `config` JSONB, but is **not used** by Telegram (which uses raw `PlatformConfig` keys instead).
+- `BotConfig` has `unique_constraint([:workspace_id, :platform])` — only one bot per platform per workspace. Needs a connector-instance discriminator to support multiple bots.
+- No `DynamicSupervisor` or `Registry`-keyed process tree for per-workspace/per-bot pollers.
+- No abstraction for passing connector-level config (e.g. `send_thinking`) into the message handler pipeline.
+
+## Acceptance Criteria
+
+### Connector instance model
+
+- [ ] Introduce a `connector_instances` table (or extend `bot_configs`) with columns: `id`, `workspace_id`, `platform` (telegram/discord/matrix/slack), `name`, `config` (JSONB, encrypted for tokens), `status`, `options` (JSONB for flags like `send_thinking`, `send_tool_calls`).
+- [ ] Remove `unique_constraint([:workspace_id, :platform])` — allow multiple connectors per platform per workspace.
+- [ ] Each connector instance has its own credentials (bot token etc.) and per-connector options.
+- [ ] Workspace schema declares `has_many :connector_instances`.
+
+### Telegram multi-workspace / multi-bot
+
+- [ ] Replace `PollerSupervisor` single GenServer with a `DynamicSupervisor` (`Telegram.PollerRegistry`) managing one supervised poller subtree per connector instance.
+- [ ] Move workspace_id and bot token into per-process GenServer state (not `Application.put_env`).
+- [ ] Resolve Telegex token isolation — evaluate: (a) webhook-only mode per workspace (each gets its own `/webhooks/telegram/<connector_id>` URL), (b) switch from Telegex to raw `Req`-based HTTP client with per-request token. **Recommended: raw HTTP client for polling + Telegex types for wire format only.**
+- [ ] `TelegramChatMapping` — add `connector_instance_id` FK. Update unique index to `(connector_instance_id, chat_id)`.
+- [ ] Session cache keys namespaced: `"telegram:<connector_instance_id>:<chat_id>"`.
+- [ ] Application startup: query all active connector instances with `platform: telegram`, start one supervised poller per instance.
+
+### Per-connector config flags
+
+- [ ] `send_thinking` and `send_tool_calls` (and future flags) live in the connector instance's `options` JSONB, not in workspace-level `PlatformConfig`.
+- [ ] Message handler pipelines receive connector instance context and read options from it.
+- [ ] B126's temporary `"telegram.send_thinking"` / `"telegram.send_tool_calls"` `PlatformConfig` keys are migrated to connector-instance options when this lands.
+
+### Matrix / Discord
+
+- [ ] Matrix: replace global app config with connector instance model.
+- [ ] Discord: replace global Nostrum token with connector instance model (one Nostrum client per instance, or webhook-only).
+
+### Setup wizard / UI
+
+- [ ] Update setup wizard to create/edit connector instances rather than writing raw `PlatformConfig` keys.
+- [ ] Support adding multiple connector instances per platform in workspace settings UI.
+
+## Notes
+
+- **Telegex token isolation is the hardest part.** Webhook mode completely avoids the polling/global-token problem — each workspace gets its own webhook endpoint. Polling with multiple tokens requires a raw HTTP client (e.g. wrap `Req` with `token` as a parameter per call). Prefer webhooks where possible.
+- Slack already has a proper per-workspace model (`slack_workspaces` table, encrypted `bot_token`). Use as reference.
+- `IntegrationCredential` schema (OAuth tokens, `belongs_to :workspace`, encrypted) is a good reference pattern for per-workspace credentials.
+- Implement in order: (1) connector_instances schema + migration, (2) Telegram, (3) Matrix/Discord.
+- B126 (`send_thinking`/`send_tool_calls` via `PlatformConfig`) is intentionally a temporary shim until this task lands. That's acceptable.

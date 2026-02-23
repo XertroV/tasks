@@ -1,0 +1,25 @@
+id: P26.M3
+name: Tests
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P26.M2
+locked: false
+epics:
+- id: E1
+  name: Size Pool Tests
+  path: 01-size-pool-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Comprehensive tests for size-based model selection covering workspace
+    config, resolver logic, agent creation, and API endpoints.
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,60 @@
+---
+id: P10.M1.E3.T001
+title: Implement GitHub issues webhook event handlers
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- github
+- webhook
+- issues
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:21:22.376724+00:00'
+started_at: '2026-02-12T00:21:22.376724+00:00'
+completed_at: '2026-02-12T00:35:40.665627+00:00'
+duration_minutes: 14.304814666666665
+---
+
+# Implement GitHub issues webhook event handlers
+
+Create webhook handlers for GitHub Issues events in `lib/pag_server/integrations/github/` directory following the pattern established by Telegram/Discord integrations.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/github/issues.ex` module with event handlers
+- [ ] Handle `issues.opened`, `issues.closed`, `issues.reopened` events
+- [ ] Handle `issue_comment.created`, `issue_comment.edited`, `issue_comment.deleted` events
+- [ ] Parse webhook payload and extract issue metadata (number, title, author, body, labels, state)
+- [ ] Route events to agent session based on repository + issue number
+- [ ] Log all incoming webhook events with proper context
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] Webhook handler extracts all issue fields correctly
+- [ ] Correctly identifies event type and dispatches to router
+- [ ] Session mapping logic routes to correct agent
+- [ ] No unhandled exception cases (defensive error handling)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-12 00:21 UTC
+**Sibling tasks**: P10.M1.E3.T002, P10.M1.E3.T003, P10.M1.E3.T004, P10.M1.E3.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M1.E3.T001 → P10.M1.E3.T002 → P10.M1.E3.T003 → P10.M1.E3.T004 → P10.M1.E3.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M1.E3.T001: .tasks/10-devops-developer-tool-integrat/01-github-integration/03-issues-integration/T001-implement-github-issues-webhoo.todo
+- P10.M1.E3.T002: .tasks/10-devops-developer-tool-integrat/01-github-integration/03-issues-integration/T002-build-github-issues-api-method.todo
+- P10.M1.E3.T003: .tasks/10-devops-developer-tool-integrat/01-github-integration/03-issues-integration/T003-implement-issue-labeling-and-a.todo
+- P10.M1.E3.T004: .tasks/10-devops-developer-tool-integrat/01-github-integration/03-issues-integration/T004-add-issue-session-mapping-and.todo
+- P10.M1.E3.T005: .tasks/10-devops-developer-tool-integrat/01-github-integration/03-issues-integration/T005-write-tests-for-issue-webhook.todo

@@ -1,0 +1,42 @@
+id: P39.M5.E2
+name: Non-Interactive Bootstrap Endpoint
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on:
+- P39.M5.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-add-template-param-to-workspac.todo
+  title: Add template param to Workspaces.bootstrap_workspace/3
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P39.M5.E1.T001
+- id: T002
+  file: T002-extend-post-api-v1-workspaces.todo
+  title: Extend POST /api/v1/workspaces/bootstrap to accept template param
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P39.M5.E2.T001
+- id: T003
+  file: T003-integration-test-pag-connect-n.todo
+  title: 'Integration test: pag-connect non-interactive workspace provisioning'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P39.M5.E2.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

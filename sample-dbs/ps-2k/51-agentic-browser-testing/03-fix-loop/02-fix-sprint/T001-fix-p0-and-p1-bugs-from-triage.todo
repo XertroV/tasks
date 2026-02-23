@@ -1,0 +1,47 @@
+---
+id: P51.M3.E2.T001
+title: Fix P0 and P1 bugs from triage
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T03:34:48.661827+00:00'
+started_at: '2026-02-21T03:34:48.661827+00:00'
+completed_at: '2026-02-21T03:37:07.030758+00:00'
+duration_minutes: 2.3061486833333333
+---
+## Purpose
+Work through the prioritized bug list. P0 first, then P1. Fix agents can run in parallel when bugs are in different areas.
+
+## Acceptance Criteria
+- [x] All P0 bugs resolved (or escalated with explanation if systemic)
+- [x] All P1 bugs resolved or explicitly deferred with documented reason
+- [x] Each fix: mix test.changed passes, commit made
+- [x] Each resolved bug updated with 'backlog fixed B_xxx --summary "..."'
+- [x] Playwright scenario notes added to each bug's .todo file
+
+## Protocol Per Bug
+1. Read bug .todo file carefully
+2. Reproduce locally (unit test preferred; browser if necessary)
+3. Edit code — keep fix minimal and targeted
+4. Run: mix test.changed
+5. If tests pass: commit with 'fix: [area] [description]'
+6. Run: backlog fixed B_xxx --summary '[one-line description of fix]'
+7. Message team lead: 'Fixed B_xxx: [summary]'
+
+## Notes
+- Parallel-safe: bugs in different modules can be fixed by separate agents simultaneously
+- If a fix causes test failures in unrelated tests, investigate before committing
+- If a bug is not fixable in <30 min, escalate to team lead with a note
+
+## See Also
+.tasks/bugs/ directory for all filed bugs
+docs/browser-testing/triage-report.md for priority order
+
+## Execution Notes (2026-02-21)
+- P0 set (`B165`, `B169`) and P1 set (`B163`, `B164`, `B166`, `B167`, `B168`, `B170`) are resolved per triage report and bug statuses.
+- Fixes were delivered in prior sprint commits (`499eaaa8`, `7e34c071`) and follow-up browser/validation verification.
+- Bug records now carry scenario/verification notes for campaign traceability.

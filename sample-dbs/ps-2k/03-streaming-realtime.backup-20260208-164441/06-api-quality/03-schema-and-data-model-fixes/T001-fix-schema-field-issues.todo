@@ -1,0 +1,99 @@
+---
+id: P3.M6.E3.T001
+title: Fix schema field issues
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- schema
+- ecto
+- bugfix
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:21:10.747110+00:00'
+started_at: '2026-02-07T00:21:10.747110+00:00'
+completed_at: '2026-02-07T00:36:12.607207+00:00'
+duration_minutes: 15.031001400000001
+---
+
+# Fix schema field issues
+
+## Context
+
+Several Ecto schemas have field type mismatches, missing fields, or incomplete changesets that will cause issues when building REST API controllers on top of them.
+
+## Requirements
+
+### Stats Schema
+
+- [ ] Add `expires_at` field (`:utc_datetime_usec`) to `PagServer.Schema.Stats`
+  - The `fix_stats_schema` migration already added this column to the DB
+  - The Ecto schema is missing the field declaration, so it cannot be read/written via Ecto
+
+### Message Schema
+
+- [ ] Change `tool_calls` field type from `:map` to `{:array, :map}`
+  - The field stores an array of tool invocations but is typed as generic `:map`
+  - Create a migration to alter the column type if needed (may already be compatible in Postgres)
+  - Update any code that reads/writes `tool_calls` to handle the array type
+- [ ] Add `has_many :tool_calls, PagServer.Schema.ToolCall` association
+  - `ToolCall` already has `belongs_to :message` but Message lacks the reverse association
+  - This enables preloading tool calls from the message side
+
+### Session Schema
+
+- [ ] Add `context_token_total` to `update_changeset/2` cast list
+  - Field exists in schema but neither `create_changeset` nor `update_changeset` includes it
+  - Currently only updatable via raw `Repo.update/2` or `Ecto.Changeset.change/2`
+
+### User Schema
+
+- [ ] Add `validate_inclusion` for `quota_tier` field
+  - Currently accepts any string; should validate against `~w(free pro enterprise)`
+  - Default is `"free"`
+
+### Tests
+
+- [ ] Update existing Stats tests to verify `expires_at` can be set and queried
+- [ ] Update existing Message tests to verify `tool_calls` as array
+- [ ] Update existing Session tests to verify `context_token_total` update via changeset
+- [ ] Add User changeset test for invalid `quota_tier`
+
+## Acceptance Criteria
+
+- [ ] `Stats.expires_at` is readable/writable via Ecto
+- [ ] `Message.tool_calls` typed as `{:array, :map}` and stores arrays correctly
+- [ ] `Message` has `has_many :tool_calls` association for preloading
+- [ ] `Session.context_token_total` updatable via `update_changeset/2`
+- [ ] `User.quota_tier` validates against allowed values
+- [ ] All existing tests pass (with necessary assertion updates)
+- [ ] Migration (if needed) is reversible
+- [ ] `mix lint` passes
+
+## Files to Modify
+
+- `lib/pag_server/schema/stats.ex`
+- `lib/pag_server/schema/message.ex`
+- `lib/pag_server/schema/session.ex`
+- `lib/pag_server/schema/user.ex`
+- `priv/repo/migrations/` (new migration if column type change needed)
+- Related test files
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M6.E3)
+**Agent**: cli-user
+**Date**: 2026-02-07 00:21 UTC
+**Sibling tasks**: P3.M6.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M6.E3.T001 → P3.M6.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M6.E3.T001: .tasks/03-streaming-realtime/06-api-quality/03-schema-and-data-model-fixes/T001-fix-schema-field-issues.todo
+- P3.M6.E3.T002: .tasks/03-streaming-realtime/06-api-quality/03-schema-and-data-model-fixes/T002-fix-content-hash-chain-and-add.todo

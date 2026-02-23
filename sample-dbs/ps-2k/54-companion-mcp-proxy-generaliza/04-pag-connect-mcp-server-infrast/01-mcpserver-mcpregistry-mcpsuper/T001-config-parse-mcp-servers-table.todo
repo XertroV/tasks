@@ -1,0 +1,34 @@
+---
+id: P54.M4.E1.T001
+title: 'Config: parse [[mcp_servers]] table from pag-connect config.toml'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T11:38:44.103044+00:00'
+started_at: '2026-02-21T11:38:44.103044+00:00'
+completed_at: '2026-02-21T12:17:04.331554+00:00'
+duration_minutes: 38.33714166666667
+---
+## Context
+pag-connect (repo: /home/xertrov/src/pag-connect) loads its config from a TOML file via PagConnect.Config. Add parsing for a new [[mcp_servers]] array-of-tables section.
+
+## Config format
+```toml
+[[mcp_servers]]
+name = "browsermcp"
+command = "bunx"
+args = ["@browsermcp/mcp@latest"]
+init_timeout_secs = 60  # optional, default 60
+```
+
+## Acceptance Criteria
+- [ ] PagConnect.Config.get() returns map with `mcp_servers: [%{name: string, command: string, args: [string], init_timeout_secs: integer}]`
+- [ ] Defaults to `mcp_servers: []` when key absent from TOML (no crash)
+- [ ] Each entry validated: name and command required strings; args list of strings (default []); init_timeout_secs positive integer (default 60)
+- [ ] Missing required fields produce descriptive error at startup
+- [ ] Tests in test/pag_connect/config_test.exs: present, absent, invalid cases
+- [ ] mix compile passes in pag-connect repo

@@ -1,0 +1,18 @@
+---
+id: B248
+title: Missing workspace deletion hook for browser session cleanup
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- companion
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.108126+00:00'
+started_at: '2026-02-23T07:29:02.108126+00:00'
+completed_at: '2026-02-23T07:43:46.204877+00:00'
+duration_minutes: 14.734945716666665
+---
+If workspace deleted before companion disconnects, orphaned browser sessions remain

@@ -1,0 +1,37 @@
+id: P15.M3.E2
+name: Predictive Context Prefetching
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-context-prediction-mode.todo
+  title: Design context prediction model
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-prefetch-queue.todo
+  title: Implement prefetch queue
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-multi-level-cache-lru-pers.todo
+  title: Add multi-level cache (LRU + persistent)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,60 @@
+---
+id: P9.M5.E5.T004
+title: Add plugin access audit logging
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P9.M5.E5.T002
+tags:
+- audit
+- logging
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:31:09.493564+00:00'
+started_at: '2026-02-07T05:31:09.493564+00:00'
+completed_at: '2026-02-07T05:55:47.921945+00:00'
+duration_minutes: 24.640472866666666
+---
+
+# Add plugin access audit logging
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/audit.ex` module
+- [x] Log all plugin access events with structured data:
+  - [x] Tool executions: plugin_name, tool_name, agent_id, session_id, timestamp, duration, result_status
+  - [x] Hook firings: plugin_name, hook_type, agent_id, timestamp, handler_result
+  - [x] Agent spawns: plugin_name, parent_agent_id, child_agent_id, timestamp
+  - [x] Message injections: plugin_name, agent_id, session_id, timestamp, message_role
+  - [x] Permission auto-approvals: plugin_name, tool_name, agent_id, timestamp
+- [x] Store audit events via `PagServer.Events.Persistence`:
+  - [x] Event type: `:plugin_audit`
+  - [x] Payload includes all relevant fields for the action type
+  - [x] Events are append-only (immutable audit trail)
+- [x] Implement queryable audit trail:
+  - [x] `query_audit/1` with filter options: plugin_name, agent_id, session_id, action_type, time_range
+  - [x] Support pagination (limit/offset)
+  - [x] Return sorted by timestamp (newest first)
+- [x] Emit telemetry events for monitoring:
+  - [x] `[:pag_server, :plugin, :audit, :event]` with action and plugin metadata
+  - [x] Enable external monitoring tools to aggregate plugin activity
+
+## Acceptance Criteria
+
+- [x] All plugin access actions are logged with complete structured data
+- [x] Audit events are persisted via the event system (survive restarts)
+- [x] `query_audit/1` returns filtered, paginated audit results
+- [x] Telemetry events fire for all audited actions
+- [x] Audit logging doesn't impact plugin operation performance (async writes)
+- [x] Unit tests cover: event logging for each action type, querying with filters, pagination
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/audit.ex`
+- **Uses**: `PagServer.Events.Persistence` for event storage
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004) for plugin validation
+- **Called from**: `ToolRegistrar`, `HookDispatcher`, `AgentSpawner`, `MessageInjector`, `PermissionGrants`
+- **Performance**: Audit writes should be async (cast, not call) to avoid blocking plugin operations

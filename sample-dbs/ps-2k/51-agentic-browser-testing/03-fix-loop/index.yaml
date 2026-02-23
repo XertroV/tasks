@@ -1,0 +1,35 @@
+id: P51.M3
+name: Fix Loop
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Triage
+  path: 01-triage
+  status: done
+  estimate_hours: 0.5
+  complexity: low
+  depends_on: []
+  description: Review all bugs filed in M2 campaigns. Group by area, assign severity
+    P0/P1/P2, update bug files.
+  locked: false
+- id: E2
+  name: Fix Sprint
+  path: 02-fix-sprint
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  depends_on: []
+  description: 'Fix agents work through prioritized bugs in order. Run in parallel
+    when bug areas are independent. Each fix: edit code, mix test.changed, update
+    bug .todo with Playwright scenario notes, commit, then ''backlog fixed B_xxx''.'
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

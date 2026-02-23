@@ -1,0 +1,45 @@
+---
+id: P15.M7.E5.T014
+title: 'T14: Create Open Source Program Manager Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:29:50.582667+00:00'
+started_at: '2026-02-18T10:29:50.582667+00:00'
+completed_at: '2026-02-18T10:32:22.241066+00:00'
+duration_minutes: 2.5276396666666665
+---
+
+# T14: Create Open Source Program Manager Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M7.E5)
+**Agent**: cli-user
+**Date**: 2026-02-18 10:29 UTC
+**Sibling tasks**: P15.M7.E5.T015
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M7.E5.T014 → P15.M7.E5.T015
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M7.E5.T014: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T014-t14-create-open-source-program.todo
+- P15.M7.E5.T015: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T015-t15-create-social-media-adviso.todo

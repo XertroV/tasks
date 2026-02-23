@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T05:37:49.199072+00:00'
+started_at: '2026-02-13T05:37:49.199072+00:00'
+completed_at: '2026-02-13T06:07:15.802875+00:00'
+duration_minutes: 29.4433965
+---
+# Add configurable policies per workspace
+
+## Description
+Create a policy management system allowing workspace admins to configure moderation behavior including which categories to check, action thresholds, and response actions (block, flag, review).
+
+## Acceptance Criteria
+- [ ] `PagServer.Compliance.Moderation.Policy` schema created
+- [ ] Fields: workspace_id, categories, thresholds, actions, enabled
+- [ ] CRUD API via `PagServer.Compliance.Policies` context
+- [ ] Categories config: hate, violence, self_harm, sexual, harassment
+- [ ] Threshold per category (0.0 - 1.0)
+- [ ] Action options: `:block`, `:flag`, `:review`, `:log_only`
+- [ ] Default policy applied to new workspaces
+- [ ] Inheritance support for workspace hierarchies
+- [ ] Policy change audit logging
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/compliance/moderation/`, `lib/pag_server/schema/`
+- Part of epic: P14.M2.E2 - Content Moderation

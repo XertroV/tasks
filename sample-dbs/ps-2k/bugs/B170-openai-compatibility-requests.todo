@@ -1,0 +1,69 @@
+---
+id: B170
+title: OpenAI compatibility requests ignore provider-specific model hint and route
+  to anthropic
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- openai-compat
+- llm-routing
+- failover
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:34:37.973078+00:00'
+started_at: '2026-02-20T18:34:37.973078+00:00'
+completed_at: '2026-02-20T18:36:18.253853+00:00'
+duration_minutes: 1.6713460666666669
+---
+## Repro
+1. Create API key with admin and llm scopes
+2. Disable Groq provider via POST /api/v1/llm/providers/<groq_id>/disable
+3. POST /v1/chat/completions with model openai/gpt-oss-120b
+4. Re-enable Groq and repeat request
+
+## Expected
+Routing should honor model/provider hint and select an appropriate provider (or return clear unknown/unsupported model validation error). Provider selection should change when primary provider is disabled/re-enabled in failover tests.
+
+## Actual
+Both before and after toggling Groq, request fails with provider anthropic no_credentials for model openai/gpt-oss-120b.
+
+## Evidence
+Response message includes: provider: :anthropic, model: "openai/gpt-oss-120b" in both disable and re-enable runs.
+
+## Playwright Scenario Notes
+- Test name: `openai compatibility honors provider-hinted model under failover`
+- Preconditions: admin API key; ability to disable/enable Groq provider.
+- Steps:
+  1. Disable Groq provider.
+  2. Send `POST /v1/chat/completions` with model `openai/gpt-oss-120b`.
+  3. Re-enable Groq provider and repeat request.
+- Assertions:
+  - Routing reflects provider-hinted model semantics rather than defaulting to anthropic.
+  - Behavior changes appropriately when Groq availability changes.
+
+## Verification
+- Ran targeted OpenAI compatibility regression tests in `test/pag_server_web/controllers/openai_chat_completions_controller_test.exs`.
+- Confirmed provider-hinted model routing now uses static catalog mapping/failover semantics instead of unconditionally defaulting to anthropic.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-20 18:34 UTC
+**Primary task**: B169 - Credentials Vault API create crashes due missing plugin table
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

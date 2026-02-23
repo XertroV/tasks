@@ -1,0 +1,67 @@
+---
+id: P10.M1.E1.T009
+title: Add webhook subscription routes to router
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:10:15.051393+00:00'
+started_at: '2026-02-11T20:10:15.051393+00:00'
+completed_at: '2026-02-11T20:32:08.573656+00:00'
+duration_minutes: 21.892037416666668
+---
+
+# Add webhook subscription routes to router
+
+
+
+## Requirements
+
+Add webhook integration routes to the Phoenix router with proper auth pipelines and permission checks.
+
+## Description
+
+Routes for webhook management endpoints must be added to the main router with appropriate authentication and authorization pipelines. This connects controllers to the HTTP layer with standard REST conventions.
+
+## Acceptance Criteria
+
+- [ ] Routes added to `lib/pag_server_web/router.ex`
+- [ ] Create `webhooks_permission` pipeline with `RequirePermissions` for `manage_webhooks`
+- [ ] Create `integrations_permission` pipeline with `RequirePermissions` for `manage_integrations`
+- [ ] Scope for integrations: `/api/v1/integrations` using `:api_resource_auth` and `:integrations_permission`
+- [ ] Scope for subscriptions: nested under `/integrations/:integration_id/subscriptions`
+- [ ] All routes use CRUD structure: `resources/2` or individual `post/4`, `get/4`, etc.
+- [ ] Routes integrate with FallbackController for error handling
+- [ ] Test routes with valid and invalid integration IDs
+
+## Implementation Notes
+
+- Location: `lib/pag_server_web/router.ex` (add pipelines and scope)
+- Add two new permission pipelines (around line 100, after existing pipelines):
+  ```elixir
+  pipeline :integrations_permission do
+    plug PagServerWeb.Plugs.RequirePermissions, permissions: [:manage_integrations]
+  end
+
+  pipeline :webhooks_permission do
+    plug PagServerWeb.Plugs.RequirePermissions, permissions: [:manage_webhooks]
+  end
+  ```
+- Add scope block inside existing API routes (before or after agent/session routes):
+  ```elixir
+  scope "/api/v1", PagServerWeb do
+    pipe_through [:api_resource_auth, :integrations_permission]
+    resources :integrations, IntegrationSettingsController do
+      resources :subscriptions, WebhookSubscriptionController
+    end
+  end
+  ```
+- This creates nested routes:
+  - `GET|POST /api/v1/integrations` (IntegrationSettings CRUD)
+  - `GET|POST /api/v1/integrations/:id/subscriptions` (WebhookSubscription CRUD)
+- Verify routes with `mix phx.routes | grep integrations` after implementation
+- Ensure all routes use `action_fallback` in respective controllers
+- Reference existing pattern: `/home/xertrov/src/pag-server/lib/pag_server_web/router.ex` (lines 40-100)

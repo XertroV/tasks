@@ -1,0 +1,85 @@
+id: P6
+name: Observability
+status: pending
+weeks: 2
+estimate_hours: 36
+complexity: medium
+depends_on:
+- P5
+milestones:
+- id: M1
+  name: Stats Tracker
+  path: 01-stats-tracker
+  status: pending
+  estimate_hours: 10
+  complexity: medium
+  depends_on: []
+  description: Real-time token/cost tracking with GenServer aggregation and persistence
+- id: M2
+  name: OpenTelemetry
+  path: 02-opentelemetry
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on: []
+  description: Distributed tracing, span instrumentation, and metrics collection
+- id: M3
+  name: Session Replay
+  path: 03-session-replay
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on:
+  - M1
+  description: Event replay engine for debugging and deterministic session restoration
+- id: M4
+  name: Audit Logging
+  path: 04-audit-logging
+  status: pending
+  estimate_hours: 6
+  complexity: low
+  depends_on: []
+  description: Structured audit logs for security and compliance
+- id: M5
+  name: Prometheus Export
+  path: 05-prometheus-export
+  status: pending
+  estimate_hours: 4
+  complexity: low
+  depends_on:
+  - M1
+  - M2
+  description: Prometheus metrics exporter for monitoring and alerting
+- id: M6
+  name: Correlation IDs & Request Tracing
+  path: 06-correlation-ids-request-tracin
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: End-to-end request tracing via correlation IDs propagated through Agent,
+    LLM, and Tools pipelines
+- id: M7
+  name: Structured JSON Logging
+  path: 07-structured-json-logging
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: Production-ready structured JSON logging with logger_json, preserving
+    human-readable dev logs
+- id: M8
+  name: Error Tracking Service Integration
+  path: 08-error-tracking-service-integra
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: External error tracking via Sentry with context enrichment and data
+    scrubbing
+stats:
+  total_tasks: 44
+  done: 44
+  in_progress: 0
+  blocked: 0
+  pending: 0

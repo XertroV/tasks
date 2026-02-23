@@ -1,0 +1,37 @@
+id: P11.M3.E1
+name: Plugin Registry & Discovery
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-plugin-registry-schema.todo
+  title: Create plugin registry schema and storage
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-plugin-discovery-end.todo
+  title: Implement plugin discovery endpoint
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-plugin-metadata-and-manife.todo
+  title: Add plugin metadata and manifest parsing
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

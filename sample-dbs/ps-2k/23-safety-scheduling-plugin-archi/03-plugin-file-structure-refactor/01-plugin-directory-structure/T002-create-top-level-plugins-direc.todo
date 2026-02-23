@@ -1,0 +1,24 @@
+---
+id: P23.M3.E1.T002
+title: Create top-level plugins/ directory structure
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on:
+- P23.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:50:53.776566+00:00'
+started_at: '2026-02-18T14:50:53.776566+00:00'
+completed_at: '2026-02-18T14:57:25.690602+00:00'
+duration_minutes: 6.531900333333334
+---
+Set up the new top-level directory layout for plugins.
+
+## Acceptance Criteria
+- [ ] Create `plugins/` directory at repo root (sibling to `lib/`)
+- [ ] Each plugin lives at `plugins/<plugin_name>/` with its `.ex` files directly inside (no nested `lib/` — keep it simple)
+- [ ] Add `plugins/.gitkeep` so the empty directory is tracked
+- [ ] Update `.gitignore` if needed so plugin build artifacts are excluded
+- [ ] Do NOT create mix.exs per plugin — plugins are loaded directly into the host app's compilation path (see PluginLoader task)

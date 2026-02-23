@@ -1,0 +1,30 @@
+---
+id: P15.M11.E7.T004
+title: Unit tests for git_worktree tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.234808+00:00'
+started_at: '2026-02-17T18:46:51.234808+00:00'
+completed_at: '2026-02-17T19:22:10.840746+00:00'
+duration_minutes: 35.32676545
+---
+## Description
+Test the git_worktree tool's add, list, and remove actions.
+
+## Files to Create
+- `test/pag_server/tools/builtin/git_worktree_test.exs`
+
+## Acceptance Criteria
+- [ ] Test add action: creates worktree with valid branch name
+- [ ] Test list action: parses porcelain output correctly
+- [ ] Test remove action: validates path is actually a worktree
+- [ ] Test path validation: rejects directory traversal attempts
+- [ ] Test branch name validation: rejects dangerous ref patterns
+- [ ] Test permission checks: :git_read for list, :git_write for add/remove
+- [ ] Tests pass
+- [ ] Lint passes

@@ -1,0 +1,23 @@
+id: P40.M1
+name: Team Shared Directories
+status: done
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Team Directory Infrastructure
+  path: 01-team-directory-infrastructure
+  status: done
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

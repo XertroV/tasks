@@ -1,0 +1,25 @@
+---
+id: P50.M2.E2.T004
+title: Implement list_workers and integrate cleanup_team worker guard
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E2.T003
+- P50.M2.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:30:27.161228+00:00'
+started_at: '2026-02-23T02:30:27.161228+00:00'
+completed_at: '2026-02-23T02:30:30.168547+00:00'
+duration_minutes: 0.0501218
+---
+## Description
+Runtime.list_workers/3 (team_id, workspace_id, opts) returns all workers for team scoped to workspace_id; support optional state and role filters. Replace stub cleanup_team guard (from M2.E1.T004) with real check: query plugin_collab_teams_runtime_workers for any workers with state NOT IN (stopped) excluding the lead; return {:error, :active_workers_remain} if found. Wire list_workers into dispatcher.
+
+## Acceptance Criteria
+- list_workers returns only workers for given team_id scoped to workspace_id
+- cleanup_team returns :active_workers_remain when non-lead workers in non-stopped states
+- cleanup_team succeeds when all non-lead workers stopped
+- cross-workspace leak test passes

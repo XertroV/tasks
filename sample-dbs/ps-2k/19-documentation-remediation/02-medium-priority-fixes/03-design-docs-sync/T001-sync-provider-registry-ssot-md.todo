@@ -1,0 +1,37 @@
+---
+id: P19.M2.E3.T001
+title: Sync provider-registry-ssot.md with implementation
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- docs
+- design
+- providers
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:24:41.145343+00:00'
+started_at: '2026-02-18T02:24:41.145343+00:00'
+completed_at: '2026-02-18T02:27:58.254943+00:00'
+duration_minutes: 3.28515975
+---
+Update provider definitions to match lib/pag_server/llm/providers.ex. Add zai_coding provider. Update model lists. Consider linking to source instead of duplicating code.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-18 02:24 UTC
+**Sibling tasks**: P19.M2.E3.T002, P19.M2.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M2.E3.T001 → P19.M2.E3.T002 → P19.M2.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M2.E3.T001: .tasks/19-documentation-remediation/02-medium-priority-fixes/03-design-docs-sync/T001-sync-provider-registry-ssot-md.todo
+- P19.M2.E3.T002: .tasks/19-documentation-remediation/02-medium-priority-fixes/03-design-docs-sync/T002-fix-main-agent-routing-md-func.todo
+- P19.M2.E3.T003: .tasks/19-documentation-remediation/02-medium-priority-fixes/03-design-docs-sync/T003-update-agents-md-architecture.todo

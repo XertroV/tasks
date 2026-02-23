@@ -1,0 +1,41 @@
+---
+id: P37.M1.E1.T002
+title: Implement threads spawn action
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.866578+00:00'
+started_at: '2026-02-19T04:21:05.866578+00:00'
+completed_at: '2026-02-19T04:43:28.081772+00:00'
+duration_minutes: 22.37025291666667
+---
+Implement action_spawn/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "spawn", hint: "Spawn implementation pending"}
+
+This action should be the primary agent-facing interface for spawning threads, wrapping/delegating to the spawn_subagent tool logic (lib/pag_server/tools/builtin/spawn_subagent.ex) but surfaced as a threads action for consistency.
+
+Required args: (at least one of) system_prompt or template_name
+Optional args:
+  - name (string, tag for the new thread)
+  - description (string)
+  - mode ("child" | "sibling", default "child") — from B146
+  - size ("small" | "medium" | "large" | "same") — from B149
+  - model_provider, model_name (explicit overrides)
+  - tools (list of tool names)
+  - workspace_id (defaults to context workspace)
+
+Behaviour:
+- Resolve system_prompt from template if template_name given (B145 logic)
+- Build and emit a SpawnAgentDirective with appropriate opts (spawn_mode, etc.)
+- Return: %{action: "spawn", thread_id: new_session_id | nil, name: name, status: "spawning"}
+  Note: thread_id may be nil at return time if async (agent_id assigned by Coordinator later)
+
+Should NOT duplicate the spawn_subagent.ex logic — extract shared helpers or call into it.
+
+Tests: spawn with system_prompt, spawn with template_name, spawn sibling, spawn with size same, missing prompt+template error
+File: lib/pag_server/plugins/agent_tools/threads.ex

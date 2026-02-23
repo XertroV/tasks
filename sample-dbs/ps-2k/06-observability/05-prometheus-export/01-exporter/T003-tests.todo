@@ -1,0 +1,69 @@
+---
+id: P6.M5.E1.T003
+title: Write exporter tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P6.M5.E1.T001
+- P6.M5.E1.T002
+tags:
+- observability
+- prometheus
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:11:43.420740+00:00'
+started_at: '2026-02-07T01:11:43.420740+00:00'
+completed_at: '2026-02-07T01:22:53.240517+00:00'
+duration_minutes: 11.163662533333333
+---
+
+# Write exporter tests
+
+Test Prometheus exporter endpoint and formatting.
+
+## Requirements
+
+- [ ] Test endpoint returns 200
+- [ ] Test format is valid Prometheus
+- [ ] Test metrics included
+- [ ] Test labels formatted correctly
+- [ ] Test compression
+- [ ] Validate with promtool (if available)
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Format validated
+- [ ] Prometheus can scrape successfully
+
+## Notes
+
+**Test Example**:
+```elixir
+test "GET /metrics returns Prometheus format" do
+  conn = get(build_conn(), "/metrics")
+  
+  assert conn.status == 200
+  assert conn.resp_content_type =~ "text/plain"
+  
+  body = conn.resp_body
+  assert body =~ "# HELP llm_requests_total"
+  assert body =~ "# TYPE llm_requests_total counter"
+  assert body =~ ~r/llm_requests_total\{.*\} \d+/
+end
+
+test "metrics include labels" do
+  conn = get(build_conn(), "/metrics")
+  body = conn.resp_body
+  
+  assert body =~ ~s(model="claude-3-5-sonnet")
+  assert body =~ ~s(provider="anthropic")
+end
+```
+
+**Validate with promtool**:
+```bash
+curl http://localhost:4000/metrics | promtool check metrics
+```

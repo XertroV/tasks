@@ -1,0 +1,41 @@
+id: P53.M2.E1
+name: Runtime routing and session lifecycle
+status: done
+estimate_hours: 7.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-route-browsermcp-tool-calls-th.todo
+  title: Route browsermcp tool calls through companion transport
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P53.M1.E1.T003
+- id: T002
+  file: T002-implement-browser-session-life.todo
+  title: Implement browser session lifecycle mapping and teardown
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P53.M2.E1.T001
+- id: T003
+  file: T003-expose-browser-backend-health.todo
+  title: Expose browser backend health and capability introspection
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P53.M2.E1.T001
+stats:
+  total: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,29 @@
+id: P11.M5
+name: System Configuration API
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: LLM Provider Configuration
+  path: 01-llm-provider-configuration
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: System Settings API
+  path: 02-system-settings-api
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

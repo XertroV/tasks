@@ -1,0 +1,31 @@
+---
+id: B145
+title: 'threads: support system prompt override and agent template lookup on session
+  spawn'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- threads
+- spawn_subagent
+- agent-templates
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:13:19.212633+00:00'
+started_at: '2026-02-19T01:13:19.212633+00:00'
+completed_at: '2026-02-19T01:24:16.792799+00:00'
+duration_minutes: 10.959669116666667
+---
+When spawning a new thread/subagent session, callers should be able to:
+1. Optionally override the system prompt directly (for one-off custom agents)
+2. Pull the system prompt from an agent template by name (similar to how opencode's task tool uses subagent_type registry lookup)
+
+Currently spawn_subagent only accepts system_prompt directly. We need a template_name / agent_type parameter that resolves to a registered agent template, with system_prompt as an explicit override that takes precedence.
+
+Acceptance criteria:
+- New optional parameter (e.g. template_name or agent_type) on the spawn tool
+- Template lookup fetches system prompt (and possibly default tools/model) from agent template registry
+- Explicit system_prompt overrides template if both provided
+- Error if neither template_name nor system_prompt is given
+- Tests for template resolution, override precedence, and missing-both error case

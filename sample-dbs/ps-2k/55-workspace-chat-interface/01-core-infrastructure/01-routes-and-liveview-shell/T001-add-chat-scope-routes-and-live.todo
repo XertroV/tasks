@@ -1,0 +1,23 @@
+---
+id: P55.M1.E1.T001
+title: Add chat scope, routes, and live_session to router.ex
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- routing
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:20:20.100316+00:00'
+started_at: '2026-02-22T06:20:20.100316+00:00'
+completed_at: '2026-02-22T06:33:42.718294+00:00'
+duration_minutes: 13.376966000000001
+---
+Add authenticated live_session :authenticated_chat in a /chat scope after the dashboard block (~line 1128). Routes: live('/:workspace_id', WorkspaceChat) and live('/:workspace_id/:session_id', WorkspaceChat). Use pipe_through [:browser, :web_authenticated] and on_mount RequireAuth hook.
+
+## Acceptance Criteria
+- GET /chat/:workspace_id renders WorkspaceChat LiveView
+- GET /chat/:workspace_id/:session_id renders same LiveView with session
+- Unauthenticated access redirects to login

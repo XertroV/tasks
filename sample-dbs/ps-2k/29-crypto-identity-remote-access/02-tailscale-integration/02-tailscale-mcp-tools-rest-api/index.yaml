@@ -1,0 +1,52 @@
+id: P29.M2.E2
+name: Tailscale MCP Tools & REST API
+status: pending
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-tailscale-mcp-tools.todo
+  title: Implement Tailscale MCP tools
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P29.M2.E1.T002
+- id: T002
+  file: T002-implement-tailscaleplugin-modu.todo
+  title: Implement TailscalePlugin module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P29.M2.E2.T001
+- id: T003
+  file: T003-add-tailscale-rest-api-endpoin.todo
+  title: Add Tailscale REST API endpoints
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on:
+  - P29.M2.E1.T002
+- id: T004
+  file: T004-write-tailscale-plugin-and-api.todo
+  title: Write Tailscale plugin and API tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P29.M2.E2.T001
+  - P29.M2.E2.T002
+  - P29.M2.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

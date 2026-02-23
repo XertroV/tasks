@@ -1,0 +1,36 @@
+---
+id: P15.M1.E1.T003
+title: Add cross-session knowledge persistence
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:34:48.017909+00:00'
+started_at: '2026-02-13T19:34:48.017909+00:00'
+completed_at: '2026-02-13T20:13:16.302004+00:00'
+duration_minutes: 38.47140113333333
+---
+
+# Add cross-session knowledge persistence
+
+## Description
+Enable agents to persist and recall knowledge across sessions. Implement knowledge extraction from conversations and automatic storage of learned facts, preferences, and context for future session use.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Memory.KnowledgeExtractor` for extracting facts from conversations
+- [ ] Implement knowledge deduplication to avoid storing duplicate facts
+- [ ] Add agent-scoped knowledge retrieval (get all knowledge for an agent)
+- [ ] Implement importance scoring for knowledge prioritization
+- [ ] Add knowledge pruning for low-importance/old entries
+- [ ] Integrate with agent initialization to load relevant knowledge
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/memory/store.ex`, `lib/pag_server/agents/agent.ex`, `lib/pag_server/schema/memory.ex`
+- Part of epic: Episodic Memory System
+- Leverage existing Memory schema importance field

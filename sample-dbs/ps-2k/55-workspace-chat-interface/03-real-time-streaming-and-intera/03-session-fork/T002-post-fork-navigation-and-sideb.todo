@@ -1,0 +1,24 @@
+---
+id: P55.M3.E3.T002
+title: Post-fork navigation and sidebar update
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- fork
+- navigation
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.965234+00:00'
+started_at: '2026-02-22T12:15:57.965234+00:00'
+completed_at: '2026-02-22T12:33:05.486698+00:00'
+duration_minutes: 17.12535755
+---
+After successful fork: add new forked session to threads list in sidebar. Push_patch to navigate to /chat/:workspace_id/:new_session_id. New thread should appear in sidebar with '(fork)' indicator or similar visual cue. Ensure PubSub subscription swaps to new forked session's agent.
+
+## Acceptance Criteria
+- Forked thread appears in sidebar
+- Navigation switches to forked thread
+- PubSub subscription updated to new agent
+- Visual indicator that thread is a fork

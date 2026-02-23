@@ -1,0 +1,38 @@
+id: P42.M4.E2
+name: Test Suite
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-unit-tests-schemas-address-mai.todo
+  title: 'Unit tests: schemas, address, mailbox, messages'
+  status: pending
+  estimate_hours: 0.75
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-unit-tests-routing-decision-fo.todo
+  title: 'Unit tests: routing_decision, fork_and_question, rule_store'
+  status: pending
+  estimate_hours: 0.75
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-integration-tests-full-send-re.todo
+  title: 'Integration tests: full send/receive flow and plugin lifecycle'
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

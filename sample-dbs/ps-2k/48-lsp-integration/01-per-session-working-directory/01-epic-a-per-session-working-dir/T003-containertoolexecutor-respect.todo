@@ -1,0 +1,16 @@
+---
+id: P48.M1.E1.T003
+title: 'ContainerToolExecutor: respect session working directory'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:16.860516+00:00'
+started_at: '2026-02-20T08:37:16.860516+00:00'
+completed_at: '2026-02-20T08:50:02.723783+00:00'
+duration_minutes: 12.764387533333332
+---
+Currently hardcodes workdir: '/workspace' in build_exec_opts/1. After: workdir: '/workspace/#{session.working_directory}' when set. Path mapping in map_container_to_host/2 and map_host_to_container/2 must account for subdirectory prefix.

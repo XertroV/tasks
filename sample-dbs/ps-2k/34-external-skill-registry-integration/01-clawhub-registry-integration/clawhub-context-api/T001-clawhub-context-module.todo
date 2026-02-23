@@ -1,0 +1,31 @@
+---
+id: P34.M1.E2.T001
+title: ClawHub Context Module
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- backend
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:40:32.111839+00:00'
+started_at: '2026-02-19T00:40:32.111839+00:00'
+completed_at: '2026-02-19T00:40:33.858765+00:00'
+duration_minutes: 0.029115266666666664
+---
+
+# ClawHub Context Module
+
+Create `PagServer.Skills.ClawHub` context:
+
+- `list_skills/1` - List available skills (delegates to Client)
+- `search_skills/2` - Search skills by query
+- `get_skill/1` - Get skill details by slug
+- `download_skill/2` - Download and extract skill
+
+## Acceptance Criteria
+
+- [ ] Context wraps Client with proper error handling
+- [ ] Consistent return types `{:ok, ...} | {:error, reason}`

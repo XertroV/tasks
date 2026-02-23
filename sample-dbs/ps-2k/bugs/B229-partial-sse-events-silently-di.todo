@@ -1,0 +1,18 @@
+---
+id: B229
+title: Partial SSE events silently discarded on stream end
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- streaming
+- llm
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.094813+00:00'
+started_at: '2026-02-23T07:29:02.094813+00:00'
+completed_at: '2026-02-23T07:43:45.575020+00:00'
+duration_minutes: 14.724669933333333
+---
+sse_parser.ex:191 - Stream ends mid-event, last partial data lost silently with no error event

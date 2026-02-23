@@ -1,0 +1,48 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T08:56:55.850423+00:00'
+started_at: '2026-02-13T08:56:55.850423+00:00'
+completed_at: '2026-02-13T09:15:09.800605+00:00'
+duration_minutes: 18.232502866666668
+---
+# Implement Notion API client
+
+## Description
+Create the Notion API client module that handles authentication via internal integration tokens or OAuth, manages rate limiting (3 requests/second), and provides the foundation for Notion workspace operations.
+
+## Acceptance Criteria
+- [ ] `PagServer.Integrations.Notion.Client` module created with struct for api_token, version
+- [ ] Support for internal integration tokens (secret_*)
+- [ ] Rate limiting with configurable limits (default 3 req/s)
+- [ ] `from_config/0` to create client from application config
+- [ ] Base request functions: `get/2`, `post/3`, `patch/3`
+- [ ] Proper Notion-Version header handling
+- [ ] Error handling for common Notion API errors
+- [ ] `health_check/1` to validate token with `/users/me`
+- [ ] `redact_token/1` for safe logging
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/integrations/slack/client.ex`, `lib/pag_server/integrations/linear/client.ex`, `lib/pag_server/integrations/jira/client.ex`
+- Part of epic: P14.M1.E2 - Notion Integration
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P14.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 08:56 UTC
+**Sibling tasks**: P14.M1.E2.T002, P14.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P14.M1.E2.T001 → P14.M1.E2.T002 → P14.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P14.M1.E2.T001: .tasks/14-integrations-performance/01-missing-messaging-integrations/02-notion-integration/T001-implement-notion-api-client.todo
+- P14.M1.E2.T002: .tasks/14-integrations-performance/01-missing-messaging-integrations/02-notion-integration/T002-add-notion-database-operations.todo
+- P14.M1.E2.T003: .tasks/14-integrations-performance/01-missing-messaging-integrations/02-notion-integration/T003-add-notion-pagecomment-handlers.todo

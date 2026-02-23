@@ -1,0 +1,57 @@
+id: P25.M2
+name: Core Tool Improvements
+status: done
+estimate_hours: 28.0
+complexity: high
+depends_on:
+- P25.M1
+locked: false
+epics:
+- id: E1
+  name: Shell & Execute Tools
+  path: 01-shell-execute-tools
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Improve the bash/execute_shell MCP tool interface with better argument
+    names, richer descriptions, timeout support, working directory, and env var parameters.
+  locked: false
+- id: E2
+  name: File Editing Tools
+  path: 02-file-editing-tools
+  status: pending
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: Improve file editing MCP tools (edit, glob, read, write, list) with
+    best-of-breed argument shapes, line-range reads, robust replace semantics, and
+    precise descriptions.
+  locked: false
+- id: E3
+  name: Agent Spawning Tool
+  path: 03-agent-spawning-tool
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: Improve the spawn_subagent/delegate MCP tool interface with clearer
+    task description fields, model/size hints, timeout, and structured return types.
+  locked: false
+- id: E4
+  name: Plugin MCP Tool-call Standardization
+  path: 04-plugin-mcp-tool-standardization
+  status: done
+  estimate_hours: 23.5
+  complexity: high
+  depends_on: []
+  description: Standardize non-conforming plugin MCP tool-call surfaces from one-tool-per-operation
+    into action/subcommand dispatch style. Add explicit compatibility and migration
+    tasks.
+  locked: false
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

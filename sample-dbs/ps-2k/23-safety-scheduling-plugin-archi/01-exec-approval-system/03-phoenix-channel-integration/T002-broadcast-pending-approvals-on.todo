@@ -1,0 +1,22 @@
+---
+id: P23.M1.E3.T002
+title: Broadcast pending approvals on agent channel join
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P23.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:36:02.178187+00:00'
+started_at: '2026-02-18T15:36:02.178187+00:00'
+completed_at: '2026-02-18T15:38:17.968514+00:00'
+duration_minutes: 2.2631718833333334
+---
+Ensure clients reconnecting to a channel see any pending approval requests they may have missed.
+
+## Acceptance Criteria
+- [ ] On channel join, server pushes any currently pending `approval_required` events for that workspace
+- [ ] Duplicate push is idempotent (client can handle receiving the same approval_required twice)
+- [ ] Test: client joins after approval_required was emitted and still receives it

@@ -1,0 +1,33 @@
+id: P46.M5
+name: User Profile, Settings & Integration Tests
+status: done
+estimate_hours: 10.0
+complexity: medium
+depends_on:
+- P46.M3
+locked: false
+epics:
+- id: E1
+  name: User Settings LiveView
+  path: 01-user-settings-liveview
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: User Profile REST API & Integration Tests
+  path: 02-user-profile-rest-api-integrat
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

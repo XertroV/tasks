@@ -1,0 +1,25 @@
+---
+id: P50.M2.E1.T001
+title: Implement CollabTeams.Runtime and create_team action
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E2.T004
+- P50.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:21:24.983245+00:00'
+started_at: '2026-02-23T02:21:24.983245+00:00'
+completed_at: '2026-02-23T02:21:27.610682+00:00'
+duration_minutes: 0.04379041666666667
+---
+## Description
+Create CollabTeams.Runtime module. Implement Runtime.create_team/1 accepting %{workspace_id, name, root_session_id, lead_agent_id, metadata}. Insert into plugin_collab_teams_runtime_teams with state: active (skip creating state -- row lands directly in active). Enforce single-lead invariant: if non-closed team in workspace already has same lead_agent_id return {:error, :lead_already_has_team}. Write collab_team_created audit event in same Repo transaction. Return {:ok, %{team_id, state, event_id, created_at, action: create_team}}.
+
+## Acceptance Criteria
+- Creating team returns {:ok, map} with all required fields
+- duplicate lead_agent_id returns :lead_already_has_team
+- audit event row written
+- invalid changeset returns error

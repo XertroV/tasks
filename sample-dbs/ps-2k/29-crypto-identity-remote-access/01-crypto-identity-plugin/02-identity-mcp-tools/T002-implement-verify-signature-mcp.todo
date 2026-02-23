@@ -1,0 +1,17 @@
+---
+id: P29.M1.E2.T002
+title: Implement verify_signature MCP tool
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P29.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:03:32.135730+00:00'
+started_at: '2026-02-18T19:03:32.135730+00:00'
+completed_at: '2026-02-18T19:03:33.597016+00:00'
+duration_minutes: 0.024354566666666667
+---
+MCP tool: verify_signature(data: string, signature: base64, public_key: base64) -> boolean. Stateless verification using :crypto.verify(:eddsa, :none, data, signature, [public_key, :ed25519]).

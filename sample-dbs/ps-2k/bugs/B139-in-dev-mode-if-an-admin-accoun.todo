@@ -1,0 +1,19 @@
+---
+id: B139
+title: In dev mode, if an admin account doesn't exist yet, the 'admin' account should
+  be created. When in dev mode, the webui should automaticlaly log you in as 'admin'.
+  This should mean we're comatible with all existing auth checks and pass every check.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:22:30.473442+00:00'
+started_at: '2026-02-18T12:22:30.473442+00:00'
+completed_at: '2026-02-18T12:33:23.771719+00:00'
+duration_minutes: 10.88830445
+---
+
+In dev mode, if an admin account doesn't exist yet, the 'admin' account should be created. When in dev mode, the webui should automaticlaly log you in as 'admin'. This should mean we're comatible with all existing auth checks and pass every check.

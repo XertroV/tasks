@@ -1,0 +1,38 @@
+---
+id: P12.M3.E2.T002
+title: Refactor classify_intent/1 (complexity 15)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:37:36.449582+00:00'
+started_at: '2026-02-13T10:37:36.449582+00:00'
+completed_at: '2026-02-13T10:49:48.449531+00:00'
+duration_minutes: 12.199998916666667
+---
+
+# Refactor classify_intent/1 (complexity 15)
+
+## Description
+
+Reduce the cyclomatic complexity of `classify_intent/1` in the retrieval pipeline. Current complexity of 15 indicates too many branching paths. Simplify and extract helper functions.
+
+## Acceptance Criteria
+
+- [ ] Analyze current function and identify complexity sources
+- [ ] Extract pattern matching logic into separate functions
+- [ ] Consider using a dispatch table or pattern-based approach
+- [ ] Maintain same classification behavior
+- [ ] Target complexity: reduce to <= 10
+- [ ] All existing tests pass
+- [ ] Lint passes
+
+## Context
+
+- Related files: `lib/pag_server/retrieval/pipeline.ex`
+- Function: `classify_intent/1`
+- May involve intent classification helpers
+- Part of epic: Refactor Complex Functions

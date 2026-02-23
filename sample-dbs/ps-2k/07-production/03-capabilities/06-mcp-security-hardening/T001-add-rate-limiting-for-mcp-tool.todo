@@ -1,0 +1,135 @@
+---
+id: P7.M3.E6.T001
+title: Add rate limiting for MCP tool calls
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- security
+- mcp
+- rate-limiting
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-07T02:49:45.271279+00:00'
+started_at: '2026-02-07T02:49:45.271279+00:00'
+completed_at: '2026-02-07T03:07:26.536265+00:00'
+duration_minutes: 17.687749616666668
+---
+
+# Add rate limiting for MCP tool calls
+
+MCP servers currently have no rate limiting. A misbehaving or compromised MCP server could be
+invoked with unlimited frequency, consuming resources and potentially causing DoS. The existing
+P7.M2 Rate Limiting milestone covers LLM API rate limiting but NOT tool call rate limiting.
+
+This task adds per-server rate limiting for MCP tool call invocations, tracking call frequency
+per server and enforcing configurable limits.
+
+## Requirements
+
+- [ ] Create a rate tracking module for MCP tool calls:
+  - Option A: Extend the existing P7.M2 rate limiter (if already implemented) with tool call buckets
+  - Option B: Create a lightweight counter-based limiter specifically for MCP calls
+  - Store call counts per MCP server name with sliding window
+- [ ] Add configurable limits per MCP server:
+  ```elixir
+  config :pag_server, PagServer.Tools.MCP,
+    rate_limits: %{
+      default: %{max_calls_per_minute: 60, max_calls_per_hour: 1000},
+      "filesystem" => %{max_calls_per_minute: 120, max_calls_per_hour: 5000},
+      "web-browser" => %{max_calls_per_minute: 30, max_calls_per_hour: 500}
+    }
+  ```
+- [ ] Integrate rate check into `MCP.ProxyTool.execute/2`:
+  - Before calling `Discovery.execute_mcp_tool/3`, check rate limit
+  - If rate exceeded, return `{:error, "MCP rate limit exceeded for server: #{server_name}"}`
+  - Include retry-after hint in error
+- [ ] Track call frequency in ETS or Agent for performance:
+  - Key: `{server_name, minute_bucket}` or similar sliding window
+  - Atomic increment operations for concurrent safety
+- [ ] Emit telemetry events:
+  - `[:pag_server, :mcp, :rate_limit, :exceeded]` with metadata `%{server_name: name, limit: limit}`
+  - `[:pag_server, :mcp, :rate_limit, :approaching]` at 80% threshold
+- [ ] Add configurable burst allowance (e.g., allow short bursts up to 2x the per-minute rate)
+- [ ] Write tests:
+  - Test rate limiting kicks in at configured threshold
+  - Test per-server independent limits
+  - Test default limits apply to unconfigured servers
+  - Test burst allowance
+  - Test sliding window resets
+
+## Acceptance Criteria
+
+- [ ] MCP tool calls are rate-limited per server
+- [ ] Rate limits are configurable per server name with sensible defaults
+- [ ] Rate limit exceeded returns clear error with server name
+- [ ] Telemetry events emitted when limits approached and exceeded
+- [ ] No performance regression for normal operation (< 1ms overhead per call)
+- [ ] Burst traffic allowed within configurable bounds
+
+## Context
+
+**Source**: Architecture audit - tool system security gap analysis (2026-02-06)
+**Severity**: MEDIUM - prevents resource exhaustion from misbehaving MCP servers
+
+**Related tasks**:
+- P7.M2 (Rate Limiting) - LLM API rate limiting infrastructure
+- P7.M3.E6.T002 (MCP capability negotiation) - complements this with capability-based restrictions
+
+## Notes
+
+Current MCP proxy execution in `lib/pag_server/tools/mcp/proxy_tool.ex`:
+```elixir
+def execute(arguments, context) when is_map(arguments) and is_map(context) do
+  with {:ok, tool_name} <- fetch_tool_name(context),
+       {:ok, server_name} <- extract_server_name(tool_name) do
+    # No rate limit check here
+    Discovery.execute_mcp_tool(server_name, tool_name, arguments)
+  end
+end
+```
+
+After fix:
+```elixir
+def execute(arguments, context) when is_map(arguments) and is_map(context) do
+  with {:ok, tool_name} <- fetch_tool_name(context),
+       {:ok, server_name} <- extract_server_name(tool_name),
+       :ok <- check_rate_limit(server_name) do
+    Discovery.execute_mcp_tool(server_name, tool_name, arguments)
+  end
+end
+
+defp check_rate_limit(server_name) do
+  case MCP.RateLimiter.check_and_consume(server_name) do
+    :ok -> :ok
+    {:error, :rate_limited} ->
+      :telemetry.execute([:pag_server, :mcp, :rate_limit, :exceeded], %{}, %{server_name: server_name})
+      {:error, "MCP rate limit exceeded for server: #{server_name}"}
+  end
+end
+```
+
+**Key files**:
+- `lib/pag_server/tools/mcp/proxy_tool.ex` (integration point)
+- `lib/pag_server/tools/mcp/discovery.ex` (MCP execution)
+- `config/config.exs` (rate limit configuration)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M3.E6)
+**Agent**: cli-user
+**Date**: 2026-02-07 02:49 UTC
+**Sibling tasks**: P7.M3.E6.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M3.E6.T001 → P7.M3.E6.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M3.E6.T001: .tasks/07-production/03-capabilities/06-mcp-security-hardening/T001-add-rate-limiting-for-mcp-tool.todo
+- P7.M3.E6.T002: .tasks/07-production/03-capabilities/06-mcp-security-hardening/T002-add-mcp-server-capability-nego.todo

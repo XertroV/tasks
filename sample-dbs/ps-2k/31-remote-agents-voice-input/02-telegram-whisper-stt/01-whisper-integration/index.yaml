@@ -1,0 +1,46 @@
+id: P31.M2.E1
+name: Whisper Integration
+status: pending
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-whisper-client-module.todo
+  title: Add Whisper client module
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-whisper-configuration-and.todo
+  title: Add Whisper configuration and health check
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-write-whisper-client-tests.todo
+  title: Write Whisper client tests
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-transcribe-audio-mcp-tool.todo
+  title: Add transcribe_audio MCP tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

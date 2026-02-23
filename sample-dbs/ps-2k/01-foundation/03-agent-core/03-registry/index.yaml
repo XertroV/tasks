@@ -1,0 +1,40 @@
+id: P1.M3.E3
+name: Agent Registry
+status: pending
+estimate_hours: 4
+complexity: low
+depends_on: [P1.M3.E1]
+
+tasks:
+  - id: T001
+    file: T001-setup-registry.todo
+    title: Set up Registry for agent processes
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    
+  - id: T002
+    file: T002-registry-helpers.todo
+    title: Add registration and lookup helpers
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-registry-tests.todo
+    title: Write registry tests
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

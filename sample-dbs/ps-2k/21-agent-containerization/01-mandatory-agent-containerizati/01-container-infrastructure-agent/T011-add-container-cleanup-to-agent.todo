@@ -1,0 +1,39 @@
+---
+id: P21.M1.E1.T011
+title: Add container cleanup to AgentServer terminate
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T010
+tags:
+- integration
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.561421+00:00'
+started_at: '2026-02-18T12:21:44.561421+00:00'
+completed_at: '2026-02-18T13:37:26.053141+00:00'
+duration_minutes: 75.69152841666667
+---
+
+# Add container cleanup to AgentServer terminate
+
+Ensure containers are properly cleaned up when agent stops.
+
+## Requirements
+
+- Stop and remove container on AgentServer terminate
+- Handle both graceful and crash shutdowns
+- Cleanup volumes if configured
+- Update ContainerRegistry
+
+## Acceptance Criteria
+
+- [ ] AgentServer `terminate/2` calls `ContainerSupervisor.stop_container/1`
+- [ ] Container stopped with grace period before kill
+- [ ] Container removed from Docker after stop
+- [ ] ContainerRegistry unregisters the agent
+- [ ] Private volume cleanup is configurable
+- [ ] Handles case where container already stopped/removed
+- [ ] Unit tests for cleanup scenarios

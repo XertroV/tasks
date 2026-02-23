@@ -1,0 +1,22 @@
+---
+id: P54.M5.E1.T003
+title: 'PLUGIN_DEVELOPMENT.md: companion MCP proxy tool pattern'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:51:20.287840+00:00'
+started_at: '2026-02-21T12:51:20.287840+00:00'
+completed_at: '2026-02-21T12:51:49.806364+00:00'
+duration_minutes: 0.49197521666666666
+---
+## Acceptance Criteria
+- [ ] New subsection added under 'Tools' in docs/PLUGIN_DEVELOPMENT.md: 'Companion-proxied MCP tools'
+- [ ] Explains when to use: MCP server must run on user's machine (browser control, local hardware, etc.)
+- [ ] Shows the CompanionToolAdapter behaviour and how BrowserMcpAdapter implements it
+- [ ] Notes tool naming convention: server_name.tool_name (workspace-scoped)
+- [ ] References browsermcp-companion-contract.md for wire protocol
+- [ ] Does not break existing doc content or links

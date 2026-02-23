@@ -1,0 +1,24 @@
+---
+id: P55.M3.E1.T004
+title: Error, usage, and hidden-token event handlers
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- streaming
+- errors
+claimed_by: cli-user
+claimed_at: '2026-02-22T11:04:32.701453+00:00'
+started_at: '2026-02-22T11:04:32.701453+00:00'
+completed_at: '2026-02-22T11:07:41.794239+00:00'
+duration_minutes: 3.1515462333333333
+---
+Handle remaining PubSub events: :llm_error - show error alert (use .alert component), clear streaming_state, set agent_status to :idle. :llm_usage - optionally display token count in toolbar/footer. :llm_hidden - ignore or show as collapsed hidden block. Ensure all unhandled events have a catch-all handle_info that logs and ignores.
+
+## Acceptance Criteria
+- LLM errors shown as alerts and clear streaming
+- Usage data optionally displayed
+- Hidden tokens handled gracefully
+- Catch-all for unknown events (no crashes)

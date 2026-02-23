@@ -1,0 +1,19 @@
+---
+id: B106
+title: Fix flakey tests. If there is a useful pattern to avoid or which we can use
+  to avoid flakey tests, add a line to AGENTS.md so that we won't make the same mistake
+  again.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:37:05.315191+00:00'
+started_at: '2026-02-17T14:37:05.315191+00:00'
+completed_at: '2026-02-17T14:50:58.765029+00:00'
+duration_minutes: 13.890830433333333
+---
+
+Fix flakey tests. If there is a useful pattern to avoid or which we can use to avoid flakey tests, add a line to AGENTS.md so that we won't make the same mistake again.

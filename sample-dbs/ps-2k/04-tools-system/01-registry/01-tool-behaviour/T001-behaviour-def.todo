@@ -1,0 +1,119 @@
+---
+id: P4.M1.E1.T001
+title: Define Tool behaviour
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- behaviour
+- registry
+claimed_by: claude-1
+claimed_at: '2026-02-05T20:13:01.430762'
+started_at: '2026-02-05T20:13:01.430762'
+completed_at: '2026-02-05T20:14:55.740799'
+duration_minutes: 1.9051671166666668
+---
+
+# Define Tool behaviour
+
+Create the `PAGServer.Tools.Tool` behaviour that all tools must implement.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/tool.ex` (~50 LoC)
+- [ ] Define `@callback name() :: String.t()` for tool name
+- [ ] Define `@callback schema() :: ToolSchema.t()` for JSON schema
+- [ ] Define `@callback execute(args :: map(), context :: map()) :: {:ok, any()} | {:error, term()}`
+- [ ] Add documentation with examples of implementing a tool
+
+## Acceptance Criteria
+
+- [ ] Behaviour module compiles without warnings
+- [ ] All three callbacks are properly defined with typespecs
+- [ ] Documentation includes example implementation
+- [ ] Test helper created for mock tool implementations
+- [ ] Module documentation explains when to use `:async` vs `:sync` execution mode
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 327-331 (Tool behaviour definition)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 338-342 (Execution logic)
+
+**Key Points**:
+- Tools are the primary extension mechanism for agents
+- All tools (builtin and MCP) implement the same behaviour
+- The `schema/0` callback returns structured metadata for LLM consumption
+- The `execute/2` callback receives validated args and agent context
+
+## Notes
+
+The behaviour is intentionally minimal to support diverse tool types:
+- Builtin tools (file ops, shell, etc.)
+- MCP proxy tools (delegating to external servers)
+- Future custom tools
+
+Context map includes:
+```elixir
+%{
+  agent_id: String.t(),
+  session_id: String.t(),
+  workspace: String.t(),
+  permissions: [atom()]
+}
+```
+
+Example implementation:
+```elixir
+defmodule PAGServer.Tools.Builtin.Echo do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "echo"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "echo",
+      description: "Echoes the input message",
+      parameters: %{
+        type: "object",
+        properties: %{
+          message: %{type: "string", description: "Message to echo"}
+        },
+        required: ["message"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"message" => msg}, _context) do
+    {:ok, msg}
+  end
+end
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 07:13 UTC
+**Primary task**: P2.M8.E3.T002 - Add summarization-based compression
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E1 vs P2.M8.E3)
+- No dependency chain: ✓ (verified at claim time)

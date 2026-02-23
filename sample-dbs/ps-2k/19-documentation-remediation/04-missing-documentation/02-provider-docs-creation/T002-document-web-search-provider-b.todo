@@ -1,0 +1,19 @@
+---
+id: P19.M4.E2.T002
+title: Document web search provider behaviour
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- docs
+- providers
+- web-search
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:02:02.005511+00:00'
+started_at: '2026-02-18T03:02:02.005511+00:00'
+completed_at: '2026-02-18T03:06:15.737722+00:00'
+duration_minutes: 4.22887
+---
+Add API docs for PagServer.Tools.WebSearch.Provider behaviour. Document @callback search/2, available?/0, expected result shapes.

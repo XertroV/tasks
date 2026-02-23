@@ -1,0 +1,26 @@
+id: P3.M2
+name: PubSub Broadcasting
+status: pending
+estimate_hours: 6
+complexity: medium
+depends_on:
+- P3.M1
+epics:
+- id: E1
+  name: Broadcaster Module
+  path: 01-broadcaster-module
+  estimate_hours: 4
+  complexity: medium
+  description: Agents.Broadcaster GenServer for centralized PubSub operations
+- id: E2
+  name: Event Handlers
+  path: 02-event-handlers
+  estimate_hours: 2
+  complexity: low
+  description: Subscribe channels to agent-specific PubSub topics
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

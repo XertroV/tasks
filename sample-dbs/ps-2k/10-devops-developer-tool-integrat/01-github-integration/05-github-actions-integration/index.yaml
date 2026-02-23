@@ -1,0 +1,45 @@
+id: P10.M1.E5
+name: GitHub Actions Integration
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-github-actions-workf.todo
+  title: Implement GitHub Actions workflow webhook handlers
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-build-workflow-trigger-and-dis.todo
+  title: Build workflow trigger and dispatch API methods
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-workflow-run-status.todo
+  title: Implement workflow run status monitoring
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T004
+  file: T004-write-tests-for-actions-webhoo.todo
+  title: Write tests for Actions webhook integration
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

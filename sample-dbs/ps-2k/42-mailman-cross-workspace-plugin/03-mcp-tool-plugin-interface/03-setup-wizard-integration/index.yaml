@@ -1,0 +1,22 @@
+id: P42.M3.E3
+name: Setup Wizard Integration
+status: done
+estimate_hours: 1.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-plugins-step-to-setupwizar.todo
+  title: Add plugins step to SetupWizard with mailman checkbox
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

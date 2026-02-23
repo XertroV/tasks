@@ -1,0 +1,46 @@
+---
+id: P7.M7.E1.T019
+title: Document built-in tool module contracts (batch 1)
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:37:45.791548+00:00'
+started_at: '2026-02-08T06:37:45.791548+00:00'
+completed_at: '2026-02-08T06:46:56.087805+00:00'
+duration_minutes: 9.171604050000001
+---
+
+# Document built-in tool module contracts (batch 1)
+
+First pass over high-traffic built-in tools to define stable documentation
+contracts before broader tool-suite coverage.
+
+
+## Requirements
+
+- [x] Add public `@doc/@spec` coverage for high-use modules under:
+  - [x] `lib/pag_server/tools/builtin/read_file.ex`
+  - [x] `lib/pag_server/tools/builtin/write_file.ex`
+  - [x] `lib/pag_server/tools/builtin/execute_shell.ex`
+  - [x] `lib/pag_server/tools/builtin/browse_web.ex`
+  - [x] `lib/pag_server/tools/builtin/json_parse.ex`
+  - [x] `lib/pag_server/tools/builtin/git_clone.ex`
+  - [x] `lib/pag_server/tools/builtin/archive_create.ex`
+- [x] For each module, document input schema expectations and error return shape
+- [x] Add `@typedoc` for any exported type aliases used in tool contracts
+- [x] Keep examples concise and aligned with actual tool runtime behavior
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] All scoped built-in tool modules have public `@doc` coverage
+- [x] Public function `@spec` exists for scoped built-in tool modules
+- [x] Exported public types in scoped modules include `@typedoc`
+- [x] `mix docs` completes without new warnings from scoped modules

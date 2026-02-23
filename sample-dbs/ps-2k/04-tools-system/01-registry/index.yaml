@@ -1,0 +1,39 @@
+id: P4.M1
+name: Tool Registry
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Tool Behaviour
+  path: 01-tool-behaviour
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: Define Tool behaviour with name, schema, execute callbacks
+- id: E2
+  name: Registry GenServer
+  path: 02-registry-genserver
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Tool registry with register, get, list operations
+- id: E3
+  name: Schema Builder
+  path: 03-schema-builder
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on:
+  - E1
+  description: Convert tool schemas to LLM-compatible JSON format
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

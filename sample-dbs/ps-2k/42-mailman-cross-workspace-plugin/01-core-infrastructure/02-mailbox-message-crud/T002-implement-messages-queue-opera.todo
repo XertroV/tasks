@@ -1,0 +1,16 @@
+---
+id: P42.M1.E2.T002
+title: Implement Messages queue operations module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:15:59.122802+00:00'
+started_at: '2026-02-19T17:15:59.122802+00:00'
+completed_at: '2026-02-19T17:19:16.654365+00:00'
+duration_minutes: 3.2921925333333335
+---
+## Context\nplugins/mailman/lib/messages.ex - message lifecycle management.\n\n## Acceptance Criteria\n- [ ] enqueue/1 - insert with status: pending, broadcast PubSub mailman:<workspace_id>:new_message\n- [ ] list_pending/1 (mailbox_id) - ordered by priority desc, inserted_at asc\n- [ ] list_inbox/2 (mailbox_id, opts) - filterable by status, limit, since\n- [ ] list_outbox/2 (workspace_id, opts)\n- [ ] get/1, mark_processing/1, mark_delivered/2, mark_failed/2, mark_rejected/2\n- [ ] increment_attempts/1\n- [ ] reply/2 - creates new message with in_reply_to_id set\n- [ ] forward/3 - creates new message with message_type: forward

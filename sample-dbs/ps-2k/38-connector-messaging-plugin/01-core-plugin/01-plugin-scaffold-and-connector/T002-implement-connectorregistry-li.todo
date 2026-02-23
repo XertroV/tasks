@@ -1,0 +1,17 @@
+---
+id: P38.M1.E1.T002
+title: 'Implement ConnectorRegistry: list_workspace_connectors/1 and get_connector/2'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P38.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:43:11.770059+00:00'
+started_at: '2026-02-19T04:43:11.770059+00:00'
+completed_at: '2026-02-19T04:47:41.754883+00:00'
+duration_minutes: 4.499746766666666
+---
+Pure context module PagServer.ConnectorMessaging.ConnectorRegistry. list_workspace_connectors(workspace_id) queries BotConfig where status='active', returns [{id, platform, name, status}]. get_connector(workspace_id, connector_id) fetches a single BotConfig verifying workspace ownership. No direct DB calls from the plugin — all DB access via this module. Add @spec annotations.

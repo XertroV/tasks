@@ -1,0 +1,39 @@
+id: P49.M6.E3
+name: Attestations progressive enforcement and migration
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P49.M6.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-progressive-enforcem.todo
+  title: Implement progressive enforcement modes and break-glass exceptions
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-define-attestation-policy-cont.todo
+  title: Define attestation policy contract and verify for high-risk plugin tiers
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-publish-migration-and-operatio.todo
+  title: Publish migration and operations playbook for Option B to Option C
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

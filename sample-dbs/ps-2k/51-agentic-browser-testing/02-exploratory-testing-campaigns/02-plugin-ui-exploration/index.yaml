@@ -1,0 +1,38 @@
+id: P51.M2.E2
+name: Plugin UI Exploration
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-level-1-2-skill-hub-models-pri.todo
+  title: 'Level 1-2: Skill Hub, Models/Pricing & Graphiti Wall'
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-level-3-4-pair-programming-plu.todo
+  title: "Level 3-4: Pair programming plugin \u2014 session creation and role management"
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-level-5-device-authorization-f.todo
+  title: 'Level 5: Device authorization flow, LLM provider config, & tool approvals'
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

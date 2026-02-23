@@ -1,0 +1,24 @@
+---
+id: P42.M2.E1.T002
+title: Implement MailmanSupervisor
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:19:28.855953+00:00'
+started_at: '2026-02-19T17:19:28.855953+00:00'
+completed_at: '2026-02-19T17:29:51.358156+00:00'
+duration_minutes: 10.37503655
+---
+## Context
+plugins/mailman/lib/supervisor.ex
+
+## Acceptance Criteria
+- [ ] DynamicSupervisor that supervises Orchestrator processes
+- [ ] PagServer.Plugins.Mailman.Registry (Registry) for named lookup
+- [ ] ensure_started/1 - idempotently start orchestrator for workspace_id
+- [ ] Supervised under plugin's application supervision tree
+- [ ] Started by MailmanPlugin.on_enable for a workspace

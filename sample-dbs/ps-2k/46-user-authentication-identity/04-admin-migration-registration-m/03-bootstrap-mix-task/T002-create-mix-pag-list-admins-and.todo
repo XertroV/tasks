@@ -1,0 +1,29 @@
+---
+id: P46.M4.E3.T002
+title: Create mix pag.list_admins and mix pag.remove_admin tasks
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P46.M4.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:44:25.700466+00:00'
+started_at: '2026-02-20T05:44:25.700466+00:00'
+completed_at: '2026-02-20T05:52:01.864001+00:00'
+duration_minutes: 7.6027253833333335
+---
+Companion admin management mix tasks:
+
+mix pag.list_admins:
+- Lists all users with is_admin: true
+- Output: table with id, email, username, created_at
+
+mix pag.remove_admin --email admin@example.com:
+- Demotes user to non-admin
+- Guard: refuses if this would leave zero admin users (print warning)
+- Idempotent (no error if already not admin)
+
+Both tasks reuse Accounts context functions.
+Acceptance: All three admin tasks (create, list, remove) work together. Cannot accidentally remove the last admin.

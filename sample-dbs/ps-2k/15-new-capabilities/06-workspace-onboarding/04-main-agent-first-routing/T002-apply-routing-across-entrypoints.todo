@@ -1,0 +1,37 @@
+---
+id: P15.M6.E4.T002
+title: Apply routing policy across API and Telegram entrypoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M6.E4.T001
+- P15.M6.E3.T003
+tags:
+- api
+- telegram
+- routing
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:50:51.236213+00:00'
+started_at: '2026-02-17T17:50:51.236213+00:00'
+completed_at: '2026-02-17T18:09:30.884483+00:00'
+duration_minutes: 18.660804316666667
+---
+
+# Apply routing policy across API and Telegram entrypoints
+
+## Owner Outcome
+- I can chat from dashboard API or Telegram and always hit the same workspace main agent behavior.
+
+## Acceptance Criteria
+- [x] Integrate routing policy in REST/LiveView chat entrypoints and Telegram webhook handler.
+  - `WorkspacesController.chat/2` and `SetupWizard` both use `RoutingPolicy.dispatch/3`. Added 202 Accepted for queued messages.
+- [x] Enforce workspace scoping and protect against cross-workspace dispatch.
+  - `SharedMainAgentRouter.fetch_active_workspace_agent/2` validates workspace_id. Integration tests confirm cross-workspace rejection.
+- [x] Add integration tests that assert consistent routing semantics across channels.
+  - 5 new tests: cross-entrypoint consistency, policy/router equivalence, cross-workspace protection, empty workspace, zero-config routing.
+- [x] Include observability fields (workspace_id, main_agent_id, source_channel) in routing logs.
+  - Structured metadata in controller error logging. SharedMainAgentRouter already had comprehensive structured logging.
+- [x] Validate owner can complete first successful chat from either channel in <10 minutes.
+  - Zero-config routing verified: bootstrapped workspace resolves main agent immediately.

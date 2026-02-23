@@ -1,0 +1,41 @@
+id: P18.M4
+name: Architectural Hardening
+status: pending
+estimate_hours: 18.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Workspace Soft-Delete
+  path: 01-workspace-soft-delete
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Add archived_at/archived_by columns, implement soft-delete behavior,
+    add restore endpoint, and filter archived workspaces from default queries.
+- id: E2
+  name: Directory Resolution Consolidation
+  path: 02-dir-resolution-consolidation
+  status: pending
+  estimate_hours: 5.5
+  complexity: medium
+  depends_on: []
+  description: Extract WorkspacePaths module as single source of truth for workspace
+    directory resolution. Refactor Workspaces, WorkspaceFiles, and FileTracker to
+    use it.
+- id: E3
+  name: Settings JSONB to Embedded Schema
+  path: 03-settings-embedded-schema
+  status: pending
+  estimate_hours: 4.5
+  complexity: medium
+  depends_on: []
+  description: Replace the unvalidated settings JSONB map with a typed WorkspaceSettings
+    embedded Ecto schema with proper changeset validation.
+stats:
+  total_tasks: 14
+  done: 14
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,24 @@
+---
+id: P55.M2.E2.T001
+title: Thread overview cards with status, agent badge, and preview
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- component
+- overview
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.957929+00:00'
+started_at: '2026-02-22T12:15:57.957929+00:00'
+completed_at: '2026-02-22T12:32:58.466186+00:00'
+duration_minutes: 17.008470716666668
+---
+Create lib/pag_server_web/live/workspace_chat/thread_overview.ex as function component. Shown when URL has workspace_id but no session_id. Grid/list of thread cards showing: name, agent badge, status pill, last activity time, message count, last message preview (truncated to ~80 chars). Sorted by last_activity_at desc. Click navigates to /chat/:workspace_id/:session_id.
+
+## Acceptance Criteria
+- Cards render with all fields (name, agent, status, time, count, preview)
+- Sorted by last_activity_at desc
+- Click navigates to thread
+- Responsive grid layout

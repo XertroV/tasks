@@ -1,0 +1,41 @@
+---
+id: B223
+title: 'w/:id/chat -- the input field should submit on ctrl+enter (similar to verification
+  chat page -- in general we want at least all the features that chat supports: autoscroll,
+  display tool calls and results, etc)'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.089813+00:00'
+started_at: '2026-02-23T07:29:02.089813+00:00'
+completed_at: '2026-02-23T07:43:45.439554+00:00'
+duration_minutes: 14.722495533333333
+---
+
+w/:id/chat -- the input field should submit on ctrl+enter (similar to verification chat page -- in general we want at least all the features that chat supports: autoscroll, display tool calls and results, etc)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-23 01:56 UTC
+**Primary task**: B222 - workspace pages seem not to have appropriate spacing above the top of the page, and error messages are not visible (they should have an orange/red dismissable box)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

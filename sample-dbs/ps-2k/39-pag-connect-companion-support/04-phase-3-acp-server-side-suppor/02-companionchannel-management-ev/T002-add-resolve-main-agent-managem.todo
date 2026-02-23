@@ -1,0 +1,16 @@
+---
+id: P39.M4.E2.T002
+title: Add resolve_main_agent management event to CompanionChannel
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:52:06.998492+00:00'
+started_at: '2026-02-19T18:52:06.998492+00:00'
+completed_at: '2026-02-19T18:52:09.000797+00:00'
+duration_minutes: 0.033371566666666665
+---
+Handle 'resolve_main_agent' in CompanionChannel. Delegates to SharedMainAgentRouter.resolve_main_agent/2 (3-step fallback: workspace platform config, global platform config, oldest active agent). Returns {agent_id, name, display_name, status, model_provider, model_name} on success, or {reason: 'no_agents_found'} on failure. Same scope requirement as list_agents.

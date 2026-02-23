@@ -1,0 +1,75 @@
+id: P9.M5.E1
+name: Plugin Foundation
+status: pending
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-define-plugin-manifest-schema.todo
+  title: Define plugin manifest schema (plugin.yaml)
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-plugin-struct-and-va.todo
+  title: Implement Plugin struct and validation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-build-directory-based-plugin-d.todo
+  title: Build directory-based plugin discovery and loader
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E1.T001
+  - P9.M5.E1.T002
+- id: T004
+  file: T004-implement-pluginregistry-gense.todo
+  title: Implement PluginRegistry GenServer for plugin lifecycle management
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E1.T003
+- id: T005
+  file: T005-add-plugin-supervisor-to-otp-s.todo
+  title: Add plugin supervisor to OTP supervision tree
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T006
+  file: T006-implement-plugin-enable-disabl.todo
+  title: Implement plugin enable/disable/install/uninstall lifecycle
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T007
+  file: T007-add-external-plugin-process-ma.todo
+  title: Add external plugin process management (stdio/HTTP MCP transport)
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P9.M5.E1.T004
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

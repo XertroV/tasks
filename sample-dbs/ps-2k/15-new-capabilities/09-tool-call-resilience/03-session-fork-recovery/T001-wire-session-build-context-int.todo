@@ -1,0 +1,39 @@
+---
+id: P15.M9.E3.T001
+title: Wire Session.build_context/1 into agent startup message loading
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- agent-server
+- session
+- fork
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:57:35.818997+00:00'
+started_at: '2026-02-17T13:57:35.818997+00:00'
+completed_at: '2026-02-17T14:03:19.701227+00:00'
+duration_minutes: 5.7313703333333335
+---
+Currently `load_persisted_messages/2` in agent_server.ex (~line 2156) only queries
+the current session via `MessagesContext.load_context(session_id)`. It does not
+call `Sessions.Session.build_context/1` which correctly walks the fork chain and
+truncates at fork points.
+
+This means forked sessions cannot escape a poisoned parent session's context.
+
+Fix: Use `Session.build_context/1` as the primary context loading path, with
+fallback to `MessagesContext.load_context/1` if it fails.
+
+Source: .plan/tool-call-resilience.md — Gap 5
+
+Files to modify:
+- lib/pag_server/agents/agent_server.ex (load_persisted_messages/2)
+
+## Acceptance Criteria
+- [ ] `load_persisted_messages/2` calls `Session.build_context/1` first
+- [ ] Falls back to `MessagesContext.load_context/1` on error
+- [ ] Forked sessions correctly inherit parent context up to fork point
+- [ ] Existing session loading still works for non-forked sessions
+- [ ] Test: fork from poisoned session, verify forked agent loads clean context

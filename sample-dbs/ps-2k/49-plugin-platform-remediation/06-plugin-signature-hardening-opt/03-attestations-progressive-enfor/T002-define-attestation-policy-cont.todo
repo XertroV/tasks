@@ -1,0 +1,37 @@
+---
+id: P49.M6.E3.T002
+title: Define attestation policy contract and verify for high-risk plugin tiers
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T19:07:09.300382+00:00'
+started_at: '2026-02-20T19:07:09.300382+00:00'
+completed_at: '2026-02-20T19:10:56.696363+00:00'
+duration_minutes: 3.7899328666666667
+---
+
+# Define attestation policy contract and verify for high-risk plugin tiers
+
+
+
+## Requirements
+
+- Define attestation policy contract and required fields for high-risk plugin tiers.
+- Integrate attestation verification into trust decision pipeline behind policy flags.
+- Emit explicit diagnostics for missing, invalid, or mismatched attestations.
+
+## Acceptance Criteria
+
+- Attestation policy requirements are documented and machine-validated.
+- High-risk plugin tiers can require attestations via policy.
+- Tests cover valid attestations and major failure classes.
+
+## Implementation Notes
+
+- Added machine-validated attestation policy contract in `lib/pag_server/plugins/attestation_policy.ex`.
+- Integrated attestation checks into trust enforcer pipeline for install-time verification results.
+- Added reason-code paths and tests for missing, invalid, and mismatched attestations.

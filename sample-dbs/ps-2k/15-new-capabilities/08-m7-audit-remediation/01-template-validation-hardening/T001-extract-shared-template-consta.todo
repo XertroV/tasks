@@ -1,0 +1,45 @@
+---
+id: P15.M8.E1.T001
+title: Extract shared template constants to PagServer.Templates.Shared
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- refactor
+- templates
+- dry
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:48:09.686214+00:00'
+started_at: '2026-02-17T16:48:09.686214+00:00'
+completed_at: '2026-02-17T17:01:22.036685+00:00'
+duration_minutes: 13.205840983333333
+---
+Duplicated constants between workspace_template.ex and template.ex: @known_providers, @variable_types, @name_regex, @version_regex. Also exists as atoms in llm/registry.ex. Create PagServer.Templates.Shared with public functions for all shared constants, update both template modules to use it.
+
+Source: E1 Audit I2
+
+## Acceptance Criteria
+- [ ] New PagServer.Templates.Shared module with all shared constants
+- [ ] Both WorkspaceTemplate and Template reference the shared module
+- [ ] No duplicated constants remain
+- [ ] All existing tests pass
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M8.E1)
+**Agent**: cli-user
+**Date**: 2026-02-17 16:48 UTC
+**Sibling tasks**: P15.M8.E1.T002, P15.M8.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M8.E1.T001 → P15.M8.E1.T002 → P15.M8.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M8.E1.T001: .tasks/15-new-capabilities/08-m7-audit-remediation/01-template-validation-hardening/T001-extract-shared-template-consta.todo
+- P15.M8.E1.T002: .tasks/15-new-capabilities/08-m7-audit-remediation/01-template-validation-hardening/T002-add-variable-cross-validation.todo
+- P15.M8.E1.T003: .tasks/15-new-capabilities/08-m7-audit-remediation/01-template-validation-hardening/T003-use-or-remove-unused-questionn.todo

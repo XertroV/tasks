@@ -1,0 +1,42 @@
+---
+id: P11.M2.E2.T003
+title: Add sandbox configuration interface
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T09:12:26.960918+00:00'
+started_at: '2026-02-12T09:12:26.960918+00:00'
+completed_at: '2026-02-13T00:59:12.050158+00:00'
+duration_minutes: 946.7514870166667
+---
+
+# Add sandbox configuration interface
+
+
+
+## Requirements
+
+- [ ] Add `PUT /api/v1/tools/:id/sandbox-config` endpoint for sandbox settings
+- [ ] Configure resource limits: CPU time, memory, timeout per execution
+- [ ] Configure I/O restrictions: filesystem paths allowed, network access
+- [ ] Support runtime isolation modes: none, container, process
+- [ ] Store sandbox config with inheritance (global, tool-level, agent-override)
+- [ ] Include metadata: isolation_type, resource_limits, io_restrictions
+- [ ] Validate sandbox config against system capabilities
+- [ ] Support testing sandbox configs before activation
+
+## Acceptance Criteria
+
+- [ ] Endpoint returns 200 with updated sandbox config
+- [ ] Config includes: cpu_time_limit_ms, memory_limit_mb, timeout_ms
+- [ ] I/O restrictions support: allowed_paths, blocked_paths, network_enabled
+- [ ] Isolation modes (none/container/process) are validated
+- [ ] Config inheritance is properly documented
+- [ ] Test endpoint available to validate config before saving
+- [ ] Invalid configs return 400 with helpful validation errors
+- [ ] Tests verify sandbox limits are enforced during execution
+- [ ] Backward compatible with tools without sandbox config

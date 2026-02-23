@@ -1,0 +1,120 @@
+---
+id: B159
+title: Review live file injection for system prompts
+status: pending
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+tags:
+  - review
+  - feature
+  - system-prompts
+  - workspace-files
+---
+
+# Review: Live File Injection for System Prompts
+
+## Summary
+
+A new feature was implemented to enable live injection of workspace files into agent system prompts. Previously, files like EGO.md were expanded once at bootstrap time and baked into the agent's system prompt. Changes to these files after bootstrap had no effect until the agent was rebooted.
+
+The live injection feature resolves `{{file:...}}` references at runtime from the database on every LLM request, ensuring agents immediately see current file content.
+
+## What Changed
+
+### Code Changes
+- **New Module**: `lib/pag_server/agents/live_prompt_resolver.ex` — Resolves file references at runtime
+- **Enhanced**: `lib/pag_server/workspace_files.ex` — Added `read_latest_contents/2` for batch DB queries
+- **Updated**: `lib/pag_server/bootstrap/file_generator.ex` — Skip expanding live files during bootstrap
+- **Wired**: `lib/pag_server/agents/agent_server.ex` — Added LivePromptResolver to `effective_system_prompt/1`
+- **Configured**: `priv/workspace_templates/agent-persona.yml` — Marked files as live-injected
+
+### Implementation Details
+- Files in `system_prompt_files` are left unexpanded at bootstrap (remain as `{{file:...}}`)
+- Other files are still expanded statically (backward compatible)
+- Live files are fetched from `WorkspaceFileRevision` (DB) using batch queries
+- Missing files gracefully degrade to empty strings
+- Works only for workspace agents; non-workspace agents unaffected
+
+## Acceptance Criteria
+
+- [ ] **Code Review**
+  - [ ] LivePromptResolver logic is sound and handles edge cases
+  - [ ] Batch query in `read_latest_contents/2` is efficient and correct
+  - [ ] File reference pattern matching is correct (`{{file:...}}`)
+  - [ ] Error handling is appropriate (DB errors don't crash, graceful degradation)
+  - [ ] Module integrates cleanly with existing agent_server pipeline
+  - [ ] No unnecessary DB queries (batch reads, not N queries)
+
+- [ ] **Architecture Review**
+  - [ ] Two-phase model (static vs. live injection) is clear and maintainable
+  - [ ] Separation of concerns: LivePromptResolver is focused and testable
+  - [ ] No performance regressions in `effective_system_prompt/1`
+  - [ ] Bootstrap behavior unchanged for non-live files
+  - [ ] Template configuration approach is extensible
+
+- [ ] **Test Coverage**
+  - [ ] All 15 new tests in `test/pag_server/agents/live_prompt_resolver_test.exs` pass
+  - [ ] Tests cover: single files, multiple files, missing files, latest revisions, edge cases
+  - [ ] Tests verify batch query behavior
+  - [ ] Tests verify graceful degradation
+
+- [ ] **Integration**
+  - [ ] Agent system prompt changes reflected immediately in LLM calls
+  - [ ] Revisions are read from `WorkspaceFileRevision` table (latest only)
+  - [ ] Agent-persona template correctly uses `system_prompt_files`
+  - [ ] Backward compatible with templates that don't use live injection
+  - [ ] No breaking changes to existing agent behavior
+
+- [ ] **Documentation & Clarity**
+  - [ ] LivePromptResolver module has clear docstrings
+  - [ ] Design rationale documented in code comments
+  - [ ] Two-phase injection model is explained
+  - [ ] Configuration approach is clear in template examples
+
+## Test Descriptions
+
+### Unit Tests (LivePromptResolver)
+1. **Single file reference** — `{{file:EGO.md}}` is replaced with actual content
+2. **Multiple file references** — Multiple `{{file:...}}` in one prompt are all resolved
+3. **Missing file** — Missing file reference replaced with empty string
+4. **Mixed missing/present** — Some files exist, others don't; both handled correctly
+5. **No references** — Prompt with no `{{file:...}}` returned unchanged
+6. **Nil workspace_id** — nil workspace_id returns prompt unchanged
+7. **Latest revision used** — When multiple revisions exist, latest is used
+8. **Preserves other patterns** — `{{variable}}` and other `{{...}}` patterns untouched
+9. **Whitespace handling** — File references with spaces trimmed correctly
+10. **Invalid arguments** — Non-binary prompt returns error
+
+### Unit Tests (read_latest_contents)
+1. **Batch query** — Multiple files fetched in one query
+2. **Omits missing** — Files with no revisions omitted from result
+3. **Empty list** — Empty file list returns empty map
+4. **Latest revision** — Multiple revisions returns latest
+
+### Integration Characteristics
+- Files are read from `WorkspaceFileRevision` (DB), not disk
+- Content is current at query time (not cached)
+- Agent sees immediate changes to tracked files
+
+## Files Involved
+
+- `lib/pag_server/agents/live_prompt_resolver.ex` (120 lines)
+- `lib/pag_server/agents/agent_server.ex` (effective_system_prompt/1)
+- `lib/pag_server/bootstrap/file_generator.ex` (substitute_file_references/3)
+- `lib/pag_server/workspace_files.ex` (read_latest_contents/2)
+- `priv/workspace_templates/agent-persona.yml` (system_prompt_files field)
+- `test/pag_server/agents/live_prompt_resolver_test.exs` (15 tests)
+
+## Notes
+
+- Commit: `c2a881be` "feat: implement live file injection for system prompts"
+- All tests pass: 15/15
+- All lint checks pass: `mix lint`
+- Bootstrap behavior and non-live files unaffected
+- Zero performance regressions expected (batch queries)

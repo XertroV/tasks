@@ -1,0 +1,72 @@
+---
+id: P2.M2.E1.T002
+title: Implement authentication and configuration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P2.M2.E1.T001
+tags:
+- llm
+- anthropic
+- auth
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-05T10:48:09.330472'
+started_at: '2026-02-05T10:48:09.330472'
+completed_at: '2026-02-05T11:01:25.440879'
+---
+
+# Implement authentication and configuration
+
+Add API key authentication and configuration management for Anthropic provider.
+
+## Requirements
+
+- [ ] Add config schema in `config/config.exs` for Anthropic API key
+- [ ] Support environment variable: `ANTHROPIC_API_KEY`
+- [ ] Add optional custom headers (for beta features)
+- [ ] Implement init/1 function for client initialization
+- [ ] Add validation for missing API key
+- [ ] Document configuration in module
+
+## Acceptance Criteria
+
+- [ ] Can read API key from config
+- [ ] Can read API key from environment variable
+- [ ] Raises clear error if API key is missing
+- [ ] Beta headers can be added (e.g., `anthropic-beta: prompt-caching-2024-07-31`)
+- [ ] Tests cover all config scenarios
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- `ref-projects/anthropix/lib/anthropix.ex` lines 40-45 (beta headers)
+
+**Key Points**:
+- API key should be configurable via environment or config
+- Support beta feature flags via headers
+- Follow Elixir config conventions
+
+## Notes
+
+Configuration structure:
+```elixir
+# config/config.exs
+config :pag_server, PagServer.LLM.Providers.Anthropic,
+  api_key: System.get_env("ANTHROPIC_API_KEY"),
+  beta: []  # e.g., ["prompt-caching-2024-07-31"]
+```
+
+Usage:
+```elixir
+client = Anthropic.init()  # Uses config
+client = Anthropic.init(api_key: "sk-...", beta: ["prompt-caching-2024-07-31"])
+```
+
+Beta headers format:
+- `anthropic-beta: feature-name-2024-07-31`
+- Multiple betas: comma-separated values

@@ -1,0 +1,98 @@
+---
+id: P7.M3.E1.T002
+title: Implement access pattern helpers
+status: done
+estimate_hours: 1
+complexity: medium
+priority: high
+depends_on:
+- P7.M3.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:39:14.104949'
+started_at: '2026-02-06T13:39:14.104949'
+completed_at: '2026-02-06T13:41:32.734645'
+tags:
+- security
+- capabilities
+- helpers
+duration_minutes: 2.310494783333333
+---
+
+# Implement access pattern helpers
+
+Add helper functions for creating common capability patterns.
+
+## Requirements
+
+- [x] Implement `restricted/0` - minimal permissions
+- [x] Implement `developer/0` - full local access
+- [x] Implement `production/0` - locked down
+- [x] Implement `merge/2` - combine capabilities
+- [x] Implement `deny_tool/2` - remove tool access
+- [x] Implement `allow_path/2` - add path permission
+- [x] Add validation for capability combinations
+
+## Acceptance Criteria
+
+- [x] Helper functions return valid Capabilities structs
+- [x] restricted/0 has minimal safe permissions
+- [x] developer/0 allows common development tasks
+- [x] production/0 has strict limits
+- [x] merge/2 combines capabilities safely
+- [x] All helpers documented with examples
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M3 (Capabilities)
+
+**Key Points**:
+- Provide sensible presets for common use cases
+- merge/2 should be conservative (intersection, not union)
+- Validation catches impossible combinations
+
+## Notes
+
+Helper implementations:
+```elixir
+def restricted() do
+  %__MODULE__{
+    allowed_tools: {:allow, ["read_file", "list_directory"]},
+    file_access: :read_only,
+    network_access: :none,
+    can_spawn_subagents: false,
+    resource_limits: %{
+      max_tokens: 10_000,
+      max_cost_millicents: 100,
+      max_tool_calls: 10,
+      max_execution_time_ms: 30_000
+    }
+  }
+end
+
+def developer() do
+  %__MODULE__{
+    allowed_tools: :all,
+    file_access: {:paths, [File.cwd!()]},
+    network_access: :full,
+    can_spawn_subagents: true,
+    resource_limits: %{
+      max_tokens: 10_000_000,
+      max_cost_millicents: 10_000_00,
+      max_tool_calls: 1000,
+      max_execution_time_ms: 3_600_000
+    }
+  }
+end
+
+def merge(cap1, cap2) do
+  # Take more restrictive of each field
+  %__MODULE__{
+    allowed_tools: merge_tool_access(cap1.allowed_tools, cap2.allowed_tools),
+    file_access: merge_file_access(cap1.file_access, cap2.file_access),
+    network_access: merge_network_access(cap1.network_access, cap2.network_access),
+    can_spawn_subagents: cap1.can_spawn_subagents and cap2.can_spawn_subagents,
+    resource_limits: merge_limits(cap1.resource_limits, cap2.resource_limits)
+  }
+end
+```

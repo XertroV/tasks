@@ -1,0 +1,36 @@
+---
+id: P7.M7.E1.T025
+title: Add missing RateLimiter typedoc for bucket state
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- documentation
+- web
+- plugs
+- exdoc
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:58:45.756099+00:00'
+started_at: '2026-02-08T06:58:45.756099+00:00'
+completed_at: '2026-02-08T07:01:43.766075+00:00'
+duration_minutes: 2.9668327999999997
+---
+
+# Add missing RateLimiter typedoc for bucket state
+
+Document the public bucket state type exported by the rate limiter plug.
+
+
+## Requirements
+
+- [x] Add `@typedoc` for `bucket_state/0` in:
+  - [x] `lib/pag_server_web/plugs/rate_limiter.ex`
+- [x] Ensure wording explains fields and behavior semantics, not just names
+- [x] Run `mix docs` and confirm no new warnings from `rate_limiter.ex`
+
+## Acceptance Criteria
+
+- [x] `bucket_state/0` has a clear, domain-specific `@typedoc`
+- [x] No ExDoc warnings are introduced by changes in `rate_limiter.ex`

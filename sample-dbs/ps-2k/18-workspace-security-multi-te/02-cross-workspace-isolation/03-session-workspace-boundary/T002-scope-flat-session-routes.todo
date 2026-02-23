@@ -1,0 +1,42 @@
+---
+id: P18.M2.E3.T002
+title: Scope flat /api/v1/sessions by user workspace memberships
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E3.T001
+tags:
+- security
+- workspace
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.926229+00:00'
+started_at: '2026-02-17T18:30:42.926229+00:00'
+completed_at: '2026-02-17T21:45:26.336177+00:00'
+duration_minutes: 194.72349895
+---
+
+# Scope flat /api/v1/sessions by user workspace memberships
+
+## Description
+
+Update the flat `/api/v1/sessions` endpoint to automatically filter sessions to workspaces the current user is a member of.
+
+## Requirements
+
+- [ ] Add `"workspace:" <> ws_id` clause to `scope_from_capabilities/1` in SessionController
+- [ ] When scope is `:all`, filter by user's workspace memberships via `WorkspaceMembers.list_workspace_ids/1`
+- [ ] If user has no workspace memberships, return empty list
+- [ ] Preserve backward compatibility for specific resource_scope values
+
+## Acceptance Criteria
+
+- [ ] `GET /api/v1/sessions` returns only sessions from user's workspaces
+- [ ] Sessions from non-member workspaces are excluded
+- [ ] Specific resource_scope (session:, agent:, project:) still works
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/session_controller.ex` (scope_from_capabilities, ~line 1013-1036)

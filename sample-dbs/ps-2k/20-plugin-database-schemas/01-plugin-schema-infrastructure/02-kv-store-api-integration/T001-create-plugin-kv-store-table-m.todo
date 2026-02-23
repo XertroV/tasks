@@ -1,0 +1,20 @@
+---
+id: P20.M1.E2.T001
+title: Create plugin_kv_store table migration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:06:33.801505+00:00'
+started_at: '2026-02-18T10:06:33.801505+00:00'
+completed_at: '2026-02-18T10:10:39.073645+00:00'
+duration_minutes: 4.0878688
+---
+## Acceptance Criteria
+- Standard Ecto migration creates plugin_kv_store table
+- Columns: id (binary_id), plugin_name (string), scope (string: global/workspace/session), scope_id (string, nullable), key (string), value (jsonb), inserted_at, updated_at
+- Unique index on (plugin_name, scope, scope_id, key)
+- Index on (plugin_name) for bulk operations

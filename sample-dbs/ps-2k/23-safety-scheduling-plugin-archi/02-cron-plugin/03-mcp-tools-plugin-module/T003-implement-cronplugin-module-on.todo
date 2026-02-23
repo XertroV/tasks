@@ -1,0 +1,28 @@
+---
+id: P23.M2.E3.T003
+title: Implement CronPlugin module (on-by-default plugin)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M2.E2.T001
+- P23.M2.E3.T001
+- P23.M2.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.795815+00:00'
+started_at: '2026-02-18T17:03:35.795815+00:00'
+completed_at: '2026-02-18T17:03:46.242091+00:00'
+duration_minutes: 0.17410445000000002
+---
+Top-level plugin module that wires everything together.
+
+## Acceptance Criteria
+- [ ] `PagServer.Plugins.CronPlugin` implements `@behaviour PagServer.Plugin`
+- [ ] Plugin is on-by-default (registered in plugin registry with `default_enabled: true`)
+- [ ] On `enable/1`: starts CronScheduler supervisor under the workspace DynamicSupervisor
+- [ ] On `disable/1`: stops the CronScheduler; pauses all enabled schedules
+- [ ] Registers MCP tools (list/add/remove/pause/resume) when plugin is active
+- [ ] Plugin config: `max_schedules` (default 50), `enabled` (default true)
+- [ ] Plugin module tests

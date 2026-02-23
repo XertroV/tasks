@@ -1,0 +1,53 @@
+# Epic: Phoenix Setup
+# Phase 1, Milestone 1, Epic 1 (P1.M1.E1)
+
+id: P1.M1.E1
+name: Phoenix Setup
+status: pending
+estimate_hours: 4
+complexity: low
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-mix-new.todo
+    title: Initialize Phoenix project
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-deps.todo
+    title: Add core dependencies
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-config.todo
+    title: Configure environment
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    # Implicit dependency on T002 by ordering
+    
+  - id: T004
+    file: T004-verify.todo
+    title: Verify project setup
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    # Implicit dependency on T003 by ordering
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

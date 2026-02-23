@@ -1,0 +1,48 @@
+id: P8.M4.E1
+name: Bot Setup
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+description: |
+  Set up Nostrum Discord library with gateway connection and message intents.
+  Configure bot token, establish WebSocket connection, and handle bot lifecycle.
+
+tasks:
+- id: T001
+  title: Add Nostrum dependency
+  path: task-001-nostrum-dep.todo
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  tags:
+  - dependencies
+  - setup
+- id: T002
+  title: Configure bot and gateway
+  path: task-002-bot-config.todo
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  tags:
+  - configuration
+  - gateway
+- id: T003
+  title: Set up message intents
+  path: task-003-intents.todo
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  tags:
+  - intents
+  - permissions
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

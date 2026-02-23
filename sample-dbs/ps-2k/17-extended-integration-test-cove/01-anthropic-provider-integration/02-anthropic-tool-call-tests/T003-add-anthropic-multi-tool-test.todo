@@ -1,0 +1,25 @@
+---
+id: P17.M1.E2.T003
+title: Add Anthropic multi-tool test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:29:32.239088+00:00'
+started_at: '2026-02-14T06:29:32.239088+00:00'
+completed_at: '2026-02-14T06:41:57.249919+00:00'
+duration_minutes: 12.416846966666666
+---
+
+# Add Anthropic multi-tool test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

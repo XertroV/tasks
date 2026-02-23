@@ -1,0 +1,54 @@
+id: P49.M1.E1
+name: Fix plugin runtime correctness and startup consistency
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-make-install-uninstall-flows-t.todo
+  title: Make install/uninstall flows transactional with rollback
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-wire-plugin-restore-load-into.todo
+  title: Wire plugin restore/load into app startup path with integration tests
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-unify-plugin-discovery-precede.todo
+  title: Unify plugin discovery precedence and document source of truth
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-align-manifest-hook-validation.todo
+  title: Align manifest hook validation with lifecycle dispatcher
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: critical
+  depends_on: []
+- id: T005
+  file: T005-fix-plugin-default-config-reso.todo
+  title: Fix plugin default config resolution to use manifest config
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

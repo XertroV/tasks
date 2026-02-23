@@ -1,0 +1,15 @@
+id: P7.M6.E3
+name: Memory Monitoring
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+tasks:
+- T001-monitor.todo
+- T002-alerts.todo
+stats:
+  total_tasks: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

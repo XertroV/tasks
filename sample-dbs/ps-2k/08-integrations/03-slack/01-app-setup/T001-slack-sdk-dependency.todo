@@ -1,0 +1,86 @@
+---
+id: P8.M3.E1.T001
+title: Add Slack SDK dependency
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- slack
+- integration
+- dependencies
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:20:55.540116+00:00'
+started_at: '2026-02-08T10:20:55.540116+00:00'
+completed_at: '2026-02-08T21:31:00+00:00'
+---
+
+# Add Slack SDK dependency
+
+Add the Slack SDK library to the project and configure basic client setup.
+
+## Requirements
+
+- [x] Add `slack` hex package to `mix.exs` (~3 LoC)
+- [x] Add Slack API token to config (~5 LoC)
+- [x] Create `lib/pag_server/integrations/slack/client.ex` (~30 LoC)
+- [x] Configure client with workspace token and signing secret
+- [x] Add basic health check function
+
+## Acceptance Criteria
+
+- [x] Slack SDK compiles without warnings
+- [x] Client module can initialize with configuration
+- [x] Health check can verify API token validity
+- [x] Configuration supports environment variables
+- [x] Documentation includes setup instructions
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 238-276 (Slack integration architecture)
+
+**Key Points**:
+- Slack SDK provides Web API and Events API clients
+- Workspace tokens stored in application config, not database
+- Client module wraps SDK for testability and abstraction
+- Signing secret required for webhook verification
+
+## Notes
+
+Configuration structure:
+```elixir
+config :pag_server, :slack,
+  api_token: System.get_env("SLACK_API_TOKEN"),
+  signing_secret: System.get_env("SLACK_SIGNING_SECRET"),
+  app_id: System.get_env("SLACK_APP_ID")
+```
+
+Client module provides:
+- `post_message/3` - Send messages to channels
+- `post_ephemeral/4` - Send private messages
+- `verify_signature/2` - Validate webhook requests
+- `health_check/0` - Verify token validity
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-08 10:20 UTC
+**Primary task**: P8.M5.E2.T001 - Implement webhook verification endpoint
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M3.E1 vs P8.M5.E2)
+- No dependency chain: ✓ (verified at claim time)

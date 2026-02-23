@@ -1,0 +1,49 @@
+---
+id: P15.M8.E2.T001
+title: Fix race condition in revision number assignment with DB-level atomicity
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- data-integrity
+- database
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:52:12.648793+00:00'
+started_at: '2026-02-17T14:52:12.648793+00:00'
+completed_at: '2026-02-17T15:23:42.543286+00:00'
+duration_minutes: 31.498241333333333
+---
+next_revision_number/3 has TOCTOU race: two concurrent writers get same revision number. Worse: write_tracked_file writes to disk FIRST then queries revision number. If DB insert fails due to concurrent write, disk is modified with no DB record.
+
+Options: (1) Repo.transaction with SELECT FOR UPDATE, (2) Retry loop on unique constraint violation, (3) Postgres INSERT ... ON CONFLICT.
+
+Also fix the write order: DB insert first (or transaction-wrap both disk write and DB insert).
+
+Source: E2 Audit C1
+
+## Acceptance Criteria
+- [ ] Concurrent writes to same (workspace_id, file_path) don't collide
+- [ ] Disk write and DB insert are atomic (both succeed or both fail)
+- [ ] Test with concurrent writes demonstrating no collision
+- [ ] Existing tests pass
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M8.E2)
+**Agent**: cli-user
+**Date**: 2026-02-17 14:52 UTC
+**Sibling tasks**: P15.M8.E2.T002, P15.M8.E2.T003, P15.M8.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M8.E2.T001 → P15.M8.E2.T002 → P15.M8.E2.T003 → P15.M8.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M8.E2.T001: .tasks/15-new-capabilities/08-m7-audit-remediation/02-data-integrity-infrastructure/T001-fix-race-condition-in-revision.todo
+- P15.M8.E2.T002: .tasks/15-new-capabilities/08-m7-audit-remediation/02-data-integrity-infrastructure/T002-extract-workspace-dir-root-to.todo
+- P15.M8.E2.T003: .tasks/15-new-capabilities/08-m7-audit-remediation/02-data-integrity-infrastructure/T003-wire-filetracker-into-supervis.todo
+- P15.M8.E2.T004: .tasks/15-new-capabilities/08-m7-audit-remediation/02-data-integrity-infrastructure/T004-add-content-size-limits-file-p.todo

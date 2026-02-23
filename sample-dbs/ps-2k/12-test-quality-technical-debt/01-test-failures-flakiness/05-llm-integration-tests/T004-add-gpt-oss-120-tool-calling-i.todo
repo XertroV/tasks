@@ -1,0 +1,26 @@
+---
+id: P12.M1.E5.T004
+title: Add gpt-oss-120 tool calling integration tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P12.M1.E5.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T18:49:24.359342+00:00'
+started_at: '2026-02-13T18:49:24.359342+00:00'
+completed_at: '2026-02-13T18:50:22.602426+00:00'
+duration_minutes: 0.9707177833333334
+---
+
+# Add gpt-oss-120 tool calling integration tests
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

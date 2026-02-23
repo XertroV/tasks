@@ -1,0 +1,22 @@
+---
+id: P20.M1.E3.T001
+title: Migrate CryptoId to new plugin schema convention
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P20.M1.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:30:55.407178+00:00'
+started_at: '2026-02-18T10:30:55.407178+00:00'
+completed_at: '2026-02-18T10:37:59.302614+00:00'
+duration_minutes: 7.06492365
+---
+## Acceptance Criteria
+- New Ecto migration renames crypto_identity_keys -> plugin_crypto_id_keys
+- CryptoId module updated to export __plugin_migrations__/0
+- Schema module updated to reference new table name
+- All existing CryptoId tests pass with new table name
+- CryptoId removed from standard migrations, managed by plugin migrator

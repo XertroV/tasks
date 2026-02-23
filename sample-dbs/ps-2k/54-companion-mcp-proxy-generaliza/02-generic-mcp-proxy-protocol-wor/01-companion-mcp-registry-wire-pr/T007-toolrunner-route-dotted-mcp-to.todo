@@ -1,0 +1,27 @@
+---
+id: P54.M2.E1.T007
+title: 'ToolRunner: route dotted MCP tool names to CompanionMCPProxy'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P54.M2.E1.T005
+- P54.M2.E1.T006
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:54:56.147084+00:00'
+started_at: '2026-02-21T10:54:56.147084+00:00'
+completed_at: '2026-02-21T10:55:54.436237+00:00'
+duration_minutes: 0.9714856833333333
+---
+## Context
+ToolRunner currently routes companion tools via use_companion?/2 which checks CompanionRegistry. Dotted tool names (e.g. browsermcp.navigate registered via mcp_register) must be routed to CompanionMCPProxy instead.
+
+## Acceptance Criteria
+- [ ] `use_companion_mcp?/2` private function: splits tool name on "."; looks up CompanionMCPRegistry.lookup(workspace_id, server_name); returns true if found
+- [ ] `execute_tool_call_with_retries/2` checks use_companion_mcp? FIRST (before use_companion?); routes to CompanionMCPProxy.execute/3 when true
+- [ ] Ordinary flat-named tools (execute_shell, read_file, etc.) unaffected — use_companion_mcp? returns false for names without dots
+- [ ] browsermcp.navigate in context {workspace_id: ws-A} routes to CompanionMCPProxy; same tool in context {workspace_id: ws-B with no MCP companion} falls through to ToolExecutor
+- [ ] Tests in test/pag_server/agents/tool_runner_companion_routing_test.exs extended to cover MCP routing
+- [ ] `mix lint` passes

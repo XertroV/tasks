@@ -1,0 +1,30 @@
+id: P24.M3.E2
+name: Scheduler
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-heartbeatscheduler-genserver-w.todo
+  title: HeartbeatScheduler GenServer with configurable interval
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-missed-heartbeat-alert-mechani.todo
+  title: Missed heartbeat alert mechanism via PubSub
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,86 @@
+---
+id: P7.M5.E2.T001
+title: Agent supervisor design
+status: done
+estimate_hours: 2
+complexity: high
+priority: high
+depends_on:
+- P7.M5.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-07T03:56:05.602472+00:00'
+started_at: '2026-02-07T03:56:05.602472+00:00'
+completed_at: '2026-02-07T04:07:34.158888+00:00'
+tags:
+- error-handling
+- supervision
+- otp
+duration_minutes: 11.4759401
+---
+
+# Agent supervisor design
+
+Design robust supervision tree for agent processes.
+
+## Requirements
+
+- [ ] Document supervision strategy (:one_for_one)
+- [ ] Define restart strategy (transient vs permanent)
+- [ ] Handle agent crashes gracefully
+- [ ] Preserve agent state across restarts
+- [ ] Limit restart frequency
+- [ ] Notify users of agent failures
+- [ ] Add supervisor telemetry
+
+## Acceptance Criteria
+
+- [ ] Supervision tree documented
+- [ ] Restart limits configured
+- [ ] Crashed agents notify users
+- [ ] State recovery tested
+- [ ] Supervisor handles shutdown cleanly
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M5.E2 (Supervision Strategy)
+
+## Notes
+
+```elixir
+defmodule PagServer.Agents.Supervisor do
+  use DynamicSupervisor
+  
+  def init(:ok) do
+    DynamicSupervisor.init(
+      strategy: :one_for_one,
+      max_restarts: 3,
+      max_seconds: 60
+    )
+  end
+  
+  def start_agent(opts) do
+    spec = {PagServer.Agents.Agent, opts}
+    DynamicSupervisor.start_child(__MODULE__, spec)
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M5.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 03:56 UTC
+**Sibling tasks**: P7.M5.E2.T002, P7.M5.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M5.E2.T001 → P7.M5.E2.T002 → P7.M5.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M5.E2.T001: .tasks/07-production/05-error-handling/02-supervision-strategy/T001-supervisor-design.todo
+- P7.M5.E2.T002: .tasks/07-production/05-error-handling/02-supervision-strategy/T002-state-recovery.todo
+- P7.M5.E2.T003: .tasks/07-production/05-error-handling/02-supervision-strategy/T003-tests.todo

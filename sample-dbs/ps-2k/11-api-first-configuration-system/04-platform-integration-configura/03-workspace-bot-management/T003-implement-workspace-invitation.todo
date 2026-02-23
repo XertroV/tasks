@@ -1,0 +1,133 @@
+---
+id: P11.M4.E3.T003
+title: Implement workspace invitation and OAuth
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P11.M4.E3.T001
+- P11.M4.E1.T002
+tags:
+- api
+- invitation
+- oauth
+claimed_by: cli-user
+claimed_at: '2026-02-13T01:06:33.439957+00:00'
+started_at: '2026-02-13T01:06:33.439957+00:00'
+completed_at: '2026-02-13T01:40:01.490494+00:00'
+duration_minutes: 33.4675087
+---
+
+# Implement workspace invitation and OAuth
+
+Add workspace invitation system and OAuth bot installation flows.
+
+## Requirements
+
+- [ ] Create workspace invitation endpoints
+- [ ] Implement invitation tokens and validation
+- [ ] Add OAuth bot installation flow for workspace setup
+- [ ] Create invitation email sending (optional)
+- [ ] Write tests for invitation and OAuth flows
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] `POST /api/workspaces/:id/invitations` - Create invitation:
+  - [ ] Accepts: `email`, `role` (optional, default: "member")
+  - [ ] Only owner/admins can invite
+  - [ ] Generates unique invitation token
+  - [ ] Stores invitation with expiration (7 days)
+  - [ ] Returns invitation token and link
+  - [ ] Returns 403 if not authorized
+  - [ ] Returns 404 if workspace not found
+  - [ ] Optionally sends email to invitee
+- [ ] `GET /api/workspaces/:id/invitations` - List invitations:
+  - [ ] Lists pending invitations for workspace
+  - [ ] Shows created_at and expires_at
+  - [ ] Only accessible to workspace admins/owner
+  - [ ] Filters out expired invitations
+  - [ ] Returns 403 if not authorized
+- [ ] `DELETE /api/workspaces/:id/invitations/:token` - Revoke invitation:
+  - [ ] Removes invitation before acceptance
+  - [ ] Only owner/admins can revoke
+  - [ ] Returns 204 on success
+  - [ ] Returns 404 if invitation not found
+  - [ ] Returns 403 if not authorized
+- [ ] `POST /api/workspaces/accept-invitation` - Accept invitation:
+  - [ ] Accepts invitation token in body
+  - [ ] Validates token format and existence
+  - [ ] Validates token not expired
+  - [ ] Creates workspace member with specified role
+  - [ ] Returns workspace details on success
+  - [ ] Returns 400 if token invalid/expired
+  - [ ] Returns 409 if already a member
+  - [ ] Auto-generates account if email not in system
+- [ ] Invitation token generation:
+  - [ ] Use `:crypto.strong_rand_bytes/1` for random bytes
+  - [ ] Format: base64 url-safe encoding
+  - [ ] Store hash of token (not plaintext) in database
+  - [ ] Include expires_at timestamp (7 days default)
+  - [ ] Include email for non-registered users
+- [ ] OAuth bot installation flow:
+  - [ ] `GET /api/workspaces/:id/install-bot/:platform` - Get install URL:
+    - [ ] Returns OAuth authorization URL for platform
+    - [ ] Includes workspace_id in state parameter
+    - [ ] Returns 404 if workspace not found
+    - [ ] Returns 403 if not workspace member
+  - [ ] `POST /api/workspaces/:id/install-bot/:platform/callback` - Handle OAuth:
+    - [ ] Accepts code and state parameters
+    - [ ] Validates workspace_id from state
+    - [ ] Exchanges code for bot token
+    - [ ] Creates Bot record with platform config
+    - [ ] Associates with workspace
+    - [ ] Returns created bot details
+    - [ ] Returns 400 if code/state invalid
+    - [ ] Returns 403 if not workspace member
+- [ ] Invitation storage:
+  - [ ] Create `WorkspaceInvitation` schema or table
+  - [ ] Fields: `id`, `workspace_id`, `email`, `token_hash`, `role`, `created_by`, `expires_at`, `accepted_at`
+  - [ ] Unique constraint on `[workspace_id, email]` (one pending invite per email)
+  - [ ] Index on `token_hash` for lookup
+  - [ ] Index on `expires_at` for cleanup
+- [ ] Error handling:
+  - [ ] Clear error messages for invalid tokens
+  - [ ] Handle expired invitations gracefully
+  - [ ] Handle duplicate invitations (allow re-invite after revocation)
+  - [ ] Never expose why token is invalid (security)
+- [ ] Optional features (for MVP):
+  - [ ] Email sending via Mailer
+  - [ ] Invitation resend endpoint
+  - [ ] Bulk invitations
+  - [ ] Invitation messages/notes
+- [ ] Tests:
+  - [ ] Invitation creation and validation
+  - [ ] Token generation and verification
+  - [ ] Expiration handling
+  - [ ] OAuth bot installation flow
+  - [ ] Role assignment on acceptance
+  - [ ] Duplicate invitation prevention
+  - [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 23:02 UTC
+**Primary task**: P11.M4.E2.T003 - Implement config validation per platform
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M4.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

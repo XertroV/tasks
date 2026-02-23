@@ -1,0 +1,78 @@
+---
+id: P2.M8.E1.T001
+title: Track token count per message on persist
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- tokens
+- messages
+- persistence
+claimed_by: claude-1
+claimed_at: '2026-02-05T18:47:22.059184'
+started_at: '2026-02-05T18:47:22.059184'
+completed_at: '2026-02-05T19:00:31.494776'
+duration_minutes: 13.157259716666665
+---
+
+# Track token count per message on persist
+
+
+
+## Requirements
+
+- [x] Persist per-message token_count when model metadata is available
+- [x] Use model_spec/model_provider+model_used to count tokens
+- [x] Include token_count in context maps returned from persistence
+
+## Acceptance Criteria
+
+- [x] Messages persisted via Messages.persist_from_context store token_count
+- [x] Context maps include token_count for loaded messages
+- [x] Tests cover token_count persistence and context mapping
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 05:44 UTC
+**Primary task**: P2.M7.E2.T001 - Create Pricing module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E1 vs P2.M7.E2)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 05:47 UTC
+**Primary task**: P2.M7.E2.T001 - Create Pricing module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E1 vs P2.M7.E2)
+- No dependency chain: ✓ (verified at claim time)

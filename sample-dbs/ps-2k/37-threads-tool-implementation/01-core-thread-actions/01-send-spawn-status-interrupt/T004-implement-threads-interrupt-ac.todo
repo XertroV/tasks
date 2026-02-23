@@ -1,0 +1,33 @@
+---
+id: P37.M1.E1.T004
+title: Implement threads interrupt action
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.872126+00:00'
+started_at: '2026-02-19T04:21:05.872126+00:00'
+completed_at: '2026-02-19T04:43:36.624824+00:00'
+duration_minutes: 22.512544633333334
+---
+Implement action_interrupt/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "interrupt", hint: "Interrupt implementation pending"}
+
+Required args: thread_id
+Optional args: reason (string, default "interrupted by agent")
+
+Behaviour:
+- Look up the session and find the running agent via AgentRegistry
+- Send an interrupt/cancel signal to the agent process (see how stream cancellation works in AgentServer — likely AgentServer.cancel/1 or similar)
+- Update session status to "paused" if interrupted mid-run, or leave as-is if already idle
+- Return: %{action: "interrupt", thread_id: id, status: "interrupted" | "already_idle" | "not_found"}
+
+Check: lib/pag_server/agents/agent_server.ex for cancel/interrupt API
+Check: how REST cancel endpoint works (GET /agents/:id/cancel or similar) — reuse that path
+
+Tests: interrupt running agent, interrupt idle agent (no-op), interrupt completed session, unknown thread_id
+File: lib/pag_server/plugins/agent_tools/threads.ex

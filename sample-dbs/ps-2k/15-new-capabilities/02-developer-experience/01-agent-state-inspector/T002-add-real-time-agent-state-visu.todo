@@ -1,0 +1,37 @@
+---
+id: P15.M2.E1.T002
+title: Add real-time agent state visualization
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:49:50.202740+00:00'
+started_at: '2026-02-13T23:49:50.202740+00:00'
+completed_at: '2026-02-14T00:20:57.394307+00:00'
+duration_minutes: 31.1198591
+---
+
+# Add real-time agent state visualization
+
+## Description
+Implement real-time updates for agent state display using Phoenix PubSub. Show agent status, current activity, message counts, and health indicators with live updates.
+
+## Acceptance Criteria
+- [ ] Subscribe dashboard to agent state PubSub topics
+- [ ] Implement state diffing for efficient updates
+- [ ] Add visual indicators for agent states (idle, active, error, etc.)
+- [ ] Show current session ID and message count
+- [ ] Display memory usage and process info
+- [ ] Add timestamp for last activity
+- [ ] Implement auto-refresh with configurable interval
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/cluster/pub_sub.ex`, `lib/pag_server/agents/agent_server.ex`, `lib/pag_server/agents/registry.ex`
+- Part of epic: Agent State Inspector
+- Use existing PubSub infrastructure

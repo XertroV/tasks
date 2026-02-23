@@ -1,0 +1,46 @@
+---
+id: P25.M2.E4.T003
+title: Standardize Cross-workspace messaging plugin MCP interface
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- cross-workspace
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:18:46.884101+00:00'
+started_at: '2026-02-19T15:18:46.884101+00:00'
+completed_at: '2026-02-19T15:18:48.845666+00:00'
+duration_minutes: 0.032692566666666666
+---
+
+# Standardize Cross-workspace messaging plugin MCP interface
+
+## Scope
+
+- Audit `lib/pag_server/plugins/cross_workspace/cross_workspace_plugin.ex`.
+- Plan conversion from:
+  - `send_message`
+  - `list_messages`
+  - `mark_messages_read`
+  - `subscribe_topic`
+- into one cross-workspace messaging domain tool.
+
+## Requirements
+
+- Add a tool schema with single required dispatch argument.
+- Document per-action argument requirements (`send`, `list`, `mark_read`, `subscribe`) in schema.
+- Preserve deterministic error shape and context usage for workspace/session handling.
+- Keep compatibility behavior described for legacy direct tools.
+
+## Acceptance Criteria
+
+- [ ] One domain tool with operation enum is documented.
+- [ ] Each operation has documented required/optional fields.
+- [ ] Unknown operation returns a clear, structured error with supported operations.
+- [ ] Legacy tool-name migration/alias behavior is explicitly documented.
+- [ ] Success payloads include operation/action for observability.

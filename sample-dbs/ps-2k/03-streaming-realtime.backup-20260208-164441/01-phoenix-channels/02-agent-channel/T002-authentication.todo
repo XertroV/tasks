@@ -1,0 +1,300 @@
+---
+title: Add Agent ID Authentication
+epic: P3.M1.E2-agent-channel
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimated_hours: 1
+depends_on:
+- P3.M1.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:29:26.732164'
+started_at: '2026-02-06T15:29:26.732164'
+completed_at: '2026-02-06T15:37:31.512539'
+duration_minutes: 8.079672733333334
+id: P3.M1.E2.T002
+---
+
+# Task: Add Agent ID Authentication
+
+## Context
+Currently, any client can join any agent channel. We need authentication to verify that clients have permission to access specific agents. For the MVP, we'll use simple token-based authentication, with plans for API keys or OAuth in the future.
+
+## Goal
+Implement authentication in AgentChannel to verify client identity and authorization before allowing channel joins.
+
+## Requirements
+- Authenticate socket connections using tokens
+- Verify client has permission to access agent
+- Support both development (permissive) and production (strict) modes
+- Assign user_id to socket for audit trail
+- Reject unauthorized join attempts
+
+## Implementation
+
+### File: `lib/pag_server_web/channels/user_socket.ex`
+
+Update the socket module to handle authentication:
+
+```elixir
+defmodule PagServerWeb.UserSocket do
+  use Phoenix.Socket
+  
+  require Logger
+  
+  ## Channels
+  channel "agent:*", PagServerWeb.AgentChannel
+  
+  @impl true
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case verify_token(token) do
+      {:ok, user_id} ->
+        socket = assign(socket, :user_id, user_id)
+        {:ok, socket}
+      
+      {:error, reason} ->
+        Logger.warning("Socket connection rejected: #{inspect(reason)}")
+        :error
+    end
+  end
+  
+  def connect(_params, _socket, _connect_info) do
+    Logger.warning("Socket connection rejected: no token provided")
+    :error
+  end
+  
+  @impl true
+  def id(socket), do: "user_socket:#{socket.assigns.user_id}"
+  
+  # Token verification
+  defp verify_token(token) do
+    case Application.get_env(:pag_server, :env) do
+      :dev ->
+        # Development: accept any token, extract user_id
+        verify_dev_token(token)
+      
+      :test ->
+        # Test: accept test tokens
+        verify_test_token(token)
+      
+      _ ->
+        # Production: verify JWT or API key
+        verify_production_token(token)
+    end
+  end
+  
+  defp verify_dev_token("dev:" <> user_id) do
+    {:ok, user_id}
+  end
+  
+  defp verify_dev_token(_token) do
+    # In dev, default to anonymous user
+    {:ok, "anonymous"}
+  end
+  
+  defp verify_test_token("test:" <> user_id) do
+    {:ok, user_id}
+  end
+  
+  defp verify_test_token(_token) do
+    {:error, :invalid_test_token}
+  end
+  
+  defp verify_production_token(token) do
+    # TODO: Implement JWT verification or API key lookup
+    # For now, placeholder implementation
+    with {:ok, claims} <- verify_jwt(token),
+         user_id <- Map.get(claims, "sub") do
+      {:ok, user_id}
+    else
+      _ -> {:error, :invalid_token}
+    end
+  end
+  
+  defp verify_jwt(_token) do
+    # Placeholder for JWT verification
+    # In future, use Guardian or Joken library
+    {:error, :not_implemented}
+  end
+end
+```
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+Update AgentChannel to check authorization:
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  alias PagServer.Agents
+  alias PagServer.Auth
+  
+  @impl true
+  def join("agent:" <> agent_id, params, socket) do
+    user_id = socket.assigns.user_id
+    
+    with {:ok, agent} <- Agents.get_agent(agent_id),
+         :ok <- authorize_agent_access(user_id, agent_id) do
+      
+      socket =
+        socket
+        |> assign(:agent_id, agent_id)
+        |> assign(:agent, agent)
+        |> assign(:session_id, params["session_id"])
+      
+      Logger.info("User #{user_id} joined agent channel: #{agent_id}")
+      
+      send(self(), :after_join)
+      
+      {:ok, socket}
+    else
+      {:error, :not_found} ->
+        {:error, %{reason: "agent not found"}}
+      
+      {:error, :unauthorized} ->
+        Logger.warning("Unauthorized access attempt: user=#{user_id}, agent=#{agent_id}")
+        {:error, %{reason: "unauthorized"}}
+    end
+  end
+  
+  # Authorization logic
+  defp authorize_agent_access(user_id, agent_id) do
+    case Application.get_env(:pag_server, :env) do
+      env when env in [:dev, :test] ->
+        # Development/test: allow all
+        :ok
+      
+      _ ->
+        # Production: check ownership or permissions
+        Auth.can_access_agent?(user_id, agent_id)
+    end
+  end
+end
+```
+
+### File: `lib/pag_server/auth.ex`
+
+Create basic authorization module:
+
+```elixir
+defmodule PagServer.Auth do
+  @moduledoc """
+  Authorization logic for resource access.
+  
+  Future expansion:
+  - API key management
+  - Role-based access control (RBAC)
+  - Agent sharing/collaboration
+  """
+  
+  alias PagServer.Agents
+  
+  @doc """
+  Check if user can access agent.
+  
+  Currently checks if user owns the agent.
+  Future: support shared agents, team access.
+  """
+  def can_access_agent?(user_id, agent_id) do
+    case Agents.get_agent(agent_id) do
+      {:ok, agent} ->
+        if agent.user_id == user_id do
+          :ok
+        else
+          {:error, :unauthorized}
+        end
+      
+      {:error, _} ->
+        {:error, :not_found}
+    end
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] Socket connection requires token
+- [ ] Valid tokens are accepted (dev/test/prod modes)
+- [ ] Invalid tokens are rejected
+- [ ] AgentChannel verifies user can access agent
+- [ ] Unauthorized access is logged
+- [ ] user_id is available in socket assigns
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/user_socket_test.exs
+defmodule PagServerWeb.UserSocketTest do
+  use PagServerWeb.ChannelCase
+  
+  alias PagServerWeb.UserSocket
+  
+  test "connect with valid test token" do
+    assert {:ok, socket} = connect(UserSocket, %{"token" => "test:user123"})
+    assert socket.assigns.user_id == "user123"
+  end
+  
+  test "connect rejects invalid token" do
+    assert :error = connect(UserSocket, %{"token" => "invalid"})
+  end
+  
+  test "connect rejects missing token" do
+    assert :error = connect(UserSocket, %{})
+  end
+end
+
+# test/pag_server_web/channels/agent_channel_test.exs
+# Add to existing test file:
+
+test "join rejects unauthorized user", %{agent: agent} do
+  # Create agent owned by different user
+  {:ok, other_agent} = Agents.create_agent(%{
+    model: "claude-sonnet-4",
+    user_id: "other-user"
+  })
+  
+  {:ok, socket} = connect(UserSocket, %{"token" => "test:user123"})
+  
+  {:error, %{reason: reason}} = subscribe_and_join(
+    socket,
+    "agent:#{other_agent.id}",
+    %{}
+  )
+  
+  assert reason == "unauthorized"
+end
+```
+
+## References
+- Phoenix Channels Authentication: https://hexdocs.pm/phoenix/Phoenix.Token.html
+- Guardian (JWT): https://hexdocs.pm/guardian/introduction.html
+- Joken (JWT): https://hexdocs.pm/joken/introduction.html
+
+## Notes
+- Current implementation is permissive in dev/test
+- Production requires proper JWT or API key verification
+- Future: Add API key management UI
+- Future: Support agent sharing between users
+- Consider adding rate limiting per user_id
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 02:29 UTC
+**Sibling tasks**: P3.M1.E2.T003, P3.M1.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M1.E2.T002 → P3.M1.E2.T003 → P3.M1.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M1.E2.T002: .tasks/03-streaming-realtime/01-phoenix-channels/02-agent-channel/T002-authentication.todo
+- P3.M1.E2.T003: .tasks/03-streaming-realtime/01-phoenix-channels/02-agent-channel/T003-presence-tracking.todo
+- P3.M1.E2.T004: .tasks/03-streaming-realtime/01-phoenix-channels/02-agent-channel/T004-channel-tests.todo

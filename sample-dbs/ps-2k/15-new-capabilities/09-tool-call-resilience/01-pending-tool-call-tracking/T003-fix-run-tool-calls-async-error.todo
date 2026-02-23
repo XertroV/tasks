@@ -1,0 +1,38 @@
+---
+id: P15.M9.E1.T003
+title: Fix run_tool_calls_async error path to synthesize error results
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P15.M9.E1.T001
+tags:
+- agent-server
+- tool-runner
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:30:18.244405+00:00'
+started_at: '2026-02-17T13:30:18.244405+00:00'
+completed_at: '2026-02-17T13:45:40.589109+00:00'
+duration_minutes: 15.372411416666667
+---
+When `ToolRunner.run_tool_calls_async/4` returns `{:error, reason}` (e.g.,
+supervisor at capacity), the current code (~lines 1271-1282) silently returns
+state unchanged. This leaves an unmatched assistant message with tool_calls in
+context, poisoning the session.
+
+Fix: On `{:error, reason}`, log the failure and use `build_synthetic_error_results/2`
+to generate error results for all tool calls, then persist them.
+
+Source: .plan/tool-call-resilience.md — Gap 3
+
+Files to modify:
+- lib/pag_server/agents/agent_server.ex (handle_llm_tool_calls, the {:error, _} clause)
+
+## Acceptance Criteria
+- [ ] `{:error, reason}` path logs an error with agent_id and reason
+- [ ] Synthetic error results are generated for all tool calls in the failed batch
+- [ ] Results are persisted so the context remains structurally valid
+- [ ] Agent can continue operating after startup failure
+- [ ] Test: mock ToolRunner.run_tool_calls_async to return {:error, :capacity}, verify error results

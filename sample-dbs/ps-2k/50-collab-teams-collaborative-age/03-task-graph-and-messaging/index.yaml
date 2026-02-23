@@ -1,0 +1,33 @@
+id: P50.M3
+name: Task Graph and Messaging
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P50.M2
+locked: false
+epics:
+- id: E1
+  name: Task DAG -- create, claim, complete, fail, cancel, block
+  path: 01-task-dag-create-claim-complete
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Messaging and Plugin Event Firing
+  path: 02-messaging-and-plugin-event-fir
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 13
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 13

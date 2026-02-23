@@ -1,0 +1,50 @@
+id: P51
+name: Agentic Browser Testing
+status: in_progress
+locked: false
+weeks: 3
+estimate_hours: 18.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Team Infrastructure
+  path: 01-team-infrastructure
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: 'Build reusable team setup: CLAUDE.md guides, browser handoff protocol
+    docs, and launch script. Defines the explorer/lead/fix-agent roles, bug report
+    format, and feature coverage map. Do once, reuse across all testing campaigns.'
+  locked: false
+- id: M2
+  name: Exploratory Testing Campaigns
+  path: 02-exploratory-testing-campaigns
+  status: in_progress
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: "Actual agent-driven testing. Each task is one explorer's feature coverage\
+    \ campaign. Testing progresses from simple (navigation, page load, basic CRUD)\
+    \ to complex (multi-agent workflows, streaming edge cases, plugin interactions).\
+    \ Agents should EXPECT to find missing or broken features \u2014 file them all\
+    \ and fix what can be fixed inline."
+  locked: false
+- id: M3
+  name: Fix Loop
+  path: 03-fix-loop
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: 'After M2 testing campaigns, triage filed bugs and fix P0/P1 issues.
+    Fix agents work in parallel (no browser needed). Each fix: edit code, mix test.changed,
+    commit, update bug with Playwright notes.'
+  locked: false
+stats:
+  total_tasks: 20
+  done: 16
+  in_progress: 0
+  blocked: 3
+  pending: 1

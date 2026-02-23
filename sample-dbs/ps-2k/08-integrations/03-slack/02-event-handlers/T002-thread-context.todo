@@ -1,0 +1,96 @@
+---
+id: P8.M3.E2.T002
+title: Implement thread context tracking
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P8.M3.E2.T001
+tags:
+- slack
+- threads
+- context
+claimed_by: cli-user
+claimed_at: '2026-02-08T12:26:49.501756+00:00'
+started_at: '2026-02-08T12:26:49.501756+00:00'
+completed_at: '2026-02-08T12:53:09.446303+00:00'
+duration_minutes: 26.332408966666666
+---
+
+# Implement thread context tracking
+
+Track Slack thread context to maintain conversation continuity and reply in threads.
+
+## Requirements
+
+- [x] Store `thread_ts` in session metadata
+- [x] Auto-reply in thread when message is threaded
+- [x] Create new thread when starting new conversation
+- [x] Handle thread branching (same user, multiple threads)
+- [x] Update `lib/pag_server/sessions/session.ex` schema (~10 LoC)
+- [x] Add thread management functions to `slack/client.ex` (~40 LoC)
+
+## Acceptance Criteria
+
+- [x] Messages in thread continue that thread
+- [x] Top-level messages create new thread for replies
+- [x] Thread switching works correctly per user
+- [x] Thread metadata persists across server restarts
+- [x] Tests verify thread continuity and branching
+- [x] Documentation explains thread behavior
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 284 (Threads maintain context)
+
+**Key Points**:
+- `thread_ts` is the timestamp of the parent message
+- All replies in thread share same `thread_ts`
+- Sessions map to (channel, user, thread) for isolation
+- Fork operation can create new thread
+
+## Notes
+
+Thread tracking in session metadata:
+```elixir
+%Session{
+  metadata: %{
+    "platform" => "slack",
+    "team_id" => "T123",
+    "channel_id" => "C789",
+    "user_id" => "U456",
+    "thread_ts" => "1234567890.123456"  # nil for top-level
+  }
+}
+```
+
+Reply logic:
+```elixir
+def reply_to_slack(session, message) do
+  opts = []
+  
+  # Reply in thread if message was in thread
+  opts = case session.metadata["thread_ts"] do
+    nil -> opts
+    thread_ts -> Keyword.put(opts, :thread_ts, thread_ts)
+  end
+  
+  Slack.Web.Chat.post_message(
+    session.metadata["channel_id"],
+    message,
+    opts
+  )
+end
+```
+
+Thread branching for forks:
+```elixir
+def fork_session(session) do
+  # Create new session without thread_ts
+  new_metadata = Map.delete(session.metadata, "thread_ts")
+  SessionManager.fork(session, metadata: new_metadata)
+  # Reply will create new thread
+end
+```

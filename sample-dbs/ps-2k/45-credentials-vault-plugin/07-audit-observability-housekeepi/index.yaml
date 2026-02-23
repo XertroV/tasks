@@ -1,0 +1,23 @@
+id: P45.M7
+name: Audit, Observability & Housekeeping
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Telemetry, Pruning & Tests
+  path: 01-telemetry-pruning-tests
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,44 @@
+---
+id: P15.M2.E4.T011
+title: Document local usage workflows for quick validation sessions
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M2.E4.T010
+tags:
+- docs
+- devex
+- workflow
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:36:20.460950+00:00'
+started_at: '2026-02-14T14:36:20.460950+00:00'
+completed_at: '2026-02-14T14:42:47.971067+00:00'
+duration_minutes: 6.458501833333333
+---
+
+# Document local usage workflows for quick validation sessions
+
+
+
+## Requirements
+
+- Document setup and day-to-day usage for the validation console in local development.
+- Include focused workflows: quick smoke validation, tool invocation testing, and session fork debugging.
+- Add troubleshooting notes for common issues (missing providers, stale session selection, stream disconnects).
+- Cross-link relevant backend API docs and task IDs for maintainers.
+
+## Acceptance Criteria
+
+- A developer can follow docs to launch the console and complete a basic validation session.
+- Documentation includes at least three concrete workflow recipes tied to console UI actions.
+- Troubleshooting section covers common failure modes with practical fixes.
+- Docs are linked from an obvious project location for discoverability.
+
+## Implementation Notes (2026-02-15)
+
+- Added `docs/guides/validation-console.md` covering setup, smoke loop usage, tool invocation checks, and fork-debug workflow.
+- Included troubleshooting guidance for provider/model issues, stale session selection, and stream interruption handling.
+- Documented fast local commands (`mix test ...validation_console_test.exs`, `scripts/validation_console_smoke.sh`).
+- Linked the new guide from `README.md` in the documentation references section for discoverability.

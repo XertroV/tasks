@@ -1,0 +1,33 @@
+---
+id: P43.M1.E1.T003
+title: Add mix test.llm_calls alias to mix.exs
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:35:23.609521+00:00'
+started_at: '2026-02-19T18:35:23.609521+00:00'
+completed_at: '2026-02-19T18:41:23.558707+00:00'
+duration_minutes: 5.999152883333333
+---
+
+# Add mix test.llm_calls alias to mix.exs
+
+
+
+## Requirements
+
+- Add a `mix test.llm_calls` alias to `mix.exs` so developers can run the LLM call records test files in one command
+- Alias must target both the recorder test and the schema test
+
+## Acceptance Criteria
+
+- `mix.exs` contains an entry in the `aliases/0` (or equivalent) function with the key `"test.llm_calls"`
+- The alias value runs: `["test test/pag_server/llm/call_recorder_test.exs test/pag_server/schema/llm_call_record_test.exs"]` (or equivalent formulation that passes both paths to `mix test`)
+- Running `mix test.llm_calls` from the project root executes exactly those two test files and no others
+- Running `mix test.llm_calls` exits 0 when both test files pass
+- The alias follows the same formatting and style as the other `test.*` aliases already present in `mix.exs` (e.g., `test.agents`, `test.sessions`, etc.)
+- `mix compile` produces no errors after the change

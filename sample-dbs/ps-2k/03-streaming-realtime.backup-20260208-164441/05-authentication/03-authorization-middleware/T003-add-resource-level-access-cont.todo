@@ -1,0 +1,622 @@
+---
+id: P3.M5.E3.T003
+title: Add resource-level access control
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: medium
+depends_on:
+- P3.M5.E3.T001
+- P3.M5.E3.T002
+tags:
+- auth
+- authorization
+- rbac
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:42:14.620864+00:00'
+started_at: '2026-02-06T18:42:14.620864+00:00'
+completed_at: '2026-02-06T18:58:46.879807+00:00'
+duration_minutes: 16.537648866666665
+---
+
+# Add resource-level access control
+
+
+
+## Requirements
+
+- [ ] Implement resource ownership verification for agents, sessions, and messages
+- [ ] Create `PAGServer.Auth.ResourcePolicy` module with authorization policies
+- [ ] Add `authorize/3` function to check resource-level access
+- [ ] Support resource scoping via project/agent IDs in capabilities
+- [ ] Implement parent-child resource access (session -> agent, message -> session)
+- [ ] Add helper functions for common authorization checks in controllers
+- [ ] Create plug for automatic resource authorization based on route params
+- [ ] Handle edge cases (archived agents, forked sessions, system messages)
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/auth/resource_policy.ex`
+- [ ] `authorize/3` function implemented:
+  ```elixir
+  @spec authorize(action :: atom(), resource :: struct(), capabilities :: map()) ::
+    :ok | {:error, :forbidden}
+  
+  # Example usage:
+  ResourcePolicy.authorize(:read, agent, capabilities)
+  ResourcePolicy.authorize(:update, session, capabilities)
+  ResourcePolicy.authorize(:delete, message, capabilities)
+  ```
+- [ ] Authorization rules implemented for each resource type:
+  - [ ] **Agents**: Check project scope matches `agent.project`
+  - [ ] **Sessions**: Verify agent ownership first, then check session access
+  - [ ] **Messages**: Verify session ownership, then check message operations
+  - [ ] **Tool Calls**: Check session ownership and tool execution permissions
+  - [ ] **Agent Messages**: Verify sender/receiver agent access
+- [ ] Scope patterns supported in capabilities:
+  - [ ] `"project:*"` - Access all projects (admin)
+  - [ ] `"project:my-project"` - Access specific project
+  - [ ] `"agent:uuid"` - Access specific agent
+  - [ ] `"session:uuid"` - Access specific session
+  - [ ] `nil` - No scope restrictions (for backward compatibility)
+- [ ] Helper functions for controllers:
+  - [ ] `authorize!/3` - Raises `PAGServer.Auth.ForbiddenError` on failure
+  - [ ] `can?/3` - Returns boolean for conditional rendering
+  - [ ] `filter_authorized/3` - Filters list to only authorized resources
+  - [ ] `preload_and_authorize/4` - Loads resource and checks authorization
+- [ ] Plug created at `lib/pag_server_web/plugs/authorize_resource.ex`:
+  ```elixir
+  # In controller:
+  plug PAGServerWeb.Plugs.AuthorizeResource, 
+    resource: :agent,  # loads @agent from params.id
+    action: :read      # checks :read_agent permission
+  ```
+- [ ] Parent-child authorization rules:
+  - [ ] Can access session if can access parent agent
+  - [ ] Can access message if can access parent session
+  - [ ] Can access tool call if can access parent session
+- [ ] Special cases handled:
+  - [ ] Archived agents require explicit `:read_archived` permission
+  - [ ] Forked sessions check both parent and child ownership
+  - [ ] System messages (no sender) have relaxed rules
+  - [ ] Inter-agent messages check both sender and receiver access
+- [ ] Error handling:
+  - [ ] Returns `:ok` on success
+  - [ ] Returns `{:error, :forbidden}` with reason on failure
+  - [ ] Logs authorization failures with resource IDs
+  - [ ] Emits telemetry events for policy decisions
+- [ ] Tests cover all authorization scenarios:
+  - [ ] Project scope matching
+  - [ ] Agent/session/message hierarchy
+  - [ ] Admin wildcard access
+  - [ ] Archived resource handling
+  - [ ] Forked session access
+  - [ ] Missing permissions
+- [ ] Integration tests with full stack (plug -> policy -> database)
+- [ ] All functions have typespecs and documentation
+
+## Context
+
+Resource-level authorization ensures users can only access resources they own or have explicit permission to access. This is critical for:
+
+1. **Multi-tenancy**: Isolating projects from each other
+2. **Security**: Preventing unauthorized access to sensitive agent data
+3. **Compliance**: Audit trail of who accessed what resources
+
+The authorization flow:
+1. **Authentication**: API key validated (RequireAuth plug)
+2. **Permission Check**: Required permissions verified (RequirePermissions plug)
+3. **Resource Authorization**: Specific resource access verified (ResourcePolicy)
+
+Example:
+- User has `:update_agent` permission (step 2)
+- User tries to update agent in project "A" 
+- Capabilities have scope "project:B"
+- Access denied because resource doesn't match scope (step 3)
+
+This prevents "horizontal privilege escalation" where a user with valid permissions accesses resources belonging to another user/project.
+
+## Implementation Notes
+
+### ResourcePolicy Module
+
+```elixir
+defmodule PAGServer.Auth.ResourcePolicy do
+  @moduledoc """
+  Resource-level authorization policies.
+  
+  Checks if capabilities allow access to specific resource instances
+  based on ownership, project scope, and parent-child relationships.
+  
+  ## Authorization Flow
+  
+  1. Check if user has required permission for action
+  2. Check if resource scope matches capability scope
+  3. For child resources, verify parent access
+  4. Apply special rules (archived, system resources, etc.)
+  
+  ## Examples
+  
+      # Check agent access
+      iex> agent = %Agent{project: "my-project"}
+      iex> capabilities = %{"resource_scope" => "project:my-project"}
+      iex> ResourcePolicy.authorize(:read, agent, capabilities)
+      :ok
+      
+      # Check session access (verifies parent agent)
+      iex> session = %Session{agent_id: "agent-123"}
+      iex> ResourcePolicy.authorize(:update, session, capabilities)
+      {:error, :forbidden}
+  """
+  
+  require Logger
+  
+  alias PAGServer.Schema.{Agent, Session, Message, ToolCall, AgentMessage}
+  alias PAGServer.Auth.Permissions
+  alias PAGServer.Repo
+  
+  @type action :: :read | :create | :update | :delete
+  @type resource :: Agent.t() | Session.t() | Message.t() | ToolCall.t() | AgentMessage.t()
+  @type capabilities :: map()
+  
+  @doc """
+  Authorize an action on a resource.
+  
+  Returns :ok if authorized, {:error, :forbidden} otherwise.
+  """
+  @spec authorize(action(), resource(), capabilities()) :: :ok | {:error, :forbidden, String.t()}
+  
+  # Agent authorization
+  def authorize(action, %Agent{} = agent, capabilities) do
+    with :ok <- check_permission(action, :agent, capabilities),
+         :ok <- check_resource_scope(agent.project, capabilities),
+         :ok <- check_archived(agent, capabilities) do
+      emit_telemetry(:allowed, %{resource_type: :agent, action: action})
+      :ok
+    else
+      {:error, reason} = error ->
+        emit_telemetry(:denied, %{
+          resource_type: :agent, 
+          action: action, 
+          reason: reason,
+          resource_id: agent.id
+        })
+        Logger.warning("Authorization denied for agent #{agent.id}: #{reason}")
+        error
+    end
+  end
+  
+  # Session authorization (checks parent agent)
+  def authorize(action, %Session{} = session, capabilities) do
+    with :ok <- check_permission(action, :session, capabilities),
+         {:ok, agent} <- load_parent_agent(session),
+         :ok <- authorize(:read, agent, capabilities) do
+      emit_telemetry(:allowed, %{resource_type: :session, action: action})
+      :ok
+    else
+      {:error, reason} = error ->
+        emit_telemetry(:denied, %{
+          resource_type: :session,
+          action: action,
+          reason: reason,
+          resource_id: session.id
+        })
+        Logger.warning("Authorization denied for session #{session.id}: #{reason}")
+        error
+    end
+  end
+  
+  # Message authorization (checks parent session)
+  def authorize(action, %Message{} = message, capabilities) do
+    with :ok <- check_permission(action, :message, capabilities),
+         {:ok, session} <- load_parent_session(message),
+         :ok <- authorize(:read, session, capabilities) do
+      emit_telemetry(:allowed, %{resource_type: :message, action: action})
+      :ok
+    else
+      {:error, reason} = error ->
+        emit_telemetry(:denied, %{
+          resource_type: :message,
+          action: action,
+          reason: reason,
+          resource_id: message.id
+        })
+        error
+    end
+  end
+  
+  # Tool call authorization (checks parent session)
+  def authorize(action, %ToolCall{} = tool_call, capabilities) do
+    with :ok <- check_permission(action, :tool, capabilities),
+         {:ok, session} <- load_tool_call_session(tool_call),
+         :ok <- authorize(:read, session, capabilities) do
+      emit_telemetry(:allowed, %{resource_type: :tool_call, action: action})
+      :ok
+    else
+      error -> error
+    end
+  end
+  
+  # Agent message authorization (checks sender and receiver)
+  def authorize(action, %AgentMessage{} = agent_message, capabilities) do
+    with :ok <- check_permission(action, :message, capabilities),
+         :ok <- check_agent_message_access(agent_message, capabilities) do
+      emit_telemetry(:allowed, %{resource_type: :agent_message, action: action})
+      :ok
+    else
+      error -> error
+    end
+  end
+  
+  @doc """
+  Authorize an action or raise ForbiddenError.
+  
+  Useful in controllers where you want to fail fast.
+  """
+  @spec authorize!(action(), resource(), capabilities()) :: :ok | no_return()
+  def authorize!(action, resource, capabilities) do
+    case authorize(action, resource, capabilities) do
+      :ok -> :ok
+      {:error, :forbidden, reason} ->
+        raise PAGServer.Auth.ForbiddenError, 
+          message: reason,
+          resource: resource,
+          action: action
+    end
+  end
+  
+  @doc """
+  Check if an action on a resource is authorized (boolean).
+  """
+  @spec can?(action(), resource(), capabilities()) :: boolean()
+  def can?(action, resource, capabilities) do
+    match?(:ok, authorize(action, resource, capabilities))
+  end
+  
+  @doc """
+  Filter a list of resources to only those authorized.
+  """
+  @spec filter_authorized([resource()], action(), capabilities()) :: [resource()]
+  def filter_authorized(resources, action, capabilities) do
+    Enum.filter(resources, &can?(action, &1, capabilities))
+  end
+  
+  @doc """
+  Load a resource by ID and authorize access.
+  
+  Returns {:ok, resource} if found and authorized.
+  Returns {:error, reason} if not found or unauthorized.
+  """
+  @spec preload_and_authorize(module(), binary(), action(), capabilities()) ::
+    {:ok, resource()} | {:error, :not_found | :forbidden}
+  def preload_and_authorize(schema_module, id, action, capabilities) do
+    case Repo.get(schema_module, id) do
+      nil -> 
+        {:error, :not_found}
+      resource -> 
+        case authorize(action, resource, capabilities) do
+          :ok -> {:ok, resource}
+          {:error, :forbidden, _reason} -> {:error, :forbidden}
+        end
+    end
+  end
+  
+  # Private helpers
+  
+  defp check_permission(action, resource_type, capabilities) do
+    permission = build_permission_atom(action, resource_type)
+    
+    if Permissions.has_permission?(capabilities, permission) do
+      :ok
+    else
+      {:error, :forbidden, "missing permission: #{permission}"}
+    end
+  end
+  
+  defp build_permission_atom(action, :agent) do
+    case action do
+      :read -> :read_agent
+      :create -> :create_agent
+      :update -> :update_agent
+      :delete -> :delete_agent
+    end
+  end
+  
+  defp build_permission_atom(action, :session) do
+    case action do
+      :read -> :read_session
+      :create -> :create_session
+      :update -> :update_session
+      :delete -> :delete_session
+    end
+  end
+  
+  defp build_permission_atom(_action, :message), do: :read_messages
+  defp build_permission_atom(_action, :tool), do: :execute_tools
+  
+  defp check_resource_scope(_project, %{"resource_scope" => "project:*"}), do: :ok
+  defp check_resource_scope(nil, _capabilities), do: :ok
+  
+  defp check_resource_scope(project, %{"resource_scope" => "project:" <> scope_project}) do
+    if project == scope_project do
+      :ok
+    else
+      {:error, :forbidden, "project scope mismatch: #{project} != #{scope_project}"}
+    end
+  end
+  
+  defp check_resource_scope(_project, _capabilities), do: :ok
+  
+  defp check_archived(%Agent{archived_at: nil}, _capabilities), do: :ok
+  
+  defp check_archived(%Agent{archived_at: archived_at}, capabilities) 
+      when not is_nil(archived_at) do
+    if Permissions.has_permission?(capabilities, :read_archived) do
+      :ok
+    else
+      {:error, :forbidden, "agent is archived"}
+    end
+  end
+  
+  defp check_archived(_resource, _capabilities), do: :ok
+  
+  defp load_parent_agent(%Session{agent_id: agent_id}) do
+    case Repo.get(Agent, agent_id) do
+      nil -> {:error, :forbidden, "parent agent not found"}
+      agent -> {:ok, agent}
+    end
+  end
+  
+  defp load_parent_session(%Message{session_id: session_id}) do
+    case Repo.get(Session, session_id) do
+      nil -> {:error, :forbidden, "parent session not found"}
+      session -> {:ok, session}
+    end
+  end
+  
+  defp load_tool_call_session(%ToolCall{session_id: session_id}) do
+    case Repo.get(Session, session_id) do
+      nil -> {:error, :forbidden, "parent session not found"}
+      session -> {:ok, session}
+    end
+  end
+  
+  defp check_agent_message_access(%AgentMessage{from_agent_id: nil}, _), do: :ok
+  
+  defp check_agent_message_access(%AgentMessage{to_agent_id: to_agent_id}, capabilities) do
+    # Simplified: check if we can access the recipient agent
+    case Repo.get(Agent, to_agent_id) do
+      nil -> {:error, :forbidden, "recipient agent not found"}
+      agent -> authorize(:read, agent, capabilities)
+    end
+  end
+  
+  defp emit_telemetry(event, metadata) do
+    :telemetry.execute([:pag_server, :authz, :resource, event], %{count: 1}, metadata)
+  end
+end
+```
+
+### AuthorizeResource Plug
+
+```elixir
+defmodule PAGServerWeb.Plugs.AuthorizeResource do
+  @moduledoc """
+  Plug to automatically load and authorize a resource from route params.
+  
+  ## Usage
+  
+      # In controller:
+      plug PAGServerWeb.Plugs.AuthorizeResource,
+        resource: :agent,
+        id_param: :id,
+        action: :read
+      
+      # Loads params.id from database, authorizes, assigns to conn.assigns.agent
+  """
+  
+  import Plug.Conn
+  import Phoenix.Controller, only: [json: 2]
+  
+  alias PAGServer.Auth.ResourcePolicy
+  alias PAGServer.Repo
+  
+  @schema_modules %{
+    agent: PAGServer.Schema.Agent,
+    session: PAGServer.Schema.Session,
+    message: PAGServer.Schema.Message
+  }
+  
+  def init(opts) do
+    resource = Keyword.fetch!(opts, :resource)
+    schema = Map.fetch!(@schema_modules, resource)
+    id_param = Keyword.get(opts, :id_param, :id)
+    action = Keyword.get(opts, :action, :read)
+    
+    %{
+      resource: resource,
+      schema: schema,
+      id_param: id_param,
+      action: action
+    }
+  end
+  
+  def call(conn, %{resource: resource_name, schema: schema, id_param: id_param, action: action}) do
+    capabilities = conn.assigns[:capabilities] || %{}
+    resource_id = conn.path_params[to_string(id_param)]
+    
+    case ResourcePolicy.preload_and_authorize(schema, resource_id, action, capabilities) do
+      {:ok, resource} ->
+        assign(conn, resource_name, resource)
+        
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> json(%{error: "Not found", message: "#{resource_name} not found"})
+        |> halt()
+        
+      {:error, :forbidden} ->
+        conn
+        |> put_status(:forbidden)
+        |> json(%{
+          error: "Forbidden",
+          message: "You do not have access to this #{resource_name}"
+        })
+        |> halt()
+    end
+  end
+end
+```
+
+### ForbiddenError Exception
+
+```elixir
+defmodule PAGServer.Auth.ForbiddenError do
+  @moduledoc """
+  Exception raised when authorization fails.
+  """
+  
+  defexception [:message, :resource, :action]
+  
+  @impl true
+  def exception(opts) do
+    message = Keyword.get(opts, :message, "Forbidden")
+    resource = Keyword.get(opts, :resource)
+    action = Keyword.get(opts, :action)
+    
+    %__MODULE__{message: message, resource: resource, action: action}
+  end
+end
+```
+
+### Controller Usage Example
+
+```elixir
+defmodule PAGServerWeb.AgentController do
+  use PAGServerWeb, :controller
+  
+  alias PAGServer.Auth.ResourcePolicy
+  
+  # Automatic resource loading + authorization
+  plug PAGServerWeb.Plugs.AuthorizeResource,
+    resource: :agent,
+    action: :read
+    when action in [:show]
+  
+  plug PAGServerWeb.Plugs.AuthorizeResource,
+    resource: :agent,
+    action: :update
+    when action in [:update]
+  
+  def show(conn, _params) do
+    # @agent already loaded and authorized by plug
+    agent = conn.assigns.agent
+    json(conn, %{agent: agent})
+  end
+  
+  def update(conn, %{"agent" => agent_params}) do
+    agent = conn.assigns.agent
+    
+    # Agent already authorized, now update it
+    case Agents.update_agent(agent, agent_params) do
+      {:ok, updated_agent} ->
+        json(conn, %{agent: updated_agent})
+        
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> json(%{errors: translate_errors(changeset)})
+    end
+  end
+  
+  def index(conn, _params) do
+    capabilities = conn.assigns.capabilities
+    
+    # Load all agents, then filter to authorized only
+    agents = Agents.list_agents()
+    authorized_agents = ResourcePolicy.filter_authorized(agents, :read, capabilities)
+    
+    json(conn, %{agents: authorized_agents})
+  end
+end
+```
+
+### Testing Plan
+
+Create `test/pag_server/auth/resource_policy_test.exs`:
+
+```elixir
+defmodule PAGServer.Auth.ResourcePolicyTest do
+  use PAGServer.DataCase, async: true
+  
+  alias PAGServer.Auth.ResourcePolicy
+  alias PAGServer.Schema.{Agent, Session, Message}
+  
+  describe "authorize/3 for agents" do
+    test "allows access with matching project scope"
+    test "denies access with mismatched project scope"
+    test "allows admin wildcard access"
+    test "denies access to archived agent without permission"
+    test "allows access to archived agent with read_archived permission"
+  end
+  
+  describe "authorize/3 for sessions" do
+    test "allows access when parent agent is accessible"
+    test "denies access when parent agent is not accessible"
+    test "checks session permission before agent ownership"
+  end
+  
+  describe "authorize/3 for messages" do
+    test "allows access when parent session is accessible"
+    test "denies access when parent session is not accessible"
+  end
+  
+  describe "authorize!/3" do
+    test "returns :ok on success"
+    test "raises ForbiddenError on failure"
+  end
+  
+  describe "can?/3" do
+    test "returns true when authorized"
+    test "returns false when unauthorized"
+  end
+  
+  describe "filter_authorized/3" do
+    test "returns only authorized resources"
+    test "handles empty list"
+    test "handles mixed authorized/unauthorized resources"
+  end
+  
+  describe "preload_and_authorize/4" do
+    test "returns {:ok, resource} when found and authorized"
+    test "returns {:error, :not_found} when not found"
+    test "returns {:error, :forbidden} when found but unauthorized"
+  end
+end
+```
+
+Create `test/pag_server_web/plugs/authorize_resource_test.exs`:
+
+```elixir
+defmodule PAGServerWeb.Plugs.AuthorizeResourceTest do
+  use PAGServerWeb.ConnCase, async: true
+  
+  alias PAGServerWeb.Plugs.AuthorizeResource
+  
+  describe "call/2" do
+    test "loads and authorizes resource", %{conn: conn}
+    test "returns 404 when resource not found", %{conn: conn}
+    test "returns 403 when resource unauthorized", %{conn: conn}
+    test "assigns resource to conn on success", %{conn: conn}
+  end
+end
+```
+
+## Notes
+
+- Resource policies enforce "defense in depth" - even with valid permissions, users can only access their own resources
+- Parent-child authorization ensures security across the resource hierarchy
+- The `authorize_resource` plug reduces boilerplate in controllers
+- Special handling for archived/system resources prevents accidental access
+- Consider adding audit logging for all authorization decisions in production
+- Future: implement "can escalate" pattern for admin users to access other projects with explicit approval

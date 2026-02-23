@@ -1,0 +1,16 @@
+---
+id: P15.M12.E5.T002
+title: Add connector_count field to WorkspaceCard and BrowserQuery
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:25:46.136544+00:00'
+started_at: '2026-02-18T07:25:46.136544+00:00'
+completed_at: '2026-02-18T07:29:18.770612+00:00'
+duration_minutes: 3.5439008999999997
+---
+The workspace card currently has a telegram_connected boolean (from BrowserQuery.list_cards/1). Replace or augment with connector_count integer (count of active bot_configs for the workspace). This enables the connector count badge added in E4.T009. Update lib/pag_server/workspaces/browser_query.ex (or wherever WorkspaceCard struct is built): add connector_count field, populate via subquery count of active bot_configs. Also add active_connector_count to the @selected_workspace assign in hydrate_workspace_detail/2. Keep telegram_connected for backward compatibility with the overview tab status cell until that cell is updated in E4.T009.

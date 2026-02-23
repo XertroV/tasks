@@ -1,0 +1,52 @@
+id: P50.M4.E3
+name: Hardening -- Load Tests, Replay Verification, Lint, Docs
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-concurrent-claim-contentio.todo
+  title: Add concurrent claim contention tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M3.E1.T004
+- id: T002
+  file: T002-add-projection-replay-verifica.todo
+  title: Add projection replay verification test
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E1.T004
+  - P50.M4.E1.T005
+- id: T003
+  file: T003-achieve-mix-lint-compliance-fo.todo
+  title: Achieve mix lint compliance for entire collab_teams plugin
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E3.T001
+  - P50.M4.E3.T002
+- id: T004
+  file: T004-write-plugins-collab-teams-rea.todo
+  title: Write plugins/collab_teams/README.md operator documentation
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on:
+  - P50.M4.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T09:37:18.294674+00:00'
+started_at: '2026-02-13T09:37:18.294674+00:00'
+completed_at: '2026-02-13T09:59:14.428442+00:00'
+duration_minutes: 21.935562566666665
+---
+# Implement notification triggers
+
+## Description
+Create the event-driven notification system that triggers emails based on workspace events. Support configurable notification preferences per workspace and delivery tracking.
+
+## Acceptance Criteria
+- [ ] `PagServer.Notifications.Dispatcher` module created
+- [ ] Subscribe to relevant events via `PagServer.Events`
+- [ ] Event handlers for: session_completed, task_failed, error_occurred
+- [ ] `PagServer.Notifications.Preferences` schema for user settings
+- [ ] Per-workspace notification configuration
+- [ ] Delivery tracking with status (pending, sent, failed)
+- [ ] Retry logic with exponential backoff for failed deliveries
+- [ ] Rate limiting to prevent email flooding
+- [ ] Oban job for async email delivery
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/events/`, `lib/pag_server/mailer.ex`, Oban job patterns
+- Part of epic: P14.M1.E4 - Email Notifications

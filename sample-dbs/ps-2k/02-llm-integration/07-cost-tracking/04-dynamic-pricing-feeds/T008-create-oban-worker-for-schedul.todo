@@ -1,0 +1,288 @@
+---
+id: P2.M7.E4.T008
+title: Create Oban worker for scheduled pricing updates
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P2.M7.E4.T006
+tags:
+- oban
+- worker
+- scheduled
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:13:35.618741'
+started_at: '2026-02-06T15:13:35.618741'
+completed_at: '2026-02-06T15:20:05.889889'
+duration_minutes: 6.504518966666667
+---
+
+# Create Oban worker for scheduled pricing updates
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/workers/` directory
+- [ ] Create `lib/pag_server/workers/pricing_refresh.ex` Oban worker
+- [ ] Use `Oban.Worker` behaviour with `:pricing` queue
+- [ ] Set `max_attempts: 3` for retry on transient failures
+- [ ] Implement `perform/1` to fetch pricing from all registered fetchers
+- [ ] Store updated pricing in database with new `effective_at` timestamp
+- [ ] Set `source` field to "scheduled_refresh"
+- [ ] Schedule worker to run every 24 hours using Oban cron
+- [ ] Add cron configuration to `config/config.exs`
+- [ ] Emit telemetry events for refresh success/failure
+- [ ] Log refresh completion with count of updated records
+- [ ] Handle individual fetcher failures gracefully (continue with other fetchers)
+- [ ] Return `:ok` on success, `{:error, reason}` on failure for Oban retry logic
+
+## Acceptance Criteria
+
+- [ ] Worker created at `lib/pag_server/workers/pricing_refresh.ex`
+- [ ] Worker uses `Oban.Worker` with `queue: :pricing, max_attempts: 3`
+- [ ] `perform/1` fetches pricing from all registered fetchers
+- [ ] Updated pricing stored in database with current timestamp as `effective_at`
+- [ ] `source` field set to "scheduled_refresh"
+- [ ] Cron schedule configured in `config/config.exs` to run at 3 AM daily
+- [ ] Worker can be enqueued manually: `PricingRefresh.new(%{}) |> Oban.insert()`
+- [ ] Telemetry events emitted:
+  - [ ] `[:pag_server, :pricing, :refresh, :start]`
+  - [ ] `[:pag_server, :pricing, :refresh, :stop]`
+  - [ ] `[:pag_server, :pricing, :refresh, :exception]`
+- [ ] Refresh logged with info level on success
+- [ ] Individual fetcher failures logged with warning level
+- [ ] Worker returns `:ok` when all fetchers complete successfully
+- [ ] Worker returns `{:error, reason}` when majority of fetchers fail
+- [ ] No compiler warnings
+- [ ] `@spec` declaration for `perform/1`
+
+## Implementation Notes
+
+### PricingRefresh Worker
+
+```elixir
+defmodule PagServer.Workers.PricingRefresh do
+  @moduledoc """
+  Oban worker for scheduled pricing updates.
+  
+  Runs daily to refresh pricing data from all registered PricingFetcher
+  implementations. Ensures pricing stays current without manual intervention.
+  """
+
+  use Oban.Worker,
+    queue: :pricing,
+    max_attempts: 3
+
+  require Logger
+
+  alias PagServer.LLM.PricingFetcher
+  alias PagServer.Pricing
+
+  @impl Oban.Worker
+  @spec perform(Oban.Job.t()) :: :ok | {:error, term()}
+  def perform(%Oban.Job{args: _args}) do
+    metadata = %{worker: __MODULE__}
+    start_time = System.monotonic_time()
+
+    :telemetry.execute(
+      [:pag_server, :pricing, :refresh, :start],
+      %{system_time: System.system_time()},
+      metadata
+    )
+
+    Logger.info("Starting scheduled pricing refresh...")
+
+    result = 
+      try do
+        do_refresh()
+      rescue
+        error ->
+          :telemetry.execute(
+            [:pag_server, :pricing, :refresh, :exception],
+            %{duration: System.monotonic_time() - start_time},
+            Map.put(metadata, :error, error)
+          )
+          {:error, error}
+      end
+
+    case result do
+      {:ok, count} ->
+        duration = System.monotonic_time() - start_time
+        
+        :telemetry.execute(
+          [:pag_server, :pricing, :refresh, :stop],
+          %{duration: duration, count: count},
+          metadata
+        )
+        
+        Logger.info("Pricing refresh complete: #{count} records updated")
+        :ok
+
+      {:error, reason} = error ->
+        Logger.error("Pricing refresh failed: #{inspect(reason)}")
+        error
+    end
+  end
+
+  defp do_refresh do
+    fetchers = PricingFetcher.list_fetchers()
+    now = DateTime.utc_now()
+
+    results =
+      fetchers
+      |> Enum.map(fn {provider, module} ->
+        fetch_and_update(provider, module, now)
+      end)
+
+    # Count successes and failures
+    {successes, failures} = Enum.split_with(results, fn
+      {:ok, _count} -> true
+      {:error, _reason} -> false
+    end)
+
+    success_count = Enum.reduce(successes, 0, fn {:ok, count}, acc -> acc + count end)
+    failure_count = length(failures)
+
+    # Fail the job if majority of fetchers failed
+    if failure_count > length(successes) do
+      {:error, {:majority_failed, failure_count, success_count}}
+    else
+      {:ok, success_count}
+    end
+  end
+
+  defp fetch_and_update(provider, module, timestamp) do
+    models = models_for_provider(provider)
+
+    count =
+      models
+      |> Enum.map(fn model ->
+        case module.fetch_pricing(model) do
+          {:ok, pricing} ->
+            attrs = %{
+              provider: to_string(provider),
+              model: model,
+              prompt_per_million: Decimal.new(to_string(pricing.prompt_per_million)),
+              completion_per_million: Decimal.new(to_string(pricing.completion_per_million)),
+              cached_per_million: Decimal.new(to_string(pricing.cached_per_million)),
+              effective_at: timestamp,
+              source: "scheduled_refresh",
+              currency: "usd"
+            }
+
+            case Pricing.create_pricing(attrs) do
+              {:ok, _} -> 1
+              {:error, changeset} ->
+                Logger.debug("Failed to store pricing for #{provider}/#{model}: #{inspect(changeset)}")
+                0
+            end
+
+          {:error, reason} ->
+            Logger.warning("Failed to fetch pricing for #{provider}/#{model}: #{inspect(reason)}")
+            0
+        end
+      end)
+      |> Enum.sum()
+
+    if count > 0 do
+      {:ok, count}
+    else
+      {:error, {:no_pricing_fetched, provider}}
+    end
+  end
+
+  # Define known models for each provider
+  defp models_for_provider(:anthropic) do
+    [
+      "claude-opus-4.6",
+      "claude-sonnet-4.5",
+      "claude-haiku-4.5",
+      "claude-opus-4.5",
+      "claude-haiku-3"
+    ]
+  end
+
+  defp models_for_provider(:openai) do
+    [
+      "gpt-5.2",
+      "gpt-5.2-pro",
+      "gpt-5-mini",
+      "gpt-4.1",
+      "gpt-4.1-mini",
+      "gpt-4.1-nano",
+      "o4-mini",
+      "gpt-realtime",
+      "gpt-realtime-mini"
+    ]
+  end
+
+  defp models_for_provider(:openrouter) do
+    # OpenRouter fetcher handles its own model discovery
+    []
+  end
+
+  defp models_for_provider(_), do: []
+end
+```
+
+### Oban Cron Configuration
+
+Add to `config/config.exs`:
+
+```elixir
+config :pag_server, Oban,
+  repo: PagServer.Repo,
+  plugins: [
+    {Oban.Plugins.Cron,
+     crontab: [
+       # Refresh pricing daily at 3 AM UTC
+       {"0 3 * * *", PagServer.Workers.PricingRefresh}
+     ]}
+  ],
+  queues: [
+    default: 10,
+    pricing: 2  # Low concurrency for pricing updates
+  ]
+```
+
+### Manual Trigger (for testing)
+
+```elixir
+# In IEx or tests
+PagServer.Workers.PricingRefresh.new(%{})
+|> Oban.insert()
+```
+
+## Context
+
+**Dependencies:**
+- T002 (done): PricingFetcher behaviour and registry
+- T004 (pending): Anthropic pricing fetcher
+- T005 (pending): OpenAI pricing fetcher
+- T006 (pending): Pricing cache layer
+
+**Purpose:**
+This worker ensures pricing data stays current by fetching updates daily. It runs during off-peak hours (3 AM UTC) to minimize impact on production traffic.
+
+**Why Daily Updates?**
+- LLM pricing changes infrequently (weeks/months between changes)
+- Daily updates ensure pricing is current within 24 hours
+- Reduces API calls compared to more frequent updates
+- 3 AM UTC chosen as low-traffic time for most global users
+
+**Reference Files:**
+- Oban migration: `priv/repo/migrations/20260205074604_add_oban_jobs_table.exs`
+- Oban config: `config/config.exs`
+- Application supervisor: `lib/pag_server/application.ex`
+
+## Notes
+
+- Worker uses `:pricing` queue with low concurrency (2) to avoid overwhelming fetcher APIs
+- `max_attempts: 3` provides retry on transient network failures
+- Individual fetcher failures don't fail the entire job (logged as warnings)
+- Job fails only if majority of fetchers fail (unusual scenario)
+- Future enhancement: make model lists dynamic by querying provider APIs
+- Consider adding rate limiting if fetcher APIs have strict rate limits

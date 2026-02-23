@@ -1,0 +1,25 @@
+---
+id: P17.M3.E3.T002
+title: Add semantic cache miss test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:12:20.962783+00:00'
+started_at: '2026-02-14T07:12:20.962783+00:00'
+completed_at: '2026-02-14T07:30:27.287038+00:00'
+duration_minutes: 18.105404099999998
+---
+
+# Add semantic cache miss test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

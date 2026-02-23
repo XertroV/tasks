@@ -1,0 +1,42 @@
+---
+id: B115
+title: improve the prompts for pair programming. highly detailed, thorough, and no
+  limit on vocabulary.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:37:49.848412+00:00'
+completed_at: '2026-02-18T21:00:00.000000+00:00'
+---
+
+improve the prompts for pair programming. highly detailed, thorough, and no limit on vocabulary.
+
+## Solution
+
+Completely rewrote all three agent prompts (coordinator, coder, observer) with:
+
+### Structural Improvements
+- Clear section organization with visual separators
+- Numbered subsections for easy reference
+- Tables for quick reference (categories, severities)
+- Checklists for quality verification
+
+### Content Additions
+- Detailed role definitions and responsibilities
+- Explicit behavioral guidelines (DO/DON'T lists)
+- Quality standards and code review checklists
+- Git workflow and commit message standards
+- Communication protocols and phase flow
+- Tool usage guidelines with examples
+
+### Prompt Philosophy
+- Explicit over implicit: Every behavior clearly described
+- Quality over speed: Thoroughness prioritized
+- Professional standards enforced
+- No vocabulary limitations - rich, detailed instructions
+
+Files modified: lib/pag_server/plugins/pair_programming/prompts.ex

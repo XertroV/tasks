@@ -1,0 +1,47 @@
+---
+id: P15.M2.E7.T007
+title: Add change preview and rollback timeline for workspace operations
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: medium
+depends_on:
+- P15.M2.E7.T004
+- P15.M2.E7.T005
+tags:
+- audit
+- timeline
+- safety
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:30:36.985230+00:00'
+started_at: '2026-02-18T04:30:36.985230+00:00'
+completed_at: '2026-02-18T04:44:09.999819+00:00'
+duration_minutes: 13.550242966666667
+---
+## Goal
+Make configuration and plugin changes safer by previewing impact and enabling rapid rollback.
+
+## Acceptance Criteria
+- Before apply, users can see a concise diff preview for config/plugin/skill changes.
+- After apply, a timeline entry records actor, scope, and outcome for each operation.
+- Recent operations can be reverted through a dry-run then apply flow when supported by backend APIs, with rollback permission scoped to Maintainer+.
+- Failure modes include clear remediation guidance.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M2.E7)
+**Agent**: cli-user
+**Date**: 2026-02-18 04:30 UTC
+**Sibling tasks**: P15.M2.E7.T008, P15.M2.E7.T009
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M2.E7.T007 → P15.M2.E7.T008 → P15.M2.E7.T009
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M2.E7.T007: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T007-add-change-preview-and-rollbac.todo
+- P15.M2.E7.T008: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T008-cover-workspace-browser-with-i.todo
+- P15.M2.E7.T009: .tasks/15-new-capabilities/02-developer-experience/07-workspace-browser-control-cent/T009-add-edit-checkpoints-with-vers.todo

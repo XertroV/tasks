@@ -1,0 +1,69 @@
+id: P2.M8.E5
+name: Advanced Summarization Strategies
+status: pending
+estimate_hours: 16.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-adaptive-chunk-sizin.todo
+  title: Implement adaptive chunk sizing for summarization
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-hierarchical-multi-s.todo
+  title: Implement hierarchical multi-stage summarization
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-history-budget-allocation.todo
+  title: Add history budget allocation with cascading summaries
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-implement-metadata-extraction.todo
+  title: Implement metadata extraction (tool failures, file ops)
+  status: pending
+  estimate_hours: 2.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-add-reverse-token-budget-user.todo
+  title: Add reverse token-budget user message preservation
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-add-progressive-fallback-for-o.todo
+  title: Add progressive fallback for oversized content
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T007
+  file: T007-enhance-summarization-prompt-w.todo
+  title: Enhance summarization prompt with Roo-Code clarity
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

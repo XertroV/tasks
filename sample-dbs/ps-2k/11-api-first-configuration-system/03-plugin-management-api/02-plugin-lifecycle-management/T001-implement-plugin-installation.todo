@@ -1,0 +1,86 @@
+---
+id: P11.M3.E2.T001
+title: Implement plugin installation from URL/registry
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T08:13:38.476772+00:00'
+started_at: '2026-02-12T08:13:38.476772+00:00'
+completed_at: '2026-02-12T09:01:30.937132+00:00'
+duration_minutes: 47.87433915
+---
+
+# Implement plugin installation from URL/registry
+
+Build plugin installation workflow supporting both registry and direct URL sources.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/installer.ex` GenServer:
+  - [ ] `install(plugin_name, version, opts)` - main installation function
+  - [ ] Support installation sources:
+    - [ ] Registry: `{:registry, "core", version}`
+    - [ ] URL: `{:url, "https://github.com/user/plugin/archive.tar.gz"}`
+    - [ ] Local path: `{:local, "/path/to/plugin"}`
+
+- [ ] Implement installation workflow:
+  - [ ] Fetch plugin from source (with retry logic)
+  - [ ] Validate checksum against manifest (if available)
+  - [ ] Extract to `priv/plugins/{namespace}/{name}/` directory
+  - [ ] Parse plugin.json manifest
+  - [ ] Create plugin record in database
+  - [ ] Run plugin initialization hook (if present)
+  - [ ] Return `{:ok, plugin}` or `{:error, reason}`
+
+- [ ] Add HTTP client for registry/URL fetching:
+  - [ ] Use Req library with timeout (30s default)
+  - [ ] Implement exponential backoff for retries (3 attempts)
+  - [ ] Handle redirects and certificate validation
+  - [ ] Support authentication headers (for private registries)
+
+- [ ] Create installation endpoint:
+  - [ ] `POST /api/plugins/install`
+  - [ ] Body: `{source: "registry"|"url", plugin: "name", version: "x.y.z", url: "..." (if url source)}`
+  - [ ] Async operation with polling support
+  - [ ] Return location header pointing to status endpoint
+
+- [ ] Implement installation status tracking:
+  - [ ] Store installation state in Cachex (temporary)
+  - [ ] Track: queued, downloading, validating, extracting, installing, done, failed
+  - [ ] Provide progress updates
+
+## Acceptance Criteria
+
+- [ ] Registry installation fetches and extracts plugin correctly
+- [ ] URL installation works with GitHub release URLs
+- [ ] Checksum validation prevents corrupted plugins
+- [ ] Installation fails gracefully on network errors (with retries)
+- [ ] Plugin database record created on successful install
+- [ ] 404 returned for non-existent registry plugins
+- [ ] 400 returned for invalid version format
+- [ ] Installation status endpoint provides real-time progress
+- [ ] Tests cover registry, URL, and local path installations
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-12 08:13 UTC
+**Sibling tasks**: P11.M3.E2.T002, P11.M3.E2.T003, P11.M3.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M3.E2.T001 → P11.M3.E2.T002 → P11.M3.E2.T003 → P11.M3.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M3.E2.T001: .tasks/11-api-first-configuration-system/03-plugin-management-api/02-plugin-lifecycle-management/T001-implement-plugin-installation.todo
+- P11.M3.E2.T002: .tasks/11-api-first-configuration-system/03-plugin-management-api/02-plugin-lifecycle-management/T002-add-plugin-enable-disable-unin.todo
+- P11.M3.E2.T003: .tasks/11-api-first-configuration-system/03-plugin-management-api/02-plugin-lifecycle-management/T003-build-plugin-dependency-resolu.todo
+- P11.M3.E2.T004: .tasks/11-api-first-configuration-system/03-plugin-management-api/02-plugin-lifecycle-management/T004-write-plugin-lifecycle-tests.todo

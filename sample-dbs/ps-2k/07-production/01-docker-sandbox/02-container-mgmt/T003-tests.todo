@@ -1,0 +1,89 @@
+---
+id: P7.M1.E2.T003
+title: Docker sandbox tests
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M1.E2.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:46:52.638436+00:00'
+started_at: '2026-02-06T20:46:52.638436+00:00'
+completed_at: '2026-02-06T21:01:39.878623+00:00'
+tags:
+- docker
+- testing
+- integration
+duration_minutes: 14.7873363
+---
+
+# Docker sandbox tests
+
+Create comprehensive tests for Docker sandbox functionality.
+
+## Requirements
+
+- [ ] Create `test/pag_server/sandbox/docker_test.exs`
+- [ ] Test successful command execution
+- [ ] Test timeout handling
+- [ ] Test memory limit enforcement
+- [ ] Test container cleanup
+- [ ] Test orphaned container detection
+- [ ] Test error handling for Docker failures
+- [ ] Add integration tests with real Docker
+
+## Acceptance Criteria
+
+- [ ] All tests pass consistently
+- [ ] Tests clean up containers after running
+- [ ] Integration tests skip if Docker unavailable
+- [ ] Test coverage >80% for Sandbox.Docker module
+- [ ] Tests document expected behavior
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M1.E2 (Container Management)
+
+**Key Points**:
+- Use ExUnit tags to skip Docker tests in CI if needed
+- Test with lightweight Alpine containers
+- Verify resource limits actually work
+- Test concurrent container execution
+
+## Notes
+
+Test structure:
+```elixir
+defmodule PagServer.Sandbox.DockerTest do
+  use ExUnit.Case, async: false
+  
+  @moduletag :docker
+  
+  setup do
+    on_exit(fn -> cleanup_test_containers() end)
+    :ok
+  end
+  
+  describe "execute_docker/2" do
+    test "runs simple command successfully" do
+      assert {:ok, output} = Sandbox.execute("echo hello", sandbox: :docker)
+      assert output =~ "hello"
+    end
+    
+    test "enforces timeout" do
+      assert {:error, :timeout} = 
+        Sandbox.execute("sleep 60", sandbox: :docker, timeout: 100)
+    end
+    
+    test "enforces memory limit" do
+      # Allocate 1GB in container with 512MB limit
+      command = "python -c 'x = [0] * (1024**3)'"
+      assert {:error, {:exit_code, _, output}} = 
+        Sandbox.execute(command, sandbox: :docker)
+      assert output =~ "OOMKilled"
+    end
+  end
+end
+```

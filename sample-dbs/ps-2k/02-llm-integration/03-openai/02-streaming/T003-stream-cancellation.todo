@@ -1,0 +1,97 @@
+---
+id: P2.M3.E2.T003
+title: Add stream cancellation support
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- streaming
+- cancellation
+- cleanup
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:44:56.507892'
+started_at: '2026-02-05T15:44:56.507892'
+completed_at: '2026-02-05T15:49:00.668929'
+duration_minutes: 4.069350466666666
+---
+
+# Add stream cancellation support
+
+Implement stream cancellation to cleanly stop in-flight streaming requests.
+
+## Requirements
+
+- [ ] Expose `cancel_request/1` function accepting task_pid
+- [ ] Send `:cancel_request` message to streaming task
+- [ ] Clean up Finch connection when cancelled
+- [ ] Ensure no resource leaks on cancellation
+- [ ] Handle cancellation during different stream states
+- [ ] Return cancellation status to caller
+
+## Acceptance Criteria
+
+- [ ] Can cancel active streams via task_pid
+- [ ] Finch connection is properly closed
+- [ ] No HTTP connections leak after cancellation
+- [ ] Cancellation works at any point in stream lifecycle
+- [ ] Stream consumers receive cancellation signal
+- [ ] Tests verify clean cancellation
+- [ ] No GenServer/Task zombie processes
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex/http_sse.ex` Lines 22-24 (cancel_request/1)
+- AGENTS.md requirement: Clean resource management
+
+**Key Points**:
+- Return task_pid from stream creation for cancellation
+- Send message to task to trigger cancellation
+- Use Finch.cancel_async_request/1 to close connection
+- Clean shutdown of Stream.resource/3
+- Important for agent interruption and context switching
+
+## Implementation Notes
+
+Cancellation function (from openai_ex):
+```elixir
+def cancel_request(task_pid) when is_pid(task_pid) do
+  send(task_pid, :cancel_request)
+end
+```
+
+Handle in streaming task:
+```elixir
+defp finch_stream(client, request, parent, ref) do
+  receive do
+    :cancel_request ->
+      Finch.cancel_async_request(request)
+      send(parent, {ref, :cancelled})
+  after
+    0 ->
+      Finch.stream(request, client.finch_name, parent, fn chunk, acc ->
+        # Stream handling
+      end)
+  end
+end
+```
+
+Stream.resource cleanup:
+```elixir
+end_stream = fn task ->
+  fn ->
+    Task.shutdown(task, :brutal_kill)
+    :ok
+  end
+end
+```
+
+Usage example:
+```elixir
+{:ok, %{body_stream: stream, task_pid: pid}} = create(client, params, stream: true)
+
+# Later, to cancel:
+cancel_request(pid)
+```

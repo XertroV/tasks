@@ -1,0 +1,76 @@
+---
+id: P2.M3.E1.T002
+title: Implement authentication and configuration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P2.M3.E1.T001
+tags:
+- authentication
+- openai
+- configuration
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:26:52.665670'
+started_at: '2026-02-05T15:26:52.665670'
+completed_at: '2026-02-05T15:29:35.040000'
+duration_minutes: 2.7062386500000004
+---
+
+# Implement authentication and configuration
+
+Add API key authentication and optional organization/project headers.
+
+## Requirements
+
+- [ ] Add API key authentication via `Authorization: Bearer <token>` header
+- [ ] Support optional `OpenAI-Organization` header
+- [ ] Support optional `OpenAI-Project` header
+- [ ] Redact API keys in logs (security requirement)
+- [ ] Load configuration from application config and environment variables
+- [ ] Support runtime configuration override
+
+## Acceptance Criteria
+
+- [ ] API key is sent in Authorization header
+- [ ] Organization header is included when provided
+- [ ] Project header is included when provided
+- [ ] API keys never appear in logs or error messages
+- [ ] Can configure via `config/runtime.exs` or at runtime
+- [ ] Invalid/missing API keys raise clear errors
+- [ ] Tests verify header construction
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex.ex` Lines 21-43 (new/3 function)
+- Security requirement: API key redaction in logs
+
+**Key Points**:
+- API keys must be redacted in all log output
+- Follow openai_ex pattern: build headers list in `new/3`
+- Support both config-based and runtime API key provisioning
+- Organization and project are optional (rarely used)
+
+## Implementation Notes
+
+Headers structure:
+```elixir
+headers = [
+  {"Authorization", "Bearer #{api_key}"},
+  {"OpenAI-Organization", organization},  # if present
+  {"OpenAI-Project", project}             # if present
+]
+```
+
+Configuration example:
+```elixir
+# config/runtime.exs
+config :pag_server, PagServer.LLM.OpenAI,
+  api_key: System.get_env("OPENAI_API_KEY"),
+  organization: System.get_env("OPENAI_ORG"),
+  project: System.get_env("OPENAI_PROJECT")
+```
+
+Ensure API keys are filtered in Logger configuration.

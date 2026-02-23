@@ -1,0 +1,36 @@
+---
+id: P15.M1.E3.T003
+title: Add correction storage for future reference
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T12:37:24.239766+00:00'
+started_at: '2026-02-13T12:37:24.239766+00:00'
+completed_at: '2026-02-13T13:53:49.733356+00:00'
+duration_minutes: 76.4248929
+---
+
+# Add correction storage for future reference
+
+## Description
+Implement storage and retrieval of user corrections so agents can learn from past mistakes. Corrections should be indexed and retrievable to prevent repeating the same errors in similar contexts.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Feedback.CorrectionStore` module for managing corrections
+- [ ] Implement correction deduplication using semantic similarity
+- [ ] Add correction retrieval API based on query/context similarity
+- [ ] Integrate corrections into context as "past corrections to avoid"
+- [ ] Add correction analytics (common error patterns)
+- [ ] Implement correction aging (less weight for old corrections)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/memory/store.ex`, `lib/pag_server/embeddings/client.ex`, `lib/pag_server/context/messages.ex`
+- Part of epic: Feedback Loop Integration
+- Use embeddings for semantic similarity of corrections

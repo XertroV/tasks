@@ -1,0 +1,45 @@
+---
+id: P27.M2.E1.T002
+title: Cron job actions use ephemeral sessions when no session_id provided
+status: done
+estimate_hours: 5.0
+complexity: medium
+priority: high
+depends_on:
+- P27.M2.E1.T001
+tags:
+- cron
+- session
+- ephemeral
+- scheduling
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:45:06.564293+00:00'
+started_at: '2026-02-18T18:45:06.564293+00:00'
+completed_at: '2026-02-18T18:50:52.051934+00:00'
+duration_minutes: 5.758127183333333
+---
+
+# Cron job actions use ephemeral sessions when no session_id provided
+
+Integrate the ephemeral session spawning path into the cron plugin so that
+scheduled agent invocations automatically get an ephemeral session when no
+explicit session_id is configured in the cron job definition.
+
+## Requirements
+
+- Update the cron plugin's agent dispatch logic to call the updated `spawn_agent`
+  without a `session_id` when none is set in the cron job config
+- Allow cron job definitions to optionally specify a `session_id` to target an
+  existing long-lived session instead
+- Log the ephemeral session ID at `:info` level when a cron job creates one, for
+  observability
+- Ensure the ephemeral session is not visible in the regular session list by default
+  (filter `ephemeral: true` sessions from listing APIs unless explicitly requested)
+
+## Acceptance Criteria
+
+- [ ] Cron job dispatch calls `spawn_agent` without `session_id` when none configured
+- [ ] Cron job config supports optional `session_id` field to target existing session
+- [ ] Logger emits info-level message with ephemeral session ID on cron agent spawn
+- [ ] `Sessions.list_sessions/1` excludes ephemeral sessions unless `include_ephemeral: true`
+- [ ] Integration-style test: cron trigger creates an ephemeral session and agent runs in it

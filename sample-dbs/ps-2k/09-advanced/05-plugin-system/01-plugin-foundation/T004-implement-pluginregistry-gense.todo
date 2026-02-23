@@ -1,0 +1,59 @@
+---
+id: P9.M5.E1.T004
+title: Implement PluginRegistry GenServer for plugin lifecycle management
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E1.T003
+tags:
+- genserver
+- registry
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:56.659658'
+started_at: '2026-02-06T17:07:56.659658'
+completed_at: '2026-02-06T17:07:57.398288'
+duration_minutes: 0.01231035
+---
+
+# Implement PluginRegistry GenServer for plugin lifecycle management
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/registry.ex` module as a GenServer
+- [ ] Use ETS table for plugin storage (named table, read-concurrency optimized)
+- [ ] Implement public API functions:
+  - [ ] `register/1` - Register a Plugin struct, store in ETS
+  - [ ] `unregister/1` - Remove plugin by name, clean up resources
+  - [ ] `get/1` - Retrieve plugin by name
+  - [ ] `list/0` - List all registered plugins
+  - [ ] `list_by_capability/1` - Filter plugins by capability type (:tools, :hooks, :prompts, :providers)
+  - [ ] `update_status/2` - Update plugin status in registry
+- [ ] Track plugin states: `:loaded`, `:enabled`, `:disabled`, `:error`
+- [ ] On init, run Discovery.discover/0 and register all found plugins
+- [ ] Emit `:telemetry` events for registration changes:
+  - [ ] `[:pag_server, :plugin, :registered]`
+  - [ ] `[:pag_server, :plugin, :unregistered]`
+  - [ ] `[:pag_server, :plugin, :status_changed]`
+- [ ] Handle duplicate registration attempts gracefully (return error, don't crash)
+
+## Acceptance Criteria
+
+- [ ] GenServer starts successfully and creates ETS table
+- [ ] `register/1` stores plugin, `get/1` retrieves it, `unregister/1` removes it
+- [ ] `list_by_capability/1` correctly filters (e.g., plugins declaring `:tools` capability)
+- [ ] Duplicate plugin name registration returns `{:error, :already_registered}`
+- [ ] Telemetry events fire on register, unregister, and status changes
+- [ ] Concurrent reads via ETS don't block (read_concurrency: true)
+- [ ] Unit tests cover CRUD operations, capability filtering, and error cases
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/registry.ex`
+- **Depends on**: `PagServer.Plugins.Discovery` (T003), `PagServer.Plugins.Plugin` (T002)
+- **Pattern reference**: Follow `PagServer.Tools.Registry` GenServer + ETS pattern
+- **Used by**: Nearly all other plugin tasks depend on this registry
+- **Supervision**: Will be added to plugin supervisor in T005

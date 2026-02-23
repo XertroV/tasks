@@ -1,0 +1,60 @@
+---
+id: P33.M1.E1.T002
+title: Create PagLiveComponent for rendering mascot
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P33.M1.E1.T001
+tags:
+- liveview
+- component
+- mascot
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:42:13.528008+00:00'
+started_at: '2026-02-18T22:42:13.528008+00:00'
+completed_at: '2026-02-18T22:49:22.799390+00:00'
+duration_minutes: 7.154522833333333
+---
+
+# Create PagLiveComponent for rendering mascot
+
+Build a Phoenix LiveComponent that renders Pag the frog mascot with reactive state management.
+
+## Requirements
+
+- LiveComponent for mascot rendering
+- Reactive to state changes (mood, activity)
+- Positioned at bottom of viewport
+- Smooth transitions between states
+
+## Component Structure
+
+```elixir
+defmodule PagServerWeb.PagLiveComponent do
+  use Phoenix.LiveComponent
+  
+  # State includes:
+  # - mood: :happy | :neutral | :sad | :sleeping
+  # - activity: :idle | :walking | :working | :sleeping
+  # - position: {x, y} for walking animation
+  # - hunger: 0-100
+  # - energy: 0-100
+end
+```
+
+## Integration Points
+
+- Mount in layout or individual LiveViews
+- Subscribe to system events for reactive mood
+- Handle user interaction events
+
+## Acceptance Criteria
+
+- [ ] PagLiveComponent created at `lib/pag_server_web/components/pag_live_component.ex`
+- [ ] Renders SVG sprite based on current state
+- [ ] State managed via LiveView assigns
+- [ ] Positioned fixed at bottom of viewport
+- [ ] Z-index above content but below modals
+- [ ] Handles state transitions smoothly

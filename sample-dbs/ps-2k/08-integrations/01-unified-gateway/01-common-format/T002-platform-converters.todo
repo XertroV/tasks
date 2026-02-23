@@ -1,0 +1,90 @@
+---
+id: P8.M1.E1.T002
+title: Implement platform converters
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P8.M1.E1.T001
+tags:
+- gateway
+- integrations
+- converters
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:36:10.565957+00:00'
+started_at: '2026-02-08T07:36:10.565957+00:00'
+completed_at: '2026-02-08T07:44:19.461908+00:00'
+duration_minutes: 8.148265683333333
+---
+
+# Implement platform converters
+
+Create converter functions to transform platform-specific messages into normalized Gateway.Message structs.
+
+## Requirements
+
+- [x] Implement `Gateway.Message.from_telegram/1` (~20 LoC)
+- [x] Implement `Gateway.Message.from_slack/1` (~20 LoC)
+- [x] Implement `Gateway.Message.from_discord/1` (~20 LoC)
+- [x] Implement `Gateway.Message.from_whatsapp/1` (~20 LoC)
+- [x] Implement `Gateway.Message.from_matrix/1` (~20 LoC)
+- [x] Implement `Gateway.Message.from_websocket/1` (~15 LoC)
+- [x] Add error handling for malformed messages
+- [x] Document expected input format for each platform
+
+## Acceptance Criteria
+
+- [x] All converter functions compile without warnings
+- [x] Each converter returns `{:ok, %Gateway.Message{}}` or `{:error, reason}`
+- [x] Platform-specific IDs are correctly extracted
+- [x] Sender information is normalized across platforms
+- [x] Context fields are properly mapped
+- [x] Timestamps are converted to UTC DateTime
+- [x] Tests verify conversion for all platforms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 485-491 (Converter function signatures)
+
+**Key Points**:
+- Each platform has different message structure
+- Converters must extract all relevant fields
+- Timestamps should be normalized to UTC
+- Platform-specific data goes into `metadata` field
+- Error handling for missing/malformed fields
+
+## Notes
+
+Example Telegram converter:
+```elixir
+def from_telegram(%{"message_id" => id, "from" => from, "text" => text, "chat" => chat, "date" => date}) do
+  {:ok, %__MODULE__{
+    id: "tg_#{id}",
+    platform: :telegram,
+    platform_id: to_string(id),
+    sender: %{
+      id: to_string(from["id"]),
+      username: from["username"],
+      first_name: from["first_name"]
+    },
+    content: text,
+    attachments: [],
+    context: %{
+      chat_id: chat["id"],
+      thread_id: chat["message_thread_id"]
+    },
+    timestamp: DateTime.from_unix!(date),
+    metadata: %{chat_type: chat["type"]}
+  }}
+end
+
+def from_telegram(_), do: {:error, :invalid_telegram_message}
+```
+
+Handle edge cases:
+- Missing optional fields (thread_id, username)
+- Different message types (text, photo, document)
+- Group vs private messages
+- Bot vs user messages

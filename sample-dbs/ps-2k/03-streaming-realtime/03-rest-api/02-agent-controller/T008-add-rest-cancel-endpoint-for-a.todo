@@ -1,0 +1,58 @@
+---
+id: P3.M3.E2.T008
+title: Add REST cancel endpoint for active agent stream
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on:
+- P3.M3.E2.T003
+- P3.M1.E3.T005
+tags:
+- rest
+- cancellation
+- streaming
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:17:09.622356+00:00'
+started_at: '2026-02-08T04:17:09.622356+00:00'
+completed_at: '2026-02-08T04:25:05.767188+00:00'
+duration_minutes: 7.935746966666667
+---
+
+# Add REST cancel endpoint for active agent stream
+
+
+
+## Requirements
+
+- [ ] Add REST cancel route in PagServerWeb.Router mapped to PagServerWeb.AgentController.
+- [ ] Implement PagServerWeb.AgentController action to cancel an active stream by agent/session identifiers.
+- [ ] Delegate cancellation to AgentServer and ensure provider stream cancellation is invoked.
+- [ ] Return deterministic JSON payload indicating cancellation outcome.
+- [ ] Ensure channel and REST cancellation share the same underlying AgentServer logic.
+
+## Context
+
+- [ ] REST cancel endpoint mirrors channel cancel and should interoperate with streaming SSE clients.
+- [ ] AgentServer owns active stream lifecycle; controller should not manage stream internals.
+
+## Acceptance Criteria
+
+- [ ] Cancel endpoint returns 200 with a stable JSON response when a stream is canceled.
+- [ ] If no active stream exists, returns 404 with a structured error body.
+- [ ] If cancel request is invalid, returns 400 with validation errors.
+- [ ] Cancellation results in downstream stream termination for SSE and channel clients.
+- [ ] AgentServer receives a cancel signal and provider stream is stopped.
+
+## Notes
+
+- [ ] Cancellation flow: REST -> PagServerWeb.AgentController -> AgentServer -> provider stream cancel.
+- [ ] If cancel occurs during SSE streaming, the response should close gracefully.
+- [ ] Use consistent error codes and messages with other REST endpoints.
+- [ ] Avoid double-cancel errors; return idempotent success if already canceled.
+
+## Testing
+
+- [ ] Add controller tests in `test/pag_server_web/controllers/agent_controller_test.exs`.
+- [ ] Add AgentServer cancellation tests in `test/pag_server/agents/agent_server_test.exs`.
+- [ ] Add channel integration tests in `test/pag_server_web/channels/agent_channel_test.exs` to confirm cross-path cancellation.

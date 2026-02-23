@@ -1,0 +1,31 @@
+---
+id: P49.M5.E1.T003
+title: Implement PluginTrustVerifier behaviour and shared verification interface
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:53:27.011137+00:00'
+started_at: '2026-02-20T09:53:27.011137+00:00'
+completed_at: '2026-02-20T10:54:17.995856+00:00'
+duration_minutes: 60.84974511666667
+---
+
+# Implement PluginTrustVerifier behaviour and shared verification interface
+
+
+
+## Requirements
+
+- Implement `PluginTrustVerifier` behavior with a shared request/response contract.
+- Provide baseline checksum verifier implementation wired to the shared interface.
+- Keep verifier selection extensible for Sigstore and local-only backends.
+
+## Acceptance Criteria
+
+- Verifier behavior and baseline implementation are available behind a stable API.
+- Policy engine consumes verifier results without backend-specific branching.
+- Tests prove backend pluggability and deterministic verification result shape.

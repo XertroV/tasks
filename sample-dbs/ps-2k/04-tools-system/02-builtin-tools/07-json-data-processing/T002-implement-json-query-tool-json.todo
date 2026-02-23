@@ -1,0 +1,206 @@
+---
+id: P4.M2.E7.T002
+title: Implement json_query tool (JSONPath)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- json
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:15:31.681888'
+started_at: '2026-02-05T23:15:31.681888'
+completed_at: '2026-02-05T23:24:16.495291'
+duration_minutes: 8.746889900000001
+---
+
+# Implement json_query tool (JSONPath)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/json_query.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Query JSON structures using JSONPath expressions
+- [ ] Use Warpath library for JSONPath support
+- [ ] Support common JSONPath operators: `.`, `[]`, `*`, `..`, filters
+- [ ] Return matched values as list (potentially multiple matches)
+- [ ] Handle queries that return no matches gracefully
+
+## Acceptance Criteria
+
+- [ ] Queries JSON data using JSONPath expressions
+- [ ] Accepts `data` parameter (already-parsed JSON structure or string to parse)
+- [ ] Accepts `path` parameter (JSONPath expression)
+- [ ] Supports basic paths: `$.field`, `$.nested.field`, `$[0]`, `$[*]`
+- [ ] Supports recursive descent: `$..field` (find all matching fields at any depth)
+- [ ] Supports wildcards: `$.users[*].name` (all names in users array)
+- [ ] Supports array slices: `$[0:5]`, `$[-1]` (last element)
+- [ ] Supports filter expressions: `$.users[?(@.age > 18)]`
+- [ ] Returns array of matched values (empty array if no matches)
+- [ ] Handles invalid JSONPath syntax with clear errors
+- [ ] Test coverage: simple paths, nested paths, array indexing, wildcards, recursive descent, filters, no matches, invalid paths
+- [ ] Performance: queries 1MB document in <50ms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use Warpath library (add to mix.exs dependencies)
+- JSONPath is a query language for JSON (like XPath for XML)
+- No sandbox concerns (pure data querying)
+- Return empty array for no matches (not an error)
+- Support both parsed data and JSON strings as input
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.JsonQuery do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "json_query"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "json_query",
+      description: "Query JSON data using JSONPath expressions",
+      parameters: %{
+        type: "object",
+        properties: %{
+          data: %{
+            description: "JSON data (object/array) or JSON string to query"
+          },
+          path: %{
+            type: "string",
+            description: "JSONPath expression (e.g., '$.users[*].name')"
+          },
+          return_first: %{
+            type: "boolean",
+            description: "Return only first match instead of array (default: false)"
+          }
+        },
+        required: ["data", "path"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"data" => data, "path" => path} = args, _context) do
+    with {:ok, parsed_data} <- ensure_parsed(data),
+         {:ok, results} <- query_path(parsed_data, path) do
+      return_first = Map.get(args, "return_first", false)
+      
+      result = if return_first do
+        %{value: List.first(results), match_count: length(results)}
+      else
+        %{values: results, match_count: length(results)}
+      end
+      
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, "JSON query failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp ensure_parsed(data) when is_binary(data) do
+    Jason.decode(data)
+  end
+  defp ensure_parsed(data) when is_map(data) or is_list(data) do
+    {:ok, data}
+  end
+  defp ensure_parsed(_) do
+    {:error, "Data must be a JSON string, object, or array"}
+  end
+
+  defp query_path(data, path) do
+    case Warpath.query(data, path) do
+      {:ok, results} when is_list(results) ->
+        {:ok, results}
+      {:ok, result} ->
+        {:ok, [result]}
+      {:error, reason} ->
+        {:error, "Invalid JSONPath expression: #{inspect(reason)}"}
+    end
+  rescue
+    e in [ArgumentError, RuntimeError] ->
+      {:error, "JSONPath query failed: #{Exception.message(e)}"}
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "data": {
+    "users": [
+      {"name": "Alice", "age": 30, "role": "admin"},
+      {"name": "Bob", "age": 25, "role": "user"},
+      {"name": "Charlie", "age": 35, "role": "user"}
+    ],
+    "organization": "Acme Corp"
+  },
+  "path": "$.users[?(@.role == 'user')].name"
+}
+```
+
+Example response:
+```json
+{
+  "values": ["Bob", "Charlie"],
+  "match_count": 2
+}
+```
+
+Common JSONPath patterns:
+```
+$.store.book[0].title          # First book title
+$.store.book[*].author         # All authors
+$..price                       # All prices (recursive)
+$.store.book[?(@.price < 10)]  # Books under $10
+$.store.book[-1]               # Last book
+$.store.book[0:2]              # First two books
+$.store.book[?(@.category == 'fiction')]  # Fiction books
+```
+
+Example queries:
+1. Get all user names:
+   ```json
+   {"data": {...}, "path": "$.users[*].name"}
+   → ["Alice", "Bob", "Charlie"]
+   ```
+
+2. Get first admin:
+   ```json
+   {"data": {...}, "path": "$.users[?(@.role == 'admin')]", "return_first": true}
+   → {"value": {"name": "Alice", "age": 30, "role": "admin"}, "match_count": 1}
+   ```
+
+3. Get all ages recursively:
+   ```json
+   {"data": {...}, "path": "$..age"}
+   → [30, 25, 35]
+   ```
+
+4. No matches:
+   ```json
+   {"data": {...}, "path": "$.users[?(@.age > 100)]"}
+   → {"values": [], "match_count": 0}
+   ```
+
+Edge cases to consider:
+- Empty data: `{}` or `[]`
+- Invalid path syntax: `$..[invalid`
+- Path doesn't exist: `$.nonexistent.field`
+- Type mismatches in filters: `$.users[?(@.name > 5)]`
+- Array out of bounds: `$[999]`
+- Complex nested filters
+- Unicode in field names: `$.café.☕`

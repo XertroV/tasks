@@ -1,0 +1,167 @@
+---
+id: P7.M7.E1.T005
+title: Document Session REST endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P7.M7.E1.T002
+- P3.M3.E3.T006
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:57:38.477835+00:00'
+started_at: '2026-02-08T05:57:38.477835+00:00'
+completed_at: '2026-02-08T06:03:37.922463+00:00'
+tags:
+- documentation
+- openapi
+- rest
+- sessions
+duration_minutes: 5.99074355
+---
+
+# Document Session REST endpoints
+
+Add OpenAPI schemas and documentation for all Session management endpoints.
+
+## Requirements
+
+- [ ] Create Session schemas module
+  - [ ] `SessionRequest`: Create session request
+  - [ ] `SessionResponse`: Single session response
+  - [ ] `SessionListResponse`: Paginated list response
+  - [ ] `ForkRequest`: Session forking request
+  - [ ] `MessageRequest`: Send message request
+
+- [ ] Document `POST /api/v1/sessions` (Create session)
+  - [ ] Request body with agent_id reference
+  - [ ] Success response (201)
+  - [ ] Error responses
+
+- [ ] Document `GET /api/v1/sessions` (List sessions)
+  - [ ] Query params (agent_id filter, pagination)
+  - [ ] Response with pagination
+
+- [ ] Document `GET /api/v1/sessions/:id` (Get session)
+  - [ ] Include message history in response
+  - [ ] Include session metadata
+
+- [ ] Document `POST /api/v1/sessions/:id/fork` (Fork session)
+  - [ ] Request body with fork options
+  - [ ] Response with new session ID
+
+- [ ] Document `POST /api/v1/sessions/:id/messages` (Send message)
+  - [ ] Request body with content and mode
+  - [ ] Response with message ID
+
+- [ ] Document `DELETE /api/v1/sessions/:id` (Delete session)
+  - [ ] Success response (204)
+
+- [ ] Add operation tags for "Sessions" group
+
+## Acceptance Criteria
+
+- [ ] All Session endpoints documented in OpenAPI spec
+- [ ] Fork endpoint clearly explains branching semantics
+- [ ] Message modes (immediate, after_thinking, when_done) documented
+- [ ] Endpoints appear grouped in Redoc under "Sessions"
+- [ ] Parent session references documented for forks
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on P3.M3.E3 (Session Controller implementation)
+- Related to P5 (Session forking features)
+
+## Implementation Guide
+
+### Session Schemas
+
+```elixir
+defmodule PagServerWeb.Schemas.Session do
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  defmodule SessionResponse do
+    OpenApiSpex.schema(%{
+      title: "SessionResponse",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        agent_id: %Schema{type: :string, format: :uuid},
+        parent_session_id: %Schema{type: :string, format: :uuid, nullable: true,
+                                    description: "ID of parent session if forked"},
+        fork_point: %Schema{type: :integer, nullable: true,
+                            description: "Message index where fork occurred"},
+        status: %Schema{type: :string, enum: ["active", "archived"]},
+        message_count: %Schema{type: :integer},
+        created_at: %Schema{type: :string, format: :"date-time"}
+      }
+    })
+  end
+
+  defmodule ForkRequest do
+    OpenApiSpex.schema(%{
+      title: "ForkRequest",
+      type: :object,
+      properties: %{
+        at_message: %Schema{type: :integer, 
+                            description: "Fork at this message index (default: latest)"},
+        name: %Schema{type: :string, 
+                      description: "Name for the forked session branch"}
+      }
+    })
+  end
+
+  defmodule MessageRequest do
+    OpenApiSpex.schema(%{
+      title: "MessageRequest",
+      type: :object,
+      properties: %{
+        content: %Schema{type: :string, description: "Message content"},
+        mode: %Schema{type: :string, 
+                      enum: ["immediate", "after_thinking", "when_done"],
+                      default: "when_done",
+                      description: "When to send message to agent"}
+      },
+      required: [:content]
+    })
+  end
+end
+```
+
+### Controller Operations
+
+```elixir
+defmodule PagServerWeb.SessionController do
+  use PagServerWeb, :controller
+  use OpenApiSpex.ControllerSpecs
+
+  tags ["Sessions"]
+
+  operation :fork,
+    summary: "Fork a session at a specific point",
+    description: """
+    Creates a new session branching from an existing one. The forked session
+    inherits all messages up to the fork point and can diverge independently.
+    """,
+    parameters: [
+      id: [in: :path, type: :string, required: true, description: "Session ID"]
+    ],
+    request_body: {"Fork options", "application/json", ForkRequest},
+    responses: [
+      created: {"Forked session", "application/json", SessionResponse}
+    ]
+
+  def fork(conn, %{"id" => id} = params) do
+    # ...
+  end
+end
+```
+
+## Notes
+
+- Session forking is a key differentiator - document clearly
+- Message modes affect agent behavior - include behavioral descriptions
+- Include examples showing fork lineage

@@ -1,0 +1,18 @@
+---
+id: P19.M2.E3.T002
+title: Fix main-agent-routing.md function names
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- design
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:24:41.146816+00:00'
+started_at: '2026-02-18T02:24:41.146816+00:00'
+completed_at: '2026-02-18T02:27:59.942911+00:00'
+duration_minutes: 3.3132680666666667
+---
+Update send_message → chat/3. Correct flow to show WorkspacesController.chat/3 → RoutingPolicy.dispatch/3.

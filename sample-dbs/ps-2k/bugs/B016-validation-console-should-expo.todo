@@ -1,0 +1,39 @@
+---
+id: B016
+title: validation console should expose model catalog refresh errors and retry action
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- validation-console
+- ux
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:14:36.815257+00:00'
+started_at: '2026-02-15T17:14:36.815257+00:00'
+completed_at: '2026-02-15T17:22:27.138962+00:00'
+duration_minutes: 7.8387282166666665
+---
+Model catalog fetch in frontend hook fails silently. Add visible warning/feedback when catalog fetch fails and provide manual retry action/button. Ensure retry updates provider/model options when successful. Add LiveView/E2E assertions.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:14 UTC
+**Primary task**: B014 - validation console should gracefully handle provider catalog load failures
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

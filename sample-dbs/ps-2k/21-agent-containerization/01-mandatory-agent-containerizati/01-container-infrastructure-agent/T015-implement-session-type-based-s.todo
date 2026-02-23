@@ -1,0 +1,40 @@
+---
+id: P21.M1.E1.T015
+title: Implement session-type-based sibling sharing defaults
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T009
+tags:
+- configuration
+- sessions
+- multi-agent
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.568072+00:00'
+started_at: '2026-02-18T12:21:44.568072+00:00'
+completed_at: '2026-02-18T13:23:23.844352+00:00'
+duration_minutes: 61.654604400000004
+---
+
+# Implement session-type-based sibling sharing defaults
+
+Implement the default behavior for sibling sharing based on session type.
+
+## Requirements
+
+- Ephemeral sessions: share /private with siblings by default
+- Persistent sessions: keep /private isolated by default
+- Configurable override at session level
+- Detect session type from Session record
+
+## Acceptance Criteria
+
+- [ ] `Session.ephemeral?/1` detects ephemeral session type
+- [ ] `VolumeManager.sibling_sharing_enabled?/2` determines sharing
+- [ ] Ephemeral sessions -> shared volume enabled
+- [ ] Persistent sessions -> shared volume disabled
+- [ ] Session config can override default behavior
+- [ ] VolumeManager uses this to set up shared mount
+- [ ] Unit tests for session type detection and sharing logic

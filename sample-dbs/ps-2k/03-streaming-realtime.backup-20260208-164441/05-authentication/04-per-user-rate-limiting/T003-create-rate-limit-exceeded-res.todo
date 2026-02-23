@@ -1,0 +1,392 @@
+---
+id: P3.M5.E4.T003
+title: Create rate limit exceeded responses
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P3.M5.E4.T001
+- P3.M5.E4.T002
+tags:
+- auth
+- api
+- errors
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:59:07.894792+00:00'
+started_at: '2026-02-06T18:59:07.894792+00:00'
+completed_at: '2026-02-06T19:12:07.583357+00:00'
+duration_minutes: 12.99480925
+---
+
+# Create rate limit exceeded responses
+
+
+
+## Requirements
+
+- [ ] Extend `lib/pag_server_web/controllers/error_json.ex` with rate limit error formatting
+- [ ] Add HTTP 429 and HTTP 402 response templates
+- [ ] Include rate limit metadata in error responses
+- [ ] Add helper functions for building rate limit headers
+- [ ] Create consistent error response format matching existing patterns
+- [ ] Document error response schema for API consumers
+
+## Acceptance Criteria
+
+- [ ] Error JSON module supports rate limit responses:
+  - [ ] `render("429.json", assigns)` - Rate limit exceeded
+  - [ ] `render("402.json", assigns)` - Quota exceeded
+  - [ ] Both include detailed error info and recovery instructions
+- [ ] Error response format matches existing pattern:
+  ```json
+  {
+    "error": "rate_limit_exceeded",
+    "message": "Too many requests. Please retry after 15 seconds.",
+    "retry_after": 15,
+    "limit": 100,
+    "remaining": 0,
+    "reset_at": "2026-02-06T12:30:45Z"
+  }
+  ```
+- [ ] Quota exceeded response includes tier info:
+  ```json
+  {
+    "error": "quota_exceeded",
+    "message": "Monthly quota exhausted. Upgrade plan or wait for reset.",
+    "quota": {
+      "tier": "free",
+      "period": "monthly",
+      "limit": 10000,
+      "used": 10000,
+      "reset_at": "2026-03-01T00:00:00Z"
+    },
+    "upgrade_url": "/api/billing/upgrade"
+  }
+  ```
+- [ ] Helper module created at `lib/pag_server_web/helpers/rate_limit_headers.ex`:
+  - [ ] `build_rate_limit_headers/3` - Constructs rate limit headers
+  - [ ] `build_quota_headers/1` - Constructs quota headers
+  - [ ] `build_retry_after_header/1` - Calculates retry-after value
+- [ ] Standard HTTP headers included:
+  - [ ] `Retry-After` - Seconds until retry allowed
+  - [ ] `X-RateLimit-Limit` - Requests per window
+  - [ ] `X-RateLimit-Remaining` - Requests remaining in window
+  - [ ] `X-RateLimit-Reset` - Unix timestamp of reset time
+  - [ ] `X-Quota-Limit-Daily` - Daily quota limit
+  - [ ] `X-Quota-Remaining-Daily` - Daily quota remaining
+  - [ ] `X-Quota-Reset-Daily` - Daily quota reset time
+  - [ ] `X-Quota-Limit-Monthly` - Monthly quota limit
+  - [ ] `X-Quota-Remaining-Monthly` - Monthly quota remaining
+  - [ ] `X-Quota-Reset-Monthly` - Monthly quota reset time
+- [ ] Error responses are developer-friendly:
+  - [ ] Clear error messages explain what happened
+  - [ ] Include actionable next steps (wait, upgrade, contact support)
+  - [ ] Provide timestamps in ISO 8601 format
+  - [ ] Consistent structure across all rate limit errors
+- [ ] Documentation added:
+  - [ ] API error response examples in module docs
+  - [ ] Header specification documented
+  - [ ] Example error payloads included
+- [ ] Tests pass with >90% coverage
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Plan References**:
+- Epic P3.M5.E4 (Per-user rate limiting)
+- Related to error handling patterns across the codebase
+
+**Key Points**:
+- Error responses should follow REST best practices (RFC 6585 for 429)
+- Use HTTP 429 for rate limits (burst), HTTP 402 for quotas (sustained)
+- Headers must match industry standards (X-RateLimit-* from GitHub/Twitter)
+- Consistent with existing error response format in `error_json.ex`
+- Should be easy for API consumers to parse and handle programmatically
+
+## Implementation Notes
+
+### Error JSON Extension
+
+Extend `lib/pag_server_web/controllers/error_json.ex`:
+
+```elixir
+defmodule PAGServerWeb.ErrorJSON do
+  @moduledoc """
+  Error responses rendered as JSON.
+  
+  Supports standard HTTP error codes plus custom rate limit and quota errors.
+  """
+
+  # Existing error templates
+  def render(template, _assigns) do
+    %{errors: %{detail: Phoenix.Controller.status_message_from_template(template)}}
+  end
+  
+  # Rate limit exceeded (429)
+  def render("429.json", %{error: error, rate_limit: rate_limit}) do
+    %{
+      error: "rate_limit_exceeded",
+      message: error || "Too many requests. Please slow down and retry after the specified time.",
+      retry_after: rate_limit.retry_after,
+      limit: rate_limit.limit,
+      remaining: rate_limit.remaining,
+      reset_at: format_datetime(rate_limit.reset_at)
+    }
+  end
+  
+  # Quota exceeded (402)
+  def render("402.json", %{quota: quota}) do
+    %{
+      error: "quota_exceeded",
+      message: "#{quota.period |> to_string() |> String.capitalize()} quota exhausted. " <>
+               "Please upgrade your plan or wait for quota reset.",
+      quota: %{
+        tier: quota.tier,
+        period: quota.period,
+        limit: quota.limit,
+        used: quota.used,
+        reset_at: format_datetime(quota.reset_at)
+      },
+      upgrade_url: "/api/billing/upgrade"  # Adjust based on your billing setup
+    }
+  end
+  
+  defp format_datetime(%DateTime{} = dt) do
+    DateTime.to_iso8601(dt)
+  end
+  
+  defp format_datetime(_), do: nil
+end
+```
+
+### Rate Limit Headers Helper
+
+Create `lib/pag_server_web/helpers/rate_limit_headers.ex`:
+
+```elixir
+defmodule PAGServerWeb.Helpers.RateLimitHeaders do
+  @moduledoc """
+  Helper functions for building rate limit and quota HTTP headers.
+  
+  Follows industry standards from GitHub, Twitter, Stripe APIs.
+  """
+  
+  @doc """
+  Build standard rate limit headers.
+  
+  ## Parameters
+  - `limit`: Total requests allowed per window
+  - `remaining`: Requests remaining in current window
+  - `reset_at`: DateTime when window resets
+  
+  ## Returns
+  List of {header, value} tuples to add to conn.
+  """
+  @spec build_rate_limit_headers(
+    limit :: non_neg_integer(),
+    remaining :: non_neg_integer(),
+    reset_at :: DateTime.t()
+  ) :: [{String.t(), String.t()}]
+  def build_rate_limit_headers(limit, remaining, reset_at) do
+    [
+      {"x-ratelimit-limit", to_string(limit)},
+      {"x-ratelimit-remaining", to_string(remaining)},
+      {"x-ratelimit-reset", reset_at |> DateTime.to_unix() |> to_string()}
+    ]
+  end
+  
+  @doc """
+  Build retry-after header value.
+  
+  Calculates seconds until reset_at from now.
+  """
+  @spec build_retry_after_header(DateTime.t()) :: {String.t(), String.t()}
+  def build_retry_after_header(reset_at) do
+    seconds = max(0, DateTime.diff(reset_at, DateTime.utc_now(), :second))
+    {"retry-after", to_string(seconds)}
+  end
+  
+  @doc """
+  Build quota headers from quota status map.
+  
+  ## Parameters
+  - `quota_status`: Map from `Quota.get_quota_status/1`
+  """
+  @spec build_quota_headers(map()) :: [{String.t(), String.t()}]
+  def build_quota_headers(quota_status) do
+    daily = quota_status.daily
+    monthly = quota_status.monthly
+    
+    [
+      {"x-quota-limit-daily", to_string(daily.limit)},
+      {"x-quota-remaining-daily", to_string(daily.remaining)},
+      {"x-quota-reset-daily", DateTime.to_iso8601(daily.reset_at)},
+      {"x-quota-limit-monthly", to_string(monthly.limit)},
+      {"x-quota-remaining-monthly", to_string(monthly.remaining)},
+      {"x-quota-reset-monthly", DateTime.to_iso8601(monthly.reset_at)}
+    ]
+  end
+  
+  @doc """
+  Add all headers to a conn.
+  
+  Convenience function for adding multiple headers at once.
+  """
+  @spec put_headers(Plug.Conn.t(), [{String.t(), String.t()}]) :: Plug.Conn.t()
+  def put_headers(conn, headers) do
+    Enum.reduce(headers, conn, fn {key, value}, acc ->
+      Plug.Conn.put_resp_header(acc, key, value)
+    end)
+  end
+end
+```
+
+### Integration with Plugs
+
+Update rate limiter plug (T001) to use these helpers:
+
+```elixir
+defp send_rate_limit_response(conn, remaining, retry_after, config) do
+  reset_at = DateTime.add(DateTime.utc_now(), retry_after, :second)
+  
+  headers = 
+    RateLimitHeaders.build_rate_limit_headers(config.bucket_size, remaining, reset_at)
+    ++ [RateLimitHeaders.build_retry_after_header(reset_at)]
+  
+  error_data = %{
+    error: "rate_limit_exceeded",
+    rate_limit: %{
+      retry_after: retry_after,
+      limit: config.bucket_size,
+      remaining: remaining,
+      reset_at: reset_at
+    }
+  }
+  
+  conn
+  |> RateLimitHeaders.put_headers(headers)
+  |> put_status(429)
+  |> Phoenix.Controller.put_view(PAGServerWeb.ErrorJSON)
+  |> Phoenix.Controller.render("429.json", error_data)
+  |> halt()
+end
+```
+
+Update quota plug (T002) to use these helpers:
+
+```elixir
+defp send_quota_exceeded_response(conn, quota_status, period) do
+  quota = quota_status[period]
+  
+  quota_data = %{
+    tier: quota_status.tier,
+    period: period,
+    limit: quota.limit,
+    used: quota.used,
+    reset_at: quota.reset_at
+  }
+  
+  headers = RateLimitHeaders.build_quota_headers(quota_status)
+  
+  conn
+  |> RateLimitHeaders.put_headers(headers)
+  |> put_status(402)
+  |> Phoenix.Controller.put_view(PAGServerWeb.ErrorJSON)
+  |> Phoenix.Controller.render("402.json", %{quota: quota_data})
+  |> halt()
+end
+```
+
+### Header Format Reference
+
+Following RFC 6585 (429 Too Many Requests) and industry standards:
+
+**Rate Limit Headers** (used by GitHub, Twitter):
+```
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 37
+X-RateLimit-Reset: 1675693845
+Retry-After: 42
+```
+
+**Quota Headers** (custom, inspired by AWS):
+```
+X-Quota-Limit-Daily: 1000
+X-Quota-Remaining-Daily: 523
+X-Quota-Reset-Daily: 2026-02-07T00:00:00Z
+X-Quota-Limit-Monthly: 10000
+X-Quota-Remaining-Monthly: 4231
+X-Quota-Reset-Monthly: 2026-03-01T00:00:00Z
+```
+
+### Testing Strategy
+
+Create `test/pag_server_web/controllers/error_json_test.exs`:
+- Test 429 response format matches schema
+- Test 402 response format matches schema
+- Test all fields present in error responses
+- Test datetime formatting (ISO 8601)
+- Test error messages are clear and actionable
+
+Create `test/pag_server_web/helpers/rate_limit_headers_test.exs`:
+- Test rate limit headers formatted correctly
+- Test quota headers formatted correctly
+- Test retry-after calculation
+- Test Unix timestamp conversion
+- Test header values are strings
+- Test edge cases (zero remaining, future reset)
+
+### API Documentation Example
+
+Add to API docs (future):
+
+```markdown
+## Rate Limiting
+
+API requests are rate limited to prevent abuse and ensure fair usage.
+
+### Rate Limit (Burst Protection)
+
+- **Limit**: 10 requests per second (burst up to 100)
+- **Response**: HTTP 429 when exceeded
+- **Headers**:
+  - `X-RateLimit-Limit`: Total requests per window
+  - `X-RateLimit-Remaining`: Requests remaining
+  - `X-RateLimit-Reset`: Unix timestamp of reset
+  - `Retry-After`: Seconds until retry allowed
+
+### Quota (Sustained Usage)
+
+- **Free Tier**: 1,000 requests/day, 10,000/month
+- **Pro Tier**: 10,000 requests/day, 100,000/month
+- **Response**: HTTP 402 when exceeded
+- **Headers**: `X-Quota-*` headers show limits and usage
+
+### Example Error Response
+
+```json
+{
+  "error": "rate_limit_exceeded",
+  "message": "Too many requests. Please retry after 15 seconds.",
+  "retry_after": 15,
+  "limit": 100,
+  "remaining": 0,
+  "reset_at": "2026-02-06T12:30:45Z"
+}
+```
+```
+
+## References
+
+- **RFC 6585** (429 Too Many Requests): https://tools.ietf.org/html/rfc6585
+- **Existing error handling**: `lib/pag_server_web/controllers/error_json.ex`
+- **LLM rate limits**: `lib/pag_server/llm/providers/anthropic/error.ex:68-75`
+- **GitHub API rate limits**: https://docs.github.com/en/rest/rate-limit
+- **Phoenix error views**: https://hexdocs.pm/phoenix/Phoenix.Controller.html#put_view/2
+
+## Dependencies
+
+- No new dependencies
+- Works with existing Phoenix error rendering
+- Integrates with rate limiter (T001) and quota tracker (T002)

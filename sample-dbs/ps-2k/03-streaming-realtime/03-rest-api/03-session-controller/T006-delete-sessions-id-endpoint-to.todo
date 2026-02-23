@@ -1,0 +1,137 @@
+---
+id: P3.M3.E3.T006
+title: DELETE /sessions/:id endpoint to delete session
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- rest
+- crud
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:25:35.407607+00:00'
+started_at: '2026-02-08T04:25:35.407607+00:00'
+completed_at: '2026-02-08T04:33:50.978633+00:00'
+duration_minutes: 8.259516933333334
+---
+
+# DELETE /sessions/:id endpoint to delete session
+
+
+
+## Requirements
+
+- [ ] Create `DELETE /sessions/:id` endpoint in `lib/pag_server_web/controllers/session_controller.ex`
+- [ ] Implement `delete/2` action following Phoenix controller patterns
+- [ ] Validate session exists before deletion
+- [ ] Handle child sessions (forked sessions) gracefully
+- [ ] Delete session record from database (or soft-delete)
+- [ ] Delete associated messages and events (cascade or prevent)
+- [ ] Return 204 No Content on success
+- [ ] Return 404 Not Found if session doesn't exist
+- [ ] Return 409 Conflict if session has child sessions (optional)
+
+## Acceptance Criteria
+
+- [ ] Validates session_id is valid UUID format
+- [ ] Returns 404 if session doesn't exist
+- [ ] Soft-deletes session record (sets `deleted_at` timestamp) for audit trail
+- [ ] Returns 204 No Content with empty body on success
+- [ ] Optional: Returns 409 if session has active child sessions (configurable)
+- [ ] Marks session status as "deleted" before soft-delete
+- [ ] Preserves messages/events for replay (soft-delete only session record)
+- [ ] Alternative: Cascade delete messages/events (if configured)
+- [ ] Test coverage: delete existing session, delete non-existent session, delete with children, concurrent deletes
+- [ ] Idempotent - deleting already-deleted session returns 404
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 245-267 (Sessions domain)
+- Event sourcing - preserve events for audit/replay
+
+**Key Points**:
+- Soft-delete recommended for event sourcing (preserve history)
+- Handle forked child sessions gracefully
+- Preserve message/event history even after session deletion
+- Idempotent operation
+
+## Notes
+
+Implementation pattern:
+```elixir
+def delete(conn, %{"id" => id}) do
+  with {:ok, session} <- get_session(id),
+       :ok <- check_child_sessions(id),
+       {:ok, _deleted} <- soft_delete_session(session) do
+    conn
+    |> send_resp(:no_content, "")
+  else
+    {:error, :not_found} ->
+      conn
+      |> put_status(:not_found)
+      |> json(%{error: "Session not found"})
+    
+    {:error, :has_child_sessions} ->
+      conn
+      |> put_status(:conflict)
+      |> json(%{error: "Cannot delete session with active child sessions"})
+  end
+end
+
+defp check_child_sessions(session_id) do
+  case Repo.exists?(from s in Session, where: s.parent_session_id == ^session_id and is_nil(s.deleted_at)) do
+    true -> {:error, :has_child_sessions}
+    false -> :ok
+  end
+end
+
+defp soft_delete_session(session) do
+  session
+  |> Ecto.Changeset.change(%{
+    status: "deleted",
+    deleted_at: DateTime.utc_now()
+  })
+  |> Repo.update()
+end
+
+# Alternative: Hard delete with cascade (NOT recommended for event sourcing)
+defp hard_delete_session(session) do
+  # Delete messages first
+  from(m in Message, where: m.session_id == ^session.id) |> Repo.delete_all()
+  # Delete events
+  from(e in Event, where: e.session_id == ^session.id) |> Repo.delete_all()
+  # Delete session
+  Repo.delete(session)
+end
+```
+
+Request example:
+```
+DELETE /api/sessions/session-uuid
+```
+
+Response example (204 No Content):
+```
+(empty body)
+```
+
+Error example (409 Conflict):
+```json
+{
+  "error": "Cannot delete session with active child sessions",
+  "child_sessions": [
+    "child-session-1",
+    "child-session-2"
+  ]
+}
+```
+
+Edge cases:
+- Session actively processing message - wait or force?
+- Child sessions exist - cascade or prevent?
+- Hard delete vs soft delete (event sourcing implications)
+- Concurrent delete requests
+- Foreign key constraints from events/messages

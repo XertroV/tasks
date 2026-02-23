@@ -1,0 +1,79 @@
+---
+id: P9.M5.E5.T001
+title: Extend agent capabilities schema with plugin access control
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- capabilities
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:31:09.488446+00:00'
+started_at: '2026-02-07T05:31:09.488446+00:00'
+completed_at: '2026-02-07T05:55:45.344945+00:00'
+duration_minutes: 24.59760813333333
+---
+
+# Extend agent capabilities schema with plugin access control
+
+
+
+## Requirements
+
+- [x] Extend `PagServer.Security.Capabilities` struct with plugin access fields:
+  - [x] `:plugins` - List of allowed plugin names (strings) or `:all` atom for unrestricted
+  - [x] `:plugin_tools` - List of allowed plugin tool patterns (e.g., `"myplugin.*"`, `"myplugin.search"`)
+  - [x] `:plugin_hooks` - List of allowed hook types from plugins (optional, defaults to all allowed)
+- [x] Support wildcard patterns in plugin_tools:
+  - [x] `"*"` matches all plugin tools
+  - [x] `"myplugin.*"` matches all tools from "myplugin"
+  - [x] `"myplugin.read_*"` matches tools starting with "read_" from "myplugin"
+- [x] Update capability presets:
+  - [x] `:default` preset - No plugin access (empty lists)
+  - [x] `:developer` preset - All plugins, all tools
+  - [x] `:restricted` preset - Explicitly listed plugins only
+- [x] Implement validation for plugin capability fields:
+  - [x] Plugin names must reference registered plugins (warn on unknown)
+  - [x] Tool patterns must be valid glob-like patterns
+- [x] Add `has_plugin_access?/2` and `has_plugin_tool_access?/2` query functions
+
+## Acceptance Criteria
+
+- [x] Capabilities struct includes `:plugins` and `:plugin_tools` fields
+- [x] Wildcard patterns correctly match plugin tool names
+- [x] Capability presets include appropriate plugin access defaults
+- [x] `has_plugin_access?/2` correctly checks agent's plugin access list
+- [x] `has_plugin_tool_access?/2` correctly matches tool names against patterns
+- [x] Existing capability tests still pass (backward compatible)
+- [x] Unit tests cover: field validation, wildcard matching, presets, access queries
+
+## Context
+
+- **Modifies**: `lib/pag_server/security/capabilities.ex`
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004) for plugin name validation
+- **Used by**: `ToolExecutor` plugin filtering (E5.T002), session plugin config (E5.T003)
+- **Backward compat**: Existing agents without plugin fields default to no plugin access
+- **Pattern matching**: Implement simple glob matching (not full regex) for tool patterns
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P9.M5.E5)
+**Agent**: cli-user
+**Date**: 2026-02-07 05:31 UTC
+**Sibling tasks**: P9.M5.E5.T002, P9.M5.E5.T003, P9.M5.E5.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P9.M5.E5.T001 → P9.M5.E5.T002 → P9.M5.E5.T003 → P9.M5.E5.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P9.M5.E5.T001: .tasks/09-advanced/05-plugin-system/05-per-agent-plugin-access/T001-extend-agent-capabilities-sche.todo
+- P9.M5.E5.T002: .tasks/09-advanced/05-plugin-system/05-per-agent-plugin-access/T002-implement-per-agent-plugin-too.todo
+- P9.M5.E5.T003: .tasks/09-advanced/05-plugin-system/05-per-agent-plugin-access/T003-implement-per-session-plugin-c.todo
+- P9.M5.E5.T004: .tasks/09-advanced/05-plugin-system/05-per-agent-plugin-access/T004-add-plugin-access-audit-loggin.todo

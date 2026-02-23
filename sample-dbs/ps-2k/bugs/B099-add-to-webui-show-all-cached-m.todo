@@ -1,0 +1,19 @@
+---
+id: B099
+title: 'Add to webui: show all cached models from all providers, and all pricing data.
+  shhould be well organized and have an easy to navigate UI (we dont want one big
+  dump with everything mixed up).'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:34:00.933359+00:00'
+started_at: '2026-02-17T13:34:00.933359+00:00'
+completed_at: '2026-02-17T13:41:47.282568+00:00'
+duration_minutes: 7.772486616666667
+---
+
+Add to webui: show all cached models from all providers, and all pricing data. shhould be well organized and have an easy to navigate UI (we dont want one big dump with everything mixed up).

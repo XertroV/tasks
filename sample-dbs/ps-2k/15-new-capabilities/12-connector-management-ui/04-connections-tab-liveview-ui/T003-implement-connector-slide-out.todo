@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T003
+title: Implement connector slide-out drawer component
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M12.E4.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.179974+00:00'
+started_at: '2026-02-18T07:31:33.179974+00:00'
+completed_at: '2026-02-18T07:51:03.156475+00:00'
+duration_minutes: 19.499608149999997
+---
+Add a slide-out drawer panel to workspace_browser_live.ex template (right side, overlaid on the connections tab, visible when connector_drawer_open == true). Drawer has two modes: :create (new connector) and :edit (existing connector, identified by connector_drawer_id). Sections: (A) Platform — select dropdown: Telegram (active), Slack (disabled, 'coming soon'), Discord (disabled, 'coming soon'); (B) Name — text input for connector display name (required, max 100 chars); (C) Configuration — Telegram section: bot_token (masked input, show/hide toggle), mode select (polling/webhook), webhook_url (conditional on webhook mode); (D) Session Binding — shows current bound session name + agent display_name, a 'Change' sub-section with three options: 'Use main session' radio, 'Select existing session' (dropdown of workspace sessions with agent name), 'Create new session' (agent select dropdown + session name input); (E) Actions — Save, Verify Connectivity (Telegram only), Delete (edit mode only, with confirmation), Cancel. Drawer animation via CSS transition (translate-x-full to translate-x-0). Close on Escape key via JS hook.

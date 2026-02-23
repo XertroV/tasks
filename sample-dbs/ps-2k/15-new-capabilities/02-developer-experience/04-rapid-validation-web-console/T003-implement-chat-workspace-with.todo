@@ -1,0 +1,45 @@
+---
+id: P15.M2.E4.T003
+title: Implement chat workspace with streaming transcript and input composer
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M2.E4.T002
+tags:
+- chat
+- streaming
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:37:33.071607+00:00'
+started_at: '2026-02-14T12:37:33.071607+00:00'
+completed_at: '2026-02-14T12:45:47.339325+00:00'
+duration_minutes: 8.237795066666667
+---
+
+# Implement chat workspace with streaming transcript and input composer
+
+
+
+## Requirements
+
+- Build a chat transcript panel that shows user/assistant messages and incremental streaming token updates.
+- Add an input composer supporting prompt send, disabled/loading states, and keyboard submit behavior.
+- Wire message send/receive against pag-server chat/session APIs or channels selected in T001.
+- Include basic metadata display (model/provider/session) to make test runs easy to reason about.
+
+## Acceptance Criteria
+
+- Sending a prompt creates a visible user message and assistant response stream in the transcript.
+- Streaming updates append progressively and settle into a finalized assistant message.
+- Composer state transitions are correct for idle, sending, streaming, and error cases.
+- Failed requests surface actionable error text without corrupting transcript state.
+
+## Implementation Notes
+
+- Transcript uses persisted session messages from `PagServer.Context.Messages.get_session_messages/2`.
+- Composer supports submit, inline validation errors, and disabled submit when no active session is selected.
+- Prompt send flow persists user message first, then assistant response.
+- Streaming mode implemented via timed chunk updates in LiveView `handle_info/2` with `streaming_state`, then finalized into persisted assistant message.
+- Metadata visibility included in chat pane header (active session/agent) and per-message `model_used` when present.

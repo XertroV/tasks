@@ -1,0 +1,29 @@
+---
+id: P15.M11.E6.T002
+title: Add human message injection UI
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.230107+00:00'
+started_at: '2026-02-17T18:46:51.230107+00:00'
+completed_at: '2026-02-17T19:22:05.563747+00:00'
+duration_minutes: 35.23889385
+---
+## Description
+Add a chat input in the pair session LiveView that lets the human send messages to either or both agents.
+
+## Files to Modify
+- `lib/pag_server_web/live/pair_session_live.ex` (add message input component)
+
+## Acceptance Criteria
+- [ ] Dropdown to select target: coder, observer, or both
+- [ ] Text input for message content
+- [ ] Sends message via `Api.send_message/3` on submit
+- [ ] Shows sent message in the UI with timestamp
+- [ ] Input clears after successful send
+- [ ] Tests pass
+- [ ] Lint passes

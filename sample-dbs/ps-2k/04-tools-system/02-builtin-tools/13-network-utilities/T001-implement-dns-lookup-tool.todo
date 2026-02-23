@@ -1,0 +1,312 @@
+---
+id: P4.M2.E13.T001
+title: Implement dns_lookup tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- network
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:42:12.982957'
+started_at: '2026-02-06T02:42:12.982957'
+completed_at: '2026-02-06T02:53:23.230671'
+duration_minutes: 11.170795083333333
+---
+
+# Implement dns_lookup tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/dns_lookup.ex` (~120 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use `:inet_res` Erlang module for DNS queries
+- [ ] Support multiple record types (A, AAAA, MX, TXT, CNAME, NS, SOA)
+- [ ] Return all matching records
+- [ ] Include TTL information
+- [ ] Handle DNS errors gracefully (NXDOMAIN, timeout, etc.)
+
+## Acceptance Criteria
+
+- [ ] Accepts hostname/domain and record type parameter
+- [ ] Supports record types: A, AAAA, MX, TXT, CNAME, NS, SOA
+- [ ] Returns list of records with values and TTL
+- [ ] Handles multiple records (e.g., multiple A records)
+- [ ] Includes record-specific fields (e.g., priority for MX)
+- [ ] Handles errors: invalid hostname, NXDOMAIN, timeout, unsupported record type
+- [ ] Test coverage: A records, AAAA records, MX records, TXT records, CNAME, invalid hostname, timeout
+- [ ] Security: SSRF protection - block queries for private IP ranges, localhost
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- DNS lookups can be SSRF vector - validate hostnames
+- `:inet_res` provides low-level DNS control
+- Different record types have different structures
+- Include TTL for caching decisions
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.DnsLookup do
+  @behaviour PAGServer.Tools.Tool
+  @timeout 5_000  # 5 second DNS timeout
+
+  @impl true
+  def name, do: "dns_lookup"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "dns_lookup",
+      description: "Perform DNS lookup for a domain",
+      parameters: %{
+        type: "object",
+        properties: %{
+          hostname: %{
+            type: "string",
+            description: "Hostname or domain to look up"
+          },
+          record_type: %{
+            type: "string",
+            enum: ["A", "AAAA", "MX", "TXT", "CNAME", "NS", "SOA"],
+            description: "DNS record type (default: A)"
+          }
+        },
+        required: ["hostname"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"hostname" => hostname} = args, _context) do
+    record_type = Map.get(args, "record_type", "A") |> String.upcase()
+    
+    with :ok <- validate_hostname(hostname),
+         {:ok, records} <- lookup(hostname, record_type) do
+      {:ok, %{
+        hostname: hostname,
+        record_type: record_type,
+        records: records,
+        count: length(records)
+      }}
+    else
+      {:error, reason} -> {:error, "DNS lookup failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_hostname(hostname) do
+    hostname_lower = String.downcase(hostname)
+    
+    blocked = [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "::1"
+    ]
+    
+    cond do
+      hostname_lower in blocked ->
+        {:error, "Localhost lookups not allowed"}
+      
+      Regex.match?(~r/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/, hostname_lower) ->
+        {:error, "Private IP lookups not allowed"}
+      
+      not Regex.match?(~r/^[a-z0-9\-\.]+$/i, hostname) ->
+        {:error, "Invalid hostname format"}
+      
+      true ->
+        :ok
+    end
+  end
+
+  defp lookup(hostname, record_type) do
+    type_atom = record_type_to_atom(record_type)
+    
+    case :inet_res.resolve(to_charlist(hostname), :in, type_atom, timeout: @timeout) do
+      {:ok, dns_rec} ->
+        records = extract_records(dns_rec, type_atom)
+        {:ok, records}
+      
+      {:error, :nxdomain} ->
+        {:error, "Domain does not exist (NXDOMAIN)"}
+      
+      {:error, :timeout} ->
+        {:error, "DNS query timeout"}
+      
+      {:error, reason} ->
+        {:error, "DNS query failed: #{inspect(reason)}"}
+    end
+  rescue
+    e -> {:error, "DNS lookup error: #{Exception.message(e)}"}
+  end
+
+  defp record_type_to_atom("A"), do: :a
+  defp record_type_to_atom("AAAA"), do: :aaaa
+  defp record_type_to_atom("MX"), do: :mx
+  defp record_type_to_atom("TXT"), do: :txt
+  defp record_type_to_atom("CNAME"), do: :cname
+  defp record_type_to_atom("NS"), do: :ns
+  defp record_type_to_atom("SOA"), do: :soa
+  defp record_type_to_atom(_), do: :a
+
+  defp extract_records(dns_rec, type) do
+    # Extract answer section from DNS record
+    answers = :inet_dns.msg(dns_rec, :anlist)
+    
+    Enum.map(answers, fn rr ->
+      extract_record_data(rr, type)
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp extract_record_data(rr, :a) do
+    case :inet_dns.rr(rr, :type) do
+      :a ->
+        {a, b, c, d} = :inet_dns.rr(rr, :data)
+        ttl = :inet_dns.rr(rr, :ttl)
+        %{
+          type: "A",
+          address: "#{a}.#{b}.#{c}.#{d}",
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp extract_record_data(rr, :aaaa) do
+    case :inet_dns.rr(rr, :type) do
+      :aaaa ->
+        ipv6 = :inet_dns.rr(rr, :data)
+        ttl = :inet_dns.rr(rr, :ttl)
+        %{
+          type: "AAAA",
+          address: format_ipv6(ipv6),
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp extract_record_data(rr, :mx) do
+    case :inet_dns.rr(rr, :type) do
+      :mx ->
+        {priority, exchange} = :inet_dns.rr(rr, :data)
+        ttl = :inet_dns.rr(rr, :ttl)
+        %{
+          type: "MX",
+          priority: priority,
+          exchange: to_string(exchange),
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp extract_record_data(rr, :txt) do
+    case :inet_dns.rr(rr, :type) do
+      :txt ->
+        data = :inet_dns.rr(rr, :data)
+        ttl = :inet_dns.rr(rr, :ttl)
+        text = data |> List.flatten() |> to_string()
+        %{
+          type: "TXT",
+          text: text,
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp extract_record_data(rr, :cname) do
+    case :inet_dns.rr(rr, :type) do
+      :cname ->
+        cname = :inet_dns.rr(rr, :data) |> to_string()
+        ttl = :inet_dns.rr(rr, :ttl)
+        %{
+          type: "CNAME",
+          target: cname,
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp extract_record_data(rr, :ns) do
+    case :inet_dns.rr(rr, :type) do
+      :ns ->
+        ns = :inet_dns.rr(rr, :data) |> to_string()
+        ttl = :inet_dns.rr(rr, :ttl)
+        %{
+          type: "NS",
+          nameserver: ns,
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp extract_record_data(rr, :soa) do
+    case :inet_dns.rr(rr, :type) do
+      :soa ->
+        {mname, rname, serial, refresh, retry, expire, minimum} = :inet_dns.rr(rr, :data)
+        ttl = :inet_dns.rr(rr, :ttl)
+        %{
+          type: "SOA",
+          mname: to_string(mname),
+          rname: to_string(rname),
+          serial: serial,
+          refresh: refresh,
+          retry: retry,
+          expire: expire,
+          minimum: minimum,
+          ttl: ttl
+        }
+      _ -> nil
+    end
+  end
+
+  defp format_ipv6({a, b, c, d, e, f, g, h}) do
+    [a, b, c, d, e, f, g, h]
+    |> Enum.map(&Integer.to_string(&1, 16))
+    |> Enum.join(":")
+    |> String.downcase()
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "hostname": "example.com",
+  "record_type": "A"
+}
+```
+
+Example response:
+```json
+{
+  "hostname": "example.com",
+  "record_type": "A",
+  "count": 2,
+  "records": [
+    {"type": "A", "address": "93.184.216.34", "ttl": 3600},
+    {"type": "A", "address": "93.184.216.35", "ttl": 3600}
+  ]
+}
+```
+
+Security considerations:
+- **Critical**: SSRF protection - block localhost, private IPs
+- Hostname validation to prevent injection
+- Timeout to prevent hanging queries
+- No system DNS cache poisoning (read-only)

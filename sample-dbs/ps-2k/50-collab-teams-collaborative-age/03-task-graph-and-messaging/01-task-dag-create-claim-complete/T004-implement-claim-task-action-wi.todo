@@ -1,0 +1,25 @@
+---
+id: P50.M3.E1.T004
+title: Implement claim_task action with optimistic locking
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:19:49.391174+00:00'
+started_at: '2026-02-23T02:19:49.391174+00:00'
+completed_at: '2026-02-23T02:19:52.036816+00:00'
+duration_minutes: 0.04409385
+---
+## Description
+CollabTeams.TaskGraph.claim_task/1 (task_id, actor_agent_id): check dependency closure (T003) -- return {:error, :dependencies_unmet, %{unmet: [...]}} if not satisfied. Use Ecto.Changeset.optimistic_lock(:lock_version) on Repo.update; retry once on Ecto.StaleEntryError then return {:error, :claim_conflict}. Set claimed_by_worker_id, transition state to in_progress, write collab_task_claimed audit event. Concurrent claim test: 5 workers racing same task -- exactly one succeeds, rest get :claim_conflict.
+
+## Acceptance Criteria
+- Dependency-unmet claim rejected with unmet task IDs
+- concurrent 5-worker race: exactly one claim wins
+- :claim_conflict returned for losers
+- audit event written on success
+- single-owner lock enforced

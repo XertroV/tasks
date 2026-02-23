@@ -1,0 +1,18 @@
+---
+id: P19.M2.E3.T003
+title: Update AGENTS.md architecture diagram
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- docs
+- AGENTS.md
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:24:41.147999+00:00'
+started_at: '2026-02-18T02:24:41.147999+00:00'
+completed_at: '2026-02-18T02:28:01.612499+00:00'
+duration_minutes: 3.3410747499999998
+---
+Add missing directories to architecture diagram or add note that it's simplified: auth/, cache/, cluster/, bootstrap/, routing/, blackboard/, audit/, embeddings/, errors/, preferences/, consensus/, contract_net/

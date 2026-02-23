@@ -1,0 +1,32 @@
+---
+id: P34.M1.E2.T003
+title: Install to Workspace
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- backend
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:42:22.853059+00:00'
+started_at: '2026-02-19T00:42:22.853059+00:00'
+completed_at: '2026-02-19T00:42:25.080083+00:00'
+duration_minutes: 0.037116833333333335
+---
+
+# Install to Workspace
+
+Implement skill installation:
+
+- Download skill bundle
+- Extract to `<workspace>/skills/<slug>/`
+- Validate SKILL.md exists
+- Return installation path
+
+## Acceptance Criteria
+
+- [ ] Skill installed to correct workspace location
+- [ ] Overwrites existing if `force: true`
+- [ ] Returns error if SKILL.md missing

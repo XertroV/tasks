@@ -1,0 +1,38 @@
+---
+id: P21.M1.E1.T007
+title: Implement workspace volume mounting logic
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T006
+tags:
+- volumes
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.555222+00:00'
+started_at: '2026-02-18T12:21:44.555222+00:00'
+completed_at: '2026-02-18T13:04:14.995546+00:00'
+duration_minutes: 42.50733858333333
+---
+
+# Implement workspace volume mounting logic
+
+Implement the common workspace volume that all agents in a workspace share.
+
+## Requirements
+
+- Mount workspace root at `/workspace` in container
+- Read-write access by default
+- Workspace path from workspace record
+- Validate workspace path exists and is accessible
+
+## Acceptance Criteria
+
+- [ ] Workspace volume mounts to `/workspace` in container
+- [ ] `get_workspace_path/1` retrieves workspace root from workspace_id
+- [ ] Validates workspace directory exists
+- [ ] Mount format compatible with Docker.ex `:volumes` option
+- [ ] Support read-only mode via configuration
+- [ ] Unit tests for workspace mount computation

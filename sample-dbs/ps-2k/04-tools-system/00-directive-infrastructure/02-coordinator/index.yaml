@@ -1,0 +1,29 @@
+# Epic: Coordinator
+# Phase 4, Milestone 0, Epic 2 (P4.M0.E2)
+
+id: P4.M0.E2
+name: Coordinator
+status: pending
+estimate_hours: 5
+complexity: medium
+depends_on:
+  - P4.M0.E1
+
+tasks:
+  - id: T003
+    file: T003-coordinator-genserver.todo
+    title: Implement Coordinator GenServer
+    status: pending
+    estimate_hours: 5
+    complexity: medium
+    priority: high
+    depends_on:
+      - P4.M0.E1.T001
+      - P4.M0.E1.T002
+
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

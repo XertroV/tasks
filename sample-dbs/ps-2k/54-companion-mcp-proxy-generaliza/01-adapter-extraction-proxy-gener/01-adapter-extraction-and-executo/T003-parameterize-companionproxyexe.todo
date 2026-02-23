@@ -1,0 +1,27 @@
+---
+id: P54.M1.E1.T003
+title: Parameterize CompanionProxyExecutor with adapter dispatch
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P54.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:37:59.965114+00:00'
+started_at: '2026-02-21T10:37:59.965114+00:00'
+completed_at: '2026-02-21T10:43:33.871677+00:00'
+duration_minutes: 5.565109199999999
+---
+## Context
+After extracting BrowserMcpAdapter, CompanionProxyExecutor must look up the appropriate adapter by tool name and dispatch to it. The generic core (~180 lines: execute_via_companion, build_execution, timing, monitoring) stays; the browsermcp-specific branches are replaced with adapter calls.
+
+## Acceptance Criteria
+- [ ] `CompanionProxyExecutor` has a private `adapter_for/1` function: maps tool name to adapter module. "browsermcp" maps to `BrowserMcpAdapter`; unknown tools return a default no-op adapter (or `nil` to use generic path)
+- [ ] `execute/3` entry calls `adapter.enabled?/1`, `adapter.authorize/2`, `adapter.pre_execute/2` before dispatch, `adapter.post_execute/3` and `adapter.normalize_error/1` after
+- [ ] All BrowserMCP-specific `if payload.name == "browsermcp"` branches removed from executor
+- [ ] `execute_via_companion/4` is unchanged (fully generic)
+- [ ] Non-browsermcp tool calls (execute_shell, read_file, etc.) unaffected — adapter_for returns default, authorize returns :ok, pre/post are no-ops
+- [ ] All existing companion proxy tests pass unchanged
+- [ ] `mix lint` passes

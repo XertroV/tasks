@@ -1,0 +1,48 @@
+---
+id: P41.M1.E1.T002
+title: Add grouped meta-aliases for common developer workflows
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P41.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:26:23.522220+00:00'
+started_at: '2026-02-19T15:26:23.522220+00:00'
+completed_at: '2026-02-19T15:29:12.694441+00:00'
+duration_minutes: 2.8195367499999997
+---
+## Context
+
+After all subdirectory aliases exist, add higher-level grouped aliases to make common workflows fast.
+
+## Aliases to Add
+
+```elixir
+# Inner loop: the core agent/session/event stack
+"test.core" => ["ecto.create --quiet", "ecto.migrate --quiet",
+  "test test/pag_server/agents/ test/pag_server/sessions/ test/pag_server/events/ test/pag_server/context/"],
+
+# LLM + integration provider stack
+"test.provider" => ["ecto.create --quiet", "ecto.migrate --quiet",
+  "test test/pag_server/llm/ test/pag_server/integrations/"],
+
+# Infrastructure layer
+"test.infra" => ["ecto.create --quiet", "ecto.migrate --quiet",
+  "test test/pag_server/containers/ test/pag_server/cluster/ test/pag_server/cache/ test/pag_server/auth/ test/pag_server/security/"],
+
+# Exclude slow/external tests (run the bulk of fast tests)
+"test.fast" => ["ecto.create --quiet", "ecto.migrate --quiet",
+  "test --exclude slow --exclude integration --exclude docker --exclude docker_required --exclude requires_anthropic --exclude requires_groq --exclude requires_zai --exclude requires_ollama --exclude requires_openrouter --exclude pgvector --exclude flaky"],
+```
+
+## Acceptance Criteria
+
+- [ ] `mix test.core` runs agents + sessions + events + context tests
+- [ ] `mix test.provider` runs llm + integrations tests
+- [ ] `mix test.infra` runs containers + cluster + cache + auth + security tests
+- [ ] `mix test.fast` runs full suite excluding all tagged slow/external tests
+- [ ] Each alias is documented with a comment in mix.exs
+- [ ] Update AGENTS.md to document the new grouped aliases

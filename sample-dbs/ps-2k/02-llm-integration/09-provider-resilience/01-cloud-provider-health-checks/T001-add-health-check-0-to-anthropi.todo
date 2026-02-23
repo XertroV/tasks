@@ -1,0 +1,112 @@
+---
+id: P2.M9.E1.T001
+title: Add health_check/0 to Anthropic provider
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- anthropic
+- health-check
+- resilience
+---
+
+# Add health_check/0 to Anthropic provider
+
+Currently only Ollama implements `health_check/0`. Cloud providers (Anthropic, OpenAI)
+are assumed healthy until a request fails. The LLM Registry already supports
+health-check-based failover routing (P2.M8.E4.T003, done), but cloud providers
+never report their health proactively. This task adds a lightweight health check
+to the Anthropic provider.
+
+## Requirements
+
+- [x] Add `health_check/0` function to `PagServer.LLM.Providers.Anthropic`
+- [x] Implement as a lightweight API call (e.g., minimal `/v1/messages` request with 1 max token)
+- [x] Alternatively, use a HEAD request or model list endpoint if available
+- [x] Return `:ok` on success (API key valid, endpoint reachable)
+- [x] Return `{:error, reason}` on failure with descriptive reason
+- [x] Handle network errors gracefully (timeout, connection refused)
+- [x] Handle authentication errors (invalid API key -> unhealthy)
+- [x] Handle rate limiting (429 -> still healthy, just rate limited)
+- [x] Set a short timeout (5 seconds) to avoid blocking the health check loop
+- [x] Add telemetry event `[:pag_server, :llm, :health_check]` with provider metadata
+- [x] Document the health check approach in `@moduledoc`
+
+## Acceptance Criteria
+
+- [x] `Anthropic.health_check()` returns `:ok` when Anthropic API is reachable with valid key
+- [x] Returns `{:error, :authentication_failed}` with invalid API key
+- [x] Returns `{:error, :connection_error}` when API unreachable
+- [x] Returns `:ok` even during rate limiting (429 means the service is up)
+- [x] Health check completes within 5 seconds (timeout enforced)
+- [x] Registry `check_provider_health/1` correctly calls the new function
+- [x] Does not consume significant API quota (minimal or free endpoint used)
+
+## Implementation Details
+
+The simplest approach is a lightweight messages request:
+
+```elixir
+def health_check do
+  client = new()
+
+  case Req.post(client.req,
+    url: "/v1/messages",
+    json: %{
+      model: "claude-3-haiku-20240307",
+      max_tokens: 1,
+      messages: [%{role: "user", content: "hi"}]
+    },
+    receive_timeout: 5_000
+  ) do
+    {:ok, %{status: status}} when status in [200, 429] ->
+      # 200 = working, 429 = rate limited but service is up
+      emit_health_telemetry(:healthy, status)
+      :ok
+
+    {:ok, %{status: 401}} ->
+      emit_health_telemetry(:unhealthy, 401)
+      {:error, :authentication_failed}
+
+    {:ok, %{status: 529}} ->
+      # Anthropic overloaded
+      emit_health_telemetry(:unhealthy, 529)
+      {:error, :overloaded}
+
+    {:ok, %{status: status}} when status >= 500 ->
+      emit_health_telemetry(:unhealthy, status)
+      {:error, {:server_error, status}}
+
+    {:error, reason} ->
+      emit_health_telemetry(:unhealthy, reason)
+      {:error, :connection_error}
+  end
+end
+```
+
+Alternative approach (cheaper): HEAD request to the API base URL, though this
+only checks connectivity, not authentication.
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Existing Infrastructure**:
+- `PagServer.LLM.Registry.check_provider_health/1` already checks for `health_check/0` via `function_exported?/3`
+- `PagServer.LLM.Providers.Ollama` has `health_check/0` via its Client (`GET /api/version`)
+- Registry failover skips unhealthy providers (P2.M8.E4.T003, done)
+
+**Reference Files**:
+- `lib/pag_server/llm/providers/anthropic.ex` - Anthropic provider module (add function here)
+- `lib/pag_server/llm/registry.ex` lines 665-684 - `check_provider_health/1` implementation
+- `lib/pag_server/llm/ollama/client.ex` - Ollama's health check pattern
+
+## Notes
+
+- The cheapest health check is a minimal chat request with `max_tokens: 1` to the fastest model (Haiku)
+- Using Haiku costs ~$0.00000025 per health check call -- negligible
+- Consider caching health check results for 30 seconds to avoid excessive API calls
+- Rate limit response (429) should still count as "healthy" since the API is functioning
+- Anthropic's 529 (overloaded) is a grey area: the service is up but degraded. Treating it as unhealthy allows failover to alternative providers.

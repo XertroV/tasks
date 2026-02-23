@@ -1,0 +1,16 @@
+---
+id: B198
+title: pag-connect session/new should validate cwd within allowed root
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:48:11.978855+00:00'
+started_at: '2026-02-21T14:48:11.978855+00:00'
+completed_at: '2026-02-21T14:57:38.692779+00:00'
+duration_minutes: 9.445231900000001
+---
+ACP session/new currently accepts arbitrary cwd. Validate/normalize cwd against configured/allowed workspace root and reject unsafe paths with tests.

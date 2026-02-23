@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T009
+title: Update Telegram overview status cell and add connections badge to workspace
+  card
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.187500+00:00'
+started_at: '2026-02-18T07:31:33.187500+00:00'
+completed_at: '2026-02-18T07:51:14.052833+00:00'
+duration_minutes: 19.681088683333332
+---
+workspace_browser_live.ex template: (1) In the overview tab Telegram cell (line ~1497), replace the static 'Connected/Not connected' text with a clickable link: phx-click='select_tab' phx-value-tab='connections', making the cell navigate to the connections tab. (2) In the workspace card (line ~1385), wrap the telegram 'no bot'/'connected' span in a phx-click='open_connections_for_card' handler that selects the workspace AND switches to the connections tab (or wire it to select_workspace + select_tab in sequence). (3) Update the workspace card to show a connector count badge if connectors > 0 (e.g. '3 connectors' in a small gray pill). This replaces the current boolean telegram_connected flag with a richer display.

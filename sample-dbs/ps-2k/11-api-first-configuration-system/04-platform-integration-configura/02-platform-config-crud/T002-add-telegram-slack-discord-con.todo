@@ -1,0 +1,119 @@
+---
+id: P11.M4.E2.T002
+title: Add Telegram/Slack/Discord config endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P11.M4.E2.T001
+tags:
+- api
+- telegram
+- slack
+- discord
+claimed_by: cli-user
+claimed_at: '2026-02-12T22:44:53.776957+00:00'
+started_at: '2026-02-12T22:44:53.776957+00:00'
+completed_at: '2026-02-12T22:59:39.456506+00:00'
+duration_minutes: 14.7613256
+---
+
+# Add Telegram/Slack/Discord config endpoints
+
+Implement platform-specific configuration endpoints and helpers.
+
+## Requirements
+
+- [ ] Create `PlatformConfig.Telegram` helper module
+- [ ] Create `PlatformConfig.Slack` helper module
+- [ ] Create `PlatformConfig.Discord` helper module
+- [ ] Add endpoints for platform-specific config operations
+- [ ] Add validation helpers per platform
+- [ ] Write tests for each platform's config operations
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] `PlatformConfig.Telegram` module:
+  - [ ] Function `validate_config(config)` validates Telegram fields:
+    - [ ] `bot_token` (string, required)
+    - [ ] `webhook_url` (string, required) - Where to send updates
+    - [ ] `poll_timeout` (integer, optional, default: 30) - Long-polling timeout
+    - [ ] `allowed_commands` (list, optional) - Whitelist of allowed commands
+    - [ ] `message_prefix` (string, optional) - Prefix for bot messages
+  - [ ] Function `test_connection(credential, config)` validates token:
+    - [ ] Makes test API call to getMe endpoint
+    - [ ] Returns `{:ok, bot_info}` with bot details
+    - [ ] Returns `{:error, :invalid_token}` on 401
+    - [ ] Returns `{:error, :network_error}` on connection failure
+  - [ ] Function `build_webhook_url(agent_id, workspace_id)` generates URL
+  - [ ] Function `parse_webhook_data(params)` extracts message from Telegram payload
+- [ ] `PlatformConfig.Slack` module:
+  - [ ] Function `validate_config(config)` validates Slack fields:
+    - [ ] `bot_token` (string, required) - xoxb token
+    - [ ] `signing_secret` (string, required) - For webhook validation
+    - [ ] `app_id` (string, optional)
+    - [ ] `allowed_channels` (list, optional) - Channels where bot can respond
+    - [ ] `thread_replies` (boolean, optional, default: true)
+    - [ ] `emoji_reactions` (boolean, optional, default: false)
+  - [ ] Function `test_connection(credential, config)` validates token:
+    - [ ] Calls auth.test endpoint
+    - [ ] Returns `{:ok, auth_info}` with workspace/user details
+    - [ ] Returns `{:error, :invalid_token}` on auth failure
+  - [ ] Function `validate_webhook_signature(secret, timestamp, body, signature)`:
+    - [ ] Validates HMAC-SHA256 signature
+    - [ ] Checks timestamp is within 5 minutes
+    - [ ] Returns `{:ok, :valid}` or `{:error, :invalid_signature}`
+  - [ ] Function `parse_webhook_data(params)` extracts message/event from Slack
+- [ ] `PlatformConfig.Discord` module:
+  - [ ] Function `validate_config(config)` validates Discord fields:
+    - [ ] `bot_token` (string, required)
+    - [ ] `public_key` (string, required) - For interaction signing
+    - [ ] `allowed_guilds` (list, optional) - Guilds where bot can respond
+    - [ ] `intents` (list, optional) - Gateway intents
+    - [ ] `message_format` (string, optional, default: "embed") - "text" or "embed"
+  - [ ] Function `test_connection(credential, config)` validates token:
+    - [ ] Calls /oauth2/applications/@me endpoint
+    - [ ] Returns `{:ok, bot_info}` with bot details
+    - [ ] Returns `{:error, :invalid_token}` on auth failure
+  - [ ] Function `verify_interaction_signature(public_key, timestamp, body, signature)`:
+    - [ ] Validates Discord ED25519 signature
+    - [ ] Checks timestamp is recent
+    - [ ] Returns `{:ok, :valid}` or `{:error, :invalid_signature}`
+  - [ ] Function `parse_webhook_data(params)` extracts message/interaction from Discord
+- [ ] Endpoints for platform-specific operations:
+  - [ ] `POST /api/platform-configs/:platform/test` - Test connection:
+    - [ ] Accepts platform in path
+    - [ ] Requires authenticated user
+    - [ ] Uses latest credential for platform
+    - [ ] Calls platform's test_connection function
+    - [ ] Returns `{success: true, bot_info: {...}}` on success
+    - [ ] Returns `{success: false, error: "..."}` on failure
+  - [ ] `POST /api/platform-configs/:platform/verify` - Verify webhook signature:
+    - [ ] Accepts platform, timestamp, signature, body
+    - [ ] Calls platform's signature verification function
+    - [ ] Returns `{valid: true}` or `{valid: false}`
+  - [ ] `GET /api/platform-configs/:platform/requirements` - Get config schema:
+    - [ ] Returns JSON schema for platform-specific config
+    - [ ] Lists required and optional fields
+    - [ ] Includes descriptions and constraints
+    - [ ] Useful for frontend form generation
+- [ ] Validation helpers:
+  - [ ] `validate_json_config(config, schema)` - Generic JSON schema validation
+  - [ ] `extract_credentials(config, keys)` - Safe credential extraction
+  - [ ] `obfuscate_credentials(config, keys)` - For logging/display
+  - [ ] `merge_configs(base, overrides)` - Safe config merging
+- [ ] Error handling:
+  - [ ] Graceful handling of API unavailability
+  - [ ] Clear error messages for validation failures
+  - [ ] Logging of test attempts (success/failure)
+  - [ ] No exposure of sensitive tokens in responses
+- [ ] Tests:
+  - [ ] Unit tests for each platform's validation
+  - [ ] Integration tests with mock platform APIs
+  - [ ] Webhook signature verification tests
+  - [ ] Connection test error cases
+- [ ] Code quality:
+  - [ ] Functions under 40 lines
+  - [ ] `mix lint` passes without warnings

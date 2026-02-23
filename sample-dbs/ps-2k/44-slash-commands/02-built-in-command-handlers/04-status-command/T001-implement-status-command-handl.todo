@@ -1,0 +1,26 @@
+---
+id: P44.M2.E4.T001
+title: Implement /status command handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:05:53.381455+00:00'
+started_at: '2026-02-19T19:05:53.381455+00:00'
+completed_at: '2026-02-19T19:06:05.580403+00:00'
+duration_minutes: 0.20331556666666667
+---
+## Summary
+Implement `PagServer.Commands.Handlers.Status` — agent runtime status. Migrates logic from Discord /agent action:status.
+
+## Acceptance Criteria
+- [ ] Implements Command behaviour (name: "status")
+- [ ] Shows: agent ID (truncated), current model + provider, uptime, busy/idle state, queue depth if relevant
+- [ ] Pulls data from AgentServer via AgentServer.get_state or similar introspection
+- [ ] Context with no agent_id: returns friendly error
+- [ ] Response.rich_text uses markdown
+- [ ] Tests: happy path, no agent_id
+- [ ] Existing Discord /agent status logic removed and replaced by this handler

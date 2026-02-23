@@ -1,0 +1,49 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:54:06.391681+00:00'
+started_at: '2026-02-13T06:54:06.391681+00:00'
+completed_at: '2026-02-13T07:36:34.469877+00:00'
+duration_minutes: 42.46796978333334
+---
+# Implement batch embedding requests
+
+## Description
+Create a batching system for embedding requests that collects individual requests and sends them in batches to reduce API calls and improve throughput. Support provider-specific batch size limits.
+
+## Acceptance Criteria
+- [ ] `PagServer.LLM.Batching.EmbeddingBatcher` module created
+- [ ] `add/2` adds embedding request to pending batch
+- [ ] `flush/1` sends accumulated batch immediately
+- [ ] Automatic flush on batch size limit or timeout
+- [ ] Configurable batch size per provider (OpenAI: 2048, etc.)
+- [ ] Configurable flush timeout (default 50ms)
+- [ ] Batch splitting for oversized requests
+- [ ] Result mapping back to original requests
+- [ ] Error handling preserves individual request context
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/pool/`, `lib/pag_server/llm/providers/`
+- Part of epic: P14.M3.E2 - Request Batching
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P14.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 06:54 UTC
+**Sibling tasks**: P14.M3.E2.T002, P14.M3.E2.T003, P14.M3.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P14.M3.E2.T001 → P14.M3.E2.T002 → P14.M3.E2.T003 → P14.M3.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P14.M3.E2.T001: .tasks/14-integrations-performance/03-connection-pooling-batching/02-request-batching/T001-implement-batch-embedding-reques.todo
+- P14.M3.E2.T002: .tasks/14-integrations-performance/03-connection-pooling-batching/02-request-batching/T002-add-request-coalescing-for-iden.todo
+- P14.M3.E2.T003: .tasks/14-integrations-performance/03-connection-pooling-batching/02-request-batching/T003-implement-prioritized-request-q.todo
+- P14.M3.E2.T004: .tasks/14-integrations-performance/03-connection-pooling-batching/02-request-batching/T004-add-batching-integration-tests.todo

@@ -1,0 +1,16 @@
+---
+id: B192
+title: pag-connect tool_call handler crashes on non-map payload
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:29:59.691321+00:00'
+started_at: '2026-02-21T14:29:59.691321+00:00'
+completed_at: '2026-02-21T14:32:47.607548+00:00'
+duration_minutes: 2.7986036166666666
+---
+Connection handle_message for tool_call should reject non-map payload and not crash websocket process. Add validation and tests.

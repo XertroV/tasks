@@ -1,0 +1,42 @@
+id: P15.M6.E2
+name: Workspace Domain Model
+status: in_progress
+estimate_hours: 8.0
+complexity: high
+depends_on:
+- P15.M6.E1
+tasks:
+- id: T001
+  file: T001-add-workspace-schema-relations.todo
+  title: Add workspace schema and relational model
+  status: in_progress
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M6.E1.T002
+- id: T002
+  file: T002-implement-workspace-api-surface.todo
+  title: Implement workspace API surface for CRUD and linking
+  status: in_progress
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M6.E2.T001
+- id: T003
+  file: T003-build-liveview-workspace-onboarding.todo
+  title: Build LiveView workspace onboarding flow with checklist
+  status: in_progress
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M6.E2.T002
+  - P15.M6.E1.T003
+stats:
+  total: 3
+  done: 0
+  in_progress: 3
+  blocked: 0
+  pending: 0

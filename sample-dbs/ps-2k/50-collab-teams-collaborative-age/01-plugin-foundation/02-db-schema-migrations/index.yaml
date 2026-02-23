@@ -1,0 +1,52 @@
+id: P50.M1.E2
+name: DB Schema Migrations
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-migration-v1-runtime-teams-and.todo
+  title: 'Migration V1: runtime_teams and runtime_workers tables'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E1.T002
+- id: T002
+  file: T002-migration-v2-runtime-tasks-tab.todo
+  title: 'Migration V2: runtime_tasks table'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E2.T001
+- id: T003
+  file: T003-migration-v3-messages-and-audi.todo
+  title: 'Migration V3: messages and audit_events tables'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E2.T001
+- id: T004
+  file: T004-add-ecto-schemas-for-all-5-tab.todo
+  title: Add Ecto schemas for all 5 tables and wire __plugin_migrations__/0
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E2.T001
+  - P50.M1.E2.T002
+  - P50.M1.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

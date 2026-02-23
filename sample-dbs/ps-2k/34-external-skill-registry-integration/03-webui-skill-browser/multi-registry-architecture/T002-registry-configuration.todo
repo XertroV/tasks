@@ -1,0 +1,36 @@
+---
+id: P34.M3.E2.T002
+title: Registry Configuration
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- backend
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:46:54.617412+00:00'
+started_at: '2026-02-19T00:46:54.617412+00:00'
+completed_at: '2026-02-19T00:49:28.547182+00:00'
+duration_minutes: 2.5654959833333333
+---
+
+# Registry Configuration
+
+Add config for multiple registries:
+
+```elixir
+config :pag_server, :skill_registries, [
+  clawhub: [
+    module: PagServer.Skills.ClawHub,
+    base_url: "https://clawhub.ai",
+    enabled: true
+  ]
+]
+```
+
+## Acceptance Criteria
+
+- [ ] Registries configured via app env
+- [ ] Can enable/disable individual registries

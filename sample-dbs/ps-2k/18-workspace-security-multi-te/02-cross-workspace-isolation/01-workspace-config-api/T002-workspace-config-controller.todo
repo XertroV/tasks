@@ -1,0 +1,48 @@
+---
+id: P18.M2.E1.T002
+title: Create WorkspaceConfigController with workspace-scoped CRUD
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- P18.M2.E1.T001
+tags:
+- security
+- workspace
+- config
+- controller
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:42:32.454244+00:00'
+started_at: '2026-02-17T21:42:32.454244+00:00'
+completed_at: '2026-02-17T21:45:23.550168+00:00'
+duration_minutes: 2.8515984833333334
+---
+
+# Create WorkspaceConfigController with workspace-scoped CRUD
+
+## Description
+
+Create a new controller that handles workspace-scoped platform config CRUD, using the workspace_id from conn.assigns set by the membership plug.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/controllers/workspace_config_controller.ex`
+- [ ] `index/2` — calls `PlatformConfig.get_all(workspace_id: conn.assigns.workspace_id)`
+- [ ] `show/2` — calls `PlatformConfig.get(key, workspace_id: conn.assigns.workspace_id)`
+- [ ] `update/2` — calls `PlatformConfig.set(key, value, workspace_id: conn.assigns.workspace_id, updated_by: user_id)`
+- [ ] `delete/2` — calls `PlatformConfig.delete(key, workspace_id: conn.assigns.workspace_id)`
+- [ ] Create `lib/pag_server_web/controllers/workspace_config_json.ex` JSON view
+- [ ] All actions use workspace_id from conn.assigns (never from params)
+
+## Acceptance Criteria
+
+- [ ] CRUD operations work correctly for workspace-scoped config
+- [ ] Config from workspace A is not visible in workspace B's endpoint
+- [ ] Write operations record the correct workspace_id and user_id
+- [ ] JSON responses follow existing config response format
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/workspace_config_controller.ex`, `lib/pag_server_web/controllers/workspace_config_json.ex`
+**Pattern reference**: Existing `PlatformConfigController` for structure, but with workspace scoping

@@ -1,0 +1,18 @@
+---
+id: B249
+title: Missing multi-workspace integration test for companion:full
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- companion
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.109084+00:00'
+started_at: '2026-02-23T07:29:02.109084+00:00'
+completed_at: '2026-02-23T07:43:46.253406+00:00'
+duration_minutes: 14.735738533333334
+---
+No test verifying single companion with companion:full key handles multiple workspaces

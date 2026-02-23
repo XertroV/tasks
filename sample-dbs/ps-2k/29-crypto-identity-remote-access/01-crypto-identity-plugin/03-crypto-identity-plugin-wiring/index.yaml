@@ -1,0 +1,43 @@
+id: P29.M1.E3
+name: Crypto Identity Plugin Wiring
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-cryptoidentityplugin.todo
+  title: Implement CryptoIdentityPlugin module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P29.M1.E1.T002
+  - P29.M1.E2.T001
+- id: T002
+  file: T002-add-cryptoidentityplugin-to-su.todo
+  title: Add CryptoIdentityPlugin to supervision tree and plugin registry
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P29.M1.E3.T001
+- id: T003
+  file: T003-write-plugin-lifecycle-tests.todo
+  title: Write plugin lifecycle tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P29.M1.E3.T001
+  - P29.M1.E3.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

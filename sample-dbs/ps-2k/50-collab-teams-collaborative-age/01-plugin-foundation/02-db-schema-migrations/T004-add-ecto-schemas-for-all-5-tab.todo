@@ -1,0 +1,26 @@
+---
+id: P50.M1.E2.T004
+title: Add Ecto schemas for all 5 tables and wire __plugin_migrations__/0
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E2.T001
+- P50.M1.E2.T002
+- P50.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:12:29.829106+00:00'
+started_at: '2026-02-23T02:12:29.829106+00:00'
+completed_at: '2026-02-23T02:12:32.741669+00:00'
+duration_minutes: 0.04854245
+---
+## Description
+Create CollabTeams.Schema.RuntimeTeam, CollabTeams.Schema.RuntimeWorker, CollabTeams.Schema.RuntimeTask, CollabTeams.Schema.Message, CollabTeams.Schema.AuditEvent with correct field types and changesets. Update __plugin_migrations__/0 to return [{1, CollabTeams.Migrations.V1}, {2, CollabTeams.Migrations.V2}, {3, CollabTeams.Migrations.V3}]. Migration test: up/0 and down/0 for each version run without error.
+
+## Acceptance Criteria
+- All 5 Ecto schemas compile
+- changesets reject missing required fields
+- __plugin_migrations__/0 returns all 3 migration tuples
+- migration smoke test passes

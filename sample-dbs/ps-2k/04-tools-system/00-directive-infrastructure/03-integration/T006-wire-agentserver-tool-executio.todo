@@ -1,0 +1,60 @@
+---
+id: P4.M0.E3.T006
+title: Wire AgentServer tool execution loop and result submission
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: critical
+depends_on:
+- P4.M1.E2.T004
+- P4.M1.E2.T005
+- P2.M2.E3.T004
+- P2.M3.E3.T004
+- P2.M4.E1.T005
+tags:
+- agentserver
+- tools
+- execution
+- results
+claimed_by: cli-user
+claimed_at: '2026-02-06T09:33:18.085712'
+started_at: '2026-02-06T09:33:18.085712'
+completed_at: '2026-02-06T09:56:32.860315'
+duration_minutes: 23.246243166666666
+---
+
+# Wire AgentServer tool execution loop and result submission
+
+
+
+## Requirements
+
+- [x] Integrate AgentServer with ToolExecutor to run tool calls emitted by the LLM response loop.
+- [x] Parse ToolCall schema outputs from provider responses and route to ToolExecutor.
+- [x] Submit tool results back to the provider using provider-specific tool result formatting.
+- [x] Persist ToolCall lifecycle events and results via the tool call store.
+- [x] Handle tool execution errors with retry or failure propagation policy compatible with agent workflow.
+
+## Context
+
+- [x] AgentServer is the orchestration loop that mediates between LLM responses and tool execution.
+- [x] ToolExecutor uses registry definitions and ToolCall schema validation to execute tools.
+- [x] Provider-specific tool result formatting must be used when sending tool results back to the LLM provider.
+
+## Notes
+
+- [x] Ensure tool execution does not block the AgentServer mailbox; use async task supervision if required.
+- [x] Maintain correlation ids between LLM tool calls, ToolCall records, and tool results.
+
+## Testing
+
+- [x] Add AgentServer integration tests in `test/pag_server/agents/agent_server_tool_loop_test.exs`.
+- [x] Add provider round-trip tests in `test/pag_server/llm/tool_round_trip_test.exs`.
+- [x] Add persistence assertions in `test/pag_server/tools/tool_call_lifecycle_integration_test.exs`.
+
+## Acceptance Criteria
+
+- [x] AgentServer detects tool calls in provider responses, executes them, and submits results.
+- [x] ToolCall schema parsing and validation errors are handled without crashing the agent loop.
+- [x] ToolCall lifecycle and tool results are persisted for each execution.
+- [x] Provider-specific tool result formatting is used when submitting tool outputs.

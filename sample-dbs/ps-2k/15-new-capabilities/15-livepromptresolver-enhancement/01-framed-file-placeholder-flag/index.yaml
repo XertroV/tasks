@@ -1,0 +1,47 @@
+id: P15.M15.E1
+name: Framed File Placeholder Flag
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-framed-flag-for-file.todo
+  title: Implement ?framed flag for file placeholders in LivePromptResolver
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-extend-livepromptresolver-tool.todo
+  title: 'Extend LivePromptResolver: {{tools:summaries}}, {{runtime:*}}, {{var:*}}
+    placeholder families'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-pass-runtime-context-to-livepr.todo
+  title: Pass runtime context to LivePromptResolver from agent_server.ex
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-tests-for-livepromptresolver-e.todo
+  title: Tests for LivePromptResolver extensions
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

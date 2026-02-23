@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T005
+title: 'Review P22.M3: Auto-Compaction'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:42:07.038494+00:00'
+started_at: '2026-02-19T01:42:07.038494+00:00'
+completed_at: '2026-02-19T01:48:36.287435+00:00'
+duration_minutes: 6.48748215
+---
+Load the review-and-fix skill. Review all epics and tasks under P22.M3 (Auto-Compaction). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: CompactionMonitor GenServer (threshold detection, trigger logic), integration with existing context summarization, session-level compaction config fields, proactive compaction replacing old summaries, compaction status tracking schema, and GET/POST API endpoints for compaction status/trigger.

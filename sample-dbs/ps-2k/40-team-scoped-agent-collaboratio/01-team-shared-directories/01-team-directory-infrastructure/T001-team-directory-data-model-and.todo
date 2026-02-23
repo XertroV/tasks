@@ -1,0 +1,69 @@
+---
+id: P40.M1.E1.T001
+title: Team directory data model and lifecycle management
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- containers
+- multi-agent
+- teams
+- filesystem
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:32:16.086188+00:00'
+started_at: '2026-02-19T14:32:16.086188+00:00'
+completed_at: '2026-02-19T15:35:08.873031+00:00'
+duration_minutes: 62.87978051666666
+---
+## Description
+Implement the core data model for hierarchical team directories. Teams use a `team-<name>` naming convention and nest inside their parent team's directory. The root team is auto-created for any workspace with a main agent; the main agent is its leader. Only team leaders can create subteams.
+
+## Directory Hierarchy Example
+```
+/team-root/              ← Root team dir (main agent is leader)
+  team-web/              ← Subteam created by root leader
+    team-frontend/       ← Subteam created by team-web leader
+    team-api/            ← Subteam created by team-web leader
+  team-infra/            ← Subteam created by root leader
+```
+
+## Requirements
+- Define team schema/struct with: team_name, parent_team_id (nullable for root), leader_agent_id, workspace_id, member_agent_ids, created_at
+- Root team auto-creation: when a workspace has a main agent, auto-create a `root` team with the main agent as leader
+- Implement create_subteam/3 (leader_agent_id, parent_team_id, team_name) — only the leader of the parent team may create subteams
+- Subteam directory is physically nested: parent dir + `team-<name>/`
+- Implement cleanup/decommission logic when team is dissolved (cascading to subteams)
+- Team names must be unique among siblings (within a parent team)
+- Support headless workspaces (no main agent, no root team)
+
+## Acceptance Criteria
+- Root team is auto-created when a workspace with a main agent is initialized
+- Only the leader of a parent team can create subteams under it
+- Subteam directories are nested inside their parent team's directory (e.g., `team-root/team-web/team-frontend/`)
+- Team dissolution cascades to subteams and cleans up nested directories
+- Headless workspaces can exist without a root team
+- Schema tracks parent_team_id and leader_agent_id
+- Agents can belong to multiple teams (multiple membership)
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P40.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 14:32 UTC
+**Sibling tasks**: P40.M1.E1.T002, P40.M1.E1.T003, P40.M1.E1.T004, P40.M1.E1.T005, P40.M1.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P40.M1.E1.T001 → P40.M1.E1.T002 → P40.M1.E1.T003 → P40.M1.E1.T004 → P40.M1.E1.T005 → P40.M1.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P40.M1.E1.T001: .tasks/40-team-scoped-agent-collaboratio/01-team-shared-directories/01-team-directory-infrastructure/T001-team-directory-data-model-and.todo
+- P40.M1.E1.T002: .tasks/40-team-scoped-agent-collaboratio/01-team-shared-directories/01-team-directory-infrastructure/T002-team-directory-visibility-and.todo
+- P40.M1.E1.T003: .tasks/40-team-scoped-agent-collaboratio/01-team-shared-directories/01-team-directory-infrastructure/T003-container-volume-mounting-for.todo
+- P40.M1.E1.T004: .tasks/40-team-scoped-agent-collaboratio/01-team-shared-directories/01-team-directory-infrastructure/T004-system-prompt-and-agent-awaren.todo
+- P40.M1.E1.T005: .tasks/40-team-scoped-agent-collaboratio/01-team-shared-directories/01-team-directory-infrastructure/T005-team-leader-role-enforcement-a.todo
+- P40.M1.E1.T006: .tasks/40-team-scoped-agent-collaboratio/01-team-shared-directories/01-team-directory-infrastructure/T006-multiple-team-membership-and-m.todo

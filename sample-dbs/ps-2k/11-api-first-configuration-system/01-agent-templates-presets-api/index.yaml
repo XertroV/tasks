@@ -1,0 +1,37 @@
+id: P11.M1
+name: Agent Templates & Presets API
+status: pending
+estimate_hours: 16.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Agent Template Schema & CRUD
+  path: 01-agent-template-schema-crud
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Template Instantiation
+  path: 02-template-instantiation
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Template Marketplace & Sharing
+  path: 03-template-marketplace-sharing
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

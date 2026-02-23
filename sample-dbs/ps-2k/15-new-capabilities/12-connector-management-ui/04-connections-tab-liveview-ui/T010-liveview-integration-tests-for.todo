@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T010
+title: LiveView integration tests for connections tab
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E4.T006
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.188610+00:00'
+started_at: '2026-02-18T07:31:33.188610+00:00'
+completed_at: '2026-02-18T07:51:15.636283+00:00'
+duration_minutes: 19.707461033333335
+---
+test/pag_server_web/live/workspace_browser_live_test.exs: Add a 'connections tab' describe block. Tests: (1) connections tab renders with empty state when no connectors; (2) connector table shows rows for existing bot_configs; (3) clicking 'Edit' opens drawer with connector data pre-populated; (4) saving connector in create mode creates a bot_config with session_id; (5) status toggle activates/deactivates; (6) verify connectivity success path shows green status pill; (7) non-admin user cannot see Add/Edit/Delete (permission guard). Use ConnCase with logged-in user. Mock Telegram API calls in verify connectivity test.

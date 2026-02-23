@@ -1,0 +1,54 @@
+id: P19.M1.E3
+name: Integration Docs Fixes
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fix-whatsapp-md-verify-signatu.todo
+  title: Fix whatsapp.md verify_signature arity
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-fix-whatsapp-md-send-template.todo
+  title: Fix whatsapp.md send_template_message module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T003
+  file: T003-fix-whatsapp-md-webhook-path.todo
+  title: Fix whatsapp.md webhook path
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T004
+  file: T004-fix-slack-md-route-paths.todo
+  title: Fix slack.md route paths
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T005
+  file: T005-remove-slack-md-non-existent-e.todo
+  title: Remove slack.md non-existent env vars
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

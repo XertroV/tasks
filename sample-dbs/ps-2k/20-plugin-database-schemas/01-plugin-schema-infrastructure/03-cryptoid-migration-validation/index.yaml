@@ -1,0 +1,42 @@
+id: P20.M1.E3
+name: CryptoId Migration & Validation
+status: pending
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-migrate-cryptoid-to-new-plugin.todo
+  title: Migrate CryptoId to new plugin schema convention
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P20.M1.E1.T004
+- id: T002
+  file: T002-add-plugin-schema-documentatio.todo
+  title: Add plugin schema documentation and developer guide
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on:
+  - P20.M1.E3.T001
+- id: T003
+  file: T003-integration-test-full-plugin-l.todo
+  title: 'Integration test: full plugin lifecycle with DB schemas'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P20.M1.E3.T001
+  - P20.M1.E2.T003
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

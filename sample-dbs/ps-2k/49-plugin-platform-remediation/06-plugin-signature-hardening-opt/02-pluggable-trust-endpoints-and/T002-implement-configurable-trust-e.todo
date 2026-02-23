@@ -1,0 +1,49 @@
+---
+id: P49.M6.E2.T002
+title: Implement configurable trust endpoint profiles for public and private Sigstore
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:47:58.338750+00:00'
+started_at: '2026-02-20T18:47:58.338750+00:00'
+completed_at: '2026-02-20T18:55:01.991601+00:00'
+duration_minutes: 7.060880683333334
+---
+
+# Implement configurable trust endpoint profiles for public and private Sigstore
+
+
+
+## Requirements
+
+- Implement configurable endpoint profiles for public and private Sigstore-compatible services.
+- Validate endpoint configuration and fail safely on invalid or unreachable profiles.
+- Keep endpoint selection independent from policy semantics.
+
+## Acceptance Criteria
+
+- Deployments can choose endpoint profiles via configuration without code changes.
+- Invalid endpoint configuration fails with actionable diagnostics.
+- Tests cover public, private, and misconfigured profile scenarios.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P49.M6.E2)
+**Agent**: cli-user
+**Date**: 2026-02-20 18:47 UTC
+**Sibling tasks**: P49.M6.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P49.M6.E2.T002 → P49.M6.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P49.M6.E2.T002: .tasks/49-plugin-platform-remediation/06-plugin-signature-hardening-opt/02-pluggable-trust-endpoints-and/T002-implement-configurable-trust-e.todo
+- P49.M6.E2.T003: .tasks/49-plugin-platform-remediation/06-plugin-signature-hardening-opt/02-pluggable-trust-endpoints-and/T003-add-verifier-backend-selection.todo

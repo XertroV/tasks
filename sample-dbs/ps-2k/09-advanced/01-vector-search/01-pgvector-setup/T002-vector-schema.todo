@@ -1,0 +1,105 @@
+---
+id: P9.M1.E1.T002
+title: Create vector storage schema
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P9.M1.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:35:51.292928+00:00'
+tags:
+- vector-search
+- schema
+- database
+- ecto
+started_at: '2026-02-11T02:35:51.292928+00:00'
+completed_at: '2026-02-11T02:42:06.412517+00:00'
+duration_minutes: 6.251992983333333
+---
+
+# Create vector storage schema
+
+Design and implement Ecto schema and database tables for vector embeddings storage.
+
+## Requirements
+
+- [ ] Create `vector_embeddings` table migration
+- [ ] Define Ecto schema `PagServer.Schema.VectorEmbedding`
+- [ ] Add indexes for efficient similarity search
+- [ ] Include metadata fields (source, type, created_at)
+- [ ] Support multiple embedding dimensions (configurable)
+- [ ] Add foreign key relationships to agents/sessions if needed
+
+## Acceptance Criteria
+
+- [ ] Migration creates table with:
+  - [ ] `id` (bigserial primary key)
+  - [ ] `content` (text, original content)
+  - [ ] `embedding` (vector type, configurable dimension)
+  - [ ] `metadata` (jsonb, flexible metadata)
+  - [ ] `source_type` (string, e.g., "message", "document")
+  - [ ] `source_id` (bigint, reference to source)
+  - [ ] `agent_id` (uuid, optional agent reference)
+  - [ ] Timestamps
+- [ ] Ecto schema compiles and passes type checks
+- [ ] Can insert/query embeddings via Repo
+- [ ] GIN index on metadata jsonb for filtering
+- [ ] Tests verify schema operations
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.7 (Schema Domain)
+- Memory efficiency target: <512MB for 50k vectors in dev
+
+**Key Points**:
+- Use JSONB for flexible metadata (tags, context)
+- Dimension should be configurable (1536 for OpenAI, 768 for others)
+- Consider partitioning for large deployments (future)
+
+## Notes
+
+Example schema structure:
+```elixir
+defmodule PagServer.Schema.VectorEmbedding do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  schema "vector_embeddings" do
+    field :content, :string
+    field :embedding, PagServer.Ecto.Vector  # Custom Ecto type
+    field :metadata, :map
+    field :source_type, :string
+    field :source_id, :integer
+    field :agent_id, Ecto.UUID
+
+    timestamps()
+  end
+end
+```
+
+Will need custom Ecto.Type for `vector` column - handle as list of floats in Elixir, vector type in PostgreSQL.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:35 UTC
+**Primary task**: P9.M5.E4.T002 - Implement plugin message injection into active sessions
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P9.M1.E1 vs P9.M5.E4)
+- No dependency chain: ✓ (verified at claim time)

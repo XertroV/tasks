@@ -1,0 +1,18 @@
+---
+id: P19.M3.E1.T001
+title: Delete MORE_THINGS_TO_DO.md
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- docs
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:34:51.633903+00:00'
+started_at: '2026-02-18T03:34:51.633903+00:00'
+completed_at: '2026-02-18T03:35:08.298584+00:00'
+duration_minutes: 0.27774451666666666
+---
+Delete low-value generic todo file. Content has no actionable specificity - better tracked in task system.

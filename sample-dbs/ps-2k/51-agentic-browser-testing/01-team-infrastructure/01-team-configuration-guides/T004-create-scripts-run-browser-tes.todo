@@ -1,0 +1,29 @@
+---
+id: P51.M1.E1.T004
+title: Create scripts/run-browser-testing-team.sh
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:35:52.138520+00:00'
+started_at: '2026-02-20T14:35:52.138520+00:00'
+completed_at: '2026-02-20T14:47:47.595453+00:00'
+duration_minutes: 11.924282016666666
+---
+## Purpose
+Launch script that verifies prerequisites and prints setup instructions for starting the browser-testing team.
+
+## Acceptance Criteria
+- [ ] Checks pag-server is reachable (curl http://localhost:4000/health or similar)
+- [ ] Checks Chrome remote debugging port is open (default 9222)
+- [ ] Checks CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 is set, warns if not
+- [ ] Prints env vars needed: PLAYWRIGHT_BASE_URL, BROWSER_CMD, CHROME_DEBUG_PORT
+- [ ] Prints team startup instructions for Claude Code session
+- [ ] Made executable (chmod +x)
+- [ ] Usage: ./scripts/run-browser-testing-team.sh
+
+## Notes
+This is a helper/docs script, not an orchestration script. The actual team is launched in an interactive Claude Code session.

@@ -1,0 +1,316 @@
+---
+id: P1.M3.E1.T002
+title: Implement core GenServer callbacks
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M3.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:49:27.089107'
+started_at: '2026-02-05T08:49:27.089107'
+completed_at: '2026-02-05T08:51:52.527089'
+tags:
+- agent
+- genserver
+- callbacks
+- otp
+- foundation
+---
+
+# Implement core GenServer callbacks
+
+Implement the core GenServer callbacks that manage the agent's lifecycle, message processing, and state transitions.
+
+## Requirements
+
+- [ ] Implement `init/1` callback
+  - [ ] Accept `:agent_id` option
+  - [ ] Load agent config from database
+  - [ ] Initialize empty message queue
+  - [ ] Set initial status to `:idle`
+  - [ ] Return `{:ok, state}` with initialized state
+  
+- [ ] Implement `handle_call/3` for synchronous operations
+  - [ ] `:send_message` - Queue message and process (returns response)
+  - [ ] `:get_state` - Return current agent state (for debugging)
+  - [ ] `:switch_model` - Change LLM model mid-session
+  
+- [ ] Implement `handle_cast/2` for asynchronous operations
+  - [ ] `:queue_message` - Add message to queue without waiting
+  - [ ] `:interrupt` - Set interrupt flag for next safe point
+  - [ ] `:update_config` - Update agent configuration
+  
+- [ ] Implement `handle_info/2` for messages from external processes
+  - [ ] `{:llm_token, token}` - Handle streaming token from LLM
+  - [ ] `{:llm_complete, response}` - Handle LLM completion
+  - [ ] `{:tool_result, result}` - Handle tool execution result
+  - [ ] `:process_queue` - Process next queued message
+  
+- [ ] Implement `terminate/2` callback
+  - [ ] Save final state to event store
+  - [ ] Cancel any pending LLM requests
+  - [ ] Broadcast agent_stopped event
+  - [ ] Clean up resources
+  
+- [ ] Add proper error handling
+  - [ ] Wrap state mutations in try/catch
+  - [ ] Log errors with agent context
+  - [ ] Return error tuples instead of crashing
+
+## Acceptance Criteria
+
+- [ ] All 5 GenServer callbacks are implemented
+- [ ] `init/1` properly initializes agent state
+- [ ] `handle_call/3` supports all synchronous operations
+- [ ] `handle_cast/2` supports all asynchronous operations
+- [ ] `handle_info/2` handles LLM and tool messages
+- [ ] `terminate/2` cleans up resources properly
+- [ ] Code compiles without warnings
+- [ ] Type specs defined for all callbacks
+- [ ] Error cases return proper error tuples
+- [ ] Module follows architecture.md guidelines (<300 LoC target)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 3.1 (Agent Process GenServer)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+
+**Key Design Points**:
+- **Message processing loop**: Agent receives message → calls LLM → executes tools → repeats
+- **Streaming**: LLM tokens arrive via `handle_info({:llm_token, token})`
+- **Interruption**: Queue modes determine when to interrupt (immediate, after_thinking, when_done)
+- **State immutability**: Always return new state, never mutate existing state
+
+## Implementation Guide
+
+### Basic GenServer Structure
+
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  alias PagServer.Agents.State
+  alias PagServer.Repo
+  alias PagServer.Schema.Agent, as: AgentSchema
+  
+  # Client API (defined in T003)
+  # ...
+  
+  # Server Callbacks
+  
+  @impl true
+  def init(opts) do
+    agent_id = Keyword.fetch!(opts, :agent_id)
+    
+    # Load agent config from DB
+    agent = Repo.get!(AgentSchema, agent_id)
+    
+    state = %State{
+      id: agent_id,
+      session_id: agent.current_session_id,
+      config: agent.config,
+      status: :idle,
+      context: [],
+      message_queue: :queue.new(),
+      current_request: nil,
+      stats: %{tokens_used: 0, cost: 0.0}
+    }
+    
+    {:ok, state}
+  end
+  
+  @impl true
+  def handle_call(:get_state, _from, state) do
+    {:reply, state, state}
+  end
+  
+  def handle_call({:send_message, content}, from, state) do
+    # Queue message with :immediate mode
+    # Process immediately
+    # Return response to caller
+    # (Implementation deferred to T003)
+    {:reply, :ok, state}
+  end
+  
+  def handle_call({:switch_model, model_spec}, _from, state) do
+    new_config = Map.put(state.config, :model, model_spec)
+    new_state = %{state | config: new_config}
+    {:reply, :ok, new_state}
+  end
+  
+  @impl true
+  def handle_cast({:queue_message, content, mode}, state) do
+    # Add message to queue
+    # Schedule processing if idle
+    new_queue = :queue.in({content, mode}, state.message_queue)
+    new_state = %{state | message_queue: new_queue}
+    
+    # If idle, trigger processing
+    if state.status == :idle do
+      send(self(), :process_queue)
+    end
+    
+    {:noreply, new_state}
+  end
+  
+  def handle_cast(:interrupt, state) do
+    # Set interrupt flag (actual interruption in executor)
+    # For now, just set status
+    new_state = %{state | status: :interrupted}
+    {:noreply, new_state}
+  end
+  
+  def handle_cast({:update_config, config}, state) do
+    new_state = %{state | config: Map.merge(state.config, config)}
+    {:noreply, new_state}
+  end
+  
+  @impl true
+  def handle_info({:llm_token, token}, state) do
+    # Broadcast token via PubSub (T004)
+    # Accumulate in current response
+    # (Full implementation in executor module)
+    {:noreply, state}
+  end
+  
+  def handle_info({:llm_complete, response}, state) do
+    # Process completion
+    # Update context
+    # Transition to idle or process tools
+    # (Full implementation in executor module)
+    new_state = %{state | status: :idle}
+    {:noreply, new_state}
+  end
+  
+  def handle_info({:tool_result, result}, state) do
+    # Add tool result to context
+    # Continue LLM turn
+    # (Full implementation in executor module)
+    {:noreply, state}
+  end
+  
+  def handle_info(:process_queue, state) do
+    # Pop next message from queue
+    # Start processing
+    case :queue.out(state.message_queue) do
+      {{:value, {content, _mode}}, new_queue} ->
+        # Process message (simplified)
+        new_state = %{
+          state
+          | message_queue: new_queue,
+            status: :processing
+        }
+        
+        {:noreply, new_state}
+      
+      {:empty, _queue} ->
+        {:noreply, state}
+    end
+  end
+  
+  @impl true
+  def terminate(reason, state) do
+    # Log termination
+    require Logger
+    Logger.info("Agent #{state.id} terminating: #{inspect(reason)}")
+    
+    # Cancel pending requests
+    if state.current_request do
+      # Cancel LLM request (implementation depends on provider)
+    end
+    
+    # Broadcast stopped event (T004)
+    # PagServer.Agents.Broadcaster.broadcast_stopped(state.id)
+    
+    :ok
+  end
+end
+```
+
+### State Management Pattern
+
+```elixir
+# Always create new state - NEVER mutate
+def update_status(state, new_status) do
+  %{state | status: new_status}
+end
+
+# Chain state updates
+state
+|> update_status(:processing)
+|> add_to_context(message)
+|> update_stats(tokens)
+```
+
+### Error Handling
+
+```elixir
+def handle_call({:send_message, content}, from, state) do
+  try do
+    # Process message
+    {:reply, {:ok, response}, new_state}
+  rescue
+    error ->
+      Logger.error("Error processing message: #{inspect(error)}")
+      {:reply, {:error, error}, state}
+  end
+end
+```
+
+## Notes
+
+### GenServer Callback Summary
+
+| Callback | Purpose | Returns |
+|----------|---------|---------|
+| `init/1` | Initialize state | `{:ok, state}` |
+| `handle_call/3` | Synchronous requests | `{:reply, reply, state}` |
+| `handle_cast/2` | Asynchronous messages | `{:noreply, state}` |
+| `handle_info/2` | External messages | `{:noreply, state}` |
+| `terminate/2` | Cleanup on shutdown | `:ok` |
+
+### Message Flow
+
+1. User sends message via `send_message/2` (Client API)
+2. GenServer receives via `handle_call({:send_message, ...})`
+3. Message queued, processing starts
+4. LLM streams tokens via `handle_info({:llm_token, ...})`
+5. Completion triggers `handle_info({:llm_complete, ...})`
+6. Tools execute, results via `handle_info({:tool_result, ...})`
+7. Loop continues until agent response complete
+
+### Testing Strategy
+
+Tests (T005) will verify:
+- State initialization with valid/invalid data
+- All handle_call operations
+- All handle_cast operations
+- Message queue processing
+- State transitions (idle → processing → idle)
+- Error handling and recovery
+- Termination cleanup
+
+### Future Enhancements
+
+This foundational callback implementation will be extended with:
+- Session forking (Phase 2)
+- Multi-agent orchestration (Phase 2)
+- Context truncation (Phase 3)
+- Vector search integration (Phase 3)
+
+## Troubleshooting
+
+**Error**: "Agent config not found"
+- Ensure agent exists in database before calling `init/1`
+- Check that migrations have run
+
+**Error**: "Queue operations fail"
+- Verify `:queue.new()` is called in init
+- Check that queue updates use `:queue.in/2` and `:queue.out/1`
+
+**Error**: "State mutations not persisting"
+- Always return new state from callbacks
+- Never mutate state in place (Elixir doesn't support this anyway)

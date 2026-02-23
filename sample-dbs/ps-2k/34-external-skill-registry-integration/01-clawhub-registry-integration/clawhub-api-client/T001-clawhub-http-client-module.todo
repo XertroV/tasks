@@ -1,0 +1,30 @@
+---
+id: P34.M1.E1.T001
+title: ClawHub HTTP Client Module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- backend
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:31:13.037333+00:00'
+started_at: '2026-02-19T00:31:13.037333+00:00'
+completed_at: '2026-02-19T00:31:23.875577+00:00'
+duration_minutes: 0.18063723333333334
+---
+
+# ClawHub HTTP Client Module
+
+Create `PagServer.Skills.ClawHub.Client` module:
+
+- Base URL configuration (default: `https://clawhub.ai/api/v1`)
+- HTTP request wrapper with error handling
+- Rate limiting support
+
+## Acceptance Criteria
+
+- [ ] Client module compiles and handles HTTP errors gracefully
+- [ ] Configurable base URL via app env

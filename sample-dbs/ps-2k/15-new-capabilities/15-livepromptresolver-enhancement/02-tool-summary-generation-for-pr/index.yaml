@@ -1,0 +1,22 @@
+id: P15.M15.E2
+name: Tool Summary Generation for Prompt Injection
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-tool-summary-generation-fu.todo
+  title: Add tool summary generation function for prompt injection
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

@@ -1,0 +1,18 @@
+---
+id: P19.M1.E2.T002
+title: Fix security-hardening.md RateLimiter config
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- guides
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:33:44.685953+00:00'
+started_at: '2026-02-18T01:33:44.685953+00:00'
+completed_at: '2026-02-18T01:35:35.463386+00:00'
+duration_minutes: 1.8462901999999999
+---
+Replace 'burst: 50' with 'bucket_size: 50' in RateLimiter config. Remove non-existent 'requests_per_minute' option. Lines 123-140.

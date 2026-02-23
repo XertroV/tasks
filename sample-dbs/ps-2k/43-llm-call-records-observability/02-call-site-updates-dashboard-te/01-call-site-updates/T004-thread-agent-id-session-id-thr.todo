@@ -1,0 +1,32 @@
+---
+id: P43.M2.E1.T004
+title: Thread agent_id/session_id through context pruning and summarization call sites
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:56:56.680251+00:00'
+started_at: '2026-02-19T23:56:56.680251+00:00'
+completed_at: '2026-02-20T06:39:23.857775+00:00'
+duration_minutes: 402.4529585
+---
+
+# Thread agent_id/session_id through context pruning and summarization call sites
+
+
+
+## Requirements
+
+- Context pruning and summarization make their own LLM calls. The agent/session identity must be forwarded into these sub-calls so that the resulting call records can be correlated with the parent agent.
+
+## Acceptance Criteria
+
+- `lib/pag_server/context/summarization.ex` — `llm_summarize/3` (or equivalent public entry point) accepts an `opts` keyword list. Before calling the LLM client it merges in `Keyword.take(opts, [:agent_id, :session_id, :workspace_id])` so that any identity keys present in the caller's opts are forwarded. If `opts` parameter did not already exist, an `opts \\ []` default is added to the function signature.
+- `lib/pag_server/context/pruning/summarization.ex` — `summarize_parts/3`, `merge_summaries/3`, and `summarize_chunk/3` each apply the same pattern: accept an opts kwlist, merge in the three identity keys, and forward them to the underlying LLM call. `opts \\ []` is added to any signature that lacked it.
+- `lib/pag_server/context/pruning/progressive_fallback.ex` — `try_level_2/4` applies the same pattern.
+- All five call sites (the three in `pruning/summarization.ex`, `try_level_2/4`, and `llm_summarize/3`) add `:caller_context` with value `"context_pruning"` to the merged opts.
+- Callers of these functions that already pass `agent_id`/`session_id` (e.g. `agent_server.ex`) have their identity automatically propagated — no manual wiring is required beyond the `opts` pass-through.
+- All existing context/pruning tests continue to pass. No compiler warnings are introduced.

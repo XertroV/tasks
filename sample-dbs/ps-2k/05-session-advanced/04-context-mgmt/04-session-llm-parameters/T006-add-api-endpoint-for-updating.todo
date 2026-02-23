@@ -1,0 +1,218 @@
+---
+id: P5.M4.E4.T006
+title: Add API endpoint for updating session params
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P5.M4.E4.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:38:00.101269+00:00'
+started_at: '2026-02-07T14:38:00.101269+00:00'
+completed_at: '2026-02-07T14:41:14.601917+00:00'
+duration_minutes: 3.2416773333333335
+---
+
+# Add API endpoint for updating session params
+
+Create PUT /api/sessions/:id/llm_params endpoint for updating session LLM parameters
+
+## Requirements
+
+- [ ] Create `PUT /api/sessions/:id/llm_params` endpoint
+- [ ] Add route in `router.ex` under sessions scope
+- [ ] Create controller action in `SessionController`
+- [ ] Validate session exists
+- [ ] Validate LLM params using Session.update_changeset
+- [ ] Update session in database
+- [ ] Notify AgentServer of parameter update (if agent running)
+- [ ] Return updated session with new params
+- [ ] Add proper error handling (404, 422)
+- [ ] Add OpenAPI/JSON schema documentation
+- [ ] Add tests for success and error cases
+
+## Acceptance Criteria
+
+- [ ] Route added to `router.ex`: `put "/sessions/:id/llm_params", SessionController, :update_llm_params`
+- [ ] `SessionController.update_llm_params/2` action implemented
+- [ ] Action validates session ID format (UUID)
+- [ ] Action fetches session from database
+- [ ] Returns 404 if session not found
+- [ ] Action updates session.llm_params using `Session.update_changeset/2`
+- [ ] Returns 422 with validation errors if params invalid
+- [ ] Returns 200 with updated session on success
+- [ ] Response includes full session with updated `llm_params` field
+- [ ] If agent is running for this session:
+  - [ ] Looks up AgentServer via Registry
+  - [ ] Sends `:update_session_params` cast to notify of changes
+  - [ ] Logs notification at debug level
+- [ ] Request body format documented:
+  ```json
+  {
+    "llm_params": {
+      "temperature": 0.7,
+      "max_tokens": 4000,
+      "thinking": "high"
+    }
+  }
+  ```
+- [ ] Response format documented:
+  ```json
+  {
+    "session": {
+      "id": "uuid",
+      "llm_params": {...},
+      ...
+    }
+  }
+  ```
+- [ ] Error responses properly formatted:
+  - [ ] 404: `{"error": "Session not found"}`
+  - [ ] 422: `{"errors": {"llm_params": ["..."]}`
+- [ ] Controller test created at `test/pag_server_web/controllers/session_controller_test.exs`
+- [ ] Test cases cover:
+  - [ ] Successful update with valid params
+  - [ ] Session not found (404)
+  - [ ] Invalid params (422)
+  - [ ] Empty params (clears overrides)
+  - [ ] Partial param updates
+  - [ ] Thinking level resolution
+- [ ] No compilation warnings
+- [ ] All tests pass
+
+## Context
+
+The API endpoint enables dynamic control of session LLM parameters without
+recreating the session or modifying the agent. This is useful for:
+- User-facing parameter controls in UIs
+- A/B testing different configurations
+- Dynamic parameter adjustment based on conversation state
+- Per-session experimentation
+
+**Design Decisions**:
+- PUT instead of PATCH (replaces entire llm_params map)
+- Notify running agents of updates (they rebuild options on next request)
+- Validation reuses Session schema logic (DRY)
+
+## Implementation Notes
+
+Add route in `lib/pag_server_web/router.ex`:
+
+```elixir
+scope "/api", PagServerWeb do
+  pipe_through :api
+  
+  resources "/sessions", SessionController, only: [:create, :show, :update, :delete] do
+    put "/llm_params", SessionController, :update_llm_params
+  end
+end
+```
+
+Implement controller action in `lib/pag_server_web/controllers/session_controller.ex`:
+
+```elixir
+def update_llm_params(conn, %{"id" => id, "llm_params" => llm_params}) do
+  with {:ok, session} <- fetch_session(id),
+       {:ok, updated_session} <- update_session_params(session, llm_params) do
+    
+    # Notify running agent if present
+    notify_agent_of_param_update(updated_session)
+    
+    conn
+    |> put_status(:ok)
+    |> render(:show, session: updated_session)
+  else
+    {:error, :not_found} ->
+      conn
+      |> put_status(:not_found)
+      |> json(%{error: "Session not found"})
+    
+    {:error, %Ecto.Changeset{} = changeset} ->
+      conn
+      |> put_status(:unprocessable_entity)
+      |> put_view(PagServerWeb.ChangesetJSON)
+      |> render(:error, changeset: changeset)
+  end
+end
+
+defp fetch_session(session_id) do
+  case Repo.get(Session, session_id) do
+    nil -> {:error, :not_found}
+    session -> {:ok, session}
+  end
+end
+
+defp update_session_params(session, llm_params) do
+  session
+  |> Session.update_changeset(%{llm_params: llm_params})
+  |> Repo.update()
+end
+
+defp notify_agent_of_param_update(session) do
+  case Registry.lookup(PagServer.Agents.Registry, session.agent_id) do
+    [{pid, _}] ->
+      Logger.debug("Notifying agent of session param update",
+        session_id: session.id,
+        agent_id: session.agent_id,
+        llm_params: session.llm_params
+      )
+      AgentServer.update_session_params(pid, session.llm_params)
+    
+    [] ->
+      # Agent not running, params will be picked up on next start
+      :ok
+  end
+end
+```
+
+Add to AgentServer public API:
+
+```elixir
+@spec update_session_params(GenServer.server(), map()) :: :ok
+def update_session_params(server, params) do
+  GenServer.cast(server, {:update_session_params, params})
+end
+```
+
+Example test:
+
+```elixir
+describe "PUT /api/sessions/:id/llm_params" do
+  test "updates session LLM params", %{conn: conn} do
+    agent = insert(:agent)
+    session = insert(:session, agent: agent, llm_params: %{})
+    
+    params = %{
+      "temperature" => 0.7,
+      "max_tokens" => 4000,
+      "thinking" => "high"
+    }
+    
+    conn = put(conn, ~p"/api/sessions/#{session.id}/llm_params", 
+                llm_params: params)
+    
+    assert %{"session" => updated_session} = json_response(conn, 200)
+    assert updated_session["llm_params"] == params
+  end
+  
+  test "returns 404 for nonexistent session", %{conn: conn} do
+    conn = put(conn, ~p"/api/sessions/#{Ecto.UUID.generate()}/llm_params",
+                llm_params: %{})
+    
+    assert %{"error" => "Session not found"} = json_response(conn, 404)
+  end
+  
+  test "returns 422 for invalid params", %{conn: conn} do
+    session = insert(:session)
+    
+    invalid_params = %{"temperature" => 5.0}  # Out of range
+    
+    conn = put(conn, ~p"/api/sessions/#{session.id}/llm_params",
+                llm_params: invalid_params)
+    
+    assert %{"errors" => _} = json_response(conn, 422)
+  end
+end
+```

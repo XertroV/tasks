@@ -1,0 +1,60 @@
+id: P39.M2.E2
+name: WebSocket Auth & Channel
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-companionsocket-with.todo
+  title: Implement CompanionSocket with API key auth
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-mount-companionsocket-in-endpo.todo
+  title: Mount CompanionSocket in endpoint.ex
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: high
+  depends_on:
+  - P39.M2.E2.T001
+- id: T003
+  file: T003-implement-companionchannel.todo
+  title: Implement CompanionChannel
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P39.M2.E1.T001
+  - P39.M2.E1.T002
+  - P39.M2.E2.T001
+- id: T004
+  file: T004-add-workspace-companion-auth-s.todo
+  title: Add workspace:companion auth scope
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-write-companionsocket-and-comp.todo
+  title: Write CompanionSocket and CompanionChannel tests
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P39.M2.E2.T001
+  - P39.M2.E2.T003
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

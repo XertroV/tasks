@@ -1,0 +1,33 @@
+id: P28.M2.E1
+name: Plugin Config Endpoints
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on:
+- P28.M1
+locked: false
+tasks:
+- id: T001
+  file: T001-generic-plugin-config-get-patch-.todo
+  title: Generic plugin config endpoint (GET/PATCH /api/v1/workspaces/:id/plugins/:plugin/config)
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P28.M1.E1.T002
+- id: T002
+  file: T002-plugin-config-schema-endpoint-re.todo
+  title: Plugin config schema endpoint (returns JSON Schema for plugin settings)
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P28.M2.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

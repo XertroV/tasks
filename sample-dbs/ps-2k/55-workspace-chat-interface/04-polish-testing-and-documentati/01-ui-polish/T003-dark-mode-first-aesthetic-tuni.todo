@@ -1,0 +1,25 @@
+---
+id: P55.M4.E1.T003
+title: Dark-mode-first aesthetic tuning and streaming cursor
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- polish
+- design
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.969036+00:00'
+started_at: '2026-02-22T12:15:57.969036+00:00'
+completed_at: '2026-02-22T12:33:12.397018+00:00'
+duration_minutes: 17.240466183333336
+---
+Tune the visual design following dark-mode-first, IDE-like aesthetic. Color-coded roles: indigo (user), neutral (assistant), amber (system), cyan (tools), violet (thinking). Add subtle pulsing cursor animation for streaming tokens (CSS @keyframes). Ensure light mode also works. Compact message bubbles, subtle borders, information-dense. Load frontend-design skill during implementation for quality.
+
+## Acceptance Criteria
+- Dark mode looks polished and IDE-like
+- Light mode functional
+- Streaming cursor animation visible
+- Color coding consistent across roles
+- No generic AI-generated UI feel

@@ -1,0 +1,38 @@
+---
+id: P15.M11.E6.T001
+title: Build pair session notepad panel LiveView
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.228940+00:00'
+started_at: '2026-02-17T18:46:51.228940+00:00'
+completed_at: '2026-02-17T19:22:04.248607+00:00'
+duration_minutes: 35.21699428333333
+---
+## Description
+LiveView component that displays the pair session state in real-time: observer notes, current phase, agent activity, and approval status.
+
+## Files to Create
+- `lib/pag_server_web/live/pair_session_live.ex`
+- `lib/pag_server_web/live/components/pair_notepad.ex`
+
+## Acceptance Criteria
+- [ ] Subscribes to Blackboard PubSub topic for real-time note updates
+- [ ] Subscribes to both agents' PubSub topics for activity indicators
+- [ ] Renders notes with category/severity badges, file/line references
+- [ ] Shows current phase (setup/coding/review/iterate/done) with visual indicator
+- [ ] Shows agent status (idle/processing/interrupted) for coder and observer
+- [ ] Shows approval status for both agents
+- [ ] Loads existing notes on mount
+- [ ] Handles `{:blackboard_change, :write, key, entry}` for live updates
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+- Follow pattern from `lib/pag_server_web/live/validation_console.ex` for PubSub subscription
+- Filter blackboard changes by `pair:<session_id>:` prefix
+- See plan: .plan/pair-programming-agents.md, Epic 5, Task 5.1 for full code

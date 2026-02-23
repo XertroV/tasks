@@ -1,0 +1,43 @@
+---
+id: P18.M3.E2.T001
+title: Normalize workspace route params from :id to :workspace_id
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- api
+- workspace
+- breaking-change
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.928733+00:00'
+started_at: '2026-02-17T18:30:42.928733+00:00'
+completed_at: '2026-02-17T20:47:51.091452+00:00'
+duration_minutes: 137.13604511666665
+---
+
+# Normalize workspace route params from :id to :workspace_id
+
+## Description
+
+The workspace routes inconsistently use `:id` (original routes) and `:workspace_id` (newer routes like bootstrap, files). Normalize all to `:workspace_id` for consistency and to support the membership plug.
+
+## Requirements
+
+- [ ] Update all workspace routes in `router.ex` from `/workspaces/:id/...` to `/workspaces/:workspace_id/...`
+- [ ] Routes affected: show, update, delete, set-main-agent, chat, readiness, bots (CRUD + status + install), invitations (CRUD)
+- [ ] Routes already using `:workspace_id` (bootstrap, files) need no change
+- [ ] This is a breaking API change — acceptable since project is in alpha
+
+## Acceptance Criteria
+
+- [ ] All workspace routes use `:workspace_id` consistently
+- [ ] No routes use bare `:id` for workspace identification
+- [ ] Router compiles without warnings
+- [ ] Consistent with the membership plug's param_name expectation
+
+## Context
+
+**Files affected**: `lib/pag_server_web/router.ex` (lines 554-594)
+**Breaking change**: Alpha status — no deprecation period needed

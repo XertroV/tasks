@@ -1,0 +1,58 @@
+id: P20.M1.E1
+name: Migration Framework
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugin-schema-migration.todo
+  title: Create plugin_schema_migrations table migration
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-plugins-schema-migra.todo
+  title: Implement Plugins.Schema.Migrator module
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P20.M1.E1.T001
+- id: T003
+  file: T003-implement-plugins-schema-valid.todo
+  title: Implement Plugins.Schema.Validator module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-integrate-migrator-into-plugin.todo
+  title: Integrate migrator into Plugins.Lifecycle.enable/2
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P20.M1.E1.T002
+  - P20.M1.E1.T003
+- id: T005
+  file: T005-tests-for-migration-framework.todo
+  title: Tests for migration framework
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P20.M1.E1.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

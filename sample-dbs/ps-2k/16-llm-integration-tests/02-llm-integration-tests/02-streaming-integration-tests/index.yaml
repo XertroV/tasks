@@ -1,0 +1,29 @@
+id: P16.M2.E2
+name: Streaming Integration Tests
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-groq-streaming-test.todo
+  title: Add Groq streaming test
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-openrouter-streaming-test.todo
+  title: Add OpenRouter streaming test
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

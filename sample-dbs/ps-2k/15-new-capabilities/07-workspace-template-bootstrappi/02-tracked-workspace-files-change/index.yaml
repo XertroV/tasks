@@ -1,0 +1,38 @@
+id: P15.M7.E2
+name: Tracked Workspace Files & Changelog
+status: pending
+estimate_hours: 10.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-workspace-file-revision.todo
+  title: Create workspace_file_revisions schema and migration
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-workspacefiles-context-m.todo
+  title: Build WorkspaceFiles context module
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-mcp-tool-wrapper-for-tracked-f.todo
+  title: MCP tool wrapper for tracked file edit detection
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

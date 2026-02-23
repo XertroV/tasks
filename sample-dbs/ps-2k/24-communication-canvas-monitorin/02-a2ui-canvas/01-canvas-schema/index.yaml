@@ -1,0 +1,30 @@
+id: P24.M2.E1
+name: Canvas Schema
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-canvas-state-jsonb-field-t.todo
+  title: Add canvas_state jsonb field to sessions schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-define-canvas-element-type-str.todo
+  title: Define canvas element type structs
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,291 @@
+---
+title: Track Connected Clients with Presence
+epic: P3.M1.E2-agent-channel
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimate_hours: 1
+depends_on:
+- P3.M1.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:29:26.733676'
+started_at: '2026-02-06T15:29:26.733676'
+completed_at: '2026-02-06T15:37:36.060088'
+duration_minutes: 8.155440033333333
+id: P3.M1.E2.T003
+---
+
+# Task: Track Connected Clients with Presence
+
+## Context
+Phoenix Presence provides distributed, conflict-free tracking of which clients are currently connected to which agents. This is useful for debugging, showing "active users" counts, and coordinating multi-client scenarios (e.g., multiple browser tabs, mobile + desktop).
+
+## Goal
+Implement Presence tracking to monitor connected clients per agent, with metadata about connection time and client type.
+
+## Requirements
+- Track presence in each agent channel
+- Store metadata: user_id, joined_at, client_info
+- Handle presence_diff events
+- Provide helper to list connected clients
+- Support multiple connections per user
+
+## Implementation
+
+### File: `lib/pag_server_web/channels/presence.ex`
+
+```elixir
+defmodule PagServerWeb.Presence do
+  @moduledoc """
+  Tracks connected clients across agent channels.
+  
+  Metadata stored per connection:
+  - user_id: authenticated user
+  - joined_at: timestamp
+  - client_type: "web", "api", "telegram", etc.
+  - client_version: optional client version
+  """
+  use Phoenix.Presence,
+    otp_app: :pag_server,
+    pubsub_server: PagServer.PubSub
+end
+```
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+Update AgentChannel to track presence:
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  alias PagServer.Agents
+  alias PagServer.Auth
+  alias PagServerWeb.Presence
+  
+  @impl true
+  def join("agent:" <> agent_id, params, socket) do
+    user_id = socket.assigns.user_id
+    
+    with {:ok, agent} <- Agents.get_agent(agent_id),
+         :ok <- authorize_agent_access(user_id, agent_id) do
+      
+      socket =
+        socket
+        |> assign(:agent_id, agent_id)
+        |> assign(:agent, agent)
+        |> assign(:session_id, params["session_id"])
+        |> assign(:client_type, params["client_type"] || "unknown")
+        |> assign(:client_version, params["client_version"])
+      
+      Logger.info("User #{user_id} joined agent channel: #{agent_id}")
+      
+      send(self(), :after_join)
+      
+      {:ok, socket}
+    else
+      {:error, :not_found} ->
+        {:error, %{reason: "agent not found"}}
+      
+      {:error, :unauthorized} ->
+        Logger.warning("Unauthorized access attempt: user=#{user_id}, agent=#{agent_id}")
+        {:error, %{reason: "unauthorized"}}
+    end
+  end
+  
+  @impl true
+  def handle_info(:after_join, socket) do
+    agent_id = socket.assigns.agent_id
+    
+    # Track presence
+    {:ok, _} = Presence.track(socket, socket.assigns.user_id, %{
+      user_id: socket.assigns.user_id,
+      joined_at: System.system_time(:second),
+      client_type: socket.assigns.client_type,
+      client_version: socket.assigns.client_version
+    })
+    
+    # Push presence state to client
+    push(socket, "presence_state", Presence.list(socket))
+    
+    # Push current agent state
+    case Agents.get_state(agent_id) do
+      {:ok, state} ->
+        push(socket, "state", %{
+          status: state.status,
+          current_session: state.current_session_id,
+          message_count: length(state.messages)
+        })
+      
+      {:error, _} ->
+        :ok
+    end
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def handle_info(%{event: "presence_diff", payload: diff}, socket) do
+    # Forward presence changes to client
+    push(socket, "presence_diff", diff)
+    {:noreply, socket}
+  end
+  
+  # ... rest of existing handlers ...
+  
+  # Authorization helper
+  defp authorize_agent_access(user_id, agent_id) do
+    case Application.get_env(:pag_server, :env) do
+      env when env in [:dev, :test] ->
+        :ok
+      _ ->
+        Auth.can_access_agent?(user_id, agent_id)
+    end
+  end
+end
+```
+
+### File: `lib/pag_server/agents.ex`
+
+Add helper to list connected clients:
+
+```elixir
+defmodule PagServer.Agents do
+  # ... existing code ...
+  
+  alias PagServerWeb.Presence
+  
+  @doc """
+  List all connected clients for an agent.
+  
+  Returns list of presences with metadata.
+  """
+  def list_connected_clients(agent_id) do
+    topic = "agent:#{agent_id}"
+    
+    Presence.list(topic)
+    |> Enum.flat_map(fn {_user_id, %{metas: metas}} ->
+      Enum.map(metas, fn meta ->
+        %{
+          user_id: meta.user_id,
+          joined_at: meta.joined_at,
+          client_type: meta.client_type,
+          client_version: meta.client_version,
+          phx_ref: meta.phx_ref
+        }
+      end)
+    end)
+  end
+  
+  @doc """
+  Count connected clients for an agent.
+  """
+  def count_connected_clients(agent_id) do
+    agent_id
+    |> list_connected_clients()
+    |> length()
+  end
+end
+```
+
+### File: `lib/pag_server_web/endpoint.ex`
+
+Ensure Presence is configured in the endpoint:
+
+```elixir
+defmodule PagServerWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :pag_server
+  
+  # ... existing configuration ...
+  
+  # Subscribe to presence events
+  # (This is handled automatically by Phoenix.Presence)
+end
+```
+
+## Acceptance Criteria
+- [ ] Presence tracks clients on join
+- [ ] presence_state pushed to client after join
+- [ ] presence_diff events forwarded to clients
+- [ ] Multiple connections per user supported
+- [ ] list_connected_clients/1 returns accurate list
+- [ ] Presence removed when client disconnects
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/agent_channel_test.exs
+# Add to existing test file:
+
+test "tracks presence on join", %{agent: agent} do
+  {:ok, _reply, socket} = subscribe_and_join(
+    socket(PagServerWeb.UserSocket, "user123", %{user_id: "user123"}),
+    "agent:#{agent.id}",
+    %{"client_type" => "web"}
+  )
+  
+  # Should receive presence_state
+  assert_push "presence_state", presences
+  assert Map.has_key?(presences, "user123")
+end
+
+test "handles multiple connections from same user", %{agent: agent} do
+  # First connection
+  {:ok, _, socket1} = subscribe_and_join(
+    socket(PagServerWeb.UserSocket, "user123", %{user_id: "user123"}),
+    "agent:#{agent.id}",
+    %{"client_type" => "web"}
+  )
+  
+  # Second connection
+  {:ok, _, socket2} = subscribe_and_join(
+    socket(PagServerWeb.UserSocket, "user123", %{user_id: "user123"}),
+    "agent:#{agent.id}",
+    %{"client_type" => "mobile"}
+  )
+  
+  # Should have 2 metas for user123
+  clients = PagServer.Agents.list_connected_clients(agent.id)
+  assert length(clients) == 2
+  
+  client_types = Enum.map(clients, & &1.client_type)
+  assert "web" in client_types
+  assert "mobile" in client_types
+end
+
+test "removes presence on disconnect", %{agent: agent} do
+  {:ok, _, socket} = subscribe_and_join(
+    socket(PagServerWeb.UserSocket, "user123", %{user_id: "user123"}),
+    "agent:#{agent.id}",
+    %{}
+  )
+  
+  # Verify presence
+  assert PagServer.Agents.count_connected_clients(agent.id) == 1
+  
+  # Disconnect
+  Process.unlink(socket.channel_pid)
+  close(socket)
+  
+  # Wait for presence to update
+  :timer.sleep(100)
+  
+  # Presence should be removed
+  assert PagServer.Agents.count_connected_clients(agent.id) == 0
+end
+```
+
+## References
+- Phoenix Presence guide: https://hexdocs.pm/phoenix/Phoenix.Presence.html
+- Presence behaviour: https://hexdocs.pm/phoenix_pubsub/Phoenix.Tracker.html
+- Handling conflict-free replicated data types (CRDTs)
+
+## Notes
+- Presence is distributed across nodes automatically
+- phx_ref is unique per socket connection
+- Multiple connections from same user = multiple metas
+- Presence state is eventually consistent
+- Consider adding "last_active_at" timestamp in future

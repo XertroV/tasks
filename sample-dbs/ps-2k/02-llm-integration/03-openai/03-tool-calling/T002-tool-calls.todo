@@ -1,0 +1,117 @@
+---
+id: P2.M3.E3.T002
+title: Handle tool_calls in responses
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M3.E3.T001
+tags:
+- tools
+- openai
+- function-calling
+- parsing
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:10:35.906851'
+started_at: '2026-02-05T16:10:35.906851'
+completed_at: '2026-02-05T16:18:41.143373'
+duration_minutes: 8.087275216666667
+---
+
+# Handle tool_calls in responses
+
+Parse and process tool_calls from OpenAI responses for execution.
+
+## Requirements
+
+- [x] Parse `tool_calls` array from assistant messages
+- [x] Extract function name, arguments, and call_id
+- [x] Validate function arguments are valid JSON
+- [x] Convert to internal ToolCall schema
+- [x] Handle tool_calls in streaming responses (delta accumulation)
+- [x] Support multiple tool calls in single response
+- [x] Preserve call_id for result submission
+
+## Acceptance Criteria
+
+- [x] Can extract tool_calls from response messages
+- [x] Function arguments are parsed from JSON strings
+- [x] Malformed JSON arguments raise clear errors
+- [x] Call IDs are preserved for tracking
+- [x] Streaming accumulates tool_call deltas correctly
+- [x] Multiple simultaneous tool calls are handled
+- [x] Tests verify parsing edge cases
+
+## Context
+
+**Plan References**:
+- OpenAI Function Calling: https://platform.openai.com/docs/guides/function-calling
+- Internal ToolCall schema (P1.M2.E5)
+
+**Key Points**:
+- Response includes `tool_calls` array with id, type, function
+- Function contains name and arguments (JSON string)
+- In streaming, tool_calls arrive as deltas
+- Call ID must be included when submitting tool results
+- Multiple tool calls can be requested in parallel
+
+## Implementation Notes
+
+Response format:
+```json
+{
+  "choices": [{
+    "message": {
+      "role": "assistant",
+      "content": null,
+      "tool_calls": [{
+        "id": "call_abc123",
+        "type": "function",
+        "function": {
+          "name": "get_weather",
+          "arguments": "{\"location\":\"SF\"}"
+        }
+      }]
+    },
+    "finish_reason": "tool_calls"
+  }]
+}
+```
+
+Parser:
+```elixir
+defmodule PagServer.LLM.OpenAI.ToolCallParser do
+  def parse_tool_calls(message) do
+    message["tool_calls"]
+    |> Enum.map(&parse_tool_call/1)
+  end
+  
+  defp parse_tool_call(tc) do
+    %PagServer.Schema.ToolCall{
+      id: tc["id"],
+      name: tc["function"]["name"],
+      arguments: Jason.decode!(tc["function"]["arguments"]),
+      provider_data: %{call_id: tc["id"]}
+    }
+  end
+end
+```
+
+Streaming delta format:
+```json
+{
+  "delta": {
+    "tool_calls": [{
+      "index": 0,
+      "id": "call_abc123",
+      "function": {
+        "name": "get_weather",
+        "arguments": "{\"loc"
+      }
+    }]
+  }
+}
+```
+
+Accumulate tool_call deltas by index, concatenate arguments.

@@ -1,0 +1,46 @@
+---
+id: P27.M1.E1.T002
+title: Auto-cleanup GenServer that destroys ephemeral sessions after completion
+status: done
+estimate_hours: 5.0
+complexity: medium
+priority: high
+depends_on:
+- P27.M1.E1.T001
+tags:
+- session
+- ephemeral
+- genserver
+- cleanup
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:17:26.619123+00:00'
+started_at: '2026-02-18T18:17:26.619123+00:00'
+completed_at: '2026-02-18T18:34:04.440033+00:00'
+duration_minutes: 16.630348333333334
+---
+
+# Auto-cleanup GenServer for ephemeral sessions
+
+Implement a GenServer (or OTP process) that monitors ephemeral sessions and destroys
+them once their associated agent has completed (succeeded, failed, or been cancelled).
+This prevents ephemeral sessions from accumulating in the database.
+
+## Requirements
+
+- Create `PagServer.Sessions.EphemeralCleaner` GenServer (or similar name)
+- Subscribe to agent lifecycle events (via PubSub or Telemetry) to detect completion
+- On agent completion, check if the session is ephemeral; if so, schedule deletion
+- Add a configurable grace period (default 5 minutes) before hard deletion to allow
+  result retrieval
+- Periodic sweep query as a fallback to catch any sessions missed by event subscription
+- Supervisor child spec added to the session or application supervision tree
+
+## Acceptance Criteria
+
+- [ ] `EphemeralCleaner` GenServer starts under the application supervisor
+- [ ] When an agent in an ephemeral session completes, the session is scheduled for deletion
+- [ ] Deletion happens after a configurable grace period (default 5 min, 0 in test mode)
+- [ ] Periodic sweep (e.g. every 10 minutes) deletes completed ephemeral sessions missed by events
+- [ ] Non-ephemeral sessions are never deleted by this cleaner
+- [ ] Module documentation explains the cleanup lifecycle and configuration
+- [ ] Unit tests for sweep query logic and event-triggered deletion scheduling

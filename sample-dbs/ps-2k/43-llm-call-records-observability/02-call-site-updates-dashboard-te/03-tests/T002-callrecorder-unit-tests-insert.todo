@@ -1,0 +1,36 @@
+---
+id: P43.M2.E3.T002
+title: 'CallRecorder unit tests: insert/complete/fail with Ecto sandbox, verify non-blocking
+  behavior'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:12:49.242197+00:00'
+started_at: '2026-02-20T00:12:49.242197+00:00'
+completed_at: '2026-02-20T00:17:21.487303+00:00'
+duration_minutes: 4.537418266666666
+---
+
+# CallRecorder unit tests: insert/complete/fail with Ecto sandbox, verify non-blocking behavior
+
+
+
+## Requirements
+
+- `CallRecorder` operations (`insert_pending`, `complete`, `fail`) must be tested end-to-end against the Ecto sandbox to confirm correct DB state, and the non-blocking (async) contract must be verified.
+
+## Acceptance Criteria
+
+- Test file `test/pag_server/llm/call_recorder_test.exs` exists and uses `use PagServer.DataCase, async: true`.
+- A test for `insert_pending/4` calls the function with a valid provider, model, model_spec, and opts map, then polls the DB (using a helper or `Process.sleep` via the `sleep_fn` pattern — max total wait 200 ms) and asserts that exactly one `LlmCallRecord` row exists with `status: :pending` and the correct provider/model values.
+- A test for `complete/3` first inserts a pending record (directly via `Repo.insert!` or `insert_pending`), calls `CallRecorder.complete/3` with token counts and duration_ms, then asserts the row's `status` is `:completed`, `completed_at` is non-nil, and `input_tokens`/`output_tokens`/`duration_ms` are set to the supplied values.
+- A test for `fail/3` follows the same pattern, asserting `status: :failed` and that `error_details` is a non-empty map containing the supplied error info.
+- A test for `extract_context/1` calls the function with a keyword list that includes `:agent_id`, `:session_id`, `:workspace_id`, `:caller_context`, and extra opts (e.g. `:temperature`); asserts the returned opts do NOT contain the four context keys and DO contain `:temperature`.
+- A test calls `extract_context/1` with an opts list where `:session_id` is `nil` and asserts it returns successfully (no raise).
+- A test calls `CallRecorder.complete/3` with a non-existent `record_id` (e.g. a random UUID) and asserts the function returns an error tuple or `:ok` without raising — it must not crash the caller process.
+- A test calls `stale_records/0` and asserts it returns a list (empty or non-empty) without raising; if the DB contains a `:pending` row with `started_at` older than the stale threshold, that row appears in the result.
+- All tests pass with `mix test test/pag_server/llm/call_recorder_test.exs` and complete in under 2 seconds total (no unbounded sleeps).

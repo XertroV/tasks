@@ -1,0 +1,161 @@
+---
+id: P1.M2.E5.T002
+title: Create ToolCall schema
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M2.E5.T001
+tags:
+- schema
+- ecto
+- tools
+- validation
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:22:33.390065'
+started_at: '2026-02-05T08:22:33.390065'
+completed_at: '2026-02-05T08:25:56.011357'
+---
+
+# Create ToolCall schema
+
+Create the Ecto schema for tool calls with associations, validations, and helper functions for status management and duration tracking.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/tool_call.ex`
+- [ ] Define schema with all fields from migration
+- [ ] Add associations:
+  - [ ] `belongs_to :session, PagServer.Schema.Session`
+  - [ ] `belongs_to :message, PagServer.Schema.Message`
+- [ ] Implement changeset with validations:
+  - [ ] Validate required fields: session_id, tool_name, arguments, status
+  - [ ] Validate status enum: ["pending", "running", "completed", "failed"]
+  - [ ] Validate arguments is a map
+  - [ ] Optional: result is a map
+- [ ] Add helper functions:
+  - [ ] `start/1` - transition to "running", set started_at
+  - [ ] `complete/2` - transition to "completed", set completed_at, calculate duration_ms
+  - [ ] `fail/2` - transition to "failed", set completed_at, error
+  - [ ] `calculate_duration/1` - compute duration_ms from timestamps
+- [ ] Write tests in `test/pag_server/schema/tool_call_test.exs`
+- [ ] Add to schema documentation
+
+## Acceptance Criteria
+
+- [ ] Can create tool call with valid attributes
+- [ ] Status transitions work correctly
+- [ ] Duration is calculated automatically on completion
+- [ ] Associations to session and message are properly defined
+- [ ] Invalid status values are rejected
+- [ ] Query by session_id returns all tool calls for that session
+- [ ] Query by tool_name returns all calls for that tool
+- [ ] Tests pass with >90% coverage
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 253-267 (tool_calls table)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4 (Tool System)
+
+**Key Points**:
+- Tool calls track execution lifecycle: pending → running → completed/failed
+- Duration calculated from started_at to completed_at
+- Arguments and result are free-form maps (validated by tool definitions)
+- Error field captures exception messages or validation failures
+- Each tool call belongs to a session; optionally linked to a message
+
+**Dependencies**:
+- Requires T001 migration completed
+- Requires Session schema (from P1.M2.E2)
+- Requires Message schema (from P1.M2.E4)
+
+## Notes
+
+Example schema structure:
+```elixir
+defmodule PagServer.Schema.ToolCall do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @valid_statuses ~w(pending running completed failed)
+
+  schema "tool_calls" do
+    field :tool_name, :string
+    field :arguments, :map
+    field :result, :map
+    field :error, :string
+    field :status, :string, default: "pending"
+    field :started_at, :utc_datetime_usec
+    field :completed_at, :utc_datetime_usec
+    field :duration_ms, :integer
+
+    belongs_to :session, PagServer.Schema.Session
+    belongs_to :message, PagServer.Schema.Message
+
+    timestamps(type: :utc_datetime_usec)
+  end
+
+  def changeset(tool_call, attrs) do
+    tool_call
+    |> cast(attrs, [:session_id, :message_id, :tool_name, :arguments, 
+                    :result, :error, :status, :started_at, :completed_at, :duration_ms])
+    |> validate_required([:session_id, :tool_name, :arguments, :status])
+    |> validate_inclusion(:status, @valid_statuses)
+    |> foreign_key_constraint(:session_id)
+    |> foreign_key_constraint(:message_id)
+  end
+
+  def start(tool_call) do
+    change(tool_call, %{
+      status: "running",
+      started_at: DateTime.utc_now()
+    })
+  end
+
+  def complete(tool_call, result) do
+    completed_at = DateTime.utc_now()
+    duration_ms = calculate_duration(tool_call.started_at, completed_at)
+    
+    change(tool_call, %{
+      status: "completed",
+      result: result,
+      completed_at: completed_at,
+      duration_ms: duration_ms
+    })
+  end
+
+  def fail(tool_call, error) do
+    completed_at = DateTime.utc_now()
+    duration_ms = if tool_call.started_at, 
+      do: calculate_duration(tool_call.started_at, completed_at),
+      else: nil
+    
+    change(tool_call, %{
+      status: "failed",
+      error: error,
+      completed_at: completed_at,
+      duration_ms: duration_ms
+    })
+  end
+
+  defp calculate_duration(nil, _), do: nil
+  defp calculate_duration(started_at, completed_at) do
+    DateTime.diff(completed_at, started_at, :millisecond)
+  end
+end
+```
+
+Example test cases:
+- Create tool call with valid attributes
+- Reject invalid status values
+- Start transitions status to "running" and sets started_at
+- Complete calculates duration_ms correctly
+- Fail records error and calculates duration if started
+- Query by session_id
+- Query by tool_name
+- Association preloading works

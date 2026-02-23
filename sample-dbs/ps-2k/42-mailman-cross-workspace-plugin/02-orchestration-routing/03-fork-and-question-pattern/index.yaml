@@ -1,0 +1,30 @@
+id: P42.M2.E3
+name: Fork-and-Question Pattern
+status: done
+estimate_hours: 3.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-forkandquestion-modu.todo
+  title: Implement ForkAndQuestion module
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-routing-rule-memory.todo
+  title: Implement routing rule memory integration
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

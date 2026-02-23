@@ -1,0 +1,72 @@
+---
+id: P10.M5.E2.T003
+title: Implement Gitea PR and issue operations
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on:
+- P10.M5.E2.T001
+- P10.M5.E2.T002
+tags:
+- gitea
+- pr-operations
+- issue-operations
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:57:40.969397+00:00'
+started_at: '2026-02-12T05:57:40.969397+00:00'
+completed_at: '2026-02-12T06:16:59.688836+00:00'
+duration_minutes: 19.31199035
+---
+
+# Implement Gitea PR and issue operations
+
+Integrate Gitea PR and issue operations into agent workflow.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/gitea/orchestrator.ex` module
+- [ ] Implement PR operations:
+  - [ ] Create pull request
+  - [ ] Update PR status
+  - [ ] Add PR comments
+  - [ ] Merge PR
+- [ ] Implement issue operations:
+  - [ ] Create issue
+  - [ ] Update issue
+  - [ ] Add issue comments
+- [ ] Integrate with agent state updates via Events
+- [ ] Add telemetry tracking
+- [ ] Write integration tests
+
+## Acceptance Criteria
+
+- [ ] PR operations work correctly
+- [ ] Issue operations work correctly
+- [ ] Status updates persisted via Events
+- [ ] Telemetry tracks operation timing
+- [ ] Error handling covers API failures
+- [ ] `mix test` passes for all tests
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 05:57 UTC
+**Primary task**: P10.M5.E1.T003 - Implement Bitbucket PR and issue operations
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P10.M5.E2 vs P10.M5.E1)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,32 @@
+id: P36.M1.E3
+name: SessionStore Query
+status: done
+estimate_hours: 1.5
+complexity: low
+depends_on:
+- P36.M1.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-add-query-auto-start-candidate.todo
+  title: Add query_auto_start_candidates/0 and update_startup_duration/2 to SessionStore
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-tests-for-sessionstore-boot-qu.todo
+  title: Tests for SessionStore boot query functions
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P36.M1.E3.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

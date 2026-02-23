@@ -1,0 +1,38 @@
+---
+id: P17.M3.E3.T001
+title: Add semantic cache match test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- integration
+- cache
+- semantic
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:26:21.462672+00:00'
+started_at: '2026-02-14T05:26:21.462672+00:00'
+completed_at: '2026-02-14T05:41:49.744811+00:00'
+duration_minutes: 15.471368833333335
+---
+
+# Add semantic cache match test
+
+Add integration test for semantic cache with real embeddings.
+
+## Requirements
+
+- Create test file `test/integration/cache/semantic_cache_test.exs`
+- Test storing and retrieving semantically similar queries
+- Test cache miss for unrelated queries
+- Use mock embeddings to avoid requiring embedding model API
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists at `test/integration/cache/semantic_cache_test.exs`
+- [ ] Test stores response with embedding
+- [ ] Test finds similar cached response
+- [ ] Test returns miss for unrelated query
+- [ ] Test uses `@moduletag :integration` for filtering
+- [ ] Test skips gracefully if no API keys available

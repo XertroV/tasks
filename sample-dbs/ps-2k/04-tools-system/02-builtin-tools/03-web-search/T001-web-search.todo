@@ -1,0 +1,170 @@
+---
+id: P4.M2.E3.T001
+title: Implement web_search tool
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- builtin
+- web
+- search
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:54:35.249558'
+started_at: '2026-02-06T02:54:35.249558'
+completed_at: '2026-02-06T03:05:00.249501'
+duration_minutes: 10.416665483333333
+---
+
+# Implement web_search tool
+
+Create the `web_search` builtin tool for searching the web.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/web_search.ex` (~150 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Integrate with search API (DuckDuckGo, SearxNG, or Brave)
+- [ ] Return structured results (title, URL, snippet)
+- [ ] Handle rate limiting and errors gracefully
+- [ ] Support result count parameter
+
+## Acceptance Criteria
+
+- [ ] Searches web and returns relevant results
+- [ ] Returns structured data: title, url, snippet, published_date
+- [ ] Handles API errors and rate limits
+- [ ] Supports pagination (top N results)
+- [ ] Test coverage with mock API responses
+- [ ] Configurable API key/endpoint via config
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Essential for agents to gather external information
+- Use privacy-focused search APIs (DuckDuckGo, SearxNG)
+- Consider caching results to reduce API calls
+- Rate limiting is critical for API quota management
+
+## Notes
+
+Implementation with DuckDuckGo Instant Answer API:
+```elixir
+defmodule PAGServer.Tools.Builtin.WebSearch do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "web_search"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "web_search",
+      description: "Search the web for information",
+      parameters: %{
+        type: "object",
+        properties: %{
+          query: %{
+            type: "string",
+            description: "Search query"
+          },
+          num_results: %{
+            type: "number",
+            description: "Number of results to return (default 5)",
+            default: 5
+          }
+        },
+        required: ["query"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"query" => query} = args, _context) do
+    num_results = Map.get(args, "num_results", 5)
+    
+    case search(query, num_results) do
+      {:ok, results} ->
+        {:ok, %{
+          query: query,
+          results: results,
+          count: length(results)
+        }}
+      {:error, reason} ->
+        {:error, "Search failed: #{reason}"}
+    end
+  end
+
+  defp search(query, num_results) do
+    # Implementation depends on chosen API
+    # DuckDuckGo Instant Answer API (free, no key)
+    # SearxNG (self-hosted)
+    # Brave Search API (requires key)
+    
+    url = "https://api.duckduckgo.com/?q=#{URI.encode(query)}&format=json"
+    
+    case HTTPoison.get(url) do
+      {:ok, %{status_code: 200, body: body}} ->
+        parse_results(body, num_results)
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp parse_results(body, num_results) do
+    # Parse JSON and extract results
+    # Format varies by API
+    {:ok, []}
+  end
+end
+```
+
+API Options:
+1. **DuckDuckGo Instant Answer** (free, no key, limited)
+2. **SearxNG** (self-hosted, privacy-focused)
+3. **Brave Search** (paid, high quality)
+4. **Google Custom Search** (paid, best quality)
+
+Configuration in `config/config.exs`:
+```elixir
+config :pag_server, :web_search,
+  provider: :duckduckgo,  # or :searxng, :brave
+  api_key: System.get_env("SEARCH_API_KEY"),
+  endpoint: "https://searxng.example.com",
+  rate_limit: 10  # requests per minute
+```
+
+Future enhancements:
+- Result caching with TTL
+- Multiple search provider fallback
+- Image and news search
+- Site-specific search (site:github.com query)
+
+Register in Registry startup.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:33 UTC
+**Primary task**: P4.M1.E3.T004 - Wire registry tool schemas into LLM request builders
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M2.E3 vs P4.M1.E3)
+- No dependency chain: ✓ (verified at claim time)

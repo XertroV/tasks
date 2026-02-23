@@ -1,0 +1,37 @@
+---
+id: P15.M5.E1.T002
+title: Implement blackboard GenServer
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M5.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T16:34:43.339211+00:00'
+started_at: '2026-02-13T16:34:43.339211+00:00'
+completed_at: '2026-02-13T16:56:24.557597+00:00'
+duration_minutes: 21.6869729
+---
+
+# Implement blackboard GenServer
+
+## Description
+Implement the Blackboard GenServer that manages the shared knowledge space. Provide CRUD operations, change notifications, and query capabilities for agents.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Blackboard.Server` GenServer
+- [ ] Implement `write(workspace_id, key, value, opts)` with conflict handling
+- [ ] Implement `read(workspace_id, key)` and `read_all(workspace_id)`
+- [ ] Add `query(workspace_id, filter)` for filtered reads
+- [ ] Implement `delete(workspace_id, key)` with notification
+- [ ] Add ETS-backed cache for hot entries
+- [ ] Persist changes to database asynchronously
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/blackboard_entry.ex`, `lib/pag_server/agents/supervisor.ex`, `lib/pag_server/cache.ex`
+- Part of epic: Blackboard Pattern
+- Follow GenServer patterns from AgentServer

@@ -1,0 +1,24 @@
+---
+id: P46.M2.E2.T002
+title: Implement identity linking for authenticated users adding new provider
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P46.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:49:29.470002+00:00'
+started_at: '2026-02-19T21:49:29.470002+00:00'
+completed_at: '2026-02-19T21:57:23.494611+00:00'
+duration_minutes: 7.9004098
+---
+When an already-logged-in user initiates an OAuth flow to add a new provider (e.g., they have GitHub linked and want to also link Google):
+1. OAuthLoginController.request/2 detects current_user in session → stores 'link_mode: true' in OAuth state
+2. OAuthLoginController.callback/2 detects link_mode flag → calls Accounts.link_identity/3 instead of UserProvisioner
+3. link_identity/3: validates (provider, uid) is not already linked to a DIFFERENT user. Creates UserIdentity for current_user. Returns {:ok, identity} | {:error, :already_linked_to_other_user}
+4. On success: redirect to /settings/profile with flash 'GitHub account linked'.
+5. On conflict: redirect to /settings/profile with flash error explaining the provider is linked to another account.
+Add 'Link [Provider]' buttons to settings page (done in M5, but wire the controller logic here).
+Acceptance: Unit tests for link_identity covering success, already-owned duplicate (idempotent), and conflict cases.

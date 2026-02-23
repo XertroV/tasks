@@ -1,0 +1,52 @@
+---
+id: I040
+title: When we get to subagents, a required field should be 'size' which could be
+  small, medium, or large. (or a model could be provided and then size can be omitted).
+  the user can specify a pool of models that fall into each size. This makes choosing
+  models easier. Workspace level setting (small/med/large) models.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:14:15.923694+00:00'
+started_at: '2026-02-18T22:14:15.923694+00:00'
+completed_at: '2026-02-18T22:14:18.173789+00:00'
+duration_minutes: 0.037501316666666666
+---
+
+# Idea Intake: When we get to subagents, a required field should be 'size' which could be small, medium, or large. (or a model could be provided and then size can be omitted). the user can specify a pool of models that fall into each size. This makes choosing models easier. Workspace level setting (small/med/large) models.
+
+## Original Idea
+
+When we get to subagents, a required field should be 'size' which could be small, medium, or large. (or a model could be provided and then size can be omitted). the user can specify a pool of models that fall into each size. This makes choosing models easier. Workspace level setting (small/med/large) models.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "When we get to subagents, a required field should be 'size' which could be small, medium, or large. (or a model could be provided and then size can be omitted). the user can specify a pool of models that fall into each size. This makes choosing models easier. Workspace level setting (small/med/large) models."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P26 (Phase): Agent Size Pool
+  - P26.M1.E1.T001: Add size pool config to workspace schema (small/medium/large model lists)
+  - P26.M1.E1.T002: Add size field to agent spawn requests
+  - P26.M2.E1.T001: Implement model selector that picks from workspace size pool
+  - P26.M2.E2.T001: API for configuring workspace model pools (get/set per size)
+  - P26.M3.E1.T001: Tests for size-based model selection (end-to-end)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

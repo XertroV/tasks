@@ -1,0 +1,103 @@
+---
+id: P8.M3.E2.T003
+title: Handle interactive components
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P8.M3.E2.T001
+tags:
+- slack
+- interactive
+- buttons
+claimed_by: cli-user
+claimed_at: '2026-02-08T12:26:49.502625+00:00'
+started_at: '2026-02-08T12:26:49.502625+00:00'
+completed_at: '2026-02-08T12:53:10.249124+00:00'
+duration_minutes: 26.34577481666667
+---
+
+# Handle interactive components
+
+Implement handlers for Slack interactive components (buttons, select menus).
+
+## Requirements
+
+- [x] Add `/slack/interactive` route (~80 LoC)
+- [x] Handle button clicks (approve/reject, fork, retry)
+- [x] Handle select menu interactions
+- [x] Update message with action results
+- [x] Send ephemeral responses for immediate feedback
+- [x] Add Block Kit builder helpers (~60 LoC)
+
+## Acceptance Criteria
+
+- [x] Button clicks trigger correct agent actions
+- [x] Interactive payloads validated and parsed
+- [x] Message updates reflect action results
+- [x] User receives immediate feedback (ephemeral)
+- [x] Tests cover all button actions
+- [x] Block Kit helpers create valid layouts
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` line 285 (Interactive components)
+
+**Key Points**:
+- Interactive payloads arrive as JSON POST
+- Must acknowledge within 3 seconds
+- Can update original message or send ephemeral
+- Block Kit provides rich UI components
+- Actions map to agent commands (fork, retry, etc.)
+
+## Notes
+
+Common interactive actions:
+- `fork_session` - Create session fork with new thread
+- `retry_message` - Regenerate last response
+- `approve_tool` - Approve pending tool execution
+- `view_stats` - Show session statistics
+
+Interactive payload structure:
+```json
+{
+  "type": "block_actions",
+  "user": {"id": "U456"},
+  "channel": {"id": "C789"},
+  "message": {"ts": "1234567890.123456"},
+  "actions": [{
+    "action_id": "fork_session",
+    "block_id": "actions",
+    "value": "session_123"
+  }]
+}
+```
+
+Block Kit example:
+```elixir
+def build_action_blocks(session_id) do
+  [
+    %{
+      type: "actions",
+      block_id: "session_actions",
+      elements: [
+        %{
+          type: "button",
+          text: %{type: "plain_text", text: "Fork"},
+          action_id: "fork_session",
+          value: session_id,
+          style: "primary"
+        },
+        %{
+          type: "button",
+          text: %{type: "plain_text", text: "Stats"},
+          action_id: "view_stats",
+          value: session_id
+        }
+      ]
+    }
+  ]
+end
+```

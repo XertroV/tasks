@@ -1,0 +1,25 @@
+id: P52.M3
+name: Verification and release readiness
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on:
+- P52.M2
+locked: false
+epics:
+- id: E1
+  name: Testing and docs
+  path: 01-testing-and-docs
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: Cover protocol behavior with automated tests and provide docs/examples
+    for local usage.
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,53 @@
+id: P22.M2
+name: Live Model Discovery
+status: pending
+estimate_hours: 20.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'Provider Behaviour: fetch_models/1 callback'
+  path: 01-provider-behaviour-fetch-model
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: ModelDiscoveryCache GenServer
+  path: 02-modeldiscoverycache-genserver
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P22.M2.E1
+  description: ''
+  locked: false
+- id: E3
+  name: 'ModelCatalog: merge static + live models'
+  path: 03-modelcatalog-merge-static-live
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on:
+  - P22.M2.E2
+  description: ''
+  locked: false
+- id: E4
+  name: 'API: model refresh endpoint + tests'
+  path: 04-api-model-refresh-endpoint-tes
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on:
+  - P22.M2.E3
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

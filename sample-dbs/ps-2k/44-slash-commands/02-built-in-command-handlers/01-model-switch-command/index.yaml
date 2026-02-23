@@ -1,0 +1,30 @@
+id: P44.M2.E1
+name: Model Switch Command
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-model-command-handle.todo
+  title: Implement /model command handler
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-platform-rendering-of-model-in.todo
+  title: Platform rendering of /model interactive options
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

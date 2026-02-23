@@ -1,0 +1,37 @@
+id: P55.M4
+name: Polish, Testing, and Documentation
+status: done
+estimate_hours: 11.0
+complexity: medium
+depends_on:
+- M3
+locked: false
+epics:
+- id: E1
+  name: UI Polish
+  path: 01-ui-polish
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Empty states (no messages, no threads), loading spinners, error alerts.
+    Responsive layout with mobile sidebar collapse/toggle. Dark-mode-first aesthetic
+    tuning and streaming cursor pulsing animation.
+  locked: false
+- id: E2
+  name: Integration Tests and Browser Testing Docs
+  path: 02-integration-tests-and-browser
+  status: done
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: LiveView integration tests using ConnCase + Phoenix.LiveViewTest. Mount/navigation/auth,
+    thread management, message rendering + streaming PubSub events, composer submit,
+    approval workflow, fork. Browser testing guide for workspace chat in docs/browser-tests/.
+  locked: false
+stats:
+  total_tasks: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

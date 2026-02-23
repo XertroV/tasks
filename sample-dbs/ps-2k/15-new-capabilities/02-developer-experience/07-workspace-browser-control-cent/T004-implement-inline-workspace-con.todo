@@ -1,0 +1,28 @@
+---
+id: P15.M2.E7.T004
+title: Implement inline workspace config editor with immediate apply and safeguards
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M2.E7.T003
+- P18.M4.E3.T002
+tags:
+- config
+- workspace
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:06:20.900334+00:00'
+started_at: '2026-02-18T04:06:20.900334+00:00'
+completed_at: '2026-02-18T04:28:33.372902+00:00'
+duration_minutes: 22.207875783333336
+---
+## Goal
+Enable safe workspace-level configuration editing directly from the browser.
+
+## Acceptance Criteria
+- Detail panel supports editing key workspace settings with validation and dirty-state tracking.
+- Save flow applies safe edits immediately, with high-risk edits requiring explicit confirmation.
+- Validation and API errors are mapped to field-level and form-level feedback.
+- Includes telemetry/audit hooks for config mutations with correlation IDs.

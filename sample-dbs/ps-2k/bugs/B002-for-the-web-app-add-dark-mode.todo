@@ -1,0 +1,23 @@
+---
+id: B002
+title: for the web app, add dark mode + make dark mode default
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:07:11.642766+00:00'
+started_at: '2026-02-15T16:07:11.642766+00:00'
+completed_at: '2026-02-15T16:08:09.628163+00:00'
+duration_minutes: 0.96642315
+---
+
+for the web app, add dark mode + make dark mode default
+
+## Fix Record
+
+- **Fixed in commit**: 37eab364
+- **Summary**: test fix from any dir
+- **Fixed at**: 2026-02-20T15:00:08Z

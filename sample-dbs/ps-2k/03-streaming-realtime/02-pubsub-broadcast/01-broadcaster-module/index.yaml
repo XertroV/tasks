@@ -1,0 +1,27 @@
+epic_id: P3.M2.E1
+name: Broadcaster Module
+description: Centralized GenServer for broadcasting agent events via PubSub
+milestone: 02-pubsub-broadcast
+phase: 03-streaming-realtime
+
+estimated_hours: 4
+priority: medium
+
+tasks:
+  - T001-broadcaster-genserver.todo
+  - T002-pubsub-topics.todo
+  - T003-broadcast-helpers.todo
+
+dependencies:
+  - P3.M1.E1  # PubSub must be configured
+
+acceptance_criteria:
+  - Broadcaster GenServer started under supervision tree
+  - Topic naming convention documented and enforced
+  - Helper functions for common broadcasts
+  - Broadcasts non-blocking and resilient
+
+deliverables:
+  - Agents.Broadcaster module
+  - Topic naming schema
+  - Broadcast helper functions

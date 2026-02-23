@@ -1,0 +1,107 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-08T03:18:10.884961+00:00'
+started_at: '2026-02-08T03:18:10.884961+00:00'
+completed_at: '2026-02-08T03:18:44.769363+00:00'
+duration_minutes: 0.5647398333333334
+---
+# Task: Configure channel endpoint in router
+# Epic: P3.M1.E1 - Channel Setup
+# Phase 3 - Streaming & Real-Time
+
+id: P3.M1.E1.T002
+title: Configure channel endpoint in router
+status: pending
+complexity: low
+priority: high
+estimate_hours: 0.5
+depends_on: [P3.M1.E1.T001]
+
+---
+
+## Context
+
+The Phoenix router needs to be configured to serve the WebSocket endpoint for channels.
+
+## Goal
+
+Configure `PagServerWeb.Endpoint` to serve the UserSocket at `/socket`.
+
+## Requirements
+
+1. **Endpoint Configuration**:
+   - Add socket mount to `lib/pag_server_web/endpoint.ex`
+   - Configure WebSocket options
+   - Set appropriate timeouts
+
+2. **WebSocket Options**:
+   - Timeout: 60 seconds
+   - Serializer: Phoenix.Socket.V2.JSONSerializer
+   - Transport log: false (in prod), :debug (in dev)
+
+## Implementation
+
+In `lib/pag_server_web/endpoint.ex`, add after the static plug:
+
+```elixir
+socket "/socket", PagServerWeb.UserSocket,
+  websocket: [
+    timeout: 60_000,
+    compress: true
+  ],
+  longpoll: false
+```
+
+## Configuration Updates
+
+Update `config/config.exs`:
+
+```elixir
+config :pag_server, PagServerWeb.Endpoint,
+  # ... existing config ...
+  render_errors: [
+    formats: [html: PagServerWeb.ErrorHTML, json: PagServerWeb.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: PagServer.PubSub
+```
+
+## File Locations
+
+- `lib/pag_server_web/endpoint.ex`
+- `config/config.exs` (verify PubSub config)
+
+## Acceptance Criteria
+
+- [ ] Socket endpoint mounted at "/socket"
+- [ ] WebSocket transport configured with 60s timeout
+- [ ] Long polling disabled (WebSocket only)
+- [ ] Compression enabled for WebSocket
+- [ ] Endpoint compiles without warnings
+
+## Testing
+
+Manual test using JavaScript console:
+
+```javascript
+let socket = new Phoenix.Socket("ws://localhost:4000/socket")
+socket.connect()
+console.log(socket.isConnected()) // should be true
+```
+
+Or using wscat:
+
+```bash
+wscat -c ws://localhost:4000/socket/websocket
+```
+
+## References
+
+- Phoenix.Endpoint: https://hexdocs.pm/phoenix/Phoenix.Endpoint.html
+- WebSocket configuration: https://hexdocs.pm/phoenix/Phoenix.Endpoint.html#socket/3
+
+## Notes
+
+- Long polling is disabled - WebSocket only for simplicity
+- Compression is enabled for bandwidth efficiency

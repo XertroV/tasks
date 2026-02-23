@@ -1,0 +1,16 @@
+---
+id: P22.M3.E2.T001
+title: Add session-level compaction config fields to session schema
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:07:30.116320+00:00'
+started_at: '2026-02-18T15:07:30.116320+00:00'
+completed_at: '2026-02-18T15:20:21.355949+00:00'
+duration_minutes: 12.853993599999999
+---
+Update session schema (or session_config JSONB field) to include: auto_compact_enabled (boolean, default: true), compact_threshold_pct (float 0-1, default: 0.8), compact_strategy (enum: :summarize | :sliding_window, default: :summarize). Add migration for any new columns. Acceptance criteria: - Config fields stored and retrieved from DB - Default values applied when not explicitly set - Values validated: threshold between 0.1 and 0.95, strategy one of allowed values - Changeset validates all fields

@@ -1,0 +1,22 @@
+id: P2.M1
+name: Provider Abstraction
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Provider Behaviour
+  path: 01-behaviour
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on: []
+  description: Define LLM.Provider behaviour, create provider registry, implement
+    model spec parser
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,47 @@
+---
+id: P25.M2.E4.T001
+title: Standardize Connector Messaging plugin MCP interface
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- standardization
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:18:30.043232+00:00'
+started_at: '2026-02-19T15:18:30.043232+00:00'
+completed_at: '2026-02-19T15:18:32.091803+00:00'
+duration_minutes: 0.034142650000000004
+---
+
+# Standardize Connector Messaging plugin MCP interface
+
+## Scope
+
+- Audit `plugins/connector_messaging/lib/connector_plugin.ex`.
+- Plan conversion from:
+  - `list_connectors`
+  - `send_connector_message`
+- to a single plugin domain tool with `action` or `subcommand` dispatch.
+- Keep compatibility strategy explicit (if this includes existing LLM workflows).
+
+## Requirements
+
+- Define a single MCP tool shape and schema with an operation enum.
+- Add per-operation required argument docs and usage examples.
+- Require and validate context-driven workspace scoping in the dispatcher path.
+- Specify deterministic failure payloads for unknown operations.
+
+## Acceptance Criteria
+
+- [ ] New schema documents a single dispatch argument with at least:
+  - `list_connectors`
+  - `send_connector_message`
+- [ ] Unknown operations return a structured error with known operations listed.
+- [ ] Response includes selected operation field for observability.
+- [ ] All current existing operations retain behavior parity in design notes.
+- [ ] Compatibility/migration note is documented before implementation work begins.

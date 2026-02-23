@@ -1,0 +1,21 @@
+---
+id: P42.M4.E2.T001
+title: 'Unit tests: schemas, address, mailbox, messages'
+status: done
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:37:12.856613+00:00'
+started_at: '2026-02-19T17:37:12.856613+00:00'
+completed_at: '2026-02-19T18:20:03.517264+00:00'
+duration_minutes: 42.84434398333334
+---
+## Acceptance Criteria
+- [ ] test/pag_server/plugins/mailman/address_test.exs: parse/1 and resolve_local/1 with all address formats including invalid ones
+- [ ] test/pag_server/plugins/mailman/mailbox_test.exs: CRUD, idempotent create, deactivate
+- [ ] test/pag_server/plugins/mailman/messages_test.exs: enqueue, status transitions, list_pending ordering, reply, forward
+- [ ] All async: true with unique workspace slugs per test
+- [ ] No Process.sleep calls

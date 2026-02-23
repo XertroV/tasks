@@ -1,0 +1,27 @@
+---
+id: P39.M1.E1.T002
+title: Update SSH plugin tests for renamed tool
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- ssh
+- cleanup
+- tests
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:28:22.448508+00:00'
+started_at: '2026-02-19T11:28:22.448508+00:00'
+completed_at: '2026-02-19T11:31:54.477502+00:00'
+duration_minutes: 3.533816416666667
+---
+Update all test assertions that reference remote_agent_spawn to use the new name ssh_tunnel_open.
+
+## Files to modify
+- test/pag_server/ssh/ssh_plugin_test.exs — update all references to 'remote_agent_spawn' -> 'ssh_tunnel_open'
+
+## Acceptance criteria
+- [ ] All SSH plugin tests pass with the new tool name
+- [ ] No references to 'remote_agent_spawn' remain in test files
+- [ ] mix test test/pag_server/ssh/ passes

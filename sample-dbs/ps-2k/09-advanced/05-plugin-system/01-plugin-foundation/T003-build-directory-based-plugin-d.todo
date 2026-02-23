@@ -1,0 +1,57 @@
+---
+id: P9.M5.E1.T003
+title: Build directory-based plugin discovery and loader
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E1.T001
+- P9.M5.E1.T002
+tags:
+- loader
+- discovery
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:55.182521'
+started_at: '2026-02-06T17:07:55.182521'
+completed_at: '2026-02-06T17:07:55.911184'
+duration_minutes: 0.012144183333333334
+---
+
+# Build directory-based plugin discovery and loader
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/discovery.ex` module
+- [ ] Implement `discover/0` and `discover/1` (with custom paths) functions
+- [ ] Scan configurable plugin directories for `plugin.yaml` files:
+  - [ ] Default paths: `.plugins/`, `~/.pag/plugins/`
+  - [ ] Additional paths from application config (`:pag_server, :plugin_dirs`)
+  - [ ] Support nested directories (one level: `.plugins/my-plugin/plugin.yaml`)
+- [ ] Parse discovered `plugin.yaml` files using `Manifest` module
+- [ ] Return `{:ok, plugins, warnings}` with list of successfully parsed plugins and any warnings
+- [ ] Collect and report discovery errors without failing the entire scan:
+  - [ ] Log warnings for manifests that fail to parse
+  - [ ] Continue scanning remaining directories on individual failures
+- [ ] Handle filesystem errors gracefully (missing dirs, permission denied)
+- [ ] Log discovery results (found count, error count) via Logger
+
+## Acceptance Criteria
+
+- [ ] Discovery scans default directories and returns list of valid Plugin structs
+- [ ] Invalid manifests produce warnings but don't block discovery of other plugins
+- [ ] Missing plugin directories are silently skipped (not errors)
+- [ ] Custom plugin directory paths are configurable via application config
+- [ ] Nested directory structure supported (`.plugins/<name>/plugin.yaml`)
+- [ ] Unit tests cover: empty dirs, valid plugins, mixed valid/invalid, missing dirs
+- [ ] Integration test with temporary directory containing sample plugin.yaml files
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/discovery.ex`
+- **Depends on**: `PagServer.Plugins.Manifest` (T001), `PagServer.Plugins.Plugin` (T002)
+- **Used by**: `PagServer.Plugins.Registry` (T004) on startup
+- **Config key**: `:pag_server, :plugin_dirs` for custom scan paths
+- **Pattern reference**: Similar to MCP server discovery in `PagServer.Tools.MCP.Discovery`

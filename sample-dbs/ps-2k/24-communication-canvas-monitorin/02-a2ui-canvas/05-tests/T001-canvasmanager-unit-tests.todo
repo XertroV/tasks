@@ -1,0 +1,27 @@
+---
+id: P24.M2.E5.T001
+title: CanvasManager unit tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:05.431731+00:00'
+started_at: '2026-02-18T17:04:05.431731+00:00'
+completed_at: '2026-02-18T17:04:11.268466+00:00'
+duration_minutes: 0.09727875000000001
+---
+
+# CanvasManager unit tests
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

@@ -1,0 +1,46 @@
+id: P15.M8.E2
+name: Data Integrity & Infrastructure
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fix-race-condition-in-revision.todo
+  title: Fix race condition in revision number assignment with DB-level atomicity
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-extract-workspace-dir-root-to.todo
+  title: Extract workspace_dir_root to shared config module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-wire-filetracker-into-supervis.todo
+  title: Wire FileTracker into supervision tree and MCP tool pipeline
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-add-content-size-limits-file-p.todo
+  title: Add content size limits, file path normalization, and error logging in sync
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

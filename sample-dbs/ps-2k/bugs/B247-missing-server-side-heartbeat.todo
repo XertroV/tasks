@@ -1,0 +1,18 @@
+---
+id: B247
+title: Missing server-side heartbeat/keepalive for companions
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- companion
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.107171+00:00'
+started_at: '2026-02-23T07:29:02.107171+00:00'
+completed_at: '2026-02-23T07:43:46.155557+00:00'
+duration_minutes: 14.734139566666666
+---
+companion_channel.ex - No server-side ping; can't detect hung companions

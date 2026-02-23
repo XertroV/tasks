@@ -1,0 +1,16 @@
+---
+id: P48.M4.E1.T008
+title: 'Working directory: anchor LSP to session.working_directory from tool context'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:26.096652+00:00'
+started_at: '2026-02-20T08:51:26.096652+00:00'
+completed_at: '2026-02-20T09:06:14.433746+00:00'
+duration_minutes: 14.805618066666666
+---
+session.working_directory is passed as part of tool call context from pag-server. pag-connect uses it as base path for root marker detection upward walk. This is how the session's git worktree path flows through to the LSP server's rootUri.

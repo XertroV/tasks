@@ -1,0 +1,53 @@
+---
+id: B088
+title: complete_bootstrap marks session complete before generating files - ordering
+  bug
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- bootstrap
+- data-integrity
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:28:00.843151+00:00'
+started_at: '2026-02-17T11:28:00.843151+00:00'
+completed_at: '2026-02-17T11:37:17.149820+00:00'
+duration_minutes: 9.271777616666666
+---
+In bootstrap.ex:124-136, Session.complete(pid) is called BEFORE FileGenerator.generate_files. If file generation fails, the session is permanently marked :complete with no files. No retry possible since Session.complete/1 rejects double-complete calls.
+
+Impact: Transient DB/filesystem failure during completion permanently bricks the workspace.
+
+## Fix
+Use the existing :generating_files intermediate state. Generate files first, then mark complete. Allow retry from :generating_files.
+
+## Acceptance Criteria
+- [ ] File generation happens before session marked complete
+- [ ] If file generation fails, session is NOT in :complete state
+- [ ] Retry possible after failed generation
+- [ ] Tests for failure-recovery and happy path
+
+Source: E3 Audit C1
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 11:28 UTC
+**Primary task**: B086 - Absolute path injection in workspace template tracked file validation
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

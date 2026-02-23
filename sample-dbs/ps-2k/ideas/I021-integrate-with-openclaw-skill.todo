@@ -1,0 +1,136 @@
+---
+id: I021
+title: Integrate with openclaw skill registry (in webui)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:21:12.300464+00:00'
+started_at: '2026-02-18T22:21:12.300464+00:00'
+completed_at: '2026-02-18T22:29:33.337828+00:00'
+duration_minutes: 8.350622383333334
+---
+
+# Idea Intake: Integrate with openclaw skill registry (in webui)
+
+## Original Idea
+
+Integrate with openclaw skill registry (in webui)
+
+Also integrate with other big popular skill registries.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Integrate with openclaw skill registry (in webui)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Research Findings
+
+### OpenClaw / ClawHub
+
+- **ClawHub** (clawhub.ai) is the public skill registry for OpenClaw
+- Skills use **AgentSkills-compatible format**: `SKILL.md` with YAML frontmatter
+- Required frontmatter: `name`, `description`
+- OpenClaw extensions in `metadata.openclaw`:
+  - `requires.bins` - Required binaries on PATH
+  - `requires.env` - Required environment variables
+  - `requires.config` - Required config keys
+  - `install` - Installation instructions (brew/node/go/uv/download)
+
+### ClawHub API
+
+- Base URL: `https://clawhub.ai/api/v1`
+- Endpoints (inferred from docs):
+  - `GET /skills` - List skills (paginated)
+  - `GET /skills?q=query` - Search skills
+  - `GET /skills/:slug` - Get skill details
+  - `GET /skills/:slug/download` - Download skill bundle
+- CLI tool: `npm i -g clawhub`
+
+### Other Skill Registries
+
+- **AgentSkills.io** - Specification that OpenClaw follows
+- **MCP (Model Context Protocol)** - More of a protocol than a registry
+- **LangChain tools** - Tool ecosystem, no unified registry
+- Most "plugin" systems are tool-specific, not cross-platform
+
+### PAG Server Integration Points
+
+- Existing `PagServer.Plugins.Marketplace` context with caching pattern
+- Existing `PagServer.Plugins.Installer` for URL/registry installation
+- Plugin Hub UI exists under milestone P28
+- Skills are different from plugins (prompt instructions vs. code execution)
+
+## Proposed Architecture
+
+```
+PagServer.Skills
+├── ClawHub
+│   ├── Client          # HTTP client for ClawHub API
+│   └── Context         # Public API wrapper
+├── Parser              # SKILL.md format parser
+├── Skill               # Skill struct and validation
+├── Requirements        # Requirements checker
+└── Registry            # Behaviour for multi-registry support
+
+PagServerWeb
+└── SkillHubLive        # LiveView for skill browsing
+```
+
+## Created Work Items
+
+**Milestone P33: External Skill Registry Integration**
+
+Epic P33.M1.E1: ClawHub API Client
+- T1: ClawHub HTTP Client Module
+- T2: Search and List Endpoints
+- T3: Download Endpoint
+- T4: Caching Layer
+
+Epic P33.M1.E2: ClawHub Context and API Routes
+- T1: ClawHub Context Module
+- T2: REST API Endpoints
+- T3: Install to Workspace
+
+Epic P33.M2.E1: AgentSkills Format Parser
+- T1: Skill Parser Module
+- T2: Skill Schema and Validation
+- T3: OpenClaw Metadata Extensions
+- T4: Skill Requirements Checker
+
+Epic P33.M3.E1: Skill Browser WebUI
+- T1: Skill List LiveView
+- T2: Skill Detail View
+- T3: Install Action
+- T4: Integration with Plugin Hub
+
+Epic P33.M3.E2: Multi-Registry Architecture
+- T1: Skill Registry Behaviour
+- T2: Registry Configuration
+
+Milestone P33.M4: Tests and Documentation
+- T1: ClawHub Client Tests
+- T2: Skill Parser Tests
+- T3: API Integration Tests
+- T4: Documentation
+
+## Bug IDs
+
+(none)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

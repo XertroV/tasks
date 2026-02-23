@@ -1,0 +1,154 @@
+---
+id: P10.M3.E2.T001
+title: Create Linear API client with GraphQL
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:01:21.735097+00:00'
+started_at: '2026-02-12T03:01:21.735097+00:00'
+completed_at: '2026-02-12T03:15:21.417085+00:00'
+duration_minutes: 13.994699566666666
+---
+
+# Create Linear API client with GraphQL
+
+Set up Linear GraphQL API client with authentication and query builder for issue operations.
+
+## Requirements
+
+### Authentication
+- [ ] Create `lib/pag_server/integrations/linear/client.ex` module
+- [ ] Implement API key authentication via Authorization header: `Authorization: Bearer <api_key>`
+- [ ] Validate API key format and presence
+- [ ] Support stateless request building (no token refresh needed)
+- [ ] Configuration: Linear API key from environment or config
+
+### GraphQL Query Builder
+- [ ] Build helper to construct GraphQL queries (fields, filters, arguments)
+- [ ] Support query operations (fetch data)
+- [ ] Support mutation operations (create, update, delete, comment)
+- [ ] Implement cursor-based pagination with `first` and `after` parameters
+- [ ] Handle fragment composition for reusable field sets
+- [ ] Query builder should be chainable/composable
+
+### HTTP Client
+- [ ] POST to https://api.linear.app/graphql with GraphQL JSON payload
+- [ ] Include proper Content-Type header (application/json)
+- [ ] Parse JSON response and extract data/errors
+- [ ] Handle connection timeouts and network errors
+- [ ] Implement retry logic with exponential backoff (max 3 retries)
+
+### Error Handling
+- [ ] Extract GraphQL errors from response.errors array
+- [ ] Format error messages with field context
+- [ ] Distinguish between validation errors and server errors
+- [ ] Handle rate limiting (429) with backoff
+- [ ] Log errors at appropriate levels (debug for expected, warn for unusual)
+
+## Acceptance Criteria
+
+- [ ] Client authenticates with valid Linear API key
+- [ ] GraphQL queries execute and return parsed data
+- [ ] Mutations (createIssue, updateIssue) execute successfully
+- [ ] Cursor pagination works for result sets with >100 items
+- [ ] GraphQL errors include helpful messages
+- [ ] Rate limit backoff prevents repeated 429 responses
+- [ ] Unit tests cover: auth, query building, mutations, pagination, error cases
+- [ ] Integration test with Linear sandbox confirms queries work
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**GraphQL Endpoint**:
+- POST https://api.linear.app/graphql
+
+**Authentication**:
+```elixir
+config :pag_server, :linear,
+  api_key: System.get_env("LINEAR_API_KEY")
+```
+
+**Query Example**:
+```graphql
+query {
+  issues(first: 10, filter: {state: {name: {eq: "In Progress"}}}) {
+    edges {
+      cursor
+      node {
+        id
+        identifier
+        title
+        state { name }
+        assignee { name email }
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+**Mutation Example**:
+```graphql
+mutation {
+  issueCreate(input: {
+    teamId: "team-123",
+    title: "New issue",
+    description: "Description"
+  }) {
+    issue {
+      id
+      identifier
+      title
+    }
+  }
+}
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests (mocked HTTP)
+mix test test/pag_server/integrations/linear/client_test.exs
+
+# Integration test with Linear sandbox
+LINEAR_API_KEY=... mix test test/pag_server/integrations/linear/client_test.exs --include integration
+```
+
+## Verification
+
+```bash
+# Check GraphQL query builder
+mix test test/pag_server/integrations/linear/client_test.exs -k "query"
+
+# Verify pagination
+mix test test/pag_server/integrations/linear/client_test.exs -k "pagina"
+
+# File size check
+wc -l lib/pag_server/integrations/linear/client.ex
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-12 03:01 UTC
+**Sibling tasks**: P10.M3.E2.T002, P10.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M3.E2.T001 → P10.M3.E2.T002 → P10.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M3.E2.T001: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/02-linear-integration/T001-create-linear-api-client-with.todo
+- P10.M3.E2.T002: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/02-linear-integration/T002-build-linear-webhook-handler.todo
+- P10.M3.E2.T003: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/02-linear-integration/T003-implement-linear-issue-operati.todo

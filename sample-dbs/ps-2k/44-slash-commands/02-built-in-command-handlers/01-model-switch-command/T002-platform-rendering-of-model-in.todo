@@ -1,0 +1,25 @@
+---
+id: P44.M2.E1.T002
+title: Platform rendering of /model interactive options
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:47:00.617076+00:00'
+started_at: '2026-02-19T18:47:00.617076+00:00'
+completed_at: '2026-02-19T18:58:48.735496+00:00'
+duration_minutes: 11.801973483333335
+---
+## Summary
+Render Response.options as interactive platform-native UI elements for the /model command.
+
+## Acceptance Criteria
+- [ ] Telegram: options rendered as inline keyboard buttons (callback queries); selecting a button triggers model switch
+- [ ] Telegram CallbackHandler updated to handle model-switch callbacks
+- [ ] Slack: options rendered as Block Kit select menu
+- [ ] Discord: options rendered as ephemeral select component or listed as text with buttons
+- [ ] Web: options rendered as clickable list items (response metadata carries options for frontend)
+- [ ] Plain-text fallback: options listed as numbered text list when platform has no interactive support

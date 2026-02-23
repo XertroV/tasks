@@ -1,0 +1,93 @@
+---
+id: I056
+title: Device Authorization Grant (RFC 8628) for pag-connect onboarding
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:08:58.569766+00:00'
+started_at: '2026-02-19T20:08:58.569766+00:00'
+completed_at: '2026-02-19T20:28:48.712315+00:00'
+duration_minutes: 19.835709
+---
+
+# Device Authorization Grant (RFC 8628) for pag-connect onboarding
+
+## Original Idea
+
+Implement Flow B from `docs/plans/2026-02-19-pag-connect-auth.md`: the RFC 8628
+OAuth 2.0 Device Authorization Grant for frictionless pag-connect onboarding.
+
+**Blocked by**: user login / browser session system (does not exist yet).
+
+**What it enables**: `pag-ctl connect register` works without any manual API key
+copy-paste. The CLI displays a short user code, the user approves in a browser,
+and the key is issued automatically.
+
+**Required server-side work**:
+- `POST /oauth/device/code` — issues `device_code`, `user_code` (`XXXX-XXXX`), `verification_uri`, `expires_in`, `interval`
+- `POST /oauth/device/token` — polling endpoint; returns `authorization_pending`, `slow_down`, or the issued `pag_sk_...` key
+- `GET /device` + `POST /device/approve` — LiveView UI for authenticated user to enter code and approve
+- Device code DB table with `pending → authorized → used` state machine
+- Brute-force protection: max 5 failed `user_code` attempts before expiry; device_code is 40-char hex (~160 bits entropy)
+
+**Reference**: `docs/plans/2026-02-19-pag-connect-auth.md` (full design)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task` on this idea once the user login system is in place.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+**New Phase:** P47 — Device Authorization Grant (RFC 8628)
+- Depends on: P46.M3 (Web Session & Route Protection)
+
+**P47.M1 — OAuth Client Registry & companion:full Scope**
+- P47.M1.E1.T001: Create oauth_clients migration and Ecto schema
+- P47.M1.E1.T002: Seed pag-connect OAuth client record
+- P47.M1.E1.T003: Implement mix pag.register_client task
+- P47.M1.E2.T001: Add companion:full to valid ApiKey scopes and document
+- P47.M1.E2.T002: Update CompanionSocket to accept companion:full scope (user-scoped)
+
+**P47.M2 — Device Code State Machine & Polling Endpoints**
+- P47.M2.E1.T001: Create device_codes migration and DeviceCode Ecto schema
+- P47.M2.E1.T002: Implement DeviceCodes context module with state machine logic
+- P47.M2.E2.T001: Implement POST /oauth/device/code endpoint
+- P47.M2.E2.T002: Implement POST /oauth/device/token polling endpoint
+- P47.M2.E2.T003: Add rate limiting to device flow endpoints
+
+**P47.M3 — Approval LiveView & Cleanup Worker** (also depends on P46.M3)
+- P47.M3.E1.T001: Implement GET /device LiveView approval page
+- P47.M3.E1.T002: Implement POST /device/approve and /device/deny actions
+- P47.M3.E2.T001: Implement DeviceCodeCleanup Oban worker
+- P47.M3.E2.T002: Add brute-force protection (expire on 5 failed user_code attempts)
+
+**P47.M4 — RFC 8414 Discovery & Integration Tests**
+- P47.M4.E1.T001: Implement GET /.well-known/oauth-authorization-server (RFC 8414)
+- P47.M4.E2.T001: Write integration tests for complete device authorization flow
+- P47.M4.E2.T002: Add mix test.device_flow alias and update docs
+
+**Key Design Changes from Original Idea:**
+- Issued key is USER-SCOPED (companion:full scope, no workspace_id binding)
+- OAuth client registry (oauth_clients table) instead of hardcoded allowlist
+- cleanup via Oban worker (hourly, 24h retention)
+- Approval page: scope summary + Approve/Deny (no workspace checklist)
+- RFC 8414 discovery endpoint included
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,25 @@
+---
+id: P54.M3.E1.T004
+title: 'Tests: plugin enable/disable, bunx check, local MCP server lifecycle'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P54.M3.E1.T002
+- P54.M3.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T11:26:01.573672+00:00'
+started_at: '2026-02-21T11:26:01.573672+00:00'
+completed_at: '2026-02-21T11:28:18.260676+00:00'
+duration_minutes: 2.27811655
+---
+## Acceptance Criteria
+- [ ] Unit tests (no real bunx needed): on_enable returns {:error, :bunx_not_found} when System.find_executable returns nil; on_enable with companion tools present returns :ok without starting server; on_disable is idempotent when no server running
+- [ ] default_enabled?/1 returns false for all workspace types
+- [ ] handle_tool_call/3 returns {:error, :unknown_tool} for any tool name
+- [ ] Config migration: BrowserMcpAdapter reads PAG_BROWSERMCP_REQUEST_TIMEOUT_MS as fallback when plugin KV has no timeout set
+- [ ] Integration tests tagged @tag :external (skipped in CI): on_enable starts ServerLifecycle process; on_disable stops it; tools prefixed "browsermcp." appear in Tools.Registry after enable
+- [ ] `mix test.plugins` (or `mix test test/pag_server/plugins/browser_mcp/`) passes
+- [ ] `mix lint` passes

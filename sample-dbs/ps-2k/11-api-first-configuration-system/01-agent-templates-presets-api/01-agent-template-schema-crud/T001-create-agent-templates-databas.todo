@@ -1,0 +1,88 @@
+---
+id: P11.M1.E1.T001
+title: Create agent_templates database schema
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- database
+- migration
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-12T07:07:16.121273+00:00'
+started_at: '2026-02-12T07:07:16.121273+00:00'
+completed_at: '2026-02-12T08:07:33.468916+00:00'
+duration_minutes: 60.28912716666667
+---
+
+# Create agent_templates database schema
+
+Create Ecto migration for agent_templates table with core fields for storing agent template definitions, configurations, and metadata.
+
+## Requirements
+
+- [ ] Create migration file `priv/repo/migrations/YYYYMMDDHHMMSS_create_agent_templates.exs`
+- [ ] Define table with:
+  - [ ] `id` (UUID primary key)
+  - [ ] `name` (string, unique, not null)
+  - [ ] `description` (text, nullable)
+  - [ ] `category` (string, not null) - e.g., "research", "coding", "analysis"
+  - [ ] `version` (string, default "1.0.0")
+  - [ ] `creator_id` (string, nullable) - for future user/org tracking
+  - [ ] `base_config` (map/jsonb) - JSON blob for agent configuration
+  - [ ] `required_tools` (array of strings or jsonb)
+  - [ ] `is_public` (boolean, default false)
+  - [ ] `is_archived` (boolean, default false)
+  - [ ] `tags` (array of strings or jsonb)
+  - [ ] `timestamps` (inserted_at, updated_at)
+- [ ] Add indexes on name, category, is_public, is_archived
+- [ ] Add unique constraint on (name, version) if versioning required
+- [ ] Run migration successfully
+- [ ] Verify table structure with `\d agent_templates` in psql
+
+## Acceptance Criteria
+
+- [ ] Migration creates agent_templates table with all specified columns
+- [ ] UUID primary key works correctly
+- [ ] Indexes are created and appear in schema
+- [ ] `mix ecto.migrate` runs without errors
+- [ ] `mix ecto.rollback` removes table cleanly
+- [ ] Table can be queried via Ecto
+- [ ] Timestamps are automatically managed
+- [ ] JSONB columns store and retrieve data correctly (if used)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/api-first-config.md` Section 1 (Agent Templates Schema)
+
+**Key Points**:
+- Template metadata must be queryable (category, tags, public status)
+- base_config is JSONB to store arbitrary agent configuration
+- Future versioning strategy: (name, version) uniqueness
+- is_public flag for template marketplace
+- Extensible design: jsonb columns allow schema evolution without migrations
+
+## Notes
+
+Template design supports:
+- System templates (creator_id = null)
+- User templates (creator_id = user_uuid)
+- Sharing/marketplace (is_public = true)
+- Versioning (version field for compatibility)
+
+Use JSONB for flexible agent config storage. Example structure:
+```json
+{
+  "model": "claude-3-sonnet",
+  "temperature": 0.7,
+  "max_tokens": 4096,
+  "system_prompt": "You are a helpful assistant",
+  "tools": {
+    "web_search": { "enabled": true },
+    "code_execution": { "enabled": false }
+  }
+}
+```

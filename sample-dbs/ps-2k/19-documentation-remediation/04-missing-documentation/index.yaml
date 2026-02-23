@@ -1,0 +1,41 @@
+id: P19.M4
+name: Missing Documentation
+status: pending
+estimate_hours: 8.0
+complexity: low
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Integration Docs Creation
+  path: 01-integration-docs-creation
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Provider Docs Creation
+  path: 02-provider-docs-creation
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Architecture Docs Creation
+  path: 03-architecture-docs-creation
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 14
+  done: 14
+  in_progress: 0
+  blocked: 0
+  pending: 0

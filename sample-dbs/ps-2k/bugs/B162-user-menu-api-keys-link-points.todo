@@ -1,0 +1,38 @@
+---
+id: B162
+title: User menu API Keys link points to dashboard; no dedicated API keys route
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- browser-testing
+- auth
+- settings
+- navigation
+claimed_by: cli-user
+claimed_at: '2026-02-20T16:01:47.501277+00:00'
+started_at: '2026-02-20T16:01:47.501277+00:00'
+completed_at: '2026-02-20T16:13:34.380215+00:00'
+duration_minutes: 11.781315483333334
+---
+## Repro
+1. Log into dashboard (dev auto-login is sufficient).
+2. Open user menu from top-right avatar.
+3. Click `API Keys`.
+
+## Expected
+`API Keys` should navigate to an API key management UI route.
+
+## Actual
+- Menu link targets `/dashboard`.
+- Direct navigation to `/dashboard/api-keys` fails with `Phoenix.Router.NoRouteError`.
+- API key controls appear to live under `/dashboard/settings` (LLM Provider API Keys section), so menu target is inconsistent/broken.
+
+## Evidence
+- Browser agent captured menu link URL as `/dashboard`.
+- Visiting `/dashboard/api-keys` returns: `no route found for GET /dashboard/api-keys (PagServerWeb.Router)`.
+
+## Impact
+Users are sent to the wrong page when trying to manage API keys from the user menu.

@@ -1,0 +1,19 @@
+---
+id: P19.M2.E2.T002
+title: Fix workspace config endpoint docs
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- guides
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:23:41.785124+00:00'
+started_at: '2026-02-18T02:23:41.785124+00:00'
+completed_at: '2026-02-18T02:24:34.961079+00:00'
+duration_minutes: 0.8862656999999999
+---
+Fix DELETE endpoint format in workspace-onboarding.md. Use /api/v1/workspaces/:workspace_id/config/:key path format.

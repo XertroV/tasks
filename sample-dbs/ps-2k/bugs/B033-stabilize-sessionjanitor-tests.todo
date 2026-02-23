@@ -1,0 +1,33 @@
+---
+id: B033
+title: stabilize SessionJanitor tests under full-suite state
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- sessions
+- tests
+- isolation
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:57:59.667035+00:00'
+started_at: '2026-02-15T17:57:59.667035+00:00'
+completed_at: '2026-02-15T17:59:14.129324+00:00'
+duration_minutes: 1.2410379666666667
+---
+
+# stabilize SessionJanitor tests under full-suite state
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe `PagServer.Sessions.SessionJanitorTest` failures where `closed_count` is greater than expected.
+
+## Expected Behavior
+
+SessionJanitor tests should deterministically close only the sessions created by each test and remain idempotent across repeated/concurrent runs.
+
+## Actual Behavior
+
+In full-suite execution, janitor closes additional idle sessions from other tests, causing assertions like `closed_count == 1` to fail with larger values.

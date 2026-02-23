@@ -1,0 +1,17 @@
+---
+id: P22.M2.E2.T001
+title: Create ModelDiscoveryCache GenServer with per-provider TTL and on-demand refresh
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:53:14.491537+00:00'
+started_at: '2026-02-18T14:53:14.491537+00:00'
+completed_at: '2026-02-18T14:58:46.303564+00:00'
+duration_minutes: 5.530200233333333
+---
+Create lib/pag_server/llm/model_discovery_cache.ex as a GenServer. State: map of provider_id -> {models, fetched_at}. TTL: 1 hour (configurable). API: - get_models(provider_id) -> {:ok, models} | {:error, :not_cached} - refresh(provider_id) -> :ok (async trigger) - refresh_all() -> :ok Periodic refresh: use Process.send_after to schedule refresh_all every TTL/2. On init: optionally pre-populate with providers that have has_live_models?: true. Acceptance criteria: - GenServer starts under application supervisor - get_models returns cached data within TTL - Expired cache triggers background refresh - Manual refresh via refresh/1 works - Handles fetch_models returning {:error, _} gracefully (keeps old cache)

@@ -1,0 +1,120 @@
+---
+id: P10.M3.E1.T001
+title: Create Jira API client with OAuth support
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T02:33:32.508829+00:00'
+started_at: '2026-02-12T02:33:32.508829+00:00'
+completed_at: '2026-02-12T02:59:06.585695+00:00'
+duration_minutes: 25.567947450000002
+---
+
+# Create Jira API client with OAuth support
+
+Set up OAuth 2.0 authentication for Jira Cloud and implement the HTTP client foundation for all Jira API operations.
+
+## Requirements
+
+### OAuth 2.0 Flow
+- [ ] Create `lib/pag_server/integrations/jira/client.ex` module
+- [ ] Implement authorization code grant flow for OAuth
+- [ ] Support configuration: client_id, client_secret, redirect_uri, authorization_server_url
+- [ ] Implement token exchange endpoint: POST to authorization_server_url with code, client_id, client_secret
+- [ ] Store and manage access tokens and refresh tokens
+- [ ] Track token expiration and implement automatic refresh before expiry (5 min buffer)
+
+### HTTP Client Foundation
+- [ ] Implement request builder with automatic Authorization header (Bearer token)
+- [ ] Support configurable base URL (cloud: api.atlassian.com, on-premise: custom)
+- [ ] Implement retry logic with exponential backoff (max 3 retries)
+- [ ] Handle 401/403 errors by triggering token refresh
+- [ ] Parse error responses and extract error messages
+- [ ] Add request/response logging at debug level
+
+### Error Handling
+- [ ] Custom error types: :invalid_oauth_config, :auth_failed, :token_expired, :network_error
+- [ ] Detect and handle token expiration gracefully (auto-refresh)
+- [ ] Log authentication failures with non-sensitive details
+
+## Acceptance Criteria
+
+- [ ] OAuth flow exchanges authorization code for access token successfully
+- [ ] Client stores tokens securely (use Application config or external store)
+- [ ] Token refresh happens automatically before expiration
+- [ ] All HTTP requests include Bearer token in Authorization header
+- [ ] Retry logic backs off exponentially for rate limits (429 status)
+- [ ] 401 responses trigger token refresh (max 1 retry to prevent loops)
+- [ ] Error messages are clear and actionable
+- [ ] Unit tests cover: OAuth flow, token refresh, request building, error cases
+- [ ] Integration test with Jira sandbox confirms authentication works
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Module Structure**:
+- Client state: base_url, client_id, client_secret, access_token, refresh_token, expires_at
+- Use GenServer for stateful token management, OR use ETS/Cachex for stateless design
+- Recommend stateless (ETS) for multi-instance deployment
+
+**API Endpoints**:
+- OAuth: https://auth.atlassian.com/oauth/authorize, /oauth/token
+- Cloud API: https://api.atlassian.com/2.1/sites
+- Issue API: https://api.atlassian.com/rest/api/3/issues
+
+**Configuration Example**:
+```elixir
+config :pag_server, :jira,
+  client_id: System.get_env("JIRA_CLIENT_ID"),
+  client_secret: System.get_env("JIRA_CLIENT_SECRET"),
+  redirect_uri: "http://localhost:4000/integrations/jira/oauth/callback",
+  authorization_server_url: "https://auth.atlassian.com"
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests (no external calls)
+mix test test/pag_server/integrations/jira/client_test.exs
+
+# Integration test with Jira sandbox (requires JIRA_* env vars)
+JIRA_CLIENT_ID=... JIRA_CLIENT_SECRET=... \
+mix test test/pag_server/integrations/jira/client_test.exs --include integration
+```
+
+## Verification
+
+```bash
+# Check compilation
+mix compile --warnings-as-errors
+
+# Run linter
+mix lint
+
+# Check file size (should be <250 LoC)
+wc -l lib/pag_server/integrations/jira/client.ex
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-12 02:33 UTC
+**Sibling tasks**: P10.M3.E1.T002, P10.M3.E1.T003, P10.M3.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M3.E1.T001 → P10.M3.E1.T002 → P10.M3.E1.T003 → P10.M3.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M3.E1.T001: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/01-jira-integration/T001-create-jira-api-client-with-oa.todo
+- P10.M3.E1.T002: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/01-jira-integration/T002-build-jira-webhook-handler-wit.todo
+- P10.M3.E1.T003: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/01-jira-integration/T003-implement-jira-issue-crud-oper.todo
+- P10.M3.E1.T004: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/01-jira-integration/T004-add-jql-query-support-and-issu.todo

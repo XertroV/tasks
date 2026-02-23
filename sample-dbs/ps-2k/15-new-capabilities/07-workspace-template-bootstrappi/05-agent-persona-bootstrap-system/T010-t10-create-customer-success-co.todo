@@ -1,0 +1,27 @@
+---
+id: P15.M7.E5.T010
+title: 'T10: Create Customer Success Commander Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:28:11.321244+00:00'
+started_at: '2026-02-18T10:28:11.321244+00:00'
+completed_at: '2026-02-18T10:29:23.619206+00:00'
+duration_minutes: 1.2049658166666668
+---
+
+# T10: Create Customer Success Commander Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

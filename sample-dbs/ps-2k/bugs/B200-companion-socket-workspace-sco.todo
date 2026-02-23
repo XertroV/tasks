@@ -1,0 +1,16 @@
+---
+id: B200
+title: Companion socket workspace-scoped keys bypass workspace access checks
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T15:01:39.853264+00:00'
+started_at: '2026-02-21T15:01:39.853264+00:00'
+completed_at: '2026-02-21T15:04:04.566362+00:00'
+duration_minutes: 2.4118848
+---
+CompanionSocket build_workspace_scoped_socket should verify key owner can access requested workspace, preventing cross-workspace access by ID guessing. Add regression tests.

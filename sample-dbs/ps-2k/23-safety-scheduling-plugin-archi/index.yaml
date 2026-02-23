@@ -1,0 +1,47 @@
+id: P23
+name: Safety, Scheduling & Plugin Architecture
+status: pending
+locked: false
+weeks: 5
+estimate_hours: 72.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Exec Approval System
+  path: 01-exec-approval-system
+  status: pending
+  estimate_hours: 28.0
+  complexity: high
+  depends_on: []
+  description: Safety system that intercepts dangerous shell/exec commands, pauses
+    execution, requests approval via WebSocket, and tracks approval history. Critical
+    for enterprise trust.
+  locked: false
+- id: M2
+  name: Cron Plugin
+  path: 02-cron-plugin
+  status: pending
+  estimate_hours: 24.0
+  complexity: medium
+  depends_on: []
+  description: 'On-by-default plugin for scheduling recurring tasks: cron-triggered
+    agent messages or CLI commands, MCP tool CRUD interface, DB-backed schedule storage.'
+  locked: false
+- id: M3
+  name: Plugin File Structure Refactor
+  path: 03-plugin-file-structure-refactor
+  status: pending
+  estimate_hours: 20.0
+  complexity: medium
+  depends_on: []
+  description: Move plugin files out of lib/pag_server/plugins/ into a top-level plugins/
+    directory. Update PluginLoader discovery, compilation paths, and migrate all existing
+    plugins.
+  locked: false
+stats:
+  total_tasks: 27
+  done: 27
+  in_progress: 0
+  blocked: 0
+  pending: 0

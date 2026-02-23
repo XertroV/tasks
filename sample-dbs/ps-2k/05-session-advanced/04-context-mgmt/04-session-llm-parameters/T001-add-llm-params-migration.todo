@@ -1,0 +1,74 @@
+---
+id: P5.M4.E4.T001
+title: Add llm_params migration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T13:58:33.483187+00:00'
+started_at: '2026-02-07T13:58:33.483187+00:00'
+completed_at: '2026-02-07T13:59:19.353513+00:00'
+duration_minutes: 0.7645052833333333
+---
+
+# Add llm_params migration
+
+Create migration to add llm_params JSONB field to sessions table with default empty map
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration add_llm_params_to_sessions`
+- [ ] Add `llm_params` JSONB field to `sessions` table
+- [ ] Set field to nullable (for backwards compatibility)
+- [ ] Set default value to empty map `{}`
+- [ ] Verify migration runs: `mix ecto.migrate`
+- [ ] Verify rollback works: `mix ecto.rollback`
+- [ ] Re-run migration: `mix ecto.migrate`
+- [ ] Commit with message "Add llm_params to sessions table"
+
+## Acceptance Criteria
+
+- [ ] Migration file created in `priv/repo/migrations/`
+- [ ] Migration adds `llm_params` JSONB column to `sessions` table
+- [ ] Column is nullable for backward compatibility
+- [ ] Column has default value of `{}`
+- [ ] Migration includes proper rollback in `down` function
+- [ ] Migration runs successfully with no errors
+- [ ] Rollback removes the column cleanly
+- [ ] No compilation warnings
+
+## Context
+
+Session-level LLM parameters allow per-session overrides of agent defaults.
+This enables dynamic control of model behavior (temperature, max_tokens, thinking, etc.)
+without modifying the agent schema.
+
+**Key Points**:
+- JSONB allows flexible parameter storage
+- Empty map default ensures existing sessions continue working
+- Parameters will be merged with agent defaults (session params take precedence)
+
+## Implementation Notes
+
+Migration template:
+
+```elixir
+defmodule PagServer.Repo.Migrations.AddLlmParamsToSessions do
+  use Ecto.Migration
+
+  def change do
+    alter table(:sessions) do
+      add :llm_params, :map, default: %{}
+    end
+  end
+end
+```
+
+Verify in psql:
+```bash
+psql -d pag_server_dev -c "\d sessions"
+# Should show llm_params | jsonb | default '{}'::jsonb
+```

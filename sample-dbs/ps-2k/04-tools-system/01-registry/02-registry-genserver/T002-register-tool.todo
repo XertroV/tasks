@@ -1,0 +1,123 @@
+---
+id: P4.M1.E2.T002
+title: Add register/get/list functions
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P4.M1.E2.T001
+tags:
+- tools
+- registry
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-05T21:26:29.596321'
+started_at: '2026-02-05T21:26:29.596321'
+completed_at: '2026-02-05T21:38:11.082227'
+duration_minutes: 11.691431566666667
+---
+
+# Add register/get/list functions
+
+Implement public API functions for tool registration and lookup.
+
+## Requirements
+
+- [x] Add `register(module)` - registers a tool module
+- [x] Add `get(name)` - retrieves tool by name (reads from ETS)
+- [x] Add `list()` - returns all registered tools
+- [x] Add `unregister(name)` - removes a tool
+- [x] Validate tool module implements Tool behaviour before registration
+
+## Acceptance Criteria
+
+- [x] `register/1` validates module implements Tool behaviour
+- [x] `register/1` calls tool's `schema/0` and stores in ETS
+- [x] `get/1` returns `{:ok, {module, schema}}` or `{:error, :not_found}`
+- [x] `list/0` returns list of all tool names
+- [x] Duplicate registration returns error or updates existing
+- [x] Test coverage for all API functions
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 333-336 (Registry functions)
+
+**Key Points**:
+- Registration validates the tool module at registration time
+- Get operations are fast ETS lookups (no GenServer call)
+- List returns all available tools for LLM context
+- Unregister allows dynamic tool removal
+
+## Notes
+
+API implementation:
+```elixir
+# Client API
+def register(module) do
+  GenServer.call(__MODULE__, {:register, module})
+end
+
+def get(name) do
+  case :ets.lookup(:tools_registry, name) do
+    [{^name, module, schema}] -> {:ok, {module, schema}}
+    [] -> {:error, :not_found}
+  end
+end
+
+def list do
+  :ets.tab2list(:tools_registry)
+  |> Enum.map(fn {name, _module, _schema} -> name end)
+end
+
+# Server callbacks
+@impl true
+def handle_call({:register, module}, _from, state) do
+  if Code.ensure_loaded?(module) and function_exported?(module, :schema, 0) do
+    schema = module.schema()
+    name = schema.name
+    :ets.insert(:tools_registry, {name, module, schema})
+    new_tools = Map.put(state.tools, name, module)
+    {:reply, :ok, %{state | tools: new_tools}}
+  else
+    {:reply, {:error, :invalid_tool}, state}
+  end
+end
+```
+
+Usage example:
+```elixir
+alias PAGServer.Tools.Registry
+
+Registry.register(PAGServer.Tools.Builtin.ReadFile)
+# => :ok
+
+Registry.get("read_file")
+# => {:ok, {PAGServer.Tools.Builtin.ReadFile, %ToolSchema{...}}}
+
+Registry.list()
+# => ["read_file", "write_file", "execute_shell"]
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 08:26 UTC
+**Primary task**: P2.M8.E5.T002 - Implement hierarchical multi-stage summarization
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E2 vs P2.M8.E5)
+- No dependency chain: ✓ (verified at claim time)

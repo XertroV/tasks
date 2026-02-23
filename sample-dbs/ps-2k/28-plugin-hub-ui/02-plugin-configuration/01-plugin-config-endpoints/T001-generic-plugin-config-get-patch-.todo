@@ -1,0 +1,65 @@
+---
+id: P28.M2.E1.T001
+title: Generic plugin config endpoint (GET/PATCH /api/v1/workspaces/:id/plugins/:plugin/config)
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on:
+- P28.M1.E1.T002
+tags:
+- plugin
+- config
+- api
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:22.180392+00:00'
+started_at: '2026-02-18T18:34:22.180392+00:00'
+completed_at: '2026-02-18T18:44:26.635460+00:00'
+duration_minutes: 10.07425095
+---
+
+# Generic plugin config endpoint
+
+Implement `GET` and `PATCH` endpoints for reading and updating per-workspace plugin
+configuration. This allows users to configure plugin settings (e.g. cron schedules,
+API keys, feature toggles) directly through the API without server-side code changes.
+
+## Requirements
+
+- Routes:
+  - `GET /api/v1/workspaces/:workspace_id/plugins/:plugin_id/config`
+  - `PATCH /api/v1/workspaces/:workspace_id/plugins/:plugin_id/config`
+- GET response: current plugin config for the workspace (JSON object)
+- PATCH request body: partial config map; merged with existing config
+- Validate incoming config against the plugin's declared config schema before persisting
+- Return validation errors as `422` with field-level error details
+- Config is stored in workspace plugin settings; falls back to plugin defaults if not set
+
+## Acceptance Criteria
+
+- [ ] `GET` returns 200 with current plugin config (including defaults for unset keys)
+- [ ] `PATCH` with valid config merges and persists changes, returns updated config
+- [ ] `PATCH` with invalid config returns 422 with field-level error detail
+- [ ] Config validation is driven by the plugin's own schema (not hard-coded)
+- [ ] Unknown plugin_id returns 404
+- [ ] Authorization: workspace member can GET; workspace admin required to PATCH
+- [ ] Controller tests for GET, PATCH valid, PATCH invalid, and auth cases
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P28.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 18:34 UTC
+**Sibling tasks**: P28.M2.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P28.M2.E1.T001 → P28.M2.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P28.M2.E1.T001: .tasks/28-plugin-hub-ui/02-plugin-configuration/01-plugin-config-endpoints/T001-generic-plugin-config-get-patch-.todo
+- P28.M2.E1.T002: .tasks/28-plugin-hub-ui/02-plugin-configuration/01-plugin-config-endpoints/T002-plugin-config-schema-endpoint-re.todo

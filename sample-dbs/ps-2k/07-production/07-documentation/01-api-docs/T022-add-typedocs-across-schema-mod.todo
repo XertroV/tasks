@@ -1,0 +1,68 @@
+---
+id: P7.M7.E1.T022
+title: Add typedocs across schema modules
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:47:01.603144+00:00'
+started_at: '2026-02-08T06:47:01.603144+00:00'
+completed_at: '2026-02-08T06:52:00.053945+00:00'
+duration_minutes: 4.974179733333333
+---
+
+# Add typedocs across schema modules
+
+Schema modules define core public data contracts; this task adds missing `@typedoc`
+coverage so generated docs explain each exported type's purpose.
+
+
+## Requirements
+
+- [x] Review exported public `@type`/`@opaque` in the following schema modules:
+  - [x] `lib/pag_server/schema/agent.ex`
+  - [x] `lib/pag_server/schema/agent_message.ex`
+  - [x] `lib/pag_server/schema/api_key.ex`
+  - [x] `lib/pag_server/schema/event.ex`
+  - [x] `lib/pag_server/schema/memory.ex`
+  - [x] `lib/pag_server/schema/message.ex`
+  - [x] `lib/pag_server/schema/oban_dead_letter.ex`
+  - [x] `lib/pag_server/schema/pricing.ex`
+  - [x] `lib/pag_server/schema/session.ex`
+  - [x] `lib/pag_server/schema/stats.ex`
+  - [x] `lib/pag_server/schema/tool_call.ex`
+  - [x] `lib/pag_server/schema/user.ex`
+- [x] Add `@typedoc` for each exported `@type`/`@opaque` that currently lacks one
+- [x] Ensure `@typedoc` language is domain-specific and avoids restating field names only
+- [x] Add/align `@spec` where schema constructor/helper APIs are exported publicly
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] Every exported public type in the 12 scoped schema modules has `@typedoc`
+- [x] Public schema helper functions have matching `@spec` where applicable
+- [x] `mix docs` completes without new warnings from schema modules
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 06:47 UTC
+**Sibling tasks**: P7.M7.E1.T023
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T022 → P7.M7.E1.T023
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T022: .tasks/07-production/07-documentation/01-api-docs/T022-add-typedocs-across-schema-mod.todo
+- P7.M7.E1.T023: .tasks/07-production/07-documentation/01-api-docs/T023-document-web-channels-controll.todo

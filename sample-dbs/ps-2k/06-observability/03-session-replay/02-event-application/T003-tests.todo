@@ -1,0 +1,57 @@
+---
+id: P6.M3.E2.T003
+title: Write event application tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P6.M3.E2.T001
+- P6.M3.E2.T002
+tags:
+- observability
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:11:42.748082+00:00'
+started_at: '2026-02-06T20:11:42.748082+00:00'
+completed_at: '2026-02-06T20:22:52.289234+00:00'
+duration_minutes: 11.159019016666667
+---
+
+# Write event application tests
+
+Test event handlers and application logic.
+
+## Requirements
+
+- [ ] Test each event handler
+- [ ] Test handler idempotence
+- [ ] Test invalid event handling
+- [ ] Test event sequence application
+- [ ] Test state transitions
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Each handler tested
+- [ ] Edge cases covered
+- [ ] Idempotence verified
+
+## Notes
+
+**Test Example**:
+```elixir
+test "message added handler updates state" do
+  state = %StateBuilder{}
+  event = %Event{type: "message.added", data: %{message: "test"}}
+  
+  new_state = EventHandler.apply(event, state)
+  
+  assert length(new_state.messages) == 1
+  assert hd(new_state.messages) == "test"
+  
+  # Idempotence
+  same_state = EventHandler.apply(event, new_state)
+  assert same_state == new_state
+end
+```

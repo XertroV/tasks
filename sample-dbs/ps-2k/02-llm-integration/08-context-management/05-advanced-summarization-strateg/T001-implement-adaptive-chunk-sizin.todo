@@ -1,0 +1,62 @@
+---
+id: P2.M8.E5.T001
+title: Implement adaptive chunk sizing for summarization
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- context
+- summarization
+- defensive
+- openclaw
+claimed_by: cli-user
+claimed_at: '2026-02-05T20:48:47.312937'
+started_at: '2026-02-05T20:48:47.312937'
+completed_at: '2026-02-05T21:25:44.481754'
+duration_minutes: 36.95281345
+---
+
+# Implement adaptive chunk sizing for summarization
+
+Dynamically adjust chunk size based on average message token count to prevent overflow during multi-stage summarization. Prevents edge cases when messages are unusually large.
+
+**Reference**: `ref-projects/openclaw/src/agents/compaction.ts:109-128`
+
+## Requirements
+
+1. Calculate adaptive chunk ratio before chunking:
+   - `avg_tokens = total_tokens / message_count`
+   - `avg_ratio = (avg_tokens * SAFETY_MARGIN) / context_window`
+   - If `avg_ratio > 0.1`, reduce chunk size
+
+2. Chunk size formula:
+   - `BASE_CHUNK_RATIO = 0.4` (40% of context per chunk)
+   - `MIN_CHUNK_RATIO = 0.15` (15% minimum)
+   - `SAFETY_MARGIN = 1.2` (20% buffer for token estimation)
+   - If avg message > 10% of context: `reduction = min(avg_ratio * 2, BASE - MIN)`
+   - `chunk_ratio = max(MIN, BASE - reduction)`
+
+3. Use computed ratio for `max_chunk_tokens` calculation
+
+## Acceptance Criteria
+
+- [x] Adaptive chunk ratio calculation
+  - [x] Calculate average message tokens
+  - [x] Apply safety margin (1.2x)
+  - [x] Reduce chunk size if avg > 10% of context
+
+- [x] Constants configuration
+  - [x] BASE_CHUNK_RATIO: 0.4 (configurable)
+  - [x] MIN_CHUNK_RATIO: 0.15 (configurable)
+  - [x] SAFETY_MARGIN: 1.2 (configurable)
+
+- [x] Integration
+  - [x] Use adaptive ratio in summarization chunking
+  - [x] Log when chunk size is reduced
+
+- [x] Tests
+  - [x] Unit test: normal messages use BASE ratio
+  - [x] Unit test: large messages trigger reduction
+  - [x] Test: chunk size never below MIN ratio

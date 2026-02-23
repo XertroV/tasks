@@ -1,0 +1,38 @@
+---
+id: P21.M1.E1.T013
+title: Add feature flag for containerization rollout
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T010
+tags:
+- configuration
+- rollout
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.564879+00:00'
+started_at: '2026-02-18T12:21:44.564879+00:00'
+completed_at: '2026-02-18T13:23:20.390249+00:00'
+duration_minutes: 61.59708928333334
+---
+
+# Add feature flag for containerization rollout
+
+Add feature flag to enable gradual rollout of containerization.
+
+## Requirements
+
+- Application config: `containerization_enabled`
+- Can be toggled at runtime
+- Default to disabled for safe rollout
+- Logging when flag is checked
+
+## Acceptance Criteria
+
+- [ ] `config :pag_server, :containerization_enabled, false` in config
+- [ ] `PagServer.Containers.enabled?/0` returns flag state
+- [ ] AgentServer checks flag before creating container
+- [ ] Flag can be changed at runtime via application env
+- [ ] Telemetry event emitted when flag is checked
+- [ ] Unit tests for flag behavior

@@ -1,0 +1,87 @@
+---
+id: P9.M1.E1.T003
+title: Implement vector similarity queries
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on:
+- P9.M1.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:42:30.215970+00:00'
+tags:
+- advanced
+- future
+started_at: '2026-02-11T02:42:30.215970+00:00'
+completed_at: '2026-02-11T02:48:50.265880+00:00'
+duration_minutes: 6.334165016666666
+---
+
+# Implement vector similarity queries
+
+Build Elixir API for vector similarity search using pgvector distance operators.
+
+## Requirements
+
+- [ ] Create VectorSearch context module
+- [ ] Implement cosine similarity search
+- [ ] Implement L2 distance search
+- [ ] Add filtering by metadata
+- [ ] Support top-k retrieval with configurable limit
+
+## Acceptance Criteria
+
+- [ ] Can search by cosine similarity: `<=> operator`
+- [ ] Can search by L2 distance: `<-> operator`
+- [ ] Returns top-k most similar vectors
+- [ ] Supports metadata filtering (JSONB queries)
+- [ ] Unit tests verify search accuracy
+- [ ] Performance acceptable for 10k+ vectors
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md`
+- `.plan/2026-02-05-velvet-cascade/architecture.md`
+
+**Key Points**:
+- Phase 9 focuses on advanced, future-oriented features
+- All tasks marked as low priority (implement after core functionality)
+- Memory efficiency targets apply: <512MB per session
+
+## Notes
+
+Example query:
+```elixir
+VectorSearch.find_similar(
+  embedding,
+  limit: 10,
+  filters: %{"source_type" => "message"}
+)
+```
+
+Distance operators in SQL:
+- `ORDER BY embedding <=> $1` (cosine)
+- `ORDER BY embedding <-> $1` (L2)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:42 UTC
+**Primary task**: P9.M5.E4.T003 - Implement custom directive registration from plugins
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P9.M1.E1 vs P9.M5.E4)
+- No dependency chain: ✓ (verified at claim time)

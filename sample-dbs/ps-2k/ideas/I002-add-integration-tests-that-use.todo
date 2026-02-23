@@ -1,0 +1,90 @@
+---
+id: I002
+title: add integration tests that use free opencode zen models, or free groq models
+  (actually this is preferred), or free openrouter models. Also add instructions to
+  the readme for where to add API keys for tests. the integration tests should start
+  simple and ramp up to include multi-model tests, tool call tests, etc.
+status: completed
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-14T01:17:00.809423+00:00'
+started_at: '2026-02-14T01:17:00.809423+00:00'
+completed_at: '2026-02-14T13:30:00+11:00'
+---
+
+# Idea Intake: add integration tests that use free opencode zen models, or free groq models (actually this is preferred), or free openrouter models. Also add instructions to the readme for where to add API keys for tests. the integration tests should start simple and ramp up to include multi-model tests, tool call tests, etc.
+
+## Original Idea
+
+add integration tests that use free opencode zen models, or free groq models (actually this is preferred), or free openrouter models. Also add instructions to the readme for where to add API keys for tests. the integration tests should start simple and ramp up to include multi-model tests, tool call tests, etc.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "add integration tests that use free opencode zen models, or free groq models (actually this is preferred), or free openrouter models. Also add instructions to the readme for where to add API keys for tests. the integration tests should start simple and ramp up to include multi-model tests, tool call tests, etc."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+### Phase P16 - LLM Integration Tests
+
+#### Milestone P16.M1 - Groq Provider Support
+- **Epic P16.M1.E1** - Groq Provider Implementation
+  - **T001** - Add Groq provider module (1h)
+  - **T002** - Add Groq tests (1h) - depends on T001
+  - **T003** - Add Groq to LLM Registry known providers (0.25h) - depends on T001
+  - **T004** - Create IntegrationCase test helper (0.25h)
+  - **T005** - Register Groq provider in Application (0.25h) - depends on T001, T003
+
+#### Milestone P16.M2 - LLM Integration Tests
+- **Epic P16.M2.E1** - Basic Chat Integration Tests
+  - **T001** - Add Groq chat completion test (0.5h) - depends on T004, P16.M1.E1.T001
+  - **T002** - Add OpenRouter chat completion test (0.5h) - depends on T004
+
+- **Epic P16.M2.E2** - Streaming Integration Tests
+  - **T001** - Add Groq streaming test (0.5h) - depends on T004, P16.M1.E1.T001
+  - **T002** - Add OpenRouter streaming test (0.5h) - depends on T004
+
+- **Epic P16.M2.E3** - Tool Call Integration Tests
+  - **T001** - Add Groq tool call test (0.5h) - depends on T004, P16.M1.E1.T001
+  - **T002** - Add OpenRouter tool call test (0.5h) - depends on T004
+
+- **Epic P16.M2.E4** - Multi-Model Integration Tests
+  - **T001** - Add multi-provider fallback test (0.5h) - depends on T004, M2.E1.T001, M2.E1.T002
+
+- **Epic P16.M2.E5** - Integration Test Documentation
+  - **T001** - Update README with API key instructions (0.5h)
+
+### Bug IDs
+- None
+
+### Total Estimate: 8 hours (13 tasks)
+
+### Implementation Order
+1. P16.M1.E1.T001 - Add Groq provider module
+2. P16.M1.E1.T002 - Add Groq tests (parallel with T003, T004)
+3. P16.M1.E1.T003 - Add Groq to LLM Registry
+4. P16.M1.E1.T004 - Create IntegrationCase
+5. P16.M1.E1.T005 - Register Groq in Application
+6. P16.M2.E1.T001/T002 - Basic chat tests
+7. P16.M2.E2.T001/T002 - Streaming tests
+8. P16.M2.E3.T001/T002 - Tool call tests
+9. P16.M2.E4.T001 - Multi-provider tests
+10. P16.M2.E5.T001 - Documentation
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

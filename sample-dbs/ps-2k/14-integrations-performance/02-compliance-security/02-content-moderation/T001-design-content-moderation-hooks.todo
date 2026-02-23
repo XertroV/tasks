@@ -1,0 +1,49 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T05:37:49.198183+00:00'
+started_at: '2026-02-13T05:37:49.198183+00:00'
+completed_at: '2026-02-13T06:07:13.185570+00:00'
+duration_minutes: 29.399789633333334
+---
+# Design content moderation hooks
+
+## Description
+Design an extensible hook system for content moderation that allows plugging in different moderation services (OpenAI Moderation, Perspective API, custom models) and configuring policies per workspace.
+
+## Acceptance Criteria
+- [ ] `PagServer.Compliance.Moderation.Hook` behaviour defined
+- [ ] Callbacks: `check/2`, `configure/1`, `health_check/1`
+- [ ] `PagServer.Compliance.Moderation.Orchestrator` for hook management
+- [ ] `register_hook/2` to add moderation providers
+- [ ] `run_hooks/2` to execute all registered hooks
+- [ ] Hook priority ordering (critical hooks run first)
+- [ ] Timeout handling for slow hooks
+- [ ] Fallback behavior when hooks fail
+- [ ] Configuration schema in `PagServer.Schema.WorkspaceModerationConfig`
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/compliance/`, Hook/orchestrator patterns in `lib/pag_server/integrations/`
+- Part of epic: P14.M2.E2 - Content Moderation
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P14.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 05:37 UTC
+**Sibling tasks**: P14.M2.E2.T002, P14.M2.E2.T003, P14.M2.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P14.M2.E2.T001 → P14.M2.E2.T002 → P14.M2.E2.T003 → P14.M2.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P14.M2.E2.T001: .tasks/14-integrations-performance/02-compliance-security/02-content-moderation/T001-design-content-moderation-hooks.todo
+- P14.M2.E2.T002: .tasks/14-integrations-performance/02-compliance-security/02-content-moderation/T002-implement-harmful-content-detect.todo
+- P14.M2.E2.T003: .tasks/14-integrations-performance/02-compliance-security/02-content-moderation/T003-add-configurable-policies-per-w.todo
+- P14.M2.E2.T004: .tasks/14-integrations-performance/02-compliance-security/02-content-moderation/T004-add-compliance-reporting-api.todo

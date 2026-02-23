@@ -1,0 +1,39 @@
+id: P3.M6
+name: API Quality
+status: pending
+estimate_hours: 13.0
+complexity: high
+depends_on:
+- P1.M1
+- P1.M2
+epics:
+- id: E1
+  name: Error Response Consistency
+  path: 01-error-response-consistency
+  status: pending
+  estimate_hours: 4.5
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: API Infrastructure
+  path: 02-api-infrastructure
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Schema and Data Model Fixes
+  path: 03-schema-and-data-model-fixes
+  status: pending
+  estimate_hours: 3.5
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 8
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 3

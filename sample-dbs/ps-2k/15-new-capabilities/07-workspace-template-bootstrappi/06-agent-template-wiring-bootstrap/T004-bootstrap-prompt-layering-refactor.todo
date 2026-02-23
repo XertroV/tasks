@@ -1,0 +1,65 @@
+---
+title: Bootstrap Prompt Layering Refactor
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E6.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T13:33:38.705004+00:00'
+started_at: '2026-02-18T13:33:38.705004+00:00'
+completed_at: '2026-02-18T13:33:40.354827+00:00'
+duration_minutes: 0.027496899999999998
+---
+# Task: Bootstrap Prompt Layering Refactor
+
+**ID**: T004  
+**Epic**: P15.M7.E6 - Agent Template Wiring & Bootstrap  
+**Phase**: 4  
+**Estimate**: 3 hours  
+**Priority**: high  
+**Complexity**: high  
+**Status**: pending  
+**Depends on**: [T003]
+
+## Description
+
+Refactor `lib/pag_server/bootstrap/prompt_compiler.ex` and `lib/pag_server/agents/agent_server.ex` so that the bootstrap_prompt is prepended to the operational prompt rather than replacing it entirely.
+
+## Acceptance Criteria
+
+### prompt_compiler.ex Changes
+
+- [ ] Change `compile/2` to return `{:ok, bootstrap_supplement, operational_prompt}` instead of replacing the system prompt entirely
+- [ ] Bootstrap prompt becomes a block prepended to operational prompt
+- [ ] Operational prompt computed from workspace template's `prompt_template`
+
+### agent_server.ex Changes
+
+- [ ] Update `resolve_base_system_prompt/1` with new logic:
+  ```
+  if bootstrapping:
+    bootstrap_supplement <> "\n\n" <> operational_prompt
+  else:
+    operational_prompt
+  ```
+- [ ] `operational_prompt` is computed from workspace template's `prompt_template`
+- [ ] Resolve `{{agent_system_prompt}}` from referenced agent template
+- [ ] Resolve `{{file:X}}` references from disk
+
+## Behavior Change
+
+**Before**: Bootstrap prompt replaces system prompt entirely  
+**After**: Bootstrap prompt is a supplement prepended to operational prompt
+
+## Files Changed
+
+- `lib/pag_server/bootstrap/prompt_compiler.ex`
+- `lib/pag_server/agents/agent_server.ex`
+
+## Related
+
+- B140: Initial message injection bug
+- `docs/AGENT_PERSONA_SYSTEM.md`

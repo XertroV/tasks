@@ -1,0 +1,101 @@
+---
+id: P6.M7.E1.T002
+title: Ensure all Logger calls include structured metadata
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P6.M7.E1.T001
+tags:
+- observability
+- logging
+- metadata
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:23:23.807366+00:00'
+started_at: '2026-02-07T01:23:23.807366+00:00'
+completed_at: '2026-02-07T01:50:32.267075+00:00'
+duration_minutes: 27.14099493333333
+---
+
+# Ensure all Logger calls include structured metadata
+
+Audit and update all ~181 Logger calls across the codebase to include structured metadata
+keywords (agent_id, session_id, correlation_id) instead of relying solely on interpolated
+string messages. This ensures JSON-formatted logs have queryable fields for log aggregation.
+
+## Requirements
+
+- [ ] Audit all Logger calls in `lib/` using `grep -r "Logger\." lib/`
+- [ ] Categorize Logger calls by subsystem:
+  - [ ] Agent layer (`lib/pag_server/agents/`) - should include agent_id, session_id
+  - [ ] LLM layer (`lib/pag_server/llm/`) - should include provider, model
+  - [ ] Tools layer (`lib/pag_server/tools/`) - should include tool_name, agent_id
+  - [ ] Events layer (`lib/pag_server/events/`) - should include event_type
+  - [ ] Context layer (`lib/pag_server/context/`) - should include session_id
+- [ ] Convert string-interpolated Logger calls to use keyword metadata:
+  ```elixir
+  # Before:
+  Logger.info("Agent #{agent_id} started session #{session_id}")
+
+  # After:
+  Logger.info("Agent started session",
+    agent_id: agent_id,
+    session_id: session_id
+  )
+  ```
+- [ ] Ensure all Logger calls in agent context include `agent_id` and `session_id`
+- [ ] Ensure all Logger calls in LLM context include `provider` and `model`
+- [ ] Ensure all Logger calls in tool context include `tool_name`
+- [ ] Add `correlation_id` to Logger.metadata at subsystem entry points (forward-compatible
+  with P6.M6 correlation ID propagation)
+- [ ] Do NOT change log levels -- only add metadata
+- [ ] Run full test suite to verify no regressions
+
+## Acceptance Criteria
+
+- [ ] At least 80% of Logger calls include structured metadata keywords
+- [ ] Agent subsystem Logger calls include agent_id and session_id
+- [ ] LLM subsystem Logger calls include provider and model
+- [ ] JSON log output (with logger_json from T001) shows metadata as queryable fields
+- [ ] No string interpolation for key identifiers (agent_id, session_id, etc.)
+- [ ] All existing tests pass
+- [ ] Log messages remain meaningful as standalone text (not just "event happened")
+
+## Context
+
+**Source**: Architecture audit found 181 Logger calls using text-only format. When logs are
+aggregated in production (ELK, Datadog), metadata keywords enable filtering like
+`agent_id:abc AND level:error` which is impossible with unstructured text.
+
+**Pattern**: Elixir's Logger supports keyword metadata natively:
+```elixir
+Logger.info("message", key1: val1, key2: val2)
+```
+With `logger_json`, these become JSON fields automatically.
+
+## Notes
+
+**High-Impact Files** (most Logger calls):
+- `lib/pag_server/agents/agent_server.ex` - ~30+ Logger calls
+- `lib/pag_server/llm/providers/anthropic.ex` - ~15+ Logger calls
+- `lib/pag_server/llm/providers/openai.ex` - ~10+ Logger calls
+- `lib/pag_server/tools/sandbox/sandbox_executor.ex` - ~10+ Logger calls
+
+**Conversion Pattern**:
+```elixir
+# String interpolation (BAD for structured logging):
+Logger.error("LLM error for model #{model}: #{inspect(error)}")
+
+# Structured metadata (GOOD for structured logging):
+Logger.error("LLM request failed",
+  model: model,
+  error: inspect(error),
+  provider: provider,
+  agent_id: state.agent_id
+)
+```
+
+**Incremental Approach**: This can be done incrementally by subsystem. Start with the
+highest-value files (agent_server.ex, LLM providers) and work outward.

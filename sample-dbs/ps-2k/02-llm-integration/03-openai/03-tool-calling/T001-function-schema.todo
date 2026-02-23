@@ -1,0 +1,113 @@
+---
+id: P2.M3.E3.T001
+title: Implement function/tool schema conversion
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- schema
+- openai
+- function-calling
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:50:28.852186'
+started_at: '2026-02-05T15:50:28.852186'
+completed_at: '2026-02-05T16:10:31.576684'
+duration_minutes: 20.045408116666668
+---
+
+# Implement function/tool schema conversion
+
+Convert internal tool definitions to OpenAI function schema format.
+
+## Requirements
+
+- [x] Create schema converter from internal Tool schema to OpenAI format
+- [x] Support function parameters with JSON Schema format
+- [x] Handle required vs optional parameters
+- [x] Support nested parameter objects
+- [x] Add function descriptions and parameter descriptions
+- [x] Validate schema before sending to API
+
+## Acceptance Criteria
+
+- [x] Tool definitions convert to valid OpenAI function schema
+- [x] Parameter types map correctly (string, number, boolean, object, array)
+- [x] Required parameters are marked in schema
+- [x] Nested objects and arrays are handled
+- [x] Schema validation catches malformed definitions
+- [x] Tests verify schema conversion
+- [x] Follows OpenAI function calling spec
+
+## Context
+
+**Plan References**:
+- OpenAI Function Calling: https://platform.openai.com/docs/guides/function-calling
+- `ref-projects/openai_ex/lib/openai_ex/chat_completions.ex` (tools parameter)
+
+**Key Points**:
+- OpenAI uses JSON Schema for function parameters
+- Tool format: `{type: "function", function: {name, description, parameters}}`
+- Parameters use JSON Schema: `{type: "object", properties: {...}, required: [...]}`
+- Must convert from internal Tool behaviour to OpenAI format
+
+## Implementation Notes
+
+OpenAI function schema format:
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "get_current_weather",
+    "description": "Get the current weather in a location",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "location": {
+          "type": "string",
+          "description": "City and state, e.g. San Francisco, CA"
+        },
+        "unit": {
+          "type": "string",
+          "enum": ["celsius", "fahrenheit"]
+        }
+      },
+      "required": ["location"]
+    }
+  }
+}
+```
+
+Converter module:
+```elixir
+defmodule PagServer.LLM.OpenAI.ToolSchema do
+  def to_openai_function(tool) do
+    %{
+      type: "function",
+      function: %{
+        name: tool.name,
+        description: tool.description,
+        parameters: convert_parameters(tool.parameters)
+      }
+    }
+  end
+  
+  defp convert_parameters(params) do
+    %{
+      type: "object",
+      properties: build_properties(params),
+      required: extract_required(params)
+    }
+  end
+end
+```
+
+Parameter types:
+- Internal -> OpenAI
+- `:string` -> `"string"`
+- `:integer` -> `"number"`
+- `:boolean` -> `"boolean"`
+- `{:array, type}` -> `{"type": "array", "items": {...}}`
+- `{:object, schema}` -> `{"type": "object", "properties": {...}}`

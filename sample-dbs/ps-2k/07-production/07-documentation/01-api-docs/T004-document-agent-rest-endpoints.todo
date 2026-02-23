@@ -1,0 +1,168 @@
+---
+id: P7.M7.E1.T004
+title: Document Agent REST endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P7.M7.E1.T002
+- P3.M3.E2.T009
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:57:38.475169+00:00'
+started_at: '2026-02-08T05:57:38.475169+00:00'
+completed_at: '2026-02-08T06:03:37.076941+00:00'
+tags:
+- documentation
+- openapi
+- rest
+- agents
+duration_minutes: 5.976695983333333
+---
+
+# Document Agent REST endpoints
+
+Add OpenAPI schemas and documentation for all Agent CRUD endpoints.
+
+## Requirements
+
+- [ ] Create Agent schemas module
+  - [ ] `AgentRequest`: Create/update request body
+  - [ ] `AgentResponse`: Single agent response
+  - [ ] `AgentListResponse`: Paginated list response
+
+- [ ] Document `POST /api/v1/agents` (Create agent)
+  - [ ] Request body schema
+  - [ ] Success response (201)
+  - [ ] Error responses (400, 422)
+
+- [ ] Document `GET /api/v1/agents` (List agents)
+  - [ ] Query parameters (pagination, filters)
+  - [ ] Response with pagination metadata
+
+- [ ] Document `GET /api/v1/agents/:id` (Get agent)
+  - [ ] Path parameter (agent_id)
+  - [ ] Success response (200)
+  - [ ] Not found response (404)
+
+- [ ] Document `PUT /api/v1/agents/:id` (Update agent)
+  - [ ] Request body schema
+  - [ ] Success response (200)
+  - [ ] Error responses
+
+- [ ] Document `DELETE /api/v1/agents/:id` (Delete agent)
+  - [ ] Success response (204)
+  - [ ] Not found response (404)
+
+- [ ] Add operation tags for grouping in Redoc
+- [ ] Add request/response examples
+
+## Acceptance Criteria
+
+- [ ] All 5 Agent endpoints documented in OpenAPI spec
+- [ ] Schemas validate actual request/response formats
+- [ ] Examples are realistic and helpful
+- [ ] Endpoints appear grouped in Redoc under "Agents"
+- [ ] All required fields marked as required
+- [ ] Error responses documented with codes
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on P3.M3.E2 (Agent Controller implementation)
+
+## Implementation Guide
+
+### Agent Schemas
+
+```elixir
+defmodule PagServerWeb.Schemas.Agent do
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  defmodule AgentRequest do
+    OpenApiSpex.schema(%{
+      title: "AgentRequest",
+      type: :object,
+      properties: %{
+        name: %Schema{type: :string, description: "Human-readable agent name"},
+        model_spec: %Schema{type: :string, description: "LLM model specification", 
+                            example: "anthropic/claude-3-5-sonnet-20241022"},
+        system_prompt: %Schema{type: :string, description: "System instructions"},
+        tools: %Schema{type: :array, items: %Schema{type: :string}, 
+                       description: "Enabled tool names"}
+      },
+      required: [:name, :model_spec]
+    })
+  end
+
+  defmodule AgentResponse do
+    OpenApiSpex.schema(%{
+      title: "AgentResponse",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, format: :uuid},
+        name: %Schema{type: :string},
+        model_spec: %Schema{type: :string},
+        status: %Schema{type: :string, enum: ["idle", "processing", "error"]},
+        created_at: %Schema{type: :string, format: :"date-time"},
+        updated_at: %Schema{type: :string, format: :"date-time"}
+      }
+    })
+  end
+end
+```
+
+### Controller Operations
+
+```elixir
+defmodule PagServerWeb.AgentController do
+  use PagServerWeb, :controller
+  use OpenApiSpex.ControllerSpecs
+
+  alias PagServerWeb.Schemas.Agent
+
+  tags ["Agents"]
+
+  operation :create,
+    summary: "Create a new agent",
+    request_body: {"Agent creation params", "application/json", Agent.AgentRequest},
+    responses: [
+      ok: {"Agent created", "application/json", Agent.AgentResponse},
+      unprocessable_entity: {"Validation errors", "application/json", ErrorResponse}
+    ]
+
+  def create(conn, params) do
+    # ...
+  end
+end
+```
+
+## Notes
+
+- Schemas should mirror Ecto schema fields
+- Include validation constraints in descriptions
+- Add realistic examples for better DX
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 05:57 UTC
+**Sibling tasks**: P7.M7.E1.T005, P7.M7.E1.T006, P7.M7.E1.T007, P7.M7.E1.T011, P7.M7.E1.T012
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T004 → P7.M7.E1.T005 → P7.M7.E1.T006 → P7.M7.E1.T007 → P7.M7.E1.T011 → P7.M7.E1.T012
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T004: .tasks/07-production/07-documentation/01-api-docs/T004-document-agent-rest-endpoints.todo
+- P7.M7.E1.T005: .tasks/07-production/07-documentation/01-api-docs/T005-document-session-rest-endpoint.todo
+- P7.M7.E1.T006: .tasks/07-production/07-documentation/01-api-docs/T006-document-stats-rest-endpoints.todo
+- P7.M7.E1.T007: .tasks/07-production/07-documentation/01-api-docs/T007-document-openai-compatible-end.todo
+- P7.M7.E1.T011: .tasks/07-production/07-documentation/01-api-docs/T011-configure-exdoc-with-module-gr.todo
+- P7.M7.E1.T012: .tasks/07-production/07-documentation/01-api-docs/T012-audit-and-complete-module-docu.todo

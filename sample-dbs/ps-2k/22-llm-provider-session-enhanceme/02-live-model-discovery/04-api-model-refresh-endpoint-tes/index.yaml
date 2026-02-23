@@ -1,0 +1,33 @@
+id: P22.M2.E4
+name: 'API: model refresh endpoint + tests'
+status: pending
+estimate_hours: 4.0
+complexity: low
+depends_on:
+- P22.M2.E3
+locked: false
+tasks:
+- id: T001
+  file: T001-api-get-api-v1-providers-provi.todo
+  title: 'API: GET /api/v1/providers/:provider/models/refresh endpoint'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M2.E2.T001
+- id: T002
+  file: T002-tests-modeldiscoverycache-ttl.todo
+  title: 'Tests: ModelDiscoveryCache TTL, refresh logic, and ModelCatalog merge'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M2.E3.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

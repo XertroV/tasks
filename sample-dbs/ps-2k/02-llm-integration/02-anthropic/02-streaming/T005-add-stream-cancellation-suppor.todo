@@ -1,0 +1,78 @@
+---
+id: P2.M2.E2.T005
+title: Add stream cancellation support to Anthropic streaming handler
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E2.T002
+tags:
+- streaming
+- cancellation
+- anthropic
+claimed_by: cli-user
+claimed_at: '2026-02-05T21:26:29.597311'
+started_at: '2026-02-05T21:26:29.597311'
+completed_at: '2026-02-05T21:38:11.747131'
+duration_minutes: 11.702496816666667
+---
+
+# Add stream cancellation support to Anthropic streaming handler
+
+
+
+## Requirements
+
+- [x] Extend the Anthropic stream handler to accept a cancellation ref/token and propagate it into the stream lifecycle.
+- [x] Ensure the cancellation ref can be used to stop the stream at the transport layer and stop emitting downstream events.
+- [x] Emit a deterministic cancellation event in the Anthropic stream handler when cancelled (no partial tool/assistant messages left open).
+- [x] Wire cancellation through the LLM registry provider entry for Anthropic streaming calls.
+- [x] Preserve existing streaming chunk handling and error paths when cancellation is not used.
+
+## Acceptance Criteria
+
+- [x] A stream started via the Anthropic stream handler can be cancelled using the same cancellation ref without crashing the session.
+- [x] Cancellation stops network reads and no further chunks are delivered to the caller after the cancel event.
+- [x] The handler returns/propagates a clear cancelled outcome distinct from error/timeout.
+- [x] Anthropic stream cancellation uses the common cancellation ref pattern used by other providers.
+- [x] LLM registry metadata includes any new cancellation option surfaced by the provider.
+
+## Context
+
+- [x] Anthropic streaming is handled in the Anthropic stream handler; this task adds cancellation behavior to match other providers.
+- [x] The cancellation ref should be stored alongside stream state so it can be matched when a cancel request arrives.
+- [x] The LLM registry is the routing entry point for provider options, including streaming and cancellation.
+
+## Notes
+
+- [x] Cancellation ref should be treated as an opaque token and not reused across concurrent streams.
+- [x] Ensure cancellation is idempotent (multiple cancels on the same ref are safe).
+- [x] Avoid emitting partial tool result or assistant message frames after cancellation.
+
+## Testing
+
+- [x] Add/extend unit tests for the Anthropic stream handler cancellation behavior (e.g., `test/pag_server/llm/anthropic/stream_handler_test.exs`).
+- [x] Add integration test covering cancellation via LLM registry stream entry (e.g., `test/pag_server/llm/registry_test.exs`).
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 08:26 UTC
+**Primary task**: P2.M8.E5.T002 - Implement hierarchical multi-stage summarization
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M2.E2 vs P2.M8.E5)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T08:56:55.851646+00:00'
+started_at: '2026-02-13T08:56:55.851646+00:00'
+completed_at: '2026-02-13T09:15:10.839855+00:00'
+duration_minutes: 18.249803266666667
+---
+# Add Notion database operations
+
+## Description
+Implement database query and CRUD operations for Notion databases. Enable agents to search, create, update, and archive database entries with full filter and sort support.
+
+## Acceptance Criteria
+- [ ] `PagServer.Integrations.Notion.Databases` module created
+- [ ] `query_database/3` with filter and sort support
+- [ ] `list_databases/2` to enumerate shared databases
+- [ ] `get_database/2` to retrieve database schema
+- [ ] `create_page/3` to add entries to databases
+- [ ] `update_page/3` to modify existing entries
+- [ ] `archive_page/2` to soft-delete entries
+- [ ] Property type handling (title, rich_text, select, multi_select, date, etc.)
+- [ ] Pagination support with cursor-based iteration
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/integrations/notion/client.ex`, `lib/pag_server/integrations/jira/issues.ex`, `lib/pag_server/integrations/linear/operations.ex`
+- Part of epic: P14.M1.E2 - Notion Integration

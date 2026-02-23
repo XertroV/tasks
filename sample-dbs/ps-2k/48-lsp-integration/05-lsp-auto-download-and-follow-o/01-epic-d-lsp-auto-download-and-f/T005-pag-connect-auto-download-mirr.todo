@@ -1,0 +1,16 @@
+---
+id: P48.M5.E1.T005
+title: 'pag-connect auto-download: mirror LspBinaryManager in pag-connect'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T13:54:15.085990+00:00'
+started_at: '2026-02-20T13:54:15.085990+00:00'
+completed_at: '2026-02-20T13:54:36.862153+00:00'
+duration_minutes: 0.3629358833333333
+---
+Same auto-download logic in pag-connect daemon. Downloads go to ~/.local/share/pag-connect/lsp-binaries/. Mirror of pag-server LspBinaryManager.

@@ -1,0 +1,31 @@
+id: P15.M11.E4
+name: Observation & Summarization
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- E2
+locked: false
+tasks:
+- id: T001
+  file: T001-build-observation-subscriber-g.todo
+  title: Build observation subscriber GenServer
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-event-formatting-helper.todo
+  title: Create event formatting helpers
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

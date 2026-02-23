@@ -1,0 +1,35 @@
+---
+id: P38.M1.E3.T001
+title: Enforce workspace-scoped connector access (security guard in dispatcher)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P38.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:53:57.445197+00:00'
+started_at: '2026-02-19T04:53:57.445197+00:00'
+completed_at: '2026-02-19T04:56:49.361556+00:00'
+duration_minutes: 2.865272333333333
+---
+ConnectorDispatcher.dispatch/3 must verify that the BotConfig.workspace_id matches the agent's workspace_id before dispatching. If mismatch: {:error, :access_denied}. Add a guard in ConnectorRegistry.get_connector/2 as well (double-check). Add a test case in test/pag_server/connector_messaging/ that verifies cross-workspace access is denied. Document the security boundary in ConnectorDispatcher @moduledoc.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P38.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-19 04:53 UTC
+**Sibling tasks**: P38.M1.E3.T002, P38.M1.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P38.M1.E3.T001 → P38.M1.E3.T002 → P38.M1.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P38.M1.E3.T001: .tasks/38-connector-messaging-plugin/01-core-plugin/03-security-auth-and-integration/T001-enforce-workspace-scoped-conne.todo
+- P38.M1.E3.T002: .tasks/38-connector-messaging-plugin/01-core-plugin/03-security-auth-and-integration/T002-add-rate-limiting-for-outbound.todo
+- P38.M1.E3.T003: .tasks/38-connector-messaging-plugin/01-core-plugin/03-security-auth-and-integration/T003-documentation-plugin-developme.todo

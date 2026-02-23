@@ -1,0 +1,17 @@
+---
+id: P47.M3.E2.T002
+title: 'Add brute-force protection: expire device code on 5 failed user_code attempts'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P47.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:41:58.932686+00:00'
+started_at: '2026-02-20T06:41:58.932686+00:00'
+completed_at: '2026-02-20T06:42:36.431072+00:00'
+duration_minutes: 0.6249728999999999
+---
+In DeviceCodes.increment_fail_count/1: when fail_count reaches 5, atomically transition status to 'expired'. The GET /device LiveView should check this before showing the confirmation view (treat 'expired' codes as not found). Implement as a single Repo.update_all with conditional logic. Add test coverage for the 5-attempt boundary. Reference: RFC 8628 §5.1 rate-limit guidance.

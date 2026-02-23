@@ -1,0 +1,202 @@
+---
+id: P4.M2.E10.T001
+title: Implement image_info tool (size, format, metadata)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- image
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:00:17.743679'
+started_at: '2026-02-06T03:00:17.743679'
+completed_at: '2026-02-06T03:03:08.135401'
+duration_minutes: 2.8398618499999997
+---
+
+# Implement image_info tool (size, format, metadata)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/image_info.ex` (~120 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use Mogrify or ImageMagick library for image inspection
+- [ ] Support common formats: JPEG, PNG, GIF, WebP, BMP, TIFF
+- [ ] Extract dimensions, format, file size, EXIF metadata
+- [ ] Validate file path is within workspace boundary
+- [ ] Handle corrupt/invalid image files gracefully
+
+## Acceptance Criteria
+
+- [ ] Accepts file path as string parameter
+- [ ] Returns image dimensions (width, height in pixels)
+- [ ] Returns image format/MIME type
+- [ ] Returns file size in bytes
+- [ ] Optionally extracts EXIF metadata (when available)
+- [ ] Validates file exists and is within workspace
+- [ ] Handles errors: file not found, invalid image, unsupported format, path traversal attempt
+- [ ] Test coverage: valid images (JPEG, PNG, GIF, WebP), missing file, corrupt image, path outside workspace, non-image file
+- [ ] Security: blocks path traversal (../, absolute paths outside workspace)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Path validation essential: all file operations must verify workspace boundary
+- Use Mogrify wrapper for ImageMagick (already common in Elixir ecosystem)
+- EXIF data can be large - provide option to include/exclude
+- Return structured metadata for easy consumption
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ImageInfo do
+  @behaviour PAGServer.Tools.Tool
+  @supported_formats ~w(jpg jpeg png gif webp bmp tiff tif)
+
+  @impl true
+  def name, do: "image_info"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "image_info",
+      description: "Get image file information (dimensions, format, metadata)",
+      parameters: %{
+        type: "object",
+        properties: %{
+          path: %{
+            type: "string",
+            description: "Path to image file (relative to workspace)"
+          },
+          include_exif: %{
+            type: "boolean",
+            description: "Include EXIF metadata (default: false)"
+          }
+        },
+        required: ["path"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"path" => path} = args, context) do
+    with :ok <- validate_path(path, context.workspace_path),
+         {:ok, full_path} <- resolve_path(path, context.workspace_path),
+         {:ok, info} <- get_image_info(full_path, args) do
+      {:ok, info}
+    else
+      {:error, reason} -> {:error, "Image info failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_path(path, workspace) do
+    cond do
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      Path.type(path) == :absolute and not String.starts_with?(path, workspace) ->
+        {:error, "Absolute paths outside workspace not allowed"}
+      true ->
+        :ok
+    end
+  end
+
+  defp resolve_path(path, workspace) do
+    full_path = 
+      if Path.type(path) == :absolute do
+        path
+      else
+        Path.join(workspace, path)
+      end
+      |> Path.expand()
+    
+    if String.starts_with?(full_path, workspace) and File.exists?(full_path) do
+      {:ok, full_path}
+    else
+      {:error, "File not found or outside workspace"}
+    end
+  end
+
+  defp get_image_info(path, args) do
+    ext = Path.extname(path) |> String.trim_leading(".") |> String.downcase()
+    
+    unless ext in @supported_formats do
+      return {:error, "Unsupported image format: #{ext}"}
+    end
+
+    case Mogrify.open(path) |> Mogrify.verbose() do
+      %Mogrify.Image{} = img ->
+        info = %{
+          width: img.width,
+          height: img.height,
+          format: img.format,
+          file_size: File.stat!(path).size,
+          path: path
+        }
+        
+        info = if Map.get(args, "include_exif", false) do
+          Map.put(info, :exif, extract_exif(img))
+        else
+          info
+        end
+        
+        {:ok, info}
+        
+      _ ->
+        {:error, "Invalid or corrupt image file"}
+    end
+  rescue
+    e -> {:error, "Failed to read image: #{Exception.message(e)}"}
+  end
+
+  defp extract_exif(img) do
+    # Extract common EXIF fields if present
+    %{
+      camera_make: img.meta["exif:Make"],
+      camera_model: img.meta["exif:Model"],
+      date_time: img.meta["exif:DateTime"],
+      orientation: img.meta["exif:Orientation"]
+    }
+    |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+    |> Map.new()
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "path": "images/photo.jpg",
+  "include_exif": true
+}
+```
+
+Example response:
+```json
+{
+  "width": 1920,
+  "height": 1080,
+  "format": "JPEG",
+  "file_size": 245678,
+  "path": "images/photo.jpg",
+  "exif": {
+    "camera_make": "Canon",
+    "camera_model": "EOS 5D",
+    "date_time": "2026:02:06 10:30:45"
+  }
+}
+```
+
+Security considerations:
+- Path traversal prevention (check for ../, symlinks)
+- Workspace boundary enforcement
+- File size limits (reject files >100MB before processing)
+- Magic byte validation (verify file is actually an image)

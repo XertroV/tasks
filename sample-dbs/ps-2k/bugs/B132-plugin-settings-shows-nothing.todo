@@ -1,0 +1,18 @@
+---
+id: B132
+title: Plugin settings shows nothing in dropdown -- we should have default plugins
+  though!
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:56:13.632875+00:00'
+started_at: '2026-02-18T06:56:13.632875+00:00'
+completed_at: '2026-02-18T07:25:20.809382+00:00'
+duration_minutes: 29.119608200000002
+---
+
+Plugin settings shows nothing in dropdown -- we should have default plugins though!

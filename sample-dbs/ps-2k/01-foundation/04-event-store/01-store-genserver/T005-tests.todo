@@ -1,0 +1,571 @@
+---
+id: P1.M4.E1.T005
+title: Write EventStore GenServer tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P1.M4.E1.T002
+- P1.M4.E1.T003
+- P1.M4.E1.T004
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:42:40.931484'
+started_at: '2026-02-05T09:42:40.931484'
+completed_at: '2026-02-05T09:42:41.426008'
+tags:
+- event-store
+- testing
+- coverage
+- concurrency
+---
+
+# Write EventStore GenServer tests
+
+Write comprehensive tests for the EventStore GenServer module covering append, query, subscription, and concurrent access scenarios.
+
+## Requirements
+
+- [ ] Create `test/pag_server/events/event_store_test.exs`
+- [ ] Test `start_link/1` and initialization
+- [ ] Test `append_event/1` operations:
+  - [ ] Successful append with valid event
+  - [ ] Event ID assignment
+  - [ ] Timestamp assignment
+  - [ ] Validation failures (missing event_type, invalid payload, etc.)
+  - [ ] Multiple appends maintain order
+- [ ] Test `query_events/1` operations:
+  - [ ] Query by agent_id
+  - [ ] Query by session_id
+  - [ ] Query by event_type
+  - [ ] Query by time_range
+  - [ ] Combined filters (multiple criteria)
+  - [ ] Empty results when no matches
+  - [ ] Results in insertion order
+- [ ] Test subscription operations:
+  - [ ] Subscribe and receive events
+  - [ ] Unsubscribe and stop receiving
+  - [ ] Multiple subscribers on same topic
+  - [ ] Topic routing (session vs agent topics)
+  - [ ] Auto-cleanup of dead subscribers
+- [ ] Test concurrent access:
+  - [ ] Multiple processes appending simultaneously
+  - [ ] Queries while appending
+  - [ ] Subscriptions during high event volume
+- [ ] Achieve >90% code coverage for event_store.ex
+- [ ] All tests pass consistently
+- [ ] No flaky tests
+
+## Acceptance Criteria
+
+- [ ] Test file exists at correct path
+- [ ] All required test cases implemented
+- [ ] Tests follow ExUnit best practices
+- [ ] Tests use proper setup and cleanup
+- [ ] Tests are well-documented with clear descriptions
+- [ ] Code coverage >90% for EventStore module
+- [ ] Run `mix test test/pag_server/events/event_store_test.exs` passes
+- [ ] Run `mix test --only event_store` passes (using tags)
+- [ ] Tests complete in <5 seconds
+- [ ] No warnings during test execution
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 7.1 (Session Replay)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.6 (Events Domain)
+
+**Testing Philosophy**:
+- Test behavior, not implementation
+- Focus on edge cases and error paths
+- Test concurrency and race conditions
+- Ensure deterministic replay
+
+## Implementation Guide
+
+### Test Module Structure
+
+```elixir
+defmodule PagServer.Events.EventStoreTest do
+  use ExUnit.Case, async: false  # GenServer is named, can't run async
+
+  alias PagServer.Events.{EventStore, Event}
+
+  @moduletag :event_store
+
+  setup do
+    # Start fresh EventStore for each test
+    start_supervised!(EventStore)
+    :ok
+  end
+
+  describe "start_link/1" do
+    test "starts the GenServer with default name" do
+      # Test covered by setup, verify it's running
+      assert Process.whereis(EventStore) != nil
+    end
+  end
+
+  describe "append_event/1" do
+    test "appends valid event and returns event ID" do
+      event = %Event{
+        event_type: "test_event",
+        agent_id: Ecto.UUID.generate(),
+        payload: %{data: "test"}
+      }
+
+      assert {:ok, event_id} = EventStore.append_event(event)
+      assert is_integer(event_id)
+      assert event_id > 0
+    end
+
+    test "assigns incrementing IDs to events" do
+      event1 = %Event{event_type: "event1", payload: %{}}
+      event2 = %Event{event_type: "event2", payload: %{}}
+
+      {:ok, id1} = EventStore.append_event(event1)
+      {:ok, id2} = EventStore.append_event(event2)
+
+      assert id2 == id1 + 1
+    end
+
+    test "assigns timestamp if not present" do
+      event = %Event{event_type: "test", payload: %{}}
+      {:ok, _id} = EventStore.append_event(event)
+
+      [stored_event] = EventStore.query_events()
+      assert stored_event.inserted_at != nil
+      assert %DateTime{} = stored_event.inserted_at
+    end
+
+    test "rejects event without event_type" do
+      event = %Event{event_type: nil, payload: %{}}
+      assert {:error, :event_type_required} = EventStore.append_event(event)
+    end
+
+    test "rejects event with empty event_type" do
+      event = %Event{event_type: "", payload: %{}}
+      assert {:error, :event_type_required} = EventStore.append_event(event)
+    end
+
+    test "rejects event with invalid payload" do
+      event = %Event{event_type: "test", payload: "not a map"}
+      assert {:error, :payload_must_be_map} = EventStore.append_event(event)
+    end
+
+    test "rejects event with invalid agent_id UUID" do
+      event = %Event{
+        event_type: "test",
+        agent_id: "invalid-uuid",
+        payload: %{}
+      }
+      assert {:error, :invalid_agent_id} = EventStore.append_event(event)
+    end
+
+    test "rejects event with invalid session_id UUID" do
+      event = %Event{
+        event_type: "test",
+        session_id: "invalid-uuid",
+        payload: %{}
+      }
+      assert {:error, :invalid_session_id} = EventStore.append_event(event)
+    end
+
+    test "maintains insertion order for multiple events" do
+      events = for i <- 1..10 do
+        %Event{event_type: "event_#{i}", payload: %{index: i}}
+      end
+
+      for event <- events do
+        EventStore.append_event(event)
+      end
+
+      stored = EventStore.query_events()
+      indices = Enum.map(stored, & &1.payload.index)
+
+      assert indices == Enum.to_list(1..10)
+    end
+  end
+
+  describe "query_events/1" do
+    setup do
+      # Create test events
+      agent_id_1 = Ecto.UUID.generate()
+      agent_id_2 = Ecto.UUID.generate()
+      session_id_1 = Ecto.UUID.generate()
+
+      events = [
+        %Event{
+          event_type: "agent_created",
+          agent_id: agent_id_1,
+          session_id: session_id_1,
+          payload: %{name: "Agent1"}
+        },
+        %Event{
+          event_type: "message_sent",
+          agent_id: agent_id_1,
+          session_id: session_id_1,
+          payload: %{content: "Hello"}
+        },
+        %Event{
+          event_type: "agent_created",
+          agent_id: agent_id_2,
+          session_id: session_id_1,
+          payload: %{name: "Agent2"}
+        }
+      ]
+
+      for event <- events do
+        EventStore.append_event(event)
+      end
+
+      {:ok, agent_id_1: agent_id_1, agent_id_2: agent_id_2, session_id_1: session_id_1}
+    end
+
+    test "queries all events with no filters" do
+      events = EventStore.query_events()
+      assert length(events) == 3
+    end
+
+    test "queries events by agent_id", %{agent_id_1: agent_id_1} do
+      events = EventStore.query_events(agent_id: agent_id_1)
+      assert length(events) == 2
+      assert Enum.all?(events, & &1.agent_id == agent_id_1)
+    end
+
+    test "queries events by session_id", %{session_id_1: session_id_1} do
+      events = EventStore.query_events(session_id: session_id_1)
+      assert length(events) == 3
+      assert Enum.all?(events, & &1.session_id == session_id_1)
+    end
+
+    test "queries events by event_type" do
+      events = EventStore.query_events(event_type: "agent_created")
+      assert length(events) == 2
+      assert Enum.all?(events, & &1.event_type == "agent_created")
+    end
+
+    test "queries events by time_range" do
+      now = DateTime.utc_now()
+      from = DateTime.add(now, -60, :second)
+      to = DateTime.add(now, 60, :second)
+
+      events = EventStore.query_events(time_range: {from, to})
+      assert length(events) == 3
+    end
+
+    test "queries with combined filters", %{agent_id_1: agent_id_1} do
+      events = EventStore.query_events(
+        agent_id: agent_id_1,
+        event_type: "message_sent"
+      )
+      assert length(events) == 1
+      assert hd(events).event_type == "message_sent"
+      assert hd(events).agent_id == agent_id_1
+    end
+
+    test "returns empty list when no matches" do
+      events = EventStore.query_events(agent_id: Ecto.UUID.generate())
+      assert events == []
+    end
+
+    test "returns events in insertion order" do
+      events = EventStore.query_events()
+      event_types = Enum.map(events, & &1.event_type)
+      assert event_types == ["agent_created", "message_sent", "agent_created"]
+    end
+  end
+
+  describe "subscribe/1 and unsubscribe/1" do
+    test "subscriber receives events after subscription" do
+      session_id = Ecto.UUID.generate()
+      topic = "events:#{session_id}"
+
+      :ok = EventStore.subscribe(topic)
+
+      event = %Event{
+        event_type: "test_event",
+        session_id: session_id,
+        payload: %{}
+      }
+      {:ok, _id} = EventStore.append_event(event)
+
+      assert_receive {:event, ^topic, received_event}
+      assert received_event.event_type == "test_event"
+    end
+
+    test "subscriber stops receiving after unsubscribe" do
+      session_id = Ecto.UUID.generate()
+      topic = "events:#{session_id}"
+
+      :ok = EventStore.subscribe(topic)
+      :ok = EventStore.unsubscribe(topic)
+
+      event = %Event{
+        event_type: "test_event",
+        session_id: session_id,
+        payload: %{}
+      }
+      EventStore.append_event(event)
+
+      refute_receive {:event, ^topic, _}, 100
+    end
+
+    test "multiple subscribers receive same event" do
+      session_id = Ecto.UUID.generate()
+      topic = "events:#{session_id}"
+
+      # Start two subscriber processes
+      parent = self()
+
+      subscriber1 = spawn_link(fn ->
+        :ok = EventStore.subscribe(topic)
+        send(parent, {:ready, :sub1})
+
+        receive do
+          {:event, ^topic, event} -> send(parent, {:received, :sub1, event})
+        end
+      end)
+
+      subscriber2 = spawn_link(fn ->
+        :ok = EventStore.subscribe(topic)
+        send(parent, {:ready, :sub2})
+
+        receive do
+          {:event, ^topic, event} -> send(parent, {:received, :sub2, event})
+        end
+      end)
+
+      # Wait for both to subscribe
+      assert_receive {:ready, :sub1}
+      assert_receive {:ready, :sub2}
+
+      # Append event
+      event = %Event{
+        event_type: "test_event",
+        session_id: session_id,
+        payload: %{}
+      }
+      {:ok, _id} = EventStore.append_event(event)
+
+      # Both should receive
+      assert_receive {:received, :sub1, _}
+      assert_receive {:received, :sub2, _}
+    end
+
+    test "subscriber only receives events for subscribed topic" do
+      session_id_1 = Ecto.UUID.generate()
+      session_id_2 = Ecto.UUID.generate()
+      topic1 = "events:#{session_id_1}"
+
+      :ok = EventStore.subscribe(topic1)
+
+      # Event for different session
+      event = %Event{
+        event_type: "test_event",
+        session_id: session_id_2,
+        payload: %{}
+      }
+      EventStore.append_event(event)
+
+      # Should not receive
+      refute_receive {:event, ^topic1, _}, 100
+    end
+
+    test "dead subscriber is cleaned up automatically" do
+      session_id = Ecto.UUID.generate()
+      topic = "events:#{session_id}"
+      parent = self()
+
+      # Start subscriber that will die
+      subscriber = spawn(fn ->
+        :ok = EventStore.subscribe(topic)
+        send(parent, :subscribed)
+        receive do
+          :die -> exit(:normal)
+        end
+      end)
+
+      assert_receive :subscribed
+
+      # Kill subscriber
+      send(subscriber, :die)
+      Process.sleep(50)  # Give time for :DOWN message to be processed
+
+      # Append event - should not crash even though subscriber is dead
+      event = %Event{
+        event_type: "test_event",
+        session_id: session_id,
+        payload: %{}
+      }
+      assert {:ok, _id} = EventStore.append_event(event)
+    end
+  end
+
+  describe "concurrent access" do
+    test "multiple processes can append simultaneously" do
+      tasks = for i <- 1..100 do
+        Task.async(fn ->
+          event = %Event{
+            event_type: "concurrent_event",
+            payload: %{index: i}
+          }
+          EventStore.append_event(event)
+        end)
+      end
+
+      results = Task.await_many(tasks)
+
+      # All should succeed
+      assert Enum.all?(results, &match?({:ok, _}, &1))
+
+      # All events should be stored
+      events = EventStore.query_events(event_type: "concurrent_event")
+      assert length(events) == 100
+    end
+
+    test "queries work while appending" do
+      # Start background appender
+      parent = self()
+
+      appender = spawn_link(fn ->
+        for i <- 1..50 do
+          event = %Event{
+            event_type: "background_event",
+            payload: %{index: i}
+          }
+          EventStore.append_event(event)
+          Process.sleep(1)
+        end
+        send(parent, :done)
+      end)
+
+      # Query while appending
+      for _ <- 1..10 do
+        events = EventStore.query_events(event_type: "background_event")
+        assert is_list(events)
+        Process.sleep(5)
+      end
+
+      assert_receive :done, 1000
+    end
+
+    test "subscriptions receive events during high volume" do
+      session_id = Ecto.UUID.generate()
+      topic = "events:#{session_id}"
+
+      :ok = EventStore.subscribe(topic)
+
+      # Append many events quickly
+      for i <- 1..100 do
+        event = %Event{
+          event_type: "volume_test",
+          session_id: session_id,
+          payload: %{index: i}
+        }
+        EventStore.append_event(event)
+      end
+
+      # Should receive all events (may need to drain mailbox)
+      received = drain_mailbox(topic, 100, [])
+      assert length(received) == 100
+    end
+  end
+
+  # Helper function to drain mailbox
+  defp drain_mailbox(_topic, 0, acc), do: Enum.reverse(acc)
+  defp drain_mailbox(topic, count, acc) do
+    receive do
+      {:event, ^topic, event} -> drain_mailbox(topic, count - 1, [event | acc])
+    after
+      100 -> Enum.reverse(acc)
+    end
+  end
+end
+```
+
+## Notes
+
+### Test Organization
+
+**Describe Blocks**:
+- Group related tests together
+- Clear test structure
+- Easy to run subsets
+
+**Setup Blocks**:
+- Use `setup` for shared test data
+- Use `setup :context_name` for named setups
+- Clean up resources in `on_exit` if needed
+
+### Async Testing
+
+**Why `async: false`?**:
+- EventStore is a named GenServer (singleton)
+- Multiple tests would share same store
+- Use `async: false` for isolation
+
+**Alternative**:
+- Start unnamed EventStore per test
+- Pass PID to functions instead of using name
+- Enables `async: true` for faster tests
+
+### Testing Subscriptions
+
+**Challenges**:
+- Asynchronous message delivery
+- Process lifecycle management
+- Race conditions
+
+**Strategies**:
+- Use `assert_receive` with timeout
+- Spawn linked processes for subscribers
+- Drain mailbox to collect all messages
+
+### Testing Concurrency
+
+**Why Test Concurrent Access?**:
+- GenServer serializes requests
+- Verify no deadlocks or bottlenecks
+- Ensure data integrity under load
+
+**How to Test**:
+- Use `Task.async_stream` for parallel operations
+- Mix reads and writes
+- Test high volume scenarios
+
+### Coverage Goals
+
+**Target: >90% Coverage**:
+- All public functions tested
+- Error paths covered
+- Edge cases included
+- Concurrent scenarios tested
+
+**Check Coverage**:
+```bash
+mix test --cover
+open cover/excoveralls.html
+```
+
+## Troubleshooting
+
+**Flaky tests**:
+- Increase timeouts for `assert_receive`
+- Add `Process.sleep/1` for async operations
+- Check for race conditions in test setup
+
+**Tests timeout**:
+- Reduce number of concurrent tasks
+- Check for deadlocks in GenServer
+- Profile slow tests with `:timer.tc`
+
+**Coverage not meeting target**:
+- Review coverage report for uncovered lines
+- Add tests for error paths
+- Test edge cases and boundary conditions
+
+**Subscription tests fail**:
+- Verify EventStore is running (`Process.whereis/1`)
+- Check mailbox with `:erlang.process_info(self(), :messages)`
+- Ensure subscriber process is alive during test

@@ -1,0 +1,40 @@
+id: P8.M2
+name: Telegram Integration
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on:
+- M1
+epics:
+- id: E1
+  name: Bot Setup
+  path: 01-bot-setup
+  status: pending
+  estimate_hours: 2
+  complexity: medium
+  depends_on: []
+  description: Telegex integration, webhook/polling setup
+- id: E2
+  name: Message Handlers
+  path: 02-handlers
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+  description: Handle messages, callbacks, inline queries
+- id: E3
+  name: Session Mapping
+  path: 03-session-mapping
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on:
+  - E1
+  description: Map chat IDs to sessions
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

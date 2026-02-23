@@ -1,0 +1,16 @@
+---
+id: P30.M1.E1.T003
+title: Write marketplace fetch tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:16:02.855448+00:00'
+started_at: '2026-02-18T19:16:02.855448+00:00'
+completed_at: '2026-02-18T19:17:58.362386+00:00'
+duration_minutes: 1.9251154833333333
+---
+Unit tests for Installer.list_available and Marketplace.list using Bypass or mocked HTTP. Test pagination, error handling, and cache behavior.

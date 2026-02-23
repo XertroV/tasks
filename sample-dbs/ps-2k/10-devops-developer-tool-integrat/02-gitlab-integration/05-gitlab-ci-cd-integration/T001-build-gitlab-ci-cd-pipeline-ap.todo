@@ -1,0 +1,78 @@
+---
+id: P10.M2.E5.T001
+title: Build GitLab CI/CD pipeline API methods
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:32:11.171779+00:00'
+started_at: '2026-02-12T03:32:11.171779+00:00'
+completed_at: '2026-02-12T03:43:54.356063+00:00'
+duration_minutes: 11.719737783333333
+---
+
+# Build GitLab CI/CD pipeline API methods
+
+
+
+## Requirements
+
+- [ ] Create wrapper module for GitLab CI/CD pipeline endpoints
+- [ ] List and get pipeline status information
+- [ ] Fetch jobs and their logs
+- [ ] Support filtering pipelines by status, branch, commit
+- [ ] Handle pipeline retry and cancellation
+- [ ] Track pipeline artifacts and reports
+- [ ] Support pagination for large pipeline lists
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/integrations/gitlab/pipelines.ex`
+- [ ] Functions implemented:
+  - [ ] `list_pipelines(client, project_id, filters)` - List project pipelines
+    - [ ] Filters: `status` (created/pending/running/success/failed), `branch`, `ref`, `sha`
+    - [ ] Support sorting by created, updated, id
+    - [ ] Pagination support (page, per_page, default 20)
+  - [ ] `get_pipeline(client, project_id, pipeline_id)` - Fetch pipeline details
+  - [ ] `get_pipeline_jobs(client, project_id, pipeline_id)` - List jobs in pipeline
+    - [ ] Return job statuses, durations, artifacts
+  - [ ] `get_job(client, project_id, job_id)` - Fetch single job details
+  - [ ] `get_job_log(client, project_id, job_id)` - Fetch job build log
+  - [ ] `retry_pipeline(client, project_id, pipeline_id)` - Retry failed pipeline
+  - [ ] `cancel_pipeline(client, project_id, pipeline_id)` - Cancel running pipeline
+  - [ ] `get_pipeline_artifacts(client, project_id, pipeline_id)` - List artifacts
+- [ ] Response normalization:
+  - [ ] Map GitLab `status` to standard format (success/failure/running/pending/skipped)
+  - [ ] Extract job timings and durations
+  - [ ] Normalize artifact metadata
+- [ ] Error handling:
+  - [ ] 404 when pipeline/job not found
+  - [ ] Handle transitional states (pipeline still running)
+  - [ ] Graceful handling of missing logs (ephemeral data)
+- [ ] Tests cover:
+  - [ ] List with various filters
+  - [ ] Fetch pipeline and job details
+  - [ ] Retry and cancel operations
+  - [ ] Large log handling
+  - [ ] Error responses
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M2.E5)
+**Agent**: cli-user
+**Date**: 2026-02-12 03:32 UTC
+**Sibling tasks**: P10.M2.E5.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M2.E5.T001 → P10.M2.E5.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M2.E5.T001: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/05-gitlab-ci-cd-integration/T001-build-gitlab-ci-cd-pipeline-ap.todo
+- P10.M2.E5.T002: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/05-gitlab-ci-cd-integration/T002-implement-pipeline-webhook-han.todo

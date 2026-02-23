@@ -1,0 +1,42 @@
+---
+id: P7.M7.E1.T017
+title: Document agent runtime API contracts
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- documentation
+- exdoc
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:37:45.788760+00:00'
+started_at: '2026-02-08T06:37:45.788760+00:00'
+completed_at: '2026-02-08T06:46:54.384986+00:00'
+duration_minutes: 9.143270266666667
+---
+
+# Document agent runtime API contracts
+
+Improve agent runtime documentation for operational modules that are heavily used
+by the orchestration layer and currently under-documented at function/type level.
+
+
+## Requirements
+
+- [x] Add missing `@doc` for public APIs in:
+  - [x] `lib/pag_server/agents/agent_server.ex`
+  - [x] `lib/pag_server/agents/queue_manager.ex`
+  - [x] `lib/pag_server/agents/checkpoint_store.ex`
+- [x] Add or align `@spec` for public functions where missing/inconsistent
+- [x] Add `@typedoc` for exported state/result/error types used by callers
+- [x] Ensure docs describe lifecycle expectations, retries/timeouts, and error semantics
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] All exported functions in the scoped modules have clear `@doc`
+- [x] Public function `@spec` coverage is complete for scoped modules
+- [x] Exported public types in scoped modules include `@typedoc`
+- [x] `mix docs` completes without new warnings from scoped modules

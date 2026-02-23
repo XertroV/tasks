@@ -1,0 +1,54 @@
+id: P15.M10.E4
+name: Reliability, Telemetry, and Docs
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-orchestration-tests-for-se.todo
+  title: Add orchestration tests for selection, failover, and cooldown behavior
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M10.E1.T004
+  - P15.M10.E2.T004
+- id: T002
+  file: T002-add-provider-adapter-tests-wit.todo
+  title: Add provider adapter tests with mocked HTTP and malformed payload coverage
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M10.E2.T001
+  - P15.M10.E2.T002
+  - P15.M10.E2.T003
+- id: T003
+  file: T003-emit-telemetry-and-structured.todo
+  title: Emit telemetry and structured logs for provider attempts and cooldowns
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M10.E1.T004
+- id: T004
+  file: T004-document-provider-configuratio.todo
+  title: Document provider configuration, fallback semantics, and troubleshooting
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M10.E2.T004
+  - P15.M10.E3.T004
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,38 @@
+id: P12
+name: Test Quality & Technical Debt
+status: pending
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Test Failures & Flakiness
+  path: 01-test-failures-flakiness
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M2
+  name: Test Performance
+  path: 02-test-performance
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+- id: M3
+  name: Code Quality & Debt
+  path: 03-code-quality-debt
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: null
+stats:
+  total_tasks: 34
+  done: 34
+  in_progress: 0
+  blocked: 0
+  pending: 0

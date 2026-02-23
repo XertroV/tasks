@@ -1,0 +1,35 @@
+# Epic: Cache Layer
+# Phase 1, Milestone 1, Epic 3 (P1.M1.E3)
+
+id: P1.M1.E3
+name: Cache Layer
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: [E2]
+
+tasks:
+  - id: T001
+    file: T001-cachex-dep.todo
+    title: Add Cachex dependency and configure
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-cache-module.todo
+    title: Create cache wrapper module
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

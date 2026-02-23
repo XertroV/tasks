@@ -1,0 +1,57 @@
+---
+id: I030
+title: Spawn remote agent over SSH. basically just run the pseudo-vpn remote mcp thing
+  and bam, your agent can control another agent 'on' a remote machine. Trying to integrate
+  it with the main agent or whatever might be a PITA but easy to get another agent
+  to do it.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:58:01.549846+00:00'
+started_at: '2026-02-18T19:58:01.549846+00:00'
+completed_at: '2026-02-18T19:58:10.871752+00:00'
+duration_minutes: 0.15536495
+---
+
+# Idea Intake: Spawn remote agent over SSH. basically just run the pseudo-vpn remote mcp thing and bam, your agent can control another agent 'on' a remote machine. Trying to integrate it with the main agent or whatever might be a PITA but easy to get another agent to do it.
+
+## Original Idea
+
+Spawn remote agent over SSH. basically just run the pseudo-vpn remote mcp thing and bam, your agent can control another agent 'on' a remote machine. Trying to integrate it with the main agent or whatever might be a PITA but easy to get another agent to do it.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Spawn remote agent over SSH. basically just run the pseudo-vpn remote mcp thing and bam, your agent can control another agent 'on' a remote machine. Trying to integrate it with the main agent or whatever might be a PITA but easy to get another agent to do it."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P31.M1 (SSH Remote Agent)
+- P31.M1.E1 (SSH Connection & Port Forwarding)
+- P31.M1.E1.T001 (Add SshConfig schema and migration)
+- P31.M1.E1.T002 (Implement SshTunnel GenServer)
+- P31.M1.E1.T003 (Implement SshSupervisor)
+- P31.M1.E1.T004 (Write SshTunnel tests)
+- P31.M1.E2 (Remote MCP Tool & Plugin)
+- P31.M1.E2.T001 (Implement remote_agent_spawn MCP tool)
+- P31.M1.E2.T002 (Implement SshPlugin module)
+- P31.M1.E2.T003 (Add SSH REST API endpoints)
+- P31.M1.E2.T004 (Write SSH plugin and API tests)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

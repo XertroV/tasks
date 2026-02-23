@@ -1,0 +1,107 @@
+---
+id: P6.M5.E1.T002
+title: Format metrics for Prometheus
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- P6.M5.E1.T001
+tags:
+- observability
+- prometheus
+- formatting
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:11:43.419786+00:00'
+started_at: '2026-02-07T01:11:43.419786+00:00'
+completed_at: '2026-02-07T01:22:51.196116+00:00'
+duration_minutes: 11.129605333333334
+---
+
+# Format metrics for Prometheus
+
+Convert internal metrics to Prometheus exposition format.
+
+## Requirements
+
+- [ ] Implement Prometheus text format:
+  - [ ] HELP comments (metric description)
+  - [ ] TYPE comments (counter/gauge/histogram)
+  - [ ] Metric name and value
+  - [ ] Labels in braces
+  - [ ] Timestamp (optional)
+- [ ] Support metric types:
+  - [ ] Counter
+  - [ ] Gauge
+  - [ ] Histogram (with buckets)
+  - [ ] Summary
+- [ ] Handle labels correctly
+- [ ] Escape special characters
+- [ ] Follow naming conventions (snake_case)
+
+## Acceptance Criteria
+
+- [ ] Format valid for Prometheus
+- [ ] All metric types supported
+- [ ] Labels formatted correctly
+- [ ] Naming conventions followed
+- [ ] Validates with promtool
+
+## Notes
+
+**Format Specification**:
+```
+# HELP <metric_name> <description>
+# TYPE <metric_name> <type>
+<metric_name>{label1="value1",label2="value2"} <value> <timestamp>
+```
+
+**Example Output**:
+```
+# HELP llm_requests_total Total LLM requests
+# TYPE llm_requests_total counter
+llm_requests_total{model="claude-3-5-sonnet",provider="anthropic"} 1234
+llm_requests_total{model="gpt-4",provider="openai"} 567
+
+# HELP llm_duration_seconds LLM call duration
+# TYPE llm_duration_seconds histogram
+llm_duration_seconds_bucket{model="claude-3-5-sonnet",le="0.1"} 45
+llm_duration_seconds_bucket{model="claude-3-5-sonnet",le="0.5"} 123
+llm_duration_seconds_bucket{model="claude-3-5-sonnet",le="1.0"} 234
+llm_duration_seconds_bucket{model="claude-3-5-sonnet",le="+Inf"} 250
+llm_duration_seconds_sum{model="claude-3-5-sonnet"} 87.3
+llm_duration_seconds_count{model="claude-3-5-sonnet"} 250
+```
+
+**Formatter Module**:
+```elixir
+defmodule PagServer.Observability.PrometheusFormatter do
+  def format_metric(name, type, value, labels \\ %{}, help \\ "") do
+    [
+      format_help(name, help),
+      format_type(name, type),
+      format_value(name, value, labels)
+    ]
+    |> Enum.join("\n")
+  end
+
+  defp format_help(name, ""), do: ""
+  defp format_help(name, help), do: "# HELP #{name} #{help}"
+
+  defp format_type(name, type), do: "# TYPE #{name} #{type}"
+
+  defp format_value(name, value, labels) when map_size(labels) == 0 do
+    "#{name} #{value}"
+  end
+
+  defp format_value(name, value, labels) do
+    label_str = labels
+    |> Enum.map(fn {k, v} -> ~s(#{k}="#{escape(v)}") end)
+    |> Enum.join(",")
+
+    "#{name}{#{label_str}} #{value}"
+  end
+
+  defp escape(str), do: String.replace(str, ~s("), ~s(\\"))
+end
+```

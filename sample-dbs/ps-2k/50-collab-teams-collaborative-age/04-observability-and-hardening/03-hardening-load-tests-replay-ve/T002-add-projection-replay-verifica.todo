@@ -1,0 +1,25 @@
+---
+id: P50.M4.E3.T002
+title: Add projection replay verification test
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E1.T004
+- P50.M4.E1.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:51:24.495118+00:00'
+started_at: '2026-02-23T02:51:24.495118+00:00'
+completed_at: '2026-02-23T02:51:27.247889+00:00'
+duration_minutes: 0.0458793
+---
+## Description
+Test: create team, add workers, create and complete several tasks via tool calls. Record get_overview, get_task_board, get_activity_feed results. Call Projection.rebuild/1 (simulating restart) with ETS cleared first. Assert all three query results are identical to pre-rebuild results. Covers: team state, all task states, worker count, activity feed entries.
+
+## Acceptance Criteria
+- Post-rebuild results identical to pre-rebuild for all three query functions
+- ETS cleared before rebuild confirmed
+- test covers minimum: team state, task counts by state, worker count
+- async: true

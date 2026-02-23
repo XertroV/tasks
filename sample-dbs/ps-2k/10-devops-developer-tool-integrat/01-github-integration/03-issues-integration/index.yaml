@@ -1,0 +1,53 @@
+id: P10.M1.E3
+name: Issues Integration
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-github-issues-webhoo.todo
+  title: Implement GitHub issues webhook event handlers
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-github-issues-api-method.todo
+  title: Build GitHub issues API methods (create, update, comment)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-issue-labeling-and-a.todo
+  title: Implement issue labeling and assignment actions
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-issue-session-mapping-and.todo
+  title: Add issue session mapping and context building
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-write-tests-for-issue-webhook.todo
+  title: Write tests for issue webhook integration
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

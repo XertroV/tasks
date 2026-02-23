@@ -1,0 +1,76 @@
+---
+id: P7.M1.E2.T002
+title: Resource limit configuration
+status: done
+estimate_hours: 2
+complexity: medium
+priority: medium
+depends_on:
+- P7.M1.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:46:52.637598+00:00'
+started_at: '2026-02-06T20:46:52.637598+00:00'
+completed_at: '2026-02-06T21:01:35.809797+00:00'
+tags:
+- docker
+- resources
+- configuration
+duration_minutes: 14.7195365
+---
+
+# Resource limit configuration
+
+Add configurable resource limits for Docker containers with sensible defaults.
+
+## Requirements
+
+- [ ] Add resource limit configuration to config/config.exs
+- [ ] Support memory limit (default: 512MB)
+- [ ] Support CPU limit (default: 0.5 cores)
+- [ ] Support PID limit (default: 100)
+- [ ] Support timeout (default: 30s)
+- [ ] Add per-tool override support
+- [ ] Document resource limit options
+
+## Acceptance Criteria
+
+- [ ] Configuration loaded from environment
+- [ ] Limits passed to Docker correctly
+- [ ] Tools can specify custom limits
+- [ ] Configuration validated on startup
+- [ ] Documentation includes limit recommendations
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1489-1513 (Docker execution)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 609-625 (Memory Budget)
+
+**Key Points**:
+- Memory: 512MB per container (allows 8 concurrent on 4GB server)
+- CPU: 0.5 cores prevents monopolization
+- PID limit: prevents fork bombs
+- Network: --network none by default for security
+
+## Notes
+
+Configuration structure:
+```elixir
+# config/config.exs
+config :pag_server, PagServer.Sandbox.Docker,
+  resource_limits: %{
+    memory: System.get_env("SANDBOX_MEMORY", "512m"),
+    cpus: System.get_env("SANDBOX_CPUS", "0.5"),
+    pids_limit: String.to_integer(System.get_env("SANDBOX_PIDS", "100")),
+    timeout_ms: String.to_integer(System.get_env("SANDBOX_TIMEOUT", "30000")),
+    network: System.get_env("SANDBOX_NETWORK", "none")
+  }
+
+# Per-tool override in tool definition:
+defmodule PagServer.Tools.Builtin.CompileCode do
+  def execute(args, context) do
+    limits = %{memory: "1g", cpus: "1.0", timeout_ms: 60_000}
+    Sandbox.execute(command, limits)
+  end
+end
+```

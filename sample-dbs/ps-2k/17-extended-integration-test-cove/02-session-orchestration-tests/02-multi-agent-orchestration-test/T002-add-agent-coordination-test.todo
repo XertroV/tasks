@@ -1,0 +1,25 @@
+---
+id: P17.M2.E2.T002
+title: Add agent coordination test
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:48:28.377333+00:00'
+started_at: '2026-02-14T05:48:28.377333+00:00'
+completed_at: '2026-02-14T06:10:20.113654+00:00'
+duration_minutes: 21.86227185
+---
+
+# Add agent coordination test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

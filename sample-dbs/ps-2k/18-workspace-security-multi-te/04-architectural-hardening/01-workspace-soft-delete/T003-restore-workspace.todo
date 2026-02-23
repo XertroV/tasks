@@ -1,0 +1,43 @@
+---
+id: P18.M4.E1.T003
+title: Add restore_workspace function and API endpoint
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P18.M4.E1.T002
+tags:
+- workspace
+- soft-delete
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:56:19.989793+00:00'
+started_at: '2026-02-17T20:56:19.989793+00:00'
+completed_at: '2026-02-17T21:15:15.055880+00:00'
+duration_minutes: 18.917767949999998
+---
+
+# Add restore_workspace function and API endpoint
+
+## Description
+
+Add the ability to restore a soft-deleted (archived) workspace.
+
+## Requirements
+
+- [ ] Add `restore_workspace/1` to Workspaces context — clears `archived_at` and `archived_by`
+- [ ] Add API endpoint: `POST /api/v1/workspaces/:workspace_id/restore`
+- [ ] Restrict to owner only
+- [ ] Return error if workspace is not archived
+
+## Acceptance Criteria
+
+- [ ] Restoring an archived workspace clears archived_at and archived_by
+- [ ] Restoring a non-archived workspace returns appropriate error
+- [ ] Only the owner can restore
+- [ ] Restored workspace appears in normal queries again
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces.ex`, `lib/pag_server_web/controllers/workspaces_controller.ex`, `lib/pag_server_web/router.ex`

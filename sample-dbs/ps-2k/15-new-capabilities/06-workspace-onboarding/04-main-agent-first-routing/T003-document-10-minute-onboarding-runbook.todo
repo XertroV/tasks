@@ -1,0 +1,36 @@
+---
+id: P15.M6.E4.T003
+title: Document 10-minute onboarding runbook and operator checklist
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M6.E4.T002
+tags:
+- docs
+- onboarding
+- operations
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:50:51.238065+00:00'
+started_at: '2026-02-17T17:50:51.238065+00:00'
+completed_at: '2026-02-17T18:09:32.617439+00:00'
+duration_minutes: 18.689656033333332
+---
+
+# Document 10-minute onboarding runbook and operator checklist
+
+## Owner Outcome
+- I can follow one runbook to start server, create main agent, connect Telegram, and chat in under 10 minutes.
+
+## Acceptance Criteria
+- [x] Add end-to-end setup runbook in docs covering prerequisites, commands, and screenshots/expected outputs.
+  - `docs/guides/workspace-onboarding.md` enhanced with verification table, expected HTTP responses, both UI and API paths documented.
+- [x] Include troubleshooting matrix for template issues, workspace readiness gaps, and Telegram failures.
+  - Three subsection tables: template issues (404/invalid category/model), workspace readiness gaps, Telegram failures (token/webhook/SSL).
+- [x] Add operator checklist that maps directly to onboarding checklist states in LiveView.
+  - 6-item checklist mapping to `WorkspaceState.checklist_state/1` flags.
+- [x] Document rollback/reset steps to retry setup from a clean state.
+  - Four procedures: delete workspace, reset Telegram only, re-bootstrap, reset wizard step.
+- [x] Explicitly state and validate the target outcome: "start server, create main agent, connect Telegram, and chat in <10 minutes."
+  - Time budget table with running totals and explicit <10 minute validation.

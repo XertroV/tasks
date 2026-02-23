@@ -1,0 +1,18 @@
+---
+id: B241
+title: Incomplete failover decision logic - provider-specific errors
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- llm
+- failover
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.101347+00:00'
+started_at: '2026-02-23T07:29:02.101347+00:00'
+completed_at: '2026-02-23T07:43:45.857720+00:00'
+duration_minutes: 14.729272716666665
+---
+registry.ex:1322-1362 - Error patterns hardcoded for OpenAI/Anthropic; missing Groq, Zai, OpenRouter

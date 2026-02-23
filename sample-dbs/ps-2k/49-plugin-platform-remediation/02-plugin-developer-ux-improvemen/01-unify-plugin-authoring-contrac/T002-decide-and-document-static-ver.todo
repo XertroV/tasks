@@ -1,0 +1,31 @@
+---
+id: P49.M2.E1.T002
+title: Decide and document static versus runtime plugin route model
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:17:26.497711+00:00'
+started_at: '2026-02-20T09:17:26.497711+00:00'
+completed_at: '2026-02-20T09:28:49.116755+00:00'
+duration_minutes: 11.376983883333333
+---
+
+# Decide and document static versus runtime plugin route model
+
+
+
+## Requirements
+
+- Evaluate static compile-time routes versus runtime plugin route registration for current architecture and constraints.
+- Produce a documented decision (ADR-style) with implications for plugin authors and runtime behavior.
+- Update plugin author docs to reflect the selected route model and constraints.
+
+## Acceptance Criteria
+
+- A clear decision document exists with rationale and trade-offs.
+- Router/plugin docs align with the selected model.
+- Tests or validations cover the expected route behavior under the selected model.

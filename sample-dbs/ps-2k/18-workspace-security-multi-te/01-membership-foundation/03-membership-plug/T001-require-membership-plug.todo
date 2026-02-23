@@ -1,0 +1,49 @@
+---
+id: P18.M1.E3.T001
+title: Create RequireWorkspaceMembership plug
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- security
+- workspace
+- plug
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:13:18.625779+00:00'
+started_at: '2026-02-17T17:13:18.625779+00:00'
+completed_at: '2026-02-17T17:15:20.629500+00:00'
+duration_minutes: 2.0333951
+---
+
+# Create RequireWorkspaceMembership plug
+
+## Description
+
+Create `PagServerWeb.Plugs.RequireWorkspaceMembership` that extracts workspace_id from URL path params, validates the current user is a workspace member, and assigns workspace context to the connection.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/plugs/require_workspace_membership.ex`
+- [ ] Extract workspace_id from `conn.path_params["workspace_id"]`
+- [ ] Accept `param_name:` init option for flexibility (default "workspace_id")
+- [ ] Look up user_id from `conn.assigns[:capabilities]["user_id"]`
+- [ ] Query `WorkspaceMembers.get_role/2` for the user's role
+- [ ] On success: assign `:workspace_id`, `:workspace_role`, `:workspace_member` to conn
+- [ ] On failure (not a member): return 403 JSON response `{"error": "forbidden", "message": "Not a member of this workspace"}`
+- [ ] On missing workspace_id: return 400 JSON response
+- [ ] On missing user_id: return 401 JSON response
+
+## Acceptance Criteria
+
+- [ ] Plug passes for workspace members and assigns correct role
+- [ ] Plug halts with 403 for non-members
+- [ ] Plug halts with 400 if workspace_id not in path params
+- [ ] Plug halts with 401 if no user_id in capabilities
+- [ ] Plug is composable in Phoenix pipeline
+
+## Context
+
+**Files affected**: `lib/pag_server_web/plugs/require_workspace_membership.ex`
+**Pattern reference**: Follow same pattern as `lib/pag_server_web/plugs/require_auth.ex`

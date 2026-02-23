@@ -1,0 +1,27 @@
+---
+id: P46.M5.E2.T001
+title: Add user profile REST API endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P46.M1.E3.T001
+- P46.M3.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:04:09.588878+00:00'
+started_at: '2026-02-20T06:04:09.588878+00:00'
+completed_at: '2026-02-20T06:10:35.064137+00:00'
+duration_minutes: 6.424587466666667
+---
+Add REST API endpoints for user profile management (for API consumers / pag-connect):
+
+GET  /api/v1/me                   — return current user profile (id, email, username, is_admin, linked_providers, created_at)
+PATCH /api/v1/me                  — update username, name
+GET  /api/v1/me/identities        — list linked OAuth identities (provider, linked_at; no tokens)
+DELETE /api/v1/me/identities/:provider — unlink OAuth identity (guard: must keep at least one)
+
+All endpoints authenticated via existing API key / JWT system (RequireAuth plug). 
+User is resolved from capabilities["user_id"].
+Acceptance: All endpoints return correct data and status codes. Tests in test/pag_server_web/controllers/me_controller_test.exs.

@@ -1,0 +1,45 @@
+id: P14.M2.E2
+name: Content Moderation
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-content-moderation-hooks.todo
+  title: Design content moderation hooks
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-harmful-content-detect.todo
+  title: Implement harmful content detection
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-configurable-policies-per-w.todo
+  title: Add configurable policies per workspace
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-compliance-reporting-api.todo
+  title: Add compliance reporting API
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

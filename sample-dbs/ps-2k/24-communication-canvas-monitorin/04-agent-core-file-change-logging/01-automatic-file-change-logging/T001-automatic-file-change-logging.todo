@@ -1,0 +1,55 @@
+---
+id: P24.M4.E1.T001
+title: Automatic file change logging for agent core files (XXX.md.log)
+status: done
+estimate_hours: 8.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- agent-persona
+- infrastructure
+- file-tracking
+- logging
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:13:47.101442+00:00'
+started_at: '2026-02-19T14:13:47.101442+00:00'
+completed_at: '2026-02-19T14:26:16.861505+00:00'
+duration_minutes: 12.496000883333332
+---
+## Description
+
+When an agent updates one of its core files (EGO.md, IDENTITY.md, USER.md, MY_TEAM.md, etc.), the system should automatically track the change by:
+
+1. Forking a lightweight session to ask the agent to describe what changed and why
+2. Using that description as a "commit message" for the diff
+3. Writing a companion `XXX.md.log` file (e.g., `EGO.md.log`) that contains a git-log style list of modifications with dates and descriptions
+
+This replaces the "Self-Modification Log" section that was previously planned for inside EGO.md itself — changes are tracked externally in companion .log files instead.
+
+Related to the agent-persona system prompt rewrite effort (P15.M7.E6) but is a separate infrastructure task.
+
+## Acceptance Criteria
+
+- [ ] When a core file is modified by an agent, a change description is automatically generated (via forked session asking the agent)
+- [ ] The description is appended to a companion .log file (e.g., EGO.md.log) in git-log style format
+- [ ] Log entries include: timestamp, brief description of what changed and why, optionally a diff summary
+- [ ] .log files are human-readable and follow consistent formatting
+- [ ] Works for all tracked/core files, not just EGO.md
+- [ ] The forked session for description generation should be lightweight (minimal token usage)
+- [ ] Graceful fallback if the description generation fails (still log the change with a generic entry)
+
+## Implementation Notes
+
+- Detect core file modifications via the file-writing tool or a post-write hook
+- Fork a minimal session with the diff context to generate a description
+- Append to the companion .log file in a consistent format, e.g.:
+  ```
+  === 2026-02-19T14:30:00Z ===
+  Changed: Added new collaboration guidelines for working with research agents
+  Reason: User requested better coordination protocols after onboarding a new team member
+  ---
+  ```
+- Consider using a plugin architecture for this (per AGENTS.md guidance on preferring plugins)
+- Keep the forked session minimal: provide only the diff and a short prompt
+- On failure, log a generic entry like "File modified (description unavailable)"

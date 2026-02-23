@@ -1,0 +1,43 @@
+id: P7.M7
+name: Documentation
+status: pending
+estimate_hours: 25.5
+complexity: medium
+depends_on:
+- M1
+- M2
+- M3
+- M4
+- M5
+- M6
+- P3.M3
+- P3.M4
+- P3.M6
+epics:
+- id: E1
+  name: API Documentation
+  path: 01-api-docs
+  status: pending
+  estimate_hours: 17.5
+  complexity: medium
+  depends_on: []
+- id: E2
+  name: Deployment Guides
+  path: 02-guides
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+- id: E3
+  name: Example Projects
+  path: 03-examples
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+stats:
+  total_tasks: 34
+  done: 34
+  in_progress: 0
+  blocked: 0
+  pending: 0

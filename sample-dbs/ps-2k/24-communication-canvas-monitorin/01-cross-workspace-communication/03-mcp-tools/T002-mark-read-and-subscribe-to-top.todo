@@ -1,0 +1,27 @@
+---
+id: P24.M1.E3.T002
+title: mark_read and subscribe_to_topic MCP tools
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:22:23.955259+00:00'
+started_at: '2026-02-18T16:22:23.955259+00:00'
+completed_at: '2026-02-18T16:33:44.669747+00:00'
+duration_minutes: 11.345241283333333
+---
+
+# mark_read and subscribe_to_topic MCP tools
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

@@ -1,0 +1,46 @@
+id: P42.M1.E1
+name: DB Schemas & Migrations
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-ecto-schema-mailmanmail.todo
+  title: 'Create Ecto schema: MailmanMailbox'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-ecto-schema-mailmanmess.todo
+  title: 'Create Ecto schema: MailmanMessage'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-create-ecto-schema-mailmanremo.todo
+  title: 'Create Ecto schema: MailmanRemoteServer'
+  status: pending
+  estimate_hours: 0.3
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-write-plugin-sql-migrations-mi.todo
+  title: Write plugin SQL migrations (Migrations.V1)
+  status: pending
+  estimate_hours: 0.7
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

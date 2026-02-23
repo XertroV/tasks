@@ -1,0 +1,43 @@
+---
+id: P7.M7.E1.T020
+title: Document MCP server lifecycle and transport modules
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- documentation
+- exdoc
+- tools
+- mcp
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:37:45.792705+00:00'
+started_at: '2026-02-08T06:37:45.792705+00:00'
+completed_at: '2026-02-08T06:46:56.961465+00:00'
+duration_minutes: 9.186145783333334
+---
+
+# Document MCP server lifecycle and transport modules
+
+Document MCP runtime lifecycle/transport APIs so callers can reason about process
+states, startup/shutdown behavior, and protocol boundaries.
+
+
+## Requirements
+
+- [x] Add or improve `@doc` coverage in:
+  - [x] `lib/pag_server/tools/mcp/server_lifecycle.ex`
+  - [x] `lib/pag_server/tools/mcp/stdio_transport.ex`
+  - [x] `lib/pag_server/tools/mcp/server.ex`
+- [x] Add missing public `@spec` for lifecycle and transport entry points
+- [x] Add `@typedoc` for exported config/state/result types
+- [x] Document lifecycle transitions and failure modes at API boundaries
+- [x] Run `mix docs` and fix warnings introduced by this task
+
+## Acceptance Criteria
+
+- [x] Scoped MCP modules have clear public `@doc` coverage
+- [x] Public `@spec` coverage is complete for scoped MCP modules
+- [x] Exported public types in scoped modules include `@typedoc`
+- [x] `mix docs` completes without new warnings from scoped modules

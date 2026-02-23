@@ -1,0 +1,42 @@
+id: P15.M9.E3
+name: Session Fork & Recovery
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- P15.M9.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-wire-session-build-context-int.todo
+  title: Wire Session.build_context/1 into agent startup message loading
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-session-repair-module.todo
+  title: Create PagServer.Context.SessionRepair module for DB-level repair
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M9.E2.T001
+- id: T003
+  file: T003-session-repair-and-fork-contex.todo
+  title: Session repair and fork context loading tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M9.E3.T001
+  - P15.M9.E3.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

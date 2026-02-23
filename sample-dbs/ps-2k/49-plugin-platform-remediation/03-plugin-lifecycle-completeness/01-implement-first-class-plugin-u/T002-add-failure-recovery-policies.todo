@@ -1,0 +1,31 @@
+---
+id: P49.M3.E1.T002
+title: Add failure recovery policies cooldown retry and operator-visible outcomes
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:56:53.693532+00:00'
+started_at: '2026-02-20T09:56:53.693532+00:00'
+completed_at: '2026-02-20T10:01:53.844693+00:00'
+duration_minutes: 5.0025190833333335
+---
+
+# Add failure recovery policies cooldown retry and operator-visible outcomes
+
+
+
+## Requirements
+
+- Define and implement plugin failure recovery policies (retry, cooldown, and disable/quarantine thresholds).
+- Surface operator-visible outcomes for repeated plugin failures.
+- Add tests for retry and cooldown behavior to prevent failure thrashing.
+
+## Acceptance Criteria
+
+- Repeated plugin failures trigger deterministic recovery policy behavior.
+- Recovery outcomes are visible via logs/events for operators.
+- Tests verify cooldown/retry policy transitions and resulting plugin states.

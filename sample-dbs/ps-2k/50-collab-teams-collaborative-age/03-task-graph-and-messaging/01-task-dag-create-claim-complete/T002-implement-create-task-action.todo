@@ -1,0 +1,24 @@
+---
+id: P50.M3.E1.T002
+title: Implement create_task action
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:19:34.110823+00:00'
+started_at: '2026-02-23T02:19:34.110823+00:00'
+completed_at: '2026-02-23T02:19:36.837627+00:00'
+duration_minutes: 0.045446549999999995
+---
+## Description
+CollabTeams.TaskGraph.create_task/1 inserts new task in pending state. Accepts depends_on: [uuid]. Validates all referenced dependency task IDs exist in same team -- returns {:error, :unknown_dependency_ids, [...]} if not. Writes collab_task_created audit event on success. Returns {:ok, %{action: create_task, team_id, task_id, state: pending, event_id}}.
+
+## Acceptance Criteria
+- create_task returns {:ok, map}
+- nonexistent depends_on IDs return :unknown_dependency_ids with bad IDs listed
+- audit event written
+- cross-team dependency reference rejected

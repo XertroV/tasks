@@ -1,0 +1,52 @@
+id: P42
+name: Mailman Cross-Workspace Plugin
+status: done
+locked: true
+weeks: 3
+estimate_hours: 17.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Core Infrastructure
+  path: 01-core-infrastructure
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: DB schemas, migrations, mailbox/message CRUD, address resolution
+  locked: false
+- id: M2
+  name: Orchestration & Routing
+  path: 02-orchestration-routing
+  status: done
+  estimate_hours: 7.0
+  complexity: high
+  depends_on: []
+  description: Orchestrator GenServer, mailman agent provisioning, fork-and-question
+    pattern
+  locked: false
+- id: M3
+  name: MCP Tool & Plugin Interface
+  path: 03-mcp-tool-plugin-interface
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: workspace_mail MCP tool, plugin manifest, setup wizard integration
+  locked: false
+- id: M4
+  name: Remote Stub & Tests
+  path: 04-remote-stub-tests
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Remote server TOFU infrastructure (stub), full test suite, documentation
+  locked: false
+stats:
+  total_tasks: 22
+  done: 22
+  in_progress: 0
+  blocked: 0
+  pending: 0

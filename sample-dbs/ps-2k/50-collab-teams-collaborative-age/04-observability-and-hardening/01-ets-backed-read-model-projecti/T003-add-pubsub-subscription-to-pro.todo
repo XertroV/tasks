@@ -1,0 +1,25 @@
+---
+id: P50.M4.E1.T003
+title: Add PubSub subscription to Projection GenServer for live updates
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M4.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:17.812154+00:00'
+started_at: '2026-02-23T02:42:17.812154+00:00'
+completed_at: '2026-02-23T02:42:20.263911+00:00'
+duration_minutes: 0.0408624
+---
+## Description
+GenServer subscribes to Phoenix.PubSub topic collab_teams:#{team_id} on init. Incoming events call apply_event/2 to keep projections current. handle_info catch-all drops unknown messages without crashing. The Projection GenServer is started per-team (one GenServer per team_id) under CollabTeams.ProjectionSupervisor DynamicSupervisor.
+
+## Acceptance Criteria
+- GenServer subscribes to correct topic on init
+- incoming :plugin_event messages update ETS
+- unknown messages ignored
+- per-team supervision confirmed
+- ProjectionSupervisor is DynamicSupervisor started in on_enable/1

@@ -1,0 +1,42 @@
+---
+id: P11.M2.E2.T002
+title: Implement per-agent tool permissions API
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T09:12:26.960243+00:00'
+started_at: '2026-02-12T09:12:26.960243+00:00'
+completed_at: '2026-02-13T00:59:10.921532+00:00'
+duration_minutes: 946.7326879
+---
+
+# Implement per-agent tool permissions API
+
+
+
+## Requirements
+
+- [ ] Create `POST /api/v1/agents/:id/permissions` for setting tool access
+- [ ] Create `GET /api/v1/agents/:id/permissions` for retrieving tool permissions
+- [ ] Create `PUT /api/v1/agents/:id/permissions/:tool_id` for updating specific tool access
+- [ ] Create `DELETE /api/v1/agents/:id/permissions/:tool_id` for revoking tool access
+- [ ] Support allowlist mode (explicit grant) and denylist mode (implicit grant)
+- [ ] Validate permission requests against policy rules
+- [ ] Audit all permission changes in event log
+- [ ] Support batch permission updates
+
+## Acceptance Criteria
+
+- [ ] POST creates permissions returning 201 with created permissions
+- [ ] GET returns agent's tool permissions with effective hierarchy applied
+- [ ] PUT updates single tool permission returning 200
+- [ ] DELETE revokes access returning 204
+- [ ] Mode parameter (allowlist/denylist) is respected in checks
+- [ ] Batch endpoint allows updating multiple tools in single request
+- [ ] All changes are logged with user, timestamp, reason
+- [ ] Endpoints are properly authenticated and authorized
+- [ ] Tests cover permission hierarchy resolution and edge cases

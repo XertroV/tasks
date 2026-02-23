@@ -1,0 +1,42 @@
+---
+id: P15.M9.E5.T003
+title: Verify test coverage across all resilience code and add missing tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M9.E5.T001
+- P15.M9.E5.T002
+tags:
+- testing
+- coverage
+- audit
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:17:22.296366+00:00'
+started_at: '2026-02-17T14:17:22.296366+00:00'
+completed_at: '2026-02-17T14:34:56.246736+00:00'
+duration_minutes: 17.565839316666665
+---
+After audit, verify test coverage is comprehensive across all tool call
+resilience code (both new and previously completed):
+
+1. Run `mix test --cover` and check coverage for:
+   - lib/pag_server/context/sanitizer.ex
+   - lib/pag_server/context/session_repair.ex
+   - lib/pag_server/llm/openai/message_formatter.ex
+   - Relevant sections of lib/pag_server/agents/agent_server.ex
+   - Relevant sections of lib/pag_server/tools/tool_executor.ex
+
+2. Identify any uncovered branches or edge cases
+
+3. Write additional tests for any gaps found
+
+4. Ensure full test suite passes: `mix test`
+
+## Acceptance Criteria
+- [ ] Coverage checked for all resilience-related modules
+- [ ] Any coverage gaps identified and filled with new tests
+- [ ] Full test suite passes
+- [ ] mix lint passes
+- [ ] No tests take > 2s (per AGENTS.md guidance)

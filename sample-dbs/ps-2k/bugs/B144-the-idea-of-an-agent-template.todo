@@ -1,0 +1,19 @@
+---
+id: B144
+title: 'The idea of an agent template seems somewhat lose atm. We should codify it
+  by say that the data required for spawning an agent in a new session is: the agent
+  template (as an elixir data struct) + any necessary parameters to satisfy the template.'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:12:59.541018+00:00'
+started_at: '2026-02-19T01:12:59.541018+00:00'
+completed_at: '2026-02-19T01:25:30.617805+00:00'
+duration_minutes: 12.517946266666666
+---
+
+The idea of an agent template seems somewhat lose atm. We should codify it by say that the data required for spawning an agent in a new session is: the agent template (as an elixir data struct) + any necessary parameters to satisfy the template.

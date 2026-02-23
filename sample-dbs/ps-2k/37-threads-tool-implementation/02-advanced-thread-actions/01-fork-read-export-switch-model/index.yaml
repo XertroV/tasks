@@ -1,0 +1,54 @@
+id: P37.M2.E1
+name: fork, read, export, switch_model, parallel
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-threads-fork-action.todo
+  title: Implement threads fork action
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-threads-read-action.todo
+  title: Implement threads read action
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-threads-export-actio.todo
+  title: Implement threads export action
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T004
+  file: T004-implement-threads-switch-model.todo
+  title: Implement threads switch_model action
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-implement-threads-parallel-gat.todo
+  title: Implement threads parallel_gather, parallel_reduce, parallel_synthesize actions
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

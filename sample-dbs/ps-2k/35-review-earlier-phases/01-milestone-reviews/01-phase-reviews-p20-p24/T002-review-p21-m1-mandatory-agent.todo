@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T002
+title: 'Review P21.M1: Mandatory Agent Containerization'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:50:04.970732+00:00'
+started_at: '2026-02-19T00:50:04.970732+00:00'
+completed_at: '2026-02-19T01:11:45.975813+00:00'
+duration_minutes: 21.683417716666668
+---
+Load the review-and-fix skill. Review all epics and tasks under P21.M1 (Mandatory Agent Containerization). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: lib/pag_server/containers/ (ContainerConfig, IsolationProfile, ContainerSupervisor, ContainerRegistry, ContainerManager, ContainerToolExecutor, VolumeManager). Verify Docker lifecycle correctness, isolation profile enforcement, volume routing (workspace/private/shared), feature flag wiring, fallback-to-direct execution paths, and that AgentServer init/cleanup hooks are correct.

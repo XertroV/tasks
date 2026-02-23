@@ -1,0 +1,29 @@
+id: P17.M3.E3
+name: Cache Feature Tests
+status: pending
+estimate_hours: 1.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-semantic-cache-match-test.todo
+  title: Add semantic cache match test
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-semantic-cache-miss-test.todo
+  title: Add semantic cache miss test
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

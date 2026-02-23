@@ -1,0 +1,18 @@
+---
+id: P29.M1.E3.T003
+title: Write plugin lifecycle tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P29.M1.E3.T001
+- P29.M1.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:05:18.646092+00:00'
+started_at: '2026-02-18T19:05:18.646092+00:00'
+completed_at: '2026-02-18T19:05:20.362915+00:00'
+duration_minutes: 0.02861351666666667
+---
+Test: enable generates key pair, disable does not destroy key, mcp_tools/0 returns correct modules, config_schema/0 is valid JSON Schema, re-enable after disable still works.

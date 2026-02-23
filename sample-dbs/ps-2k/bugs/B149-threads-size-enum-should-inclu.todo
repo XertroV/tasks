@@ -1,0 +1,28 @@
+---
+id: B149
+title: 'threads: size enum should include ''same'' to inherit parent model'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- threads
+- spawn_subagent
+- model-selection
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:13:44.228784+00:00'
+started_at: '2026-02-19T01:13:44.228784+00:00'
+completed_at: '2026-02-19T01:24:25.728792+00:00'
+duration_minutes: 10.6916666
+---
+The current size enum for thread/subagent spawning is: small | medium | large (mapping to haiku/sonnet/opus). A 'same' option should be added so the spawned thread inherits the exact model (provider + model name) of the spawning parent agent.
+
+This is useful when the parent is running on a non-default model (e.g. a custom OpenRouter model or a specific version) and wants subagents to use the same model without having to explicitly pass provider+model_name.
+
+Acceptance criteria:
+- size enum extended to: small | medium | large | same
+- When size: 'same', resolve model_provider and model_name from the spawning agent's current model at spawn time
+- Falls back to medium if parent model cannot be determined
+- Works correctly when parent is using a non-Anthropic provider
+- Tests covering: same inherits correctly, same with non-default provider, fallback when parent model unknown

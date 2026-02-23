@@ -1,0 +1,203 @@
+---
+id: P1.M3.E2.T003
+title: Write supervisor tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M3.E2.T002
+claimed_by: claude
+claimed_at: '2026-02-05T09:11:55.891504'
+started_at: '2026-02-05T09:11:55.891504'
+completed_at: '2026-02-05T09:13:43.627119'
+tags:
+- testing
+- supervision
+- exunit
+- integration
+---
+
+# Write supervisor tests
+
+Create comprehensive tests for `PagServer.Agents.Supervisor` to verify supervision behavior.
+
+## Requirements
+
+- [ ] Create `test/pag_server/agents/supervisor_test.exs`
+- [ ] Test supervisor starts successfully
+- [ ] Test supervisor registers with correct name
+- [ ] Test list_agents/0 returns empty list initially
+- [ ] Test stop_agent/1 with non-existent PID
+- [ ] Test supervisor appears in application supervision tree
+- [ ] Ensure all tests pass with `mix test`
+- [ ] Ensure test coverage for public functions
+- [ ] Commit changes with message "Add AgentSupervisor tests"
+
+## Acceptance Criteria
+
+- [ ] All tests pass (`mix test test/pag_server/agents/supervisor_test.exs`)
+- [ ] Tests run in isolation (no shared state between tests)
+- [ ] Tests clean up processes (no orphaned processes after test)
+- [ ] Test coverage > 80% for Supervisor module
+- [ ] Tests demonstrate supervisor functionality clearly
+- [ ] No flaky tests (run 10 times, all pass)
+- [ ] Tests follow ExUnit best practices
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md` (Testing Strategy)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+
+**Key Testing Points**:
+- Test supervisor lifecycle (start/stop)
+- Test registry integration
+- Verify supervision strategy behavior
+- Test error cases (invalid input, crashes)
+
+## Implementation Guide
+
+### Test Structure
+
+```elixir
+defmodule PagServer.Agents.SupervisorTest do
+  use ExUnit.Case, async: false
+
+  alias PagServer.Agents.Supervisor
+
+  describe "start_link/1" do
+    test "starts the supervisor successfully" do
+      # Note: Supervisor already started by application
+      # Just verify it's running
+      assert Process.whereis(Supervisor) != nil
+    end
+
+    test "supervisor is registered with correct name" do
+      pid = Process.whereis(PagServer.Agents.Supervisor)
+      assert is_pid(pid)
+      assert Process.alive?(pid)
+    end
+  end
+
+  describe "list_agents/0" do
+    test "returns empty list when no agents are running" do
+      # Assuming no agents started yet in tests
+      agents = Supervisor.list_agents()
+      assert agents == []
+    end
+  end
+
+  describe "stop_agent/1" do
+    test "returns error when agent PID does not exist" do
+      # Create a fake PID
+      fake_pid = spawn(fn -> :ok end)
+      Process.exit(fake_pid, :kill)
+      
+      result = Supervisor.stop_agent(fake_pid)
+      assert result == {:error, :not_found}
+    end
+  end
+
+  describe "supervision tree" do
+    test "supervisor is child of application supervisor" do
+      # Verify supervisor is in application tree
+      app_supervisor = Process.whereis(PagServer.Supervisor)
+      children = Supervisor.which_children(app_supervisor)
+      
+      supervisor_child = 
+        Enum.find(children, fn {_id, pid, _type, _modules} ->
+          pid == Process.whereis(PagServer.Agents.Supervisor)
+        end)
+      
+      assert supervisor_child != nil
+    end
+  end
+end
+```
+
+### Test Notes
+
+**Why `async: false`?**
+- Tests interact with global named processes
+- Registry and Supervisor are shared across tests
+- Async could cause race conditions
+
+**Future Tests** (once Agent GenServer exists):
+- Test starting agents with `start_agent/1`
+- Test agent crashes trigger restart
+- Test multiple concurrent agents
+- Test stopping agents cleans up Registry entries
+
+### Running Tests
+
+```bash
+# Run just supervisor tests
+mix test test/pag_server/agents/supervisor_test.exs
+
+# Run with coverage
+mix test --cover
+
+# Run multiple times to detect flakiness
+for i in {1..10}; do mix test test/pag_server/agents/supervisor_test.exs; done
+```
+
+## Notes
+
+### Test Organization
+
+```
+test/
+└── pag_server/
+    └── agents/
+        └── supervisor_test.exs
+```
+
+This mirrors the source structure:
+```
+lib/
+└── pag_server/
+    └── agents/
+        └── supervisor.ex
+```
+
+### Testing Philosophy
+
+From `.plan/2026-02-05-velvet-cascade/testing.md`:
+- **Unit tests**: Test functions in isolation
+- **Integration tests**: Test supervisor + registry interaction
+- **Property tests**: Test supervision invariants (future)
+
+### Coverage Goals
+
+- Supervisor module: 80%+ coverage
+- All public functions tested
+- Critical error paths tested
+- Edge cases covered
+
+### Current Limitations
+
+Since `PagServer.Agents.Agent` doesn't exist yet, we can't test:
+- `start_agent/1` functionality
+- Agent crash recovery
+- Multiple agent coordination
+
+These will be added in future tasks when Agent GenServer is implemented.
+
+## Troubleshooting
+
+**Error**: "no process associated with name PagServer.Agents.Supervisor"
+- Supervisor not started by application
+- Check that T002 was completed (supervisor added to app tree)
+
+**Error**: Tests fail intermittently
+- Likely race condition with async tests
+- Set `async: false` in test module
+
+**Error**: Orphaned processes after tests
+- Add cleanup in ExUnit callbacks
+- Use `on_exit` to stop test-specific processes
+
+**Test hangs indefinitely**
+- Deadlock or infinite loop in supervisor code
+- Add timeout to test: `@tag timeout: 1000`

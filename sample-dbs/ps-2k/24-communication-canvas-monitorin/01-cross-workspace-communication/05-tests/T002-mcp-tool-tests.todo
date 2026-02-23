@@ -1,0 +1,27 @@
+---
+id: P24.M1.E5.T002
+title: MCP tool tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:37:16.506590+00:00'
+started_at: '2026-02-18T17:37:16.506590+00:00'
+completed_at: '2026-02-18T17:37:18.000848+00:00'
+duration_minutes: 0.024904133333333335
+---
+
+# MCP tool tests
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

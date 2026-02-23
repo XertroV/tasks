@@ -1,0 +1,73 @@
+---
+id: P34.M4
+title: Tests and Documentation
+status: pending
+estimate_hours: 4.0
+complexity: low
+priority: medium
+depends_on:
+- P34.M1
+- P34.M2
+- P34.M3
+tags:
+- milestone
+- testing
+- docs
+---
+
+# Milestone: Tests and Documentation
+
+Testing and documentation for the skill registry integration.
+
+## Tasks
+
+### T1: ClawHub Client Tests
+
+Test `PagServer.Skills.ClawHub.Client`:
+
+- Mock HTTP responses for list/search/get
+- Test error handling
+- Test caching behavior
+
+Acceptance Criteria:
+- [ ] All public functions tested
+- [ ] Error cases covered
+- [ ] Cache hit/miss tested
+
+### T2: Skill Parser Tests
+
+Test `PagServer.Skills.Parser`:
+
+- Parse valid SKILL.md
+- Handle missing frontmatter
+- Validate required fields
+- Parse OpenClaw metadata extensions
+
+Acceptance Criteria:
+- [ ] All parsing edge cases covered
+- [ ] Invalid input handled gracefully
+
+### T3: API Integration Tests
+
+Test REST API endpoints:
+
+- List skills with pagination
+- Search skills
+- Get skill details
+- Install skill
+
+Acceptance Criteria:
+- [ ] All endpoints tested
+- [ ] Error responses validated
+
+### T4: Documentation
+
+Document the skill registry integration:
+
+- Update PLUGIN_DEVELOPMENT.md with skill section
+- Add API documentation for new endpoints
+- Document skill format requirements
+
+Acceptance Criteria:
+- [ ] Developers can understand how to use the integration
+- [ ] API docs are complete

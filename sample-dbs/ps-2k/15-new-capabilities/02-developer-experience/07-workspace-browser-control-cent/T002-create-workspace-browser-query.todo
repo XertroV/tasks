@@ -1,0 +1,28 @@
+---
+id: P15.M2.E7.T002
+title: Create workspace browser query surface and view models
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P15.M2.E7.T001
+- P11.M3.E2.T004
+tags:
+- api
+- workspace
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:06:20.898188+00:00'
+started_at: '2026-02-18T04:06:20.898188+00:00'
+completed_at: '2026-02-18T04:18:53.235671+00:00'
+duration_minutes: 12.538957866666667
+---
+## Goal
+Provide a backend query surface that powers one-shot loading of workspace cards and detail state.
+
+## Acceptance Criteria
+- Adds an endpoint/service that returns workspace metadata, plugin/skill states, and config summaries.
+- Response shape is optimized for LiveView rendering (minimal client-side joins).
+- Includes authorization tests for cross-workspace access boundaries.
+- Includes graceful partial-data behavior when optional integrations are unavailable.

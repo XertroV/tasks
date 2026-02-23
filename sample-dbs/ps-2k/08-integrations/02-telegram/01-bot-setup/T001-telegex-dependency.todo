@@ -1,0 +1,88 @@
+---
+id: P8.M2.E1.T001
+title: Add Telegex dependency
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- integrations
+- telegram
+- dependencies
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:20:55.538795+00:00'
+started_at: '2026-02-08T10:20:55.538795+00:00'
+completed_at: '2026-02-08T21:31:00+00:00'
+---
+
+# Add Telegex dependency
+
+Add the Telegex library to the project for Telegram bot API integration.
+
+## Requirements
+
+- [x] Add `{:telegex, "~> 1.7"}` to `mix.exs` dependencies (~5 LoC)
+- [x] Add `{:finch, "~> 0.19"}` for HTTP client if not already present (~5 LoC)
+- [x] Run `mix deps.get` to fetch dependencies
+- [x] Verify compilation with `mix compile`
+- [x] Add basic Telegex configuration to `config/runtime.exs` (~10 LoC)
+
+## Acceptance Criteria
+
+- [x] Telegex dependency added to mix.exs
+- [x] Dependencies compile without warnings
+- [x] Configuration section created for Telegram integration
+- [x] Documentation comment added explaining Telegex version choice
+- [x] `TELEGRAM_BOT_TOKEN` environment variable documented in README
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 180-235 (Telegram architecture)
+
+**Key Points**:
+- Telegex is the primary Elixir library for Telegram Bot API
+- Supports both polling and webhook modes
+- Requires bot token from @BotFather on Telegram
+
+## Notes
+
+Telegex provides two modes:
+- **Polling**: `use Telegex.Polling` - simpler for development/testing
+- **Webhook**: `use Telegex.Hook` - production-ready, requires HTTPS
+
+Initial configuration structure:
+```elixir
+config :pag_server, PAGServer.Integrations.Telegram,
+  bot_token: System.get_env("TELEGRAM_BOT_TOKEN"),
+  mode: :polling,  # or :webhook
+  webhook_url: System.get_env("TELEGRAM_WEBHOOK_URL")
+```
+
+To create a bot token:
+1. Message @BotFather on Telegram
+2. Send `/newbot` command
+3. Follow prompts to get token
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-08 10:20 UTC
+**Primary task**: P8.M5.E2.T001 - Implement webhook verification endpoint
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M2.E1 vs P8.M5.E2)
+- No dependency chain: ✓ (verified at claim time)

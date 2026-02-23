@@ -1,0 +1,22 @@
+---
+id: B135
+title: If i create a workspace through the setup wizard, (using create workspace button),
+  1. it should proceed next when the workspace is created, but also 2. if I refresh
+  the page or lose the session or whatever, that workspace is like stuck in limbo.
+  It half exists (I cant create another with that slug), but it doesn't show up on
+  any workspaces list. There should be more tabs on the workspaces browser page so
+  that workspaces like this show up.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:21:22.269615+00:00'
+started_at: '2026-02-18T10:21:22.269615+00:00'
+completed_at: '2026-02-18T10:26:01.162310+00:00'
+duration_minutes: 4.648211183333333
+---
+
+If i create a workspace through the setup wizard, (using create workspace button), 1. it should proceed next when the workspace is created, but also 2. if I refresh the page or lose the session or whatever, that workspace is like stuck in limbo. It half exists (I cant create another with that slug), but it doesn't show up on any workspaces list. There should be more tabs on the workspaces browser page so that workspaces like this show up.

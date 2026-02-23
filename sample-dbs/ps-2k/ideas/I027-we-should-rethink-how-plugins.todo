@@ -1,0 +1,57 @@
+---
+id: I027
+title: We should rethink how plugins are shown / presented to the user, and how they're
+  integrated with the UI. We should make them the centerpoint because that's how users
+  add all kinds of things they way.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+work_items:
+- P28.M1.E1.T001
+- P28.M1.E1.T002
+- P28.M2.E1.T001
+- P28.M2.E1.T002
+- P28.M3.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:30:08.480156+00:00'
+started_at: '2026-02-18T22:30:08.480156+00:00'
+completed_at: '2026-02-18T22:31:26.957590+00:00'
+duration_minutes: 1.3079570666666667
+---
+
+# Idea Intake: We should rethink how plugins are shown / presented to the user, and how they're integrated with the UI. We should make them the centerpoint because that's how users add all kinds of things they way.
+
+## Original Idea
+
+We should rethink how plugins are shown / presented to the user, and how they're integrated with the UI. We should make them the centerpoint because that's how users add all kinds of things they way.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "We should rethink how plugins are shown / presented to the user, and how they're integrated with the UI. We should make them the centerpoint because that's how users add all kinds of things they way."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P28 (phase): Plugin Hub UI (.tasks/28-plugin-hub-ui/)
+- P28.M1.E1.T001: REST API to list all available plugins with metadata
+- P28.M1.E1.T002: REST API to enable/disable plugins per workspace
+- P28.M2.E1.T001: Generic plugin config endpoint (GET/PATCH)
+- P28.M2.E1.T002: Plugin config schema endpoint (returns JSON Schema)
+- P28.M3.E1.T001: Plugin registry API tests
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

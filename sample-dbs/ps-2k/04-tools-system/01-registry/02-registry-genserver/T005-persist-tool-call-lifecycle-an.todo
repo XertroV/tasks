@@ -1,0 +1,77 @@
+---
+id: P4.M1.E2.T005
+title: Persist tool call lifecycle and results
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P1.M2.E5.T002
+- P4.M1.E2.T001
+tags:
+- tools
+- persistence
+- tool-calls
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:42:14.277198'
+started_at: '2026-02-06T02:42:14.277198'
+completed_at: '2026-02-06T02:53:23.857772'
+duration_minutes: 11.159676066666666
+---
+
+# Persist tool call lifecycle and results
+
+
+
+## Requirements
+
+- [x] Persist ToolCall lifecycle events (created, dispatched, completed, failed) with timestamps and provider metadata.
+- [x] Store input arguments and tool name per ToolCall schema, including correlation id and agent/session references.
+- [x] Persist tool results in a provider-specific formatted payload as returned by ToolExecutor.
+- [x] Ensure storage supports replay/audit of tool executions and linking to AgentServer event stream.
+
+## Context
+
+- [x] ToolCall schema is the canonical payload for tool invocation and should be stored without lossy conversion.
+- [x] ToolExecutor produces provider-specific tool result formatting that must be preserved for correct resubmission.
+- [x] AgentServer integration will emit lifecycle events when tool execution starts and finishes.
+
+## Notes
+
+- [x] Capture execution timing and error details for observability.
+- [x] Avoid storing raw provider responses that are not tied to ToolCall schema fields.
+
+## Testing
+
+- [x] Add persistence tests in `test/pag_server/tools/persistence_test.exs`.
+- [x] Add lifecycle event tests (included in persistence tests).
+- [x] Add result formatting storage tests (included in persistence tests).
+
+## Acceptance Criteria
+
+- [x] ToolCall lifecycle records are created for start, success, and failure paths.
+- [x] Stored ToolCall data includes tool name, args, call id, provider metadata, and timestamps.
+- [x] Tool results are persisted in the provider-specific formatted payload returned by ToolExecutor.
+- [x] Retrieval supports reconstructing a ToolCall and its final result for replay.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 08:48 UTC
+**Primary task**: P2.M6.E3.T002 - Implement regex-based parser
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E2 vs P2.M6.E3)
+- No dependency chain: ✓ (verified at claim time)

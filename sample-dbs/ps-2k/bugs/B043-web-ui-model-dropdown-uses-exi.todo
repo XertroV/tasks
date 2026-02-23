@@ -1,0 +1,19 @@
+---
+id: B043
+title: 'web ui: model dropdown uses existing entry to filter models (but it should
+  only do that after the user *types* not on dropdown because otherwise ALL models
+  get hidden)'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T01:31:13.784050+00:00'
+started_at: '2026-02-16T01:31:13.784050+00:00'
+completed_at: '2026-02-16T01:37:03.863683+00:00'
+duration_minutes: 5.834660333333333
+---
+
+web ui: model dropdown uses existing entry to filter models (but it should only do that after the user *types* not on dropdown because otherwise ALL models get hidden)

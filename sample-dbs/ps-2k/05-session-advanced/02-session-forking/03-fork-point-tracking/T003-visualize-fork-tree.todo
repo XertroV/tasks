@@ -1,0 +1,61 @@
+---
+id: P5.M2.E3.T003
+title: Visualize fork tree
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P5.M2.E3.T002
+claimed_by: cli-user
+claimed_at: '2026-02-07T12:38:46.296165+00:00'
+tags:
+- phase-5
+- session-advanced
+- 2_session_forking
+started_at: '2026-02-07T12:38:46.296165+00:00'
+completed_at: '2026-02-07T12:39:44.021610+00:00'
+duration_minutes: 0.9620905166666667
+---
+
+# Visualize fork tree
+
+Generate graph of session fork relationships
+
+## Requirements
+
+- [ ] Implement core functionality
+- [ ] Add proper error handling
+- [ ] Write comprehensive tests
+- [ ] Update documentation
+
+## Acceptance Criteria
+
+- [ ] Unit tests pass (>85% coverage)
+- [ ] Integration tests pass
+- [ ] No compilation warnings
+- [ ] `mix credo` passes
+- [ ] Code follows architecture guidelines (.plan/architecture.md)
+- [ ] Module size <500 LoC (hard limit 1000)
+- [ ] Function size <30 lines (hard limit 50)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 5 (Message Queue) or Section 7 (Session Management)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Module organization
+
+**Key Points**:
+- Follow event sourcing pattern - emit events for all state changes
+- Use bounded data structures (no unbounded queues/lists)
+- Memory efficiency: Use iolists for streaming, not string concatenation
+- Test both happy path and error cases
+
+## Notes
+
+Related modules:
+- `PagServer.Agents.Agent` - Main GenServer
+- `PagServer.Sessions.Session` - Session management
+- `PagServer.Events.Store` - Event persistence
+
+Refer to architecture docs for module responsibilities and file size limits.

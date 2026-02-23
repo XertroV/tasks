@@ -1,0 +1,34 @@
+---
+id: P15.M8.E3.T002
+title: Formalize state machine transitions and add terminal state cleanup
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- bootstrap
+- state-machine
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:48:48.537688+00:00'
+started_at: '2026-02-17T15:48:48.537688+00:00'
+completed_at: '2026-02-17T16:08:37.738188+00:00'
+duration_minutes: 19.82000815
+---
+Two related issues in BootstrapSession GenServer:
+
+1. State machine allows mutations on :failed sessions (E3 I1): record_answers and advance only check for :complete. A :failed session (from timeout/cancel) still accepts answers.
+
+2. Session processes never stop after terminal state (E3 I2): After timeout/cancel/complete, the GenServer continues running. Processes remain registered in Registry indefinitely.
+
+Fix: (a) Add @transitions map with valid state transitions, (b) add terminal?/1 guard, (c) return {:stop, :normal, state} after delayed cleanup in terminal states, (d) consider using defstruct for state instead of plain maps (E3 M1).
+
+Source: E3 Audit I1, I2, M1, Pattern P1/P2
+
+## Acceptance Criteria
+- [ ] @transitions map defines valid state transitions
+- [ ] Operations on :failed sessions are rejected
+- [ ] Session processes stop after entering terminal state (with short delay)
+- [ ] Session state uses defstruct instead of plain map
+- [ ] Tests for rejected operations on terminal states
+- [ ] Tests for process cleanup after completion/failure

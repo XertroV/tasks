@@ -1,0 +1,54 @@
+id: P51.M1.E1
+name: Team Configuration & Guides
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-docs-browser-testing-te.todo
+  title: Create docs/browser-testing/TEAM.md
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-docs-browser-testing-ex.todo
+  title: Create docs/browser-testing/explorer-guide.md
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-create-docs-browser-testing-fi.todo
+  title: Create docs/browser-testing/fix-agent-guide.md
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-create-scripts-run-browser-tes.todo
+  title: Create scripts/run-browser-testing-team.sh
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-implement-backlog-fixed-cli-co.todo
+  title: Implement 'backlog fixed' CLI command
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

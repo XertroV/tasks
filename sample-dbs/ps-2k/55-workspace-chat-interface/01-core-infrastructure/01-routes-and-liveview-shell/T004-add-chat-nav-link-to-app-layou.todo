@@ -1,0 +1,23 @@
+---
+id: P55.M1.E1.T004
+title: Add Chat nav link to app layout header
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- navigation
+- layout
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:22:50.167051+00:00'
+started_at: '2026-02-22T06:22:50.167051+00:00'
+completed_at: '2026-02-22T06:33:56.369874+00:00'
+duration_minutes: 11.103380166666666
+---
+Add a 'Chat' navigation link to the app layout header navigation (alongside existing Dashboard, etc.). Link should point to /chat/:workspace_id using the current workspace context. Follow existing nav link patterns in the layout.
+
+## Acceptance Criteria
+- Chat link visible in header navigation
+- Links to /chat/:workspace_id for current workspace
+- Follows existing nav link styling

@@ -1,0 +1,50 @@
+id: P23.M2
+name: Cron Plugin
+status: pending
+estimate_hours: 24.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: CronSchedule Schema & Storage
+  path: 01-cronschedule-schema-storage
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Scheduler GenServer
+  path: 02-scheduler-genserver
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: MCP Tools & Plugin Module
+  path: 03-mcp-tools-plugin-module
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Cron Plugin Tests
+  path: 04-cron-plugin-tests
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

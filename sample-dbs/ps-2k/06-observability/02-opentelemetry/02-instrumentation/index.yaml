@@ -1,0 +1,53 @@
+# Epic: Instrumentation
+# Phase 6, Milestone 2, Epic 2 (P6.M2.E2)
+
+id: P6.M2.E2
+name: Instrumentation
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: [E1]
+
+tasks:
+  - id: T001
+    file: T001-llm-spans.todo
+    title: Add spans for LLM calls
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-tool-spans.todo
+    title: Add spans for tool invocations
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: medium
+    depends_on: []
+    
+  - id: T003
+    file: T003-agent-spans.todo
+    title: Add spans for agent operations
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T004
+    file: T004-tests.todo
+    title: Write instrumentation tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+    depends_on: [T001, T002, T003]
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,37 @@
+---
+id: P12.M2.E1.T002
+title: Migrate agent_server_test.exs (34 sleeps)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:18:28.330985+00:00'
+started_at: '2026-02-13T20:18:28.330985+00:00'
+completed_at: '2026-02-13T20:50:49.548645+00:00'
+duration_minutes: 32.35362751666666
+---
+
+# Migrate agent_server_test.exs (34 sleeps)
+
+## Description
+
+Replace `Process.sleep` calls in `agent_server_test.exs` with the injectable `sleep_fn` pattern to make tests faster and more deterministic.
+
+## Acceptance Criteria
+
+- [ ] Audit all `Process.sleep` calls in the file
+- [ ] Identify which sleeps can be replaced with `sleep_fn` pattern
+- [ ] Modify `AgentServer` to accept optional `sleep_fn` parameter
+- [ ] Update tests to inject `sleep_fn: fn _ -> :ok end`
+- [ ] All tests pass
+- [ ] Test file runs significantly faster
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/agents/agent_server_test.exs`, `lib/pag_server/agents/agent_server.ex`
+- Pattern reference: See `test/pag_server/retry_test.exs`
+- Part of epic: Replace Process.sleep with Injectable Functions

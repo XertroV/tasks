@@ -1,0 +1,50 @@
+id: P17
+name: Extended Integration Test Coverage
+status: pending
+weeks: 2
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Anthropic Provider Integration Tests
+  path: 01-anthropic-provider-integration
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: Integration tests for Anthropic provider (primary/default provider
+    with zero coverage)
+- id: M2
+  name: Session Orchestration Tests
+  path: 02-session-orchestration-tests
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Integration tests for session forking, parallel queries, and multi-agent
+    coordination
+- id: M3
+  name: Advanced Feature Tests
+  path: 03-advanced-feature-tests
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: Integration tests for tool execution loop, context summarization, and
+    semantic cache
+- id: M4
+  name: Provider Integration Validation
+  path: 04-provider-integration-validatio
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: null
+  locked: false
+stats:
+  total_tasks: 17
+  done: 17
+  in_progress: 0
+  blocked: 0
+  pending: 0

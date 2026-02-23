@@ -1,0 +1,50 @@
+---
+id: P15.M2.E6.T003
+title: Add test coverage for global/session/agent settings workflows
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P15.M2.E6.T001
+- P15.M2.E6.T002
+- P15.M2.E5.T003
+tags:
+- testing
+- liveview
+- e2e
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:50:02.077528+00:00'
+started_at: '2026-02-16T10:50:02.077528+00:00'
+completed_at: '2026-02-16T10:51:27.275260+00:00'
+duration_minutes: 1.4199614666666667
+---
+
+# Add test coverage for global/session/agent settings workflows
+
+
+
+## Requirements
+
+- Add LiveView and integration coverage for global, session, and agent settings workflows.
+- Cover success paths plus validation and recoverable failure handling for each settings section.
+- Verify navigation and routing behavior for the new settings page.
+- Ensure related existing dashboard tests continue to pass.
+
+## Acceptance Criteria
+
+- Tests cover global settings load/edit/save and failure states.
+- Tests cover session settings selection/edit/save and validation errors.
+- Tests cover agent settings selection/edit/save and validation/permission errors.
+- New and existing dashboard settings tests pass reliably in CI/local runs.
+
+## Implementation Notes
+
+- Expanded `test/pag_server_web/live/settings_dashboard_test.exs` to cover:
+  - global settings save + validation + dirty/reset flow
+  - session settings save + validation + deleted-session disallowed save behavior
+  - agent settings save + validation + archived-agent disallowed save behavior
+  - one-pass end-to-end update flow across global/session/agent sections
+- Re-ran settings dashboard suite with test output logged to `recent-mix-tests.log`.
+- Re-ran validation console regression tests to ensure existing dashboard behavior remains stable.
+- Ran strict Credo checks on updated settings dashboard source/test files.

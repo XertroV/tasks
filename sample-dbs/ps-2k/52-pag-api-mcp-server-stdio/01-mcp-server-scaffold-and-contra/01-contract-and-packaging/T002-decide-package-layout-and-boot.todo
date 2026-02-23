@@ -1,0 +1,75 @@
+---
+id: P52.M1.E1.T002
+title: Decide package layout and bootstrap command
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- planning
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:22:02.572737+00:00'
+started_at: '2026-02-21T04:22:02.572737+00:00'
+completed_at: '2026-02-21T04:22:20.443506+00:00'
+duration_minutes: 0.297846
+---
+
+# Decide package layout and bootstrap command
+
+## Decision
+
+- **Chosen approach:** implement the MCP stdio server as a first-class `pag-server` plugin/package-in-repo first, with a clean boundary that can be extracted to `pac-mcp` later if needed.
+
+## Rationale and Trade-Offs
+
+- Pros:
+  - Reuses existing PAG runtime modules, auth conventions, and test helpers immediately.
+  - Faster iteration for v1 since no cross-repo release choreography is needed.
+  - Keeps protocol mapping close to PAG API changes while interface is still evolving.
+- Cons:
+  - Tightens coupling during early iterations.
+  - External consumers do not get an independently versioned artifact yet.
+- Mitigation:
+  - Keep MCP bridge modules under a dedicated namespace (`PagServer.MCP.*`).
+  - Avoid direct dependencies on unrelated web/controller modules.
+  - Keep a single runtime entrypoint contract so extraction to `pac-mcp` is mechanical.
+
+## Bootstrap Commands
+
+- Local development:
+  - `mix pag.mcp.stdio`
+- Production-like execution:
+  - `MCP_STDIO=1 PAG_BASE_URL=http://127.0.0.1:4000 PAG_API_KEY=... mix pag.mcp.stdio`
+
+Required environment variables for first cut:
+
+- `PAG_BASE_URL` - target PAG API base URL.
+- `PAG_API_KEY` - bearer/API key for MCP bridge calls.
+- `PAG_WORKSPACE_ID` (optional) - default workspace target.
+- `PAG_SESSION_ID` (optional) - default session target.
+
+## Module Boundary Notes
+
+- Reuse from `pag-server`:
+  - Existing API client/request utilities and shared error normalization patterns.
+  - Existing workspace/session identifier validation helpers where available.
+- Implement in MCP layer:
+  - JSON-RPC stdio loop and MCP protocol dispatcher.
+  - MCP tool schema registry and argument normalization layer.
+  - MCP-specific error code mapping wrapper around upstream failures.
+
+
+
+## Requirements
+
+- Decide whether the MCP server lives inside `pag-server` or as a sibling package (`pac-mcp`) with clear ownership boundaries.
+- Define bootstrap command(s) for local dev and production-like stdio execution.
+- Document dependency strategy for sharing API client types/config without circular coupling.
+
+## Acceptance Criteria
+
+- A packaging decision is recorded with rationale and trade-offs.
+- Canonical run command(s) are specified, including required environment variables.
+- Module boundary notes identify what is reused from `pag-server` versus implemented in MCP layer.

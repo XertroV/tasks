@@ -1,0 +1,25 @@
+---
+id: P50.M4.E1.T007
+title: Add comprehensive projection unit tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E1.T004
+- P50.M4.E1.T005
+- P50.M4.E1.T006
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:47.078934+00:00'
+started_at: '2026-02-23T02:42:47.078934+00:00'
+completed_at: '2026-02-23T02:42:49.583151+00:00'
+duration_minutes: 0.041736583333333334
+---
+## Description
+Tests in test/pag_server/plugins/collab_teams/projection_test.exs covering: cold start rebuild from 5 audit events; incremental update for all 10 event types; get_overview returns correct task_summary counts; get_task_board grouped correctly; get_activity_feed respects limit; concurrent events don't corrupt ETS; :projection_not_running returned when GenServer absent. All async: true with unique team IDs. Under 2s total.
+
+## Acceptance Criteria
+- All tests pass; async: true; no sleeps
+- rebuild idempotency tested
+- ETS isolation between tests (unique team IDs)

@@ -1,0 +1,42 @@
+---
+id: P40.M1.E1.T004
+title: System prompt and agent awareness of team directories
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P40.M1.E1.T001
+- P40.M1.E1.T002
+tags:
+- containers
+- multi-agent
+- teams
+- filesystem
+- prompts
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:32:16.089908+00:00'
+started_at: '2026-02-19T14:32:16.089908+00:00'
+completed_at: '2026-02-19T15:35:27.014582+00:00'
+duration_minutes: 63.1820777
+---
+## Description
+Ensure agents are informed about their team membership and directory structure via system prompts and MY_TEAM.md. The directory naming convention (`team-<name>`) is self-documenting, so agents don't need to be told explicit paths — they just need to know their team name, their role (leader or member), and what subteams exist.
+
+## Requirements
+- System prompt tells agents: their team name(s), whether they are a leader, and the `team-<name>` naming convention
+- MY_TEAM.md tracks: team membership list, subteam names, team leader identity — but NOT explicit directory paths (dirs are self-documenting from team names)
+- Root leader's prompt should explain the full hierarchy visible under `/team-root/`
+- Subteam leader's prompt should explain they can see descendants under `/team-<name>/`
+- Regular member's prompt should explain they see `/team-<name>/` at root level
+- Agents on multiple teams should see all their team memberships listed
+- Context/state should include team hierarchy info for programmatic access
+
+## Acceptance Criteria
+- System prompt correctly describes the agent's team role (leader vs member) and mount points
+- MY_TEAM.md tracks team membership and subteam structure (not paths)
+- Root leader is told about full hierarchy visibility under `/team-root/`
+- Subteam leaders are told about their descendant visibility
+- Regular members are told about their `/team-<name>/` mount
+- Agents on multiple teams see all memberships in prompt and MY_TEAM.md
+- Agents can discover their team directory from the naming convention without additional guidance

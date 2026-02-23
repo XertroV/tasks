@@ -1,0 +1,52 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-08T13:08:25.676089+00:00'
+started_at: '2026-02-08T13:08:25.676089+00:00'
+completed_at: '2026-02-09T00:00:00+00:00'
+---
+
+# Slash command parser - COMPLETED
+
+## Implementation Summary
+
+The slash command parser has been fully implemented and tested.
+
+### Files Created/Modified
+
+1. **`lib/pag_server/integrations/slack/command_parser.ex`** (136 lines)
+   - Parses `/pag <subcommand> <args>` format
+   - Supports: ask, fork, stats, help subcommands
+   - Validates input and returns structured output
+
+2. **`lib/pag_server_web/controllers/slack_commands_controller.ex`** (426 lines)
+   - Handles Slack slash command webhooks
+   - Validates Slack signatures
+   - Routes commands to appropriate handlers
+
+3. **`lib/pag_server_web/router.ex`**
+   - Added `/slack/commands` POST route
+
+### Tests Created
+
+1. **`test/pag_server/integrations/slack/command_parser_test.exs`**
+   - All subcommands tested
+   - Edge cases covered
+   - **Status: Passes all tests**
+
+2. **`test/pag_server_web/controllers/slack_commands_controller_test.exs`**
+   - Controller tests for slash commands
+
+### Code Quality
+
+- **Credo**: No issues
+- **Format**: Correctly formatted
+- **Line count**: 136 LoC (within <1000 LoC limit)
+
+### Acceptance Criteria Met
+
+- [x] Command parser extracts subcommand from `/pag ask question`
+- [x] Supports ask, fork, stats, help subcommands
+- [x] Validates input and returns errors for invalid commands
+- [x] Provides help text for commands
+- [x] Tests cover all subcommands and edge cases

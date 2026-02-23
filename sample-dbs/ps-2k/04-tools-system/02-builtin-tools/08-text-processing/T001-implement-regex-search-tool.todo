@@ -1,0 +1,281 @@
+---
+id: P4.M2.E8.T001
+title: Implement regex_search tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- text
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:08:39.828931'
+started_at: '2026-02-05T23:08:39.828931'
+completed_at: '2026-02-05T23:15:25.094490'
+duration_minutes: 6.754425816666667
+---
+
+# Implement regex_search tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/regex_search.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support pattern, text, and options (case_insensitive, multiline)
+- [ ] Return all matches with capture groups, line numbers, and positions
+- [ ] Implement ReDoS protection (timeout, complexity limits)
+- [ ] Support named capture groups
+- [ ] Limit maximum matches returned (default 1000)
+
+## Acceptance Criteria
+
+- [ ] Searches text for all matches of regex pattern
+- [ ] Returns match text, position (byte offset), line number, and column
+- [ ] Returns capture groups for each match (both numbered and named)
+- [ ] Supports case-insensitive flag
+- [ ] Supports multiline mode (^ and $ match line boundaries)
+- [ ] Supports dotall mode (. matches newlines)
+- [ ] Limits results to max_matches (default 1000, configurable)
+- [ ] Protects against ReDoS: timeout after 5 seconds, reject overly complex patterns
+- [ ] Handles common errors: invalid regex, timeout, pattern too complex
+- [ ] Truncates individual match context at 1KB (prevents returning huge matches)
+- [ ] Test coverage: simple pattern, capture groups, named groups, case-insensitive, multiline, line numbers, max matches limit, ReDoS protection, invalid regex
+- [ ] Performance: efficiently handles multi-MB text inputs
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- ReDoS protection is critical (catastrophic backtracking can hang server)
+- Return structured data for easy parsing by LLM
+- Line numbers help agents understand context
+- Capture groups enable complex text extraction patterns
+- Named groups make results more semantic
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.RegexSearch do
+  @behaviour PAGServer.Tools.Tool
+  @max_matches 1000
+  @max_match_context_bytes 1_000  # 1KB per match
+  @regex_timeout_ms 5_000  # 5 seconds
+  @max_pattern_length 500  # Prevent overly complex patterns
+
+  @impl true
+  def name, do: "regex_search"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "regex_search",
+      description: "Search text using regular expressions, returning matches with capture groups and positions",
+      parameters: %{
+        type: "object",
+        properties: %{
+          pattern: %{
+            type: "string",
+            description: "Regular expression pattern (Elixir/PCRE syntax)"
+          },
+          text: %{
+            type: "string",
+            description: "Text to search"
+          },
+          case_insensitive: %{
+            type: "boolean",
+            description: "Case-insensitive matching (default: false)"
+          },
+          multiline: %{
+            type: "boolean",
+            description: "Multiline mode: ^ and $ match line boundaries (default: false)"
+          },
+          dotall: %{
+            type: "boolean",
+            description: "Dotall mode: . matches newlines (default: false)"
+          },
+          max_matches: %{
+            type: "integer",
+            description: "Maximum number of matches to return (default: 1000)"
+          }
+        },
+        required: ["pattern", "text"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"pattern" => pattern, "text" => text} = args, _context) do
+    with :ok <- validate_pattern(pattern),
+         {:ok, regex} <- compile_regex(pattern, args),
+         {:ok, matches} <- find_matches(regex, text, args) do
+      {:ok, %{
+        pattern: pattern,
+        match_count: length(matches),
+        matches: matches
+      }}
+    else
+      {:error, reason} -> {:error, "Regex search failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_pattern(pattern) when byte_size(pattern) > @max_pattern_length do
+    {:error, "Pattern too long (max #{@max_pattern_length} chars)"}
+  end
+  defp validate_pattern(_pattern), do: :ok
+
+  defp compile_regex(pattern, args) do
+    opts = []
+    opts = if Map.get(args, "case_insensitive"), do: [:caseless | opts], else: opts
+    opts = if Map.get(args, "multiline"), do: [:multiline | opts], else: opts
+    opts = if Map.get(args, "dotall"), do: [:dotall | opts], else: opts
+    
+    case Regex.compile(pattern, opts) do
+      {:ok, regex} -> {:ok, regex}
+      {:error, reason} -> {:error, "Invalid regex: #{inspect(reason)}"}
+    end
+  end
+
+  defp find_matches(regex, text, args) do
+    max = Map.get(args, "max_matches", @max_matches)
+    
+    # Use Task with timeout for ReDoS protection
+    task = Task.async(fn ->
+      Regex.scan(regex, text, return: :index, capture: :all)
+      |> Enum.take(max)
+      |> Enum.with_index(1)
+      |> Enum.map(fn {match_data, match_num} ->
+        build_match_result(match_data, text, match_num)
+      end)
+    end)
+    
+    case Task.yield(task, @regex_timeout_ms) || Task.shutdown(task) do
+      {:ok, matches} -> {:ok, matches}
+      nil -> {:error, "Regex search timeout (possible ReDoS)"}
+    end
+  end
+
+  defp build_match_result(match_data, text, match_num) do
+    [{start_pos, length} | capture_groups] = match_data
+    
+    match_text = 
+      String.slice(text, start_pos, length)
+      |> truncate_match(@max_match_context_bytes)
+    
+    {line, column} = get_line_column(text, start_pos)
+    
+    %{
+      match_number: match_num,
+      match: match_text,
+      start: start_pos,
+      length: length,
+      line: line,
+      column: column,
+      captures: build_captures(capture_groups, text)
+    }
+  end
+
+  defp build_captures(capture_groups, text) do
+    capture_groups
+    |> Enum.with_index(1)
+    |> Enum.map(fn
+      {{start_pos, length}, index} ->
+        capture_text = String.slice(text, start_pos, length)
+        %{group: index, text: capture_text, start: start_pos, length: length}
+      {nil, index} ->
+        %{group: index, text: nil, start: nil, length: 0}
+    end)
+  end
+
+  defp get_line_column(text, position) do
+    substring = String.slice(text, 0, position)
+    lines = String.split(substring, "\n")
+    line_num = length(lines)
+    column = lines |> List.last() |> String.length() |> Kernel.+(1)
+    {line_num, column}
+  end
+
+  defp truncate_match(match, max_bytes) when byte_size(match) > max_bytes do
+    binary_part(match, 0, max_bytes) <> "...[truncated]"
+  end
+  defp truncate_match(match, _max_bytes), do: match
+end
+```
+
+Example usage:
+```json
+{
+  "pattern": "(\\w+)@([\\w.]+)",
+  "text": "Contact: john@example.com or support@test.org",
+  "case_insensitive": true
+}
+```
+
+Example response:
+```json
+{
+  "pattern": "(\\w+)@([\\w.]+)",
+  "match_count": 2,
+  "matches": [
+    {
+      "match_number": 1,
+      "match": "john@example.com",
+      "start": 9,
+      "length": 16,
+      "line": 1,
+      "column": 10,
+      "captures": [
+        {"group": 1, "text": "john", "start": 9, "length": 4},
+        {"group": 2, "text": "example.com", "start": 14, "length": 11}
+      ]
+    },
+    {
+      "match_number": 2,
+      "match": "support@test.org",
+      "start": 29,
+      "length": 16,
+      "line": 1,
+      "column": 30,
+      "captures": [
+        {"group": 1, "text": "support", "start": 29, "length": 7},
+        {"group": 2, "text": "test.org", "start": 37, "length": 8}
+      ]
+    }
+  ]
+}
+```
+
+Security considerations:
+- ReDoS protection essential: timeout + pattern complexity limits
+- Evil patterns: `(a+)+b`, `(a*)*`, `(a|a)*`, `(a|ab)*`
+- Truncate individual matches to prevent memory exhaustion
+- Limit total matches returned
+- Validate pattern length before compilation
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 10:07 UTC
+**Primary task**: P4.M2.E7.T001 - Implement json_parse tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M2.E8 vs P4.M2.E7)
+- No dependency chain: ✓ (verified at claim time)

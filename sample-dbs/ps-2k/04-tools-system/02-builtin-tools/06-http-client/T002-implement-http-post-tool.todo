@@ -1,0 +1,184 @@
+---
+id: P4.M2.E6.T002
+title: Implement http_post tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- http
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:57:15.704759'
+started_at: '2026-02-06T02:57:15.704759'
+completed_at: '2026-02-06T02:58:33.000622'
+duration_minutes: 1.2882641833333333
+---
+
+# Implement http_post tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/http_post.ex` (~150 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support URL, headers, body (JSON or form data)
+- [ ] Use HTTP client library (Req or Finch)
+- [ ] Timeout configuration (default 30s)
+- [ ] Content-Type auto-detection (JSON, form, raw)
+- [ ] Validate URL format and allowed protocols
+
+## Acceptance Criteria
+
+- [ ] Makes HTTP POST requests to provided URL
+- [ ] Accepts optional headers as key-value map
+- [ ] Accepts body as string (raw), object (JSON), or form data
+- [ ] Auto-sets Content-Type header if not provided (application/json for objects)
+- [ ] Returns response body, status code, and headers
+- [ ] Handles common errors: timeout, network failure, invalid URL, 4xx/5xx responses
+- [ ] Validates URL is http:// or https:// only
+- [ ] Truncates response body at 512KB limit
+- [ ] Test coverage: POST JSON, POST form data, with headers, timeout, invalid URL, 400/500 errors
+- [ ] Security: blocks localhost/private IPs (SSRF protection)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- SSRF protection (same as http_get)
+- Auto-detect Content-Type from body type
+- Support both JSON and form-encoded data
+- Share validation logic with http_get
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.HttpPost do
+  @behaviour PAGServer.Tools.Tool
+  @max_response_bytes 512_000
+  @default_timeout 30_000
+
+  @impl true
+  def name, do: "http_post"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "http_post",
+      description: "Make HTTP POST request with body",
+      parameters: %{
+        type: "object",
+        properties: %{
+          url: %{
+            type: "string",
+            description: "URL to post to (http:// or https://)"
+          },
+          body: %{
+            oneOf: [
+              %{type: "object", description: "JSON object (auto-encoded)"},
+              %{type: "string", description: "Raw body data"}
+            ]
+          },
+          headers: %{
+            type: "object",
+            description: "Optional HTTP headers",
+            additionalProperties: %{type: "string"}
+          },
+          timeout_ms: %{
+            type: "integer",
+            description: "Request timeout in milliseconds (default: 30000)"
+          }
+        },
+        required: ["url", "body"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"url" => url, "body" => body} = args, _context) do
+    with :ok <- validate_url(url),
+         :ok <- validate_ssrf(url),
+         {encoded_body, content_type} <- prepare_body(body, args),
+         {:ok, response} <- make_request(url, encoded_body, content_type, args) do
+      {:ok, %{
+        status: response.status,
+        headers: response.headers,
+        body: truncate_body(response.body)
+      }}
+    else
+      {:error, reason} -> {:error, "HTTP POST failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp prepare_body(body, args) when is_map(body) do
+    # JSON object - encode as JSON
+    headers = Map.get(args, "headers", %{})
+    content_type = Map.get(headers, "content-type", "application/json")
+    
+    encoded = Jason.encode!(body)
+    {encoded, content_type}
+  end
+
+  defp prepare_body(body, args) when is_binary(body) do
+    # String - use as-is, infer content type from headers
+    headers = Map.get(args, "headers", %{})
+    content_type = Map.get(headers, "content-type", "text/plain")
+    {body, content_type}
+  end
+
+  defp make_request(url, body, content_type, args) do
+    headers = Map.get(args, "headers", %{})
+    |> Map.put("content-type", content_type)
+    
+    timeout = Map.get(args, "timeout_ms", @default_timeout)
+    
+    Req.post(url,
+      body: body,
+      headers: headers,
+      receive_timeout: timeout
+    )
+  end
+
+  # Reuse validation from HttpGet
+  defp validate_url(url), do: PAGServer.Tools.Builtin.HttpGet.validate_url(url)
+  defp validate_ssrf(url), do: PAGServer.Tools.Builtin.HttpGet.validate_ssrf(url)
+  defp truncate_body(body), do: PAGServer.Tools.Builtin.HttpGet.truncate_body(body)
+end
+```
+
+Example usage (JSON):
+```json
+{
+  "url": "https://api.example.com/create",
+  "body": {
+    "name": "test",
+    "value": 42
+  },
+  "headers": {
+    "Authorization": "Bearer token123"
+  }
+}
+```
+
+Example usage (form data):
+```json
+{
+  "url": "https://example.com/form",
+  "body": "field1=value1&field2=value2",
+  "headers": {
+    "content-type": "application/x-www-form-urlencoded"
+  }
+}
+```
+
+Edge cases:
+- Large request bodies - validate max size
+- Binary data - base64 encode?
+- Multipart form data - future enhancement
+- Character encoding issues

@@ -1,0 +1,37 @@
+id: P13.M3.E1
+name: Agent Startup Backpressure
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-poollimiter-for-max-con.todo
+  title: Design PoolLimiter for max concurrent agents
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-admission-control-wi.todo
+  title: Implement admission control with queue
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-telemetry-for-throttling-e.todo
+  title: Add telemetry for throttling events
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

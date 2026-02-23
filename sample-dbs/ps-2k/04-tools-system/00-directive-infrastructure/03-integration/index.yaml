@@ -1,0 +1,47 @@
+id: P4.M0.E3
+name: Integration
+status: pending
+estimate_hours: 8
+complexity: high
+depends_on:
+- P4.M0.E1
+- P4.M0.E2
+tasks:
+- id: T004
+  file: T004-agentserver-integration.todo
+  title: Integrate directives into AgentServer
+  status: pending
+  estimate_hours: 5
+  complexity: high
+  priority: critical
+  depends_on:
+  - P4.M0.E1.T002
+  - P4.M0.E2.T003
+- id: T005
+  file: T005-event-schemas.todo
+  title: Define directive event schemas
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  priority: high
+  depends_on:
+  - P4.M0.E1.T001
+- id: T006
+  file: T006-wire-agentserver-tool-executio.todo
+  title: Wire AgentServer tool execution loop and result submission
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - P4.M1.E2.T004
+  - P4.M1.E2.T005
+  - P2.M2.E3.T004
+  - P2.M3.E3.T004
+  - P2.M4.E1.T005
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

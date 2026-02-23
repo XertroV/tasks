@@ -1,0 +1,18 @@
+---
+id: B006
+title: 'web ui: when provider is changed under settings, the list of models does not
+  update'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:45:46.962854+00:00'
+started_at: '2026-02-15T16:45:46.962854+00:00'
+completed_at: '2026-02-15T16:53:54.097265+00:00'
+duration_minutes: 8.1189067
+---
+
+web ui: when provider is changed under settings, the list of models does not update

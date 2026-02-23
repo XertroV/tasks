@@ -1,0 +1,26 @@
+# Epic: Web Search
+# Phase 4, Milestone 2, Epic 3 (P4.M2.E3)
+
+id: P4.M2.E3
+name: Web Search
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-web-search.todo
+    title: Implement web_search tool
+    status: pending
+    estimate_hours: 3.0
+    complexity: medium
+    priority: medium
+    depends_on: []
+
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

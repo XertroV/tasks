@@ -1,0 +1,161 @@
+---
+id: P2.M7.E1.T004
+title: Research and integrate native tokenizer libraries for accurate counting
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on:
+- P2.M7.E1.T002
+tags:
+- tokenizer
+- tiktoken
+- accuracy
+- research
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:39:14.111631'
+started_at: '2026-02-06T13:39:14.111631'
+completed_at: '2026-02-06T13:58:39.584401'
+duration_minutes: 19.424545983333335
+---
+
+# Research and integrate native tokenizer libraries for accurate counting
+
+All providers currently use approximate character-based heuristics for token counting
+(~4 chars/token for GPT, ~4.5 for Claude). This provides only rough estimates.
+This task researches and integrates native tokenizer libraries to achieve accurate
+token counts, especially for OpenAI models where tiktoken is available.
+
+## Requirements
+
+- [x] Research available Elixir/Erlang NIF bindings for tiktoken (OpenAI tokenizer)
+- [x] Research available tokenizer options for Anthropic models
+- [x] Research HuggingFace tokenizers Rust library with potential NIF wrapper
+- [x] Evaluate `tiktoken` Elixir packages (e.g., `ex_tiktoken`, `tiktoken_ex`)
+- [x] Evaluate performance impact of NIF-based tokenization vs heuristics
+- [x] Implement `PagServer.Context.Tokenizer.NativeTokenizer` behaviour for pluggable backends
+- [x] Implement tiktoken backend for OpenAI models (cl100k_base, o200k_base encodings)
+- [x] Add graceful fallback: if NIF not available, fall back to heuristic approximation
+- [x] Integrate native counting into existing `count_tokens/2` function
+- [x] Add model-to-encoding mapping (e.g., gpt-4o -> o200k_base, gpt-3.5 -> cl100k_base)
+- [x] Document accuracy levels per provider in module docs
+- [x] Add optional dependency handling (tokenizer libraries as optional deps)
+
+## Acceptance Criteria
+
+- [x] OpenAI model token counts are accurate within 5% of actual API usage
+- [x] Anthropic model token counts have documented accuracy level (heuristic if no native tokenizer)
+- [x] Ollama model token counts have documented accuracy level
+- [x] Fallback to heuristic works seamlessly when NIF libraries not compiled
+- [x] No performance regression: native tokenization completes in <1ms for typical messages
+- [x] `mix test` passes both with and without optional tokenizer dependencies
+- [x] Token counting accuracy is tested against known reference inputs/outputs
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.Context.Tokenizer.NativeTokenizer do
+  @moduledoc """
+  Behaviour for native tokenizer backends.
+  """
+
+  @callback count_tokens(text :: String.t(), encoding :: atom()) :: {:ok, non_neg_integer()} | {:error, term()}
+  @callback supported_encodings() :: [atom()]
+end
+
+defmodule PagServer.Context.Tokenizer.TiktokenBackend do
+  @moduledoc """
+  Tiktoken-based tokenizer for OpenAI models.
+  Uses cl100k_base for GPT-4/GPT-3.5, o200k_base for GPT-4o.
+  """
+  @behaviour PagServer.Context.Tokenizer.NativeTokenizer
+
+  @model_encodings %{
+    "gpt-4o" => :o200k_base,
+    "gpt-4o-mini" => :o200k_base,
+    "gpt-4-turbo" => :cl100k_base,
+    "gpt-4" => :cl100k_base,
+    "gpt-3.5-turbo" => :cl100k_base,
+    "o1" => :o200k_base,
+    "o1-mini" => :o200k_base
+  }
+
+  @impl true
+  def count_tokens(text, encoding) do
+    # Use tiktoken NIF binding
+    case Tiktoken.encode(text, encoding) do
+      {:ok, tokens} -> {:ok, length(tokens)}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  def encoding_for_model(model) do
+    Map.get(@model_encodings, model, :cl100k_base)
+  end
+end
+```
+
+Updated `count_tokens/2` with native backend:
+
+```elixir
+def count_tokens(text, model) when is_binary(text) and is_binary(model) do
+  case try_native_count(text, model) do
+    {:ok, count} -> count
+    {:error, _} -> heuristic_count(text, model)
+  end
+end
+
+defp try_native_count(text, model) do
+  cond do
+    String.contains?(model, "gpt") or String.contains?(model, "o1") ->
+      encoding = TiktokenBackend.encoding_for_model(model)
+      TiktokenBackend.count_tokens(text, encoding)
+
+    true ->
+      {:error, :no_native_tokenizer}
+  end
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Existing Work**:
+- `P2.M7.E1.T001` (done): Created basic Tokenizer module with heuristic counting
+- `P2.M7.E1.T002` (pending): Model-specific heuristic multipliers (4.0 for GPT, 4.5 for Claude)
+- This task (T004) goes beyond heuristics to native tokenizer integration
+
+**Reference Files**:
+- `lib/pag_server/context/tokenizer.ex` - Current tokenizer with heuristic approximation
+- `P2.M7.E1.T002` notes: "Future enhancement will integrate native tokenizers"
+
+## Notes
+
+- **Priority**: Start with tiktoken for OpenAI since it has the most mature Elixir bindings
+- **Anthropic**: Anthropic does not publish a standalone tokenizer; their API returns token counts in responses. Consider using response `usage` data to calibrate heuristics.
+- **Ollama**: Token counts come from Ollama's response (`prompt_eval_count`, `eval_count`). No separate tokenizer needed for cost tracking, but pre-request estimates still use heuristics.
+- **Risk**: NIF compilation may fail on some platforms. Must handle this gracefully with compile-time feature flags or runtime availability checks.
+- Packages to evaluate: `ex_tiktoken`, `tiktoken_ex`, `tokenizers` (HuggingFace Rust NIF)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-07 00:39 UTC
+**Primary task**: P7.M3.E1.T002 - Implement access pattern helpers
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M7.E1 vs P7.M3.E1)
+- No dependency chain: ✓ (verified at claim time)

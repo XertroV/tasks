@@ -1,0 +1,24 @@
+---
+id: P55.M3.E1.T001
+title: PubSub subscription lifecycle with Broadcaster
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- pubsub
+- realtime
+claimed_by: cli-user
+claimed_at: '2026-02-22T11:03:58.090244+00:00'
+started_at: '2026-02-22T11:03:58.090244+00:00'
+completed_at: '2026-02-22T11:07:26.470751+00:00'
+duration_minutes: 3.473008233333333
+---
+Implement PubSub subscription in mount/3 (when connected) using Broadcaster.subscribe(agent_id). On thread switch in handle_params: unsubscribe from old agent topic (Phoenix.PubSub.unsubscribe), subscribe to new agent topic. Track subscribed_agent_id in assigns. Handle case where agent_id is nil (no active thread). Follow same pattern as ValidationConsole.
+
+## Acceptance Criteria
+- Subscribe to agent PubSub on mount when connected
+- Unsub/resub on thread switch
+- subscribed_agent_id tracked correctly
+- No subscription when no active thread

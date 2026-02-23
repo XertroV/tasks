@@ -1,0 +1,41 @@
+id: P2.M6
+name: Stream Processing
+status: pending
+estimate_hours: 10
+complexity: medium
+depends_on:
+- M2
+- M3
+epics:
+- id: E1
+  name: SSE Parser
+  path: 01-sse-parser
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on: []
+  description: Parse Server-Sent Events from LLM provider streams
+- id: E2
+  name: Token Processor
+  path: 02-token-processor
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+  description: Process tokens per-token with backpressure handling
+- id: E3
+  name: Thinking Extractor
+  path: 03-thinking-extractor
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E2
+  description: Extract and handle <thinking> blocks from LLM responses
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

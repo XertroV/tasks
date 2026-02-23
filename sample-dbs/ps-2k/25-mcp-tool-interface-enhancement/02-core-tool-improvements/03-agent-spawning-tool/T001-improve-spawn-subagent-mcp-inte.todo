@@ -1,0 +1,46 @@
+---
+id: P25.M2.E3.T001
+title: Improve spawn_subagent MCP tool interface with task description and model hints
+status: done
+estimate_hours: 8.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- mcp
+- tools
+- agents
+- subagents
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:28.277835+00:00'
+started_at: '2026-02-18T18:34:28.277835+00:00'
+completed_at: '2026-02-18T18:44:40.774576+00:00'
+duration_minutes: 10.208278866666666
+---
+
+# Improve spawn_subagent MCP tool interface
+
+Using the design document from P25.M1.E1.T002 and informed by P26 (agent size pool),
+implement an improved spawn_subagent/delegate MCP tool interface.
+
+## Requirements
+
+- `description` - short 3-5 word label for the subagent task (for display/logging)
+- `prompt` - full detailed task description the subagent should perform
+- `subagent_type` or `type` - categorical type hint (e.g. general, explore, review)
+- `model` (optional) - explicit model override; when omitted, `size` is used
+- `size` (optional) - small/medium/large; resolves to workspace model pool (see P26)
+- `task_id` (optional) - resume a prior subagent session
+- Tool description should explain when to use subagents vs direct tool calls
+- Tool description should explain the `size` vs `model` mutual-exclusion semantics
+- Return value should include agent_id and a way to retrieve results
+
+## Acceptance Criteria
+
+- [ ] spawn_subagent tool has `description`, `prompt`, `type`, `model`, `size`, `task_id` parameters
+- [ ] `size` and `model` are mutually exclusive (validation error if both provided)
+- [ ] Tool description explains subagent use cases clearly for LLM consumers
+- [ ] Integration with P26 size pool resolver when `size` is provided
+- [ ] Return value includes agent_id and result retrieval mechanism
+- [ ] Existing subagent spawning tests pass
+- [ ] New tests cover size/model parameter validation

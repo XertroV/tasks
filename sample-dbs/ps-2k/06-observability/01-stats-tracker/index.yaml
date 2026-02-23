@@ -1,0 +1,47 @@
+id: P6.M1
+name: Stats Tracker
+status: pending
+estimate_hours: 10
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Tracker GenServer
+  path: 01-tracker-genserver
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+  description: GenServer for real-time token and cost tracking per agent/session
+- id: E2
+  name: Stats Aggregation
+  path: 02-aggregation
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E1
+  description: Aggregate stats across sessions, models, and time periods
+- id: E3
+  name: Stats Persistence
+  path: 03-persistence
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E1
+  description: Persist stats to database with rollup and archival
+- id: E4
+  name: Telemetry Handler Coverage
+  path: 04-telemetry-handler-coverage
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,50 @@
+id: P15.M6
+name: Workspace & Onboarding
+status: pending
+estimate_hours: 28.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Agent Template Catalog
+  path: 01-agent-template-catalog
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Standardize non-adhoc agent creation with curated templates.
+- id: E2
+  name: Workspace Domain Model
+  path: 02-workspace-domain-model
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on:
+  - P15.M6.E1
+  description: Introduce workspace aggregate that groups agents, sessions, and channels.
+- id: E3
+  name: Telegram Quicklaunch Wizard
+  path: 03-telegram-quicklaunch-wizard
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on:
+  - P15.M6.E2
+  description: Deliver setup wizard that connects Telegram and validates chat path
+    quickly.
+- id: E4
+  name: Main-Agent-First Routing
+  path: 04-main-agent-first-routing
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P15.M6.E2
+  - P15.M6.E3
+  description: Route inbound messages through designated main agent before delegating.
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

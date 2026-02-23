@@ -1,0 +1,55 @@
+---
+id: P15.M5.E3.T001
+title: Design voting/arbitration system
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T17:26:35.403748+00:00'
+started_at: '2026-02-13T17:26:35.403748+00:00'
+completed_at: '2026-02-13T18:25:42.229351+00:00'
+duration_minutes: 59.113759800000004
+---
+
+# Design voting/arbitration system
+
+## Description
+Design a consensus system for multi-agent decision making. Define voting protocols, arbitration rules, and conflict resolution when agents disagree.
+
+## Acceptance Criteria
+- [ ] Define consensus types: majority, unanimous, weighted, quorum
+- [ ] Design vote structure: agent_id, choice, confidence, rationale
+- [ ] Define arbitration rules for tie-breaking
+- [ ] Add timeout handling for non-responsive agents
+- [ ] Design proposal structure for voting
+- [ ] Add vote delegation/proxy support
+- [ ] Document consensus decision flow
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/agent.ex`, `lib/pag_server/agents/coordinator.ex`, `lib/pag_server/schema/workspace.ex`
+- Part of epic: Consensus Mechanisms
+- Reference existing coordinator patterns
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M5.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 17:26 UTC
+**Sibling tasks**: P15.M5.E3.T002, P15.M5.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M5.E3.T001 → P15.M5.E3.T002 → P15.M5.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M5.E3.T001: .tasks/15-new-capabilities/05-multi-agent-patterns/03-consensus-mechanisms/T001-design-voting-arbitration-syst.todo
+- P15.M5.E3.T002: .tasks/15-new-capabilities/05-multi-agent-patterns/03-consensus-mechanisms/T002-implement-consensus-coordinato.todo
+- P15.M5.E3.T003: .tasks/15-new-capabilities/05-multi-agent-patterns/03-consensus-mechanisms/T003-add-cross-workspace-agent-disc.todo

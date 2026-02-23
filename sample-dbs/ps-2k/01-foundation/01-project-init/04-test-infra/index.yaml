@@ -1,0 +1,44 @@
+# Epic: Test Infrastructure
+# Phase 1, Milestone 1, Epic 4 (P1.M1.E4)
+
+id: P1.M1.E4
+name: Test Infrastructure
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: [P1.M1.E1]
+
+tasks:
+  - id: T001
+    file: T001-exmachina.todo
+    title: Set up ExMachina factories
+    status: pending
+    estimate_hours: 1
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-mox.todo
+    title: Configure Mox for mocking
+    status: pending
+    estimate_hours: 1
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T003
+    file: T003-ci-workflow.todo
+    title: Create GitHub Actions CI pipeline
+    status: pending
+    estimate_hours: 1
+    complexity: low
+    priority: high
+    depends_on: []
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

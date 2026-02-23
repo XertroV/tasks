@@ -1,0 +1,112 @@
+---
+id: P7.M7.E1.T003
+title: Integrate Redoc UI at /api/docs
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P7.M7.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:48:38.502387+00:00'
+started_at: '2026-02-06T21:48:38.502387+00:00'
+completed_at: '2026-02-06T22:11:01.225973+00:00'
+tags:
+- documentation
+- openapi
+- ui
+duration_minutes: 22.378726283333332
+---
+
+# Integrate Redoc UI at /api/docs
+
+Mount Redoc documentation viewer at /api/docs endpoint for interactive API exploration.
+
+## Requirements
+
+- [ ] Add route for OpenAPI JSON spec at `/api/openapi.json`
+  - [ ] Use `OpenApiSpex.Plug.RenderSpec`
+  - [ ] Return JSON format
+
+- [ ] Add route for Redoc UI at `/api/docs`
+  - [ ] Serve Redoc HTML page
+  - [ ] Configure to load spec from `/api/openapi.json`
+
+- [ ] Create Redoc HTML template
+  - [ ] Use CDN-hosted Redoc (no npm dependency)
+  - [ ] Configure Redoc options (expand responses, hide download)
+  - [ ] Add PAG Server branding/title
+
+## Acceptance Criteria
+
+- [ ] `GET /api/openapi.json` returns valid OpenAPI 3.0 JSON
+- [ ] `GET /api/docs` renders Redoc UI
+- [ ] Redoc successfully loads and displays the spec
+- [ ] All defined endpoints appear in the UI
+- [ ] No JavaScript console errors on the docs page
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on T002 (base spec module)
+
+## Implementation Guide
+
+### Router Configuration
+
+```elixir
+# lib/pag_server_web/router.ex
+
+scope "/api" do
+  pipe_through :api
+  get "/openapi.json", OpenApiSpex.Plug.RenderSpec, []
+end
+
+scope "/api" do
+  get "/docs", PagServerWeb.DocsController, :index
+end
+```
+
+### Docs Controller
+
+```elixir
+defmodule PagServerWeb.DocsController do
+  use PagServerWeb, :controller
+  
+  def index(conn, _params) do
+    html = """
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>PAG Server API Documentation</title>
+        <meta charset="utf-8"/>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <style>body { margin: 0; padding: 0; }</style>
+      </head>
+      <body>
+        <redoc spec-url='/api/openapi.json' expand-responses="200,201"></redoc>
+        <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
+      </body>
+    </html>
+    """
+    
+    conn
+    |> put_resp_content_type("text/html")
+    |> send_resp(200, html)
+  end
+end
+```
+
+## Testing
+
+```bash
+mix phx.server
+curl http://localhost:4000/api/openapi.json | jq .info
+open http://localhost:4000/api/docs
+```
+
+## Notes
+
+- Using CDN-hosted Redoc avoids npm/node dependencies
+- Redoc is MIT licensed

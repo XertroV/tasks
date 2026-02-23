@@ -1,0 +1,56 @@
+---
+id: P10.M1.E1.T004
+title: Build IntegrationSettings Ecto schema with encryption
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T19:55:09.624228+00:00'
+started_at: '2026-02-11T19:55:09.624228+00:00'
+completed_at: '2026-02-11T20:09:28.245177+00:00'
+duration_minutes: 14.310348966666668
+---
+
+# Build IntegrationSettings Ecto schema with encryption
+
+
+
+## Requirements
+
+Build an Ecto schema and changesets for the `IntegrationSettings` model with field-level encryption for sensitive credentials.
+
+## Description
+
+The IntegrationSettings schema handles encrypted GitHub API tokens and webhook secrets. Sensitive fields must be transparently encrypted/decrypted using a custom Ecto type or field-level encryption hook. The schema provides secure credential management with audit support.
+
+## Acceptance Criteria
+
+- [ ] Schema module at `lib/pag_server/schema/integration_settings.ex`
+- [ ] All fields defined with correct types, sensitive fields use encrypted types
+- [ ] Association to User via `belongs_to :user` and to WebhookSubscriptions via `has_many :subscriptions`
+- [ ] `create_changeset/1` validates api_token_encrypted, webhook_secret_encrypted, integration_type, user_id
+- [ ] `update_changeset/2` allows updating config, is_active, and timestamp fields
+- [ ] Sensitive field validations: tokens are non-empty after decryption, at least 20 chars
+- [ ] `decrypted_api_token/1` function returns plaintext token for GitHub API calls
+- [ ] `decrypted_webhook_secret/1` function returns plaintext secret for HMAC validation
+- [ ] Type spec defined with all field types
+- [ ] Database queries never leak encrypted values in logs
+
+## Implementation Notes
+
+- Location: `lib/pag_server/schema/integration_settings.ex`
+- Encryption type location: `lib/pag_server/types/encrypted_string.ex` (to be created if not exists)
+- Custom Ecto type: `PagServer.Types.EncryptedString` (base64 + AES-256-GCM)
+- Use custom `dump/1` and `load/1` callbacks for encryption/decryption in type module
+- Encryption key from `Application.get_env(:pag_server, :encryption_key)` - must be 32 bytes for AES-256
+- Decryption: use `:crypto.block_decrypt(:aes_256_gcm, key, iv, {ciphertext, tag})`
+- Virtual fields: `api_token`, `webhook_secret` (plaintext input, not persisted)
+- Cast from virtual → encrypted fields in changesets, validate plaintext before encryption
+- `integration_type`: restrict to "github" using `validate_inclusion`
+- Associations: `belongs_to :user`, `has_many :subscriptions, WebhookSubscription`
+- Include `decrypted_api_token/1` and `decrypted_webhook_secret/1` functions for runtime decryption
+- Timestamps: `:utc_datetime_usec`, `last_synced_at`: `:utc_datetime_usec`
+- Reference: `/home/xertrov/src/pag-server/lib/pag_server/schema/api_key.ex` for schema pattern

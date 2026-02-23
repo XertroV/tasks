@@ -1,0 +1,264 @@
+---
+id: P1.M3.E4.T004
+title: Write state management tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P1.M3.E4.T002
+- P1.M3.E4.T003
+claimed_by: claude-1
+claimed_at: '2026-02-05T10:00:20.836815'
+started_at: '2026-02-05T10:00:20.836815'
+completed_at: '2026-02-05T10:03:37.035560'
+tags:
+- agent
+- state
+- testing
+- exunit
+---
+
+# Write state management tests
+
+Create comprehensive test suite for `PagServer.Agents.State` module.
+
+## Requirements
+
+- [ ] Create `test/pag_server/agents/state_test.exs`
+- [ ] Test struct creation:
+  - [ ] `new/1` creates valid state
+  - [ ] Required fields are populated
+  - [ ] Initial values are correct (empty queue, idle status)
+- [ ] Test status transitions:
+  - [ ] Valid transitions succeed
+  - [ ] Invalid transitions return error
+  - [ ] All 6 transition combinations covered
+- [ ] Test context operations:
+  - [ ] `add_to_context/2` appends messages
+  - [ ] `clear_context/1` empties context list
+  - [ ] `truncate_context/2` keeps most recent messages
+  - [ ] Edge cases: empty context, exactly at limit, over limit
+- [ ] Test queue operations:
+  - [ ] `enqueue_message/2` adds to queue
+  - [ ] `dequeue_message/1` removes from queue (FIFO)
+  - [ ] `queue_empty?/1` detects empty queue
+  - [ ] Multiple enqueue/dequeue cycles
+- [ ] Test stats tracking:
+  - [ ] `update_stats/2` merges updates
+  - [ ] `increment_tokens/2` accumulates correctly
+  - [ ] Stats never decrease
+- [ ] Test serialization:
+  - [ ] Round-trip: `state |> to_json() |> from_json()` preserves data
+  - [ ] Sensitive fields are filtered
+  - [ ] Queue serialization works
+  - [ ] `to_debug_string/1` produces expected format
+- [ ] Property-based tests (optional but recommended):
+  - [ ] Stats always increase with `increment_tokens/2`
+  - [ ] Context truncation never exceeds limit
+- [ ] Aim for >90% coverage
+
+## Acceptance Criteria
+
+- [ ] Test file `test/pag_server/agents/state_test.exs` exists
+- [ ] Minimum 20 test cases (covering all functions)
+- [ ] All tests pass with `mix test`
+- [ ] Coverage report shows >90% for `State` module
+- [ ] Tests use descriptive names (`test "status transition from idle to processing succeeds"`)
+- [ ] Tests use `setup` blocks for common fixtures
+- [ ] Property-based tests use StreamData (if implemented)
+- [ ] No flaky tests (run `mix test --seed 0` multiple times)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 9 (Code Review Checklist)
+  - Tests cover new code (80%+ coverage) - line 813
+- AGENTS.md commands: `mix test`, `mix test --only unit`
+
+**Testing Philosophy**:
+- Test behavior, not implementation
+- One assertion per test (where reasonable)
+- Descriptive test names that read like specs
+- Use factories/fixtures for complex state setup
+- Fast tests (<1ms per test for pure functions)
+
+**Coverage Targets**:
+- `new/1`: 100%
+- Status transitions: 100% (all valid + all invalid)
+- Context operations: 100%
+- Queue operations: 100%
+- Stats tracking: 100%
+- Serialization: 90%+ (edge cases may be complex)
+
+## Notes
+
+Example test structure:
+
+```elixir
+defmodule PagServer.Agents.StateTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.Agents.State
+  
+  describe "new/1" do
+    test "creates state with required fields" do
+      config = %{
+        id: "agent-123",
+        session_id: "session-456",
+        model: "claude-3-5-sonnet-20241022"
+      }
+      
+      state = State.new(config)
+      
+      assert state.id == "agent-123"
+      assert state.session_id == "session-456"
+      assert state.status == :idle
+      assert state.context == []
+      assert :queue.is_empty(state.message_queue)
+      assert state.stats.tokens == 0
+    end
+    
+    test "raises if required fields missing" do
+      assert_raise KeyError, fn ->
+        State.new(%{model: "claude-3"})
+      end
+    end
+  end
+  
+  describe "update_status/2" do
+    setup do
+      config = %{id: "a", session_id: "s", model: "m"}
+      {:ok, state: State.new(config)}
+    end
+    
+    test "idle -> processing succeeds", %{state: state} do
+      assert {:ok, new_state} = State.update_status(state, :processing)
+      assert new_state.status == :processing
+    end
+    
+    test "idle -> interrupted fails", %{state: state} do
+      assert {:error, :cannot_interrupt_idle} = 
+        State.update_status(state, :interrupted)
+    end
+    
+    test "processing -> interrupted succeeds", %{state: state} do
+      {:ok, processing} = State.update_status(state, :processing)
+      assert {:ok, interrupted} = State.update_status(processing, :interrupted)
+      assert interrupted.status == :interrupted
+    end
+    
+    # ... test all 6 combinations
+  end
+  
+  describe "context operations" do
+    setup do
+      config = %{id: "a", session_id: "s", model: "m"}
+      state = State.new(config)
+      {:ok, state: state}
+    end
+    
+    test "add_to_context appends message", %{state: state} do
+      msg = %{role: "user", content: "Hello"}
+      new_state = State.add_to_context(state, msg)
+      
+      assert length(new_state.context) == 1
+      assert List.last(new_state.context) == msg
+    end
+    
+    test "truncate_context keeps most recent messages", %{state: state} do
+      # Add 10 messages
+      state = Enum.reduce(1..10, state, fn i, s ->
+        State.add_to_context(s, %{id: i})
+      end)
+      
+      # Truncate to 5
+      truncated = State.truncate_context(state, 5)
+      
+      assert length(truncated.context) == 5
+      assert Enum.map(truncated.context, & &1.id) == [6, 7, 8, 9, 10]
+    end
+    
+    test "truncate_context handles empty context", %{state: state} do
+      truncated = State.truncate_context(state, 10)
+      assert truncated.context == []
+    end
+  end
+  
+  describe "serialization" do
+    setup do
+      config = %{id: "abc", session_id: "xyz", model: "claude-3"}
+      state = State.new(config)
+      {:ok, state: state}
+    end
+    
+    test "round-trip preserves data", %{state: state} do
+      json = State.to_json(state)
+      {:ok, decoded} = State.from_json(json)
+      
+      assert decoded.id == state.id
+      assert decoded.status == state.status
+      assert :queue.is_empty(decoded.message_queue)
+    end
+    
+    test "filters sensitive config fields" do
+      config = %{
+        id: "a", 
+        session_id: "s", 
+        model: "m",
+        api_key: "secret123"
+      }
+      state = State.new(config)
+      
+      json = State.to_json(state)
+      refute String.contains?(json, "secret123")
+    end
+    
+    test "to_debug_string includes key info", %{state: state} do
+      debug = State.to_debug_string(state)
+      
+      assert debug =~ "Agent State"
+      assert debug =~ state.id
+      assert debug =~ ":idle"
+    end
+  end
+  
+  describe "property-based tests" do
+    test "stats.tokens never decrease" do
+      check all increments <- list_of(positive_integer(), min_length: 1, max_length: 100) do
+        config = %{id: "a", session_id: "s", model: "m"}
+        state = State.new(config)
+        
+        final_state = Enum.reduce(increments, state, fn inc, s ->
+          State.increment_tokens(s, inc)
+        end)
+        
+        assert final_state.stats.tokens == Enum.sum(increments)
+      end
+    end
+  end
+end
+```
+
+**Running Tests**:
+```bash
+# Run all state tests
+mix test test/pag_server/agents/state_test.exs
+
+# Run specific test
+mix test test/pag_server/agents/state_test.exs:42
+
+# Run with coverage
+mix test --cover
+
+# Run with detailed output
+mix test --trace
+```
+
+**Common Pitfalls to Avoid**:
+- Don't test implementation details (e.g., internal private functions)
+- Don't have side effects in tests (use `async: true`)
+- Don't rely on global state or order of execution
+- Don't use sleep/timers (state functions are pure)
+- Do test edge cases (nil, empty, boundary values)
+- Do test error cases (invalid transitions, missing fields)

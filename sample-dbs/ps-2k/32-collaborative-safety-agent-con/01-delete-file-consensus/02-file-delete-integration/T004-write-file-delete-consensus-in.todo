@@ -1,0 +1,23 @@
+---
+id: P32.M1.E2.T004
+title: Write file delete consensus integration tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P32.M1.E2.T001
+- P32.M1.E2.T002
+- P32.M1.E2.T003
+tags:
+- tests
+- integration
+- file-delete
+- consensus
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:22.293734+00:00'
+started_at: '2026-02-18T20:03:22.293734+00:00'
+completed_at: '2026-02-18T22:09:37.840483+00:00'
+duration_minutes: 126.25911211666667
+---
+Integration tests for the full delete consensus flow.\n\nTest cases:\n- Delete blocked: vote pending, file not deleted until vote resolves\n- Delete approved: majority yes => file deleted successfully\n- Delete rejected: majority no => {:error, :consensus_rejected}, file untouched\n- Delete timeout: no votes within 30s => file untouched (use sleep_fn mock)\n- Single agent: consensus skipped, delete proceeds immediately\n- Consensus disabled: enable_delete_consensus=false => delete proceeds without vote\n- min_agents_for_consensus=3: only 2 agents => consensus skipped\n- MCP list_pending_votes: pending vote appears for all session agents\n- MCP cast_vote: agent can vote via MCP tool\n\nAcceptance criteria:\n- [ ] All test cases pass\n- [ ] Tests complete in < 10s total (mock sleeps)\n- [ ] No file system side effects leak between tests\n- [ ] mix test path/to/file_delete_consensus_test.exs passes cleanly

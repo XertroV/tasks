@@ -1,0 +1,86 @@
+---
+id: P8.M3.E1.T003
+title: Create app manifest and setup docs
+status: done
+estimate_hours: 1
+complexity: medium
+priority: high
+depends_on:
+- P8.M3.E1.T002
+tags:
+- slack
+- documentation
+- deployment
+claimed_by: cli-user
+claimed_at: '2026-02-08T12:02:59.281531+00:00'
+started_at: '2026-02-08T12:02:59.281531+00:00'
+completed_at: '2026-02-08T12:26:38.652923+00:00'
+duration_minutes: 23.656189649999998
+---
+
+# Create app manifest and setup docs
+
+Create Slack app manifest YAML and documentation for deploying the integration.
+
+## Requirements
+
+- [x] Create `config/slack_manifest.yml` (~100 lines)
+- [x] Define all required OAuth scopes
+- [x] Configure event subscriptions and slash commands
+- [x] Add setup guide to `docs/integrations/slack.md` (~150 lines)
+- [x] Document environment variables and secrets
+- [x] Include ngrok/tunneling instructions for development
+
+## Acceptance Criteria
+
+- [x] Manifest includes all required features and scopes
+- [x] Event subscriptions configured for message and app_mention
+- [x] Slash commands defined (`/pag`)
+- [x] Interactive components enabled
+- [x] Documentation covers app creation and installation
+- [x] Development setup instructions tested
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 279-286 (Slack features)
+
+**Key Points**:
+- App manifest allows one-click app creation
+- Request URL must be publicly accessible (ngrok for dev)
+- Event subscriptions require signature verification
+- Slash commands can be workspace-specific or global
+
+## Notes
+
+Required event subscriptions:
+- `message.channels` - Channel messages
+- `message.groups` - Private channel messages
+- `message.im` - Direct messages
+- `app_mention` - @mentions
+
+Slash command configuration:
+- Command: `/pag`
+- Request URL: `https://your-domain.com/slack/commands`
+- Short description: "Interact with PAG agent"
+- Usage hint: `ask [question] | fork | stats`
+
+Manifest template structure:
+```yaml
+display_information:
+  name: PAG Agent
+  description: 24/7 LLM agent orchestration
+features:
+  bot_user:
+    display_name: PAG
+  slash_commands:
+    - command: /pag
+      description: Interact with PAG agent
+oauth_config:
+  scopes:
+    bot: [chat:write, commands, users:read, channels:read]
+settings:
+  event_subscriptions:
+    request_url: https://your-domain.com/slack/events
+    bot_events: [message.channels, app_mention]
+```

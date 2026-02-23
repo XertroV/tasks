@@ -1,0 +1,35 @@
+---
+id: B173
+title: Pair programming UI lacks session creation and role action controls
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- browser-testing
+- pair-programming
+- plugin-ui
+claimed_by: cli-user
+claimed_at: '2026-02-21T08:10:14.863351+00:00'
+started_at: '2026-02-21T08:10:14.863351+00:00'
+completed_at: '2026-02-21T08:18:04.881833+00:00'
+duration_minutes: 7.833641166666666
+---
+## Repro
+1. Navigate to `/dashboard/agent-manager` and `/dashboard/validation-console`.
+2. Look for any control to create a pair-programming session (coder/observer), approve/interrupt actions, or role swap controls.
+3. Navigate directly to `/dashboard/pair-sessions/test`.
+
+## Expected
+- A discoverable UI flow exists to create a pair session.
+- Pair session lifecycle controls (approve/interrupt) and role-switching are reachable from the dashboard workflow.
+
+## Actual
+- No discoverable create/session-management flow found in Agent Manager or Validation Console.
+- Direct pair-session route loads only if a pre-existing session ID is known, otherwise renders "Session not found or not yet initialized."
+
+## Notes
+Discovered during `P51.M2.E2.T002` plugin UI exploration campaign.
+
+Follow-up backend prerequisites were addressed under `B174` (agent spawner lifecycle and blackboard bootstrap), but a dedicated dashboard UX flow for creating/managing pair sessions and invoking role actions is still missing.

@@ -1,0 +1,17 @@
+---
+id: B052
+title: .env should be autoloaded by phx.server
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:34:17.914847+00:00'
+started_at: '2026-02-16T03:34:17.914847+00:00'
+completed_at: '2026-02-16T03:40:26.117359+00:00'
+duration_minutes: 6.136707983333333
+---
+
+.env should be autoloaded by phx.server

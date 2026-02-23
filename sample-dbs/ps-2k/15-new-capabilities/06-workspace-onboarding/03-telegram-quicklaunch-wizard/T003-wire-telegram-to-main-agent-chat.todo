@@ -1,0 +1,40 @@
+---
+id: P15.M6.E3.T003
+title: Wire Telegram updates to workspace main agent chat path
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M6.E3.T002
+tags:
+- telegram
+- integration
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:50:51.233848+00:00'
+started_at: '2026-02-17T17:50:51.233848+00:00'
+completed_at: '2026-02-17T18:09:24.207068+00:00'
+duration_minutes: 18.54955335
+---
+
+# Wire Telegram updates to workspace main agent chat path
+
+## Owner Outcome
+- I can send a Telegram message and receive a response from the workspace main agent.
+
+## Implementation Notes
+Routing implemented in `lib/pag_server/integrations/telegram/session_mapper.ex`:
+- `resolve_main_agent/1` performs workspace lookup and main-agent dispatch
+- Failure handling for missing workspace/agent with actionable logs
+- Message handler at `lib/pag_server/integrations/telegram/message_handler.ex`
+
+## Acceptance Criteria
+- [x] Route inbound Telegram updates through workspace lookup and designated main-agent dispatch path.
+- [x] Add outbound reply handling that preserves message/session correlation.
+  - `build_send_opts/2` with `ReplyParameters` for Telegram reply threading. First chunk threaded, continuations standalone.
+- [x] Add integration/smoke test for Telegram message -> main agent response loop.
+  - 7 tests in `round_trip_test.exs`: full round trip, session reuse, outbound correlation, e2e verification.
+- [x] Add failure handling for missing workspace or missing main agent with actionable logs.
+- [x] Verify this completes the "connect Telegram and chat in <10 minutes" journey when previous steps are complete.
+  - E2E verification test documents all 9 layers of the journey.

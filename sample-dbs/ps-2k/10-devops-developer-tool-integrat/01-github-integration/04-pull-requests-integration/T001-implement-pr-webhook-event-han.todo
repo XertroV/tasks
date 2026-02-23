@@ -1,0 +1,61 @@
+---
+id: P10.M1.E4.T001
+title: Implement PR webhook event handlers
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- github
+- webhook
+- pull-requests
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:36:08.091649+00:00'
+started_at: '2026-02-12T00:36:08.091649+00:00'
+completed_at: '2026-02-12T01:16:26.502528+00:00'
+duration_minutes: 40.30684778333333
+---
+
+# Implement PR webhook event handlers
+
+Create webhook handlers for GitHub Pull Request events in `lib/pag_server/integrations/github/` directory following the pattern established by Issues integration.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/github/pull_requests.ex` module with event handlers
+- [ ] Handle `pull_request.opened`, `pull_request.closed`, `pull_request.synchronize` events
+- [ ] Handle `pull_request_review.submitted`, `pull_request_review.dismissed` events
+- [ ] Handle `pull_request_review_comment.created`, `pull_request_review_comment.edited` events
+- [ ] Parse webhook payload and extract PR metadata (number, title, author, head/base branches, files changed, diff)
+- [ ] Route events to agent session based on repository + PR number
+- [ ] Log all incoming webhook events with proper context
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] Webhook handler extracts all PR fields correctly (including diff URL)
+- [ ] Correctly identifies event type and dispatches to router
+- [ ] Session mapping logic routes to correct agent
+- [ ] No unhandled exception cases (defensive error handling)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M1.E4)
+**Agent**: cli-user
+**Date**: 2026-02-12 00:36 UTC
+**Sibling tasks**: P10.M1.E4.T002, P10.M1.E4.T003, P10.M1.E4.T004, P10.M1.E4.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M1.E4.T001 → P10.M1.E4.T002 → P10.M1.E4.T003 → P10.M1.E4.T004 → P10.M1.E4.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M1.E4.T001: .tasks/10-devops-developer-tool-integrat/01-github-integration/04-pull-requests-integration/T001-implement-pr-webhook-event-han.todo
+- P10.M1.E4.T002: .tasks/10-devops-developer-tool-integrat/01-github-integration/04-pull-requests-integration/T002-build-pr-api-methods-comment-r.todo
+- P10.M1.E4.T003: .tasks/10-devops-developer-tool-integrat/01-github-integration/04-pull-requests-integration/T003-implement-pr-diff-fetching-and.todo
+- P10.M1.E4.T004: .tasks/10-devops-developer-tool-integrat/01-github-integration/04-pull-requests-integration/T004-add-pr-review-submission-and-i.todo
+- P10.M1.E4.T005: .tasks/10-devops-developer-tool-integrat/01-github-integration/04-pull-requests-integration/T005-write-tests-for-pr-webhook-int.todo

@@ -1,0 +1,35 @@
+---
+id: P42.M1.E1.T001
+title: 'Create Ecto schema: MailmanMailbox'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:13:36.042361+00:00'
+started_at: '2026-02-19T17:13:36.042361+00:00'
+completed_at: '2026-02-19T17:15:39.903318+00:00'
+duration_minutes: 2.0643491
+---
+## Context\nCreate Ecto schema for plugin_mailman_mailboxes table.\n\n## Acceptance Criteria\n- [ ] Schema module at plugins/mailman/lib/schema/mailbox.ex under PagServer.Plugins.Mailman.Schema.Mailbox\n- [ ] Fields: id (uuid PK), workspace_id (FK), address (text unique), is_active (bool), mailman_agent_id (FK nullable), default_recipient_agent_id (FK nullable), metadata (map), timestamps\n- [ ] Changesets with validation\n- [ ] Unique index on workspace_id and address
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P42.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 17:13 UTC
+**Sibling tasks**: P42.M1.E1.T002, P42.M1.E1.T003, P42.M1.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P42.M1.E1.T001 → P42.M1.E1.T002 → P42.M1.E1.T003 → P42.M1.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P42.M1.E1.T001: .tasks/42-mailman-cross-workspace-plugin/01-core-infrastructure/01-db-schemas-migrations/T001-create-ecto-schema-mailmanmail.todo
+- P42.M1.E1.T002: .tasks/42-mailman-cross-workspace-plugin/01-core-infrastructure/01-db-schemas-migrations/T002-create-ecto-schema-mailmanmess.todo
+- P42.M1.E1.T003: .tasks/42-mailman-cross-workspace-plugin/01-core-infrastructure/01-db-schemas-migrations/T003-create-ecto-schema-mailmanremo.todo
+- P42.M1.E1.T004: .tasks/42-mailman-cross-workspace-plugin/01-core-infrastructure/01-db-schemas-migrations/T004-write-plugin-sql-migrations-mi.todo

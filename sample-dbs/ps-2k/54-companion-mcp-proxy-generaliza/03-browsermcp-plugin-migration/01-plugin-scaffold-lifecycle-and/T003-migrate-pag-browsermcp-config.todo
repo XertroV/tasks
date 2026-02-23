@@ -1,0 +1,25 @@
+---
+id: P54.M3.E1.T003
+title: Migrate PAG_BROWSERMCP_* config to plugin config with backward compat
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P54.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T11:20:59.123161+00:00'
+started_at: '2026-02-21T11:20:59.123161+00:00'
+completed_at: '2026-02-21T11:25:47.604537+00:00'
+duration_minutes: 4.8080226999999995
+---
+## Context
+P53 uses PAG_BROWSERMCP_ENABLED, PAG_BROWSERMCP_BACKEND, PAG_BROWSERMCP_REQUEST_TIMEOUT_MS env vars read into application env in runtime.exs. These become plugin config, but must continue to work for existing deployments.
+
+## Acceptance Criteria
+- [ ] BrowserMcpPlugin reads its configuration via plugin KV store (workspace-scoped) with fallback to application env (PAG_BROWSERMCP_* vars) for backward compatibility
+- [ ] BrowserMcpAdapter updated to read timeout and enabled state from plugin config first, PAG_BROWSERMCP_* env vars as fallback
+- [ ] runtime.exs browsermcp section retained as-is (backward compat); new plugin config keys documented
+- [ ] No existing deployments break: a server with PAG_BROWSERMCP_ENABLED=true and no plugin installed behaves the same as before
+- [ ] `mix lint` passes

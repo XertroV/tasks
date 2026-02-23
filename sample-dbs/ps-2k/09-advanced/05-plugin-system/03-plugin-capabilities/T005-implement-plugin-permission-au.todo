@@ -1,0 +1,60 @@
+---
+id: P9.M5.E3.T005
+title: Implement plugin permission auto-approval via capability grants
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+- P9.M5.E2.T003
+tags:
+- permissions
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:09:59.144545+00:00'
+started_at: '2026-02-07T05:09:59.144545+00:00'
+completed_at: '2026-02-07T05:15:56.236703+00:00'
+duration_minutes: 5.951535716666667
+---
+
+# Implement plugin permission auto-approval via capability grants
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/permission_grants.ex` module
+- [x] Allow plugins to declare auto-approval rules in manifest:
+  - [x] `permissions.auto_approve` field: list of tool/resource patterns
+  - [x] Rules are scoped to the plugin's own tools and resources only
+  - [x] Example: `auto_approve: ["myplugin.read_*", "myplugin.list_*"]`
+- [x] Validate auto-approval rules against `Security.Capabilities`:
+  - [x] Rules cannot grant permissions beyond the plugin's declared capabilities
+  - [x] Rules must match the plugin's namespace prefix
+  - [x] Reject rules that attempt cross-plugin permission grants
+- [x] Support admin override:
+  - [x] Server config can deny specific plugin auto-approvals
+  - [x] Config key: `:pag_server, :plugins, :permission_overrides`
+  - [x] Override format: `%{plugin_name => :deny_all | [denied_patterns]}`
+- [x] Implement audit trail for auto-approved permissions:
+  - [x] Log each auto-approval with plugin name, tool, agent_id, timestamp
+  - [x] Store in event system for queryable history
+- [x] Integrate with existing permission check flow in `Security.Capabilities`
+
+## Acceptance Criteria
+
+- [x] Plugins can declare auto-approval rules for their own tools
+- [x] Auto-approval rules are restricted to the plugin's namespace (can't approve other plugins' tools)
+- [x] `Security.Capabilities` respects plugin auto-approval rules during permission checks
+- [x] Admin overrides can deny specific plugin auto-approvals
+- [x] Audit log records every auto-approved permission with full context
+- [x] Unit tests cover: valid rules, namespace enforcement, admin overrides, audit logging
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/permission_grants.ex`
+- **Integrates with**: `PagServer.Security.Capabilities` for permission checking
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004), `PagServer.Plugins.HookDispatcher` (E2.T002)
+- **Audit storage**: `PagServer.Events.Persistence` for audit trail events
+- **Security note**: Critical that cross-plugin permission grants are impossible

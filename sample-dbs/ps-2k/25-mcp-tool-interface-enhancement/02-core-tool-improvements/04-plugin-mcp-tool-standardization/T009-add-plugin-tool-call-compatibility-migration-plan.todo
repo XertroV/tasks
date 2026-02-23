@@ -1,0 +1,57 @@
+---
+id: P25.M2.E4.T009
+title: Add plugin tool-call compatibility and migration plan
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P25.M2.E4.T001
+- P25.M2.E4.T002
+- P25.M2.E4.T003
+- P25.M2.E4.T004
+- P25.M2.E4.T005
+- P25.M2.E4.T006
+- P25.M2.E4.T007
+- P25.M2.E4.T008
+tags:
+- mcp
+- plugin
+- standards
+- migration
+- compatibility
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:21:51.410090+00:00'
+started_at: '2026-02-19T15:21:51.410090+00:00'
+completed_at: '2026-02-19T15:26:08.904282+00:00'
+duration_minutes: 4.291569666666666
+---
+
+# Add plugin tool-call compatibility and migration plan
+
+## Scope
+
+- Consolidate compatibility and deprecation policy across:
+  - Connector Messaging
+  - Cron
+  - Cross-workspace
+  - Graphiti Wall
+  - Pair Programming
+  - SSH
+  - Tailscale
+  - Whisper
+- Define rollout plan for one-version compatibility window.
+
+## Requirements
+
+- Create a migration matrix showing old tool names vs new operation names.
+- Define alias handling, warning/deprecation behavior, and removal criteria.
+- Add docs checklist for user-facing and API-facing changes.
+- Include rollout verification sequence and rollback approach.
+
+## Acceptance Criteria
+
+- [ ] Migration matrix exists and is explicitly scoped to all 7 plugin families.
+- [ ] Backward-compatibility policy is documented with timeline and owners.
+- [ ] Rollout, warning, and deprecation behavior is consistent with AGENTS conventions.
+- [ ] Plan identifies required docs/tests to verify compatibility during migration.

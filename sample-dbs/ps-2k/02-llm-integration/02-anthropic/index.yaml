@@ -1,0 +1,50 @@
+id: P2.M2
+name: Anthropic Provider
+status: pending
+estimate_hours: 12
+complexity: medium
+depends_on:
+- P2.M1
+epics:
+- id: E1
+  name: Basic Client
+  path: 01-basic-client
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: HTTP client for Anthropic API with authentication and basic request/response
+    handling
+- id: E2
+  name: Streaming
+  path: 02-streaming
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Server-Sent Events (SSE) streaming with iolist accumulation for tokens
+- id: E3
+  name: Tool Calling
+  path: 03-tool-calling
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on:
+  - E2
+  description: Tool use implementation with schema conversion and multi-turn execution
+- id: E4
+  name: Prompt Caching
+  path: 04-caching
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on:
+  - E1
+  description: Anthropic prompt caching support with cache_control breakpoints
+stats:
+  total_tasks: 15
+  done: 15
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,32 @@
+id: P30.M1
+name: Marketplace Registry API
+status: pending
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Marketplace Installer Enhancements
+  path: 01-marketplace-installer-enhancem
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Marketplace REST Endpoints
+  path: 02-marketplace-rest-endpoints
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

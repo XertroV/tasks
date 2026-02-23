@@ -1,0 +1,30 @@
+id: P55.M3.E3
+name: Session Fork
+status: done
+estimate_hours: 2.5
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fork-button-on-message-hover-a.todo
+  title: Fork button on message hover and session fork call
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-post-fork-navigation-and-sideb.todo
+  title: Post-fork navigation and sidebar update
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

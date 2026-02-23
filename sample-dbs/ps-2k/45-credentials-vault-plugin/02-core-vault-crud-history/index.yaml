@@ -1,0 +1,23 @@
+id: P45.M2
+name: Core Vault CRUD & History
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Vault Context Module
+  path: 01-vault-context-module
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

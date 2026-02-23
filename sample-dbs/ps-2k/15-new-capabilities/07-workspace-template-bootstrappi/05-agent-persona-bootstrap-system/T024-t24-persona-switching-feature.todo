@@ -1,0 +1,17 @@
+---
+id: P15.M7.E5.T024
+title: 'T24: Persona Switching Feature'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: low
+depends_on:
+- P15.M7.E5.T017
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:07:29.559513+00:00'
+started_at: '2026-02-18T09:07:29.559513+00:00'
+completed_at: '2026-02-18T10:32:08.196250+00:00'
+duration_minutes: 84.64394546666668
+---
+Change personas mid-workspace (with confirmation). Context preservation during switch. Command: pag persona switch <persona>

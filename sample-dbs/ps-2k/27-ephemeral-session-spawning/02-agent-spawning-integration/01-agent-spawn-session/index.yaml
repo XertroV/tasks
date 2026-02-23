@@ -1,0 +1,33 @@
+id: P27.M2.E1
+name: Agent Spawn Session Logic
+status: pending
+estimate_hours: 10.0
+complexity: medium
+depends_on:
+- P27.M1
+locked: false
+tasks:
+- id: T001
+  file: T001-update-agent-spawn-to-accept-se.todo
+  title: Update agent spawn logic to accept session_id or create ephemeral session
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P27.M1.E1.T001
+- id: T002
+  file: T002-cron-job-actions-use-ephemeral-s.todo
+  title: Cron job actions use ephemeral sessions when no session_id provided
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P27.M2.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

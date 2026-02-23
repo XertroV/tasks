@@ -1,0 +1,44 @@
+# Epic: HNSWLib Development Fallback
+# Phase 9, Milestone 1, Epic 2 (P9.M1.E2)
+
+id: P9.M1.E2
+name: HNSWLib Development Fallback
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: [P9.M1.E1]
+
+tasks:
+  - id: T001
+    file: T001-hnswlib-nif.todo
+    title: Integrate HNSWLib NIF
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-memory-limits.todo
+    title: Implement memory-bounded index
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-dev-switch.todo
+    title: Add dev/prod environment switching
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: low
+    depends_on: [T001, T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

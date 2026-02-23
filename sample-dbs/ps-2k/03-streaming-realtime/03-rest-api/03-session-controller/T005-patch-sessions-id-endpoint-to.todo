@@ -1,0 +1,131 @@
+---
+id: P3.M3.E3.T005
+title: PATCH /sessions/:id endpoint to update session
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- rest
+- crud
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:25:35.406756+00:00'
+started_at: '2026-02-08T04:25:35.406756+00:00'
+completed_at: '2026-02-08T04:33:50.119219+00:00'
+duration_minutes: 8.245207566666666
+---
+
+# PATCH /sessions/:id endpoint to update session
+
+
+
+## Requirements
+
+- [ ] Create `PATCH /sessions/:id` endpoint in `lib/pag_server_web/controllers/session_controller.ex`
+- [ ] Implement `update/2` action following Phoenix controller patterns
+- [ ] Accept partial JSON update (only modified fields required)
+- [ ] Allow updating: status, metadata (NOT agent_id, parent_session_id)
+- [ ] Validate session exists before updating
+- [ ] Validate status transitions are valid (active -> completed/archived, not reverse)
+- [ ] Return 200 OK with updated session details
+- [ ] Return 404 Not Found if session doesn't exist
+- [ ] Return 422 on validation errors
+
+## Acceptance Criteria
+
+- [ ] Accepts JSON body with any subset of: `status`, `metadata`
+- [ ] Validates session_id is valid UUID format
+- [ ] Returns 404 if session doesn't exist in database
+- [ ] Updates only provided fields (partial update)
+- [ ] Validates status transitions: `active` → `paused` → `completed`/`archived`, never back to active
+- [ ] Prevents updating immutable fields (agent_id, parent_session_id, created_at)
+- [ ] Merges metadata updates (doesn't replace entire object unless explicitly requested)
+- [ ] Returns 200 with full updated session JSON
+- [ ] Returns 422 for invalid status transitions
+- [ ] Test coverage: update status, update metadata, invalid transition, invalid ID, non-existent session
+- [ ] Handles concurrent updates with optimistic locking (version field)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 245-267 (Sessions domain)
+
+**Key Points**:
+- Status transitions must be one-way (active → completed, not reverse)
+- Metadata updates are common for tracking session state
+- Immutable fields: agent_id, parent_session_id, created_at
+- Consider optimistic locking for concurrent updates
+
+## Notes
+
+Implementation pattern:
+```elixir
+def update(conn, %{"id" => id} = params) do
+  with {:ok, session} <- get_session(id),
+       {:ok, attrs} <- validate_update_params(params),
+       :ok <- validate_status_transition(session.status, attrs[:status]),
+       {:ok, updated_session} <- update_session_record(session, attrs) do
+    conn
+    |> put_status(:ok)
+    |> json(session_to_json(updated_session))
+  else
+    {:error, :not_found} ->
+      conn |> put_status(:not_found) |> json(%{error: "Session not found"})
+    
+    {:error, :invalid_transition} ->
+      conn
+      |> put_status(:unprocessable_entity)
+      |> json(%{error: "Invalid status transition"})
+    
+    {:error, %Ecto.Changeset{} = changeset} ->
+      conn
+      |> put_status(:unprocessable_entity)
+      |> json(%{errors: translate_errors(changeset)})
+  end
+end
+
+defp validate_status_transition(current, new) when is_nil(new), do: :ok
+defp validate_status_transition("active", new) when new in ["paused", "completed", "archived"], do: :ok
+defp validate_status_transition("paused", new) when new in ["active", "completed", "archived"], do: :ok
+defp validate_status_transition("completed", _), do: {:error, :invalid_transition}
+defp validate_status_transition("archived", _), do: {:error, :invalid_transition}
+defp validate_status_transition(_, _), do: {:error, :invalid_transition}
+```
+
+Request example:
+```json
+PATCH /api/sessions/session-uuid
+{
+  "status": "completed",
+  "metadata": {
+    "completion_reason": "task_finished",
+    "total_messages": 42
+  }
+}
+```
+
+Response example (200 OK):
+```json
+{
+  "id": "session-uuid",
+  "agent_id": "550e8400-e29b-41d4-a716-446655440000",
+  "parent_session_id": null,
+  "status": "completed",
+  "created_at": "2026-02-06T10:30:00Z",
+  "updated_at": "2026-02-06T11:30:00Z",
+  "metadata": {
+    "purpose": "code_review",
+    "completion_reason": "task_finished",
+    "total_messages": 42
+  },
+  "message_count": 42
+}
+```
+
+Edge cases:
+- Attempting to reactivate completed session - reject with clear error
+- Metadata merge vs replace semantics
+- Concurrent updates (use optimistic locking)
+- Very large metadata objects - validate size limit

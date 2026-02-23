@@ -1,0 +1,55 @@
+---
+id: P15.M5.E2.T001
+title: Design task auction/bidding protocol
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T17:04:22.342390+00:00'
+started_at: '2026-02-13T17:04:22.342390+00:00'
+completed_at: '2026-02-13T17:19:55.493218+00:00'
+duration_minutes: 15.552513083333334
+---
+
+# Design task auction/bidding protocol
+
+## Description
+Design a contract net protocol for task allocation. Define auction lifecycle, bid format, winner selection criteria, and contract execution tracking.
+
+## Acceptance Criteria
+- [ ] Define auction states: announced, bidding, awarded, executing, completed, failed
+- [ ] Design bid structure: agent_id, capability_match, estimated_cost, estimated_time
+- [ ] Define winner selection: lowest_cost, fastest, best_capability, weighted
+- [ ] Add bid deadline and timeout handling
+- [ ] Design contract structure with terms and milestones
+- [ ] Add contract renegotiation protocol
+- [ ] Document protocol message flow
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/agent.ex`, `lib/pag_server/schema/goal.ex`, `lib/pag_server/agents/coordinator.ex`
+- Part of epic: Contract Net Protocol
+- Reference Goal schema for task structure
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M5.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 17:04 UTC
+**Sibling tasks**: P15.M5.E2.T002, P15.M5.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M5.E2.T001 → P15.M5.E2.T002 → P15.M5.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M5.E2.T001: .tasks/15-new-capabilities/05-multi-agent-patterns/02-contract-net-protocol/T001-design-task-auction-bidding-pr.todo
+- P15.M5.E2.T002: .tasks/15-new-capabilities/05-multi-agent-patterns/02-contract-net-protocol/T002-implement-contract-net-coordin.todo
+- P15.M5.E2.T003: .tasks/15-new-capabilities/05-multi-agent-patterns/02-contract-net-protocol/T003-add-bidding-agent-behavior.todo

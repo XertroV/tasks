@@ -1,0 +1,16 @@
+id: P7.M5.E1
+name: Retry Logic
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+tasks:
+- T001-exponential-backoff.todo
+- T002-integration.todo
+- T003-tests.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

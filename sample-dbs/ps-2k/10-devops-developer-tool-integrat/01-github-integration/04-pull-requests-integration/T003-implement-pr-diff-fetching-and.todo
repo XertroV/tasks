@@ -1,0 +1,40 @@
+---
+id: P10.M1.E4.T003
+title: Implement PR diff fetching and parsing
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- github
+- api
+- diffs
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:36:08.095486+00:00'
+started_at: '2026-02-12T00:36:08.095486+00:00'
+completed_at: '2026-02-12T01:16:28.961198+00:00'
+duration_minutes: 40.347761399999996
+---
+
+# Implement PR diff fetching and parsing
+
+Fetch and parse GitHub PR diffs for inclusion in agent context with syntax highlighting and incremental streaming support.
+
+## Requirements
+
+- [ ] Add `get_pr_diff(repo, number)` method returning unified diff format
+- [ ] Add `get_pr_diff_context(repo, number, context_lines: 3)` for context-aware diffs
+- [ ] Parse diff into structured format: `{file_path, changes: [{type, line_number, content}]}`
+- [ ] Implement streaming diff parser for large PRs (return `Stream.t()`)
+- [ ] Truncate diffs to respect context token limits
+- [ ] Cache parsed diffs in Cachex for 1 hour (keyed by `{repo, pr_number}`)
+- [ ] Handle binary files gracefully (skip or mark as binary)
+
+## Acceptance Criteria
+
+- [ ] Diff parsing correctly identifies additions, deletions, modifications
+- [ ] Large diffs (>10k lines) stream without loading entirely into memory
+- [ ] Token truncation respects max_tokens parameter
+- [ ] Cached diffs are invalidated on PR update events
+- [ ] Binary files are properly handled without errors

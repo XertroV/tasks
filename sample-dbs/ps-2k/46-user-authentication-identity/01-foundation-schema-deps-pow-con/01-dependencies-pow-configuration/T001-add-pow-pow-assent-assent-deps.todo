@@ -1,0 +1,40 @@
+---
+id: P46.M1.E1.T001
+title: Add pow, pow_assent, assent deps to mix.exs
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:33:57.797884+00:00'
+started_at: '2026-02-19T20:33:57.797884+00:00'
+completed_at: '2026-02-19T20:41:03.561821+00:00'
+duration_minutes: 7.09606545
+---
+Add the following dependencies to mix.exs:
+- {:pow, "~> 1.0"}
+- {:pow_assent, "~> 0.4"}
+- {:assent, "~> 0.2"}
+Run mix deps.get and verify no conflicts with existing Joken dep.
+Acceptance: mix deps.get succeeds, mix compile succeeds.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 20:33 UTC
+**Sibling tasks**: P46.M1.E1.T002, P46.M1.E1.T003, P46.M1.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M1.E1.T001 → P46.M1.E1.T002 → P46.M1.E1.T003 → P46.M1.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M1.E1.T001: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/01-dependencies-pow-configuration/T001-add-pow-pow-assent-assent-deps.todo
+- P46.M1.E1.T002: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/01-dependencies-pow-configuration/T002-create-pagserverweb-powconfig.todo
+- P46.M1.E1.T003: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/01-dependencies-pow-configuration/T003-add-oauth-provider-config-to-c.todo
+- P46.M1.E1.T004: .tasks/46-user-authentication-identity/01-foundation-schema-deps-pow-con/01-dependencies-pow-configuration/T004-add-pow-session-plugs-to-pagse.todo

@@ -1,0 +1,17 @@
+---
+id: P47.M3.E2.T001
+title: Implement DeviceCodeCleanup Oban worker
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P47.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:32:49.650815+00:00'
+started_at: '2026-02-20T06:32:49.650815+00:00'
+completed_at: '2026-02-20T06:43:09.915833+00:00'
+duration_minutes: 10.33775
+---
+Create lib/pag_server/workers/device_code_cleanup.ex as an Oban.Worker. perform/1: (1) expire stale pending rows: UPDATE device_codes SET status='expired' WHERE status='pending' AND expires_at < now(); (2) delete old used/expired rows: DELETE FROM device_codes WHERE status IN ('used','expired') AND updated_at < now() - interval '24 hours'. Schedule: every 60 minutes via Oban cron (:device_code_cleanup, every: 3600). Add to Oban config in config.exs. Include telemetry events for rows_expired and rows_deleted counts.

@@ -1,0 +1,38 @@
+---
+id: P43.M1.E2.T003
+title: Implement CallRecorder.extract_context/1 to strip context opts from provider_opts
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:02:04.854665+00:00'
+started_at: '2026-02-19T19:02:04.854665+00:00'
+completed_at: '2026-02-19T19:10:40.512713+00:00'
+duration_minutes: 8.594300550000002
+---
+
+# Implement CallRecorder.extract_context/1 to strip context opts from provider_opts
+
+
+
+## Requirements
+
+- Add `extract_context/1` to `PagServer.LLM.CallRecorder`
+- The function separates observability context keys from provider-facing opts so the recorder can capture metadata without leaking it to provider adapters
+
+## Acceptance Criteria
+
+- `extract_context/1` has signature `extract_context(provider_opts)` where `provider_opts` is a keyword list
+- The function extracts the following keys if present: `:agent_id`, `:session_id`, `:workspace_id`, `:message_id`, `:caller_context`
+- Return value is `{context_map, cleaned_provider_opts}` where:
+  - `context_map` is a plain map containing only the keys that were actually present in `provider_opts` (absent keys are omitted, not set to `nil`)
+  - `cleaned_provider_opts` is the original keyword list with the five context keys removed, preserving all other keys and their order
+- Calling `extract_context([])` returns `{%{}, []}` — no error on empty input
+- Calling `extract_context([model: "gpt-5.2"])` with no context keys returns `{%{}, [model: "gpt-5.2"]}` — non-context keys are untouched
+- Calling `extract_context([agent_id: "abc", model: "gpt-5.2", session_id: "xyz"])` returns `{%{agent_id: "abc", session_id: "xyz"}, [model: "gpt-5.2"]}`
+- Duplicate keys in the input keyword list: only the first occurrence of each context key is included in `context_map`; `cleaned_provider_opts` has all occurrences of context keys removed
+- The function does not raise under any input that is a valid keyword list
+- Unit tests in `test/pag_server/llm/call_recorder_test.exs` cover all cases above

@@ -1,0 +1,40 @@
+id: P53.M1.E1
+name: Contract and architecture baseline
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-write-browsermcp-support-contr.todo
+  title: Write BrowserMCP support contract and capability matrix
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-decide-companion-vs-headless-f.todo
+  title: Decide companion vs headless fallback strategy
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P53.M1.E1.T001
+- id: T003
+  file: T003-define-config-flags-and-bootst.todo
+  title: Define config flags and bootstrap wiring for browser backend
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P53.M1.E1.T002
+stats:
+  total: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

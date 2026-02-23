@@ -1,0 +1,133 @@
+---
+id: P7.M7.E1.T006
+title: Document Stats REST endpoints
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P7.M7.E1.T002
+- P3.M3.E4.T002
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:57:38.479102+00:00'
+started_at: '2026-02-08T05:57:38.479102+00:00'
+completed_at: '2026-02-08T06:03:38.799674+00:00'
+tags:
+- documentation
+- openapi
+- rest
+- stats
+duration_minutes: 6.005342683333334
+---
+
+# Document Stats REST endpoints
+
+Add OpenAPI schemas and documentation for statistics and metrics endpoints.
+
+## Requirements
+
+- [ ] Create Stats schemas module
+  - [ ] `AgentStatsResponse`: Per-agent statistics
+  - [ ] `SessionStatsResponse`: Per-session statistics
+  - [ ] `GlobalStatsResponse`: System-wide statistics
+
+- [ ] Document `GET /api/v1/stats` (Global stats)
+  - [ ] Total tokens, costs, requests
+  - [ ] Time range filters
+
+- [ ] Document `GET /api/v1/agents/:id/stats` (Agent stats)
+  - [ ] Token counts (input/output)
+  - [ ] Cost breakdown by model
+  - [ ] Request counts
+
+- [ ] Document `GET /api/v1/sessions/:id/stats` (Session stats)
+  - [ ] Message counts
+  - [ ] Token usage
+  - [ ] Tool call statistics
+
+- [ ] Add time range query parameters
+  - [ ] `from`: Start timestamp
+  - [ ] `to`: End timestamp
+  - [ ] `granularity`: hour/day/week
+
+## Acceptance Criteria
+
+- [ ] All Stats endpoints documented in OpenAPI spec
+- [ ] Time range filtering clearly documented
+- [ ] Cost fields include currency (USD)
+- [ ] Endpoints appear grouped under "Statistics"
+- [ ] Response examples show realistic data
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on P3.M3.E4 (Stats Controller implementation)
+- Related to P2.M7 (Cost Tracking)
+
+## Implementation Guide
+
+### Stats Schemas
+
+```elixir
+defmodule PagServerWeb.Schemas.Stats do
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  defmodule AgentStatsResponse do
+    OpenApiSpex.schema(%{
+      title: "AgentStatsResponse",
+      type: :object,
+      properties: %{
+        agent_id: %Schema{type: :string, format: :uuid},
+        period: %Schema{type: :object, properties: %{
+          from: %Schema{type: :string, format: :"date-time"},
+          to: %Schema{type: :string, format: :"date-time"}
+        }},
+        tokens: %Schema{type: :object, properties: %{
+          input: %Schema{type: :integer},
+          output: %Schema{type: :integer},
+          total: %Schema{type: :integer}
+        }},
+        cost: %Schema{type: :object, properties: %{
+          total_usd: %Schema{type: :number, format: :float},
+          by_model: %Schema{type: :object, additionalProperties: %Schema{type: :number}}
+        }},
+        requests: %Schema{type: :object, properties: %{
+          total: %Schema{type: :integer},
+          successful: %Schema{type: :integer},
+          failed: %Schema{type: :integer}
+        }}
+      }
+    })
+  end
+end
+```
+
+### Controller Operations
+
+```elixir
+defmodule PagServerWeb.StatsController do
+  use PagServerWeb, :controller
+  use OpenApiSpex.ControllerSpecs
+
+  tags ["Statistics"]
+
+  operation :agent_stats,
+    summary: "Get statistics for an agent",
+    parameters: [
+      id: [in: :path, type: :string, required: true],
+      from: [in: :query, type: :string, format: :"date-time"],
+      to: [in: :query, type: :string, format: :"date-time"]
+    ],
+    responses: [
+      ok: {"Agent statistics", "application/json", AgentStatsResponse}
+    ]
+end
+```
+
+## Notes
+
+- Include cost tracking details from P2.M7
+- Document rate limiting implications
+- Add caching headers documentation

@@ -1,0 +1,38 @@
+---
+id: P12.M3.E3.T002
+title: Extract shared HTTP client patterns from integrations
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:50:16.938869+00:00'
+started_at: '2026-02-13T10:50:16.938869+00:00'
+completed_at: '2026-02-13T11:12:45.864835+00:00'
+duration_minutes: 22.48209915
+---
+
+# Extract shared HTTP client patterns from integrations
+
+## Description
+
+Identify and extract common HTTP client patterns from integration modules (GitHub, GitLab, Jenkins, Gitea, Matrix) into a shared utility module. Reduce code duplication.
+
+## Acceptance Criteria
+
+- [ ] Audit all integration modules for shared HTTP patterns
+- [ ] Identify common patterns: auth headers, error handling, retries, rate limiting
+- [ ] Create `lib/pag_server/integrations/http_client.ex` or similar
+- [ ] Extract at least 3 shared patterns
+- [ ] Refactor 2+ integration modules to use shared client
+- [ ] All integration tests pass
+- [ ] Lint passes
+
+## Context
+
+- Related files: `lib/pag_server/integrations/*/` directories
+- Focus on: GitHub, GitLab, Jenkins, Gitea integrations
+- Patterns: Bearer token auth, error response handling, retry logic
+- Part of epic: Complete TODO Implementations

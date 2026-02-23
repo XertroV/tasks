@@ -1,0 +1,25 @@
+---
+id: P55.M4.E2.T004
+title: Browser testing guide for workspace chat
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- docs
+- testing
+- browser
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.973731+00:00'
+started_at: '2026-02-22T12:15:57.973731+00:00'
+completed_at: '2026-02-22T12:33:21.576260+00:00'
+duration_minutes: 17.393375316666667
+---
+Create docs/browser-tests/workspace-chat.md with browser testing instructions for the workspace chat interface. Cover: navigating to /chat/:workspace_id, selecting threads, sending messages, verifying streaming display, testing tool call rendering, testing approval workflow, testing fork. Include expected URLs, element selectors, and verification steps. Reference existing browser testing patterns in docs/browser-tests/.
+
+## Acceptance Criteria
+- Guide covers all major chat features
+- Includes navigation URLs and selectors
+- Step-by-step instructions for each test scenario
+- Follows existing docs/browser-tests/ conventions

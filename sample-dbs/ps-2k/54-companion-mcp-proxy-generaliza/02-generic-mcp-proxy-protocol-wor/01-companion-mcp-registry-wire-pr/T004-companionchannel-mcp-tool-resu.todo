@@ -1,0 +1,32 @@
+---
+id: P54.M2.E1.T004
+title: 'CompanionChannel: mcp_tool_result + mcp_tool_error handlers'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P54.M2.E1.T002
+- P54.M2.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:18:57.314860+00:00'
+started_at: '2026-02-21T10:18:57.314860+00:00'
+completed_at: '2026-02-21T10:29:10.021381+00:00'
+duration_minutes: 10.21177515
+---
+## Context
+Companions respond to mcp_tool_call with mcp_tool_result or mcp_tool_error. The channel resolves or rejects the pending MCP call via PendingCalls.
+
+## Wire format
+mcp_tool_result (companion->server): {"call_id": "cmcp_...", "result": {...}}
+mcp_tool_error  (companion->server): {"call_id": "cmcp_...", "error": "..."}
+
+## Acceptance Criteria
+- [ ] handle_in("mcp_tool_result", %{"call_id" => call_id, "result" => result}, socket): calls PendingCalls.resolve_mcp/2; removes call_id from :pending_mcp_call_ids; replies :ok
+- [ ] handle_in("mcp_tool_result", _, socket): replies {:error, %{reason: "missing call_id or result"}}
+- [ ] Unknown call_id in mcp_tool_result: replies {:error, %{reason: "unknown call_id"}}, logs warning
+- [ ] handle_in("mcp_tool_error", %{"call_id" => call_id, "error" => error}, socket): calls PendingCalls.reject_mcp/2; removes call_id from :pending_mcp_call_ids; replies :ok
+- [ ] handle_in("mcp_tool_error", _, socket): replies {:error, %{reason: "missing call_id or error"}}
+- [ ] Handlers inserted before existing catch-all handle_in/3
+- [ ] `mix lint` passes

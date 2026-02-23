@@ -1,0 +1,30 @@
+id: P15.M13.E2
+name: Future Integrations (Vecnet-AI, Reputation)
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-design-vecnet-ai-forum-integra.todo
+  title: Design vecnet-ai forum integration API
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-design-reputation-f2f-network.todo
+  title: Design reputation/f2f network integration
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: low
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

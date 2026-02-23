@@ -1,0 +1,144 @@
+---
+id: P5.M4.E6.T001
+title: Implement conversation export module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- export
+- context
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:54:10.215331+00:00'
+started_at: '2026-02-07T14:54:10.215331+00:00'
+completed_at: '2026-02-07T14:58:13.262915+00:00'
+duration_minutes: 4.0507929166666665
+---
+
+# Implement conversation export module
+
+Implement a `PagServer.Context.Export` module that can export conversation sessions
+in multiple formats (JSON and Markdown). Currently there is no export capability,
+meaning conversation data can only be accessed through the Ecto queries in the
+Messages context. This gap was identified in an architecture audit.
+
+The module should be stream-based to handle large conversations without loading
+all messages into memory at once.
+
+## Requirements
+
+- [ ] Create `PagServer.Context.Export` module at `lib/pag_server/context/export.ex`
+- [ ] Implement `export_json/2` function
+  - Signature: `export_json(session_id, opts \\ [])`
+  - Returns a structured JSON representation including:
+    - Session metadata (id, created_at, model info)
+    - Messages array with role, content, timestamp, token_count, model_used
+    - Thinking content included when `include_thinking: true` option set
+    - Tool calls included when `include_tool_calls: true` option set
+  - Uses Stream for lazy evaluation on large conversations
+  - Returns `{:ok, json_string}` or `{:ok, stream}` depending on opts
+- [ ] Implement `export_markdown/2` function
+  - Signature: `export_markdown(session_id, opts \\ [])`
+  - Returns human-readable Markdown format:
+    - Header with session info
+    - Messages formatted with role headers (## User, ## Assistant, etc.)
+    - Timestamps on each message
+    - Code blocks preserved from content
+    - Thinking content in collapsible `<details>` blocks when included
+  - Returns `{:ok, markdown_string}` or `{:ok, stream}`
+- [ ] Implement `export_to_file/3` function
+  - Signature: `export_to_file(session_id, path, format: :json | :markdown)`
+  - Streams directly to file for large conversations
+  - Returns `{:ok, bytes_written}` or `{:error, reason}`
+- [ ] Implement `export_stream/2` for streaming export
+  - Returns an Elixir `Stream` that yields chunks
+  - Useful for HTTP streaming responses in the API layer
+- [ ] Handle empty sessions gracefully (export with zero messages)
+- [ ] Include hash chain summary in export metadata (first hash, last hash, count)
+
+## Acceptance Criteria
+
+- [ ] Conversations exportable as well-formed JSON
+- [ ] Conversations exportable as readable Markdown
+- [ ] Large conversations (10,000+ messages) export without OOM
+- [ ] Stream-based export works for HTTP response streaming
+- [ ] Empty sessions produce valid (but empty) exports
+- [ ] Export includes session metadata and timestamps
+- [ ] Thinking content and tool calls optionally included
+
+## Context
+
+This task was identified in an architecture audit as a MINOR priority gap.
+No export capability currently exists for conversation data.
+
+## Notes
+
+Example JSON export structure:
+
+```json
+{
+  "session_id": "uuid",
+  "exported_at": "2025-01-15T10:00:00Z",
+  "message_count": 42,
+  "hash_chain": {
+    "first_hash": "abc123...",
+    "last_hash": "def456...",
+    "verified": true
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello!",
+      "timestamp": "2025-01-15T10:00:01Z",
+      "sequence_num": 0,
+      "token_count": 3
+    }
+  ]
+}
+```
+
+Example Markdown export:
+
+```markdown
+# Conversation Export
+Session: uuid
+Date: 2025-01-15
+
+---
+
+## User (10:00:01)
+Hello!
+
+## Assistant (10:00:02)
+Hi there! How can I help you today?
+```
+
+Stream-based implementation pattern:
+
+```elixir
+def export_stream(session_id, opts \\ []) do
+  format = Keyword.get(opts, :format, :json)
+  batch_size = Keyword.get(opts, :batch_size, 100)
+
+  Stream.resource(
+    fn -> {0, batch_size} end,
+    fn {offset, limit} ->
+      messages = Messages.get_session_messages(session_id, offset: offset, limit: limit)
+      if messages == [] do
+        {:halt, nil}
+      else
+        formatted = Enum.map(messages, &format_message(&1, format))
+        {formatted, {offset + limit, limit}}
+      end
+    end,
+    fn _ -> :ok end
+  )
+end
+```
+
+## Reference Files
+
+- `lib/pag_server/context/messages.ex` - Messages context (data source)
+- `lib/pag_server/schema/message.ex` - Message schema
+- `lib/pag_server/schema/session.ex` - Session schema (for metadata)

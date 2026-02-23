@@ -1,0 +1,17 @@
+---
+id: P48.M3.E4.T002
+title: 'Auto-diagnostics post-write hook: inject LSP diagnostics into write_file/file_edit
+  results'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:06:33.161858+00:00'
+started_at: '2026-02-20T09:06:33.161858+00:00'
+completed_at: '2026-02-20T09:42:57.781221+00:00'
+duration_minutes: 36.410322533333336
+---
+Plugin registers post_tool hook for write_file and file_edit. After successful write: detect language from extension, LspManager.get_or_start_client (lazy spawn), LspClient.touch_file, LspClient.wait_for_diagnostics (150ms debounce, 3s timeout). If diagnostics: append <diagnostics file='...'> block to tool result. If LSP unavailable: silently skip (never block tool result). Configurable disable per-workspace: lsp.auto_diagnostics = false.

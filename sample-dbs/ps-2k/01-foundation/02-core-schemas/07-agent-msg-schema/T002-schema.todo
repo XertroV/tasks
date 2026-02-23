@@ -1,0 +1,178 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:37:38.071422'
+started_at: '2026-02-05T08:37:38.071422'
+completed_at: '2026-02-05T08:39:19.083304'
+---
+# T002: Create AgentMessage schema module
+# Epic: P1.M2.E7 - AgentMessage Schema
+# Estimate: 1.5h, Complexity: low
+
+## Context
+Create the Ecto schema module for AgentMessage with associations, validations, and helper functions
+for inter-agent communication.
+
+Reference: `.plan/2026-02-05-velvet-cascade/index.md` lines 298-310
+
+## Dependencies
+- [T001] agent_messages table migration must be complete
+
+## Task
+Create `lib/pag_server/schema/agent_message.ex`
+
+### Schema Definition
+```elixir
+defmodule PAGServer.Schema.AgentMessage do
+  use Ecto.Schema
+  import Ecto.Changeset
+  alias PAGServer.Schema.Agent
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  schema "agent_messages" do
+    field :subject, :string
+    field :content, :string
+    field :thread_id, :binary_id
+    field :read, :boolean, default: false
+    field :priority, :string, default: "normal"
+
+    belongs_to :from_agent, Agent, foreign_key: :from_agent_id
+    belongs_to :to_agent, Agent, foreign_key: :to_agent_id
+
+    timestamps()
+  end
+
+  @valid_priorities ~w(normal high blocking)
+
+  def changeset(message, attrs) do
+    message
+    |> cast(attrs, [:from_agent_id, :to_agent_id, :subject, :content, :thread_id, :read, :priority])
+    |> validate_required([:to_agent_id, :content])
+    |> validate_inclusion(:priority, @valid_priorities)
+    |> validate_length(:content, min: 1, max: 100_000)
+    |> validate_length(:subject, max: 200)
+    |> foreign_key_constraint(:from_agent_id)
+    |> foreign_key_constraint(:to_agent_id)
+  end
+end
+```
+
+### Helper Functions
+Consider adding to schema or separate context module:
+- `mark_as_read/1` - Mark message as read
+- `unread_for_agent/1` - Query unread messages for agent
+- `thread_messages/1` - Get all messages in thread
+- `blocking_messages/1` - Get blocking priority messages
+
+## Acceptance Criteria
+- [ ] Schema file created at correct path
+- [ ] All fields properly defined with correct types
+- [ ] Associations to from_agent and to_agent work
+- [ ] Priority enum validated (normal/high/blocking)
+- [ ] Changeset validates required fields
+- [ ] Content length validated (1-100k chars)
+- [ ] Subject length validated (max 200 chars)
+- [ ] Foreign key constraints present
+- [ ] Can create message: `AgentMessage.changeset(%AgentMessage{}, attrs) |> Repo.insert()`
+- [ ] Can send message between agents
+- [ ] Can track read status
+- [ ] Can thread conversations via thread_id
+
+## Implementation Notes
+
+### Priority Levels
+- `"normal"` - Standard inter-agent message
+- `"high"` - Urgent message, prioritize in queue
+- `"blocking"` - Agent should pause and handle immediately
+
+### Threading
+- `thread_id` is optional
+- First message in thread: set `thread_id` to own `id` after insert
+- Reply messages: use same `thread_id` as parent message
+- Query thread: `from m in AgentMessage, where: m.thread_id == ^thread_id, order_by: [asc: m.inserted_at]`
+
+### Read Tracking
+- Default `read: false` on insert
+- Update to `true` when agent processes message
+- Index on `[:to_agent_id, :read]` enables fast unread queries
+
+### Associations
+- `from_agent` can be nil (system messages)
+- `to_agent` must always exist
+- Use `Repo.preload(message, [:from_agent, :to_agent])` to load associations
+
+## Testing
+```elixir
+# In test file: test/pag_server/schema/agent_message_test.exs
+defmodule PAGServer.Schema.AgentMessageTest do
+  use PAGServer.DataCase
+  alias PAGServer.Schema.{Agent, AgentMessage}
+
+  describe "changeset/2" do
+    test "valid message" do
+      agent1 = insert(:agent)
+      agent2 = insert(:agent)
+      
+      attrs = %{
+        from_agent_id: agent1.id,
+        to_agent_id: agent2.id,
+        content: "Test message",
+        priority: "normal"
+      }
+      
+      changeset = AgentMessage.changeset(%AgentMessage{}, attrs)
+      assert changeset.valid?
+    end
+
+    test "requires to_agent_id and content" do
+      changeset = AgentMessage.changeset(%AgentMessage{}, %{})
+      refute changeset.valid?
+      assert %{to_agent_id: ["can't be blank"], content: ["can't be blank"]} = errors_on(changeset)
+    end
+
+    test "validates priority" do
+      changeset = AgentMessage.changeset(%AgentMessage{}, %{priority: "invalid"})
+      refute changeset.valid?
+    end
+  end
+
+  describe "message operations" do
+    test "send message between agents" do
+      agent1 = insert(:agent)
+      agent2 = insert(:agent)
+      
+      {:ok, msg} = %AgentMessage{}
+        |> AgentMessage.changeset(%{
+          from_agent_id: agent1.id,
+          to_agent_id: agent2.id,
+          content: "Hello",
+          subject: "Greeting"
+        })
+        |> Repo.insert()
+      
+      assert msg.read == false
+      assert msg.priority == "normal"
+    end
+
+    test "thread messages" do
+      agent1 = insert(:agent)
+      agent2 = insert(:agent)
+      
+      {:ok, msg1} = create_message(agent1, agent2, "First message")
+      # Use msg1.id as thread_id for replies
+      {:ok, msg2} = create_message(agent2, agent1, "Reply", msg1.id)
+      
+      thread = Repo.all(from m in AgentMessage, where: m.thread_id == ^msg1.id)
+      assert length(thread) == 2
+    end
+  end
+end
+```
+
+## Status
+- [ ] Not started
+- [ ] In progress
+- [ ] Blocked (reason: _______)
+- [ ] Done

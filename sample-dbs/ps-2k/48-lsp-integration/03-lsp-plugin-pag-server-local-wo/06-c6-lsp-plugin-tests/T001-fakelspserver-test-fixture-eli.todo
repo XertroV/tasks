@@ -1,0 +1,16 @@
+---
+id: P48.M3.E6.T001
+title: 'FakeLspServer test fixture: Elixir Port script speaking LSP protocol'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:06:33.170429+00:00'
+started_at: '2026-02-20T09:06:33.170429+00:00'
+completed_at: '2026-02-20T09:43:19.475984+00:00'
+duration_minutes: 36.771759083333336
+---
+An Elixir Port script that speaks the LSP protocol for testing. Responds to initialize with minimal capabilities. Pushes configurable publishDiagnostics notifications. Returns hover/definition/references results. Used by both unit and integration tests. Mockable spawn_fn (consistent with existing test patterns).

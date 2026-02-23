@@ -1,0 +1,27 @@
+---
+id: P24.M1.E2.T002
+title: Broadcast, scope, and DM delivery logic
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:09:28.573160+00:00'
+started_at: '2026-02-18T16:09:28.573160+00:00'
+completed_at: '2026-02-18T16:22:01.114555+00:00'
+duration_minutes: 12.5423564
+---
+
+# Broadcast, scope, and DM delivery logic
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

@@ -1,0 +1,18 @@
+---
+id: B244
+title: Tool call ID mismatch after normalization
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- agent
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.104365+00:00'
+started_at: '2026-02-23T07:29:02.104365+00:00'
+completed_at: '2026-02-23T07:43:46.014363+00:00'
+duration_minutes: 14.731833133333334
+---
+agent_server.ex:1786-1825 - Nil call_id gets new UUID that doesn't match provider's original

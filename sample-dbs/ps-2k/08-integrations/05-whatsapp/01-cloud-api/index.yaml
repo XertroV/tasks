@@ -1,0 +1,44 @@
+# Epic: Cloud API Setup
+# Phase 8, Milestone 5, Epic 1 (P8.M5.E1)
+
+id: P8.M5.E1
+name: Cloud API Setup
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-cloud-api-client.todo
+    title: Create Cloud API client
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-authentication.todo
+    title: Implement authentication
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-template-support.todo
+    title: Add template support
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: medium
+    depends_on: [T001, T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,39 @@
+---
+id: P13.M3.E1.T003
+title: Add telemetry for throttling events
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:08:36.485331+00:00'
+started_at: '2026-02-13T23:08:36.485331+00:00'
+completed_at: '2026-02-13T23:19:08.175601+00:00'
+duration_minutes: 10.528170999999999
+---
+
+# Add telemetry for throttling events
+
+## Description
+
+Add telemetry events for PoolLimiter operations to enable monitoring of agent admission control, queue depths, and throttling incidents.
+
+## Acceptance Criteria
+- [ ] Emit `[:pag_server, :pool_limiter, :acquire, :start]` when slot requested
+- [ ] Emit `[:pag_server, :pool_limiter, :acquire, :complete]` when slot acquired
+- [ ] Emit `[:pag_server, :pool_limiter, :queue, :add]` when request queued
+- [ ] Emit `[:pag_server, :pool_limiter, :release]` when slot released
+- [ ] Include measurements: queue_depth, wait_time_ms, available_slots
+- [ ] Include metadata: workspace_id (if applicable)
+- [ ] Update existing telemetry handlers if needed
+- [ ] Add telemetry tests
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/pool_limiter.ex`
+- Related files: `lib/pag_server/observability/telemetry_helper.ex`
+- Part of epic: P13.M3.E1 - Agent Startup Backpressure

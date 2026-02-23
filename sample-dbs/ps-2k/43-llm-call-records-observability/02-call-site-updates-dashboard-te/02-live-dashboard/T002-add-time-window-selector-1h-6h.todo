@@ -1,0 +1,37 @@
+---
+id: P43.M2.E2.T002
+title: Add time window selector (1h/6h/24h), provider/model filters, and summary stats
+  row
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:03:37.138945+00:00'
+started_at: '2026-02-20T00:03:37.138945+00:00'
+completed_at: '2026-02-20T00:08:25.112053+00:00'
+duration_minutes: 4.7995514833333335
+---
+
+# Add time window selector (1h/6h/24h), provider/model filters, and summary stats row
+
+
+
+## Requirements
+
+- The dashboard should allow operators to narrow the recent-history view and aggregate stats to a chosen time window, and to filter by provider and model, without a full page reload.
+
+## Acceptance Criteria
+
+- Socket assigns include `:time_window` (string, one of `"1h"`, `"6h"`, `"24h"`; default `"1h"`), `:provider_filter` (string or `:all`; default `:all`), and `:model_filter` (string or `:all`; default `:all`).
+- The template renders three clickable time-window buttons (`"1h"`, `"6h"`, `"24h"`); the active window button is visually distinguished (e.g. highlighted class).
+- `handle_event("set_window", %{"window" => w}, socket)` validates that `w` is one of the three allowed values, updates `:time_window`, re-queries `recent/1` and `summary_stats/2` with the new window, and updates the relevant assigns.
+- The template renders a provider filter `<select>` populated with `[:all | providers_used(hours)]`; selecting a value fires `handle_event("set_provider", %{"provider" => p}, socket)` which updates `:provider_filter` and re-queries.
+- The template renders a model filter `<select>` populated with `[:all | models_used(hours)]`; selecting a value fires `handle_event("set_model", %{"model" => m}, socket)` which updates `:model_filter` and re-queries.
+- Both filters are applied together when querying `recent/1` — i.e. if both are set, only records matching both provider AND model are shown.
+- A summary stats row is rendered above the recent-history table and displays: total call count, completed count, failed count, timed_out count, average `duration_ms` (formatted as `"N ms"` or `"—"` if no completed records), total cost formatted as USD, and total token count (input + output summed).
+- Summary stats are recomputed whenever the time window or filters change.
+- `handle_event("set_provider", ...)` and `handle_event("set_model", ...)` each return `{:noreply, socket}` and do not crash on unknown values (unknown values fall back to `:all`).
+- All existing LlmCallsDashboardLive tests (from T001) continue to pass after this task.

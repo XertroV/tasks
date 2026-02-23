@@ -1,0 +1,16 @@
+id: P7.M5.E2
+name: Supervision Strategy
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on: []
+tasks:
+- T001-supervisor-design.todo
+- T002-state-recovery.todo
+- T003-tests.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

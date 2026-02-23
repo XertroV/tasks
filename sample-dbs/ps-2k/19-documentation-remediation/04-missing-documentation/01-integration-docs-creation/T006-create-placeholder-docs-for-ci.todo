@@ -1,0 +1,19 @@
+---
+id: P19.M4.E1.T006
+title: Create placeholder docs for CI/CD integrations
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- docs
+- integrations
+- cicd
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:16:53.873701+00:00'
+started_at: '2026-02-18T03:16:53.873701+00:00'
+completed_at: '2026-02-18T03:19:13.953993+00:00'
+duration_minutes: 2.3346712000000003
+---
+Add concise placeholder docs for cicd, circleci, drone, jenkins with status, known modules/routes/config, and links to shared template.

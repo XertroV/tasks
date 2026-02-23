@@ -1,0 +1,39 @@
+---
+id: B019
+title: tool executor should handle nil pii filter config without crashing
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- tools
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:26:00.812342+00:00'
+started_at: '2026-02-15T17:26:00.812342+00:00'
+completed_at: '2026-02-15T17:28:49.192963+00:00'
+duration_minutes: 2.8063435500000002
+---
+ToolExecutor.apply_pii_filter currently calls Keyword.get/3 with nil config and crashes. Normalize config access and default behavior so tool execution proceeds safely when pii filter config is missing. Add regression tests.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:26 UTC
+**Primary task**: B017 - docs endpoint /api/openapi.json returns 500 due missing GenericResponse schema
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

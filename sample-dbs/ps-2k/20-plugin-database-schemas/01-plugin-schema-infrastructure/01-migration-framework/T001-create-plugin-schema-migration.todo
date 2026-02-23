@@ -1,0 +1,20 @@
+---
+id: P20.M1.E1.T001
+title: Create plugin_schema_migrations table migration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:06:33.796777+00:00'
+started_at: '2026-02-18T10:06:33.796777+00:00'
+completed_at: '2026-02-18T10:10:35.872056+00:00'
+duration_minutes: 4.034587683333333
+---
+## Acceptance Criteria
+- Standard Ecto migration creates plugin_schema_migrations table
+- Columns: id (binary_id), plugin_name (string), version (integer), migrated_at (utc_datetime_usec)
+- Unique index on (plugin_name, version)
+- Migration in priv/repo/migrations/

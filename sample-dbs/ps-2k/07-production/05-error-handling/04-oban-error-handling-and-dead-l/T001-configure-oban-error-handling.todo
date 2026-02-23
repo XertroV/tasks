@@ -1,0 +1,187 @@
+---
+id: P7.M5.E4.T001
+title: Configure Oban error handling and max attempts
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- oban
+- error-handling
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:08:26.261869+00:00'
+started_at: '2026-02-06T18:08:26.261869+00:00'
+completed_at: '2026-02-06T18:25:59.692106+00:00'
+duration_minutes: 17.557170466666665
+---
+
+# Configure Oban error handling and max attempts
+
+The current Oban configuration in `config/config.exs` defines queues but lacks error handling
+configuration. Jobs that fail will use Oban's default retry behavior (20 attempts with
+exponential backoff), which is excessive for most use cases. This task adds explicit
+max_attempts per queue, a global error handler module, and discard/snooze behavior for
+different error categories.
+
+## Requirements
+
+- [ ] Set `max_attempts` per Oban worker module:
+  - Default queue workers: `max_attempts: 3`
+  - Agent queue workers: `max_attempts: 5` (longer retry window for agent operations)
+  - Tool queue workers: `max_attempts: 3`
+- [ ] Create `lib/pag_server/oban_error_handler.ex` implementing Oban error reporting:
+  - Attach to Oban telemetry events: `[:oban, :job, :exception]` and `[:oban, :job, :discard]`
+  - Log structured error details (worker, queue, attempt, error, args summary)
+  - Emit PAG telemetry events: `[:pag_server, :oban, :job_failed]` and `[:pag_server, :oban, :job_discarded]`
+  - Classify errors into categories: transient (retry), permanent (discard), rate_limited (snooze)
+- [ ] Configure Oban plugins in `config/config.exs`:
+  - Add `Oban.Plugins.Lifeline` to rescue orphaned jobs (rescue_after: 60 minutes)
+  - Add `Oban.Plugins.Pruner` to clean completed/discarded jobs (max_age: 7 days)
+- [ ] Implement `snooze` behavior for rate-limited errors:
+  - Return `{:snooze, seconds}` from worker `perform/1` when rate limited
+  - Default snooze: 60 seconds for rate limit errors
+- [ ] Add Oban error handler to application startup in `lib/pag_server/application.ex`
+- [ ] Document error handling strategy in module docs
+
+## Acceptance Criteria
+
+- [ ] Each Oban worker has explicit `max_attempts` configured (not relying on Oban default of 20)
+- [ ] Failed jobs are logged with structured error details (worker, queue, attempt, error type)
+- [ ] Telemetry events emitted for job failures and discards
+- [ ] Rate-limited errors trigger snooze instead of immediate retry
+- [ ] Orphaned jobs (stuck executing) are rescued after 60 minutes
+- [ ] Completed/discarded jobs are pruned after 7 days
+- [ ] Error handler module is started in the application supervision tree
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+The current Oban configuration (`config/config.exs`, line 61-63) defines only queues:
+```elixir
+config :pag_server, Oban,
+  repo: PagServer.Repo,
+  queues: [default: 10, agents: 5, tools: 3]
+```
+
+There is no error handling, no max_attempts override, no plugins for job lifecycle
+management, and no dead letter queue. This means failed jobs retry 20 times (Oban default),
+orphaned jobs are never rescued, and completed jobs accumulate indefinitely.
+
+**Key Files**:
+- `config/config.exs` - Oban configuration at line 61
+- `lib/pag_server/application.ex` - Supervision tree at line 11-46
+- Any existing Oban workers in the codebase (search for `use Oban.Worker`)
+
+## Notes
+
+Updated Oban configuration example:
+```elixir
+config :pag_server, Oban,
+  repo: PagServer.Repo,
+  queues: [default: 10, agents: 5, tools: 3],
+  plugins: [
+    # Rescue orphaned (stuck executing) jobs
+    {Oban.Plugins.Lifeline, rescue_after: :timer.minutes(60)},
+    # Prune completed/discarded/cancelled jobs after 7 days
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24 * 7}
+  ]
+```
+
+Error handler module:
+```elixir
+defmodule PagServer.ObanErrorHandler do
+  @moduledoc """
+  Centralized error handling for Oban job failures.
+
+  Attaches to Oban telemetry events and provides structured logging,
+  error classification, and PAG-specific telemetry emission.
+  """
+
+  require Logger
+
+  def attach do
+    :telemetry.attach_many(
+      "pag-oban-error-handler",
+      [
+        [:oban, :job, :exception],
+        [:oban, :job, :discard]
+      ],
+      &__MODULE__.handle_event/4,
+      nil
+    )
+  end
+
+  def handle_event([:oban, :job, :exception], measure, meta, _config) do
+    Logger.warning(
+      "Oban job failed",
+      worker: meta.job.worker,
+      queue: meta.job.queue,
+      attempt: meta.job.attempt,
+      max_attempts: meta.job.max_attempts,
+      error: Exception.message(meta.reason),
+      duration_ms: System.convert_time_unit(measure.duration, :native, :millisecond)
+    )
+
+    :telemetry.execute(
+      [:pag_server, :oban, :job_failed],
+      %{count: 1, attempt: meta.job.attempt},
+      %{worker: meta.job.worker, queue: meta.job.queue}
+    )
+  end
+
+  def handle_event([:oban, :job, :discard], _measure, meta, _config) do
+    Logger.error(
+      "Oban job permanently discarded",
+      worker: meta.job.worker,
+      queue: meta.job.queue,
+      args: inspect(meta.job.args, limit: 200)
+    )
+
+    :telemetry.execute(
+      [:pag_server, :oban, :job_discarded],
+      %{count: 1},
+      %{worker: meta.job.worker, queue: meta.job.queue}
+    )
+  end
+end
+```
+
+Worker max_attempts pattern:
+```elixir
+defmodule PagServer.Workers.AgentJob do
+  use Oban.Worker,
+    queue: :agents,
+    max_attempts: 5
+
+  @impl Oban.Worker
+  def perform(%Oban.Job{args: args}) do
+    case do_work(args) do
+      {:ok, result} -> {:ok, result}
+      {:error, :rate_limited} -> {:snooze, 60}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M5.E4)
+**Agent**: cli-user
+**Date**: 2026-02-06 18:08 UTC
+**Sibling tasks**: P7.M5.E4.T002, P7.M5.E4.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M5.E4.T001 → P7.M5.E4.T002 → P7.M5.E4.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M5.E4.T001: .tasks/07-production/05-error-handling/04-oban-error-handling-and-dead-l/T001-configure-oban-error-handling.todo
+- P7.M5.E4.T002: .tasks/07-production/05-error-handling/04-oban-error-handling-and-dead-l/T002-implement-dead-letter-queue-fo.todo
+- P7.M5.E4.T003: .tasks/07-production/05-error-handling/04-oban-error-handling-and-dead-l/T003-tests-for-oban-error-handling.todo

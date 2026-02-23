@@ -1,0 +1,38 @@
+id: P19.M2.E3
+name: Design Docs Sync
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-sync-provider-registry-ssot-md.todo
+  title: Sync provider-registry-ssot.md with implementation
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-fix-main-agent-routing-md-func.todo
+  title: Fix main-agent-routing.md function names
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-update-agents-md-architecture.todo
+  title: Update AGENTS.md architecture diagram
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

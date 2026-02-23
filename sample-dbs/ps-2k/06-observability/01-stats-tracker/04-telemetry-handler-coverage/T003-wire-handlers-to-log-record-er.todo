@@ -1,0 +1,115 @@
+---
+id: P6.M1.E4.T003
+title: Wire handlers to log/record errors, retries, and failover events
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P6.M1.E4.T002
+tags:
+- observability
+- telemetry
+- error-handling
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:13:34.216741'
+started_at: '2026-02-06T17:13:34.216741'
+completed_at: '2026-02-06T17:23:46.205730'
+duration_minutes: 10.199816066666667
+---
+
+# Wire handlers to log/record errors, retries, and failover events
+
+Create specialized telemetry handlers that log operationally important events (errors, retries,
+failovers, crashes) at appropriate severity levels. These handlers ensure that critical system
+events are visible in production logs for incident response, even before full metrics/alerting
+infrastructure is in place.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/observability/error_logger_handler.ex` module
+- [ ] Register as telemetry handler for error-related events via TelemetryHandlers (T001)
+- [ ] Log the following events at `:warning` level:
+  - [ ] `[:pag_server, :llm, :retry]` -- include retry count, delay_ms, provider, model
+  - [ ] `[:pag_server, :llm, :failover]` -- include from_provider, to_provider, reason
+  - [ ] `[:pag_server, :agent, :context_overflow]` -- include agent_id, session_id, token count
+  - [ ] `[:pag_server, :agent, :memory_bounds]` -- include agent_id, count, threshold
+- [ ] Log the following events at `:error` level:
+  - [ ] `[:pag_server, :llm, :error]` -- include provider, model, error type, status code
+  - [ ] `[:pag_server, :llm, :routing_error]` -- include requested model, available providers
+  - [ ] `[:pag_server, :agent, :crash_recovery]` -- include agent_id, reason, recovery action
+  - [ ] `[:pag_server, :agent, :invalid_transition]` -- include agent_id, from_state, to_state
+- [ ] Include structured metadata in all log messages:
+  - [ ] `agent_id` when available
+  - [ ] `session_id` when available
+  - [ ] `provider` when available
+  - [ ] `model` when available
+  - [ ] `correlation_id` when available (forward-compatible with Gap 3)
+- [ ] Implement rate limiting for high-frequency error events to prevent log flooding
+  - [ ] Use sliding window: max 10 identical errors per minute
+  - [ ] Log summary message when rate limit kicks in ("suppressed N identical events")
+- [ ] Add tests using `:telemetry.execute/3` to simulate events and capture log output
+
+## Acceptance Criteria
+
+- [ ] All error/retry/failover events produce visible log output
+- [ ] Log levels are appropriate (`:warning` for retries, `:error` for failures)
+- [ ] Structured metadata included in every log entry
+- [ ] Rate limiting prevents log flooding under sustained error conditions
+- [ ] Tests verify log output for each event type using `ExUnit.CaptureLog`
+- [ ] Handler does not crash on malformed/missing metadata
+
+## Context
+
+**Source**: Architecture audit found that errors, retries, and failovers happen silently with no
+log output. Operations teams cannot detect or respond to issues without this visibility.
+
+**Priority**: This is the most immediately impactful observability gap -- even without Prometheus
+or OTel, having structured error logs enables incident response.
+
+## Notes
+
+**Example Handler**:
+```elixir
+defmodule PagServer.Observability.ErrorLoggerHandler do
+  require Logger
+
+  def handle_event([:pag_server, :llm, :error], measurements, metadata, _config) do
+    Logger.error("LLM request failed",
+      provider: metadata[:provider],
+      model: metadata[:model],
+      error_type: metadata[:error_type],
+      status_code: metadata[:status_code],
+      agent_id: metadata[:agent_id],
+      session_id: metadata[:session_id]
+    )
+  end
+
+  def handle_event([:pag_server, :llm, :retry], measurements, metadata, _config) do
+    Logger.warning("LLM request retry",
+      provider: metadata[:provider],
+      model: metadata[:model],
+      attempt: measurements[:count],
+      delay_ms: measurements[:delay_ms]
+    )
+  end
+
+  def handle_event([:pag_server, :llm, :failover], _measurements, metadata, _config) do
+    Logger.warning("LLM provider failover triggered",
+      from_provider: metadata[:from_provider],
+      to_provider: metadata[:to_provider],
+      reason: metadata[:reason]
+    )
+  end
+end
+```
+
+**Rate Limiting Pattern**:
+```elixir
+# Use ETS counter with periodic reset
+defp rate_limited?(event_key) do
+  count = :ets.update_counter(@rate_table, event_key, {2, 1}, {event_key, 0})
+  count > @max_per_minute
+end
+```

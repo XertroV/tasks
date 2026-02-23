@@ -1,0 +1,19 @@
+---
+id: P29.M2.E2.T004
+title: Write Tailscale plugin and API tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P29.M2.E2.T001
+- P29.M2.E2.T002
+- P29.M2.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:09:04.458732+00:00'
+started_at: '2026-02-18T19:09:04.458732+00:00'
+completed_at: '2026-02-18T19:13:22.618633+00:00'
+duration_minutes: 4.3026648666666665
+---
+Test plugin enable/disable, MCP tool dispatch, REST endpoint responses using mocked TailscaleManager.

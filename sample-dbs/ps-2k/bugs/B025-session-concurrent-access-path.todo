@@ -1,0 +1,41 @@
+---
+id: B025
+title: session concurrent access paths should avoid FK race failures under parallel
+  execution
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- sessions
+- concurrency
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:33:25.821544+00:00'
+started_at: '2026-02-15T17:33:25.821544+00:00'
+completed_at: '2026-02-15T17:40:21.219959+00:00'
+duration_minutes: 6.923306766666667
+---
+Fix concurrency/race issues causing foreign-key failures on messages.session_id and flaky expectations in concurrent session tests. Improve sequencing/isolation and add stable regression assertions.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:33 UTC
+**Primary task**: B023 - slack events processing should not crash on option shape or malformed user maps
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

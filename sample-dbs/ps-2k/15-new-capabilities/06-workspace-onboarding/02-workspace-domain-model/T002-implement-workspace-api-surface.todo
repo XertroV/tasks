@@ -1,0 +1,38 @@
+---
+id: P15.M6.E2.T002
+title: Implement workspace API surface for CRUD and linking
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M6.E2.T001
+tags:
+- api
+- backend
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:37:37.127182+00:00'
+started_at: '2026-02-17T17:37:37.127182+00:00'
+completed_at: '2026-02-17T17:41:18.465717+00:00'
+duration_minutes: 3.6889754166666666
+---
+
+# Implement workspace API surface for CRUD and linking
+
+## Owner Outcome
+- I can create a workspace, assign its main agent, and query setup readiness from one API surface.
+
+## Acceptance Criteria
+- [x] Implement API endpoints/context functions for create/show/update workspace and linking template-created agents.
+  - Full CRUD at `lib/pag_server_web/controllers/workspaces_controller.ex`: index, show, create, update, delete.
+  - Bootstrap endpoint (`POST /api/v1/workspaces/bootstrap`) creates workspace + main agent + default bot configs in one call via `Workspaces.bootstrap_workspace/2`.
+  - Context module at `lib/pag_server/workspaces.ex` with `create_workspace`, `get_workspace`, `update_workspace`, `delete_workspace`, `list_workspaces`, `bootstrap_workspace`.
+- [x] Add endpoint to set/change designated main agent with validation that agent belongs to workspace.
+  - `POST /api/v1/workspaces/:id/set-main-agent` at controller line 288, with validation that agent belongs to workspace. 7 tests covering success, wrong workspace (422), archived agent (422), unauthorized (403), missing/invalid agent_id.
+- [x] Return onboarding readiness payload (main agent configured, telegram linked, chat smoke-test status).
+  - `GET /api/v1/workspaces/:id/readiness` at controller line 443, via `Workspaces.get_workspace_readiness/1`. Returns workspace_created, main_agent_configured, telegram_connected, first_chat_verified, onboarding_status, next_step. 7 tests.
+- [x] Add tests for happy path and invalid linking/main-agent assignment cases.
+  - 35 tests total in `test/pag_server_web/controllers/workspaces_controller_test.exs`, all passing. Covers CRUD, set-main-agent, readiness, authorization.
+- [x] Ensure API response makes it obvious how owner reaches "start server to first Telegram chat" in <10 minutes.
+  - Workspace show endpoint now includes `onboarding_status` and `_links` guidance map with endpoints for readiness, set-main-agent, chat, and bots.

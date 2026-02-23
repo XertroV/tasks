@@ -1,0 +1,36 @@
+---
+id: P7.M7.E1.T029
+title: Complete OpenAI operation docs for PAG headers and SSE
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- openapi
+- documentation
+- openai
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:06:45.410531+00:00'
+started_at: '2026-02-08T07:06:45.410531+00:00'
+completed_at: '2026-02-08T10:30:00+00:00'
+---
+
+# Complete OpenAI operation docs for PAG headers and SSE
+
+Finish OpenAI-compatible operation docs so custom PAG extensions and streaming
+response semantics are represented in the OpenAPI contract.
+
+
+## Requirements
+
+- [x] Document `x-pag-agent-id` and `x-pag-session-id` in request schema/docs - Added PAGRequestHeaders schema
+- [x] Add explicit streaming (`text/event-stream`) response documentation for chat completions - Added ChatCompletionsStreamResponse schema
+- [x] Ensure non-stream and stream operation responses both match implementation - Both schemas documented
+- [x] Verify docs render correctly in Redoc and generated OpenAPI JSON - `mix docs` generates successfully
+
+## Acceptance Criteria
+
+- [x] OpenAI request schema includes PAG extension fields with descriptions - PAGRequestHeaders schema defined
+- [x] Streaming and non-streaming responses are both documented in operation spec - Both response schemas defined
+- [x] `/api/openapi.json` reflects updated OpenAI schema/operation metadata - Docs generate successfully

@@ -1,0 +1,17 @@
+---
+id: P45.M2.E1.T004
+title: Write unit tests for Vault context module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P45.M2.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.186378+00:00'
+started_at: '2026-02-19T19:17:35.186378+00:00'
+completed_at: '2026-02-19T19:50:13.555102+00:00'
+duration_minutes: 32.63947856666667
+---
+test/plugins/credentials_vault/vault_test.exs. Use DataCase. Cover: store creates secret + version, fetch_current returns decrypted value, fetch from wrong scope returns error, rotate adds version and fetch returns latest, delete hides from list, history returns all versions, soft-deleted secrets not returned in list.

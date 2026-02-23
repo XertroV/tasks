@@ -1,0 +1,24 @@
+---
+id: P55.M1.E2.T002
+title: Create helpers.ex with role_class, chat_entries merge, timestamps
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- helpers
+- utilities
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:22:50.171070+00:00'
+started_at: '2026-02-22T06:22:50.171070+00:00'
+completed_at: '2026-02-22T06:34:09.477622+00:00'
+duration_minutes: 11.3217757
+---
+Create lib/pag_server_web/live/workspace_chat/helpers.ex as a function component module (use Phoenix.Component). Port chat_entries/2 pattern from ValidationConsole (~line 1795) for merging messages + tool calls sorted by timestamp. Port role_class/1 for CSS classes per role. Add relative timestamp formatting (e.g., '2m ago', '1h ago', 'Yesterday'). Add message preview truncation helper.
+
+## Acceptance Criteria
+- chat_entries/2 correctly interleaves messages and tool calls by timestamp
+- role_class/1 returns correct Tailwind classes for user/assistant/system/tool_result
+- Relative timestamps render correctly
+- Module is importable by root LiveView and components

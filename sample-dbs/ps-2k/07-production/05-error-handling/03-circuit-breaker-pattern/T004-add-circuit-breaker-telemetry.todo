@@ -1,0 +1,139 @@
+---
+id: P7.M5.E3.T004
+title: Add circuit breaker telemetry events
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- circuit-breaker
+- telemetry
+- monitoring
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:22:22.883663+00:00'
+started_at: '2026-02-06T21:22:22.883663+00:00'
+completed_at: '2026-02-06T21:48:28.912972+00:00'
+duration_minutes: 26.100488316666667
+---
+
+# Add circuit breaker telemetry events
+
+Add comprehensive telemetry instrumentation for circuit breaker state transitions and
+operations. This enables monitoring dashboards, alerting, and operational visibility
+into provider health patterns. Uses the existing `[:pag_server, ...]` telemetry prefix.
+
+## Requirements
+
+- [ ] Emit `[:pag_server, :circuit_breaker, :state_change]` on state transitions:
+  - Measurements: `%{count: 1}`
+  - Metadata: `%{provider: atom(), from_state: atom(), to_state: atom(), timestamp: integer()}`
+  - States: `:closed`, `:open`, `:half_open`
+- [ ] Emit `[:pag_server, :circuit_breaker, :request_blocked]` when circuit is open:
+  - Measurements: `%{count: 1}`
+  - Metadata: `%{provider: atom(), operation: atom()}`
+- [ ] Emit `[:pag_server, :circuit_breaker, :failure_recorded]` on fuse melt:
+  - Measurements: `%{count: 1, consecutive_failures: integer()}`
+  - Metadata: `%{provider: atom(), error_type: atom()}`
+- [ ] Emit `[:pag_server, :circuit_breaker, :health_probe]` on probe attempts:
+  - Measurements: `%{duration_ms: integer()}`
+  - Metadata: `%{provider: atom(), result: :ok | :error, reason: term()}`
+- [ ] Emit `[:pag_server, :circuit_breaker, :reset]` when circuit is manually or auto-reset:
+  - Measurements: `%{count: 1}`
+  - Metadata: `%{provider: atom(), trigger: :auto | :manual}`
+- [ ] Add Logger warnings for circuit open events
+- [ ] Add Logger info for circuit recovery events
+- [ ] Create a `CircuitBreaker.Stats` module to aggregate circuit breaker metrics:
+  - Current state per provider
+  - Total failures in last hour
+  - Average time in open state
+  - Number of state transitions
+
+## Acceptance Criteria
+
+- [ ] All circuit breaker state transitions emit telemetry events
+- [ ] Blocked requests (circuit open) are tracked and countable
+- [ ] Health probe results are observable via telemetry
+- [ ] Logger output provides human-readable circuit breaker status changes
+- [ ] Telemetry events follow existing `[:pag_server, ...]` naming convention
+- [ ] Stats module can be queried for current circuit breaker status across all providers
+- [ ] No telemetry calls in hot paths add measurable latency (fire-and-forget)
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+Observability is critical for circuit breakers in production. Without telemetry,
+operators cannot determine why requests are failing or when providers recover.
+This integrates with the existing telemetry infrastructure already used by the LLM
+Registry (see `emit_routing_telemetry/3` and `emit_failover_telemetry/4`).
+
+**Key Files**:
+- `lib/pag_server/llm/circuit_breaker.ex` - Add telemetry calls to state transitions
+- `lib/pag_server/llm/registry.ex` - Existing telemetry patterns at lines 836-849
+- `lib/pag_server_web/telemetry.ex` - Telemetry setup
+- `lib/pag_server/llm/circuit_breaker/health_probe.ex` - From T003
+
+## Notes
+
+Telemetry integration pattern (consistent with existing code):
+```elixir
+defmodule PagServer.LLM.CircuitBreaker do
+  # ... existing functions ...
+
+  defp emit_state_change_telemetry(provider, from_state, to_state) do
+    :telemetry.execute(
+      [:pag_server, :circuit_breaker, :state_change],
+      %{count: 1},
+      %{
+        provider: provider,
+        from_state: from_state,
+        to_state: to_state,
+        timestamp: System.system_time(:millisecond)
+      }
+    )
+  end
+
+  defp emit_blocked_telemetry(provider, operation) do
+    :telemetry.execute(
+      [:pag_server, :circuit_breaker, :request_blocked],
+      %{count: 1},
+      %{provider: provider, operation: operation}
+    )
+  end
+end
+```
+
+Stats module for operational dashboards:
+```elixir
+defmodule PagServer.LLM.CircuitBreaker.Stats do
+  @moduledoc "Aggregated circuit breaker statistics for monitoring."
+
+  def summary do
+    providers = [:anthropic, :openai, :openrouter, :ollama]
+
+    Enum.into(providers, %{}, fn provider ->
+      {provider, %{
+        state: CircuitBreaker.state(provider),
+        available: CircuitBreaker.available?(provider)
+      }}
+    end)
+  end
+end
+```
+
+Testing approach:
+```elixir
+test "emits telemetry on circuit open" do
+  ref = :telemetry_test.attach_event_handlers(self(), [
+    [:pag_server, :circuit_breaker, :state_change]
+  ])
+
+  # Trigger enough failures to open circuit
+  for _ <- 1..5, do: CircuitBreaker.record_failure(:test_provider)
+
+  assert_receive {[:pag_server, :circuit_breaker, :state_change],
+                  ^ref, %{count: 1},
+                  %{provider: :test_provider, to_state: :open}}
+end
+```

@@ -1,0 +1,132 @@
+---
+id: P4.M2.E5.T003
+title: Parse browser snapshots
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P4.M2.E5.T002
+tags:
+- tools
+- builtin
+- browser
+- parsing
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:02:52.024570'
+started_at: '2026-02-06T03:02:52.024570'
+completed_at: '2026-02-06T03:04:31.086454'
+duration_minutes: 1.65103125
+---
+
+# Parse browser snapshots
+
+Parse agent-browser snapshot output for LLM consumption.
+
+## Requirements
+
+- [ ] Parse JSON snapshot from agent-browser
+- [ ] Extract element references and metadata
+- [ ] Build accessible element tree
+- [ ] Format for LLM-friendly representation
+- [ ] Handle malformed snapshots gracefully
+
+## Acceptance Criteria
+
+- [ ] Parses valid snapshot JSON
+- [ ] Extracts all element refs and labels
+- [ ] Returns structured element tree
+- [ ] Handles parse errors gracefully
+- [ ] Test coverage for various snapshot formats
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` Browser automation
+
+**Key Points**:
+- Snapshots include ref-based element identifiers
+- LLMs use refs to target elements for interaction
+- Snapshot format is JSON with accessibility tree
+- Consider truncating large snapshots
+
+## Notes
+
+Snapshot format from agent-browser:
+```json
+{
+  "url": "https://example.com",
+  "title": "Example Domain",
+  "elements": [
+    {
+      "ref": "link-more-info",
+      "role": "link",
+      "name": "More information...",
+      "value": "https://www.iana.org/domains/example"
+    },
+    {
+      "ref": "button-submit",
+      "role": "button",
+      "name": "Submit"
+    }
+  ],
+  "text": "Example Domain\n\nThis domain is for use in illustrative examples..."
+}
+```
+
+Parser implementation:
+```elixir
+defmodule PAGServer.Tools.Builtin.Browser.SnapshotParser do
+  def parse(json_string) do
+    case Jason.decode(json_string) do
+      {:ok, snapshot} ->
+        {:ok, %{
+          url: snapshot["url"],
+          title: snapshot["title"],
+          elements: parse_elements(snapshot["elements"]),
+          text: snapshot["text"]
+        }}
+      {:error, reason} ->
+        {:error, "Failed to parse snapshot: #{reason}"}
+    end
+  end
+
+  defp parse_elements(elements) when is_list(elements) do
+    Enum.map(elements, fn elem ->
+      %{
+        ref: elem["ref"],
+        role: elem["role"],
+        name: elem["name"],
+        value: elem["value"]
+      }
+    end)
+  end
+  defp parse_elements(_), do: []
+
+  def format_for_llm(snapshot) do
+    """
+    Page: #{snapshot.title} (#{snapshot.url})
+
+    Interactive Elements:
+    #{format_elements(snapshot.elements)}
+
+    Page Text:
+    #{snapshot.text}
+    """
+  end
+
+  defp format_elements(elements) do
+    elements
+    |> Enum.map(fn elem ->
+      "- [#{elem.ref}] #{elem.role}: #{elem.name}"
+    end)
+    |> Enum.join("\n")
+  end
+end
+```
+
+Future enhancements:
+- Snapshot diff for change detection
+- Element filtering (hide non-interactive)
+- Screenshot integration in snapshot
+- Snapshot compression for large pages

@@ -1,0 +1,35 @@
+---
+id: P15.M8.E2.T004
+title: Add content size limits, file path normalization, and error logging in sync
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- data-integrity
+- robustness
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:52:12.653027+00:00'
+started_at: '2026-02-17T14:52:12.653027+00:00'
+completed_at: '2026-02-17T15:23:44.150135+00:00'
+duration_minutes: 31.52495165
+---
+Three related data integrity improvements:
+
+1. No content size limit (E2 I3): No max file content size enforced. Could store 100MB per revision. Add validate_length(:content, max: 1_048_576) to create_changeset.
+
+2. File path normalization missing (E2 I9): Paths like 'foo/bar.md', 'foo//bar.md', 'foo/./bar.md' stored as-is but resolve to same disk path. Same file could have multiple revision histories. Normalize paths before storage.
+
+3. sync_from_disk silently swallows errors (E2 I8): When write_revision fails, error is discarded. At minimum log the error, ideally return {:ok, revisions, errors}.
+
+4. validate_file_path false positives (E2 I7): String.contains?(value, '..') rejects valid filenames like 'CHANGELOG..old'. Check path segments instead: '..' in Path.split(value).
+
+Source: E2 Audit I3, I7, I8, I9
+
+## Acceptance Criteria
+- [ ] Content size limit enforced (configurable, default ~1MB)
+- [ ] File paths normalized before storage
+- [ ] sync_from_disk logs errors for failed files
+- [ ] validate_file_path checks segments not substring
+- [ ] Tests for all four improvements

@@ -1,0 +1,33 @@
+---
+id: B040
+title: make PoolLimiter test cleanup resilient to process-exit race
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: high
+depends_on: []
+tags:
+- agents
+- tests
+- race
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:23:01.754689+00:00'
+started_at: '2026-02-15T18:23:01.754689+00:00'
+completed_at: '2026-02-15T18:23:28.645958+00:00'
+duration_minutes: 0.44818765000000005
+---
+
+# make PoolLimiter test cleanup resilient to process-exit race
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe occasional `no process` exit in `PagServer.Agents.PoolLimiterTest` on `GenServer.stop/3` during on-exit cleanup.
+
+## Expected Behavior
+
+PoolLimiter tests should clean up limiter processes without failing if the process exits between liveness check and stop call.
+
+## Actual Behavior
+
+Cleanup uses a non-atomic alive check then stop call; a race can trigger `** (EXIT) no process` and fail the test.

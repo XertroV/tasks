@@ -1,0 +1,50 @@
+---
+id: B172
+title: Skill Hub detail modal opens with blank content
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- browser-testing
+- skill-hub
+- ui
+claimed_by: cli-user
+claimed_at: '2026-02-21T03:44:25.762164+00:00'
+started_at: '2026-02-21T03:44:25.762164+00:00'
+completed_at: '2026-02-21T03:44:49.423671+00:00'
+duration_minutes: 0.39435828333333334
+---
+## Repro
+1. Navigate to /dashboard/skills/hub
+2. Click any listed skill name
+3. Observe detail modal content
+
+## Expected
+Modal should render skill metadata/details.
+
+## Actual
+Modal opens but content area is blank (only fragmentary text/buttons).
+
+## Notes
+Discovered during P51.M2.E2.T001 plugin UI exploration campaign.
+
+## Resolution
+- Normalized skill detail payloads in Skill Hub LiveView so detail data renders correctly for nested and atom-key maps returned by registry clients.
+
+## Verification
+- Added regression test: `test/pag_server_web/live/skill_hub_live_test.exs` (`view_detail renders detail modal when registry returns atom-key skill payload`).
+- Ran `mix test test/pag_server_web/live/skill_hub_live_test.exs` with all tests passing.
+
+## Playwright Scenario Notes
+- Test name: `skill hub detail modal renders content`
+- Preconditions: logged in as admin; skill list loaded on `/dashboard/skills/hub`.
+- Steps:
+  1. `await page.goto('/dashboard/skills/hub')`
+  2. `await page.click('button:has-text("boof")')`
+  3. `await page.waitForTimeout(300)`
+- Assertions:
+  - Detail modal is visible.
+  - Modal shows skill name/version and action controls (e.g., `Install`, `Close`).
+  - Modal body is not an empty/blank container.

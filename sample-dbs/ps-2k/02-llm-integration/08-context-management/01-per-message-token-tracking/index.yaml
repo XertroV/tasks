@@ -1,0 +1,37 @@
+id: P2.M8.E1
+name: Per-Message Token Tracking
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-track-token-count-per-message.todo
+  title: Track token count per message on persist
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-calculate-running-context-tota.todo
+  title: Calculate running context total in session
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-store-model-context-limits-in.todo
+  title: Store model context limits in registry
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

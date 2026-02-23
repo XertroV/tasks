@@ -1,0 +1,38 @@
+id: P30.M1.E1
+name: Marketplace Installer Enhancements
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-list-available-search-avai.todo
+  title: Add list_available/search_available to Installer
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-pluginmarketplace-context.todo
+  title: Add PluginMarketplace context module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-write-marketplace-fetch-tests.todo
+  title: Write marketplace fetch tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

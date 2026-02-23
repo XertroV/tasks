@@ -1,0 +1,64 @@
+---
+id: P6.M3.E2.T002
+title: Ensure deterministic replay
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P6.M3.E2.T001
+tags:
+- observability
+- determinism
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:11:42.746858+00:00'
+started_at: '2026-02-06T20:11:42.746858+00:00'
+completed_at: '2026-02-06T20:22:35.083002+00:00'
+duration_minutes: 10.872268850000001
+---
+
+# Ensure deterministic replay
+
+Verify replay is deterministic: same events always produce same state.
+
+## Requirements
+
+- [ ] Eliminate non-deterministic operations:
+  - [ ] No timestamps (use event.timestamp)
+  - [ ] No random IDs (use event.data IDs)
+  - [ ] No external I/O
+- [ ] Add determinism tests:
+  - [ ] Replay twice, compare states
+  - [ ] Replay in parallel, compare results
+- [ ] Document determinism requirements
+- [ ] Add property-based tests
+
+## Acceptance Criteria
+
+- [ ] Replay is deterministic
+- [ ] Tests verify determinism
+- [ ] No non-deterministic operations
+- [ ] Property tests pass
+
+## Notes
+
+**Determinism Test**:
+```elixir
+test "replay is deterministic" do
+  session_id = create_test_session()
+  
+  state1 = Replay.replay_session(session_id)
+  state2 = Replay.replay_session(session_id)
+  
+  assert state1 == state2
+end
+
+property "replay always produces same state" do
+  check all events <- list_of(event_generator()) do
+    state1 = apply_events(events)
+    state2 = apply_events(events)
+    assert state1 == state2
+  end
+end
+```

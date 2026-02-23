@@ -1,0 +1,53 @@
+id: P12.M1
+name: Test Failures & Flakiness
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Fix Mock Expectation Failures
+  path: 01-fix-mock-expectation-failures
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Fix Flaky Integration Tests
+  path: 02-fix-flaky-integration-tests
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Dialyzer/Type Warnings in Tests
+  path: 03-dialyzer-type-warnings-in-test
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Coverage Gaps
+  path: 04-coverage-gaps
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E5
+  name: LLM Integration Tests
+  path: 05-llm-integration-tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 17
+  done: 17
+  in_progress: 0
+  blocked: 0
+  pending: 0

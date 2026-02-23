@@ -1,0 +1,40 @@
+---
+id: P16.M1.E1.T004
+title: Create IntegrationCase test helper
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- test
+- integration
+- helper
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:38:51.939338+00:00'
+started_at: '2026-02-14T02:38:51.939338+00:00'
+completed_at: '2026-02-14T02:50:21.575755+00:00'
+duration_minutes: 11.493940133333332
+---
+
+# Create IntegrationCase test helper
+
+Create a test case module for integration tests with API key handling.
+
+## Requirements
+
+- Create `test/support/integration_case.ex` module
+- Provide `skip_without_api_key/1` helper macro
+- Provide `api_key_available?/1` helper function
+- Handle graceful skipping when API keys not set
+- Support `@tag :integration` for filtering
+
+## Acceptance Criteria
+
+- [ ] `PagServer.IntegrationCase` module exists
+- [ ] `skip_without_api_key(:groq)` skips test if `GROQ_API_KEY` not set
+- [ ] `skip_without_api_key(:openrouter)` skips test if `OPENROUTER_API_KEY` not set
+- [ ] `skip_without_api_key(:anthropic)` skips test if `ANTHROPIC_API_KEY` not set
+- [ ] `skip_without_api_key(:openai)` skips test if `OPENAI_API_KEY` not set
+- [ ] Tests can use `use PagServer.IntegrationCase` pattern
+- [ ] Clear log message when test is skipped

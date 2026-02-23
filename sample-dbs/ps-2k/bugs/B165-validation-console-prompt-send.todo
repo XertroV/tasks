@@ -1,0 +1,57 @@
+---
+id: B165
+title: Validation Console prompt send records message but produces no assistant response
+  or error
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- browser-testing
+- validation-console
+- chat
+claimed_by: cli-user
+claimed_at: '2026-02-20T17:53:03.349510+00:00'
+started_at: '2026-02-20T17:53:03.349510+00:00'
+completed_at: '2026-02-20T17:53:05.390783+00:00'
+duration_minutes: 0.03402105
+---
+## Repro
+1. Open `/dashboard/validation-console?streaming=false`
+2. Click `+ New` to create a session
+3. Send prompt: `Return exactly: FOUR`
+4. Wait 30 seconds
+
+## Expected
+Assistant response appears in transcript OR explicit error feedback is shown.
+
+## Actual
+User message is saved and appears in transcript, but no assistant message appears and no error feedback is shown.
+
+## Evidence
+- Browser run showed `message.sent` events for prompt.
+- Chat debug remained `Assistant msgs: 0` after 30s.
+- No controls/chat error banner was shown.
+- Browser console contained no JS errors.
+
+## Resolution
+- Added a fallback `handle_info/2` clause in Validation Console LiveView to ignore unrelated messages (including periodic `:tick`) instead of crashing.
+- Added a regression test that sends `:tick` directly to the LiveView process and asserts the view stays alive.
+
+## Verification
+- Re-ran `mix test test/pag_server_web/live/validation_console_test.exs` with 33 passing tests.
+- Browser re-test now surfaces explicit provider error feedback (`Provider request failed ... no_credentials`) instead of silently stalling.
+
+## Playwright Scenario Notes
+- Test name: `validation console send prompt returns response or explicit error`
+- Preconditions: logged in; validation console reachable; session created via `+ New`.
+- Steps:
+  1. `await page.goto('/dashboard/validation-console?streaming=false')`
+  2. `await page.click('button:has-text("+ New")')`
+  3. `await page.fill('textarea[placeholder="Enter a validation prompt"]', 'Return exactly: FOUR')`
+  4. `await page.click('button:has-text("Send prompt")')`
+  5. `await page.waitForTimeout(5000)`
+- Assertions:
+  - Transcript shows either an assistant message or explicit provider error banner.
+  - UI does not silently stall with only user messages.

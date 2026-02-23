@@ -1,0 +1,16 @@
+---
+id: P15.M12.E4.T001
+title: Add :connections tab to WorkspaceBrowserLive assigns and tab bar
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.175711+00:00'
+started_at: '2026-02-18T07:31:33.175711+00:00'
+completed_at: '2026-02-18T07:50:59.378068+00:00'
+duration_minutes: 19.43670566666667
+---
+lib/pag_server_web/live/workspace_browser_live.ex: (1) Add :connections to @tabs list (line 22, currently [:overview, :config, :plugins]). (2) Add connector-related assigns to mount/3: connectors: [], connector_drawer_open: false, connector_drawer_mode: :view, connector_form: %{}, connector_error: nil, connector_verify_status: :idle. (3) Add connector count badge on the :connections tab button (like the amber dot on :config). (4) Load connectors in hydrate_workspace_detail/2 via BotConfigs.list_bot_configs(workspace_id, preload: [:session]). Connectors sort by platform then name.

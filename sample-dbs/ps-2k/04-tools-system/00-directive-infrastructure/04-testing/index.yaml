@@ -1,0 +1,30 @@
+# Epic: Testing Infrastructure
+# Phase 4, Milestone 0, Epic 4 (P4.M0.E4)
+
+id: P4.M0.E4
+name: Testing Infrastructure
+status: pending
+estimate_hours: 2
+complexity: low
+depends_on:
+  - P4.M0.E1
+  - P4.M0.E3
+
+tasks:
+  - id: T006
+    file: T006-testing-infrastructure.todo
+    title: Create DirectiveCase test helpers
+    status: pending
+    estimate_hours: 2
+    complexity: low
+    priority: medium
+    depends_on:
+      - P4.M0.E1.T001
+      - P4.M0.E3.T004
+
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

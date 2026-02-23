@@ -1,0 +1,51 @@
+id: P19
+name: Documentation Remediation
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Critical Fixes
+  path: 01-critical-fixes
+  status: done
+  estimate_hours: 8.0
+  complexity: critical
+  depends_on: []
+  description: Fix all critical documentation errors that will cause users to fail
+  locked: false
+- id: M2
+  name: Medium Priority Fixes
+  path: 02-medium-priority-fixes
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Fix outdated model names, config key mismatches, and design doc drift
+  locked: false
+- id: M3
+  name: Cleanup & Archive
+  path: 03-cleanup-archive
+  status: done
+  estimate_hours: 8.0
+  complexity: low
+  depends_on: []
+  description: Delete low-value docs, archive completed feature docs
+  locked: false
+- id: M4
+  name: Missing Documentation
+  path: 04-missing-documentation
+  status: pending
+  estimate_hours: 8.0
+  complexity: low
+  depends_on: []
+  description: Create missing integration docs, provider docs, and architecture references
+  locked: false
+stats:
+  total_tasks: 38
+  done: 38
+  in_progress: 0
+  blocked: 0
+  pending: 0

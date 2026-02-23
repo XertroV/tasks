@@ -1,0 +1,17 @@
+---
+id: P45.M2.E1.T002
+title: Implement Vault.store/2 and Vault.fetch_current/2
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P45.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.183589+00:00'
+started_at: '2026-02-19T19:17:35.183589+00:00'
+completed_at: '2026-02-19T19:50:06.355053+00:00'
+duration_minutes: 32.51952421666667
+---
+Implement in CredentialsVault.Vault context module. store/2 takes (scope_params, attrs) and upserts the secret record plus inserts a new version row. fetch_current/2 returns the secret metadata + decrypted value for the latest non-expired version. Enforce scope rules (workspace_id required for workspace scope, agent_id required for agent scope, etc.).

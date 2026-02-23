@@ -1,0 +1,61 @@
+---
+id: P6.M3.E1.T004
+title: Write replay tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P6.M3.E1.T001
+- P6.M3.E1.T002
+- P6.M3.E1.T003
+tags:
+- observability
+- testing
+- replay
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:45:51.729482'
+started_at: '2026-02-06T14:45:51.729482'
+completed_at: '2026-02-06T14:51:11.492661'
+duration_minutes: 5.329386116666667
+---
+
+# Write replay tests
+
+Test replay engine with various event sequences and edge cases.
+
+## Requirements
+
+- [x] Test basic replay
+- [x] Test replay up to event N
+- [x] Test replay from event N
+- [x] Test fork replay
+- [x] Test broken event chain detection
+- [x] Test missing events handling
+- [x] Performance test (1000+ events)
+
+## Acceptance Criteria
+
+- [x] All tests pass (37 tests, 0 failures)
+- [x] Edge cases covered (nil payloads, single events, session isolation, atom/string keys)
+- [x] Performance requirements met (1000 events replays in ~185ms)
+- [x] Determinism verified (repeated replay produces identical state)
+
+## Notes
+
+**Test Example**:
+```elixir
+test "replay reconstructs state correctly" do
+  session_id = create_test_session()
+  
+  # Create some events
+  EventStore.record(:message_added, %{message: "Hello"})
+  EventStore.record(:llm_response, %{text: "Hi there"})
+  
+  # Replay
+  state = Replay.replay_session(session_id)
+  
+  assert length(state.messages) == 2
+  assert hd(state.messages).text == "Hello"
+end
+```

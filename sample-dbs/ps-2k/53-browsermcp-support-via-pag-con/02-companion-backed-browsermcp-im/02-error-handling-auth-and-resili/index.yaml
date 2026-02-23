@@ -1,0 +1,33 @@
+id: P53.M2.E2
+name: Error handling, auth, and resilience
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on:
+- P53.M2.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-enforce-auth-and-workspace-gat.todo
+  title: Enforce auth and workspace gating for browsermcp actions
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P53.M2.E1.T001
+- id: T002
+  file: T002-normalize-browser-transport-er.todo
+  title: Normalize browser transport errors and retry guidance
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P53.M2.E2.T001
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

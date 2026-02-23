@@ -1,0 +1,49 @@
+---
+id: P17.M4.E1.T001
+title: Run integration tests one-by-one with Groq backend
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- groq
+- integration
+- validation
+claimed_by: cli-user
+claimed_at: '2026-02-14T07:37:51.028957+00:00'
+started_at: '2026-02-14T07:37:51.028957+00:00'
+completed_at: '2026-02-14T12:17:50.139480+00:00'
+duration_minutes: 279.9851751833333
+---
+
+# Run integration tests one-by-one with Groq backend
+
+
+
+## Requirements
+
+- Configure Groq as the LLM backend for integration tests
+- Run each integration test individually to isolate failures
+- Fix issues that arise during testing
+- Track iteration count (max 6 iterations)
+- If more than 6 iterations are needed, mark task as blocked and document findings
+
+## Acceptance Criteria
+
+- [ ] All integration tests pass when run one-by-one with Groq backend
+- [ ] Any discovered issues are fixed (within 6 iteration limit)
+- [ ] Test results documented (which tests pass/fail with Groq)
+- [ ] If blocked after 6 iterations: task marked as blocked with clear documentation of remaining issues
+- [ ] Configuration changes for Groq backend are properly implemented
+
+## Implementation Notes
+
+Run tests individually with Groq configured as the provider:
+```bash
+# Configure Groq provider in test config
+# Run each test file individually:
+mix test test/integration/some_test.exs --max-cases 1
+```
+
+Track iterations - if any single test requires more than 6 fix attempts, mark task as blocked and continue with other work.

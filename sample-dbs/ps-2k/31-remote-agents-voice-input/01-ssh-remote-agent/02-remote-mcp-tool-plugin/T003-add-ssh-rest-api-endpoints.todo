@@ -1,0 +1,16 @@
+---
+id: P31.M1.E2.T003
+title: Add SSH REST API endpoints
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:36.937997+00:00'
+started_at: '2026-02-18T19:46:36.937997+00:00'
+completed_at: '2026-02-18T19:46:41.570207+00:00'
+duration_minutes: 0.07720338333333333
+---
+Routes: GET /api/v1/workspaces/:id/ssh/connections, POST /api/v1/workspaces/:id/ssh/connect, DELETE /api/v1/workspaces/:id/ssh/:connection_id.

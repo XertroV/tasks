@@ -1,0 +1,111 @@
+---
+id: P1.M2.E5.T001
+title: Create tool_calls table
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- migration
+- database
+- tools
+- schema
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:21:12.279305'
+started_at: '2026-02-05T08:21:12.279305'
+completed_at: '2026-02-05T08:22:23.334526'
+---
+
+# Create tool_calls table
+
+Create a migration for the `tool_calls` table to log all tool executions with timing and status tracking.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_tool_calls`
+- [ ] Add `tool_calls` table with the following fields:
+  - [ ] `id` - binary_id (primary key)
+  - [ ] `session_id` - references(:sessions, type: :binary_id, on_delete: :delete_all, null: false)
+  - [ ] `message_id` - references(:messages, type: :binary_id, on_delete: :nilify_all)
+  - [ ] `tool_name` - string (not null)
+  - [ ] `arguments` - map (not null, default: %{})
+  - [ ] `result` - map (nullable)
+  - [ ] `error` - text (nullable)
+  - [ ] `status` - string (not null, default: "pending")
+  - [ ] `started_at` - utc_datetime_usec (nullable)
+  - [ ] `completed_at` - utc_datetime_usec (nullable)
+  - [ ] `duration_ms` - integer (nullable)
+  - [ ] `inserted_at` - utc_datetime_usec (not null)
+  - [ ] `updated_at` - utc_datetime_usec (not null)
+- [ ] Add indexes:
+  - [ ] Index on `session_id`
+  - [ ] Index on `tool_name`
+- [ ] Run migration: `mix ecto.migrate`
+- [ ] Verify schema in database
+
+## Acceptance Criteria
+
+- [ ] Migration runs cleanly with `mix ecto.migrate`
+- [ ] Migration can be rolled back with `mix ecto.rollback`
+- [ ] Tool calls can be logged with all required fields
+- [ ] Timing fields track execution duration
+- [ ] Status field supports progression: pending → running → completed/failed
+- [ ] Foreign keys enforce data integrity
+- [ ] Indexes exist for efficient querying by session and tool name
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 253-267 (tool_calls table)
+
+**Key Points**:
+- Tool calls are associated with sessions (required) and messages (optional)
+- Status enum: "pending" | "running" | "completed" | "failed"
+- Timing tracked via started_at, completed_at, duration_ms
+- Arguments and result stored as JSONB maps
+- Errors stored as text for debugging
+- On session delete, cascade delete tool calls
+- On message delete, set message_id to null (preserve tool history)
+
+**Dependencies**:
+- Requires `sessions` table (from P1.M2.E1)
+- Requires `messages` table (from P1.M2.E3)
+
+## Notes
+
+Example migration structure:
+```elixir
+defmodule PagServer.Repo.Migrations.CreateToolCalls do
+  use Ecto.Migration
+
+  def change do
+    create table(:tool_calls, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :session_id, references(:sessions, type: :binary_id, on_delete: :delete_all), null: false
+      add :message_id, references(:messages, type: :binary_id, on_delete: :nilify_all)
+      add :tool_name, :string, null: false
+      add :arguments, :map, null: false, default: %{}
+      add :result, :map
+      add :error, :text
+      add :status, :string, null: false, default: "pending"
+      add :started_at, :utc_datetime_usec
+      add :completed_at, :utc_datetime_usec
+      add :duration_ms, :integer
+
+      timestamps(type: :utc_datetime_usec)
+    end
+
+    create index(:tool_calls, [:session_id])
+    create index(:tool_calls, [:tool_name])
+  end
+end
+```
+
+Status values should be validated at the schema level:
+- "pending" - tool call queued but not started
+- "running" - tool call in progress
+- "completed" - tool call finished successfully
+- "failed" - tool call encountered an error
+
+Duration calculation: `duration_ms = DateTime.diff(completed_at, started_at, :millisecond)`

@@ -1,0 +1,16 @@
+---
+id: P48.M5.E1.T001
+title: 'LspBinaryManager: auto-download LSP server binaries on first use'
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T13:34:27.074604+00:00'
+started_at: '2026-02-20T13:34:27.074604+00:00'
+completed_at: '2026-02-20T13:53:59.790852+00:00'
+duration_minutes: 19.545270533333333
+---
+Module checks if binary exists in PATH; downloads if not. Feature flag: lsp.auto_download (default false, assume installed). Per-server download strategy: elixir-ls (GitHub release zip -> language_server.sh), zls (GitHub releases), clangd (GitHub releases), yaml-language-server (npm), taplo (GitHub releases), vscode-json-languageserver (npm), typescript-language-server (npm). Document for servers requiring user install: rust-analyzer (rustup), gopls (go install), ruby-lsp (gem), pyright (pip/npm).

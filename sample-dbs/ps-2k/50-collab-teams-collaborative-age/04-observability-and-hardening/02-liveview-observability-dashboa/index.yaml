@@ -1,0 +1,61 @@
+id: P50.M4.E2
+name: LiveView Observability Dashboard
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-declare-web-routes-0-and-wire.todo
+  title: Declare web_routes/0 and wire into PagServerWeb.Router
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-collabteams-dashboar.todo
+  title: Implement CollabTeams.DashboardLive mount and team index
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E2.T001
+  - P50.M4.E1.T005
+- id: T003
+  file: T003-add-real-time-per-team-panel-w.todo
+  title: Add real-time per-team panel with worker states and task board
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E2.T002
+- id: T004
+  file: T004-add-activity-feed-panel-to-tea.todo
+  title: Add activity feed panel to team dashboard
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E2.T003
+- id: T005
+  file: T005-add-liveview-integration-tests.todo
+  title: Add LiveView integration tests for dashboard
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P50.M4.E2.T002
+  - P50.M4.E2.T003
+  - P50.M4.E2.T004
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

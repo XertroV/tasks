@@ -1,0 +1,48 @@
+---
+id: P39.M5.E2.T001
+title: Add template param to Workspaces.bootstrap_workspace/3
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P39.M5.E1.T001
+tags:
+- bootstrap
+- api
+- workspaces
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:41:55.462130+00:00'
+started_at: '2026-02-19T23:41:55.462130+00:00'
+completed_at: '2026-02-19T23:46:35.128271+00:00'
+duration_minutes: 4.661102183333333
+---
+Extend the bootstrap_workspace function to accept a template name and skip the conversational bootstrap questionnaire when a template is provided.
+
+Files: lib/pag_server/workspaces.ex
+
+Acceptance criteria:
+- bootstrap_workspace/3 accepts opts: [template: "coding-assistant"] (or via attrs)
+- When template is provided, workspace is created and provisioned using the workspace template agent_config (model, system prompt, tools)
+- When template is provided, NO bootstrap session is started — the workspace is immediately ready (onboarding_status set to 'complete')
+- When template is nil/not provided, existing behavior is unchanged
+- The agent created from the template uses the template's base_system_prompt as its system_prompt
+- Unit tests cover both the templated and non-templated paths
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P39.M5.E2)
+**Agent**: cli-user
+**Date**: 2026-02-19 23:41 UTC
+**Sibling tasks**: P39.M5.E2.T002, P39.M5.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P39.M5.E2.T001 → P39.M5.E2.T002 → P39.M5.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P39.M5.E2.T001: .tasks/39-pag-connect-companion-support/05-coding-assistant-workspace-tem/02-non-interactive-bootstrap-endp/T001-add-template-param-to-workspac.todo
+- P39.M5.E2.T002: .tasks/39-pag-connect-companion-support/05-coding-assistant-workspace-tem/02-non-interactive-bootstrap-endp/T002-extend-post-api-v1-workspaces.todo
+- P39.M5.E2.T003: .tasks/39-pag-connect-companion-support/05-coding-assistant-workspace-tem/02-non-interactive-bootstrap-endp/T003-integration-test-pag-connect-n.todo

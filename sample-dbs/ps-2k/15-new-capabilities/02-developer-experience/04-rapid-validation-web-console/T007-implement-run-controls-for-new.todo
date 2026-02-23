@@ -1,0 +1,66 @@
+---
+id: P15.M2.E4.T007
+title: Implement run controls for new session, fork, stop, and retry flows
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E4.T003
+- P15.M2.E4.T004
+tags:
+- sessions
+- controls
+- workflow
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:36:20.456672+00:00'
+started_at: '2026-02-14T14:36:20.456672+00:00'
+completed_at: '2026-02-14T14:42:44.559441+00:00'
+duration_minutes: 6.401712666666667
+---
+
+# Implement run controls for new session, fork, stop, and retry flows
+
+
+
+## Requirements
+
+- Add explicit run controls for creating a new session, forking current session, stopping an active run, and retrying last prompt.
+- Wire controls to backend operations with optimistic but safe UI state transitions.
+- Ensure current session selection and transcript state stay consistent across control actions.
+- Expose any unsupported backend capability as disabled controls with explanatory copy.
+
+## Acceptance Criteria
+
+- New session control creates a distinct session and switches chat context automatically.
+- Fork control creates a child session and shows parent/child linkage in the browser panel.
+- Stop/retry actions function for in-flight or recently failed runs without UI corruption.
+- Control states (enabled/disabled/loading) correctly reflect backend operation lifecycle.
+
+## Implementation Notes (2026-02-15)
+
+- Added explicit **Run Controls** in the validation console UI (`new_session`, `fork_session`, `stop_run`, `retry_last`) and wired them through LiveView events.
+- Implemented `new_session` creation flow with safe loading/error states, automatic context switch to created session, and refreshed browser/transcript state.
+- Reused existing fork/replay behavior from controls while making them accessible through dedicated run-control actions.
+- Added stream stop handling for in-flight simulated runs by clearing active stream state and preserving UI consistency.
+- Added fork lineage rendering in browser session cards (`fork of <parent-id>`), so parent/child linkage is visible without navigation.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M2.E4)
+**Agent**: cli-user
+**Date**: 2026-02-14 14:36 UTC
+**Sibling tasks**: P15.M2.E4.T008, P15.M2.E4.T010, P15.M2.E4.T011
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M2.E4.T007 → P15.M2.E4.T008 → P15.M2.E4.T010 → P15.M2.E4.T011
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M2.E4.T007: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T007-implement-run-controls-for-new.todo
+- P15.M2.E4.T008: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T008-add-lightweight-event-timeline.todo
+- P15.M2.E4.T010: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T010-cover-console-with-integration.todo
+- P15.M2.E4.T011: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T011-document-local-usage-workflows.todo

@@ -1,0 +1,44 @@
+# Epic: Channel Setup
+# Phase 3, Milestone 1, Epic 1 (P3.M1.E1)
+
+id: P3.M1.E1
+name: Channel Setup
+status: pending
+estimate_hours: 2
+complexity: low
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-user-socket.todo
+    title: Create UserSocket module
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-channel-endpoint.todo
+    title: Configure channel endpoint in router
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [P3.M1.E1.T001]
+    
+  - id: T003
+    file: T003-transport-config.todo
+    title: Set up WebSocket transport configuration
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [P3.M1.E1.T002]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

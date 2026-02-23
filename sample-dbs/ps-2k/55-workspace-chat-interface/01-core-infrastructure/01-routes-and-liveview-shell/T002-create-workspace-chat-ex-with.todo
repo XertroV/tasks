@@ -1,0 +1,23 @@
+---
+id: P55.M1.E1.T002
+title: Create workspace_chat.ex with mount and full assigns struct
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- liveview
+- core
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:22:50.161581+00:00'
+started_at: '2026-02-22T06:22:50.161581+00:00'
+completed_at: '2026-02-22T06:33:47.553204+00:00'
+duration_minutes: 10.956526883333334
+---
+Create lib/pag_server_web/live/workspace_chat.ex as root LiveView. Mount assigns: workspace_id, workspace, current_user (from RequireAuth), threads (list), sidebar_search, active_session_id, active_session, active_agent_id, transcript, tool_calls, entries (merged), streaming_state (nil), pending_approvals, agent_status (:idle), composer_error (nil), subscribed_agent_id (nil), token_buffer (''), flush_pending (false). Use Phoenix.LiveView, import core components. Implement mount/3 for connected/disconnected states.
+
+## Acceptance Criteria
+- LiveView mounts without error for valid workspace_id
+- All assigns initialized with correct defaults
+- Workspace loaded from DB on mount

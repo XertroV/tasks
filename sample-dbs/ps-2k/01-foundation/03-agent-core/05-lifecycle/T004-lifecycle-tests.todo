@@ -1,0 +1,180 @@
+---
+id: P1.M3.E5.T004
+title: Write lifecycle hook tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M3.E5.T002
+- P1.M3.E5.T003
+claimed_by: claude-1
+claimed_at: '2026-02-05T10:13:41.670646'
+started_at: '2026-02-05T10:13:41.670646'
+completed_at: '2026-02-05T10:15:41.420552'
+tags:
+- agent
+- lifecycle
+- testing
+- hooks
+---
+
+# Write lifecycle hook tests
+
+Create comprehensive tests for lifecycle hook execution and shutdown behavior.
+
+## Requirements
+
+- [ ] Create `test/pag_server/agents/lifecycle_test.exs`
+- [ ] Test lifecycle behaviour module:
+  - [ ] Verify optional callbacks are defined correctly
+  - [ ] Test behaviour compilation
+- [ ] Test hook execution in Agent:
+  - [ ] Test `on_start/1` called during init
+  - [ ] Test `on_message_received/2` called when message queued
+  - [ ] Test `on_turn_complete/2` called after LLM response
+  - [ ] Test `on_error/3` called on errors
+  - [ ] Test hooks not called when module is nil
+  - [ ] Test hooks not called when not implemented
+- [ ] Test hook error handling:
+  - [ ] Agent survives hook exceptions
+  - [ ] Hook errors logged properly
+  - [ ] Telemetry emitted for hook failures
+- [ ] Test graceful shutdown:
+  - [ ] `on_shutdown/2` called with reason
+  - [ ] Events flushed before termination
+  - [ ] Database updated with final status
+  - [ ] Shutdown completes within timeout
+- [ ] Test telemetry events for all hooks
+
+## Acceptance Criteria
+
+- [ ] Test file covers all lifecycle hooks
+- [ ] All tests pass consistently
+- [ ] Code coverage > 90% for lifecycle module
+- [ ] Test both success and failure scenarios
+- [ ] Mock implementations for lifecycle module
+- [ ] Async test tags used appropriately
+- [ ] Tests complete in < 5 seconds total
+- [ ] No flaky tests due to timing issues
+
+## Context
+
+**Plan References**:
+- Test infrastructure from P1.M1.E4
+- Follow existing test patterns in codebase
+
+**Key Points**:
+- Use `start_supervised!/1` for proper cleanup
+- Mock lifecycle module for controlled testing
+- Use `capture_log/1` to verify logging
+- Telemetry testing with `:telemetry_test` helpers
+- Shutdown tests need careful timing
+
+## Notes
+
+Example test structure:
+```elixir
+defmodule PagServer.Agents.LifecycleTest do
+  use PagServer.DataCase, async: true
+  
+  alias PagServer.Agents.Agent
+  
+  # Mock lifecycle module
+  defmodule MockLifecycle do
+    @behaviour PagServer.Agents.Lifecycle
+    
+    def on_start(state) do
+      send(self(), {:hook_called, :on_start})
+      {:ok, state}
+    end
+    
+    def on_shutdown(reason, _state) do
+      send(self(), {:hook_called, :on_shutdown, reason})
+      :ok
+    end
+    
+    # Implement other hooks...
+  end
+  
+  describe "lifecycle hooks" do
+    test "on_start called during agent initialization" do
+      agent_id = Ecto.UUID.generate()
+      
+      {:ok, pid} = Agent.start_link(
+        agent_id: agent_id,
+        lifecycle_module: MockLifecycle
+      )
+      
+      assert_receive {:hook_called, :on_start}, 100
+    end
+    
+    test "agent survives hook exceptions" do
+      defmodule CrashingLifecycle do
+        @behaviour PagServer.Agents.Lifecycle
+        def on_start(_), do: raise("Boom!")
+      end
+      
+      log = capture_log(fn ->
+        {:ok, _pid} = Agent.start_link(
+          agent_id: Ecto.UUID.generate(),
+          lifecycle_module: CrashingLifecycle
+        )
+      end)
+      
+      assert log =~ "Hook on_start failed"
+    end
+    
+    test "on_shutdown called with reason" do
+      {:ok, pid} = Agent.start_link(
+        agent_id: Ecto.UUID.generate(),
+        lifecycle_module: MockLifecycle
+      )
+      
+      GenServer.stop(pid, :normal)
+      
+      assert_receive {:hook_called, :on_shutdown, :normal}, 100
+    end
+  end
+  
+  describe "graceful shutdown" do
+    test "events flushed before termination" do
+      # Test event persistence
+    end
+    
+    test "database updated with terminated status" do
+      # Test DB update
+    end
+    
+    test "shutdown completes within timeout" do
+      # Test timing constraint
+    end
+  end
+  
+  describe "telemetry" do
+    setup do
+      :telemetry_test.attach_event_handlers(self(), [
+        [:pag, :agent, :hook],
+        [:pag, :agent, :hook, :error],
+        [:pag, :agent, :shutdown]
+      ])
+      
+      :ok
+    end
+    
+    test "emits hook execution telemetry" do
+      {:ok, pid} = Agent.start_link(
+        agent_id: Ecto.UUID.generate(),
+        lifecycle_module: MockLifecycle
+      )
+      
+      assert_receive {[:pag, :agent, :hook], _ref, %{duration: _}, %{hook: :on_start}}
+    end
+  end
+end
+```
+
+## Related
+
+- Depends on: T002 (Hook execution), T003 (Shutdown)
+- Validates: All lifecycle functionality works correctly

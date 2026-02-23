@@ -1,0 +1,56 @@
+---
+id: P9.M5.E1.T006
+title: Implement plugin enable/disable/install/uninstall lifecycle
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- lifecycle
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:35.284752'
+started_at: '2026-02-06T17:07:35.284752'
+completed_at: '2026-02-06T17:07:35.992174'
+duration_minutes: 0.0117902
+---
+
+# Implement plugin enable/disable/install/uninstall lifecycle
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/lifecycle.ex` module
+- [ ] Implement plugin state machine with valid transitions:
+  - [ ] `:discovered` -> `:loaded` (plugin code/process initialized)
+  - [ ] `:loaded` -> `:enabled` (hooks and tools activated)
+  - [ ] `:enabled` -> `:disabled` (hooks and tools deactivated, process may remain)
+  - [ ] `:disabled` -> `:enabled` (re-activation)
+  - [ ] Any state -> `:error` (on failure)
+  - [ ] `:error` -> `:loaded` (after recovery/retry)
+- [ ] Implement `enable/1` - Activate plugin hooks and register plugin tools
+- [ ] Implement `disable/1` - Deactivate hooks, unregister tools, graceful process shutdown
+- [ ] Implement `install/2` - Copy plugin to plugin directory, register in Registry
+- [ ] Implement `uninstall/1` - Disable, unregister, remove from plugin directory
+- [ ] Persist enabled/disabled state to disk (e.g., `.plugins/.state.json`) for restart survival
+- [ ] Emit telemetry events for all lifecycle transitions
+
+## Acceptance Criteria
+
+- [ ] State machine enforces valid transitions (rejects invalid ones with `{:error, :invalid_transition}`)
+- [ ] `enable/1` activates plugin hooks and tools; `disable/1` deactivates them
+- [ ] `install/2` copies plugin files to plugin directory and registers the plugin
+- [ ] `uninstall/1` fully removes plugin (disables, unregisters, deletes files)
+- [ ] Enabled/disabled state persists across application restarts
+- [ ] Graceful shutdown: disabling a plugin with in-flight operations waits for completion
+- [ ] Unit tests cover all valid transitions, invalid transitions, and persistence
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/lifecycle.ex`
+- **Depends on**: `PagServer.Plugins.Registry` (T004), `PagServer.Plugins.Plugin` (T002)
+- **Integrates with**: `PagServer.Tools.Registry` (tool registration), `PagServer.Plugins.HookDispatcher` (E2)
+- **State file**: `.plugins/.state.json` for persistence across restarts
+- **Pattern reference**: Similar state machine to agent lifecycle in `PagServer.Agents.Lifecycle`

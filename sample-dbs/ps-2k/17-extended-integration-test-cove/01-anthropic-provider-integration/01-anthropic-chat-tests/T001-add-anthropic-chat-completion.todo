@@ -1,0 +1,44 @@
+---
+id: P17.M1.E1.T001
+title: Add Anthropic chat completion test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:19:12.823787+00:00'
+started_at: '2026-02-14T06:19:12.823787+00:00'
+completed_at: '2026-02-14T06:27:17.029726+00:00'
+duration_minutes: 8.07009885
+---
+
+# Add Anthropic chat completion test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P17.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 06:19 UTC
+**Sibling tasks**: P17.M1.E1.T002, P17.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P17.M1.E1.T001 → P17.M1.E1.T002 → P17.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P17.M1.E1.T001: .tasks/17-extended-integration-test-cove/01-anthropic-provider-integration/01-anthropic-chat-tests/T001-add-anthropic-chat-completion.todo
+- P17.M1.E1.T002: .tasks/17-extended-integration-test-cove/01-anthropic-provider-integration/01-anthropic-chat-tests/T002-add-anthropic-multi-turn-test.todo
+- P17.M1.E1.T003: .tasks/17-extended-integration-test-cove/01-anthropic-provider-integration/01-anthropic-chat-tests/T003-add-anthropic-streaming-test.todo

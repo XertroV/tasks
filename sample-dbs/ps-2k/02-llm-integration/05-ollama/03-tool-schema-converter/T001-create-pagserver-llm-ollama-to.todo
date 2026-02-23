@@ -1,0 +1,116 @@
+---
+id: P2.M5.E3.T001
+title: Create PagServer.LLM.Ollama.ToolSchema module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- ollama
+- tool-schema
+- converter
+claimed_by: cli-user
+claimed_at: '2026-02-06T12:32:01.242474'
+started_at: '2026-02-06T12:32:01.242474'
+completed_at: '2026-02-06T13:12:04.823362'
+duration_minutes: 40.05968128333333
+---
+
+# Create PagServer.LLM.Ollama.ToolSchema module
+
+Ollama uses an OpenAI-compatible tool format for function calling. Both Anthropic
+and OpenAI already have dedicated ToolSchema converter modules, but Ollama does not.
+The Ollama provider currently passes tools through without formal conversion or
+validation. This task creates a `PagServer.LLM.Ollama.ToolSchema` module that
+converts internal tool schemas to Ollama's expected format.
+
+## Requirements
+
+- [x] Create `lib/pag_server/llm/ollama/tool_schema.ex` module
+- [x] Implement `convert/1` accepting tool modules, ToolSchema structs, and internal format maps
+- [x] Implement `convert_all/1` for batch conversion of tool lists
+- [x] Implement `validate/1` for schema validation
+- [x] Convert internal parameter list format to JSON Schema `properties` object
+- [x] Handle `required` vs optional field segregation correctly
+- [x] Support all JSON Schema types: string, integer, number, boolean, object, array, null
+- [x] Support nested object properties and array item schemas
+- [x] Support enum constraints on parameters
+- [x] Pass through already-formatted OpenAI-compatible tool schemas unchanged
+- [x] Wire the converter into `PagServer.LLM.Providers.Ollama.do_chat/4` tool handling
+- [x] Add `@moduledoc` with format documentation and usage examples
+
+## Acceptance Criteria
+
+- [x] `Ollama.ToolSchema.convert/1` produces OpenAI-compatible `%{"type" => "function", "function" => %{...}}` format
+- [x] Output format is identical to `PagServer.LLM.OpenAI.ToolSchema.convert/1` output
+- [x] Internal format maps with atom and string keys both convert correctly
+- [x] Tool modules implementing `schema/0` callback convert correctly
+- [x] `%PagServer.Tools.ToolSchema{}` structs convert correctly
+- [x] `validate/1` catches missing names, invalid schemas, and required-field mismatches
+- [x] Ollama provider can receive tool schemas and pass them to the local API
+- [x] All parameter types (string, integer, number, boolean, object, array) are handled
+
+## Implementation Details
+
+Since Ollama uses the same tool format as OpenAI, this module can delegate to or
+mirror the OpenAI ToolSchema converter. The key decision is whether to:
+
+1. **Delegate directly** to `PagServer.LLM.OpenAI.ToolSchema` (simplest)
+2. **Copy the pattern** into a separate module (more independence, parallel evolution)
+
+Option 1 is recommended unless Ollama diverges from OpenAI format in the future.
+
+```elixir
+defmodule PagServer.LLM.Ollama.ToolSchema do
+  @moduledoc """
+  Converts internal tool schemas to Ollama's tool format (OpenAI-compatible).
+
+  Ollama uses the same function calling format as OpenAI:
+  %{"type" => "function", "function" => %{"name" => ..., "parameters" => ...}}
+
+  This module delegates to the OpenAI ToolSchema converter since the formats
+  are identical, providing a stable interface should Ollama diverge in future.
+  """
+
+  alias PagServer.LLM.OpenAI.ToolSchema, as: OpenAIToolSchema
+
+  @doc "Converts a single tool definition to Ollama format."
+  defdelegate convert(tool), to: OpenAIToolSchema
+
+  @doc "Converts multiple tools to Ollama format."
+  defdelegate convert_all(tools), to: OpenAIToolSchema
+
+  @doc "Validates a tool schema is well-formed."
+  defdelegate validate(tool), to: OpenAIToolSchema
+end
+```
+
+Then wire into the provider:
+
+```elixir
+# In PagServer.LLM.Providers.Ollama.do_chat/4
+defp do_chat(client, model, messages, opts) do
+  tools = Keyword.get(opts, :tools, [])
+  converted_tools = if tools != [], do: Ollama.ToolSchema.convert_all(tools), else: []
+  ollama_opts = Keyword.put(opts, :tools, converted_tools)
+  # ... rest of implementation
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Reference Files**:
+- `lib/pag_server/llm/providers/anthropic/tool_schema.ex` - Anthropic converter (uses `input_schema` key)
+- `lib/pag_server/llm/openai/tool_schema.ex` - OpenAI converter (uses `function.parameters` key)
+- `lib/pag_server/llm/providers/ollama.ex` - Current Ollama provider (no tool conversion)
+- `lib/pag_server/tools/tool_schema.ex` - Internal ToolSchema struct definition
+
+## Notes
+
+- Ollama's tool calling format is documented at https://ollama.com/blog/tool-support
+- The format matches OpenAI's function calling specification exactly
+- Not all Ollama models support tools; the existing `supports_tools?/1` check in the provider handles this
+- The `PagServer.LLM.Providers.Ollama` module already has `parse_tool_calls/1` for responses; this task adds the request-side conversion

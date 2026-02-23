@@ -1,0 +1,210 @@
+---
+id: P2.M8.E2.T001
+title: Detect context overflow before LLM request
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- context
+- overflow
+- validation
+claimed_by: claude-1
+claimed_at: '2026-02-05T18:47:22.060350'
+started_at: '2026-02-05T18:47:22.060350'
+completed_at: '2026-02-05T19:00:32.127624'
+duration_minutes: 13.167787716666668
+---
+
+# Detect context overflow before LLM request
+
+
+
+## Requirements
+
+- [ ] Implement proactive context overflow detection before sending LLM request
+- [ ] Count tokens across all message content (content, thinking_content, tool_calls)
+- [ ] Include system prompt in total token count calculation
+- [ ] Retrieve model context limits from multiple sources (config, registry, app env)
+- [ ] Compare total token count against model-specific context limit
+- [ ] Return structured error with token count and limit details
+- [ ] Use existing three-layer token counting system (provider → tokenizer → approximation)
+- [ ] Emit telemetry event when overflow detected
+- [ ] Handle cases where context limit is not available (skip validation)
+- [ ] Handle cases where token counting fails (log warning, return error)
+
+## Acceptance Criteria
+
+- [ ] Function `check_context_overflow/1` exists in `AgentServer` module
+- [ ] Token counting uses `LLMRegistry.count_tokens/2` as primary method
+- [ ] Falls back to `Context.Tokenizer.count_tokens/2` if provider counting fails
+- [ ] Retrieves context limit via cascading fallback:
+  - [ ] `config[:context_limit_tokens]`
+  - [ ] `config[:max_context_tokens]`
+  - [ ] `config.metadata.context_limit_tokens`
+  - [ ] `config.capabilities.max_context_tokens`
+  - [ ] `LLMRegistry.get_context_limit/1` (from model spec)
+  - [ ] `Application.get_env(:pag_server, :llm_context_limit_tokens)`
+- [ ] Returns `:ok` when token count is within limit
+- [ ] Returns `{:error, %{reason: :context_overflow, token_count: count, limit: limit}}` when exceeded
+- [ ] Returns `:ok` when context limit is nil/0 (skip validation)
+- [ ] Telemetry event emitted with measurements and metadata:
+  ```elixir
+  :telemetry.execute(
+    [:pag_server, :agent, :context_overflow],
+    %{count: 1},
+    %{
+      agent_id: state.id,
+      session_id: state.session_id,
+      model: model_spec.model,
+      provider: model_spec.provider,
+      limit: limit,
+      token_count: token_count,
+      overflow_tokens: token_count - limit
+    }
+  )
+  ```
+- [ ] Messages include system prompt when building context for token counting
+- [ ] Works with both string and map-based message formats
+- [ ] Logs warning when token counting fails completely
+- [ ] Tests cover all fallback scenarios
+- [ ] Tests verify telemetry event emission
+- [ ] Tests check token counting with/without system prompt
+- [ ] Tests validate with mock provider (known token counts)
+- [ ] No compilation warnings after `mix lint`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md:596-630` (Context building)
+- Existing implementation: `lib/pag_server/agents/agent_server.ex:1912-1941`
+
+**Key Points**:
+- This is **proactive** detection (before LLM call), complementing reactive auto-truncation
+- Uses three-layer token counting: provider-specific → simple approximation → character count
+- Context limits come from multiple sources with cascading fallback
+- System prompt must be included in token count (often forgotten)
+- Telemetry enables monitoring of overflow frequency per model/provider
+
+## Implementation Notes
+
+The function already exists in `AgentServer` but needs to be verified and enhanced. Key areas:
+
+### Existing Pattern (Reference)
+```elixir
+# lib/pag_server/agents/agent_server.ex:1912-1941
+defp check_context_overflow(state) do
+  model_spec = build_model_spec(state.config)
+  limit = context_limit_tokens(state.config, model_spec)
+  
+  if is_integer(limit) and limit > 0 do
+    messages = messages_with_system_prompt(
+      build_llm_messages(state), 
+      state.config[:system_prompt]
+    )
+    
+    case LLMRegistry.count_tokens(model_spec, messages) do
+      {:ok, token_count} when token_count > limit ->
+        emit_context_overflow_telemetry(state, model_spec, limit, token_count)
+        {:error, %{reason: :context_overflow, token_count: token_count, limit: limit}}
+      
+      {:ok, _} -> :ok
+      {:error, reason} -> {:error, %{reason: :context_token_count_failed, error: reason}}
+    end
+  else
+    :ok  # No limit configured, skip validation
+  end
+end
+```
+
+### Token Counting Layers
+```elixir
+# Layer 1: Provider-specific (preferred)
+LLMRegistry.count_tokens(model_spec, messages)
+
+# Layer 2: Simple approximation (fallback in Tokenizer)
+Context.Tokenizer.count_tokens(text, model)
+# Returns: String.length(text) / 4
+
+# Layer 3: Message-level storage (for historical tracking)
+# Token count computed during message creation
+```
+
+### Context Limit Resolution
+```elixir
+defp context_limit_tokens(config, model_spec) do
+  config[:context_limit_tokens] ||
+  config[:max_context_tokens] ||
+  get_in(config, [:metadata, :context_limit_tokens]) ||
+  get_in(config, [:metadata, "context_limit_tokens"]) ||
+  get_in(config, [:capabilities, :max_context_tokens]) ||
+  get_in(config, [:capabilities, "max_context_tokens"]) ||
+  context_limit_from_registry(model_spec) ||
+  Application.get_env(:pag_server, :llm_context_limit_tokens)
+end
+```
+
+### Testing Strategy
+```elixir
+# Test scenarios:
+test "detects overflow when tokens exceed limit"
+test "allows request when tokens within limit"
+test "skips validation when limit not configured"
+test "handles token counting failure gracefully"
+test "includes system prompt in token count"
+test "emits telemetry on overflow detection"
+test "uses fallback token counting when provider unavailable"
+test "resolves context limit from multiple config sources"
+```
+
+## Notes
+
+- This task appears to already be implemented (status: done). The requirements document what SHOULD exist in the implementation.
+- If implementation is missing features, they should be added.
+- The reactive auto-truncation (T003) complements this by handling cases where proactive detection is bypassed or fails.
+- Telemetry data enables dashboards showing overflow frequency, which models/providers hit limits most often, and token usage trends.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 05:44 UTC
+**Primary task**: P2.M7.E2.T001 - Create Pricing module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E2 vs P2.M7.E2)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 05:47 UTC
+**Primary task**: P2.M7.E2.T001 - Create Pricing module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E2 vs P2.M7.E2)
+- No dependency chain: ✓ (verified at claim time)

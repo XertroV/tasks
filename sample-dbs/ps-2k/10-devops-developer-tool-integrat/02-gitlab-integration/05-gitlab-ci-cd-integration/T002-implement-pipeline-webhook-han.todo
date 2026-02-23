@@ -1,0 +1,71 @@
+---
+id: P10.M2.E5.T002
+title: Implement pipeline webhook handlers and job monitoring
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:32:11.172935+00:00'
+started_at: '2026-02-12T03:32:11.172935+00:00'
+completed_at: '2026-02-12T03:43:55.571323+00:00'
+duration_minutes: 11.73997295
+---
+
+# Implement pipeline webhook handlers and job monitoring
+
+
+
+## Requirements
+
+- [ ] Implement handlers for GitLab pipeline and job events
+- [ ] Track pipeline status transitions (created → running → success/failed)
+- [ ] Monitor job failures and create alerts
+- [ ] Parse pipeline failure reasons and error logs
+- [ ] Integrate with agent system for CI/CD context
+- [ ] Store pipeline results for audit and trending
+
+## Acceptance Criteria
+
+- [ ] Handler module created at `lib/pag_server/integrations/gitlab/pipeline_webhook_handler.ex`
+- [ ] `handle_pipeline_event/2` function accepts parsed event and integration context
+- [ ] Supported events:
+  - [ ] `pipeline:created` - Log pipeline start
+  - [ ] `pipeline:running` - Track active pipeline
+  - [ ] `pipeline:success` - Log successful completion
+  - [ ] `pipeline:failed` - Log failure, extract error details
+  - [ ] `job:created` - Track individual job start
+  - [ ] `job:success` - Track job completion
+  - [ ] `job:failed` - Log job failure, fetch logs
+- [ ] Pipeline tracking:
+  - [ ] Store pipeline ID, status, branch, commit in context
+  - [ ] Track duration from start to completion
+  - [ ] Extract failed job names and stages
+- [ ] Failure handling:
+  - [ ] When `pipeline:failed`:
+    - [ ] Fetch failed jobs list
+    - [ ] Fetch job logs for debugging context
+    - [ ] Extract error messages and stack traces
+    - [ ] Create incident/alert in system if configured
+  - [ ] Support retry suggestions
+- [ ] Agent integration:
+  - [ ] Create agent session for CI/CD failure analysis (future)
+  - [ ] Pass job logs and error context to agent
+  - [ ] Enable agent to suggest fixes
+- [ ] Webhook payload parsing:
+  - [ ] Extract `pipeline.id`, `pipeline.status`, `pipeline.failure_reason`
+  - [ ] Extract `pipeline.commit.message` for context
+  - [ ] Extract `pipeline.created_at`, `pipeline.finished_at` for timing
+  - [ ] Handle multiple failed jobs in single pipeline
+- [ ] Error handling:
+  - [ ] Handle missing job logs gracefully
+  - [ ] Handle webhook payload schema variations
+  - [ ] Log failures without blocking downstream processing
+- [ ] Tests cover:
+  - [ ] Each event type (created/running/success/failed)
+  - [ ] Failure detection and logging
+  - [ ] Job log fetching and parsing
+  - [ ] Duplicate event handling
+  - [ ] Error conditions

@@ -1,0 +1,44 @@
+---
+id: P10.M1.E2.T005
+title: Implement GitHub API rate limiting and backoff
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:32:41.665980+00:00'
+started_at: '2026-02-11T20:32:41.665980+00:00'
+completed_at: '2026-02-12T00:12:17.351495+00:00'
+duration_minutes: 219.59475816666665
+---
+
+# Implement GitHub API rate limiting and backoff
+
+
+
+## Requirements
+
+- [ ] Implement rate limiting and backoff strategy for GitHub API calls
+- [ ] Parse `X-RateLimit-Remaining` and `X-RateLimit-Reset` headers from responses
+- [ ] Use exponential backoff (2^n seconds) with jitter for retries
+- [ ] Cache rate limit state in Cachex to avoid redundant API calls when exhausted
+- [ ] Respect GitHub's two rate limit tiers: primary (5000 req/hr) and secondary (no burst)
+- [ ] Add `with_retry/3` wrapper function for API calls with backoff
+- [ ] Support configurable max retries and retry delays
+- [ ] Log rate limit state changes (exhausted, reset)
+- [ ] Fail fast when rate limit exhausted rather than hammering API
+
+## Acceptance Criteria
+
+- [ ] Rate limit headers parsed correctly from API responses
+- [ ] Cachex cache stores remaining/reset-time per authenticated identity
+- [ ] `Client.with_retry/3` implements exponential backoff (2^retry_count * base_delay)
+- [ ] Jitter added to prevent thundering herd (±20% variation)
+- [ ] Max retry count configurable (default: 3)
+- [ ] Waits until reset time when limit exhausted before retrying
+- [ ] Secondary rate limit respected (1 request per second, concurrent limit)
+- [ ] Clear logging of retry attempts and rate limit hits
+- [ ] Tests verify backoff timing, cache behavior, header parsing
+- [ ] Integrates with existing Client module functions

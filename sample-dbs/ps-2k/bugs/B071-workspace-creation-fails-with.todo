@@ -1,0 +1,21 @@
+---
+id: B071
+title: Workspace creation fails with :eacces - default workspace_dir_root is /workspace
+  (not writable in dev)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- bug
+- webui
+- setup-wizard
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:04:44.933892+00:00'
+started_at: '2026-02-17T09:04:44.933892+00:00'
+completed_at: '2026-02-17T09:29:28.313784+00:00'
+duration_minutes: 24.72299801666667
+---
+
+Workspace creation fails with :eacces - default workspace_dir_root is /workspace (not writable in dev)

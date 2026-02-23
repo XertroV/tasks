@@ -1,0 +1,17 @@
+---
+id: P45.M1.E2.T003
+title: 'Migration V3: vault_access_grants & vault_access_log tables'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P45.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:28.773040+00:00'
+started_at: '2026-02-19T19:17:28.773040+00:00'
+completed_at: '2026-02-19T19:49:47.253795+00:00'
+duration_minutes: 32.30801243333333
+---
+Migration V3: (a) plugin_credentials_vault_access_grants — id, secret_id (FK), grantee_workspace_id (FK nullable), grantee_user_id (FK nullable), granted_by_user_id (FK), permission (enum: read), revoked_at (utc_datetime_usec nullable), inserted_at. CHECK that exactly one of grantee_workspace_id/grantee_user_id is non-null. (b) plugin_credentials_vault_access_log — id (uuid PK), secret_id (FK), version_id (FK nullable), actor_type (enum: agent/user/system), actor_id (string), action (enum: read/reveal/create/update/delete/share/revoke), ip_address (string nullable), inserted_at. No updates, append-only.

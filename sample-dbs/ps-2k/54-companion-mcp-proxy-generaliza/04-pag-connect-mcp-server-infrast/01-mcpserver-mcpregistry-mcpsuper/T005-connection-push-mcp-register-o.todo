@@ -1,0 +1,27 @@
+---
+id: P54.M4.E1.T005
+title: 'Connection: push mcp_register on channel join'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P54.M4.E1.T003
+- P54.M4.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:31:11.591201+00:00'
+started_at: '2026-02-21T12:31:11.591201+00:00'
+completed_at: '2026-02-21T12:33:38.425288+00:00'
+duration_minutes: 2.4472346333333332
+---
+## Context
+After joining the companion channel and registering base tools, Connection queries MCPRegistry for all running MCP servers and pushes mcp_register to declare them to pag-server.
+
+## Acceptance Criteria
+- [ ] handle_join/3 in PagConnect.ServerClient.Connection: after existing register push, calls MCPRegistry.list_all()
+- [ ] If list non-empty: pushes "mcp_register" event with payload %{"servers" => [%{"name" => name, "tools" => [...tool_schema_maps...]}]}
+- [ ] If list empty (no MCP servers configured or none ready): no mcp_register push (not even an empty one)
+- [ ] Push failure (Slipstream {:error, reason}): logs warning, join continues (not aborted)
+- [ ] @moduledoc in connection.ex updated with mcp_register in wire protocol table
+- [ ] mix compile passes

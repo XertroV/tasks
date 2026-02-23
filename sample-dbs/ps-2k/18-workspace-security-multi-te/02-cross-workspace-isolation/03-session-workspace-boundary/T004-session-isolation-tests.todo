@@ -1,0 +1,46 @@
+---
+id: P18.M2.E3.T004
+title: Add tests for cross-workspace session isolation
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E3.T003
+tags:
+- security
+- workspace
+- sessions
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.642643+00:00'
+started_at: '2026-02-17T20:48:56.642643+00:00'
+completed_at: '2026-02-17T20:55:28.944567+00:00'
+duration_minutes: 6.538365116666667
+---
+
+# Add tests for cross-workspace session isolation
+
+## Description
+
+Comprehensive tests verifying session isolation between workspaces via both flat and nested routes.
+
+## Requirements
+
+- [ ] Test flat route scoping by workspace membership
+- [ ] Test nested route scoping:
+  - List returns only workspace sessions
+  - Access by ID returns 404 for sessions in other workspaces
+  - Create assigns correct workspace_id
+- [ ] Test role enforcement on nested routes
+- [ ] Test backward compatibility with existing scope options
+
+## Acceptance Criteria
+
+- [ ] All cross-workspace session isolation tests pass
+- [ ] Tests use async: true with unique identifiers
+- [ ] Both flat and nested route isolation verified
+
+## Context
+
+**Files affected**: `test/pag_server_web/controllers/session_controller_test.exs`

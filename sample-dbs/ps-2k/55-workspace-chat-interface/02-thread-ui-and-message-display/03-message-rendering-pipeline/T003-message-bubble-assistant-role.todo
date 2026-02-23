@@ -1,0 +1,26 @@
+---
+id: P55.M2.E3.T003
+title: Message bubble - assistant role with markdown and thinking blocks
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags:
+- component
+- messages
+- markdown
+claimed_by: cli-user
+claimed_at: '2026-02-22T09:12:00.807833+00:00'
+started_at: '2026-02-22T09:12:00.807833+00:00'
+completed_at: '2026-02-22T10:51:27.605199+00:00'
+duration_minutes: 99.44662253333333
+---
+Assistant role in message_bubble.ex: left-aligned, neutral background. Content rendered via .markdown component from core_components. Thinking content in collapsible <details> element with violet styling (match existing ValidationConsole pattern). Model name + timestamp in footer. Handle messages with both content and thinking_content. Handle empty content gracefully.
+
+## Acceptance Criteria
+- Assistant messages left-aligned with neutral bg
+- Content rendered as markdown with syntax highlighting (MarkdownContent hook)
+- Thinking blocks in collapsible details with violet styling
+- Model + timestamp footer
+- Fork button on hover

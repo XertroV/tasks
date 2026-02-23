@@ -1,0 +1,126 @@
+id: P35.M1.E2
+name: Phase Reviews P25-P29
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p25-m1-mcp-tool-researc.todo
+  title: 'Review P25.M1: MCP Tool Research & Audit'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-review-p25-m2-mcp-core-tool-im.todo
+  title: 'Review P25.M2: MCP Core Tool Improvements'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-review-p25-m3-mcp-tool-integra.todo
+  title: 'Review P25.M3: MCP Tool Integration Tests'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T004
+  file: T004-review-p26-m1-agent-size-pool.todo
+  title: 'Review P26.M1: Agent Size Pool Schema & Config'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T005
+  file: T005-review-p26-m2-agent-size-pool.todo
+  title: 'Review P26.M2: Agent Size Pool Routing & API'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T006
+  file: T006-review-p26-m3-agent-size-pool.todo
+  title: 'Review P26.M3: Agent Size Pool Tests'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T007
+  file: T007-review-p27-m1-ephemeral-sessio.todo
+  title: 'Review P27.M1: Ephemeral Session Schema & Config'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T008
+  file: T008-review-p27-m2-ephemeral-agent.todo
+  title: 'Review P27.M2: Ephemeral Agent Spawning Integration'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T009
+  file: T009-review-p27-m3-ephemeral-sessio.todo
+  title: 'Review P27.M3: Ephemeral Session Tests'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T010
+  file: T010-review-p28-m1-plugin-registry.todo
+  title: 'Review P28.M1: Plugin Registry API'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T011
+  file: T011-review-p28-m2-plugin-configura.todo
+  title: 'Review P28.M2: Plugin Configuration API'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T012
+  file: T012-review-p28-m3-plugin-hub-ui-te.todo
+  title: 'Review P28.M3: Plugin Hub UI Tests'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T013
+  file: T013-review-p29-m1-crypto-identity.todo
+  title: 'Review P29.M1: Crypto Identity Plugin'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T014
+  file: T014-review-p29-m2-tailscale-integr.todo
+  title: 'Review P29.M2: Tailscale Integration'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 14
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 14

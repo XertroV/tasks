@@ -1,0 +1,68 @@
+---
+id: P10.M5.E2.T002
+title: Build Gitea webhook handler
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on:
+- P10.M5.E2.T001
+tags:
+- webhooks
+- gitea
+- event-handling
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:40:06.829674+00:00'
+started_at: '2026-02-12T05:40:06.829674+00:00'
+completed_at: '2026-02-12T05:54:22.853359+00:00'
+duration_minutes: 14.267061250000001
+---
+
+# Build Gitea webhook handler
+
+Implement webhook receiver and event processor for Gitea events (PR, issues, pushes).
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/gitea/webhook_handler.ex` module
+- [ ] Define webhook event parsing:
+  - [ ] Push events
+  - [ ] Pull request events
+  - [ ] Issue events
+- [ ] Implement event signature verification
+- [ ] Route events to appropriate handlers
+- [ ] Implement idempotent event processing
+- [ ] Add comprehensive logging
+- [ ] Write tests for webhooks
+
+## Acceptance Criteria
+
+- [ ] Webhook receiver validates signatures correctly
+- [ ] Event parsing handles all documented types
+- [ ] Invalid signatures rejected with 403
+- [ ] Webhook events trigger appropriate handlers
+- [ ] All events logged with repo and event info
+- [ ] `mix test` passes for all webhook tests
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 05:40 UTC
+**Primary task**: P10.M5.E1.T002 - Build Bitbucket webhook handler
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P10.M5.E2 vs P10.M5.E1)
+- No dependency chain: ✓ (verified at claim time)

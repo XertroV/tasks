@@ -1,0 +1,16 @@
+---
+id: P48.M5.E1.T002
+title: Per-workspace download cache and version management
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T13:54:15.079506+00:00'
+started_at: '2026-02-20T13:54:15.079506+00:00'
+completed_at: '2026-02-20T13:54:22.094327+00:00'
+duration_minutes: 0.11691353333333333
+---
+Downloads go to ~/.local/share/pag-server/lsp-binaries/<server-id>/<version>/. Version pinning: store downloaded version, allow update check. Prevent re-download on restart.

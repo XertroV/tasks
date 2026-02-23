@@ -1,0 +1,91 @@
+---
+id: P7.M4.E1.T002
+title: Limit enforcement in agent
+status: done
+estimate_hours: 2
+complexity: high
+priority: high
+depends_on:
+- P7.M4.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:02:24.573511+00:00'
+started_at: '2026-02-06T21:02:24.573511+00:00'
+completed_at: '2026-02-06T21:18:16.028215+00:00'
+tags:
+- resources
+- enforcement
+- agent
+duration_minutes: 15.857578166666666
+---
+
+# Limit enforcement in agent
+
+Enforce resource limits before LLM calls and tool executions.
+
+## Requirements
+
+- [ ] Check limits before each LLM request
+- [ ] Check limits before each tool execution
+- [ ] Stop agent gracefully on limit exceeded
+- [ ] Send limit exceeded event to user
+- [ ] Add soft warning at 80% threshold
+- [ ] Prevent new work after limit hit
+- [ ] Allow graceful shutdown
+
+## Acceptance Criteria
+
+- [ ] Agents stop when any limit exceeded
+- [ ] User notified of limit type and value
+- [ ] Agent state saved before stopping
+- [ ] No work queued after limit hit
+- [ ] Warnings sent at 80% threshold
+- [ ] Telemetry tracks limit hits
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M4 (Resource Limits)
+
+**Key Points**:
+- Check before consuming (fail fast)
+- Graceful degradation over abrupt failure
+- Clear error messages to user
+- Agent can be resumed with higher limits
+
+## Notes
+
+Enforcement pattern:
+```elixir
+defmodule PagServer.Agents.Agent do
+  def handle_call({:send_message, content}, _from, state) do
+    # Check limits before starting work
+    case State.check_limits(state) do
+      :ok ->
+        # Warn if approaching limits
+        warn_if_approaching_limits(state)
+        
+        # Proceed with message
+        new_state = execute_turn(content, state)
+        {:reply, :ok, new_state}
+        
+      {:error, {:limit_exceeded, resource, limit}} ->
+        # Stop gracefully
+        broadcast_limit_exceeded(state, resource, limit)
+        new_state = %{state | status: :limit_exceeded}
+        {:reply, {:error, :limit_exceeded}, new_state}
+    end
+  end
+  
+  defp warn_if_approaching_limits(state) do
+    usage = state.resource_usage
+    caps = state.capabilities
+    
+    for {resource, limit} <- caps.resource_limits do
+      current = Map.get(usage, resource, 0)
+      if current >= limit * 0.8 do
+        broadcast_warning(state, resource, current, limit)
+      end
+    end
+  end
+end
+```

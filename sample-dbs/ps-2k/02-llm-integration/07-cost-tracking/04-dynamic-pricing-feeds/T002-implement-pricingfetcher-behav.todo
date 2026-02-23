@@ -1,0 +1,167 @@
+---
+id: P2.M7.E4.T002
+title: Implement PricingFetcher behavior and registry
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P2.M7.E2.T001
+tags:
+- behavior
+- registry
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:54:19.036007'
+started_at: '2026-02-06T02:54:19.036007'
+completed_at: '2026-02-06T03:02:26.004484'
+duration_minutes: 8.116141133333333
+---
+
+# Implement PricingFetcher behavior and registry
+
+
+
+## Requirements
+
+**Note:** This task was already completed (status: done). These requirements document what was implemented.
+
+- [x] Create `lib/pag_server/llm/pricing_fetcher.ex` module with behaviour definition
+- [x] Define `@callback fetch_pricing/1` returning `{:ok, pricing}` or `{:error, reason}`
+- [x] Define `@callback provider_name/0` returning provider atom
+- [x] Define `@callback supports_model?/1` returning boolean
+- [x] Implement ETS-based registry for fetcher modules
+- [x] Implement `init/0` to initialize ETS table
+- [x] Implement `register/2` to register fetcher modules
+- [x] Implement `unregister/1` to remove fetchers
+- [x] Implement `list_fetchers/0` to list all registered fetchers
+- [x] Implement `get_pricing/1` that tries fetchers, falls back to static pricing
+- [x] Use `read_concurrency: true` for ETS table (high-read, low-write workload)
+- [x] Add comprehensive `@moduledoc` with usage examples
+- [x] Add typespec annotations for all public functions
+- [x] Create test file at `test/pag_server/llm/pricing_fetcher_test.exs`
+
+## Acceptance Criteria
+
+**Note:** All criteria were met in the implementation (completed 2026-02-06 03:02:26).
+
+- [x] Behaviour module created at `lib/pag_server/llm/pricing_fetcher.ex`
+- [x] Three callbacks defined: `fetch_pricing/1`, `provider_name/0`, `supports_model?/1`
+- [x] ETS table `:pricing_fetchers` created with `:public` access
+- [x] `register/2` inserts fetcher module into registry
+- [x] `unregister/1` removes fetcher from registry
+- [x] `list_fetchers/0` returns list of `{provider, module}` tuples
+- [x] `get_pricing/1` implementation:
+  - [x] Tries all registered fetchers via `supports_model?/1`
+  - [x] Returns first successful `{:ok, pricing}` result
+  - [x] Falls back to `PagServer.LLM.Pricing.get_pricing/1` if no fetchers support model
+  - [x] Falls back to static pricing if all fetchers fail
+- [x] `init/0` safely handles multiple calls (idempotent)
+- [x] Registry survives individual fetcher failures
+- [x] Test file created with comprehensive test coverage
+- [x] Tests verify:
+  - [x] Registry initialization
+  - [x] Fetcher registration and unregistration
+  - [x] `get_pricing/1` fallback behavior
+  - [x] Multiple fetchers with priority (first match wins)
+  - [x] Concurrent access (ETS read concurrency)
+- [x] All functions have `@spec` declarations
+- [x] No compiler warnings
+
+## Implementation Summary
+
+The implemented `PricingFetcher` module provides:
+
+### Behaviour Definition
+
+```elixir
+@callback fetch_pricing(model :: String.t()) :: {:ok, pricing()} | {:error, term()}
+@callback provider_name() :: atom()
+@callback supports_model?(model :: String.t()) :: boolean()
+```
+
+### Registry Functions
+
+```elixir
+@spec init() :: :ok
+@spec register(atom(), module()) :: :ok
+@spec unregister(atom()) :: :ok
+@spec list_fetchers() :: [{atom(), module()}]
+@spec get_pricing(String.t()) :: pricing()
+```
+
+### Key Design Decisions
+
+1. **ETS Registry**: Chosen over GenServer for:
+   - Zero-latency reads (no message passing)
+   - High concurrency (`:read_concurrency`)
+   - Simplicity (no state management, no crashes)
+
+2. **Fallback Strategy**: 
+   - Try registered fetchers first (dynamic, fresh data)
+   - Fall back to static pricing (reliability, offline support)
+   - Never fail (always return some pricing)
+
+3. **Fetcher Selection**:
+   - `supports_model?/1` determines eligibility
+   - First matching fetcher wins (order matters)
+   - Failures are silently skipped (try next fetcher)
+
+4. **Error Handling**:
+   - Individual fetcher failures don't crash registry
+   - Fetcher errors logged but don't prevent fallback
+   - Static pricing ensures system always functions
+
+### Example Usage
+
+```elixir
+# Define a fetcher
+defmodule MyApp.OpenRouterFetcher do
+  @behaviour PagServer.LLM.PricingFetcher
+
+  def fetch_pricing(model), do: {:ok, %{...}}
+  def provider_name, do: :openrouter
+  def supports_model?(model), do: String.contains?(model, "/")
+end
+
+# Register it
+PricingFetcher.register(:openrouter, MyApp.OpenRouterFetcher)
+
+# Use it
+pricing = PricingFetcher.get_pricing("anthropic/claude-sonnet-4")
+```
+
+## Context
+
+**Status:** Completed 2026-02-06 03:02:26 (duration: ~8 minutes)
+
+**Purpose:**
+This module is the foundation for the dynamic pricing feeds epic. It establishes:
+- A pluggable architecture for pricing sources
+- Graceful fallback to static pricing
+- Zero-dependency initialization (pure ETS)
+- High-performance concurrent reads
+
+**Dependencies Met:**
+- P2.M7.E2.T001: Pricing module (static pricing fallback)
+
+**Enables:**
+- T003: OpenRouter pricing fetcher (first dynamic implementation)
+- T004: Anthropic static pricing fetcher
+- T005: OpenAI static pricing fetcher
+- T006: Pricing cache layer (wraps PricingFetcher.get_pricing/1)
+- T007: Startup initialization (registers fetchers)
+- T008: Scheduled refresh (uses registered fetchers)
+
+**Reference Files:**
+- Implementation: `lib/pag_server/llm/pricing_fetcher.ex`
+- Tests: `test/pag_server/llm/pricing_fetcher_test.exs`
+- Static pricing: `lib/pag_server/llm/pricing.ex`
+
+## Notes
+
+- The registry uses ETS `:set` semantics (one fetcher per provider key)
+- Multiple providers can support the same model (first registered wins)
+- Future enhancement: priority-based fetcher selection
+- Future enhancement: circuit breaker for failing fetchers
+- Future enhancement: metrics for fetcher performance

@@ -1,0 +1,198 @@
+---
+id: P1.M4.E2.T001
+title: Implement database persistence layer
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:43:04.194152'
+started_at: '2026-02-05T09:43:04.194152'
+completed_at: '2026-02-05T09:46:46.873775'
+tags:
+- event-store
+- database
+- persistence
+- ecto
+---
+
+# Implement database persistence layer
+
+Create database persistence functions for the EventStore to save and retrieve events from PostgreSQL.
+
+## Requirements
+
+- [ ] Create `PagServer.Events.Persistence` module
+- [ ] Implement `append_event/1` function to persist events:
+  - [ ] Insert into `events` table via Ecto
+  - [ ] Return `{:ok, event}` or `{:error, changeset}`
+  - [ ] Handle compression logic (call compression module)
+  - [ ] Ensure atomicity (single transaction)
+- [ ] Implement `get_events/1` function with options:
+  - [ ] Support filtering by `:agent_id`
+  - [ ] Support filtering by `:session_id`
+  - [ ] Support filtering by `:event_type`
+  - [ ] Support `:since` timestamp filter
+  - [ ] Support `:limit` and `:offset` for pagination
+  - [ ] Return decompressed events
+- [ ] Implement `stream_events/1` for memory-efficient replay:
+  - [ ] Use `Repo.stream/2` with batching
+  - [ ] Default batch size: 1000 events
+  - [ ] Decompress payloads in stream
+- [ ] Add proper error handling and logging
+- [ ] Add telemetry events for monitoring
+
+## Acceptance Criteria
+
+- [ ] `append_event/1` successfully persists events to database
+- [ ] Compressed payloads are automatically decompressed on read
+- [ ] Query functions support all documented filters
+- [ ] `stream_events/1` handles large event histories without OOM
+- [ ] Telemetry events emitted for:
+  - [ ] Event append (with duration)
+  - [ ] Event queries (with count and duration)
+  - [ ] Compression/decompression operations
+- [ ] Module compiles with zero warnings
+- [ ] Dialyzer passes with no type errors
+- [ ] All public functions have `@doc` and `@spec`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Lines 241-250 (events table schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Lines 358-380 (Events Domain)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Lines 690-707 (Event Replay Streaming)
+
+**Key Requirements**:
+- Events are append-only (no updates or deletes)
+- Must handle large event histories (stream, don't load all)
+- Compression is transparent to callers
+- Events table has indexes on: agent_id, session_id, event_type, inserted_at
+
+## Notes
+
+### Example Implementation Structure
+
+```elixir
+defmodule PagServer.Events.Persistence do
+  @moduledoc """
+  Database persistence layer for event sourcing.
+  
+  Handles saving and retrieving events from PostgreSQL with
+  automatic compression/decompression for large payloads.
+  """
+  
+  alias PagServer.Repo
+  alias PagServer.Events.Event
+  alias PagServer.Events.Compression
+  
+  @type query_opts :: [
+    agent_id: Ecto.UUID.t(),
+    session_id: Ecto.UUID.t(),
+    event_type: String.t(),
+    since: DateTime.t(),
+    limit: pos_integer(),
+    offset: non_neg_integer()
+  ]
+  
+  @doc """
+  Append an event to the event store.
+  
+  Automatically compresses large payloads (>1KB).
+  
+  ## Examples
+  
+      iex> event = %Event{event_type: "message.sent", payload: %{...}}
+      iex> Persistence.append_event(event)
+      {:ok, %Event{id: 42, ...}}
+  """
+  @spec append_event(Event.t()) :: {:ok, Event.t()} | {:error, Ecto.Changeset.t()}
+  def append_event(%Event{} = event) do
+    # Compress if needed
+    # Insert via Repo
+    # Emit telemetry
+  end
+  
+  @doc """
+  Query events with filters.
+  
+  ## Options
+  
+    * `:agent_id` - Filter by agent UUID
+    * `:session_id` - Filter by session UUID
+    * `:event_type` - Filter by event type string
+    * `:since` - Only events after this timestamp
+    * `:limit` - Maximum events to return (default: 1000)
+    * `:offset` - Skip this many events (default: 0)
+  
+  ## Examples
+  
+      iex> Persistence.get_events(session_id: session_id, limit: 100)
+      [%Event{}, %Event{}, ...]
+  """
+  @spec get_events(query_opts()) :: [Event.t()]
+  def get_events(opts \\ []) do
+    # Build query with filters
+    # Decompress payloads
+    # Return events
+  end
+  
+  @doc """
+  Stream events for memory-efficient replay.
+  
+  Uses Repo.stream with batching to avoid loading entire
+  event history into memory.
+  
+  ## Examples
+  
+      iex> Persistence.stream_events(session_id: session_id)
+      iex> |> Enum.reduce(state, &apply_event/2)
+      %State{...}
+  """
+  @spec stream_events(query_opts()) :: Enum.t()
+  def stream_events(opts \\ []) do
+    # Use Repo.stream with batch size
+  end
+  
+  defp build_query(opts) do
+    # Build Ecto query from options
+  end
+  
+  defp decompress_event(%Event{} = event) do
+    # Decompress if payload_compressed is present
+  end
+end
+```
+
+### Telemetry Events
+
+```elixir
+# Event append
+:telemetry.execute(
+  [:pag, :events, :append],
+  %{duration: duration},
+  %{event_type: event.event_type, compressed: is_binary(event.payload_compressed)}
+)
+
+# Event query
+:telemetry.execute(
+  [:pag, :events, :query],
+  %{count: length(events), duration: duration},
+  %{filters: opts}
+)
+```
+
+### Memory Safety
+
+- Use `Repo.stream/2` for large queries (>1000 events)
+- Default batch size: 1000 events per chunk
+- Decompress payloads lazily in stream
+- Target: <512MB per replay session
+
+### Error Handling
+
+- Handle database connection errors gracefully
+- Validate event structure before insert
+- Log all persistence errors with context
+- Return descriptive error tuples

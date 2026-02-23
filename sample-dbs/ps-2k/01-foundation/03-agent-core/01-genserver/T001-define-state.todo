@@ -1,0 +1,94 @@
+---
+id: P1.M3.E1.T001
+title: Define Agent state struct
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:48:07.611530'
+started_at: '2026-02-05T08:48:07.611530'
+completed_at: '2026-02-05T08:49:13.802496'
+tags:
+- agent
+- genserver
+- state
+- foundation
+---
+
+# Define Agent state struct
+
+Create the Agent module and define the state struct that will hold all agent runtime data.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/agent.ex`
+- [ ] Define `defstruct` with required fields:
+  - [ ] `:id` - Agent UUID (binary_id)
+  - [ ] `:session_id` - Current session UUID
+  - [ ] `:config` - Agent configuration map (from DB)
+  - [ ] `:status` - Current status (`:idle`, `:processing`, `:interrupted`)
+  - [ ] `:context` - Message context list
+  - [ ] `:message_queue` - Erlang queue for pending messages
+  - [ ] `:current_request` - Current LLM request reference
+  - [ ] `:stats` - Session statistics map
+- [ ] Add `@type` spec for the state struct
+- [ ] Add module documentation
+
+## Acceptance Criteria
+
+- [ ] File `lib/pag_server/agents/agent.ex` exists
+- [ ] State struct includes all 8 required fields
+- [ ] Type spec is defined with `@type t :: %__MODULE__{...}`
+- [ ] Module has `@moduledoc` explaining agent process purpose
+- [ ] Code compiles without warnings
+- [ ] Follows Elixir naming conventions
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 3.1 (Agent Process GenServer)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Module Organization)
+
+**Key Points**:
+- Each agent is a separate GenServer process with isolated state
+- State must be immutable - updates create new state maps
+- Message queue uses Erlang's `:queue` module for efficiency
+- Status tracking enables proper lifecycle management
+
+## Notes
+
+Example state structure:
+```elixir
+defmodule PagServer.Agents.Agent do
+  @moduledoc """
+  GenServer process representing a single LLM agent.
+  
+  Each agent has isolated state, context, and message queue.
+  Agents can fork sessions, queue messages, and be interrupted.
+  """
+  
+  defstruct [
+    :id,              # binary_id
+    :session_id,      # binary_id
+    :config,          # Agent config from DB
+    :status,          # :idle | :processing | :interrupted
+    :context,         # List of messages
+    :message_queue,   # :queue.queue()
+    :current_request, # %{ref: ..., from: ...} | nil
+    :stats            # %{tokens: ..., cost: ...}
+  ]
+  
+  @type t :: %__MODULE__{
+    id: binary(),
+    session_id: binary(),
+    config: map(),
+    status: :idle | :processing | :interrupted,
+    context: list(map()),
+    message_queue: :queue.queue(),
+    current_request: map() | nil,
+    stats: map()
+  }
+end
+```

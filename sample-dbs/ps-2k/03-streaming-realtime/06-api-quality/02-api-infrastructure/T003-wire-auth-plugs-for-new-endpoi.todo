@@ -1,0 +1,67 @@
+---
+id: P3.M6.E2.T003
+title: Wire auth plugs for new endpoints
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P3.M6.E2.T001
+tags:
+- auth
+- middleware
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-08T03:35:28.416282+00:00'
+started_at: '2026-02-08T03:35:28.416282+00:00'
+completed_at: '2026-02-08T03:42:32.474801+00:00'
+duration_minutes: 7.067641816666667
+---
+
+# Wire auth plugs for new endpoints
+
+## Context
+
+Several sophisticated auth plugs are implemented but unused: `RequireAuth` (unifies API key + JWT + builds capability maps), `RequirePermissions` (checks permission atoms against capability map), and `AuthorizeResource` (loads resource by path param, authorizes via ResourcePolicy). These need to be wired into pipelines for the upcoming agent/session/stats REST endpoints.
+
+## Requirements
+
+- [ ] Define a new `:api_resource_auth` pipeline (or extend `:api_auth`) that includes:
+  - [ ] `RequireAuth` (replaces or supplements `ApiKeyAuth` -- builds capability map from scopes)
+  - [ ] Rate limiter (wired in T002)
+- [ ] Define scope requirements for each planned endpoint category:
+  - [ ] Agent endpoints: `agents:read`, `agents:write`, `agents:admin`
+  - [ ] Session endpoints: `sessions:read`, `sessions:write`
+  - [ ] Message endpoints: `messages:read`
+  - [ ] Tool endpoints: `tools:read`
+  - [ ] Stats endpoints: `agents:read` (or dedicated `stats:read`)
+- [ ] Create route-level `RequirePermissions` plug calls for each scope
+  - [ ] Read endpoints: require `:<resource>_read` permission
+  - [ ] Write endpoints: require `:<resource>_write` permission
+  - [ ] Delete endpoints: require `:<resource>_write` permission
+- [ ] Wire `AuthorizeResource` for `:id` param endpoints
+  - [ ] Agent show/update/delete: load agent, check ownership (user + project scope)
+  - [ ] Session show/update/delete/fork: load session, traverse to agent for scope check
+- [ ] Reconcile `ApiKeyAuth` and `RequireAuth` overlap
+  - [ ] Document which plug to use where (or unify them)
+  - [ ] Avoid double-processing if both are in a pipeline
+- [ ] Write tests for new pipeline with permission checks
+  - [ ] Verify insufficient scopes return 403 with `missing_permissions`
+  - [ ] Verify resource not found returns 404
+  - [ ] Verify cross-user access denied returns 403 (unless admin)
+
+## Acceptance Criteria
+
+- [ ] Auth pipeline defined for resource endpoints with scope-based permissions
+- [ ] `RequirePermissions` correctly checks scopes for each endpoint category
+- [ ] `AuthorizeResource` loads and authorizes resources by ID
+- [ ] Admin API keys bypass permission checks (`:admin_access` super-permission)
+- [ ] Regular keys only access resources scoped to their user + project
+- [ ] All tests pass including permission edge cases
+- [ ] `mix lint` passes
+
+## Files to Modify
+
+- `lib/pag_server_web/router.ex` (new pipeline, scope definitions)
+- Possibly `lib/pag_server_web/plugs/require_auth.ex` (adjustments)
+- Tests: new pipeline integration tests

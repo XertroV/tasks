@@ -1,0 +1,27 @@
+---
+id: P24.M1.E5.T001
+title: Delivery integration tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:18:25.830187+00:00'
+started_at: '2026-02-18T17:18:25.830187+00:00'
+completed_at: '2026-02-18T17:28:03.976177+00:00'
+duration_minutes: 9.635766316666666
+---
+
+# Delivery integration tests
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

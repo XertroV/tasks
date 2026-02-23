@@ -1,0 +1,34 @@
+---
+id: P15.M10.E4.T001
+title: Add orchestration tests for selection, failover, and cooldown behavior
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M10.E1.T004
+- P15.M10.E2.T004
+tags:
+- test
+- web-search
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:38:55.369134+00:00'
+started_at: '2026-02-17T15:38:55.369134+00:00'
+completed_at: '2026-02-17T15:40:23.874131+00:00'
+duration_minutes: 1.4750830833333335
+---
+
+# Add orchestration tests for selection, failover, and cooldown behavior
+
+
+
+## Requirements
+
+- Add focused tests for provider selection, fallback behavior, and cooldown exclusion.
+- Keep tests fast and deterministic by injecting RNG/time functions.
+
+## Acceptance Criteria
+
+- Test suite validates healthy-provider randomization and fallback on provider failures.
+- Cooldown expiry and re-entry behavior are covered without sleep-based test delays.

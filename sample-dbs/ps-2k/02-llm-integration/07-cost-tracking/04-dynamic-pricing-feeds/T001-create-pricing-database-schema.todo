@@ -1,0 +1,282 @@
+---
+id: P2.M7.E4.T001
+title: Create pricing database schema and context
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M7.E2.T001
+tags:
+- database
+- ecto
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-05T19:47:44.952170'
+started_at: '2026-02-05T19:47:44.952170'
+completed_at: '2026-02-05T19:49:11.482912'
+duration_minutes: 1.4421788666666666
+---
+
+# Create pricing database schema and context
+
+## Requirements
+
+### Overview
+
+This task establishes the foundational database infrastructure for dynamic LLM pricing management. It replaces the static, hardcoded pricing map in `lib/pag_server/llm/pricing.ex` with a time-versioned database system that enables:
+
+1. **Historical pricing lookups** for accurate cost analysis of past agent sessions
+2. **Future price change scheduling** by pre-inserting records with future `effective_at` timestamps
+3. **Multiple concurrent pricing records** per provider/model pair across different time windows
+4. **Audit trail** of when pricing data was fetched and from which source
+5. **Cache invalidation signals** through `expires_at` timestamps
+6. **Provider attribution** to track which pricing source supplied each record
+
+### Why Time-Versioned Pricing Records?
+
+The current static pricing module (`lib/pag_server/llm/pricing.ex`) has several limitations:
+
+**Problems with Static Pricing:**
+- Requires code deployment to update prices (cannot respond to provider changes)
+- No historical record of pricing at the time an agent session ran
+- Cannot pre-schedule future price changes
+- Makes cost analysis of old sessions inaccurate when pricing has changed
+- Couples pricing data to application code (violates separation of concerns)
+
+**Benefits of Time-Versioned Database Records:**
+- **Accurate Historical Analysis**: When analyzing costs from January, use January's pricing—not today's
+- **Dynamic Updates**: Future tasks (T002-T005) will fetch live pricing from APIs without code changes
+- **Scheduled Price Changes**: Insert a record with `effective_at: ~U[2026-03-01 00:00:00Z]` to schedule a future price
+- **Cache Invalidation**: Set `expires_at` to signal when cached pricing should be refreshed
+- **Audit Trail**: Track when pricing was fetched (`inserted_at`), from which `source`, and what `metadata` accompanied it
+
+### Database Schema Design
+
+#### Table: `pricing`
+
+**Primary Key:**
+- `id` (binary_id): UUIDs are used consistently across PAG-Server for distributed-system compatibility and to avoid integer ID collisions in event sourcing scenarios
+
+**Core Identification Fields:**
+- `provider` (string, not null): Provider identifier (e.g., "anthropic", "openai", "openrouter")
+- `model` (string, not null): Model identifier as returned by provider APIs (e.g., "claude-sonnet-4.5", "gpt-4.1")
+
+**Pricing Fields (Decimals, not Floats):**
+- `prompt_per_million` (decimal(12,6), not null): USD per 1M prompt tokens
+- `completion_per_million` (decimal(12,6), not null): USD per 1M completion tokens  
+- `cached_per_million` (decimal(12,6), nullable): USD per 1M cached/prompt tokens (optional—calculated as 10% of prompt if missing)
+
+**Why Decimal Instead of Float?**
+- Financial calculations require exact precision (floats accumulate rounding errors)
+- `precision: 12, scale: 6` supports prices from $0.000001 to $999,999.999999 per million tokens
+- Ensures accurate cost calculations when multiplying by large token counts
+
+**Time-Versioning Fields:**
+- `effective_at` (utc_datetime_usec, not null): When this pricing becomes active (enables historical lookups and future scheduling)
+- `expires_at` (utc_datetime_usec, nullable): When this pricing expires (optional cache invalidation signal)
+
+**Metadata Fields:**
+- `currency` (string, not null, default: "usd"): Currency code for future multi-currency support
+- `source` (string, nullable): Origin of this pricing data (e.g., "openrouter_api", "anthropic_static", "manual_admin")
+- `metadata` (jsonb map, default: {}): Extensible field for provider-specific data (e.g., rate limits, model capabilities, context windows)
+
+**Timestamps:**
+- `inserted_at` / `updated_at` (utc_datetime_usec): Standard Ecto audit timestamps
+
+#### Composite Indexes
+
+**Index 1: `[:provider, :model]`**
+- Purpose: Fast lookups when fetching any pricing for a provider/model pair
+- Used by: Admin interfaces, batch operations, pricing comparison queries
+
+**Index 2: `[:provider, :model, :effective_at]`**
+- Purpose: **Critical for time-versioned lookups** (the core use case)
+- Query pattern: "Get the latest pricing effective on or before timestamp T"
+- Supports: `get_latest_pricing/2` queries with `WHERE provider = ? AND model = ? AND effective_at <= ?` filtered by `ORDER BY effective_at DESC LIMIT 1`
+- Enables efficient historical cost analysis without full table scans
+
+### Context Module Functions
+
+`PagServer.Pricing` provides a bounded context for pricing operations:
+
+**CRUD Operations:**
+- `create_pricing(attrs)` - Insert new pricing records (used by fetcher tasks T002-T005)
+- `update_pricing(pricing, attrs)` - Update existing records (rare—typically insert new records with later `effective_at` instead)
+
+**Query Operations:**
+- `get_latest_pricing(provider, model)` - Returns the most recent pricing record by `effective_at` (DESC order, limit 1)
+  - **Critical function**: Used by cache layer (T006) to fetch current pricing
+  - **Time-aware**: If multiple records exist, returns the one with the latest `effective_at <= NOW()`
+  
+- `list_pricing(opts)` - Flexible query with filters:
+  - `provider:` filter to specific provider
+  - `model:` filter to specific model  
+  - `limit:` cap result count
+  - Always ordered by `effective_at DESC` for most-recent-first results
+
+### Validation Rules
+
+**Schema-Level Validations (enforced by `Pricing.changeset/2`):**
+
+1. **Required Fields:**
+   - `provider`, `model`, `prompt_per_million`, `completion_per_million`, `currency`, `effective_at` must be present
+
+2. **Field Length Constraints:**
+   - `provider`: 1-255 characters (prevents empty strings and unreasonably long identifiers)
+   - `model`: 1-255 characters
+   - `currency`: 1-8 characters (supports standard currency codes like "usd", "eur")
+
+3. **Non-Negative Pricing:**
+   - `prompt_per_million >= 0`
+   - `completion_per_million >= 0`  
+   - `cached_per_million >= 0` (when present)
+   - Rationale: Prevents data entry errors; free models (Ollama) use `0.0`
+
+4. **Effective Window Validation:**
+   - If both `effective_at` and `expires_at` are present, `expires_at` must be after `effective_at`
+   - Prevents invalid time windows (e.g., a price that expires before it becomes effective)
+   - Implemented via custom `validate_effective_window/1` private function
+
+### Differences from Static Pricing Module
+
+| Aspect | Static (`LLM.Pricing`) | Dynamic (`Pricing` schema) |
+|--------|------------------------|----------------------------|
+| **Storage** | Hardcoded map in module | Database table with migrations |
+| **Updates** | Code deployment required | API fetchers + Oban workers (T002-T008) |
+| **Historical** | Single "current" pricing | Time-versioned records via `effective_at` |
+| **Precision** | Floats (rounding errors) | Decimals (exact precision) |
+| **Audit Trail** | None | `inserted_at`, `source`, `metadata` |
+| **Cache Invalidation** | N/A (always in-memory) | `expires_at` signals staleness |
+| **Extensibility** | Requires code changes | `metadata` JSONB for new fields |
+| **Model Aliasing** | Complex `apply_model_aliases/1` logic | Normalized at fetch time by fetchers |
+
+**Migration Path:**
+- Static module will remain temporarily as a fallback during rollout
+- Cache layer (T006) will query database first, fall back to static pricing if missing
+- Once all providers have database pricing, static module can be deprecated
+
+### Connection to Epic Goals
+
+This task is the **foundational building block** for the Dynamic Pricing Feeds epic:
+
+```
+T001 (This Task) ──→ Database Schema & Context
+                     │
+                     ├──→ T002: PricingFetcher behavior/registry
+                     │    ├──→ T003: OpenRouter fetcher
+                     │    ├──→ T004: Anthropic static seeder
+                     │    └──→ T005: OpenAI static seeder
+                     │
+                     ├──→ T006: Cache layer (reads from this schema)
+                     ├──→ T007: Startup fetch (populates on boot)
+                     ├──→ T008: Oban worker (scheduled updates)
+                     ├──→ T009: Admin refresh endpoint
+                     ├──→ T010: Telemetry events
+                     └──→ T011: Integration tests
+```
+
+**Without this task**, subsequent tasks cannot:
+- Store fetched pricing data
+- Query time-versioned pricing
+- Build cache invalidation logic
+- Perform historical cost analysis
+
+## Acceptance Criteria
+
+### Database Migration
+
+- [x] Migration file created at `priv/repo/migrations/20260206093000_create_pricing.exs`
+- [x] Table `pricing` created with `binary_id` primary key (UUID)
+- [x] All required fields present: `provider`, `model`, `prompt_per_million`, `completion_per_million`, `effective_at`
+- [x] Optional fields present: `cached_per_million`, `expires_at`, `source`, `metadata`
+- [x] Default value set for `currency` field ("usd")
+- [x] Decimal precision set to `precision: 12, scale: 6` for all price fields
+- [x] Microsecond-precision timestamps used (`utc_datetime_usec`) for time-versioning accuracy
+- [x] Composite index on `[:provider, :model]` for general lookups
+- [x] Composite index on `[:provider, :model, :effective_at]` for time-versioned queries
+- [x] Migration runs successfully with `mix ecto.migrate`
+
+### Ecto Schema
+
+- [x] Schema module created at `lib/pag_server/schema/pricing.ex`
+- [x] Uses `binary_id` primary key (consistent with PAG-Server conventions)
+- [x] All fields from migration defined with correct Ecto types
+- [x] Default values match migration (`:currency` defaults to "usd", `:metadata` defaults to `%{}`)
+- [x] Complete `@type t()` typespec documents all fields with correct Elixir types
+- [x] `Decimal.t()` used for pricing fields (not `float()`)
+- [x] `DateTime.t()` used for timestamp fields (not `NaiveDateTime.t()`)
+
+### Schema Validations
+
+- [x] `changeset/2` function validates required fields: `provider`, `model`, `prompt_per_million`, `completion_per_million`, `currency`, `effective_at`
+- [x] Optional fields correctly omitted from `validate_required/2`: `cached_per_million`, `expires_at`, `source`, `metadata`
+- [x] Length validations:
+  - [x] `provider`: min 1, max 255 characters
+  - [x] `model`: min 1, max 255 characters
+  - [x] `currency`: min 1, max 8 characters
+- [x] Number validations ensure non-negative pricing:
+  - [x] `prompt_per_million >= 0`
+  - [x] `completion_per_million >= 0`
+  - [x] `cached_per_million >= 0`
+- [x] Custom `validate_effective_window/1` function ensures `expires_at > effective_at` (when both present)
+- [x] Validation error message is clear: "must be after effective_at"
+
+### Context Module
+
+- [x] Context module created at `lib/pag_server/pricing.ex`
+- [x] `create_pricing(attrs)` function:
+  - [x] Accepts map of attributes
+  - [x] Returns `{:ok, Pricing.t()}` on success
+  - [x] Returns `{:error, Ecto.Changeset.t()}` on validation failure
+  - [x] Inserts via `Repo.insert/1`
+- [x] `update_pricing(pricing, attrs)` function:
+  - [x] Accepts `%Pricing{}` struct and map of attributes
+  - [x] Returns `{:ok, Pricing.t()}` on success
+  - [x] Returns `{:error, Ecto.Changeset.t()}` on failure
+  - [x] Updates via `Repo.update/1`
+- [x] `get_latest_pricing(provider, model)` function:
+  - [x] Filters by provider and model
+  - [x] Orders by `effective_at DESC` (most recent first)
+  - [x] Limits to 1 result
+  - [x] Returns `Pricing.t() | nil`
+- [x] `list_pricing(opts)` function:
+  - [x] Accepts keyword list of options
+  - [x] Supports `:provider` filter (optional)
+  - [x] Supports `:model` filter (optional)
+  - [x] Supports `:limit` option (optional)
+  - [x] Orders by `effective_at DESC` by default
+  - [x] Returns list of `Pricing.t()`
+
+### Type Safety
+
+- [x] All public functions have `@spec` declarations
+- [x] Specs use `String.t()`, `Decimal.t()`, `DateTime.t()` (not ambiguous types)
+- [x] Private helper functions have descriptive names (`maybe_filter_provider/2`, `maybe_limit/2`)
+
+### Code Quality
+
+- [x] Module `@moduledoc` explains purpose and time-versioning concept
+- [x] Function `@doc` strings explain behavior and return types
+- [x] Query composition uses Ecto's pipe-friendly pattern (`query |> where(...) |> order_by(...)`)
+- [x] Guards used on function clauses for input validation (`when is_binary(provider)`, `when is_list(opts)`)
+- [x] No compiler warnings when running `mix compile`
+- [x] Passes Credo checks (if applicable)
+
+### Integration Readiness
+
+- [x] Schema can store realistic pricing data (tested range: $0.000001 to $999,999.999999 per million tokens)
+- [x] Time-versioned queries work correctly (multiple records with different `effective_at` timestamps)
+- [x] Composite indexes improve query performance (verified via `EXPLAIN ANALYZE` or integration tests in T011)
+- [x] Context functions are ready to be called by:
+  - **T002-T005**: Fetchers calling `create_pricing/1`
+  - **T006**: Cache layer calling `get_latest_pricing/2`
+  - **T009**: Admin API calling `list_pricing/1` and `create_pricing/1`
+  - **T011**: Integration tests using all context functions
+
+### Documentation
+
+- [x] Migration includes `@doc` comment explaining time-versioning and decimal precision
+- [x] Schema `@moduledoc` mentions time-versioning use case
+- [x] Context `@moduledoc` explains when to use this module vs. `LLM.Pricing`
+- [x] Function docs include examples or options lists where relevant

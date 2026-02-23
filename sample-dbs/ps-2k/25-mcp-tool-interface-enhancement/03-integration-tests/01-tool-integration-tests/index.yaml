@@ -1,0 +1,22 @@
+id: P25.M3.E1
+name: Tool Integration Tests
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-integration-tests-for-improved-.todo
+  title: Integration tests for improved MCP tool interfaces
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

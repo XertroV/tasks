@@ -1,0 +1,252 @@
+---
+id: P1.M4.E2.T002
+title: Add event compression (zstd)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M4.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:48:17.472225'
+started_at: '2026-02-05T09:48:17.472225'
+completed_at: '2026-02-05T09:50:54.519809'
+tags:
+- event-store
+- compression
+- zstd
+- performance
+---
+
+# Add event compression (zstd)
+
+Implement zstd compression for large event payloads to reduce database storage and improve I/O performance.
+
+## Requirements
+
+- [ ] Add `:ezstd` dependency to `mix.exs`
+- [ ] Create `PagServer.Events.Compression` module
+- [ ] Implement `should_compress?/1` decision function:
+  - [ ] Return `true` if payload >1KB (1024 bytes)
+  - [ ] Return `false` otherwise
+- [ ] Implement `compress/1` function:
+  - [ ] Serialize payload to JSON
+  - [ ] Compress using zstd (level 3 - balanced)
+  - [ ] Return compressed binary
+  - [ ] Handle errors gracefully
+- [ ] Implement `decompress/1` function:
+  - [ ] Decompress zstd binary
+  - [ ] Parse JSON back to map
+  - [ ] Handle corrupted data gracefully
+  - [ ] Return `{:ok, payload}` or `{:error, reason}`
+- [ ] Add compression ratio telemetry
+- [ ] Create comprehensive module documentation
+
+## Acceptance Criteria
+
+- [ ] `:ezstd` dependency added and working
+- [ ] Compression threshold is configurable via application env
+- [ ] `compress/1` reduces payload size for typical events (>50% reduction)
+- [ ] `decompress/1` correctly restores original payload
+- [ ] Round-trip compression works: `decompress(compress(payload)) == payload`
+- [ ] Handles edge cases:
+  - [ ] Empty payloads
+  - [ ] Very large payloads (>1MB)
+  - [ ] Payloads with binary data
+  - [ ] Corrupted compressed data
+- [ ] Telemetry tracks compression ratios
+- [ ] Module compiles with zero warnings
+- [ ] Dialyzer passes with no type errors
+- [ ] All functions have `@doc` and `@spec`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Line 247 (payload_compressed field)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Lines 376-380 (Event compression)
+
+**Key Requirements**:
+- Use zstd (not gzip) for better compression ratio and speed
+- Compression level 3 (balanced between speed and ratio)
+- Threshold: 1KB (configurable)
+- Transparent to callers (persistence layer handles it)
+
+## Notes
+
+### Example Implementation
+
+```elixir
+defmodule PagServer.Events.Compression do
+  @moduledoc """
+  Compression utilities for event payloads.
+  
+  Uses zstd compression for payloads exceeding the configured
+  threshold (default: 1KB). Provides transparent compression
+  and decompression.
+  """
+  
+  require Logger
+  
+  # Compression level: 3 = balanced (range: 1-22)
+  @compression_level 3
+  
+  # Default threshold: 1KB
+  @default_threshold 1024
+  
+  @doc """
+  Determines if a payload should be compressed.
+  
+  Returns true if the serialized payload size exceeds the
+  configured threshold (default: 1KB).
+  
+  ## Examples
+  
+      iex> small = %{msg: "hi"}
+      iex> Compression.should_compress?(small)
+      false
+      
+      iex> large = %{content: String.duplicate("x", 2000)}
+      iex> Compression.should_compress?(large)
+      true
+  """
+  @spec should_compress?(map()) :: boolean()
+  def should_compress?(payload) when is_map(payload) do
+    threshold = Application.get_env(:pag_server, :compression_threshold, @default_threshold)
+    byte_size(Jason.encode!(payload)) > threshold
+  end
+  
+  @doc """
+  Compress a payload using zstd.
+  
+  Serializes the payload to JSON, then compresses with zstd.
+  
+  ## Examples
+  
+      iex> payload = %{type: "test", data: String.duplicate("x", 2000)}
+      iex> {:ok, compressed} = Compression.compress(payload)
+      iex> is_binary(compressed)
+      true
+  """
+  @spec compress(map()) :: {:ok, binary()} | {:error, term()}
+  def compress(payload) when is_map(payload) do
+    try do
+      json = Jason.encode!(payload)
+      compressed = :ezstd.compress(json, @compression_level)
+      
+      # Emit telemetry
+      original_size = byte_size(json)
+      compressed_size = byte_size(compressed)
+      ratio = Float.round(original_size / compressed_size, 2)
+      
+      :telemetry.execute(
+        [:pag, :events, :compression],
+        %{original_bytes: original_size, compressed_bytes: compressed_size, ratio: ratio},
+        %{}
+      )
+      
+      {:ok, compressed}
+    rescue
+      e ->
+        Logger.error("Failed to compress payload: #{inspect(e)}")
+        {:error, :compression_failed}
+    end
+  end
+  
+  @doc """
+  Decompress a zstd-compressed payload.
+  
+  Decompresses the binary and parses JSON back to a map.
+  
+  ## Examples
+  
+      iex> {:ok, compressed} = Compression.compress(%{test: "data"})
+      iex> {:ok, payload} = Compression.decompress(compressed)
+      iex> payload
+      %{test: "data"}
+  """
+  @spec decompress(binary()) :: {:ok, map()} | {:error, term()}
+  def decompress(compressed) when is_binary(compressed) do
+    try do
+      json = :ezstd.decompress(compressed)
+      payload = Jason.decode!(json)
+      {:ok, payload}
+    rescue
+      e ->
+        Logger.error("Failed to decompress payload: #{inspect(e)}")
+        {:error, :decompression_failed}
+    end
+  end
+  
+  @doc """
+  Get the current compression threshold in bytes.
+  """
+  @spec get_threshold() :: pos_integer()
+  def get_threshold do
+    Application.get_env(:pag_server, :compression_threshold, @default_threshold)
+  end
+end
+```
+
+### Configuration
+
+Add to `config/config.exs`:
+
+```elixir
+config :pag_server,
+  # Event compression threshold (bytes)
+  compression_threshold: 1024,  # 1KB
+  
+  # Compression level (1-22, higher = better compression but slower)
+  compression_level: 3
+```
+
+### mix.exs Dependency
+
+```elixir
+defp deps do
+  [
+    # ... other deps
+    {:ezstd, "~> 1.1"},  # Zstandard compression
+  ]
+end
+```
+
+### Integration with Persistence
+
+The persistence layer should call compression automatically:
+
+```elixir
+def append_event(%Event{payload: payload} = event) do
+  event = 
+    if Compression.should_compress?(payload) do
+      {:ok, compressed} = Compression.compress(payload)
+      %{event | payload_compressed: compressed, payload: %{}}
+    else
+      event
+    end
+  
+  Repo.insert(event)
+end
+
+def get_events(opts) do
+  events = # ... query events
+  
+  Enum.map(events, fn event ->
+    if event.payload_compressed do
+      {:ok, payload} = Compression.decompress(event.payload_compressed)
+      %{event | payload: payload, payload_compressed: nil}
+    else
+      event
+    end
+  end)
+end
+```
+
+### Testing Compression Ratios
+
+Typical compression ratios for JSON event data:
+- Text-heavy events: 5-10x reduction
+- Structured data: 2-5x reduction
+- Already compressed data: ~1x (no benefit)
+
+Target: >50% reduction on average across all compressible events.

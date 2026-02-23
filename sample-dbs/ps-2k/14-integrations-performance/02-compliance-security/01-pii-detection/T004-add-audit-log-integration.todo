@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T04:28:25.184290+00:00'
+started_at: '2026-02-13T04:28:25.184290+00:00'
+completed_at: '2026-02-13T05:18:41.371732+00:00'
+duration_minutes: 50.2697905
+---
+# Add audit log integration
+
+## Description
+Create audit logging for PII detection events including what was detected, where, and what action was taken. Provide a queryable interface for compliance reporting and incident investigation.
+
+## Acceptance Criteria
+- [ ] `PagServer.Compliance.AuditLog` schema created
+- [ ] Fields: workspace_id, session_id, pii_type, action_taken, timestamp, metadata
+- [ ] `log_detection/3` function records PII detection events
+- [ ] `log_action/3` function records redaction/blocking actions
+- [ ] `query/2` function with filtering by workspace, date range, PII type
+- [ ] Automatic retention policy (default 90 days)
+- [ ] Async logging via Oban job for performance
+- [ ] Export functionality for compliance reports (CSV, JSON)
+- [ ] Integration with existing audit infrastructure
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/compliance/pii_detector.ex`, `lib/pag_server/schema/`
+- Part of epic: P14.M2.E1 - PII Detection

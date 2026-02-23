@@ -1,0 +1,50 @@
+id: P1
+name: Foundation
+status: pending
+weeks: 3
+estimate_hours: 84
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Project Initialization
+  path: 01-project-init
+  status: pending
+  estimate_hours: 16
+  complexity: medium
+  depends_on: []
+  description: Phoenix setup, database config, cache layer, test infrastructure
+- id: M2
+  name: Core Schemas
+  path: 02-core-schemas
+  status: pending
+  estimate_hours: 24
+  complexity: medium
+  depends_on:
+  - M1
+  description: Agent, Session, Message, Event, ToolCall, Stats, AgentMessage schemas
+- id: M3
+  name: Agent System Core
+  path: 03-agent-core
+  status: pending
+  estimate_hours: 32
+  complexity: high
+  depends_on:
+  - M1
+  - M2
+  description: Agent GenServer, supervision tree, registry, state management, lifecycle
+- id: M4
+  name: Event Store
+  path: 04-event-store
+  status: pending
+  estimate_hours: 12
+  complexity: medium
+  depends_on:
+  - M2
+  description: Event sourcing store, persistence, compression
+stats:
+  total_tasks: 56
+  done: 56
+  in_progress: 0
+  blocked: 0
+  pending: 0

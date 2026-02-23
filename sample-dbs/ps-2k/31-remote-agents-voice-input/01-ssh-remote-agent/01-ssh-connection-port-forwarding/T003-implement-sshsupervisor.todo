@@ -1,0 +1,16 @@
+---
+id: P31.M1.E1.T003
+title: Implement SshSupervisor
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:27:58.032642+00:00'
+started_at: '2026-02-18T19:27:58.032642+00:00'
+completed_at: '2026-02-18T19:46:27.858221+00:00'
+duration_minutes: 18.49709275
+---
+DynamicSupervisor for per-workspace SshTunnel processes. Registry for workspace->pid lookup. Add to application supervision tree.

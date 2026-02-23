@@ -1,0 +1,41 @@
+id: P23.M3.E2
+name: PluginLoader Update & Migration
+status: pending
+estimate_hours: 10.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-update-pluginloader-to-discove.todo
+  title: Update PluginLoader to discover plugins from plugins/ dir
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M3.E1.T003
+- id: T002
+  file: T002-migrate-existing-plugins-from.todo
+  title: Migrate existing plugins from lib/pag_server/plugins/ to plugins/
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M3.E2.T001
+- id: T003
+  file: T003-remove-lib-pag-server-plugins.todo
+  title: Remove lib/pag_server/plugins/ backward-compat shim and cleanup
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P23.M3.E2.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

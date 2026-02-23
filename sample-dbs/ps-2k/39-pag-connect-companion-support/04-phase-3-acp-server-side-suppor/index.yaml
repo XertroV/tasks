@@ -1,0 +1,33 @@
+id: P39.M4
+name: Phase 3 ACP Server-Side Support
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Auth Infrastructure
+  path: 01-auth-infrastructure
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: CompanionChannel Management Events
+  path: 02-companionchannel-management-ev
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - E1
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

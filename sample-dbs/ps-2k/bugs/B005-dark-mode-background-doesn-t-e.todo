@@ -1,0 +1,40 @@
+---
+id: B005
+title: dark mode background doesn't extend if i scroll down (only shows 100vh but
+  stuck to top of page)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:16:03.321005+00:00'
+started_at: '2026-02-15T16:16:03.321005+00:00'
+completed_at: '2026-02-15T16:43:43.787702+00:00'
+duration_minutes: 27.674444783333335
+---
+
+dark mode background doesn't extend if i scroll down (only shows 100vh but stuck to top of page)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 16:16 UTC
+**Primary task**: B003 - on thhe webui, when i try to send a prompt, it does nothing. even when connected to backend. it also says no active session selected, but i tried creating one with the new session button (also does nothing). no errors in console.
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

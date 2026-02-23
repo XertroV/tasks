@@ -1,0 +1,24 @@
+---
+id: P50.M3.E2.T003
+title: Implement list_messages action
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:34:13.520746+00:00'
+started_at: '2026-02-23T02:34:13.520746+00:00'
+completed_at: '2026-02-23T02:34:15.991233+00:00'
+duration_minutes: 0.041174550000000004
+---
+## Description
+Messaging.list_messages/1 (team_id, limit \ 50, before_id \ nil, to_agent_id \ nil). When to_agent_id set: returns messages where to_agent_id matches OR is NULL (broadcasts), ordered by inserted_at DESC. When before_id set: keyset pagination returning only messages before that message's inserted_at. Returns {:ok, %{messages: [...], action: list_messages}}. Wire into dispatcher.
+
+## Acceptance Criteria
+- Filter by to_agent_id returns directs+broadcasts for that agent but not other agents' directs
+- before_id pagination works
+- ordering is inserted_at DESC
+- 10-message fixture test passes

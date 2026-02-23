@@ -1,0 +1,39 @@
+---
+id: P19.M1.E3.T001
+title: Fix whatsapp.md verify_signature arity
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- integrations
+- whatsapp
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:35:54.370690+00:00'
+started_at: '2026-02-18T01:35:54.370690+00:00'
+completed_at: '2026-02-18T01:38:21.538225+00:00'
+duration_minutes: 2.4527920833333337
+---
+verify_signature has 3 args not 2. Update: verify_signature(payload, signature_header, app_secret). Line 132.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-18 01:35 UTC
+**Sibling tasks**: P19.M1.E3.T002, P19.M1.E3.T003, P19.M1.E3.T004, P19.M1.E3.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M1.E3.T001 → P19.M1.E3.T002 → P19.M1.E3.T003 → P19.M1.E3.T004 → P19.M1.E3.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M1.E3.T001: .tasks/19-documentation-remediation/01-critical-fixes/03-integration-docs-fixes/T001-fix-whatsapp-md-verify-signatu.todo
+- P19.M1.E3.T002: .tasks/19-documentation-remediation/01-critical-fixes/03-integration-docs-fixes/T002-fix-whatsapp-md-send-template.todo
+- P19.M1.E3.T003: .tasks/19-documentation-remediation/01-critical-fixes/03-integration-docs-fixes/T003-fix-whatsapp-md-webhook-path.todo
+- P19.M1.E3.T004: .tasks/19-documentation-remediation/01-critical-fixes/03-integration-docs-fixes/T004-fix-slack-md-route-paths.todo
+- P19.M1.E3.T005: .tasks/19-documentation-remediation/01-critical-fixes/03-integration-docs-fixes/T005-remove-slack-md-non-existent-e.todo

@@ -1,0 +1,64 @@
+---
+id: P10.M4.E1.T003
+title: Implement CircleCI build trigger and monitoring
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P10.M4.E1.T001
+- P10.M4.E1.T002
+tags:
+- circleci
+- build-triggers
+- monitoring
+claimed_by: cli-user
+claimed_at: '2026-02-12T06:34:19.006450+00:00'
+started_at: '2026-02-12T06:34:19.006450+00:00'
+completed_at: '2026-02-12T06:54:13.458479+00:00'
+duration_minutes: 19.907533633333333
+---
+
+# Implement CircleCI build trigger and monitoring
+
+Integrate CircleCI builds into agent workflow by implementing pipeline triggers and status polling.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/circleci/orchestrator.ex` module for high-level operations
+- [ ] Implement pipeline trigger function that:
+  - [ ] Accepts workflow parameters (repository, branch, variables)
+  - [ ] Calls CircleCI API to start pipeline
+  - [ ] Returns run ID and initial status
+- [ ] Implement polling function for checking pipeline status:
+  - [ ] Query CircleCI API for current status
+  - [ ] Return workflow state (running, success, failed)
+  - [ ] Include timing info (start time, elapsed time)
+- [ ] Integrate with agent state updates via Events module
+- [ ] Implement Oban job for background status monitoring
+- [ ] Add telemetry tracking for trigger latency and success rates
+- [ ] Write integration tests with mocked CircleCI API
+
+## Acceptance Criteria
+
+- [ ] Trigger function successfully initiates CircleCI pipeline with variables
+- [ ] Status polling correctly reads workflow state from API
+- [ ] Polling job runs on configurable interval (default 30s)
+- [ ] Workflow status updates are persisted via Events system
+- [ ] Agent receives status notifications when build completes
+- [ ] Failed builds include error messages from CircleCI logs
+- [ ] `mix test` passes for all integration tests
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Integration Points**: Pipeline triggers update agent state, status updates feed into event stream, agent can make decisions based on build outcomes.
+
+**Background Jobs**: Use Oban for polling to avoid blocking agent processes.
+
+## Notes
+
+CircleCI pipeline run returns:
+- `id`: pipeline/workflow ID for status checks
+- `number`: build number
+- `state`: current execution state

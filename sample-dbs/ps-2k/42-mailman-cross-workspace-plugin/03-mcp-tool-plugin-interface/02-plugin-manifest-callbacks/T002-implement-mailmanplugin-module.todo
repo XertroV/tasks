@@ -1,0 +1,26 @@
+---
+id: P42.M3.E2.T002
+title: Implement MailmanPlugin module callbacks
+status: done
+estimate_hours: 0.7
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:30:13.889017+00:00'
+started_at: '2026-02-19T17:30:13.889017+00:00'
+completed_at: '2026-02-19T17:36:59.786861+00:00'
+duration_minutes: 6.764963866666666
+---
+## Context
+plugins/mailman/lib/mailman_plugin.ex
+
+## Acceptance Criteria
+- [ ] default_enabled?/1 -> false (opt-in)
+- [ ] on_enable/1 (workspace): get_or_create mailbox, start orchestrator via Supervisor.ensure_started
+- [ ] on_disable/1 (workspace): deactivate mailbox, stop orchestrator
+- [ ] mcp_tools/0: returns tool schemas for workspace_mail
+- [ ] handle_tool_call/3: delegates to Tools module
+- [ ] __plugin_migrations__/0: declares Migrations module
+- [ ] name/0, description/0, config_schema/0

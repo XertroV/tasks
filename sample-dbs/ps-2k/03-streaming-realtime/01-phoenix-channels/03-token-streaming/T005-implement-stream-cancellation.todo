@@ -1,0 +1,247 @@
+---
+id: P3.M1.E3.T005
+title: Implement stream cancellation via channel message
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P3.M1.E2.T001
+tags:
+- streaming
+- cancellation
+- channels
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:00:15.401262'
+started_at: '2026-02-06T16:00:15.401262'
+completed_at: '2026-02-06T23:50:25.838302+00:00'
+duration_minutes: 470.1739505
+---
+
+# Implement stream cancellation via channel message
+
+
+
+## Context
+
+Phoenix Channels need the ability to cancel in-flight LLM streams when clients disconnect or explicitly request cancellation. The LLM provider layer already has full cancellation support (`create_cancellable_stream/2` and `cancel_stream/1` in Anthropic/OpenAI/OpenRouter providers), but there's currently no way to trigger cancellation from outside the streaming Task process.
+
+The current architecture spawns a Task in `AgentServer.dispatch_llm_request/5` (line 1906) that consumes the stream, but the Task PID and cancel_ref are not tracked in agent state, making external cancellation impossible.
+
+## Requirements
+
+### 1. Track Streaming State in AgentServer
+- [ ] Add `streaming_task` field to agent state struct to store `%{pid: task_pid, cancel_ref: ref, message_id: id}`
+- [ ] Store streaming task info when `dispatch_llm_request/5` spawns the streaming Task
+- [ ] Clear streaming task info when stream completes, errors, or is cancelled
+
+### 2. Add Cancellation Handler to AgentServer
+- [ ] Implement `handle_cast(:cancel_stream, state)` in `agent_server.ex`
+- [ ] Send `{:cancel_stream, cancel_ref}` message to the streaming Task PID
+- [ ] Transition agent to `:interrupted` status when cancellation requested
+- [ ] Handle case where no stream is active (idempotent cancellation)
+- [ ] Clean up streaming task state after cancellation
+
+### 3. Modify Stream Creation to Support Cancellation
+- [ ] Update `do_llm_stream_request/4` to use `create_cancellable_stream/2` from providers
+- [ ] Pass `cancel_ref` to `process_stream/4` for stream lifecycle tracking
+- [ ] Ensure cancellable streams work for all providers (Anthropic, OpenAI, OpenRouter, Ollama)
+
+### 4. Handle Cancelled Stream Events
+- [ ] Process `:cancelled` StreamEvent type in `process_stream/4`
+- [ ] Broadcast cancellation event via PubSub (`:llm_cancelled` event type)
+- [ ] Send `{:llm_cancelled, ref}` message back to AgentServer
+- [ ] Store partial response state before cancellation
+
+### 5. Channel Message Handler
+- [ ] Implement `handle_in("cancel_stream", payload, socket)` in AgentChannel
+- [ ] Extract agent_id from socket assigns
+- [ ] Call `AgentServer.cancel_stream(agent_id)` API function
+- [ ] Reply with `:ok` on success or `{:error, reason}` on failure
+- [ ] Validate that caller has permission to cancel (same user who started stream)
+- [ ] Keep cancellation flow consistent with REST cancel and SSE disconnect behavior
+- [ ] Emit a channel event or reply indicating cancellation success or failure
+
+### 6. Public API Function
+- [ ] Add `AgentServer.cancel_stream(agent_id)` public function
+- [ ] Use `GenServer.cast` to avoid blocking caller
+- [ ] Return `:ok` immediately (async cancellation)
+- [ ] Document function with @doc and @spec
+
+## Acceptance Criteria
+
+### AgentServer Implementation
+- [ ] `streaming_task` field added to agent state with typespec
+- [ ] Streaming task tracked when LLM request starts (Task PID, cancel_ref, message_id)
+- [ ] `cancel_stream/1` public API function exists with proper typespec
+- [ ] `handle_cast(:cancel_stream, state)` sends cancel message to Task
+- [ ] Cancellation is idempotent (safe to call multiple times)
+- [ ] Agent transitions to `:interrupted` status when stream cancelled
+- [ ] Streaming task state cleared after cancellation/completion/error
+
+### Stream Cancellation Integration
+- [ ] `do_llm_stream_request/4` uses `create_cancellable_stream/2` for all providers
+- [ ] Cancel ref tracked and passed to stream processing
+- [ ] `:cancelled` StreamEvent processed correctly in `process_stream/4`
+- [ ] Cancellation event broadcast via PubSub: `{:agent_event, :llm_cancelled, %{agent_id, message_id, reason}}`
+- [ ] Partial response accumulated before cancellation is saved
+
+### Phoenix Channel Handler
+- [ ] AgentChannel handles `"cancel_stream"` incoming message
+- [ ] Calls `AgentServer.cancel_stream(agent_id)` when message received
+- [ ] Replies with `{:ok, %{status: "cancelling"}}` on success
+- [ ] Replies with `{:error, %{reason: "..."}}` if agent not found or other error
+- [ ] Channel pushes `"stream_cancelled"` event to client when PubSub receives cancellation
+- [ ] Works across all connected clients (cancellation visible to all subscribers)
+- [ ] Channel cancel triggers AgentServer cancellation for the correct session/agent
+- [ ] Provider stream is canceled and no further tokens are emitted after cancel
+- [ ] Errors during cancel return a structured error reply to the channel
+
+### Error Handling
+- [ ] Cancelling non-existent stream returns error without crashing
+- [ ] Cancelling already-completed stream is a no-op
+- [ ] Task crash during cancellation doesn't crash AgentServer
+- [ ] Provider-specific cancellation errors handled gracefully
+- [ ] Network errors during cancellation logged but don't prevent state transition
+
+### Testing
+- [ ] Unit test: `AgentServer.cancel_stream/1` sends cancel message to Task
+- [ ] Unit test: Cancelling when no stream active returns appropriate error
+- [ ] Unit test: Cancelled stream emits `:cancelled` event
+- [ ] Integration test: Channel message triggers AgentServer cancellation
+- [ ] Integration test: Provider stream stops emitting tokens after cancel
+- [ ] Integration test: PubSub broadcasts cancellation event to all subscribers
+- [ ] Integration test: Partial response preserved in database before cancellation
+- [ ] Integration test: Multiple cancel requests are idempotent
+- [ ] Channel tests in `test/pag_server_web/channels/agent_channel_test.exs` for cancel flow
+- [ ] AgentServer tests in `test/pag_server/agents/agent_server_test.exs` for cancellation API
+- [ ] Test that cancel arriving during token delivery closes stream immediately
+- [ ] Test cross-transport cancellation (REST/SSE/Channel share same AgentServer logic)
+
+## Implementation Notes
+
+### End-to-End Cancellation Flow
+
+This task covers the complete cancellation pipeline:
+- **Channel → AgentServer → Provider**: Channel cancel handler invokes `AgentServer.cancel_stream/1`, which sends cancel signal to the streaming Task, which calls provider-level `cancel_stream/1`
+- **Consistency Across Transports**: Same AgentServer cancellation logic used by Channel, REST, and SSE disconnects
+- **In-Flight Stream Cleanup**: When cancel arrives during token delivery, stream is closed immediately and AgentServer state cleaned up
+- **Idempotency**: Multiple cancel requests are safe and return success if stream already stopped
+
+### Streaming Task Tracking
+
+Add to agent state:
+```elixir
+defmodule PagServer.Agents.AgentServer.State do
+  defstruct [
+    # ... existing fields ...
+    streaming_task: nil  # %{pid: pid, cancel_ref: ref, message_id: id} | nil
+  ]
+end
+```
+
+### Cancellation Flow
+
+```
+Channel                 AgentServer              Task (streaming)          LLM Provider
+   |                         |                           |                         |
+   |--"cancel_stream"------> |                           |                         |
+   |                         |--{:cancel_stream, ref}--> |                         |
+   |                         |                           |--cancel_stream(ref)---> |
+   |                         |                           |<--:cancelled event----- |
+   |                         |<--{:llm_cancelled}------- |                         |
+   |<--"stream_cancelled"--- |                           |                         |
+```
+
+### AgentServer Changes
+
+In `dispatch_llm_request/5` (around line 1906):
+```elixir
+# Before spawning task, extract cancel_ref from cancellable stream
+case Provider.stream_chat(model_spec, messages, opts) do
+  {:ok, stream} ->
+    %{stream: cancel_stream, cancel_ref: cancel_ref} = 
+      make_stream_cancellable(stream, provider)
+    
+    task = Task.start(fn ->
+      do_llm_stream_request(agent_pid, state, ref, stream_timeout, cancel_stream)
+    end)
+    
+    # Store task info
+    state = put_in(state.streaming_task, %{
+      pid: elem(task, 1), 
+      cancel_ref: cancel_ref, 
+      message_id: ref
+    })
+end
+```
+
+Add handler:
+```elixir
+@impl true
+def handle_cast(:cancel_stream, %{streaming_task: nil} = state) do
+  Logger.warning("Cancel requested but no stream active for agent #{state.id}")
+  {:noreply, state}
+end
+
+def handle_cast(:cancel_stream, %{streaming_task: task} = state) do
+  Logger.info("Cancelling stream for agent #{state.id}, message #{task.message_id}")
+  
+  # Send cancel message to streaming task
+  send(task.pid, {:cancel_stream, task.cancel_ref})
+  
+  # Transition to interrupted status
+  state = %{state | status: :interrupted}
+  
+  {:noreply, state}
+end
+```
+
+### Channel Handler
+
+```elixir
+@impl true
+def handle_in("cancel_stream", _payload, socket) do
+  agent_id = socket.assigns.agent_id
+  
+  case AgentServer.cancel_stream(agent_id) do
+    :ok ->
+      {:reply, {:ok, %{status: "cancelling"}}, socket}
+    
+    {:error, reason} ->
+      {:reply, {:error, %{reason: inspect(reason)}}, socket}
+  end
+end
+
+@impl true
+def handle_info({:agent_event, :llm_cancelled, payload}, socket) do
+  push(socket, "stream_cancelled", %{
+    message_id: payload.message_id,
+    reason: payload.reason
+  })
+  
+  {:noreply, socket}
+end
+```
+
+### Provider Compatibility
+
+All current providers support cancellable streams:
+- ✅ Anthropic: `StreamHandler.create_cancellable_stream/2`
+- ✅ OpenAI: `StreamHandler.create_cancellable_stream/2` 
+- ✅ OpenRouter: Uses OpenAI's ChatCompletions (inherits support)
+- ⚠️  Ollama: May need to add cancellable stream support
+
+## Dependencies
+
+- **Depends on**: P3.M1.E2.T001 (AgentChannel join/basic setup)
+- **Required by**: P3.M3.E2.T008 (REST cancel endpoint uses same AgentServer cancellation)
+- **Related**: P2.M3.E2.T003, P2.M2.E2.T005 (AgentServer lifecycle)
+
+## References
+
+- AgentServer streaming: `lib/pag_server/agents/agent_server.ex:1892-1906`
+- Provider cancellation: `lib/pag_server/llm/providers/anthropic/stream_handler.ex:157-200`
+- StreamEvent types: `lib/pag_server/llm/stream_event.ex:152-155`
+- PubSub broadcaster: `lib/pag_server/agents/broadcaster.ex`
+- Cancellation tests: `test/pag_server/llm/providers/anthropic/stream_handler_test.exs:612-788`

@@ -1,0 +1,53 @@
+# Epic: Docker Integration
+# Phase 4, Milestone 4, Epic 2 (P4.M4.E2)
+
+id: P4.M4.E2
+name: Docker Integration
+status: pending
+estimate_hours: 7
+complexity: critical
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-docker-client.todo
+    title: Implement Docker API client
+    status: pending
+    estimate_hours: 2.5
+    complexity: high
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-container-lifecycle.todo
+    title: Container create/exec/destroy
+    status: pending
+    estimate_hours: 2.5
+    complexity: critical
+    priority: critical
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-volume-mounting.todo
+    title: Volume mounting for workspace
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-image-mgmt.todo
+    title: Manage sandbox Docker images
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

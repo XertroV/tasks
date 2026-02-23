@@ -1,0 +1,43 @@
+# Epic: Browser Integration
+# Phase 4, Milestone 2, Epic 5 (P4.M2.E5)
+
+id: P4.M2.E5
+name: Browser Integration
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-agent-browser-setup.todo
+    title: Setup agent-browser CLI
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: medium
+    depends_on: []
+    
+  - id: T002
+    file: T002-browser-tool.todo
+    title: Implement browser tool
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: medium
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-snapshot-parsing.todo
+    title: Parse browser snapshots
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: low
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,151 @@
+---
+id: P7.M5.E3.T003
+title: Implement half-open state with health probes
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- circuit-breaker
+- health
+- recovery
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:22:22.882859+00:00'
+started_at: '2026-02-06T21:22:22.882859+00:00'
+completed_at: '2026-02-06T21:48:28.141334+00:00'
+duration_minutes: 26.087641033333334
+---
+
+# Implement half-open state with health probes
+
+Add health probe functionality for the half-open circuit breaker state. When the `fuse`
+library's reset timeout expires, the circuit transitions to half-open. In this state,
+a lightweight health probe should verify the provider is actually available before allowing
+full traffic to resume. This prevents premature circuit closure when a provider is still
+experiencing issues.
+
+## Requirements
+
+- [ ] Create `PagServer.LLM.CircuitBreaker.HealthProbe` module
+- [ ] Implement lightweight health check for each provider type:
+  - Anthropic: Send a minimal `count_tokens` request (cheapest API call)
+  - OpenAI: Send a minimal chat completion with `max_tokens: 1`
+  - OpenRouter: Use the `/auth/key` endpoint to verify connectivity
+  - Ollama: Use the `/api/tags` endpoint (no-cost local call)
+- [ ] On fuse reset (half-open transition), run health probe before allowing full traffic
+- [ ] If health probe succeeds, keep circuit closed (fuse stays reset)
+- [ ] If health probe fails, immediately re-melt the fuse and extend the reset timeout
+- [ ] Make health probe timeout configurable (default: 5 seconds)
+- [ ] Implement progressive backoff for reset timeouts on repeated failures:
+  - First reset: configured reset_timeout_ms
+  - Second consecutive failure: 2x reset_timeout_ms
+  - Cap at 5 minutes
+- [ ] Integrate with `LLM.Registry.check_provider_health/1` for consistent health semantics
+
+## Acceptance Criteria
+
+- [ ] Health probes run automatically when circuit transitions to half-open
+- [ ] Successful probe allows traffic to resume normally
+- [ ] Failed probe re-opens the circuit with extended timeout
+- [ ] Health probes are lightweight and do not consume significant API quota
+- [ ] Progressive backoff prevents rapid cycling between open and half-open
+- [ ] Probe timeout is configurable per provider
+- [ ] Telemetry events emitted for probe success/failure
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+The `fuse` library handles basic open/closed/half-open transitions, but its default
+half-open behavior simply allows the next request through as a probe. This can be
+problematic if the probe request is an expensive LLM completion. A dedicated health
+probe ensures we use a cheap operation to verify provider availability.
+
+**Key Files**:
+- `lib/pag_server/llm/circuit_breaker.ex` - Created in T001, extend with probe logic
+- `lib/pag_server/llm/registry.ex` - `check_provider_health/1` at line 665
+- `lib/pag_server/llm/providers/anthropic.ex` - Provider implementation
+- `lib/pag_server/llm/providers/openai.ex` - Provider implementation
+
+## Notes
+
+Health probe implementation example:
+```elixir
+defmodule PagServer.LLM.CircuitBreaker.HealthProbe do
+  @moduledoc """
+  Lightweight health probes for LLM providers during half-open circuit state.
+  """
+
+  require Logger
+
+  @default_timeout 5_000
+
+  @doc "Run a health probe for a provider. Returns :ok or {:error, reason}."
+  def check(provider, opts \\ []) do
+    timeout = Keyword.get(opts, :timeout, @default_timeout)
+
+    task = Task.async(fn -> do_probe(provider) end)
+
+    case Task.yield(task, timeout) || Task.shutdown(task) do
+      {:ok, result} -> result
+      nil -> {:error, :probe_timeout}
+    end
+  end
+
+  defp do_probe(:anthropic) do
+    # Use count_tokens as cheapest Anthropic API call
+    case PagServer.LLM.Providers.Anthropic.count_tokens(
+      "anthropic:claude-sonnet-4-20250514",
+      [%{role: "user", content: "ping"}]
+    ) do
+      {:ok, _count} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp do_probe(:openai) do
+    # Minimal completion request
+    case PagServer.LLM.Providers.OpenAI.chat(
+      "openai:gpt-4o-mini",
+      [%{role: "user", content: "1"}],
+      max_tokens: 1
+    ) do
+      {:ok, _response} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp do_probe(:ollama) do
+    # Local no-cost endpoint check
+    case Finch.build(:get, "http://localhost:11434/api/tags")
+         |> Finch.request(PagServer.LLM.OpenAI.Finch, receive_timeout: 3_000) do
+      {:ok, %{status: 200}} -> :ok
+      {:ok, %{status: status}} -> {:error, {:http_status, status}}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp do_probe(provider) do
+    Logger.warning("No health probe configured for provider: #{provider}")
+    :ok
+  end
+end
+```
+
+Progressive backoff tracking:
+```elixir
+# In CircuitBreaker module, track consecutive failures per provider
+def record_failure_with_backoff(provider) do
+  :fuse.melt(fuse_name(provider))
+
+  # Track consecutive failure count in ETS or Agent
+  failures = increment_failure_count(provider)
+
+  if failures > 1 do
+    # Extend reset timeout: min(base * 2^(failures-1), 300_000)
+    extended_timeout = min(base_timeout(provider) * :math.pow(2, failures - 1), 300_000)
+    reinstall_with_timeout(provider, trunc(extended_timeout))
+  end
+end
+```

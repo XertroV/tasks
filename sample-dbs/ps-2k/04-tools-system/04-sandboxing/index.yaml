@@ -1,0 +1,40 @@
+id: P4.M4
+name: Sandboxing
+status: pending
+estimate_hours: 16
+complexity: critical
+depends_on:
+- M2
+epics:
+- id: E1
+  name: Port Executor
+  path: 01-port-executor
+  status: pending
+  estimate_hours: 6
+  complexity: high
+  depends_on: []
+  description: Elixir Port-based isolation for shell and tool execution
+- id: E2
+  name: Docker Integration
+  path: 02-docker-integration
+  status: pending
+  estimate_hours: 7
+  complexity: critical
+  depends_on:
+  - E1
+  description: Docker client, container lifecycle, volume mounting
+- id: E3
+  name: Resource Limits
+  path: 03-resource-limits
+  status: pending
+  estimate_hours: 3
+  complexity: high
+  depends_on:
+  - E1
+  description: CPU, memory, timeout limits for sandbox execution
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,131 @@
+---
+id: P6.M3.E1.T001
+title: Create Events.Replay module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- event-sourcing
+- replay
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:45:51.726421'
+started_at: '2026-02-06T14:45:51.726421'
+completed_at: '2026-02-06T14:50:57.763325'
+duration_minutes: 5.1006149
+---
+
+# Create Events.Replay module
+
+Implement replay engine that reconstructs agent state from event log.
+
+## Requirements
+
+- [x] Create `lib/pag_server/events/replay.ex` module
+- [x] Implement functions:
+  - [x] `replay_session(session_id)` - Replay all events for session
+  - [x] `replay_to_event(session_id, event_id)` - Replay up to specific event
+  - [x] `replay_from_event(session_id, event_id)` - Replay from specific event
+- [x] Load events in order from EventStore
+- [x] Apply events sequentially to rebuild state
+- [x] Verify event chain integrity (sequential ID validation — events use auto-incrementing IDs, not hash chains)
+- [x] Handle missing or corrupted events
+
+## Acceptance Criteria
+
+- [x] Replay module reconstructs agent state correctly
+- [x] Event chain validated during replay
+- [x] Partial replay (up to event N) works
+- [x] Missing events detected and reported
+- [x] Performance: replay 1000 events <1 second
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.6 (Events Domain)
+- Event sourcing: all state changes are events
+- Events form hash-linked chain for integrity
+
+**Key Points**:
+- Events are immutable audit log
+- Replay must be deterministic (same events → same state)
+- Use pattern matching on event types
+
+## Notes
+
+**Replay Module**:
+```elixir
+defmodule PagServer.Events.Replay do
+  alias PagServer.Events.{EventStore, Event}
+  alias PagServer.Agents.Agent
+
+  def replay_session(session_id) do
+    events = EventStore.get_events(session_id: session_id, order: :asc)
+    
+    initial_state = Agent.new()
+    
+    Enum.reduce(events, initial_state, fn event, state ->
+      apply_event(event, state)
+    end)
+  end
+
+  def replay_to_event(session_id, target_event_id) do
+    events = EventStore.get_events(session_id: session_id, order: :asc)
+    
+    events_to_apply = Enum.take_while(events, fn e -> 
+      e.id != target_event_id 
+    end)
+    
+    initial_state = Agent.new()
+    Enum.reduce(events_to_apply, initial_state, &apply_event/2)
+  end
+
+  defp apply_event(%Event{type: type, data: data}, state) do
+    case type do
+      "message.added" -> handle_message_added(data, state)
+      "context.updated" -> handle_context_updated(data, state)
+      "llm.response" -> handle_llm_response(data, state)
+      _ -> state
+    end
+  end
+
+  defp handle_message_added(%{message: msg}, state) do
+    %{state | messages: state.messages ++ [msg]}
+  end
+end
+```
+
+**Event Chain Validation**:
+```elixir
+defp verify_chain(events) do
+  Enum.reduce_while(events, nil, fn event, prev_hash ->
+    if prev_hash && event.parent_hash != prev_hash do
+      {:halt, {:error, :chain_broken, event}}
+    else
+      {:cont, event.hash}
+    end
+  end)
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:45 UTC
+**Sibling tasks**: P6.M3.E1.T002, P6.M3.E1.T003, P6.M3.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M3.E1.T001 → P6.M3.E1.T002 → P6.M3.E1.T003 → P6.M3.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M3.E1.T001: .tasks/06-observability/03-session-replay/01-replay-engine/T001-replay-module.todo
+- P6.M3.E1.T002: .tasks/06-observability/03-session-replay/01-replay-engine/T002-state-reconstruction.todo
+- P6.M3.E1.T003: .tasks/06-observability/03-session-replay/01-replay-engine/T003-fork-replay.todo
+- P6.M3.E1.T004: .tasks/06-observability/03-session-replay/01-replay-engine/T004-tests.todo

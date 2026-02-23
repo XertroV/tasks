@@ -1,0 +1,51 @@
+id: P55.M3
+name: Real-Time Streaming and Interactive Features
+status: done
+estimate_hours: 12.5
+complexity: high
+depends_on:
+- M2
+locked: false
+epics:
+- id: E1
+  name: PubSub and Streaming
+  path: 01-pubsub-and-streaming
+  status: done
+  estimate_hours: 5.0
+  complexity: high
+  depends_on: []
+  description: PubSub subscription lifecycle (Broadcaster.subscribe on mount, unsub/resub
+    on thread switch). Streaming token batching with 100ms Process.send_after flush
+    (token_buffer + flush_pending assigns). State transition handlers (processing
+    -> init streaming_state, idle -> clear streaming + reload transcript tail). Error,
+    usage, and hidden-token event handlers.
+  locked: false
+- id: E2
+  name: Tool Calls and Approvals
+  path: 02-tool-calls-and-approvals
+  status: done
+  estimate_hours: 4.5
+  complexity: medium
+  depends_on: []
+  description: Tool call card component with 4 states (pending spinner, running, completed
+    green check, failed red X), collapsible args/result JSON, duration badge. Approval
+    banner with amber warning, command preview, approve/deny buttons wired to ApprovalManager.
+    PubSub event wiring for tool_start/tool_complete/approval_required.
+  locked: false
+- id: E3
+  name: Session Fork
+  path: 03-session-fork
+  status: done
+  estimate_hours: 2.5
+  complexity: medium
+  depends_on: []
+  description: 'Fork button on message hover triggers session fork backend call. Post-fork:
+    add new thread to sidebar, push_patch to new thread URL. Uses existing Session
+    fork infrastructure.'
+  locked: false
+stats:
+  total_tasks: 9
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 9

@@ -1,0 +1,16 @@
+---
+id: P48.M3.E1.T002
+title: 'LspServerLifecycle GenServer: initialize/shutdown handshake'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:21.647397+00:00'
+started_at: '2026-02-20T08:37:21.647397+00:00'
+completed_at: '2026-02-20T08:50:25.180191+00:00'
+duration_minutes: 13.058879733333333
+---
+Wraps LspTransport with LSP-specific handshake: send initialize (rootUri, workspaceFolders, capabilities, processId: nil), wait for initializeResult (capture serverCapabilities), send initialized notification. Client capabilities: window.workDoneProgress, workspace.configuration, workspace.workspaceFolders, textDocument.synchronization.didOpen+didChange, publishDiagnostics.versionSupport. Shutdown: shutdown request -> exit notification.

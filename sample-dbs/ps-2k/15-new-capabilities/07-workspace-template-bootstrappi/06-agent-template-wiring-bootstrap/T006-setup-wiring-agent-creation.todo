@@ -1,0 +1,58 @@
+---
+title: Wiring - Setup Wizard & Agent Creation
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E6.T001
+- P15.M7.E6.T002
+- P15.M7.E6.T003
+- P15.M7.E6.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T13:32:48.219976+00:00'
+started_at: '2026-02-18T13:32:48.219976+00:00'
+completed_at: '2026-02-18T13:56:22.567690+00:00'
+duration_minutes: 23.572461716666666
+---
+# Task: Wiring — Setup Wizard & Agent Creation
+
+**ID**: T006  
+**Epic**: P15.M7.E6 - Agent Template Wiring & Bootstrap  
+**Phase**: 6  
+**Estimate**: 3 hours  
+**Priority**: high  
+**Complexity**: high  
+**Status**: pending  
+**Depends on**: [T001, T002, T003, T004]
+
+## Description
+
+Wire the setup wizard to use the new agent template system and inject initial_message during bootstrap.
+
+## Acceptance Criteria
+
+### setup_wizard.ex Changes
+
+- [ ] Update `create_agent_from_workspace_template/3` with new flow:
+  1. Load workspace template via `WorkspaceBuiltins.load/1`
+  2. If `template.agent_template` is set, load it via `Templates.Builtins.load/1`
+  3. Merge: agent_template fields are the base, `template.agent_config` overrides specific keys
+  4. Call `Agents.create_agent/1` with full attrs: model, tools, capabilities, system_prompt (nil placeholder — overwritten post-bootstrap)
+
+### session.ex Changes
+
+- [ ] After session starts: if `template.initial_message` is set, inject it as the first user-turn message
+- [ ] Tag with metadata so runtime and history redaction logic can identify it
+- [ ] Message should be hidden from user-visible chat
+
+## Files Changed
+
+- `lib/pag_server_web/live/setup_wizard.ex`
+- `lib/pag_server/bootstrap/session.ex`
+
+## Related
+
+- B140: Initial message injection bug
+- `docs/AGENT_PERSONA_SYSTEM.md`

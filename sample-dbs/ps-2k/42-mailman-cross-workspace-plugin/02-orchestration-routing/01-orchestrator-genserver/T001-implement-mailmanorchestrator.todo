@@ -1,0 +1,29 @@
+---
+id: P42.M2.E1.T001
+title: Implement MailmanOrchestrator GenServer
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:19:28.853032+00:00'
+started_at: '2026-02-19T17:19:28.853032+00:00'
+completed_at: '2026-02-19T17:29:47.806068+00:00'
+duration_minutes: 10.315883683333334
+---
+## Context
+plugins/mailman/lib/orchestrator.ex
+One GenServer per workspace, lazy-started via Registry on first message delivery or plugin enable.
+
+## Acceptance Criteria
+- [ ] GenServer registered via {:via, Registry, {PagServer.Plugins.Mailman.Registry, workspace_id}}
+- [ ] on init: subscribe to PubSub topic mailman:<workspace_id>:new_message
+- [ ] handle_info {:new_message, message_id}: immediately trigger process_pending/1
+- [ ] 60s polling fallback via Process.send_after(:poll, 60_000) reset on each event
+- [ ] process_pending/1: query list_pending, dispatch each via route_message/2
+- [ ] route_message/2: check mailman memory for matching rule -> direct deliver; no rule -> ForkAndQuestion.ask/2
+- [ ] Deliver: call Messages.mark_delivered or mark_failed with attempts tracking
+- [ ] start_link/1 accepts workspace_id
+- [ ] Max 3 delivery attempts per message before mark_failed

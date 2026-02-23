@@ -1,0 +1,21 @@
+id: P7.M3.E7
+name: Argument Constraint Validation
+status: pending
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-extend-validate-arguments-with.todo
+  title: Extend validate_arguments with constraint validation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

@@ -1,0 +1,37 @@
+---
+id: P19.M3.E2.T001
+title: Archive completed feature docs
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- docs
+- archive
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:36:47.821308+00:00'
+started_at: '2026-02-18T03:36:47.821308+00:00'
+completed_at: '2026-02-18T03:40:17.523411+00:00'
+duration_minutes: 3.4950348666666664
+---
+Move to docs/archive/2026-02-18/: FEATURE_DEPENDENCY_ENFORCEMENT.md, FEATURE_DEPENDENCY_GRAPH.md, FEATURE_AVAILABLE_TASKS.md
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 03:36 UTC
+**Sibling tasks**: P19.M3.E2.T002, P19.M3.E2.T003, P19.M3.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M3.E2.T001 → P19.M3.E2.T002 → P19.M3.E2.T003 → P19.M3.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M3.E2.T001: .tasks/19-documentation-remediation/03-cleanup-archive/02-archive-completed-docs/T001-archive-completed-feature-docs.todo
+- P19.M3.E2.T002: .tasks/19-documentation-remediation/03-cleanup-archive/02-archive-completed-docs/T002-archive-completed-review-docs.todo
+- P19.M3.E2.T003: .tasks/19-documentation-remediation/03-cleanup-archive/02-archive-completed-docs/T003-archive-completed-planning-doc.todo
+- P19.M3.E2.T004: .tasks/19-documentation-remediation/03-cleanup-archive/02-archive-completed-docs/T004-review-p7-p9-open-issues.todo

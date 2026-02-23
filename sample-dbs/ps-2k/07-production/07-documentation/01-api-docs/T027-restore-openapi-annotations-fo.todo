@@ -1,0 +1,63 @@
+---
+id: P7.M7.E1.T027
+title: Restore OpenAPI annotations for legacy controllers
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- openapi
+- documentation
+- controllers
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:06:45.408523+00:00'
+started_at: '2026-02-08T07:06:45.408523+00:00'
+completed_at: '2026-02-08T10:30:00+00:00'
+---
+
+# Restore OpenAPI annotations for legacy controllers
+
+Recover OpenAPI operation coverage for pre-existing REST endpoints so
+`/api/openapi.json` reflects the full legacy + new API surface.
+
+
+## Requirements
+
+- [x] Add `use OpenApiSpex.ControllerSpecs` and `operation/2` callbacks to:
+  - [x] `lib/pag_server_web/controllers/health_controller.ex`
+  - [x] `lib/pag_server_web/controllers/auth_controller.ex`
+  - [x] `lib/pag_server_web/controllers/api_key_controller.ex`
+  - [x] `lib/pag_server_web/controllers/admin/pricing_controller.ex`
+- [x] Add missing schema modules for legacy endpoints as needed under:
+  - [x] `lib/pag_server_web/schemas/health_schemas.ex`
+  - [x] `lib/pag_server_web/schemas/auth_schemas.ex`
+  - [x] `lib/pag_server_web/schemas/api_key_schemas.ex`
+  - [x] `lib/pag_server_web/schemas/pricing_schemas.ex`
+- [x] Ensure operation tags and security requirements are present per endpoint
+- [x] Verify `/api/openapi.json` includes legacy route paths in addition to new v1 paths
+
+## Acceptance Criteria
+
+- [x] Legacy health/auth/api-key/admin-pricing endpoints appear in `/api/openapi.json`
+- [x] Operations include response/request schemas and security details
+- [x] Redoc groups legacy endpoints under coherent tags
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 07:06 UTC
+**Sibling tasks**: P7.M7.E1.T028, P7.M7.E1.T029
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T027 → P7.M7.E1.T028 → P7.M7.E1.T029
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T027: .tasks/07-production/07-documentation/01-api-docs/T027-restore-openapi-annotations-fo.todo
+- P7.M7.E1.T028: .tasks/07-production/07-documentation/01-api-docs/T028-wire-openapispex-castandvalida.todo
+- P7.M7.E1.T029: .tasks/07-production/07-documentation/01-api-docs/T029-complete-openai-operation-docs.todo

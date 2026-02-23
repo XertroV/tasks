@@ -1,0 +1,44 @@
+id: P39.M3.E1
+name: Companion Proxy Execution
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-companionproxyexecut.todo
+  title: Implement CompanionProxyExecutor
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P39.M2.E1.T001
+  - P39.M2.E1.T002
+- id: T002
+  file: T002-add-companion-routing-to-toolr.todo
+  title: Add companion routing to ToolRunner
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P39.M3.E1.T001
+  - P39.M2.E2.T003
+- id: T003
+  file: T003-write-companionproxyexecutor-a.todo
+  title: Write CompanionProxyExecutor and ToolRunner routing tests
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P39.M3.E1.T001
+  - P39.M3.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

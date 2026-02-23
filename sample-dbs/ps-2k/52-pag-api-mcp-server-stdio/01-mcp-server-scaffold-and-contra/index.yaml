@@ -1,0 +1,24 @@
+id: P52.M1
+name: MCP server scaffold and contract
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Contract and packaging
+  path: 01-contract-and-packaging
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: Establish MCP transport contract, capability map, and repository/package
+    boundaries for pac-mcp integration.
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

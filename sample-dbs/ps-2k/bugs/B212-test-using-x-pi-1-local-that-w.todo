@@ -1,0 +1,18 @@
+---
+id: B212
+title: Test using x-pi-1.local that when an agent is run on a remote machine via pag-connect,
+  that agent's commands are properly forwarded to the remote machine.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T16:56:17.941997+00:00'
+started_at: '2026-02-21T16:56:17.941997+00:00'
+completed_at: '2026-02-21T19:10:14.531113+00:00'
+duration_minutes: 133.94315171666668
+---
+
+Test using x-pi-1.local that when an agent is run on a remote machine via pag-connect, that agent's commands are properly forwarded to the remote machine.

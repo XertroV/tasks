@@ -1,0 +1,45 @@
+---
+id: P18.M2.E2.T002
+title: Scope flat /api/v1/agents by user workspace memberships
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E2.T001
+tags:
+- security
+- workspace
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.924678+00:00'
+started_at: '2026-02-17T18:30:42.924678+00:00'
+completed_at: '2026-02-17T21:45:24.905020+00:00'
+duration_minutes: 194.69967219999998
+---
+
+# Scope flat /api/v1/agents by user workspace memberships
+
+## Description
+
+Update the flat `/api/v1/agents` endpoint to automatically filter agents to only those in workspaces the current user is a member of.
+
+## Requirements
+
+- [ ] Add `"workspace:" <> ws_id` clause to `scope_from_capabilities/1` in AgentController — returns `{:ok, {:workspace_id, ws_id}}`
+- [ ] When `scope_from_capabilities` returns `{:ok, :all}`, additionally filter by user's workspace memberships:
+  - Call `WorkspaceMembers.list_workspace_ids(user_id)` to get the user's workspaces
+  - Scope the agent query to `{:workspace_ids, workspace_ids}`
+- [ ] If user has no workspace memberships, return empty list (not all agents)
+- [ ] Preserve backward compatibility: if `resource_scope` is set to a specific agent/project, honor that
+
+## Acceptance Criteria
+
+- [ ] `GET /api/v1/agents` with a broad-scope key returns only agents from user's workspaces
+- [ ] Agents from workspaces the user is not a member of are excluded
+- [ ] Specific resource_scope (agent:, project:) still works as before
+- [ ] workspace: prefix in resource_scope correctly scopes to single workspace
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/agent_controller.ex` (scope_from_capabilities, ~line 663-674)

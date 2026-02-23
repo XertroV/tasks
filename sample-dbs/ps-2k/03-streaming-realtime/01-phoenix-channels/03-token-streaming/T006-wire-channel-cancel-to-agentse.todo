@@ -1,0 +1,45 @@
+---
+id: P3.M1.E3.T006
+title: Wire channel cancel to AgentServer and provider stream cancellation
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: critical
+depends_on:
+- P3.M1.E3.T005
+- P2.M3.E2.T003
+- P2.M2.E2.T005
+tags:
+- streaming
+- cancellation
+- agentserver
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:05:21.042913+00:00'
+started_at: '2026-02-07T00:05:21.042913+00:00'
+completed_at: '2026-02-07T00:05:26.915696+00:00'
+duration_minutes: 0.09787948333333334
+---
+
+# Wire channel cancel to AgentServer and provider stream cancellation
+
+## Resolution Note
+
+This task was historically split out but its implementation requirements were folded into `P3.M1.E3.T005` in commit `a63aa682a64fc49802b01acee5a51e92b31d67b1`.
+
+To keep the task graph consistent for dependencies that still reference `P3.M1.E3.T006`, this task remains as a compatibility task and should be marked complete based on the T005 implementation.
+
+## Requirements
+
+- [x] Update channel cancel handling to call AgentServer cancellation API.
+- [x] Ensure provider stream cancellation is invoked when channel cancel is received.
+- [x] Keep cancellation flow consistent with REST cancel and SSE disconnect behavior.
+- [x] Emit a channel event or reply indicating cancellation success or failure.
+- [x] Ensure any in-flight stream state is cleaned up in AgentServer.
+
+## Acceptance Criteria
+
+- [x] Channel cancel triggers AgentServer cancellation for the correct session/agent.
+- [x] Provider stream is canceled and no further tokens are emitted.
+- [x] Channel receives a confirmation response or event on success.
+- [x] Cancel is idempotent and does not crash when stream is already stopped.
+- [x] Errors during cancel return a structured error reply to the channel.

@@ -1,0 +1,41 @@
+---
+id: P10.M1.E4.T005
+title: Write tests for PR webhook integration
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- github
+- pull-requests
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:36:08.097638+00:00'
+started_at: '2026-02-12T00:36:08.097638+00:00'
+completed_at: '2026-02-12T01:16:32.175009+00:00'
+duration_minutes: 40.401289283333334
+---
+
+# Write tests for PR webhook integration
+
+Write comprehensive test suite for PR webhook handlers and API methods.
+
+## Requirements
+
+- [ ] Test pull_request.opened webhook handling (creates session, dispatches to agent)
+- [ ] Test pull_request.closed and pull_request.synchronize webhooks
+- [ ] Test pull_request_review.submitted webhook with approval/change-request events
+- [ ] Test pull_request_review_comment webhooks
+- [ ] Test API methods: create_pr_comment, create_pr_review, merge_pr, get_pr_files
+- [ ] Test diff fetching with caching behavior
+- [ ] Test session mapping with multiple repositories
+- [ ] Mock external GitHub API calls using existing patterns
+
+## Acceptance Criteria
+
+- [ ] All test cases pass (use async: true by default, see CLAUDE.md)
+- [ ] Coverage >80% for webhook and API modules
+- [ ] No test contamination (proper cleanup via on_exit/1)
+- [ ] Tests run in <8s total
+- [ ] Mock HTTP responses for all GitHub API calls

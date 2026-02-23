@@ -1,0 +1,27 @@
+---
+id: P54.M2.E1.T006
+title: Workspace-scoped companion MCP tool schema injection
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P54.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:18:57.317051+00:00'
+started_at: '2026-02-21T10:18:57.317051+00:00'
+completed_at: '2026-02-21T10:29:18.655177+00:00'
+duration_minutes: 10.355634883333332
+---
+## Context
+LLM agents cannot discover companion MCP tools because they only appear in CompanionMCPRegistry, not the global tool registry. SchemaBuilder/ToolExecutor must query CompanionMCPRegistry to include workspace-scoped MCP tool schemas in the LLM tool list.
+
+## Acceptance Criteria
+- [ ] `ToolExecutor.list_available_tool_schemas/3` (or equivalent schema-listing function) accepts `workspace_id:` in opts; appends CompanionMCPRegistry.list_tool_schemas(workspace_id) to global schemas when workspace_id is provided
+- [ ] If workspace_id is nil/omitted, CompanionMCPRegistry is not queried (no crash)
+- [ ] All call sites of list_available_tool_schemas (grep lib/) pass workspace_id from agent config
+- [ ] Companion MCP tool names appear in LLM tool list as "server_name.tool_name" (e.g. "browsermcp.navigate")
+- [ ] Cache invalidation: CompanionMCPRegistry.register/4 and unregister_workspace/1 call Cache.clear() (or invalidate_agent_tool_cache for affected workspace) so schema lists don't go stale after companion connect/disconnect
+- [ ] SchemaBuilder handles %ToolSchema{} from CompanionMCPRegistry identically to global registry schemas (no changes needed to SchemaBuilder itself — test confirms this)
+- [ ] `mix lint` passes

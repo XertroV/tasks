@@ -1,0 +1,17 @@
+---
+id: B176
+title: skill hub is not linked from anywhere, and /skills route does not exist.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T08:19:04.578063+00:00'
+started_at: '2026-02-21T08:19:04.578063+00:00'
+completed_at: '2026-02-21T08:20:15.301475+00:00'
+duration_minutes: 1.1787231333333332
+---
+
+skill hub is not linked from anywhere, and /skills route does not exist.

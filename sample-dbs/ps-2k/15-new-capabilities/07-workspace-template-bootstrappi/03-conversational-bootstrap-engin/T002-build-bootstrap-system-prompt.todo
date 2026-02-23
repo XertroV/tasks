@@ -1,0 +1,52 @@
+---
+id: P15.M7.E3.T002
+title: Build bootstrap system prompt compiler
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E3.T001
+tags:
+- bootstrap
+- prompts
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:56:50.957170+00:00'
+started_at: '2026-02-17T08:56:50.957170+00:00'
+completed_at: '2026-02-17T09:04:24.428059+00:00'
+duration_minutes: 7.557847966666667
+---
+## Description
+Compiles a workspace template into a full bootstrap system prompt that instructs the agent on how to conduct the onboarding conversation.
+
+## Module: PagServer.Bootstrap.PromptCompiler
+
+### compile/2 - (template, opts)
+Takes a WorkspaceTemplate and returns a complete system prompt string.
+
+### Prompt Structure
+1. **Role & Context**: You are conducting a workspace setup conversation. Your goal is to learn about the user and their needs to configure this workspace.
+2. **Conversation Guidelines**: Be warm, natural, conversational. Ask one section at a time. Confirm answers. Allow revisions. Dont be robotic.
+3. **Questionnaire Structure**: Injected from template.questionnaire_sections. Each section includes:
+   - Section name and description
+   - Questions with types (free_text, single_select, multi_select, yes_no, scale)
+   - Which variables each answer maps to
+   - Follow-up question triggers (if answer X, also ask Y)
+4. **Answer Collection Protocol**: How to signal answers to the system (structured format the BootstrapSession can parse from agent responses)
+5. **Section Transitions**: How to move between sections, summarize before moving on
+6. **Completion Protocol**: What to do when all sections are done - summarize everything, ask for final confirmation, signal completion
+7. **File Preview**: Optionally show the user what files will be generated and from which answers
+
+### Answer Extraction
+- Define a structured format for the agent to embed answers in its responses
+- e.g. JSON blocks or structured markers that BootstrapSession can parse
+- Fallback: if agent doesnt use structured format, extract from conversation context
+
+## Acceptance Criteria
+- [ ] compile/2 produces valid system prompt from any WorkspaceTemplate
+- [ ] Questionnaire sections properly injected with all question metadata
+- [ ] Answer collection protocol defined and documented in prompt
+- [ ] Prompt handles conditional questions (show Q if previous answer matches)
+- [ ] Completion signal format defined
+- [ ] Unit tests with both built-in templates
+- [ ] Generated prompt stays under reasonable token count

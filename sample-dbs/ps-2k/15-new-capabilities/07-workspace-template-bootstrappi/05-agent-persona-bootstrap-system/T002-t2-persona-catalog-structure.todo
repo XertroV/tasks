@@ -1,0 +1,17 @@
+---
+id: P15.M7.E5.T002
+title: 'T2: Persona Catalog Structure'
+status: done
+estimate_hours: 3.0
+complexity: low
+priority: high
+depends_on:
+- P15.M7.E5.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T08:52:43.581606+00:00'
+started_at: '2026-02-18T08:52:43.581606+00:00'
+completed_at: '2026-02-18T09:02:09.470952+00:00'
+duration_minutes: 9.431488916666666
+---
+Create priv/personas/ directory structure, create catalog.yml index file, add caching layer (ETS or compile-time).

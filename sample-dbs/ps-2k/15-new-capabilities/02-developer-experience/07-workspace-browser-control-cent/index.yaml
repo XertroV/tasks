@@ -1,0 +1,103 @@
+id: P15.M2.E7
+name: Workspace Browser Control Center
+status: done
+estimate_hours: 20.0
+complexity: high
+depends_on:
+- P15.M2.E6
+locked: false
+tasks:
+- id: T001
+  file: T001-define-workspace-browser-ia-an.todo
+  title: Define workspace browser IA and permission model
+  status: done
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E6.T003
+  - P18.M2.E1.T004
+- id: T002
+  file: T002-create-workspace-browser-query.todo
+  title: Create workspace browser query surface and view models
+  status: done
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M2.E7.T001
+  - P11.M3.E2.T004
+- id: T003
+  file: T003-build-dashboard-workspace-brow.todo
+  title: Build dashboard workspace browser with search and status lanes
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E7.T002
+- id: T004
+  file: T004-implement-inline-workspace-con.todo
+  title: Implement inline workspace config editor with immediate apply and safeguards
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M2.E7.T003
+  - P18.M4.E3.T002
+- id: T005
+  file: T005-add-plugin-and-skill-toggles-w.todo
+  title: Add plugin and skill toggles with dependency guardrails
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M2.E7.T004
+  - P11.M3.E3.T002
+- id: T006
+  file: T006-add-workspace-command-palette.todo
+  title: Add workspace command palette and quick actions
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P15.M2.E7.T003
+- id: T007
+  file: T007-add-change-preview-and-rollbac.todo
+  title: Add change preview and rollback timeline for workspace operations
+  status: done
+  estimate_hours: 2.5
+  complexity: high
+  priority: medium
+  depends_on:
+  - P15.M2.E7.T004
+  - P15.M2.E7.T005
+- id: T008
+  file: T008-cover-workspace-browser-with-i.todo
+  title: Cover workspace browser with integration tests and operator playbook
+  status: done
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E7.T005
+  - P15.M2.E7.T007
+- id: T009
+  file: T009-add-edit-checkpoints-with-vers.todo
+  title: Add edit checkpoints with version labels and rollback anchors
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E7.T004
+  - P15.M2.E7.T007
+stats:
+  total: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

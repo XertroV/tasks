@@ -1,0 +1,41 @@
+---
+id: P18.M2.E3.T001
+title: Add workspace_id scope to session queries
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- security
+- workspace
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:19:06.706835+00:00'
+started_at: '2026-02-17T18:19:06.706835+00:00'
+completed_at: '2026-02-17T18:29:16.902560+00:00'
+duration_minutes: 10.169928566666666
+---
+
+# Add workspace_id scope to session queries
+
+## Description
+
+Extend session query scoping to support workspace_id-based filtering, mirroring the agent workspace scope pattern.
+
+## Requirements
+
+- [ ] Add `{:workspace_id, ws_id}` clause to `apply_session_scope/2` in SessionController or Sessions context
+- [ ] Add `{:workspace_ids, ws_ids}` clause for multi-workspace filtering
+- [ ] Sessions are scoped via their parent agent's workspace_id (sessions.workspace_id column)
+- [ ] Ensure list and get operations correctly apply workspace scoping
+
+## Acceptance Criteria
+
+- [ ] Session queries filtered by workspace_id return only sessions in that workspace
+- [ ] Multi-workspace filtering works correctly
+- [ ] Existing scope options continue to work
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/session_controller.ex` (apply_session_scope, ~line 972-997)

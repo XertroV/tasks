@@ -1,0 +1,33 @@
+---
+id: P15.M8.E3.T003
+title: Wrap transition_agent in transaction and add DynamicSupervisor max_children
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- bootstrap
+- robustness
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:48:48.538970+00:00'
+started_at: '2026-02-17T15:48:48.538970+00:00'
+completed_at: '2026-02-17T16:08:39.067974+00:00'
+duration_minutes: 19.8421498
+---
+Two reliability issues:
+
+1. transition_agent/4 not transactional (E3 I3): compose prompt -> update agent -> clear bootstrap -> set workspace ready is not wrapped in Repo.transaction. Partial failure leaves inconsistent state.
+
+2. DynamicSupervisor has no max_children (E3 I4): Unbounded child processes. Bug or attack starting many sessions could exhaust memory.
+
+Also fix: cancel_bootstrap ignoring set_onboarding_status result (E3 I6), stale doc in supervisor.ex (E3 M4).
+
+Source: E3 Audit I3, I4, I6, M4
+
+## Acceptance Criteria
+- [ ] transition_agent DB operations wrapped in Repo.transaction
+- [ ] DynamicSupervisor has max_children limit (e.g., 1000)
+- [ ] cancel_bootstrap propagates or logs set_onboarding_status errors
+- [ ] Supervisor moduledoc updated (no longer says 'NOT added')
+- [ ] Tests for transaction rollback on partial failure

@@ -1,0 +1,30 @@
+id: P39.M1.E1
+name: SSH Plugin Cleanup
+status: done
+estimate_hours: 1.5
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-rename-remote-agent-spawn-to-s.todo
+  title: Rename remote_agent_spawn to ssh_tunnel_open
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-update-ssh-plugin-tests-for-re.todo
+  title: Update SSH plugin tests for renamed tool
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

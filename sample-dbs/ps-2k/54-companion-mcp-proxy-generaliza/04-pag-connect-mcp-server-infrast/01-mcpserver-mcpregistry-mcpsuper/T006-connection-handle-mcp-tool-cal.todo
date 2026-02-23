@@ -1,0 +1,24 @@
+---
+id: P54.M4.E1.T006
+title: 'Connection: handle mcp_tool_call and push mcp_tool_result/mcp_tool_error'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P54.M4.E1.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:33:58.677386+00:00'
+started_at: '2026-02-21T12:33:58.677386+00:00'
+completed_at: '2026-02-21T12:36:00.843220+00:00'
+duration_minutes: 2.0360970666666667
+---
+## Acceptance Criteria
+- [ ] handle_message/4 handles event "mcp_tool_call" with payload %{"call_id" => id, "server" => name, "tool" => tool, "arguments" => args}
+- [ ] Malformed payload (missing call_id, server, or tool): logs warning, drops silently, no response
+- [ ] Valid payload: spawns Task under PagConnect.ToolExecutor.TaskSupervisor that: looks up MCPRegistry.lookup(server_name); calls MCPServer.call_tool(pid, tool, args); sends {:push_mcp_tool_result, call_id, result} or {:push_mcp_tool_error, call_id, reason} to self()
+- [ ] MCPRegistry.lookup {:error, :not_found}: sends {:push_mcp_tool_error, call_id, "mcp_server_not_found: <name>"}
+- [ ] handle_info({:push_mcp_tool_result, call_id, result}): pushes "mcp_tool_result" event %{"call_id" => call_id, "result" => result}
+- [ ] handle_info({:push_mcp_tool_error, call_id, error}): pushes "mcp_tool_error" event %{"call_id" => call_id, "error" => error}
+- [ ] mix compile passes

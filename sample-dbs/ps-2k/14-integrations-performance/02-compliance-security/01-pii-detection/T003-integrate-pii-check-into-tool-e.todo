@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T04:28:25.184048+00:00'
+started_at: '2026-02-13T04:28:25.184048+00:00'
+completed_at: '2026-02-13T05:18:40.269792+00:00'
+duration_minutes: 50.25142891666667
+---
+# Integrate PII check into tool execution
+
+## Description
+Integrate PII detection into the tool execution pipeline to scan both tool inputs and outputs. Support blocking and warning modes based on severity and configuration.
+
+## Acceptance Criteria
+- [ ] `PagServer.Tools.PIIFilter` middleware module created
+- [ ] Pre-execution scan of tool arguments
+- [ ] Post-execution scan of tool results
+- [ ] Mode configuration: `:block`, `:warn`, `:pass`
+- [ ] Blocking mode prevents tool execution and returns error
+- [ ] Warning mode logs alert but allows execution
+- [ ] PII types configurable for severity levels
+- [ ] Integration with existing tool executor
+- [ ] Telemetry events for monitoring
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/tools/executor.ex`, `lib/pag_server/compliance/pii_detector.ex`, `lib/pag_server/compliance/pii_redactor.ex`
+- Part of epic: P14.M2.E1 - PII Detection

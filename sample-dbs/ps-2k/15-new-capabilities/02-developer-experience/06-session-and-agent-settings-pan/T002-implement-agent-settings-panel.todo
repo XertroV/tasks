@@ -1,0 +1,49 @@
+---
+id: P15.M2.E6.T002
+title: Implement agent settings panel (select + edit + persist)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E5.T002
+- P15.M2.E4.T004
+tags:
+- agents
+- frontend
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:42:36.573808+00:00'
+started_at: '2026-02-16T10:42:36.573808+00:00'
+completed_at: '2026-02-16T10:45:26.074255+00:00'
+duration_minutes: 2.82500675
+---
+
+# Implement agent settings panel (select + edit + persist)
+
+
+
+## Requirements
+
+- Build an agent settings panel that supports selecting an agent and editing key runtime fields.
+- Persist updates through existing agent update pathways and schema validations.
+- Enforce constraints for non-editable/archived entities with explicit user feedback.
+- Keep UI behavior aligned with existing Agent Manager expectations.
+
+## Acceptance Criteria
+
+- A user can select an agent and load editable settings in the panel.
+- Valid changes persist and are reflected in subsequent loads.
+- Invalid or disallowed edits show clear validation/permission feedback.
+- Updating agent settings from this panel does not break Agent Manager workflows.
+
+## Implementation Notes
+
+- Extended `SettingsDashboard` with an agent selector and editable agent form.
+- Agent form supports updating: `name`, `model_provider`, `model_name`, and `system_prompt`.
+- Save path reuses `PagServer.Agents.get_agent/2` + `PagServer.Agents.update_agent/2` for persistence and schema validation.
+- Added guard for archived agents with explicit error messaging.
+- Added dirty-state, inline validation, and reset-to-persisted behavior for agent settings.
+- Added tests in `test/pag_server_web/live/settings_dashboard_test.exs` for:
+  - selecting + saving agent settings and persistence verification
+  - validation failure while preserving edited values

@@ -1,0 +1,94 @@
+---
+id: P2.M3.E1.T003
+title: Implement chat completions endpoint
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- chat
+- openai
+- completions
+- api
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:29:35.394839'
+started_at: '2026-02-05T15:29:35.394839'
+completed_at: '2026-02-05T15:32:16.995827'
+duration_minutes: 2.6933496333333333
+---
+
+# Implement chat completions endpoint
+
+Create the `/chat/completions` endpoint wrapper with full parameter support.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/openai/chat_completions.ex` module
+- [ ] Implement `create/2` function for non-streaming requests
+- [ ] Support all chat completion parameters (messages, model, temperature, etc.)
+- [ ] Build request map with proper API field filtering
+- [ ] Parse response into internal message format
+- [ ] Convert to provider-agnostic Message schema
+- [ ] Handle usage statistics (prompt_tokens, completion_tokens)
+
+## Acceptance Criteria
+
+- [ ] Can create non-streaming chat completion requests
+- [ ] All API parameters are supported (model, temperature, top_p, etc.)
+- [ ] Responses are parsed correctly
+- [ ] Usage stats are extracted and returned
+- [ ] Messages are converted to internal schema
+- [ ] Tests verify request/response handling
+- [ ] Follows provider abstraction behaviour
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex/chat_completions.ex` (API implementation)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section on provider abstraction
+
+**Key Points**:
+- Endpoint: `POST /chat/completions`
+- Support all parameters: messages, model, temperature, top_p, max_tokens, etc.
+- Return usage statistics for cost tracking
+- Convert OpenAI response format to internal Message schema
+
+## Implementation Notes
+
+API fields to support (from openai_ex):
+```elixir
+@api_fields [
+  :messages,
+  :model,
+  :frequency_penalty,
+  :logit_bias,
+  :logprobs,
+  :max_completion_tokens,
+  :max_tokens,
+  :n,
+  :parallel_tool_calls,
+  :presence_penalty,
+  :response_format,
+  :seed,
+  :stop,
+  :temperature,
+  :top_p,
+  :top_logprobs,
+  :tools,
+  :tool_choice,
+  :user
+]
+```
+
+Request function:
+```elixir
+def create(client, params) do
+  body = params |> Map.take(@api_fields)
+  client
+  |> Http.post("/chat/completions", json: body)
+  |> parse_response()
+end
+```
+
+Response format includes `choices`, `usage`, `id`, `model`, `created`.

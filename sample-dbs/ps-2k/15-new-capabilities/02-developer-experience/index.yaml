@@ -1,0 +1,76 @@
+id: P15.M2
+name: Developer Experience
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Agent State Inspector
+  path: 01-agent-state-inspector
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Conversation Replay Debugger
+  path: 02-conversation-replay-debugger
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Tool Execution Timeline
+  path: 03-tool-execution-timeline
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Rapid Validation Web Console
+  path: 04-rapid-validation-web-console
+  status: done
+  estimate_hours: 24.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E5
+  name: Global Settings Hub
+  path: 05-global-settings-hub
+  status: done
+  estimate_hours: 4.5
+  complexity: medium
+  depends_on:
+  - P15.M2.E4
+  description: ''
+  locked: false
+- id: E6
+  name: Session and Agent Settings Panels
+  path: 06-session-and-agent-settings-pan
+  status: done
+  estimate_hours: 5.5
+  complexity: high
+  depends_on:
+  - P15.M2.E5
+  description: ''
+  locked: false
+- id: E7
+  name: Workspace Browser Control Center
+  path: 07-workspace-browser-control-cent
+  status: done
+  estimate_hours: 20.0
+  complexity: high
+  depends_on:
+  - P15.M2.E6
+  description: ''
+  locked: false
+stats:
+  total_tasks: 36
+  done: 36
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,83 @@
+---
+id: P8.M5.E1.T003
+title: Add WhatsApp template message support
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P8.M5.E1.T001
+tags:
+- whatsapp
+- templates
+- compliance
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:09:09.580445+00:00'
+started_at: '2026-02-08T10:09:09.580445+00:00'
+completed_at: '2026-02-08T21:18:30+00:00'
+---
+
+# Add WhatsApp template message support
+
+Implement support for pre-approved template messages required for business-initiated conversations.
+
+## Requirements
+
+- [x] Create `lib/pag_server/integrations/whatsapp/templates.ex` (~60 LoC)
+- [x] Implement `send_template_message/3` function
+- [x] Add template parameter substitution
+- [x] Support template languages (en, es, etc.)
+- [x] Add template listing and caching
+
+## Acceptance Criteria
+
+- [x] Can send messages using approved templates
+- [x] Template parameters are properly substituted
+- [x] Invalid template names return clear error messages
+- [x] Template cache refreshes every 24 hours
+- [x] Supports all template types (text, media, interactive)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 405-411 (WhatsApp features)
+
+**Key Points**:
+- Templates must be pre-approved by Meta (1-2 day review)
+- Required for sending messages outside 24-hour window
+- Support variable substitution with {{1}}, {{2}}, etc.
+- Templates are language-specific
+
+## Notes
+
+Template message format:
+```elixir
+%{
+  messaging_product: "whatsapp",
+  to: phone_number,
+  type: "template",
+  template: %{
+    name: "greeting_template",
+    language: %{code: "en"},
+    components: [
+      %{
+        type: "body",
+        parameters: [
+          %{type: "text", text: user_name}
+        ]
+      }
+    ]
+  }
+}
+```
+
+Common template categories:
+- Account updates (registration, password reset)
+- Order notifications (shipping, delivery)
+- Appointment reminders
+- Agent session summaries
+
+Template caching strategy:
+- Fetch available templates on startup
+- Cache in ETS table with 24h TTL
+- Lazy refresh on cache miss

@@ -1,0 +1,60 @@
+---
+id: P6.M4.E1.T004
+title: Write audit tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P6.M4.E1.T001
+- P6.M4.E1.T002
+- P6.M4.E1.T003
+tags:
+- observability
+- audit
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:23:02.158956+00:00'
+started_at: '2026-02-06T20:23:02.158956+00:00'
+completed_at: '2026-02-06T20:33:50.050636+00:00'
+duration_minutes: 10.798194516666666
+---
+
+# Write audit tests
+
+Test audit logging functionality and compliance.
+
+## Requirements
+
+- [ ] Test basic logging
+- [ ] Test security event logging
+- [ ] Test compliance logging
+- [ ] Test immutability (no updates/deletes)
+- [ ] Test log retrieval and filtering
+- [ ] Test report generation
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Immutability verified
+- [ ] Reports tested
+- [ ] Edge cases covered
+
+## Notes
+
+**Test Example**:
+```elixir
+test "audit log is immutable" do
+  log = Audit.Logger.log_event("test", actor, "create", resource)
+  
+  # Attempt to update should fail
+  assert_raise Ecto.NoPrimaryKeyValueError, fn ->
+    Repo.update!(Ecto.Changeset.change(log, action: "update"))
+  end
+  
+  # Attempt to delete should fail
+  assert_raise Ecto.NoPrimaryKeyValueError, fn ->
+    Repo.delete!(log)
+  end
+end
+```

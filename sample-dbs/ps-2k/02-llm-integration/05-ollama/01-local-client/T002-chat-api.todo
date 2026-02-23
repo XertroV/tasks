@@ -1,0 +1,44 @@
+---
+status: done
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:57:46.136359'
+started_at: '2026-02-05T16:57:46.136359'
+completed_at: '2026-02-05T17:05:56.793205'
+duration_minutes: 8.177613883333333
+---
+id: P2.M5.E1.T002
+title: Implement /api/chat endpoint
+status: pending
+priority: high
+estimate_hours: 1.0
+complexity: low
+depends_on: [P2.M5.E1.T001]
+
+description: |
+  Implement Ollama's /api/chat endpoint for message-based LLM interactions.
+  
+  Request format:
+  - model: model name (e.g., "llama3.2")
+  - messages: array of {role, content} objects
+  - stream: boolean (default true)
+  - tools: optional tool definitions
+  - options: model parameters (temperature, etc.)
+
+acceptance_criteria:
+  - [ ] Implement chat/3 function in Ollama module
+  - [ ] Format messages into Ollama API format
+  - [ ] Support system/user/assistant roles
+  - [ ] Handle tool_calls in responses
+  - [ ] Map options (temperature, top_p, etc.)
+  - [ ] Return structured response with role and content
+
+files:
+  - lib/pag_server/llm/ollama.ex
+
+references:
+  - Ollama chat API: POST /api/chat
+  - Example request/response in API docs
+
+notes: |
+  Streaming handled in T003. This task focuses on non-streaming first.
+  Response includes: role, content, done, total_duration, eval_count, etc.

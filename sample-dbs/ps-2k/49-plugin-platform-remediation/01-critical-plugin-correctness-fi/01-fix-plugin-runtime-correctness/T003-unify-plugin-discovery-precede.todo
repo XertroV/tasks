@@ -1,0 +1,31 @@
+---
+id: P49.M1.E1.T003
+title: Unify plugin discovery precedence and document source of truth
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:01.534543+00:00'
+started_at: '2026-02-20T08:51:01.534543+00:00'
+completed_at: '2026-02-20T09:10:40.461338+00:00'
+duration_minutes: 19.64877968333333
+---
+
+# Unify plugin discovery precedence and document source of truth
+
+
+
+## Requirements
+
+- Define one canonical plugin discovery precedence order for configured `plugins_dir` and default directories.
+- Align loader, registry, and docs to use the same discovery behavior and precedence rules.
+- Add tests that prove deterministic discovery when plugins are present in multiple locations.
+
+## Acceptance Criteria
+
+- Discovery precedence is implemented consistently across runtime entry points.
+- Documentation clearly states discovery order and conflict behavior.
+- Tests validate precedence and conflict handling behavior.

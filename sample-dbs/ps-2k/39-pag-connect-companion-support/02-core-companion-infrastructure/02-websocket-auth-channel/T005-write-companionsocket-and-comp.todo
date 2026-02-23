@@ -1,0 +1,46 @@
+---
+id: P39.M2.E2.T005
+title: Write CompanionSocket and CompanionChannel tests
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P39.M2.E2.T001
+- P39.M2.E2.T003
+tags:
+- companion
+- tests
+- websocket
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:32:11.148820+00:00'
+started_at: '2026-02-19T11:32:11.148820+00:00'
+completed_at: '2026-02-19T11:40:25.433069+00:00'
+duration_minutes: 8.238070650000001
+---
+Write comprehensive tests for CompanionSocket auth and CompanionChannel protocol.
+
+## New files
+- test/pag_server_web/sockets/companion_socket_test.exs
+- test/pag_server_web/channels/companion_channel_test.exs
+
+## CompanionSocket test cases
+- Valid api_key + workspace_id -> connected
+- Invalid key format -> :error
+- Valid key but wrong scope -> :error
+- Non-existent workspace -> :error
+- Revoked/expired key -> :error
+- Missing params -> :error
+
+## CompanionChannel test cases
+- Join with mismatched workspace_id is rejected
+- 'register' event: filters tools to allowlist, stores in registry
+- 'tool_result' event: calls PendingCalls.resolve/2
+- 'tool_error' event: calls PendingCalls.reject/2
+- handle_info({:send_tool_call, ...}): pushes 'tool_call' to client
+- terminate/2: unregisters from registry, rejects all pending calls
+
+## Acceptance criteria
+- [ ] All test cases listed above are implemented and pass
+- [ ] Tests are async: true where possible
+- [ ] Tests create proper DB fixtures (users, api_keys, workspaces)

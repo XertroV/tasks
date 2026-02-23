@@ -1,0 +1,205 @@
+---
+id: P1.M3.E4.T002
+title: Implement state update helpers
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M3.E4.T001
+claimed_by: claude
+claimed_at: '2026-02-05T09:19:32.277280'
+started_at: '2026-02-05T09:19:32.277280'
+completed_at: '2026-02-05T09:20:31.582362'
+tags:
+- agent
+- state
+- helpers
+- api
+---
+
+# Implement state update helpers
+
+Add helper functions to `PagServer.Agents.State` for common state transformations.
+
+## Requirements
+
+- [ ] Implement constructor function:
+  - [ ] `new/1` - Create initial state from agent config
+- [ ] Implement status management:
+  - [ ] `update_status/2` - Transition to new status
+  - [ ] `idle?/1`, `processing?/1`, `interrupted?/1` - Status predicates
+- [ ] Implement context management:
+  - [ ] `add_to_context/2` - Append message to context
+  - [ ] `clear_context/1` - Reset context (for session fork)
+  - [ ] `truncate_context/2` - Apply context window limits
+- [ ] Implement queue management:
+  - [ ] `enqueue_message/2` - Add message to queue
+  - [ ] `dequeue_message/1` - Remove and return next message
+  - [ ] `queue_empty?/1` - Check if queue is empty
+- [ ] Implement stats tracking:
+  - [ ] `update_stats/2` - Merge stats update
+  - [ ] `increment_tokens/2` - Add to token count
+- [ ] Add `@spec` for all public functions
+- [ ] Add `@doc` for all public functions
+
+## Acceptance Criteria
+
+- [ ] All 14 helper functions are implemented
+- [ ] Each function has proper `@spec` type annotation
+- [ ] Each function has `@doc` with:
+  - [ ] Brief description
+  - [ ] Parameter explanations
+  - [ ] Return value explanation
+  - [ ] Example usage
+- [ ] All functions are pure (no side effects)
+- [ ] All functions use pattern matching where appropriate
+- [ ] State updates are immutable (return new structs)
+- [ ] Code compiles without warnings
+- [ ] Dialyzer passes without errors
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1
+  - State module target: ~150 LoC (lines 220-225)
+  - Helper functions should be concise (<30 lines each)
+
+**Key Design Decisions**:
+- All updates return `{:ok, new_state}` or `{:error, reason}`
+- Status transitions are validated (can't go from `:idle` to `:interrupted`)
+- Context truncation uses recency-based strategy (keep newest messages)
+- Queue uses Erlang's `:queue` module for efficiency
+- Stats are cumulative (never decrease)
+
+**Status Transition Rules**:
+```
+:idle -> :processing  ✓
+:idle -> :interrupted ✗ (can't interrupt idle agent)
+:processing -> :idle  ✓
+:processing -> :interrupted ✓
+:interrupted -> :idle ✓
+:interrupted -> :processing ✗ (must go to idle first)
+```
+
+## Notes
+
+Example helper implementations:
+
+```elixir
+@doc """
+Create a new agent state from configuration.
+
+## Parameters
+
+  - `config` - Agent configuration map (id, session_id, model, etc.)
+
+## Returns
+
+Returns initial state struct with empty context and queue.
+
+## Examples
+
+    iex> State.new(%{id: "abc", session_id: "xyz", model: "claude-3"})
+    %State{id: "abc", session_id: "xyz", status: :idle, ...}
+"""
+@spec new(map()) :: t()
+def new(config) do
+  %__MODULE__{
+    id: Map.fetch!(config, :id),
+    session_id: Map.fetch!(config, :session_id),
+    config: config,
+    status: :idle,
+    context: [],
+    message_queue: :queue.new(),
+    current_request: nil,
+    stats: %{tokens: 0, cost: 0.0, requests: 0},
+    metadata: %{}
+  }
+end
+
+@doc """
+Update agent status with validation.
+
+## Parameters
+
+  - `state` - Current state
+  - `new_status` - Target status (`:idle`, `:processing`, `:interrupted`)
+
+## Returns
+
+  - `{:ok, updated_state}` if transition is valid
+  - `{:error, reason}` if transition is invalid
+
+## Examples
+
+    iex> State.update_status(idle_state, :processing)
+    {:ok, %State{status: :processing}}
+    
+    iex> State.update_status(idle_state, :interrupted)
+    {:error, :invalid_transition}
+"""
+@spec update_status(t(), status()) :: {:ok, t()} | {:error, atom()}
+def update_status(%__MODULE__{status: :idle} = state, :processing) do
+  {:ok, %{state | status: :processing}}
+end
+def update_status(%__MODULE__{status: :idle}, :interrupted) do
+  {:error, :cannot_interrupt_idle}
+end
+# ... more pattern matches for all valid transitions
+
+@doc """
+Add a message to the agent's context.
+
+Messages are appended to the end (most recent).
+Context is not automatically truncated - use `truncate_context/2` explicitly.
+
+## Parameters
+
+  - `state` - Current state
+  - `message` - Message map (role, content, etc.)
+
+## Returns
+
+Updated state with message appended to context.
+
+## Examples
+
+    iex> State.add_to_context(state, %{role: "user", content: "Hello"})
+    %State{context: [..., %{role: "user", content: "Hello"}]}
+"""
+@spec add_to_context(t(), map()) :: t()
+def add_to_context(%__MODULE__{context: ctx} = state, message) do
+  %{state | context: ctx ++ [message]}
+end
+
+@doc """
+Truncate context to maximum number of messages, keeping most recent.
+
+## Parameters
+
+  - `state` - Current state
+  - `max_messages` - Maximum messages to retain
+
+## Returns
+
+Updated state with truncated context.
+
+## Examples
+
+    iex> State.truncate_context(state, 10)
+    %State{context: [...]} # Only last 10 messages
+"""
+@spec truncate_context(t(), pos_integer()) :: t()
+def truncate_context(%__MODULE__{context: ctx} = state, max_messages) do
+  truncated = Enum.take(ctx, -max_messages)
+  %{state | context: truncated}
+end
+```
+
+**Testing Requirements** (for T004):
+- Unit tests for each helper function
+- Tests for valid/invalid status transitions
+- Tests for queue operations (enqueue, dequeue, empty check)
+- Tests for context truncation edge cases (empty, exactly at limit, etc.)
+- Property-based tests for stats accumulation (always increasing)

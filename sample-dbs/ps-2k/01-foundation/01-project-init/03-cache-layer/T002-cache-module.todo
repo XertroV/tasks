@@ -1,0 +1,197 @@
+---
+id: P1.M1.E3.T002
+title: Create cache wrapper module
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M1.E3.T001
+tags:
+- cache
+- api
+- telemetry
+- memory
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:05:46.995140'
+started_at: '2026-02-05T08:05:46.995140'
+completed_at: '2026-02-05T08:09:02.744267'
+---
+
+# Create cache wrapper module
+
+Create `lib/pag_server/cache.ex` wrapper module with clean API, error handling, and telemetry hooks.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/cache.ex` module
+- [ ] Implement `get/2`, `put/3`, `put/4` (with custom TTL), `delete/2` functions
+- [ ] Implement `fetch/3` helper (get or compute if missing)
+- [ ] Add error handling for all operations
+- [ ] Emit telemetry events for cache operations
+- [ ] Add typespec annotations
+- [ ] Document all public functions
+
+## Acceptance Criteria
+
+- [ ] All functions compile without warnings
+- [ ] Can cache and retrieve values via wrapper API
+- [ ] `fetch/3` computes value on cache miss and stores it
+- [ ] Telemetry events recorded for hits/misses/evictions
+- [ ] Memory stays bounded (verified via `:observer.start()`)
+- [ ] Typespecs pass `mix dialyzer` (if configured)
+- [ ] Documentation clear and complete
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 8 (Memory Efficiency)
+- `.plan/2026-02-05-velvet-cascade/telemetry.md` (Telemetry strategy)
+
+**Key Points**:
+- Provide clean API to hide Cachex implementation details
+- All cache operations should be instrumented for observability
+- Use this for: LLM response caching, tool result caching, context fragments
+- Error handling: never crash on cache failures, log and continue
+
+## Implementation Notes
+
+Create `lib/pag_server/cache.ex`:
+
+```elixir
+defmodule PagServer.Cache do
+  @moduledoc """
+  Cache wrapper around Cachex for bounded, TTL-based caching.
+  
+  Provides memory-safe caching with automatic eviction (LRU, 100k entry limit)
+  and TTL expiration (30 min default).
+  """
+
+  require Logger
+
+  @cache_name :pag_cache
+  @default_ttl :timer.minutes(30)
+
+  @doc """
+  Get value from cache.
+  
+  Returns `{:ok, value}` on hit, `{:ok, nil}` on miss, `{:error, reason}` on failure.
+  """
+  @spec get(term(), Keyword.t()) :: {:ok, term() | nil} | {:error, term()}
+  def get(key, opts \\ []) do
+    case Cachex.get(@cache_name, key, opts) do
+      {:ok, value} ->
+        emit_telemetry(:hit, %{key: key})
+        {:ok, value}
+        
+      {:error, reason} = error ->
+        emit_telemetry(:error, %{key: key, reason: reason})
+        Logger.warning("Cache get failed: #{inspect(reason)}")
+        error
+    end
+  end
+
+  @doc """
+  Put value in cache with default TTL.
+  """
+  @spec put(term(), term(), Keyword.t()) :: :ok | {:error, term()}
+  def put(key, value, opts \\ []) do
+    put(key, value, @default_ttl, opts)
+  end
+
+  @doc """
+  Put value in cache with custom TTL (milliseconds).
+  """
+  @spec put(term(), term(), pos_integer(), Keyword.t()) :: :ok | {:error, term()}
+  def put(key, value, ttl, opts) when is_integer(ttl) do
+    case Cachex.put(@cache_name, key, value, [ttl: ttl] ++ opts) do
+      {:ok, true} ->
+        emit_telemetry(:put, %{key: key, ttl: ttl})
+        :ok
+        
+      {:error, reason} = error ->
+        emit_telemetry(:error, %{key: key, reason: reason})
+        Logger.warning("Cache put failed: #{inspect(reason)}")
+        error
+    end
+  end
+
+  @doc """
+  Delete value from cache.
+  """
+  @spec delete(term(), Keyword.t()) :: :ok | {:error, term()}
+  def delete(key, opts \\ []) do
+    case Cachex.del(@cache_name, key, opts) do
+      {:ok, _} ->
+        emit_telemetry(:delete, %{key: key})
+        :ok
+        
+      {:error, reason} = error ->
+        emit_telemetry(:error, %{key: key, reason: reason})
+        Logger.warning("Cache delete failed: #{inspect(reason)}")
+        error
+    end
+  end
+
+  @doc """
+  Fetch value from cache or compute it via function.
+  
+  If key exists, returns cached value.
+  If key missing, executes `compute_fn`, stores result, and returns it.
+  """
+  @spec fetch(term(), (-> term()), Keyword.t()) :: {:ok, term()} | {:error, term()}
+  def fetch(key, compute_fn, opts \\ []) when is_function(compute_fn, 0) do
+    case get(key, opts) do
+      {:ok, nil} ->
+        emit_telemetry(:miss, %{key: key})
+        value = compute_fn.()
+        put(key, value, opts)
+        {:ok, value}
+        
+      {:ok, value} ->
+        {:ok, value}
+        
+      error ->
+        error
+    end
+  end
+
+  # Emit telemetry event
+  defp emit_telemetry(event, metadata) do
+    :telemetry.execute(
+      [:pag_server, :cache, event],
+      %{count: 1},
+      metadata
+    )
+  end
+end
+```
+
+Verify in IEx:
+```elixir
+iex> PagServer.Cache.put("user:123", %{name: "Alice"})
+iex> PagServer.Cache.get("user:123")
+{:ok, %{name: "Alice"}}
+
+iex> PagServer.Cache.fetch("computed", fn -> 
+  IO.puts("Computing...")
+  42
+end)
+# Prints "Computing..."
+{:ok, 42}
+
+iex> PagServer.Cache.fetch("computed", fn -> 
+  IO.puts("Computing...")
+  42
+end)
+# No output (cached)
+{:ok, 42}
+```
+
+## Notes
+
+- Telemetry events allow monitoring cache efficiency
+- Error handling: log and return error, never crash
+- `fetch/3` prevents thundering herd on cache misses
+- Future: add `get_or_put/3`, `clear/0`, `size/0` as needed
+- Consider adding @behaviour for testing (future work)

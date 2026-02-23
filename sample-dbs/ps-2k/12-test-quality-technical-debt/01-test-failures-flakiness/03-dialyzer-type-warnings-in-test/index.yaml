@@ -1,0 +1,37 @@
+id: P12.M1.E3
+name: Dialyzer/Type Warnings in Tests
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-fix-dialyzer-warnings-in-deplo.todo
+  title: Fix dialyzer warnings in deployment_guide_test.exs
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-fix-dialyzer-warnings-in-metri.todo
+  title: Fix dialyzer warnings in metrics_test.exs
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-run-dialyzer-on-test-directory.todo
+  title: Run dialyzer on test directory and fix remaining
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

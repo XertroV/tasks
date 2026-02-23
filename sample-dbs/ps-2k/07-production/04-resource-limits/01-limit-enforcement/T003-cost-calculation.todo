@@ -1,0 +1,89 @@
+---
+id: P7.M4.E1.T003
+title: Cost calculation accuracy
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M4.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:02:24.574348+00:00'
+started_at: '2026-02-06T21:02:24.574348+00:00'
+completed_at: '2026-02-06T21:18:17.027976+00:00'
+tags:
+- resources
+- cost
+- pricing
+duration_minutes: 15.87422695
+---
+
+# Cost calculation accuracy
+
+Implement accurate cost calculation for all LLM providers.
+
+## Requirements
+
+- [ ] Add pricing data for all providers
+- [ ] Calculate cost from token usage
+- [ ] Handle different input/output rates
+- [ ] Update pricing from config
+- [ ] Add `calculate_cost/3` to LLM.Pricing
+- [ ] Support millicent precision
+- [ ] Add pricing tests with known values
+
+## Acceptance Criteria
+
+- [ ] Cost calculated within 1% accuracy
+- [ ] All providers have pricing data
+- [ ] Input/output tokens priced differently
+- [ ] Pricing updatable without code changes
+- [ ] Tests verify against known costs
+- [ ] Documentation includes pricing sources
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M4 (Resource Limits)
+- LLM.Pricing module in architecture
+
+**Key Points**:
+- Store prices in millicents (avoid floats)
+- Different rates for input vs output tokens
+- Pricing changes frequently - must be configurable
+- Track cost per session for budgeting
+
+## Notes
+
+Pricing implementation:
+```elixir
+defmodule PagServer.LLM.Pricing do
+  # Prices in millicents per 1M tokens
+  @pricing %{
+    "anthropic/claude-sonnet-4" => %{
+      input: 300_00,   # $3.00/1M tokens
+      output: 1500_00  # $15.00/1M tokens
+    },
+    "openai/gpt-4-turbo" => %{
+      input: 1000_00,  # $10.00/1M tokens
+      output: 3000_00  # $30.00/1M tokens
+    },
+    "openai/gpt-4o-mini" => %{
+      input: 15,       # $0.015/1M tokens
+      output: 60       # $0.060/1M tokens
+    }
+  }
+  
+  def calculate_cost(model, input_tokens, output_tokens) do
+    case Map.get(@pricing, model) do
+      nil -> {:error, :unknown_model}
+      pricing ->
+        input_cost = div(input_tokens * pricing.input, 1_000_000)
+        output_cost = div(output_tokens * pricing.output, 1_000_000)
+        {:ok, input_cost + output_cost}
+    end
+  end
+  
+  def get_pricing(model), do: Map.get(@pricing, model)
+end
+```

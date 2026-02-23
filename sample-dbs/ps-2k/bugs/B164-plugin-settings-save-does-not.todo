@@ -1,0 +1,56 @@
+---
+id: B164
+title: Plugin Settings save does not persist and leaves form dirty
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- browser-testing
+- plugin-settings
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-20T17:31:30.397609+00:00'
+started_at: '2026-02-20T17:31:30.397609+00:00'
+completed_at: '2026-02-20T17:39:19.141863+00:00'
+duration_minutes: 7.812403916666667
+---
+## Repro
+1. Navigate to `/dashboard/plugin-settings`.
+2. Select plugin `agent_tools` (default loaded plugin also reproduces).
+3. In Global Settings JSON, enter `{\"test_key\":\"persist_check\"}`.
+4. Click `Save settings`.
+
+## Expected
+- Save succeeds with clear success feedback.
+- Form dirty state clears.
+- Reloading page shows persisted JSON value.
+
+## Actual
+- After click, form remains dirty (`You have unsaved changes.` still visible).
+- Effective Settings panel does not reflect the new key.
+- Reloading page reverts textbox to previous value.
+
+## Evidence
+- Direct browser run reproduced via Browser MCP with successful click event.
+- Snapshot after save still shows dirty state and unchanged effective settings.
+- This is distinct from click-timeout issue tracked in B163.
+
+## Verification
+- Browser validation confirmed save persists JSON and clears dirty state after submit.
+- Reload path reflects saved value in both editable and effective settings panels.
+- Regression coverage exercised via plugin settings LiveView tests (`mix test test/pag_server_web/live/plugin_settings_live_test.exs`).
+
+## Playwright Scenario Notes
+- Test name: `plugin settings save persists and clears dirty banner`
+- Preconditions: logged in as admin; `/dashboard/plugin-settings` reachable.
+- Steps:
+  1. `await page.goto('/dashboard/plugin-settings')`
+  2. `await page.selectOption('select[aria-label="Plugin"]', 'agent_tools')`
+  3. `await page.fill('textarea[aria-label="Settings (JSON)"]', '{"test_key":"persist_check"}')`
+  4. `await page.click('button:has-text("Save settings")')`
+  5. `await page.click('button:has-text("Reload saved values")')`
+- Assertions:
+  - `You have unsaved changes.` is not shown after save.
+  - Saved key appears in effective settings output.

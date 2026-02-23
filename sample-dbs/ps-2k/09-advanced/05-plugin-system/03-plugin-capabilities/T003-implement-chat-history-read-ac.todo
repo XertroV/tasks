@@ -1,0 +1,58 @@
+---
+id: P9.M5.E3.T003
+title: Implement chat history read access API for plugins
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- history
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-07T04:59:35.367070+00:00'
+started_at: '2026-02-07T04:59:35.367070+00:00'
+completed_at: '2026-02-07T05:02:55.929088+00:00'
+duration_minutes: 3.3427000333333337
+---
+
+# Implement chat history read access API for plugins
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/history_access.ex` module
+- [x] Provide read-only access to session message history for plugins:
+  - [x] `get_messages/2` - (session_id, opts) returns list of messages
+  - [x] `get_messages/3` - (agent_id, session_id, opts) for agent-scoped access
+- [x] Support query options:
+  - [x] `:limit` and `:offset` for pagination
+  - [x] `:role` filter (e.g., only `:user`, `:assistant`, `:system` messages)
+  - [x] `:since` and `:until` for time range filtering
+  - [x] `:search` for content text search within messages
+- [x] Scope access by agent_id and session_id (plugins can't access sessions they're not authorized for)
+- [x] Use existing `PagServer.Context.Messages` queries under the hood
+- [x] Implement rate limiting per plugin:
+  - [x] Configurable max requests per minute (default 60)
+  - [x] Return `{:error, :rate_limited}` when exceeded
+- [x] Return sanitized message structs (no internal metadata, PIDs, or references)
+
+## Acceptance Criteria
+
+- [x] Plugins can read message history for authorized sessions
+- [x] Pagination works correctly with limit/offset
+- [x] Role filtering returns only messages matching the specified role
+- [x] Time range filtering returns messages within the specified window
+- [x] Rate limiting blocks excessive access with `{:error, :rate_limited}`
+- [x] Access to unauthorized sessions returns `{:error, :unauthorized}`
+- [x] Unit tests cover: basic access, pagination, filtering, rate limiting, unauthorized access
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/history_access.ex`
+- **Uses**: `PagServer.Context.Messages` for underlying message queries
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004) for plugin identity verification
+- **Security**: Access control scoped by agent/session; no cross-session leakage
+- **Rate limiting**: Use simple token bucket or sliding window counter per plugin name

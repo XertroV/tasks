@@ -1,0 +1,16 @@
+---
+id: P31.M2.E1.T002
+title: Add Whisper configuration and health check
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:50.673249+00:00'
+started_at: '2026-02-18T19:46:50.673249+00:00'
+completed_at: '2026-02-18T19:46:53.796198+00:00'
+duration_minutes: 0.05204898333333333
+---
+PagServer.Whisper.Config: get_executable_path/0, get_default_model/0, is_available?/0. PagServer.Whisper.HealthCheck: check/0 -> {:ok, version} | {:error, :not_installed}. Config via application env :pag_server, :whisper_executable.

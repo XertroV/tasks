@@ -1,0 +1,25 @@
+---
+id: P44.M1.E1.T002
+title: Define Command Response struct
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:20:28.000420+00:00'
+started_at: '2026-02-19T18:20:28.000420+00:00'
+completed_at: '2026-02-19T18:29:36.508025+00:00'
+duration_minutes: 9.141793250000001
+---
+## Summary
+Define `PagServer.Commands.Response` struct for platform-agnostic command responses.
+
+## Acceptance Criteria
+- [ ] Struct fields: `:text` (plain string, required), `:rich_text` (markdown, optional), `:options` (list of {label, value} tuples for interactive picks), `:ephemeral?` (boolean, default true), `:metadata` (map)
+- [ ] Convenience constructor `new/1` and `new/2`
+- [ ] `text_only/1` helper that builds a Response with just text
+- [ ] `with_options/2` helper to attach option choices to an existing response
+- [ ] Typespecs complete
+- [ ] Tests cover construction and helpers

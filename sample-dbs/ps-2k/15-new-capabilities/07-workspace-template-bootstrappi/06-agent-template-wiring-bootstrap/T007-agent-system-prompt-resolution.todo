@@ -1,0 +1,58 @@
+---
+title: agent_system_prompt Variable Resolution
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E6.T002
+- P15.M7.E6.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T13:32:48.221769+00:00'
+started_at: '2026-02-18T13:32:48.221769+00:00'
+completed_at: '2026-02-18T13:56:22.595162+00:00'
+duration_minutes: 23.57288971666667
+---
+# Task: `agent_system_prompt` Variable Resolution
+
+**ID**: T007  
+**Epic**: P15.M7.E6 - Agent Template Wiring & Bootstrap  
+**Phase**: 7  
+**Estimate**: 2 hours  
+**Priority**: high  
+**Complexity**: medium  
+**Status**: pending  
+**Depends on**: [T002, T003]
+
+## Description
+
+Implement `{{agent_system_prompt}}` variable resolution in the file generation/prompt composition module.
+
+## Acceptance Criteria
+
+### file_generation.ex Changes
+
+- [ ] Add `compose_operational_prompt/4` or update existing function
+- [ ] When resolving `{{agent_system_prompt}}` in `prompt_template`:
+  1. Check if workspace template has `agent_template` set
+  2. If so, load it via `Templates.Builtins.load/1`
+  3. Apply `agent_config` overrides
+  4. Substitute resulting `system_prompt` for `{{agent_system_prompt}}`
+  5. If no `agent_template`, substitute empty string (graceful degradation)
+
+- [ ] During bootstrap: `{{agent_system_prompt}}` is always resolved, even with empty EGO.md
+
+## Graceful Degradation
+
+- If no `agent_template` is specified, the `{{agent_system_prompt}}` placeholder resolves to empty string
+- This allows workspace templates to work without an agent template reference
+
+## Files Changed
+
+- `lib/pag_server/bootstrap/file_generation.ex`
+
+## Related
+
+- B140: Initial message injection bug
+- `docs/AGENT_PERSONA_SYSTEM.md`

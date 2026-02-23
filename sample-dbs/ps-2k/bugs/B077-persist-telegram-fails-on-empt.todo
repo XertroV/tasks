@@ -1,0 +1,21 @@
+---
+id: B077
+title: persist_telegram fails on empty webhook_url when mode is polling - PlatformConfig.set
+  requires non-blank value
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- bug
+- webui
+- setup-wizard
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:29:51.677505+00:00'
+started_at: '2026-02-17T09:29:51.677505+00:00'
+completed_at: '2026-02-17T09:39:52.657479+00:00'
+duration_minutes: 10.016332716666666
+---
+
+persist_telegram fails on empty webhook_url when mode is polling - PlatformConfig.set requires non-blank value

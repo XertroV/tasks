@@ -1,0 +1,90 @@
+---
+id: P2.M2.E3.T002
+title: Parse tool_use content blocks
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E3.T001
+tags:
+- llm
+- anthropic
+- tools
+- parsing
+claimed_by: claude-1
+claimed_at: '2026-02-05T14:06:01.387531'
+started_at: '2026-02-05T14:06:01.387531'
+completed_at: '2026-02-05T14:09:42.387312'
+duration_minutes: 3.6833295
+---
+
+# Parse tool_use content blocks
+
+Parse tool_use content blocks from Anthropic API responses.
+
+## Requirements
+
+- [ ] Parse content blocks with type="tool_use"
+- [ ] Extract: id, name, input (arguments)
+- [ ] Handle multiple tool calls in single response
+- [ ] Validate tool_use structure
+- [ ] Add comprehensive tests with fixtures
+
+## Acceptance Criteria
+
+- [ ] All tool_use blocks are parsed correctly
+- [ ] Multiple tool calls are handled
+- [ ] Invalid structures are rejected
+- [ ] Tests cover edge cases
+- [ ] >85% test coverage
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.5 (Tools Domain)
+
+**Key Points**:
+- Anthropic returns tool calls as content blocks
+- Can have multiple tool calls in one response
+- Must extract all details for execution
+
+## Notes
+
+Tool use response format:
+```json
+{
+  "content": [
+    {
+      "type": "tool_use",
+      "id": "toolu_123",
+      "name": "get_weather",
+      "input": {
+        "location": "San Francisco",
+        "units": "celsius"
+      }
+    }
+  ],
+  "stop_reason": "tool_use"
+}
+```
+
+Parser implementation:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.ToolParser do
+  def parse_tool_calls(content_blocks) do
+    content_blocks
+    |> Enum.filter(&(&1["type"] == "tool_use"))
+    |> Enum.map(&parse_tool_use/1)
+  end
+  
+  defp parse_tool_use(block) do
+    %{
+      id: block["id"],
+      name: block["name"],
+      arguments: block["input"]
+    }
+  end
+end
+```

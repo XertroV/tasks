@@ -1,0 +1,23 @@
+---
+id: P23.M3.E3.T002
+title: Update PLUGIN_DEVELOPMENT.md for new plugin file location
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P23.M3.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:13:58.891657+00:00'
+started_at: '2026-02-18T16:13:58.891657+00:00'
+completed_at: '2026-02-18T17:28:14.185243+00:00'
+duration_minutes: 74.25489295000001
+---
+Update developer documentation to reflect the new plugin structure.
+
+## Acceptance Criteria
+- [ ] `docs/PLUGIN_DEVELOPMENT.md` updated with: new plugin location (`plugins/<name>/`), minimal plugin file example, how PluginLoader discovers plugins, how to add a new plugin
+- [ ] Remove references to `lib/pag_server/plugins/` as the plugin home
+- [ ] Add a note in the top-level README.md (if it has a plugins section) pointing to the new location
+- [ ] Documentation is concise — no more than 1 page added

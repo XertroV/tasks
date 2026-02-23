@@ -1,0 +1,39 @@
+---
+id: P13.M2.E1.T002
+title: Implement new Coordinator with Registry backend
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:53:51.684146+00:00'
+started_at: '2026-02-13T20:53:51.684146+00:00'
+completed_at: '2026-02-13T21:18:40.558010+00:00'
+duration_minutes: 24.814564066666666
+---
+
+# Implement new Coordinator with Registry backend
+
+## Description
+
+Implement the Registry-based Coordinator backend, replacing the ETS tables (`:agent_hierarchy`, `:agent_children`) with Elixir Registry partitions. Maintain all existing API compatibility.
+
+## Acceptance Criteria
+- [ ] Replace `:agent_hierarchy` ETS table with Registry lookups
+- [ ] Replace `:agent_children` ETS bag table with Registry
+- [ ] Implement `spawn_child/2` using Registry.register/3
+- [ ] Implement `stop_child/3` using Registry lookups
+- [ ] Implement `list_children/1` using Registry.select/2
+- [ ] Implement `get_parent/1` using Registry lookup
+- [ ] Monitor handling uses Registry metadata or separate monitor process
+- [ ] Maintain max 100 children per parent limit
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/coordinator.ex`
+- Related files: `lib/pag_server/agents/distributed_registry.ex`
+- Part of epic: P13.M2.E1 - Coordinator ETS Replacement

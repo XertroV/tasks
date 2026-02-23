@@ -1,0 +1,48 @@
+---
+id: I046
+title: Add a plugin to coordinate cross-workspace communication. We can have a mailman
+  agent that handles incoming and outgoing comms so that it doesn't clog stuff up.
+  Should expose an MCP command with subcommands. Mostly focused on delivering to workspaces
+  hosted on the same pag-server, but could expand to remote pag-servers in future.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:03:03.750347+00:00'
+started_at: '2026-02-19T17:03:03.750347+00:00'
+completed_at: '2026-02-19T17:08:33.269319+00:00'
+duration_minutes: 5.491982566666667
+---
+
+# Idea Intake: Add a plugin to coordinate cross-workspace communication. We can have a mailman agent that handles incoming and outgoing comms so that it doesn't clog stuff up. Should expose an MCP command with subcommands. Mostly focused on delivering to workspaces hosted on the same pag-server, but could expand to remote pag-servers in future.
+
+## Original Idea
+
+Add a plugin to coordinate cross-workspace communication. We can have a mailman agent that handles incoming and outgoing comms so that it doesn't clog stuff up. Should expose an MCP command with subcommands. Mostly focused on delivering to workspaces hosted on the same pag-server, but could expand to remote pag-servers in future.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add a plugin to coordinate cross-workspace communication. We can have a mailman agent that handles incoming and outgoing comms so that it doesn't clog stuff up. Should expose an MCP command with subcommands. Mostly focused on delivering to workspaces hosted on the same pag-server, but could expand to remote pag-servers in future."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,15 @@
+id: P7.M7.E3
+name: Example Projects
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+tasks:
+- T001-basic.todo
+- T002-production.todo
+stats:
+  total_tasks: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

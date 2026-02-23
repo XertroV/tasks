@@ -1,0 +1,27 @@
+---
+id: B092
+title: Step navigation doesn't clear form_error in setup wizard
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- webui
+- setup-wizard
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:28:07.858455+00:00'
+started_at: '2026-02-17T11:28:07.858455+00:00'
+completed_at: '2026-02-17T11:37:13.718043+00:00'
+duration_minutes: 9.097659566666666
+---
+In setup_wizard.ex:104-118, go_to_step doesn't clear form_error. An error from a previous step persists visually on the new step.
+
+## Fix
+Add form_error: nil to assign update in go_to_step.
+
+## Acceptance Criteria
+- [ ] Navigating to a different step clears form error
+- [ ] Test for form_error clearing on navigation
+
+Source: E4 Audit M2

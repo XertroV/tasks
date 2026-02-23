@@ -1,0 +1,54 @@
+id: P49.M2.E1
+name: Unify plugin authoring contract and developer ergonomics
+status: done
+estimate_hours: 16.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-reduce-direct-host-plugin-coup.todo
+  title: Reduce direct host-plugin coupling by routing through plugin API facade
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-decide-and-document-static-ver.todo
+  title: Decide and document static versus runtime plugin route model
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-publish-canonical-plugin-manif.todo
+  title: Publish canonical plugin manifest contract used by validator docs and examples
+  status: pending
+  estimate_hours: 3.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-build-plugin-doctor-validation.todo
+  title: Build plugin doctor validation command and API diagnostics
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-improve-plugin-load-failure-di.todo
+  title: Improve plugin load failure diagnostics and lifecycle traceability
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

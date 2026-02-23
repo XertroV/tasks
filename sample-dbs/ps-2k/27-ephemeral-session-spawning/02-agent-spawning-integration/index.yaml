@@ -1,0 +1,27 @@
+id: P27.M2
+name: Agent Spawning Integration
+status: pending
+estimate_hours: 10.0
+complexity: medium
+depends_on:
+- P27.M1.E1
+locked: false
+epics:
+- id: E1
+  name: Agent Spawn Session Logic
+  path: 01-agent-spawn-session
+  status: pending
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on:
+  - P27.M1.E1
+  description: Update agent spawn logic to accept an optional session_id or automatically
+    create an ephemeral session, and wire cron job actions to use ephemeral sessions
+    when no session_id is provided.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

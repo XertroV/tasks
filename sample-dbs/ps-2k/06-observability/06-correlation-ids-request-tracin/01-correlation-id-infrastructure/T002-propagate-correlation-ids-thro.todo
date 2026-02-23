@@ -1,0 +1,117 @@
+---
+id: P6.M6.E1.T002
+title: Propagate correlation IDs through Agent-LLM-Tools pipeline via Logger.metadata
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P6.M6.E1.T001
+tags:
+- observability
+- tracing
+- correlation-id
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:34:00.806541+00:00'
+started_at: '2026-02-06T20:34:00.806541+00:00'
+completed_at: '2026-02-06T20:46:45.329610+00:00'
+duration_minutes: 12.742051
+---
+
+# Propagate correlation IDs through Agent-LLM-Tools pipeline via Logger.metadata
+
+Ensure that the correlation ID set at the HTTP layer (T001) is propagated into all downstream
+subsystems: AgentServer GenServer processes, LLM provider calls, and tool executions. Since
+GenServer processes run in separate BEAM processes with their own Logger metadata, explicit
+propagation is required.
+
+## Requirements
+
+- [ ] Pass correlation_id when starting agent operations:
+  - [ ] Add `correlation_id` to AgentServer `send_message/3` opts
+  - [ ] Set `Logger.metadata(correlation_id: id)` in AgentServer `handle_cast/call` entry points
+- [ ] Propagate through LLM calls:
+  - [ ] Include correlation_id in LLM request metadata passed to providers
+  - [ ] Set Logger.metadata in provider `complete/3` and `stream_complete/3` functions
+  - [ ] Pass through to HTTP headers for upstream provider requests (optional, for debugging)
+- [ ] Propagate through tool execution:
+  - [ ] Include correlation_id in tool execution context
+  - [ ] Set Logger.metadata in ToolExecutor before executing each tool
+  - [ ] For sandbox/port-based tools, pass correlation_id as environment variable
+- [ ] Propagate through Phoenix Channel connections:
+  - [ ] Extract correlation_id from channel join params or socket assigns
+  - [ ] Set Logger.metadata in channel message handlers
+- [ ] For Task.async / spawned processes:
+  - [ ] Capture Logger.metadata before spawn, restore in child process
+  - [ ] Consider a helper: `with_metadata(metadata, fn -> ... end)`
+- [ ] Add integration test: fire HTTP request, verify correlation_id appears in logs from
+  Agent, LLM, and Tool layers
+
+## Acceptance Criteria
+
+- [ ] A single HTTP request's correlation_id appears in all log entries across Agent, LLM,
+  and Tool subsystems
+- [ ] GenServer processes correctly set Logger.metadata with correlation_id
+- [ ] Spawned tasks inherit the parent's correlation_id
+- [ ] Logger.metadata is cleaned up after request completes (no leaking between requests)
+- [ ] Integration test demonstrates full tracing path
+
+## Context
+
+**Source**: Architecture audit found no end-to-end request tracing. This is the critical
+propagation task that makes correlation IDs actually useful beyond the HTTP layer.
+
+**Key Challenge**: BEAM processes have independent Logger metadata. When AgentServer (GenServer)
+handles a message, it runs in its own process, so the HTTP request's Logger.metadata is not
+automatically available. Explicit passing is required.
+
+## Notes
+
+**Metadata Propagation Helper**:
+```elixir
+defmodule PagServer.Observability.CorrelationContext do
+  require Logger
+
+  @doc "Capture current metadata for cross-process propagation"
+  def capture do
+    Logger.metadata()
+  end
+
+  @doc "Restore metadata in a new process context"
+  def restore(metadata) do
+    Logger.metadata(metadata)
+  end
+
+  @doc "Run function with specific metadata, then restore original"
+  def with_context(metadata, fun) do
+    original = Logger.metadata()
+    Logger.metadata(metadata)
+    try do
+      fun.()
+    after
+      Logger.metadata(original)
+    end
+  end
+end
+```
+
+**AgentServer Integration**:
+```elixir
+# In AgentServer.handle_cast({:send_message, message, opts}, state)
+def handle_cast({:send_message, message, opts}, state) do
+  if correlation_id = opts[:correlation_id] do
+    Logger.metadata(correlation_id: correlation_id)
+  end
+  # ... rest of handler
+end
+```
+
+**Task.async Propagation**:
+```elixir
+metadata = PagServer.Observability.CorrelationContext.capture()
+Task.async(fn ->
+  PagServer.Observability.CorrelationContext.restore(metadata)
+  do_work()
+end)
+```

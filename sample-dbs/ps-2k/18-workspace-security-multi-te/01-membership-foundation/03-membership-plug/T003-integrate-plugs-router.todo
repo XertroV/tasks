@@ -1,0 +1,49 @@
+---
+id: P18.M1.E3.T003
+title: Integrate plugs into router workspace pipelines
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: critical
+depends_on:
+- P18.M1.E3.T002
+tags:
+- security
+- workspace
+- router
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:17:07.009955+00:00'
+started_at: '2026-02-17T17:17:07.009955+00:00'
+completed_at: '2026-02-17T17:20:09.820596+00:00'
+duration_minutes: 3.04684385
+---
+
+# Integrate plugs into router workspace pipelines
+
+## Description
+
+Integrate RequireWorkspaceMembership and RequireWorkspaceRole plugs into the router's workspace-related pipelines, replacing the current permission-only approach.
+
+## Requirements
+
+- [ ] Create new pipeline compositions for workspace routes:
+  - `:workspace_member` — RequireWorkspaceMembership (any role)
+  - `:workspace_admin` — RequireWorkspaceMembership + RequireWorkspaceRole(minimum_role: :admin)
+  - `:workspace_owner` — RequireWorkspaceMembership + RequireWorkspaceRole(minimum_role: :owner)
+- [ ] Update workspace read routes to use `:workspace_member` pipeline
+- [ ] Update workspace write routes: management actions use `:workspace_admin`, delete uses `:workspace_owner`, chat/sessions use `:workspace_member`
+- [ ] Preserve existing auth pipeline (api_resource_auth) as the first layer
+- [ ] Routes that don't have a workspace_id in the URL (e.g., POST /workspaces, GET /workspaces) should not use the membership plug
+
+## Acceptance Criteria
+
+- [ ] Workspace read endpoints accessible by any workspace member
+- [ ] Workspace management endpoints restricted to admin+
+- [ ] Workspace deletion restricted to owner only
+- [ ] Chat and session creation accessible by any member
+- [ ] Non-workspace routes (list workspaces, create workspace) unaffected
+- [ ] Auth pipeline still runs before membership check
+
+## Context
+
+**Files affected**: `lib/pag_server_web/router.ex` (lines 554-594)

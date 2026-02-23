@@ -1,0 +1,111 @@
+---
+id: I029
+title: Add pag the orange frog as a little clippy like temagochi thing walking around
+  the bottom of the dashboard screens.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:31:32.625678+00:00'
+started_at: '2026-02-18T22:31:32.625678+00:00'
+completed_at: '2026-02-18T22:43:45.750976+00:00'
+duration_minutes: 12.218754733333332
+---
+
+# Idea Intake: Add pag the orange frog as a little clippy like temagochi thing walking around the bottom of the dashboard screens.
+
+## Original Idea
+
+Add pag the orange frog as a little clippy like temagochi thing walking around the bottom of the dashboard screens.
+
+## Planning Summary
+
+### Mascot Design Concept
+
+**Pag** - An orange frog mascot inspired by:
+- Clippy (Office Assistant) - helpful, contextual tips
+- Tamagotchi - care mechanics, emotional attachment
+- TUI mascot patterns - cute, expressive, state-driven
+
+**Visual Design:**
+- Small frog (48x48px base, scalable SVG)
+- Orange body (#FF8C42) with cream belly (#FFD4A3)
+- Bright cyan eyes (#4CC9F0) for expressiveness
+- Pink blush marks for warmth
+- Multiple sprite states for different moods
+
+**7 Sprite States:**
+1. Idle - Standing still, occasional blink
+2. Happy - Eyes happy, slight bounce
+3. Working - Determined expression
+4. Sleeping - Eyes closed, Zzz animation
+5. Hungry - Sad expression, stomach rumble
+6. Excited - Big eyes, jumping
+7. Walking - Walk cycle animation
+
+### Interaction Patterns
+
+1. **Click/Tap** - Triggers happy animation + speech bubble
+2. **Double-click** - Pet interaction (heart particles)
+3. **Hover** - Shows tooltip with current metrics
+4. **Drag** - Reposition mascot
+5. **Context menu** - Feed, Play, Sleep options
+
+### Tamagotchi Mechanics
+
+Three metrics (0-100 each):
+- **Hunger** - Decreases over time, feed to restore
+- **Energy** - Decreases during work, recovers during sleep
+- **Happiness** - Affected by interactions and neglect
+
+Derived mood determines visual state and speech messages.
+
+### Integration
+
+- Fixed position at bottom of viewport
+- Walks horizontally across screen
+- Reacts to system events (agent status, validation, etc.)
+- Can be hidden via settings
+- State persisted to localStorage
+
+## Created Work Items
+
+### Phase: P33 - UI/UX Enhancements
+
+### Milestone: P33.M1 - Pag Mascot System (16h)
+
+### Epic: P33.M1.E1 - Pag Mascot Core (8h)
+
+**Tasks:**
+- P33.M1.E1.T001 - Design Pag mascot appearance and sprite system (2h)
+- P33.M1.E1.T002 - Create PagLiveComponent for rendering mascot (2h)
+- P33.M1.E1.T003 - Implement CSS animation system for Pag states (1.5h)
+- P33.M1.E1.T004 - Add tamagotchi mechanics (mood, energy, hunger) (1.5h)
+- P33.M1.E1.T005 - Implement user interactions (click, hover, pet) (1h)
+- P33.M1.E1.T006 - Integrate Pag into dashboard layout (1h)
+- P33.M1.E1.T007 - Add state persistence for Pag (localStorage) (0.5h)
+
+### Dependencies
+
+```
+T001 (Design) ──> T002 (Component) ──> T004 (Mechanics)
+                        │
+                        ├──> T003 (Animations)
+                        │
+                        └──> T005 (Interactions)
+                                   │
+                                   └──> T006 (Integration)
+                                            │
+                                            └──> T007 (Persistence)
+```
+
+## Completion Criteria
+
+- [x] Idea has been decomposed into concrete `.tasks` work items.
+- [x] New items include clear acceptance criteria and dependencies.
+- [ ] This idea intake is updated with created IDs and marked done.

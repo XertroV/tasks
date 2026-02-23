@@ -1,0 +1,37 @@
+---
+id: P15.M5.E2.T003
+title: Add bidding agent behavior
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M5.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T17:04:22.345223+00:00'
+started_at: '2026-02-13T17:04:22.345223+00:00'
+completed_at: '2026-02-13T17:19:59.073948+00:00'
+duration_minutes: 15.612144916666667
+---
+
+# Add bidding agent behavior
+
+## Description
+Add bidding behavior to agents so they can participate in task auctions. Implement bid calculation based on capabilities, current load, and estimated effort.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.ContractNet.Bidder` module
+- [ ] Implement `evaluate_task(agent, task_spec)` returning bid or decline
+- [ ] Add capability matching logic (can agent do this task?)
+- [ ] Calculate bid based on current agent load
+- [ ] Add bid confidence scoring
+- [ ] Implement contract acceptance/rejection on award
+- [ ] Add bidding history for agent learning
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent.ex`, `lib/pag_server/agents/agent_server.ex`, `lib/pag_server/schema/agent.ex`
+- Part of epic: Contract Net Protocol
+- Integrate with agent capability system

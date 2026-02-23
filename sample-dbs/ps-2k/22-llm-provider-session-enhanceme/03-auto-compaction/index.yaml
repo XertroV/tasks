@@ -1,0 +1,53 @@
+id: P22.M3
+name: Auto-Compaction
+status: pending
+estimate_hours: 20.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: CompactionMonitor GenServer
+  path: 01-compactionmonitor-genserver
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Session Compaction Config & Proactive Trigger
+  path: 02-session-compaction-config-proa
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on:
+  - P22.M3.E1
+  description: ''
+  locked: false
+- id: E3
+  name: Compaction Status Tracking & API
+  path: 03-compaction-status-tracking-api
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on:
+  - P22.M3.E2
+  description: ''
+  locked: false
+- id: E4
+  name: 'Tests: Auto-Compaction'
+  path: 04-tests-auto-compaction
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - P22.M3.E2
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

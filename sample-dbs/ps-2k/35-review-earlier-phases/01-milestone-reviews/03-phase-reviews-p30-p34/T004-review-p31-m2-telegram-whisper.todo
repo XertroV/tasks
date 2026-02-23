@@ -1,0 +1,16 @@
+---
+id: P35.M1.E3.T004
+title: 'Review P31.M2: Telegram Whisper STT'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:31:51.319960+00:00'
+started_at: '2026-02-19T01:31:51.319960+00:00'
+completed_at: '2026-02-19T01:41:46.171183+00:00'
+duration_minutes: 9.914186866666666
+---
+Load the review-and-fix skill. Review all epics and tasks under P31.M2 (Telegram Whisper STT). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: Whisper HTTP client module (audio format handling, request construction), config (model path, API URL, health check), transcribe_audio MCP tool, Telegram voice message download/dispatch integration, voice transcription workspace config, WhisperPlugin wiring, and tests.

@@ -1,0 +1,66 @@
+---
+id: P9.M5.E4.T006
+title: Add plugin API surface module with sandboxed access to PAG internals
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E4.T001
+- P9.M5.E4.T002
+- P9.M5.E4.T003
+tags:
+- api
+- sandbox
+claimed_by: cli-user
+claimed_at: '2026-02-11T06:19:59.284625+00:00'
+started_at: '2026-02-11T06:19:59.284625+00:00'
+completed_at: '2026-02-11T06:30:28.237791+00:00'
+duration_minutes: 10.482552416666666
+---
+
+# Add plugin API surface module with sandboxed access to PAG internals
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/api.ex` module as the unified plugin author API
+- [ ] Wrap all plugin capabilities with a clean, documented interface:
+  - [ ] `spawn_agent/2` - Delegate to `AgentSpawner` with validation
+  - [ ] `send_message/3` - Delegate to `MessageInjector` with validation
+  - [ ] `register_tool/2` - Delegate to `ToolRegistrar` with validation
+  - [ ] `inject_context/3` - Delegate to `ContextInjector` with validation
+  - [ ] `read_history/2` - Delegate to `HistoryAccess` with validation
+  - [ ] `register_directive/2` - Delegate to `DirectiveAdapter` with validation
+  - [ ] `register_pruning_strategy/2` - Delegate to `PruningRegistrar` with validation
+  - [ ] `register_provider/2` - Delegate to `ProviderRegistrar` with validation
+- [ ] Input validation on all API functions:
+  - [ ] Validate plugin_name exists and is enabled in Registry
+  - [ ] Validate required parameters present and correctly typed
+  - [ ] Return consistent `{:ok, result}` / `{:error, reason}` tuples
+- [ ] Rate limiting per plugin across all API calls:
+  - [ ] Global rate limit configurable per plugin
+  - [ ] Per-endpoint rate limits for sensitive operations (spawn, send_message)
+- [ ] Telemetry instrumentation on all API calls:
+  - [ ] `[:pag_server, :plugin, :api, :call]` with plugin_name, function, duration
+  - [ ] `[:pag_server, :plugin, :api, :error]` for failures
+- [ ] Comprehensive `@moduledoc` and `@doc` documentation for plugin authors
+
+## Acceptance Criteria
+
+- [ ] All plugin capabilities accessible through single `PagServer.Plugins.API` module
+- [ ] Input validation rejects invalid parameters with descriptive errors
+- [ ] Calls to disabled plugins return `{:error, :plugin_not_enabled}`
+- [ ] Rate limiting applies across all API endpoints per plugin
+- [ ] Telemetry events fire for every API call with timing and result
+- [ ] Full `@doc` documentation with examples for each function
+- [ ] Unit tests cover: all API functions, validation, rate limiting, error cases
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/api.ex`
+- **Delegates to**: `AgentSpawner`, `MessageInjector`, `ToolRegistrar`, `ContextInjector`, `HistoryAccess`, `DirectiveAdapter`, `PruningRegistrar`, `ProviderRegistrar`
+- **Depends on**: All E4 tasks (T001-T005), plus E3 modules
+- **Purpose**: Single entry point for plugin authors; simplifies plugin development
+- **Documentation**: This is the primary API documentation for third-party plugin developers

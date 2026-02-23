@@ -1,0 +1,20 @@
+---
+id: B140
+title: When I first message the bot after setting it up with the setup wizard, it
+  doesn't start bootstrapping or anything. Personally I think the template should
+  inject the first message, which can be hidden from the user in the bootstrap interface.
+  That first message says read BOOTSTRAP.md etc. It can say a lot.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:53:50.677053+00:00'
+started_at: '2026-02-18T12:53:50.677053+00:00'
+completed_at: '2026-02-18T13:56:24.218006+00:00'
+duration_minutes: 62.55901551666667
+---
+
+When I first message the bot after setting it up with the setup wizard, it doesn't start bootstrapping or anything. Personally I think the template should inject the first message, which can be hidden from the user in the bootstrap interface. That first message says read BOOTSTRAP.md etc. It can say a lot.

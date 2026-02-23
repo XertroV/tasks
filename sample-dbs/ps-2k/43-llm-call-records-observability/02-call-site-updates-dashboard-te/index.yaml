@@ -1,0 +1,41 @@
+id: P43.M2
+name: Call Site Updates, Dashboard & Tests
+status: done
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Call Site Updates
+  path: 01-call-site-updates
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Live Dashboard
+  path: 02-live-dashboard
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Tests
+  path: 03-tests
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

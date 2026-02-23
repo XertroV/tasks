@@ -1,0 +1,37 @@
+---
+id: P46.M2.E1.T002
+title: Configure Assent strategies for GitHub, Google, GitLab
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P46.M1.E1.T001
+- P46.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:30:25.132191+00:00'
+started_at: '2026-02-19T21:30:25.132191+00:00'
+completed_at: '2026-02-19T21:38:17.257594+00:00'
+duration_minutes: 7.868756533333333
+---
+Configure the three Assent OAuth strategies:
+
+GitHub (Assent.Strategy.Github):
+- Scopes: user:email, read:user
+- Extracts: uid (id), email (from /user/emails if not in primary), name, login (for username derivation)
+
+Google (Assent.Strategy.Google):
+- Scopes: openid email profile
+- Extracts: uid (sub), email, name, given_name
+
+GitLab (Assent.Strategy.Gitlab):
+- Scopes: read_user
+- Extracts: uid (id), email, name, username (for username derivation)
+- Support self-hosted GitLab via GITLAB_BASE_URL env var (default: https://gitlab.com)
+
+Create a OAuthProviders module at lib/pag_server/accounts/oauth_providers.ex:
+- config_for/1 — returns Assent config map for given provider atom
+- providers/0 — returns list of enabled provider atoms (only those with client_id configured)
+- display_info/1 — returns {label, icon} for UI rendering
+Acceptance: All three provider configs build valid Assent authorization URLs. Unit tests mock HTTP.

@@ -1,0 +1,108 @@
+---
+id: P2.M9.E1.T002
+title: Add health_check/0 to OpenAI provider
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- openai
+- health-check
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-06T12:53:02.028521'
+started_at: '2026-02-06T12:53:02.028521'
+completed_at: '2026-02-06T12:55:00.000000'
+---
+
+# Add health_check/0 to OpenAI provider
+
+Add a lightweight health check to the OpenAI provider, following the same pattern
+as the Anthropic health check (P2.M9.E1.T001). OpenAI provides a `/v1/models`
+endpoint that can serve as a low-cost health check.
+
+## Requirements
+
+- [x] Add `health_check/0` function to `PagServer.LLM.Providers.OpenAI`
+- [x] Use `GET /v1/models` endpoint (list models, requires only API key, no token cost)
+- [x] Return `:ok` on success (API key valid, endpoint reachable)
+- [x] Return `{:error, reason}` on failure with descriptive reason
+- [x] Handle network errors gracefully (timeout, connection refused)
+- [x] Handle authentication errors (401 invalid API key -> unhealthy)
+- [x] Handle rate limiting (429 -> still healthy, service is up)
+- [x] Set a short timeout (5 seconds) to avoid blocking
+- [x] Add telemetry event `[:pag_server, :llm, :health_check]` with provider metadata
+- [x] Document the health check approach in function docs
+
+## Acceptance Criteria
+
+- [x] `OpenAI.health_check()` returns `:ok` when OpenAI API is reachable with valid key
+- [x] Returns `{:error, :authentication_failed}` with invalid API key
+- [x] Returns `{:error, :connection_error}` when API unreachable
+- [x] Returns `:ok` during rate limiting (429 means service is up)
+- [x] Health check completes within 5 seconds
+- [x] Registry `check_provider_health/1` correctly calls the new function
+- [x] No token cost incurred (uses models list endpoint, not chat completion)
+
+## Implementation Details
+
+OpenAI's `/v1/models` endpoint is ideal for health checks: it requires authentication
+but does not consume any tokens.
+
+```elixir
+def health_check do
+  client = Client.from_config()
+
+  case Req.get(client.req,
+    url: "/v1/models",
+    receive_timeout: 5_000
+  ) do
+    {:ok, %{status: 200}} ->
+      emit_health_telemetry(:healthy, 200)
+      :ok
+
+    {:ok, %{status: 429}} ->
+      # Rate limited but service is up
+      emit_health_telemetry(:healthy, 429)
+      :ok
+
+    {:ok, %{status: 401}} ->
+      emit_health_telemetry(:unhealthy, 401)
+      {:error, :authentication_failed}
+
+    {:ok, %{status: status}} when status >= 500 ->
+      emit_health_telemetry(:unhealthy, status)
+      {:error, {:server_error, status}}
+
+    {:error, reason} ->
+      emit_health_telemetry(:unhealthy, reason)
+      {:error, :connection_error}
+  end
+end
+
+defp emit_health_telemetry(status, detail) do
+  :telemetry.execute(
+    [:pag_server, :llm, :health_check],
+    %{count: 1},
+    %{provider: :openai, status: status, detail: detail}
+  )
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Reference Files**:
+- `lib/pag_server/llm/providers/openai.ex` - OpenAI provider module (add function here)
+- `lib/pag_server/llm/openai/client.ex` - OpenAI HTTP client with Req
+- `lib/pag_server/llm/registry.ex` lines 665-684 - `check_provider_health/1` implementation
+
+## Notes
+
+- OpenAI's `/v1/models` is the preferred health check endpoint: free, fast, authenticated
+- This is cheaper than Anthropic's approach (no token cost at all)
+- Consider rate limiting the health check calls themselves (at most once per 30 seconds)
+- The OpenAI client module (`Client.from_config()`) should handle API key retrieval
+- If `Client.from_config()` raises when no API key is configured, catch and return `{:error, :not_configured}`

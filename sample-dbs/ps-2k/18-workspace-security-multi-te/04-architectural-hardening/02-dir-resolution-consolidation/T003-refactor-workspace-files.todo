@@ -1,0 +1,41 @@
+---
+id: P18.M4.E2.T003
+title: Refactor WorkspaceFiles to use WorkspacePaths
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P18.M4.E2.T001
+tags:
+- workspace
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.650749+00:00'
+started_at: '2026-02-17T20:48:56.650749+00:00'
+completed_at: '2026-02-17T20:55:43.587128+00:00'
+duration_minutes: 6.782272666666667
+---
+
+# Refactor WorkspaceFiles to use WorkspacePaths
+
+## Description
+
+Replace `resolve_path/3` and `workspace_dir_root/1` in `PagServer.WorkspaceFiles` with calls to `WorkspacePaths`.
+
+## Requirements
+
+- [ ] Replace `resolve_path/3` with `WorkspacePaths.resolve_file/2`
+- [ ] Remove `workspace_dir_root/1` private function
+- [ ] Update `write_tracked_file`, `read_tracked_file`, and `detect_drift` to use WorkspacePaths
+- [ ] Ensure path traversal guard behavior is preserved
+
+## Acceptance Criteria
+
+- [ ] No path resolution logic remains in WorkspaceFiles (delegated to WorkspacePaths)
+- [ ] All existing tests continue to pass
+- [ ] Path traversal protection still works
+
+## Context
+
+**Files affected**: `lib/pag_server/workspace_files.ex`

@@ -1,0 +1,31 @@
+---
+id: P49.M2.E1.T005
+title: Improve plugin load failure diagnostics and lifecycle traceability
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:17:26.500380+00:00'
+started_at: '2026-02-20T09:17:26.500380+00:00'
+completed_at: '2026-02-20T09:29:02.037375+00:00'
+duration_minutes: 11.592283083333333
+---
+
+# Improve plugin load failure diagnostics and lifecycle traceability
+
+
+
+## Requirements
+
+- Improve plugin startup/load diagnostics to clearly report loaded, skipped, and failed plugins with reasons.
+- Add lifecycle traceability signals (events/log metadata) for enable/disable/load transitions.
+- Ensure failure diagnostics are actionable for plugin authors and operators.
+
+## Acceptance Criteria
+
+- Plugin load failures include explicit plugin id, phase, and error reason.
+- Lifecycle transitions emit consistent traceable metadata.
+- Tests verify diagnostic payload shape and key failure-mode outputs.

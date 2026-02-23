@@ -1,0 +1,257 @@
+---
+id: P4.M0.E2.T003
+title: Implement Coordinator GenServer
+status: done
+estimate_hours: 5
+complexity: medium
+priority: high
+depends_on:
+- P4.M0.E1.T001
+- P4.M0.E1.T002
+tags:
+- coordination
+- genserver
+- supervision
+- multi-agent
+claimed_by: claude-1
+claimed_at: '2026-02-05T17:57:50.632512'
+started_at: '2026-02-05T17:57:50.632512'
+completed_at: '2026-02-05T18:43:30.379403'
+duration_minutes: 45.662448000000005
+---
+
+# Implement Coordinator GenServer
+
+Create the Coordinator GenServer for managing parent-child agent relationships.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/coordinator.ex` (~300 LoC)
+- [ ] Implement GenServer callbacks (init, handle_call, handle_info)
+- [ ] Client API functions:
+  - [ ] `spawn_child/2` - Spawn child agent
+  - [ ] `stop_child/3` - Stop child gracefully
+  - [ ] `list_children/1` - Get child IDs
+  - [ ] `get_parent/1` - Get parent ID
+- [ ] ETS table for parent-child hierarchy tracking
+- [ ] Process monitoring for child agents
+- [ ] Max 100 children per parent enforcement
+- [ ] Add to supervision tree in `application.ex`
+- [ ] Create test file: `test/pag_server/agents/coordinator_test.exs`
+
+## Acceptance Criteria
+
+- [ ] spawn_child/2 creates child via AgentSupervisor
+- [ ] ETS table tracks parent → children mapping
+- [ ] Process.monitor tracks child processes
+- [ ] handle_info(:DOWN) cleans up dead children
+- [ ] Max children limit enforced (returns {:error, :max_children})
+- [ ] list_children/1 returns all child IDs for parent
+- [ ] stop_child/3 gracefully stops child and removes from tracking
+- [ ] Coordinator starts in application supervision tree
+- [ ] Test coverage ≥80%
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md` (Section 2, Component 4)
+
+**Existing Patterns**:
+- AgentSupervisor: `lib/pag_server/agents/supervisor.ex:93-116` (start_agent/1)
+- Registry pattern: Similar to AgentRegistry
+
+**Key Points**:
+- Coordinator is singleton GenServer (not per-agent)
+- Uses ETS for hierarchy (not in GenServer state for performance)
+- Monitors children to detect crashes
+- Prevents fork bombs via max children limit
+
+## Notes
+
+### GenServer structure
+
+```elixir
+defmodule PagServer.Agents.Coordinator do
+  use GenServer
+  require Logger
+  alias PagServer.Agents.Supervisor, as: AgentSupervisor
+
+  @max_children_per_parent 100
+
+  # Client API
+
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  def spawn_child(parent_id, %Directive.SpawnAgent{} = directive) do
+    GenServer.call(__MODULE__, {:spawn_child, parent_id, directive})
+  end
+
+  def stop_child(parent_id, child_id, reason \\ :normal) do
+    GenServer.call(__MODULE__, {:stop_child, parent_id, child_id, reason})
+  end
+
+  def list_children(parent_id) do
+    GenServer.call(__MODULE__, {:list_children, parent_id})
+  end
+
+  # Server Callbacks
+
+  @impl true
+  def init(_opts) do
+    # ETS tables for hierarchy tracking
+    hierarchy = :ets.new(:agent_hierarchy, [:set, :protected, :named_table])
+    children = :ets.new(:agent_children, [:bag, :protected, :named_table])
+    
+    {:ok, %{hierarchy: hierarchy, children: children}}
+  end
+
+  @impl true
+  def handle_call({:spawn_child, parent_id, directive}, _from, state) do
+    # Check max children
+    child_count = :ets.select_count(state.children, [{{parent_id, :_}, [], [true]}])
+    
+    if child_count >= @max_children_per_parent do
+      {:reply, {:error, :max_children}, state}
+    else
+      # Build agent config
+      agent_config = %{
+        name: directive.role,
+        system_prompt: directive.system_prompt,
+        tools: directive.tools || :inherit,
+        parent_id: parent_id,
+        metadata: directive.metadata
+      }
+
+      case AgentSupervisor.start_agent(agent_config) do
+        {:ok, child_id, child_pid} ->
+          # Track in hierarchy
+          :ets.insert(state.hierarchy, {child_id, parent_id})
+          :ets.insert(state.children, {parent_id, child_id})
+
+          # Monitor child
+          ref = Process.monitor(child_pid)
+          :ets.insert(state.hierarchy, {child_id, {:ref, ref}})
+
+          Logger.info("Spawned child agent #{child_id} under parent #{parent_id}")
+          {:reply, {:ok, child_id, child_pid}, state}
+
+        {:error, reason} = error ->
+          Logger.error("Failed to spawn child: #{inspect(reason)}")
+          {:reply, error, state}
+      end
+    end
+  end
+
+  @impl true
+  def handle_call({:stop_child, parent_id, child_id, reason}, _from, state) do
+    # Verify parent owns child
+    case :ets.lookup(state.hierarchy, child_id) do
+      [{^child_id, ^parent_id}] ->
+        # Stop child agent
+        case Registry.lookup(PagServer.Agents.Registry, child_id) do
+          {:ok, pid} ->
+            Process.exit(pid, reason)
+            cleanup_child(child_id, parent_id, state)
+            {:reply, :ok, state}
+
+          {:error, :not_found} ->
+            {:reply, {:error, :not_found}, state}
+        end
+
+      _ ->
+        {:reply, {:error, :not_parent}, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:list_children, parent_id}, _from, state) do
+    children = :ets.select(state.children, [{{parent_id, :"$1"}, [], [:"$1"]}])
+    {:reply, {:ok, children}, state}
+  end
+
+  @impl true
+  def handle_info({:DOWN, ref, :process, _pid, reason}, state) do
+    # Find child by monitor ref
+    case :ets.match(state.hierarchy, {:"$1", {:ref, ref}}) do
+      [[child_id]] ->
+        case :ets.lookup(state.hierarchy, child_id) do
+          [{^child_id, parent_id}, {^child_id, {:ref, ^ref}}] ->
+            Logger.warning("Child agent #{child_id} died: #{inspect(reason)}")
+            cleanup_child(child_id, parent_id, state)
+
+          _ ->
+            :ok
+        end
+
+      [] ->
+        :ok
+    end
+
+    {:noreply, state}
+  end
+
+  # Private Helpers
+
+  defp cleanup_child(child_id, parent_id, state) do
+    :ets.delete(state.hierarchy, child_id)
+    :ets.delete_object(state.children, {parent_id, child_id})
+  end
+end
+```
+
+### Add to supervision tree
+
+```elixir
+# In lib/pag_server/application.ex
+children = [
+  # ... existing children ...
+  PagServer.Agents.Supervisor,  # Existing
+  PagServer.Agents.Coordinator,  # NEW - after AgentSupervisor
+  # ... rest ...
+]
+```
+
+### Test coverage
+
+```elixir
+describe "spawn_child/2" do
+  test "spawns child and tracks in hierarchy" do
+    {:ok, child_id, pid} = Coordinator.spawn_child("parent-1", %Directive.SpawnAgent{
+      role: "worker",
+      system_prompt: "Do work"
+    })
+
+    assert is_binary(child_id)
+    assert is_pid(pid)
+    
+    {:ok, children} = Coordinator.list_children("parent-1")
+    assert child_id in children
+  end
+
+  test "enforces max children limit" do
+    # Spawn 100 children
+    for i <- 1..100 do
+      {:ok, _, _} = Coordinator.spawn_child("parent-1", ...)
+    end
+
+    # 101st should fail
+    assert {:error, :max_children} = Coordinator.spawn_child("parent-1", ...)
+  end
+end
+
+describe "handle_info :DOWN" do
+  test "cleans up dead child from hierarchy" do
+    {:ok, child_id, pid} = Coordinator.spawn_child("parent-1", ...)
+    
+    Process.exit(pid, :kill)
+    Process.sleep(50)  # Wait for :DOWN message
+    
+    {:ok, children} = Coordinator.list_children("parent-1")
+    refute child_id in children
+  end
+end
+```
+
+Ensure proper ETS cleanup, monitoring, and error handling.

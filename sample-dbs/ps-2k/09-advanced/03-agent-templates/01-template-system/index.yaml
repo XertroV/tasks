@@ -1,0 +1,62 @@
+# Epic: Template System
+# Phase 9, Milestone 3, Epic 1 (P9.M3.E1)
+
+id: P9.M3.E1
+name: Template System
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-template-schema.todo
+    title: Design template schema
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-template-loader.todo
+    title: Implement template loader
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-template-instantiation.todo
+    title: Add agent instantiation from templates
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: low
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-builtin-templates.todo
+    title: Create built-in templates
+    status: pending
+    estimate_hours: 2.0
+    complexity: low
+    priority: low
+    depends_on: [T003]
+    
+  - id: T005
+    file: T005-template-marketplace.todo
+    title: Design template marketplace API
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: low
+    depends_on: [T003]
+
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

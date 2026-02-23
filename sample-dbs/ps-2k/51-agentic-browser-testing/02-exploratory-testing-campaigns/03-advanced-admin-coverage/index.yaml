@@ -1,0 +1,46 @@
+id: P51.M2.E3
+name: Advanced & Admin Coverage
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-admin-dashboard-admin.todo
+  title: Admin dashboard (/admin/)
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-openai-compatible-endpoint-v1.todo
+  title: OpenAI-compatible endpoint (/v1/chat/completions)
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-credentials-vault-api-vault-se.todo
+  title: Credentials vault (/api/vault/secrets)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-level-6-end-to-end-integration.todo
+  title: 'Level 6: End-to-end integration scenarios'
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

@@ -1,0 +1,27 @@
+---
+id: P23.M1.E4.T003
+title: End-to-end approval flow integration tests
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M1.E1.T002
+- P23.M1.E3.T001
+- P23.M1.E4.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:44.517322+00:00'
+started_at: '2026-02-18T17:04:44.517322+00:00'
+completed_at: '2026-02-18T17:17:43.259135+00:00'
+duration_minutes: 12.979030033333334
+---
+Full integration tests covering the approval lifecycle.
+
+## Acceptance Criteria
+- [ ] Test: dangerous command blocked, approval_required emitted, approval received via channel → command executes and result returned
+- [ ] Test: dangerous command blocked → timeout expires → agent receives `{:error, :timeout}`
+- [ ] Test: dangerous command blocked → deny received → agent receives `{:error, :denied}`
+- [ ] Test: exec_approval_enabled=false → dangerous command executes without approval
+- [ ] Test: concurrent approvals for different agents don't interfere
+- [ ] All tests run in < 5s (use mock/configurable timeout via sleep_fn pattern)

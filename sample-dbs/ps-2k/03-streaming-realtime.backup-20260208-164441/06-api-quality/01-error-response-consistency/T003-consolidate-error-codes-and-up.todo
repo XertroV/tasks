@@ -1,0 +1,58 @@
+---
+id: P3.M6.E1.T003
+title: Consolidate error codes and update error documentation
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P3.M6.E1.T002
+tags:
+- error-handling
+- documentation
+claimed_by: cli-user
+claimed_at: '2026-02-08T03:50:39.911627+00:00'
+started_at: '2026-02-08T03:50:39.911627+00:00'
+completed_at: '2026-02-08T03:57:26.528909+00:00'
+duration_minutes: 6.77695455
+---
+
+# Consolidate error codes and update error documentation
+
+## Context
+
+After migrating to the unified error format, error code strings (e.g., `"invalid_api_key"`, `"rate_limit_exceeded"`) are scattered as string literals across plug and controller modules. This task extracts them into a constants module and updates the error documentation to reflect the unified REST + WebSocket format.
+
+## Requirements
+
+- [ ] Create `PagServerWeb.ErrorCodes` module
+  - [ ] Define constants for all error codes used across plugs and controllers
+  - [ ] Group by category: auth, validation, rate_limiting, resource, agent, llm, tool
+  - [ ] Each constant is a string matching the `error` field in responses
+  - [ ] Add `@moduledoc` with full error code catalog
+- [ ] Replace all string literal error codes with module constants
+  - [ ] Plugs: `ApiKeyAuth`, `AdminAuth`, `RequireAuth`, `RequireBearerToken`, etc.
+  - [ ] Controllers: `AuthController`, `PricingController`, `ApiKeyController`
+  - [ ] `ErrorJSON` templates
+  - [ ] `FallbackController`
+- [ ] Update `docs/error-handling.md` (created by P7.M7.E1.T009)
+  - [ ] Align REST error format with the unified `%{error, message}` shape
+  - [ ] Document that REST and WebSocket use consistent error code strings
+  - [ ] Update numeric code mapping if applicable
+  - [ ] Add REST-specific error examples alongside WebSocket examples
+- [ ] Update `PagServerWeb.Schemas.Common.ErrorResponse` description to reference error codes
+
+## Acceptance Criteria
+
+- [ ] `ErrorCodes` module exists with all error code constants
+- [ ] No string literal error codes remain in plugs/controllers (all reference ErrorCodes)
+- [ ] `docs/error-handling.md` covers both REST and WebSocket error formats
+- [ ] Error format is consistent: `%{error: "code", message: "text"}` everywhere
+- [ ] `mix lint` passes
+- [ ] All tests pass
+
+## Files to Create/Modify
+
+- `lib/pag_server_web/error_codes.ex` (new)
+- All plug and controller files (replace string literals)
+- `docs/error-handling.md` (update)

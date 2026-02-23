@@ -1,0 +1,48 @@
+id: P36
+name: Agent Execution Modes
+status: done
+locked: true
+weeks: 1
+estimate_hours: 14.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Core Infrastructure
+  path: 01-core-infrastructure
+  status: done
+  estimate_hours: 11.75
+  complexity: medium
+  depends_on: []
+  description: Schema changes, pure logic modules, SessionStore queries, BootManager
+    GenServer, and AgentWaker implementation.
+  locked: false
+- id: M2
+  name: UI
+  path: 02-ui
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on:
+  - P36.M1
+  description: Agent Manager LiveView form fields for execution mode, and session
+    list badges and toggles.
+  locked: false
+- id: M3
+  name: Execution Mode Rename
+  path: 03-execution-mode-rename
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on:
+  - P36.M1
+  - P36.M2
+  description: Rename continuous/discrete to persistent/transient/amnesiac three-mode
+    system across all modules, schemas, UI, and DB.
+  locked: false
+stats:
+  total_tasks: 16
+  done: 16
+  in_progress: 0
+  blocked: 0
+  pending: 0

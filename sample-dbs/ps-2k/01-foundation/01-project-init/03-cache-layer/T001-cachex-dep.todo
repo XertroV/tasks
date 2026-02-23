@@ -1,0 +1,88 @@
+---
+id: P1.M1.E3.T001
+title: Add Cachex dependency and configure
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- setup
+- cachex
+- supervision
+- memory
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:53:27.284199'
+started_at: '2026-02-05T07:53:27.284199'
+completed_at: '2026-02-05T07:55:52.443570'
+---
+
+# Add Cachex dependency and configure
+
+Configure Cachex in the application supervision tree with bounded size, TTL, and LRU eviction to prevent OOM.
+
+## Requirements
+
+- [ ] Verify Cachex dependency added in mix.exs (from T002-deps in E1)
+- [ ] Add Cachex to application supervision tree in `lib/pag_server/application.ex`
+- [ ] Configure bounded cache with max 100k entries
+- [ ] Set default TTL to 30 minutes
+- [ ] Enable LRU eviction policy
+- [ ] Add telemetry for cache hits/misses/evictions
+
+## Acceptance Criteria
+
+- [ ] Cachex starts automatically with the application
+- [ ] Cache enforces entry limit (100k max)
+- [ ] Entries expire after 30 minutes (TTL)
+- [ ] LRU eviction triggers when limit is reached
+- [ ] Telemetry events emit for cache operations
+- [ ] No compilation warnings
+- [ ] Application starts successfully with `mix phx.server`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 8 (Memory Efficiency)
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 1.2.3 (Supervision Tree)
+
+**Key Points**:
+- Cachex is critical for memory efficiency - prevents unbounded growth
+- Target: <4GB total, <512MB per session
+- Use Cachex (not raw ETS) for bounded caching with TTL
+- LRU eviction ensures oldest entries removed when limit hit
+
+## Implementation Notes
+
+Add to `lib/pag_server/application.ex` supervision tree:
+
+```elixir
+children = [
+  # ... existing children ...
+  {Cachex, [
+    name: :pag_cache,
+    limit: 100_000,
+    policy: Cachex.Policy.LRU,
+    expiration: Cachex.Expiration.default(
+      default: :timer.minutes(30),
+      interval: :timer.seconds(60)
+    ),
+    stats: true
+  ]}
+]
+```
+
+Verify configuration:
+```bash
+iex -S mix
+iex> Cachex.put(:pag_cache, "test_key", "test_value")
+iex> Cachex.get(:pag_cache, "test_key")
+iex> Cachex.stats(:pag_cache)
+```
+
+## Notes
+
+- The dependency should already be in mix.exs from E1.T002-deps
+- Stats enabled for telemetry integration (future work)
+- Interval of 60s means expired entries checked every minute
+- This cache will be used for LLM responses, tool results, and context fragments

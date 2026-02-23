@@ -1,0 +1,33 @@
+id: P22.M1.E3
+name: Credential Management API
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on:
+- P22.M1.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-api-crud-endpoints-for-provide.todo
+  title: 'API: CRUD endpoints for provider credentials (POST/GET/PATCH/DELETE /api/v1/providers/:id/credentials)'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M1.E1.T001
+- id: T002
+  file: T002-api-post-api-v1-providers-id-c.todo
+  title: 'API: POST /api/v1/providers/:id/credentials/:cred_id/reset-cooldown endpoint'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M1.E3.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

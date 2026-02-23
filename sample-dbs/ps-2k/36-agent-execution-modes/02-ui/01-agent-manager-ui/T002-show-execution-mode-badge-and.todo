@@ -1,0 +1,22 @@
+---
+id: P36.M2.E1.T002
+title: Show execution mode badge and auto_start toggle on session list/detail
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P36.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:09:32.416306+00:00'
+started_at: '2026-02-19T03:09:32.416306+00:00'
+completed_at: '2026-02-19T03:09:35.306201+00:00'
+duration_minutes: 0.04816466666666666
+---
+## Acceptance Criteria
+- Session list shows badge: blue 'Continuous' for :continuous, yellow 'Discrete' for :discrete
+- Session detail view shows execution_mode badge and auto_start status
+- Operators can flip auto_start per-session via phx-click toggle
+- Toggle calls SessionStore.update with auto_start: new_value
+- UI is consistent with existing badge/toggle styles in the codebase

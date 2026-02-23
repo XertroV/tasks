@@ -1,0 +1,35 @@
+---
+id: P15.M8.E1.T002
+title: Add variable cross-validation between questionnaire, variables map, and default
+  files
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P15.M8.E1.T001
+tags:
+- validation
+- templates
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:48:09.687857+00:00'
+started_at: '2026-02-17T16:48:09.687857+00:00'
+completed_at: '2026-02-17T17:01:23.492483+00:00'
+duration_minutes: 13.2300769
+---
+Three cross-validation gaps in WorkspaceTemplate:
+
+1. Questionnaire questions reference variables not validated against variables map (E1 I3)
+2. Default file {{variable}} placeholders not validated against variables map (E1 I4)
+3. Missing required/default conflict validation that exists in agent Template (E1 I1)
+
+Fix: Port validate_variable_required_and_default from Template, add questionnaire-to-variables cross-ref, add optional default_files variable reference check using Substitutor.extract_variables/1.
+
+Source: E1 Audit I1, I3, I4
+
+## Acceptance Criteria
+- [ ] Variables with required: true and default value are rejected
+- [ ] Questionnaire variables not in variables map produce error
+- [ ] Default file template variables not in variables map produce warning/error
+- [ ] Tests for each cross-validation rule
+- [ ] Built-in templates still pass validation

@@ -1,0 +1,24 @@
+id: P36.M2
+name: UI
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on:
+- P36.M1
+locked: false
+epics:
+- id: E1
+  name: Agent Manager UI
+  path: 01-agent-manager-ui
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

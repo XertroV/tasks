@@ -1,0 +1,40 @@
+---
+id: P23.M2.E1.T001
+title: Create CronSchedule Ecto schema and migration
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:58:49.800743+00:00'
+started_at: '2026-02-18T14:58:49.800743+00:00'
+completed_at: '2026-02-18T17:03:17.179629+00:00'
+duration_minutes: 124.45631461666667
+---
+Define the DB-backed schedule model for the cron plugin.
+
+## Acceptance Criteria
+- [ ] Ecto schema `PagServer.Plugins.Cron.CronSchedule` with fields: id (UUID), workspace_id, name, cron_expression, action_type (`agent_message|cli_command`), action_payload (map), target_session_id (nullable), target_agent_id (nullable), output_forwarding (map, nullable), enabled (boolean, default true), last_fired_at (utc_datetime, nullable), inserted_at, updated_at
+- [ ] Migration creates `cron_schedules` table with indexes on workspace_id and enabled
+- [ ] Changeset validates cron_expression format (basic 5-field cron syntax)
+- [ ] Schema tests and changeset validation tests pass
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P23.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 14:58 UTC
+**Sibling tasks**: P23.M2.E1.T002, P23.M2.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P23.M2.E1.T001 → P23.M2.E1.T002 → P23.M2.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P23.M2.E1.T001: .tasks/23-safety-scheduling-plugin-archi/02-cron-plugin/01-cronschedule-schema-storage/T001-create-cronschedule-ecto-schem.todo
+- P23.M2.E1.T002: .tasks/23-safety-scheduling-plugin-archi/02-cron-plugin/01-cronschedule-schema-storage/T002-implement-cronschedules-contex.todo
+- P23.M2.E1.T003: .tasks/23-safety-scheduling-plugin-archi/02-cron-plugin/01-cronschedule-schema-storage/T003-add-cron-expression-validation.todo

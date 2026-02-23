@@ -1,0 +1,17 @@
+---
+id: P48.M3.E3.T002
+title: 'Built-in LSP server definitions: elixir-ls, typescript, rust-analyzer, pyright,
+  gopls'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:21.650739+00:00'
+started_at: '2026-02-20T08:37:21.650739+00:00'
+completed_at: '2026-02-20T08:50:36.883697+00:00'
+duration_minutes: 13.253882383333332
+---
+Implement LspServerConfig for: elixir-ls (IMPORTANT: check if .git is a FILE at root - if so, raise :elixir_ls_git_worktree_bug error with comment noting GitHub issue #1175 closed 'not planned', unfixed as of v0.30.0 Nov 2025, workaround needed before full enablement), typescript-language-server --stdio (root: package.json/tsconfig.json), rust-analyzer (root: Cargo.toml), pyright-langserver --stdio (root: pyproject.toml/setup.py/requirements.txt), gopls serve (root: go.mod/go.work).

@@ -1,0 +1,18 @@
+---
+id: B250
+title: Token buffer not flushed on all state changes
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- web
+- streaming
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.110050+00:00'
+started_at: '2026-02-23T07:29:02.110050+00:00'
+completed_at: '2026-02-23T07:43:46.298911+00:00'
+duration_minutes: 14.736480566666668
+---
+agent_channel.ex:199-215 - Only :idle and :interrupted flush; other state changes may lose buffered tokens

@@ -1,0 +1,43 @@
+---
+id: P7.M7.E3.T002
+title: Production example
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M7.E3.T001
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:11:09.635101+00:00'
+started_at: '2026-02-08T06:11:09.635101+00:00'
+completed_at: '2026-02-08T06:27:47.749237+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 16.63523545
+---
+
+# Production example
+
+Create production-ready example
+
+## Requirements
+
+- [ ] Implement core functionality
+- [ ] Add tests
+- [ ] Update documentation
+
+## Acceptance Criteria
+
+- [ ] Feature works as specified
+- [ ] Tests pass
+- [ ] Documentation updated
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.

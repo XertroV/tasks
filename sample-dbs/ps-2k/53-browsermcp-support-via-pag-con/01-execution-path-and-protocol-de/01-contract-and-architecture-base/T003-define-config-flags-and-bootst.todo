@@ -1,0 +1,46 @@
+---
+id: P53.M1.E1.T003
+title: Define config flags and bootstrap wiring for browser backend
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P53.M1.E1.T002
+tags:
+- browsermcp
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:29:55.187691+00:00'
+started_at: '2026-02-21T05:29:55.187691+00:00'
+completed_at: '2026-02-21T05:30:22.118179+00:00'
+duration_minutes: 0.4488413
+---
+
+# Define config flags and bootstrap wiring for browser backend
+
+
+
+## Requirements
+
+- Define runtime config keys/env vars for Browser MCP backend selection and connection details.
+- Specify safe defaults for dev and production-like environments.
+- Define startup validation behavior when browser backend config is incomplete.
+
+## Acceptance Criteria
+
+- Config keys and precedence order are documented with examples.
+- Invalid/incomplete config behavior is deterministic and documented.
+- Bootstrap flow includes feature-flag gating so Browser MCP can be disabled cleanly.
+
+## Execution Notes (2026-02-21)
+
+- Added BrowserMCP runtime config guide with explicit keys, env vars, and
+  precedence rules.
+- Documented deterministic invalid-config behavior and backend degradation
+  semantics.
+- Added feature-flag gate and rollback behavior for clean disablement.
+
+## Evidence Artifacts
+
+- `docs/guides/browsermcp-runtime-config.md`

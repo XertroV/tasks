@@ -1,0 +1,45 @@
+id: P49.M6
+name: Plugin Signature Hardening (Option C)
+status: done
+estimate_hours: 20.0
+complexity: high
+depends_on:
+- P49.M5
+locked: false
+epics:
+- id: E1
+  name: Sigstore and cosign verification backend
+  path: 01-sigstore-and-cosign-verificati
+  status: done
+  estimate_hours: 8.0
+  complexity: high
+  depends_on:
+  - P49.M5.E2
+  description: ''
+  locked: false
+- id: E2
+  name: Pluggable trust endpoints and local-only verification mode
+  path: 02-pluggable-trust-endpoints-and
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P49.M6.E1
+  description: ''
+  locked: false
+- id: E3
+  name: Attestations progressive enforcement and migration
+  path: 03-attestations-progressive-enfor
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P49.M6.E2
+  description: ''
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

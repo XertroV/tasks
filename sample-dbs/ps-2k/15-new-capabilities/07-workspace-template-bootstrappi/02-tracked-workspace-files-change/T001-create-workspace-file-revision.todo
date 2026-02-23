@@ -1,0 +1,46 @@
+---
+id: P15.M7.E2.T001
+title: Create workspace_file_revisions schema and migration
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- schema
+- database
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:46:28.011134+00:00'
+started_at: '2026-02-17T08:46:28.011134+00:00'
+completed_at: '2026-02-17T08:46:29.269264+00:00'
+duration_minutes: 0.020968566666666667
+---
+## Description
+Create an append-only workspace file revision tracking table. This provides a tamper-resistant changelog for key workspace files that the agent cannot modify or delete.
+
+## Schema: PagServer.Schema.WorkspaceFileRevision
+- id (binary_id, PK)
+- workspace_id (FK to workspaces, required)
+- file_path (string, relative path within workspace dir, required)
+- content_hash (string, SHA-256 of file content, required)
+- content (text, full file content at this revision)
+- revision_number (integer, auto-increment per workspace+file_path pair)
+- change_source (string enum: bootstrap, agent, user, mcp_edit, sync, required)
+- changed_by (binary_id, nullable - user or agent ID)
+- metadata (map, default %{} - extra context like diff summary, tool name, etc)
+- inserted_at (utc_datetime_usec)
+
+## Key Constraints
+- Append-only: no update or delete operations exposed
+- Unique index on (workspace_id, file_path, revision_number)
+- Index on (workspace_id, file_path) for latest revision queries
+- revision_number auto-calculated as max(existing) + 1
+
+## Acceptance Criteria
+- [ ] Ecto schema with all fields and validations
+- [ ] Migration creating the table with proper indexes
+- [ ] No update_changeset or delete functions - strictly append-only
+- [ ] create_revision/1 function that auto-calculates revision_number
+- [ ] content_hash computed automatically from content
+- [ ] Unit tests for schema validation
+- [ ] Test that revision_number auto-increments correctly

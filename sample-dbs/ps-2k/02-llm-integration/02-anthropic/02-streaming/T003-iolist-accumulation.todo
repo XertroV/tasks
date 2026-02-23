@@ -1,0 +1,107 @@
+---
+id: P2.M2.E2.T003
+title: Implement iolist accumulation for tokens
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P2.M2.E2.T002
+tags:
+- llm
+- anthropic
+- streaming
+- performance
+- memory
+claimed_by: claude-1
+claimed_at: '2026-02-05T12:27:32.940316'
+started_at: '2026-02-05T12:27:32.940316'
+completed_at: '2026-02-05T12:32:30.991122'
+duration_minutes: 4.967513266666667
+---
+
+# Implement iolist accumulation for tokens
+
+Use iolists instead of string concatenation for efficient memory usage during streaming.
+
+## Requirements
+
+- [ ] Replace string concatenation with iolist accumulation
+- [ ] Accumulate tokens as `[acc.content | new_token]`
+- [ ] Convert to binary only when needed: `IO.iodata_to_binary(content)`
+- [ ] Document memory efficiency in moduledoc
+- [ ] Add benchmark comparing concat vs iolist
+- [ ] Verify no memory regression in tests
+
+## Acceptance Criteria
+
+- [ ] All token accumulation uses iolists
+- [ ] No `<>` operator for incremental text building
+- [ ] Benchmark shows O(n) vs O(n²) improvement
+- [ ] Memory usage stays within budget (see architecture.md)
+- [ ] Tests pass with iolist implementation
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 8.2 (Memory Efficiency)
+- Architecture doc lines 648-656 (iolist pattern)
+
+**Key Points**:
+- String concatenation in loops is O(n²)
+- Iolists are O(n) for incremental building
+- Critical for long streaming responses
+
+## Notes
+
+BAD - O(n²) memory usage:
+```elixir
+# DON'T DO THIS
+%{acc | content: acc.content <> delta}
+```
+
+GOOD - O(n) memory usage:
+```elixir
+# DO THIS
+%{acc | content: [acc.content | delta]}
+
+# Convert at end
+final_content = IO.iodata_to_binary(acc.content)
+```
+
+Example in context:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.StreamAccumulator do
+  defstruct [:id, :model, content: [], :usage]
+  
+  def new(id, model) do
+    %__MODULE__{id: id, model: model, content: []}
+  end
+  
+  def add_delta(acc, text) do
+    %{acc | content: [acc.content | text]}  # iolist accumulation
+  end
+  
+  def finalize(acc) do
+    %{acc | content: IO.iodata_to_binary(acc.content)}
+  end
+end
+```
+
+Benchmark test:
+```elixir
+defmodule AccumulationBenchmark do
+  def concat_bench(n) do
+    Enum.reduce(1..n, "", fn _, acc -> acc <> "x" end)
+  end
+  
+  def iolist_bench(n) do
+    Enum.reduce(1..n, [], fn _, acc -> [acc | "x"] end)
+    |> IO.iodata_to_binary()
+  end
+end
+
+# concat_bench(10_000): ~500ms
+# iolist_bench(10_000): ~5ms
+```

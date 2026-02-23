@@ -1,0 +1,258 @@
+---
+id: P1.M1.E2.T003
+title: Configure SQLite adapter
+status: done
+estimate_hours: 2
+complexity: low
+priority: medium
+depends_on:
+- P1.M1.E2.T001
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:52:54.518461'
+started_at: '2026-02-05T07:52:54.518461'
+completed_at: '2026-02-05T07:53:02.555109'
+tags:
+- sqlite
+- database
+- development
+- testing
+---
+
+# Configure SQLite adapter
+
+Set up SQLite for development and test environments with proper isolation and sandbox mode.
+
+## Requirements
+
+### Development Configuration
+- [ ] Configure SQLite adapter in `config/dev.exs`
+- [ ] Set database path to `priv/repo/dev.db`
+- [ ] Enable WAL mode for concurrent reads
+- [ ] Set pool size to 5 (adequate for dev)
+- [ ] Enable query logging
+
+### Test Configuration
+- [ ] Configure SQLite adapter in `config/test.exs`
+- [ ] Set database path to `priv/repo/test.db` or in-memory
+- [ ] Enable sandbox mode for test isolation
+- [ ] Set pool size to 10 (tests may run concurrently)
+- [ ] Disable query logging for cleaner test output
+
+### Sandbox Setup
+- [ ] Configure Ecto.Adapters.SQL.Sandbox in `test/test_helper.exs`
+- [ ] Set up data case module for test setup
+- [ ] Ensure tests can run with `async: true`
+- [ ] Verify no cross-test contamination
+
+## Acceptance Criteria
+
+- [ ] `mix phx.server` starts with SQLite in dev
+- [ ] Database file created at `priv/repo/dev.db`
+- [ ] `mix test` runs with isolated SQLite instances
+- [ ] Tests with `async: true` don't interfere with each other
+- [ ] No "database is locked" errors during tests
+- [ ] `mix ecto.reset` works in dev environment
+- [ ] WAL mode enables concurrent reads during development
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/research.md` Section 8.1 (Database)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 6 (Testing Strategy)
+
+**Key Points**:
+- SQLite for dev/test environments (fast, zero-config, file-based)
+- PostgreSQL for production (ACID guarantees, better concurrency)
+- Ecto abstracts the differences (same queries work on both)
+- Sandbox mode critical for test isolation
+
+## Notes
+
+### config/dev.exs
+
+```elixir
+import Config
+
+config :pag_server, PagServer.Repo,
+  adapter: Ecto.Adapters.SQLite3,
+  database: Path.expand("../priv/repo/dev.db", Path.dirname(__ENV__.file)),
+  pool_size: 5,
+  timeout: 15_000,
+  journal_mode: :wal,
+  cache_size: -64000,  # 64MB cache
+  temp_store: :memory,
+  synchronous: :normal,
+  foreign_keys: :on,
+  busy_timeout: 5000,
+  show_sensitive_data_on_connection_error: true,
+  stacktrace: true
+```
+
+### config/test.exs
+
+```elixir
+import Config
+
+# Configure your database
+config :pag_server, PagServer.Repo,
+  adapter: Ecto.Adapters.SQLite3,
+  database: Path.expand("../priv/repo/test.db", Path.dirname(__ENV__.file)),
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: 10,
+  timeout: 15_000,
+  journal_mode: :wal,
+  cache_size: -64000,
+  temp_store: :memory,
+  synchronous: :normal,
+  foreign_keys: :on,
+  busy_timeout: 5000,
+  ownership_timeout: 60_000  # Longer timeout for debugging tests
+
+# Print only warnings and errors during test
+config :logger, level: :warning
+```
+
+### test/test_helper.exs
+
+```elixir
+ExUnit.start()
+
+# Set sandbox mode for test isolation
+Ecto.Adapters.SQL.Sandbox.mode(PagServer.Repo, :manual)
+```
+
+### test/support/data_case.ex
+
+Create this file to provide test helpers:
+
+```elixir
+defmodule PagServer.DataCase do
+  @moduledoc """
+  This module defines the setup for tests requiring
+  access to the application's data layer.
+
+  You may define functions here to be used as helpers in
+  your tests.
+
+  Finally, if the test case interacts with the database,
+  we enable the SQL sandbox, so changes done to the database
+  are reverted at the end of every test. If you are using
+  PostgreSQL, you can even run database tests asynchronously
+  by setting `use PagServer.DataCase, async: true`, although
+  this option is not recommended for other databases.
+  """
+
+  use ExUnit.CaseTemplate
+
+  using do
+    quote do
+      alias PagServer.Repo
+
+      import Ecto
+      import Ecto.Changeset
+      import Ecto.Query
+      import PagServer.DataCase
+    end
+  end
+
+  setup tags do
+    PagServer.DataCase.setup_sandbox(tags)
+    :ok
+  end
+
+  @doc """
+  Sets up the sandbox based on the test tags.
+  """
+  def setup_sandbox(tags) do
+    pid = Ecto.Adapters.SQL.Sandbox.start_owner!(PagServer.Repo, shared: not tags[:async])
+    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(pid) end)
+  end
+
+  @doc """
+  A helper that transforms changeset errors into a map of messages.
+
+      assert {:error, changeset} = Accounts.create_user(%{password: "short"})
+      assert "password is too short" in errors_on(changeset).password
+      assert %{password: ["password is too short"]} = errors_on(changeset)
+
+  """
+  def errors_on(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
+  end
+end
+```
+
+### Example Test Usage
+
+```elixir
+defmodule PagServer.Agents.AgentTest do
+  use PagServer.DataCase, async: true  # Safe because of sandbox
+
+  alias PagServer.Agents.Agent
+
+  test "creates an agent" do
+    assert {:ok, agent} = Agent.create(%{name: "test-agent"})
+    assert agent.name == "test-agent"
+  end
+end
+```
+
+### SQLite-Specific Settings
+
+**WAL Mode** (`journal_mode: :wal`):
+- Allows concurrent readers while writing
+- Better performance for dev/test scenarios
+- File-based: creates `.db-wal` and `.db-shm` files
+
+**Cache Size** (`cache_size: -64000`):
+- Negative value = size in KB (64MB here)
+- Improves query performance
+- Reasonable for dev/test environments
+
+**Busy Timeout** (`busy_timeout: 5000`):
+- Wait up to 5 seconds if database is locked
+- Prevents "database is locked" errors in tests
+- Important for concurrent test execution
+
+### Differences from PostgreSQL
+
+Be aware of SQLite limitations:
+- No concurrent writes (single writer lock)
+- Limited ALTER TABLE support (can't drop columns in older versions)
+- No native UUID type (use string)
+- Different date/time handling
+- No ENUM type (use check constraints)
+
+**Mitigation**: 
+- Keep migrations simple and PostgreSQL-compatible
+- Use Ecto's cross-database abstractions
+- Test migrations on both SQLite and PostgreSQL before deploying
+
+### Troubleshooting
+
+**"database is locked" errors**:
+```bash
+# Increase busy_timeout in config
+busy_timeout: 10000  # 10 seconds
+
+# Or use in-memory database for tests (faster but can't inspect)
+database: ":memory:"
+```
+
+**WAL files not cleaned up**:
+```bash
+# Force checkpoint to merge WAL into main DB
+sqlite3 priv/repo/dev.db "PRAGMA wal_checkpoint(TRUNCATE);"
+
+# Or disable WAL mode (slower)
+journal_mode: :delete
+```
+
+**Tests hanging**:
+- Check `ownership_timeout` in test config
+- Ensure `Sandbox.stop_owner/1` is called in `on_exit`
+- Verify no tests are holding connections open

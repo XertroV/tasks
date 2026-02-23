@@ -1,0 +1,47 @@
+---
+id: P25.M2.E4.T002
+title: Standardize Cron plugin MCP interface
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- cron
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:18:41.142882+00:00'
+started_at: '2026-02-19T15:18:41.142882+00:00'
+completed_at: '2026-02-19T15:18:43.086392+00:00'
+duration_minutes: 0.03239165
+---
+
+# Standardize Cron plugin MCP interface
+
+## Scope
+
+- Audit `lib/pag_server/plugins/cron/cron_plugin.ex` and `lib/pag_server/plugins/cron/cron_tools.ex`.
+- Plan conversion from:
+  - `list_schedules`
+  - `add_schedule`
+  - `remove_schedule`
+  - `pause_schedule`
+  - `resume_schedule`
+- to one cron domain tool with explicit action/subcommand routing.
+
+## Requirements
+
+- Define a single tool schema with operation enum and operation-specific validation.
+- Keep argument requirements visible by operation in schema docs.
+- Include robust unknown operation error behavior and migration notes.
+- Ensure workspace context handling remains explicit and safe.
+
+## Acceptance Criteria
+
+- [ ] Single cron MCP tool definition with operation enum documented.
+- [ ] Existing operations are mapped one-to-one in design with no behavior dropped.
+- [ ] Unknown operations return deterministic structured errors with available operations.
+- [ ] Dispatch behavior uses deterministic validation (enum + action guard).
+- [ ] Backwards compatibility plan is documented for direct tool names.

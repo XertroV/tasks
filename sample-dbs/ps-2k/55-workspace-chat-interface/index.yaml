@@ -1,0 +1,61 @@
+id: P55
+name: Workspace Chat Interface
+status: done
+locked: true
+weeks: 3
+estimate_hours: 42.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Core Infrastructure
+  path: 01-core-infrastructure
+  status: done
+  estimate_hours: 9.5
+  complexity: medium
+  depends_on: []
+  description: Routes, LiveView shell, data loading, helpers. Establishes /chat routes,
+    root LiveView with full assign struct, handle_params thread switching, and shared
+    helper utilities.
+  locked: false
+- id: M2
+  name: Thread UI and Message Display
+  path: 02-thread-ui-and-message-display
+  status: done
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on:
+  - M1
+  description: Thread sidebar, thread overview (no-session view), message rendering
+    pipeline with role-based bubbles, composer, and toolbar. All function components
+    receiving assigns from root LiveView.
+  locked: false
+- id: M3
+  name: Real-Time Streaming and Interactive Features
+  path: 03-real-time-streaming-and-intera
+  status: done
+  estimate_hours: 12.5
+  complexity: high
+  depends_on:
+  - M2
+  description: "PubSub subscription lifecycle, streaming token batching (100ms flush),\
+    \ tool call display, approval workflow, and session fork. Highest complexity milestone\
+    \ \u2014 streaming state management and multi-event handler suite."
+  locked: false
+- id: M4
+  name: Polish, Testing, and Documentation
+  path: 04-polish-testing-and-documentati
+  status: done
+  estimate_hours: 11.0
+  complexity: medium
+  depends_on:
+  - M3
+  description: UI polish (empty states, responsive, dark mode), LiveView integration
+    tests, and browser testing documentation for docs/browser-tests/.
+  locked: false
+stats:
+  total_tasks: 33
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 33

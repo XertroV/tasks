@@ -1,0 +1,41 @@
+---
+id: B063
+title: on very wide monitors we should take advantage of that space on the validation
+  console. like the event timeline could go on the righht of quick actions instead
+  of below it
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T14:07:14.302094+00:00'
+started_at: '2026-02-16T14:07:14.302094+00:00'
+completed_at: '2026-02-16T14:32:19.009172+00:00'
+duration_minutes: 25.078451166666664
+---
+
+on very wide monitors we should take advantage of that space on the validation console. like the event timeline could go on the righht of quick actions instead of below it
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-16 14:07 UTC
+**Primary task**: B062 - we should be able to set a default model per provider. we cna use that in forms like the agent management new agent form to populate the default model first for that provider.
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

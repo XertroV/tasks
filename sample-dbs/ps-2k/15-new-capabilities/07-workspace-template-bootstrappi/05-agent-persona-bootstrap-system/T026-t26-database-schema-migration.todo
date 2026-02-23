@@ -1,0 +1,16 @@
+---
+id: P15.M7.E5.T026
+title: 'T26: Database Schema Migration'
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:34:38.869524+00:00'
+started_at: '2026-02-18T10:34:38.869524+00:00'
+completed_at: '2026-02-18T10:34:40.677836+00:00'
+duration_minutes: 0.030138349999999998
+---
+Create workspace_personas and subordinate_agents tables with appropriate indexes and foreign keys.

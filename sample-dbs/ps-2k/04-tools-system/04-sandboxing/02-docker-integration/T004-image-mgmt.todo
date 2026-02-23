@@ -1,0 +1,78 @@
+---
+id: P4.M4.E2.T004
+title: Manage sandbox Docker images
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- sandboxing
+- docker
+- images
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:24:29.628761'
+started_at: '2026-02-05T23:24:29.628761'
+completed_at: '2026-02-05T23:31:10.693926'
+duration_minutes: 6.684419266666667
+---
+
+# Manage sandbox Docker images
+
+Pull and manage Docker images for sandboxing.
+
+## Requirements
+
+- [ ] Pull images on demand
+- [ ] Cache pulled images
+- [ ] List available sandbox images
+- [ ] Remove unused images
+- [ ] Configure default sandbox image
+
+## Acceptance Criteria
+
+- [ ] Pulls images when needed
+- [ ] Caches images locally
+- [ ] Lists sandbox images
+- [ ] Test image pull and cache
+
+## Context
+
+Default images:
+- `alpine:latest` - Minimal base
+- `ubuntu:22.04` - Full environment
+- Custom images for specific tools
+
+## Notes
+
+Image management:
+```elixir
+def ensure_image(name) do
+  case image_exists?(name) do
+    true -> :ok
+    false -> pull_image(name)
+  end
+end
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 10:24 UTC
+**Primary task**: P4.M2.E7.T003 - Implement json_transform tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M4.E2 vs P4.M2.E7)
+- No dependency chain: ✓ (verified at claim time)

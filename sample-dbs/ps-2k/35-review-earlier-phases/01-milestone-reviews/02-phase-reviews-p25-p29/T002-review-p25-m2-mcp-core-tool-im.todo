@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T002
+title: 'Review P25.M2: MCP Core Tool Improvements'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:50:04.973998+00:00'
+started_at: '2026-02-19T00:50:04.973998+00:00'
+completed_at: '2026-02-19T01:11:47.633698+00:00'
+duration_minutes: 21.710994816666666
+---
+Load the review-and-fix skill. Review all epics and tasks under P25.M2 (MCP Tool Interface - Core Tool Improvements). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: improvements to bash_tool/execute_shell (argument shapes, output handling), file editing tools (edit, glob, read, write), and spawn_subagent tool interface. Verify argument schemas are sensible, descriptions are accurate and helpful, and error messages are informative.

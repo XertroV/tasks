@@ -1,0 +1,66 @@
+---
+id: P11.M5.E1.T001
+title: Create LLM provider configuration schema
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- database
+- schema
+- llm
+- configuration
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:37:10.243130+00:00'
+started_at: '2026-02-12T11:37:10.243130+00:00'
+completed_at: '2026-02-12T22:20:42.146428+00:00'
+duration_minutes: 643.5317214833334
+---
+
+# Create LLM provider configuration schema
+
+## Requirements
+
+- [ ] Create `ProviderConfig` Ecto schema in `lib/pag_server/schema/provider_config.ex`
+- [ ] Support multi-provider configuration: Anthropic, OpenAI, OpenRouter, Ollama
+- [ ] Store encrypted API keys using Application config or vault integration
+- [ ] Store per-provider settings: model defaults, temperature, max_tokens, rate limits
+- [ ] Support metadata and custom fields for provider-specific options
+- [ ] Add changesets for creation and updates with validation
+- [ ] Implement soft-delete via `deleted_at` timestamp for archival
+- [ ] Add database migration in `priv/repo/migrations/`
+
+## Acceptance Criteria
+
+- [ ] Schema has required fields: provider_name, api_key_encrypted, is_enabled, metadata
+- [ ] Schema has optional fields: model_default, temperature, max_tokens, rate_limit, deleted_at
+- [ ] Changesets validate provider_name against allowed providers (anthropic, openai, openrouter, ollama)
+- [ ] Changesets validate API key format (non-empty string, reasonable length)
+- [ ] Numeric fields validated as positive (temperature 0.0-2.0, max_tokens > 0)
+- [ ] Migration creates `provider_configs` table with proper indexes
+- [ ] Unique constraint: (provider_name, deleted_at) to allow archival and re-configuration
+- [ ] Tests verify create, update, and soft-delete functionality
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 11:37 UTC
+**Primary task**: P11.M4.E2.T001 - Build platform configuration controller
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M5.E1 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

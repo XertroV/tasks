@@ -1,0 +1,80 @@
+---
+id: P10.M1.E1.T007
+title: Create WebhookSubscriptionController (CRUD endpoints)
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:10:15.049319+00:00'
+started_at: '2026-02-11T20:10:15.049319+00:00'
+completed_at: '2026-02-11T20:32:06.468224+00:00'
+duration_minutes: 21.856981566666665
+---
+
+# Create WebhookSubscriptionController (CRUD endpoints)
+
+
+
+## Requirements
+
+Create a WebhookSubscriptionController with CRUD endpoints for managing webhook subscriptions with proper error handling and permission checks.
+
+## Description
+
+The controller provides REST endpoints for subscription management: create subscriptions, list by integration, view details, update filters/events, and deactivate subscriptions. Endpoints follow REST conventions and integrate with permission checks and error handling.
+
+## Acceptance Criteria
+
+- [ ] Controller at `lib/pag_server_web/controllers/webhook_subscription_controller.ex`
+- [ ] `POST /api/v1/integrations/:integration_id/subscriptions` - Create subscription
+- [ ] `GET /api/v1/integrations/:integration_id/subscriptions` - List subscriptions
+- [ ] `GET /api/v1/integrations/:integration_id/subscriptions/:id` - Show subscription
+- [ ] `PATCH /api/v1/integrations/:integration_id/subscriptions/:id` - Update filters/events
+- [ ] `DELETE /api/v1/integrations/:integration_id/subscriptions/:id` - Deactivate subscription
+- [ ] Returns 201 on create, 200 on get/update, 204 on delete
+- [ ] Validates permission via `RequirePermissions` plug with appropriate scopes
+- [ ] Returns validation errors with field-level details on 422
+- [ ] Returns 404 if subscription/integration not found
+- [ ] Uses OpenAPI specs for documentation
+
+## Implementation Notes
+
+- Location: `lib/pag_server_web/controllers/webhook_subscription_controller.ex`
+- REST paths: `/api/v1/integrations/:integration_id/subscriptions` (create, index)
+- Nested path: `/api/v1/integrations/:integration_id/subscriptions/:id` (show, update, delete)
+- Use pattern from `/home/xertrov/src/pag-server/lib/pag_server_web/controllers/api_key_controller.ex` (lines 40-90)
+- Permissions: Add to auth system - `:manage_webhooks` for CRUD operations
+- Create params: `repository` (required), `webhook_url` (required), `events` (required array), `filters` (optional, default {}), `priority` (optional, default 100)
+- Update params: `events`, `filters`, `is_active`, `priority` (cannot change integration_id or repository)
+- Use `action_fallback PagServerWeb.FallbackController` for consistent error handling
+- Response JSON: `id`, `integration_id`, `repository`, `webhook_url`, `events`, `filters`, `is_active`, `priority`, `created_at`, `updated_at`
+- Implement OpenApiSpex specs for request/response schemas (create separate `_json.ex` file for JSON rendering)
+- HTTP status codes: 201 (create), 200 (show/update), 204 (delete), 404 (not found), 422 (validation)
+- Handle foreign key errors gracefully: return 404 if integration not found or doesn't belong to user
+- Validate webhook_url format before persistence
+- Add module spec and comprehensive docstring with examples
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-11 20:10 UTC
+**Sibling tasks**: P10.M1.E1.T008, P10.M1.E1.T009, P10.M1.E1.T010, P10.M1.E1.T011, P10.M1.E1.T012
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M1.E1.T007 → P10.M1.E1.T008 → P10.M1.E1.T009 → P10.M1.E1.T010 → P10.M1.E1.T011 → P10.M1.E1.T012
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M1.E1.T007: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T007-create-webhooksubscriptioncont.todo
+- P10.M1.E1.T008: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T008-create-integrationsettingscont.todo
+- P10.M1.E1.T009: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T009-add-webhook-subscription-route.todo
+- P10.M1.E1.T010: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T010-implement-permission-checks-fo.todo
+- P10.M1.E1.T011: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T011-add-webhook-subscription-test.todo
+- P10.M1.E1.T012: .tasks/10-devops-developer-tool-integrat/01-github-integration/01-webhook-infrastructure/T012-write-tests-for-webhook-routin.todo

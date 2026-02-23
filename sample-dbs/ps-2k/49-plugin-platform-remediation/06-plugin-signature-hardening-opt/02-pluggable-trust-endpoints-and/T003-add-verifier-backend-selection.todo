@@ -1,0 +1,31 @@
+---
+id: P49.M6.E2.T003
+title: Add verifier backend selection and deterministic fallback chain
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:47:58.340275+00:00'
+started_at: '2026-02-20T18:47:58.340275+00:00'
+completed_at: '2026-02-20T18:55:06.093959+00:00'
+duration_minutes: 7.129227883333333
+---
+
+# Add verifier backend selection and deterministic fallback chain
+
+
+
+## Requirements
+
+- Add verifier backend selection policy supporting checksum, sigstore, and local-only verifier modes.
+- Define deterministic fallback chain and failure behavior.
+- Record selected backend and fallback path in trust events.
+
+## Acceptance Criteria
+
+- Backend selection follows documented deterministic rules.
+- Fallback decisions are transparent in logs/events.
+- Tests validate backend selection and fallback edge cases.

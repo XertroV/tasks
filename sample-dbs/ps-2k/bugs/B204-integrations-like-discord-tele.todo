@@ -1,0 +1,19 @@
+---
+id: B204
+title: Integrations (like discord, telegram, teams, etc) should be possible to implement
+  as plugins. We'll need to audit the plugin systme to make sure it's feasible, and
+  implement one to test
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T15:47:54.568069+00:00'
+started_at: '2026-02-21T15:47:54.568069+00:00'
+completed_at: '2026-02-21T15:50:24.065530+00:00'
+duration_minutes: 2.4916241166666664
+---
+
+Integrations (like discord, telegram, teams, etc) should be possible to implement as plugins. We'll need to audit the plugin systme to make sure it's feasible, and implement one to test

@@ -1,0 +1,79 @@
+---
+id: P33.M1.E1.T003
+title: Implement CSS animation system for Pag states
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on:
+- P33.M1.E1.T001
+tags:
+- css
+- animation
+- mascot
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:42:13.529139+00:00'
+started_at: '2026-02-18T22:42:13.529139+00:00'
+completed_at: '2026-02-18T22:49:24.638861+00:00'
+duration_minutes: 7.185161816666667
+---
+
+# Implement CSS animation system for Pag states
+
+Create CSS keyframe animations for all Pag mascot states and transitions.
+
+## Animation Types
+
+### Idle Animation
+- Subtle breathing effect (scale Y slightly)
+- Occasional blink (every 3-5 seconds)
+- Gentle tail/leg wiggle
+
+### Walking Animation
+- Leg movement cycle (8 frames)
+- Horizontal translation across screen
+- Direction flip at screen edges
+
+### Working Animation
+- Concentration wiggle
+- Maybe holding a wrench/tool indicator
+- Faster, more focused movement
+
+### Sleeping Animation
+- Slow breathing
+- Zzz bubbles floating up
+- Eyes closed
+
+### Happy/Excited
+- Bounce animation
+- Sparkles around character
+- Faster, energetic movement
+
+### Hungry
+- Slight slump
+- Stomach rumble visual
+- Sadder expression
+
+## CSS Structure
+
+```css
+.pag-mascot {
+  /* Base styles */
+}
+
+.pag-mascot--idle { /* idle animation */ }
+.pag-mascot--walking { /* walking animation */ }
+.pag-mascot--working { /* working animation */ }
+.pag-mascot--sleeping { /* sleeping animation */ }
+.pag-mascot--happy { /* happy animation */ }
+.pag-mascot--hungry { /* hungry animation */ }
+```
+
+## Acceptance Criteria
+
+- [ ] CSS animations defined in `assets/css/pag-mascot.css`
+- [ ] All 6 state animations implemented
+- [ ] Animations respect `prefers-reduced-motion`
+- [ ] Smooth transitions between states (300ms)
+- [ ] Walking animation moves character across screen
+- [ ] Performance optimized (uses transform, opacity)

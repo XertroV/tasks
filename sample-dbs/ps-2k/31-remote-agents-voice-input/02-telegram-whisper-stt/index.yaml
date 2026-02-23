@@ -1,0 +1,32 @@
+id: P31.M2
+name: Telegram Whisper STT
+status: pending
+estimate_hours: 13.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Whisper Integration
+  path: 01-whisper-integration
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Telegram Voice Handler
+  path: 02-telegram-voice-handler
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

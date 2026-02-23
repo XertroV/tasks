@@ -1,0 +1,60 @@
+---
+id: P11.M2.E2.T001
+title: Design tool permission configuration schema
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T00:18:37.954847+00:00'
+started_at: '2026-02-13T00:18:37.954847+00:00'
+completed_at: '2026-02-13T00:59:09.851246+00:00'
+duration_minutes: 40.53160645
+---
+
+# Design tool permission configuration schema
+
+
+
+## Requirements
+
+- [ ] Design Ecto schema for tool permissions configuration
+- [ ] Support role-based access control: admin, agent_owner, read-only
+- [ ] Support per-agent tool allowlist/denylist
+- [ ] Store permission rules with effective date ranges
+- [ ] Support override rules: per-agent overrides per-session overrides global
+- [ ] Include metadata: created_by, created_at, expires_at, reason
+- [ ] Support default permissions template for new agents
+- [ ] Document permission hierarchy and precedence rules
+
+## Acceptance Criteria
+
+- [ ] Ecto schema created with proper associations to Agent and Tool models
+- [ ] Supports role-based permissions with clear privilege levels
+- [ ] Allows time-based permission rules (start_date, end_date)
+- [ ] Permission hierarchy documented: agent override > session override > global
+- [ ] Migration creates permissions table with proper indexes
+- [ ] Default permission template can be applied to new agents
+- [ ] Soft-deletion support for audit trail
+- [ ] Schema includes validation: no permission conflicts, date ranges valid
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-12 09:12 UTC
+**Sibling tasks**: P11.M2.E2.T002, P11.M2.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M2.E2.T001 → P11.M2.E2.T002 → P11.M2.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M2.E2.T001: .tasks/11-api-first-configuration-system/02-tools-capabilities-management/02-tool-permissions-sandbox-confi/T001-design-tool-permission-configu.todo
+- P11.M2.E2.T002: .tasks/11-api-first-configuration-system/02-tools-capabilities-management/02-tool-permissions-sandbox-confi/T002-implement-per-agent-tool-permi.todo
+- P11.M2.E2.T003: .tasks/11-api-first-configuration-system/02-tools-capabilities-management/02-tool-permissions-sandbox-confi/T003-add-sandbox-configuration-inte.todo

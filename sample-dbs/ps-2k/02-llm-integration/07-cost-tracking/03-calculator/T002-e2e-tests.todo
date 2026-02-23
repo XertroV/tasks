@@ -1,0 +1,239 @@
+---
+id: P2.M7.E3.T002
+title: Write end-to-end cost tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- testing
+- integration
+- e2e
+claimed_by: claude-1
+claimed_at: '2026-02-05T19:15:42.376095'
+started_at: '2026-02-05T19:15:42.376095'
+completed_at: '2026-02-05T19:23:10.158390'
+duration_minutes: 7.463038116666667
+---
+
+# Write end-to-end cost tests
+
+Create end-to-end tests that verify the complete cost tracking pipeline.
+
+## Requirements
+
+- [ ] Create `test/pag_server/stats_test.exs`
+- [ ] Test full request cost calculation flow
+- [ ] Test session aggregation with multiple requests
+- [ ] Verify token counts match expected values
+- [ ] Verify cost calculations are accurate
+- [ ] Test with different models and providers
+- [ ] Test edge cases (empty messages, no usage data)
+
+## Acceptance Criteria
+
+- [ ] All tests pass with `mix test test/pag_server/stats_test.exs`
+- [ ] Tests cover complete tokenizer → pricing → stats flow
+- [ ] Realistic message examples used
+- [ ] Multiple providers tested (Anthropic, OpenAI, Ollama)
+- [ ] Session aggregation verified with 3+ requests
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.StatsTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.Stats
+
+  describe "calculate_request_cost/3" do
+    test "calculates cost for Claude request" do
+      messages = [
+        %{"role" => "user", "content" => "Hello, how are you today?"}
+      ]
+      
+      response = %{
+        "content" => "I'm doing great, thank you for asking!",
+        "usage" => %{
+          "input_tokens" => 100,
+          "output_tokens" => 50,
+          "cache_read_input_tokens" => 0
+        }
+      }
+      
+      stats = Stats.calculate_request_cost(messages, "claude-sonnet-4", response)
+      
+      # Verify token counts
+      assert stats.prompt_tokens > 0
+      assert stats.completion_tokens > 0
+      assert stats.cached_tokens == 0
+      
+      # Verify costs
+      assert stats.prompt_cost_millicents > 0
+      assert stats.completion_cost_millicents > 0
+      assert stats.total_cost_millicents == 
+             stats.prompt_cost_millicents + 
+             stats.completion_cost_millicents + 
+             stats.cached_cost_millicents
+    end
+
+    test "handles cached tokens for Anthropic" do
+      messages = [
+        %{"role" => "user", "content" => "Follow-up question"}
+      ]
+      
+      response = %{
+        "content" => "Here's the answer",
+        "usage" => %{
+          "input_tokens" => 20,
+          "output_tokens" => 10,
+          "cache_read_input_tokens" => 500  # Cached from previous request
+        }
+      }
+      
+      stats = Stats.calculate_request_cost(messages, "claude-sonnet-4", response)
+      
+      assert stats.cached_tokens == 500
+      assert stats.cached_cost_millicents > 0
+      # Cached should be ~10% of prompt cost
+      assert stats.cached_cost_millicents < stats.prompt_cost_millicents
+    end
+
+    test "Ollama requests cost $0" do
+      messages = [%{"role" => "user", "content" => "Test"}]
+      response = %{"content" => "Response"}
+      
+      stats = Stats.calculate_request_cost(messages, "llama3", response)
+      
+      assert stats.total_cost_millicents == 0
+    end
+
+    test "handles empty messages" do
+      stats = Stats.calculate_request_cost([], "claude-sonnet-4", %{"content" => ""})
+      
+      assert stats.prompt_tokens == 0
+      assert stats.completion_tokens == 0
+      assert stats.total_cost_millicents == 0
+    end
+  end
+
+  describe "aggregate_session_stats/1" do
+    test "aggregates multiple requests" do
+      request_stats = [
+        %{
+          prompt_tokens: 100,
+          completion_tokens: 50,
+          cached_tokens: 0,
+          prompt_cost_millicents: 300,
+          completion_cost_millicents: 750,
+          cached_cost_millicents: 0,
+          total_cost_millicents: 1050
+        },
+        %{
+          prompt_tokens: 20,
+          completion_tokens: 10,
+          cached_tokens: 100,
+          prompt_cost_millicents: 60,
+          completion_cost_millicents: 150,
+          cached_cost_millicents: 30,
+          total_cost_millicents: 240
+        },
+        %{
+          prompt_tokens: 50,
+          completion_tokens: 25,
+          cached_tokens: 0,
+          prompt_cost_millicents: 150,
+          completion_cost_millicents: 375,
+          cached_cost_millicents: 0,
+          total_cost_millicents: 525
+        }
+      ]
+      
+      session = Stats.aggregate_session_stats(request_stats)
+      
+      assert session.prompt_tokens == 170
+      assert session.completion_tokens == 85
+      assert session.cached_tokens == 100
+      assert session.total_cost_millicents == 1815
+      
+      # Verify totals match sum of components
+      assert session.total_cost_millicents ==
+             session.prompt_cost_millicents +
+             session.completion_cost_millicents +
+             session.cached_cost_millicents
+    end
+
+    test "handles empty request list" do
+      session = Stats.aggregate_session_stats([])
+      
+      assert session.prompt_tokens == 0
+      assert session.total_cost_millicents == 0
+    end
+  end
+
+  describe "end-to-end cost tracking" do
+    test "realistic conversation with cost tracking" do
+      # User: Initial question
+      messages1 = [
+        %{"role" => "user", "content" => "What is the capital of France?"}
+      ]
+      response1 = %{
+        "content" => "The capital of France is Paris.",
+        "usage" => %{"input_tokens" => 50, "output_tokens" => 20}
+      }
+      stats1 = Stats.calculate_request_cost(messages1, "claude-sonnet-4", response1)
+
+      # User: Follow-up (with cached context)
+      messages2 = [
+        %{"role" => "user", "content" => "What is the capital of France?"},
+        %{"role" => "assistant", "content" => "The capital of France is Paris."},
+        %{"role" => "user", "content" => "What about Germany?"}
+      ]
+      response2 = %{
+        "content" => "The capital of Germany is Berlin.",
+        "usage" => %{
+          "input_tokens" => 30,
+          "output_tokens" => 20,
+          "cache_read_input_tokens" => 70  # Previous context cached
+        }
+      }
+      stats2 = Stats.calculate_request_cost(messages2, "claude-sonnet-4", response2)
+
+      # Aggregate session
+      session = Stats.aggregate_session_stats([stats1, stats2])
+
+      # Verify session totals
+      assert session.prompt_tokens > 0
+      assert session.completion_tokens > 0
+      assert session.cached_tokens == 70
+      assert session.total_cost_millicents > 0
+
+      # Verify caching reduced cost
+      assert stats2.cached_cost_millicents > 0
+      assert stats2.cached_cost_millicents < stats2.prompt_cost_millicents
+    end
+  end
+end
+```
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md:1268-1280` (Full cost calculation flow)
+
+**Key Points**:
+- Test realistic multi-turn conversations
+- Verify Anthropic prompt caching reduces costs
+- Test all providers (some free, some paid)
+- Verify aggregation math is correct
+
+## Notes
+
+These E2E tests serve as documentation for how the complete cost tracking system works. They demonstrate:
+1. Single request cost calculation
+2. Session-level aggregation
+3. Prompt caching benefits
+4. Provider differences (local vs. cloud)
+
+Run these tests frequently to ensure cost tracking accuracy.

@@ -1,0 +1,32 @@
+---
+id: P34.M1.E2.T002
+title: REST API Endpoints
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- backend
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:40:59.867949+00:00'
+started_at: '2026-02-19T00:40:59.867949+00:00'
+completed_at: '2026-02-19T00:41:01.690607+00:00'
+duration_minutes: 0.030377433333333332
+---
+
+# REST API Endpoints
+
+Add routes under `/api/v1/skills/clawhub`:
+
+- `GET /` - List skills (paginated)
+- `GET /search?q=query` - Search skills
+- `GET /:slug` - Get skill details
+- `POST /:slug/install` - Install skill to workspace
+
+## Acceptance Criteria
+
+- [ ] All endpoints return proper JSON responses
+- [ ] Pagination params (`page`, `per_page`) work
+- [ ] Error responses use consistent format

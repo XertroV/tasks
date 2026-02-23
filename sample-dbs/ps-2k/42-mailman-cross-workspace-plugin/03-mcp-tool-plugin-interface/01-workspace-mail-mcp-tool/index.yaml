@@ -1,0 +1,22 @@
+id: P42.M3.E1
+name: workspace_mail MCP Tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-workspace-mail-mcp-t.todo
+  title: Implement workspace_mail MCP tool (all actions)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

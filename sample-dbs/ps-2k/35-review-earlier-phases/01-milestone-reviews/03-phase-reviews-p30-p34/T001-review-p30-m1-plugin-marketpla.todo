@@ -1,0 +1,16 @@
+---
+id: P35.M1.E3.T001
+title: 'Review P30.M1: Plugin Marketplace Registry API'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:32:14.803817+00:00'
+started_at: '2026-02-19T00:32:14.803817+00:00'
+completed_at: '2026-02-19T00:37:26.183917+00:00'
+duration_minutes: 5.189668166666666
+---
+Load the review-and-fix skill. Review all epics and tasks under P30.M1 (Plugin Marketplace Registry API). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: PluginMarketplace context module, list_available/search_available functions, marketplace fetch/caching logic, GET /api/v1/plugins/marketplace and GET /api/v1/plugins/marketplace/:name endpoints, installer enhancements, and controller tests.

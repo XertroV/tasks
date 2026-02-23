@@ -1,0 +1,154 @@
+---
+id: P4.M0.E6.T002
+title: Implement schema converters for each provider
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- schema
+- providers
+claimed_by: cli-user
+claimed_at: '2026-02-05T21:25:51.857072'
+started_at: '2026-02-05T21:25:51.857072'
+completed_at: '2026-02-05T21:25:52.495621'
+duration_minutes: 0.010642333333333334
+---
+
+# Implement schema converters for each provider
+
+
+
+## Requirements
+
+Create bidirectional converters between `ProviderSchema` and provider-specific tool formats for:
+- Anthropic (input_schema format)
+- OpenAI (function calling format with type: "function" wrapper)
+- OpenRouter (uses OpenAI format)
+- Ollama (uses OpenAI format)
+
+### Architecture
+
+**Module-based converters** in `lib/pag_server/tools/converters/`:
+- `AnthropicConverter` - Anthropic-specific conversions
+- `OpenAIConverter` - OpenAI/OpenRouter/Ollama conversions
+
+Each converter provides:
+- `to_provider/1` - Convert `ProviderSchema` → provider format
+- `from_provider/1` - Convert provider format → `ProviderSchema`
+
+### Provider Format Details
+
+**Anthropic Format:**
+```elixir
+%{
+  "name" => "get_weather",
+  "description" => "Get current weather",
+  "input_schema" => %{
+    "type" => "object",
+    "properties" => %{"location" => %{"type" => "string"}},
+    "required" => ["location"]
+  },
+  # Optional:
+  "cache_control" => %{"type" => "ephemeral"}
+}
+```
+
+**OpenAI Format:**
+```elixir
+%{
+  "type" => "function",
+  "function" => %{
+    "name" => "get_weather",
+    "description" => "Get current weather",
+    "parameters" => %{
+      "type" => "object",
+      "properties" => %{"location" => %{"type" => "string"}},
+      "required" => ["location"],
+      # Optional (strict mode):
+      "additionalProperties" => false
+    },
+    # Optional (strict mode):
+    "strict" => true
+  }
+}
+```
+
+### Conversion Rules
+
+**ProviderSchema → Anthropic:**
+- Map `name`, `description`, `parameters` to top-level
+- Rename `parameters` → `input_schema`
+- Add `cache_control` if present
+- **Ignore** `strict` field (Anthropic doesn't use it)
+
+**Anthropic → ProviderSchema:**
+- Rename `input_schema` → `parameters`
+- Extract `cache_control` if present
+- Set `strict: nil` (not applicable)
+
+**ProviderSchema → OpenAI:**
+- Wrap in `{"type" => "function", "function" => {...}}`
+- Put `name`, `description`, `parameters` inside `function`
+- If `strict: true`, add to `function` and ensure `parameters.additionalProperties == false`
+- **Ignore** `cache_control` field (OpenAI doesn't use it)
+
+**OpenAI → ProviderSchema:**
+- Extract from `function` wrapper
+- If `function.strict == true`, set `strict: true`
+- Set `cache_control: nil` (not applicable)
+
+## Acceptance Criteria
+
+### Module Structure
+
+- [x] Create `lib/pag_server/tools/converters/` directory
+- [x] Implement `AnthropicConverter` module
+- [x] Implement `OpenAIConverter` module
+- [x] Both modules export `to_provider/1` and `from_provider/1`
+
+### AnthropicConverter
+
+- [x] `to_provider/1` converts ProviderSchema to Anthropic format
+- [x] Handles `cache_control` field correctly
+- [x] Ignores `strict` field (not applicable to Anthropic)
+- [x] `from_provider/1` converts Anthropic format to ProviderSchema
+- [x] Extracts `cache_control` if present
+- [x] Sets `strict: nil` since Anthropic doesn't use it
+
+### OpenAIConverter
+
+- [x] `to_provider/1` converts ProviderSchema to OpenAI format
+- [x] Wraps in `type: "function"` wrapper
+- [x] Handles `strict` mode correctly (adds to function, validates additionalProperties)
+- [x] Ignores `cache_control` field (not applicable to OpenAI)
+- [x] `from_provider/1` converts OpenAI format to ProviderSchema
+- [x] Unwraps from `type: "function"` wrapper
+- [x] Extracts `strict` flag from function if present
+- [x] Sets `cache_control: nil` since OpenAI doesn't use it
+
+### Validation & Error Handling
+
+- [x] Both converters validate input format
+- [x] Return `{:error, reason}` for invalid inputs
+- [x] Handle missing optional fields gracefully
+- [x] Preserve all JSON Schema properties (properties, required, enum, etc.)
+
+### Testing
+
+- [x] Comprehensive test coverage for both converters
+- [x] Test roundtrip conversions (ProviderSchema → Provider → ProviderSchema)
+- [x] Test edge cases: missing descriptions, empty parameters, strict mode
+- [x] Test provider-specific fields (cache_control for Anthropic, strict for OpenAI)
+- [x] Test error cases (invalid formats, missing required fields)
+- [x] Real-world examples from both providers
+
+### Code Quality
+
+- [x] All tests pass: `mix test`
+- [x] Lint clean: `mix lint`
+- [x] Functions < 40 lines each
+- [x] Files < 1000 lines
+- [x] Clear documentation with examples

@@ -1,0 +1,17 @@
+---
+id: P48.M3.E4.T001
+title: 'LspTool: domain tool with action dispatch (diagnostics, hover, goto_def, refs,
+  symbols)'
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:06:33.158524+00:00'
+started_at: '2026-02-20T09:06:33.158524+00:00'
+completed_at: '2026-02-20T09:42:53.838473+00:00'
+duration_minutes: 36.344665549999995
+---
+Tool name: 'lsp'. Actions: diagnostics, hover, go_to_definition, find_references, document_symbols, workspace_symbols. Args: action (required), file (required for file-scoped), line (1-indexed), column (1-indexed), query (workspace_symbols only). Language auto-detected from extension. Error if no server for language (list supported). Always include action in response. Convert relative paths to absolute using session.working_directory. Follow domain tool pattern from AGENTS.md.

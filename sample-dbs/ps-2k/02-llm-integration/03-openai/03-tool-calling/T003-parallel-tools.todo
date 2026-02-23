@@ -1,0 +1,104 @@
+---
+id: P2.M3.E3.T003
+title: Support parallel_tool_calls option
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- openai
+- parallel
+- configuration
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:18:41.500901'
+started_at: '2026-02-05T16:18:41.500901'
+completed_at: '2026-02-05T16:21:26.822994'
+duration_minutes: 2.75536805
+---
+
+# Support parallel_tool_calls option
+
+Add support for OpenAI's parallel_tool_calls parameter to control execution mode.
+
+## Requirements
+
+- [x] Add `parallel_tool_calls` parameter to chat completion requests
+- [x] Support `true` (allow parallel calls) and `false` (sequential only)
+- [x] Default to `true` for best performance
+- [x] Document parallel vs sequential tool calling behavior
+- [x] Handle mixed parallel/sequential tool execution
+- [x] Track which tools were called in parallel
+
+## Acceptance Criteria
+
+- [x] `parallel_tool_calls: true` allows multiple simultaneous tool calls
+- [x] `parallel_tool_calls: false` ensures sequential execution
+- [x] Default behavior is parallel (OpenAI default)
+- [x] Configuration is passed correctly to API
+- [x] Tests verify both modes work
+- [x] Documentation explains when to use each mode
+- [x] Behavior matches OpenAI API spec
+
+## Context
+
+**Plan References**:
+- OpenAI Parallel Tool Calls: https://platform.openai.com/docs/guides/function-calling/parallel-function-calling
+- `ref-projects/openai_ex/lib/openai_ex/chat_completions.ex` Line 19 (parallel_tool_calls field)
+
+**Key Points**:
+- `parallel_tool_calls: true` (default): Model can request multiple tools at once
+- `parallel_tool_calls: false`: Model requests one tool at a time
+- Sequential mode useful when tool order matters or has side effects
+- Parallel mode is faster for independent tool calls
+- Setting affects model behavior, not just client
+
+## Implementation Notes
+
+Request parameter:
+```elixir
+def create(client, params) do
+  body = params
+  |> Map.take(@api_fields)
+  |> Map.put_new(:parallel_tool_calls, true)  # Default
+  
+  # Send to API
+end
+```
+
+Usage examples:
+```elixir
+# Parallel (default) - fast for independent tools
+create(client, %{
+  model: "gpt-4",
+  messages: messages,
+  tools: tools,
+  parallel_tool_calls: true
+})
+
+# Sequential - preserves order, useful for stateful operations
+create(client, %{
+  model: "gpt-4",
+  messages: messages,
+  tools: tools,
+  parallel_tool_calls: false
+})
+```
+
+When parallel=true, response may contain multiple tool_calls:
+```json
+{
+  "tool_calls": [
+    {"id": "call_1", "function": {"name": "get_weather", ...}},
+    {"id": "call_2", "function": {"name": "get_time", ...}}
+  ]
+}
+```
+
+When parallel=false, response contains at most one tool_call.
+
+Configuration considerations:
+- Agent system should execute tool calls in parallel when possible
+- Sequential mode useful for tools with dependencies
+- Consider adding agent-level configuration for default mode

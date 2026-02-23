@@ -1,0 +1,138 @@
+---
+id: P2.M7.E2.T001
+title: Create Pricing module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- pricing
+- llm
+- cost
+claimed_by: claude-1
+claimed_at: '2026-02-05T18:47:22.055180'
+started_at: '2026-02-05T18:47:22.055180'
+completed_at: '2026-02-05T19:00:30.845230'
+duration_minutes: 13.1465006
+---
+
+# Create Pricing module
+
+Implement the Pricing module for LLM cost calculation based on token usage.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/pricing.ex` module
+- [ ] Implement `get_pricing/1` function (model name → pricing map)
+- [ ] Implement `calculate_cost/3` function (tokens, model, token_type)
+- [ ] Use millicents (1/100,000 dollar) for precision
+- [ ] Handle prompt, completion, and cached token types
+- [ ] Add @doc and @spec for all public functions
+- [ ] Follow architecture.md:311 module structure
+
+## Acceptance Criteria
+
+- [ ] `Pricing.get_pricing("claude-sonnet-4")` returns pricing map
+- [ ] `Pricing.calculate_cost(1_000_000, "claude-sonnet-4", :prompt)` returns cost in millicents
+- [ ] Cached tokens are priced at 10% of prompt cost
+- [ ] Unknown models return default pricing
+- [ ] Module compiles without warnings
+- [ ] Module is under 150 LoC (target ~100 LoC)
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.LLM.Pricing do
+  @moduledoc """
+  LLM pricing calculation and cost tracking.
+  
+  Provides per-model pricing data and calculates costs
+  in millicents (1/100,000 dollar) for precision.
+  """
+
+  @type pricing :: %{
+    prompt_per_million: float(),
+    completion_per_million: float(),
+    cached_per_million: float()
+  }
+
+  @doc """
+  Get pricing for a specific model.
+  
+  Returns pricing in USD per million tokens.
+  Falls back to conservative default for unknown models.
+  """
+  @spec get_pricing(String.t()) :: pricing()
+  def get_pricing(model) do
+    pricing_data()
+    |> Map.get(normalize_model(model), default_pricing())
+  end
+
+  @doc """
+  Calculate cost for token usage.
+  
+  Returns cost in millicents (1/100,000 dollar).
+  
+  ## Examples
+  
+      iex> calculate_cost(1_000_000, "claude-sonnet-4", :prompt)
+      300_000  # $3.00 in millicents
+  """
+  @spec calculate_cost(non_neg_integer(), String.t(), :prompt | :completion | :cached) :: non_neg_integer()
+  def calculate_cost(tokens, model, token_type) do
+    pricing = get_pricing(model)
+    rate = get_rate(pricing, token_type)
+    
+    # Convert to millicents: (tokens / 1M) * rate * 100_000
+    (tokens * rate * 100_000 / 1_000_000)
+    |> round()
+  end
+
+  # Private functions
+
+  defp normalize_model(model) do
+    model
+    |> String.downcase()
+    |> String.trim()
+  end
+
+  defp get_rate(pricing, :prompt), do: pricing.prompt_per_million
+  defp get_rate(pricing, :completion), do: pricing.completion_per_million
+  defp get_rate(pricing, :cached), do: pricing.cached_per_million
+
+  defp default_pricing do
+    %{
+      prompt_per_million: 3.0,
+      completion_per_million: 15.0,
+      cached_per_million: 0.3
+    }
+  end
+
+  defp pricing_data do
+    # Placeholder - will be filled in T002
+    %{}
+  end
+end
+```
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md:311` (Pricing module)
+- `.plan/2026-02-05-velvet-cascade/index.md:283-287` (Cost storage in millicents)
+- `.plan/2026-02-05-velvet-cascade/index.md:654-658` (get_pricing callback)
+
+**Key Points**:
+- Millicents = 1/100,000 dollar for precision (avoid floating point errors)
+- Cached tokens typically cost 10% of prompt tokens
+- Must handle model name variations (case, whitespace)
+- Default pricing for unknown models to avoid crashes
+
+## Notes
+
+The pricing module separates pricing data (added in T002) from calculation logic. This allows easy updates to pricing without touching calculation code.
+
+Millicent precision example:
+- $3.00 per 1M tokens = 300,000 millicents
+- 10,000 tokens = 3,000 millicents = $0.03

@@ -1,0 +1,52 @@
+id: P50.M1.E3
+name: Action Dispatcher and Error Contract
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-collabteams-dispatch.todo
+  title: Implement CollabTeams.Dispatcher with action routing skeleton
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E1.T002
+- id: T002
+  file: T002-add-shared-context-validation.todo
+  title: Add shared context validation to dispatcher
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E3.T001
+- id: T003
+  file: T003-declare-mcp-tool-schema-for-co.todo
+  title: Declare MCP tool schema for collab_teams.team
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E3.T001
+- id: T004
+  file: T004-add-dispatcher-unit-tests.todo
+  title: Add dispatcher unit tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E3.T001
+  - P50.M1.E3.T002
+  - P50.M1.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

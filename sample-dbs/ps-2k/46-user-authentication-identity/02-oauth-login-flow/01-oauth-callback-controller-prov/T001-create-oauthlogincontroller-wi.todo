@@ -1,0 +1,44 @@
+---
+id: P46.M2.E1.T001
+title: Create OAuthLoginController with initiation and callback actions
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P46.M1.E1.T003
+- P46.M1.E2.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:30:25.130488+00:00'
+started_at: '2026-02-19T21:30:25.130488+00:00'
+completed_at: '2026-02-19T21:38:11.025845+00:00'
+duration_minutes: 7.76492245
+---
+Create lib/pag_server_web/controllers/oauth_login_controller.ex (separate from existing OAuthController which handles integration credentials).
+Actions:
+- request/2 — initiate OAuth flow. Reads provider from path param (:provider). Validates provider is one of [:github, :google, :gitlab]. Uses PowAssent or Assent directly to build authorization URL with PKCE state. Stores state in session. Redirects to provider.
+- callback/2 — handles OAuth provider redirect. Validates state param matches session. Exchanges code for token. Fetches user info from provider. Delegates to UserProvisioner (see E2). On success: create session, redirect to dashboard. On error: redirect to /login with flash error.
+Add routes to router.ex under a :oauth_login scope (no auth required):
+  GET  /auth/:provider          -> OAuthLoginController.request
+  GET  /auth/:provider/callback -> OAuthLoginController.callback
+Note: these routes must NOT conflict with existing /oauth/:provider routes (integration OAuth). Use /auth/ prefix.
+Acceptance: GitHub OAuth flow works end-to-end in dev with real GitHub app credentials.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 21:30 UTC
+**Sibling tasks**: P46.M2.E1.T002, P46.M2.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M2.E1.T001 → P46.M2.E1.T002 → P46.M2.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M2.E1.T001: .tasks/46-user-authentication-identity/02-oauth-login-flow/01-oauth-callback-controller-prov/T001-create-oauthlogincontroller-wi.todo
+- P46.M2.E1.T002: .tasks/46-user-authentication-identity/02-oauth-login-flow/01-oauth-callback-controller-prov/T002-configure-assent-strategies-fo.todo
+- P46.M2.E1.T003: .tasks/46-user-authentication-identity/02-oauth-login-flow/01-oauth-callback-controller-prov/T003-add-logout-action-and-session.todo

@@ -1,0 +1,39 @@
+---
+id: P51.M1.E1.T005
+title: Implement 'backlog fixed' CLI command
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:35:52.140796+00:00'
+started_at: '2026-02-20T14:35:52.140796+00:00'
+completed_at: '2026-02-20T14:47:52.574244+00:00'
+duration_minutes: 12.00722395
+---
+## Purpose
+Add a 'backlog fixed' subcommand (alias: 'bl fixed') that marks a bug as resolved inline during testing, recording the fix commit hash and a summary in the bug .todo file.
+
+## Acceptance Criteria
+- [ ] 'backlog fixed <BUG_ID>' marks the bug as done
+- [ ] Optionally accepts '--commit <hash>' and '--summary <text>' flags
+- [ ] If in a git repo, auto-captures the current HEAD commit hash
+- [ ] Appends a 'Fixed in commit <hash>: <summary>' note to the bug .todo body
+- [ ] Equivalent to 'backlog done' but with richer fix metadata
+- [ ] Works from any directory (searches .tasks/bugs/)
+
+## Implementation Notes
+- Look at how 'backlog done' and 'backlog bug' are implemented for patterns
+- The CLI is Python-based (check pyproject.toml or setup.py in the backlog tool source)
+- If backlog is installed as a package, may need to fork or patch locally
+- Alternative: implement as a shell wrapper in scripts/ that calls 'backlog done' + appends to the .todo file
+
+## Acceptance Test
+```bash
+backlog bug --title "Test bug" --area validation-console
+# -> creates B_001 or similar
+backlog fixed B_001 --summary "Fixed by adding nil guard in validate_input"
+backlog show B_001  # should show status: done + fix metadata
+```

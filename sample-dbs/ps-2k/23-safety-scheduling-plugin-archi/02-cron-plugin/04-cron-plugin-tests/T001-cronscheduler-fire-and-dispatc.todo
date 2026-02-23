@@ -1,0 +1,26 @@
+---
+id: P23.M2.E4.T001
+title: CronScheduler fire-and-dispatch integration test
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M2.E2.T002
+- P23.M2.E3.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.797347+00:00'
+started_at: '2026-02-18T17:03:35.797347+00:00'
+completed_at: '2026-02-18T17:03:47.742535+00:00'
+duration_minutes: 0.1990862833333333
+---
+Integration tests for the full schedule-fire lifecycle.
+
+## Acceptance Criteria
+- [ ] Test: schedule created → scheduler picks it up → fires at expected time → last_fired_at updated
+- [ ] Test: paused schedule does not fire
+- [ ] Test: agent_message action dispatches message to target agent
+- [ ] Test: cli_command action runs command and (if output_forwarding set) sends output to agent
+- [ ] Test: schedule with bad cron expression never fires but doesn't crash scheduler
+- [ ] All tests complete in < 5s via mockable tick mechanism (no real sleep)

@@ -1,0 +1,43 @@
+id: P46.M2.E1
+name: OAuth Callback Controller & Provider Strategies
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-oauthlogincontroller-wi.todo
+  title: Create OAuthLoginController with initiation and callback actions
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M1.E1.T003
+  - P46.M1.E2.T004
+- id: T002
+  file: T002-configure-assent-strategies-fo.todo
+  title: Configure Assent strategies for GitHub, Google, GitLab
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M1.E1.T001
+  - P46.M1.E1.T003
+- id: T003
+  file: T003-add-logout-action-and-session.todo
+  title: Add logout action and session deletion
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P46.M2.E1.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

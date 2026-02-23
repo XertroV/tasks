@@ -1,0 +1,41 @@
+---
+id: P18.M4.E2.T002
+title: Refactor Workspaces to use WorkspacePaths
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P18.M4.E2.T001
+tags:
+- workspace
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.649259+00:00'
+started_at: '2026-02-17T20:48:56.649259+00:00'
+completed_at: '2026-02-17T20:55:40.466470+00:00'
+duration_minutes: 6.730286466666667
+---
+
+# Refactor Workspaces to use WorkspacePaths
+
+## Description
+
+Replace inline path resolution in `PagServer.Workspaces` with calls to the new `WorkspacePaths` module.
+
+## Requirements
+
+- [ ] Replace `workspace_path/1` private function with `WorkspacePaths.workspace_dir/1`
+- [ ] Replace `ensure_workspace_directory/2` with `WorkspacePaths.ensure_dir!/1`
+- [ ] Remove duplicated root resolution logic
+- [ ] Update `create_workspace` and `update_workspace` to use WorkspacePaths
+
+## Acceptance Criteria
+
+- [ ] No path resolution logic remains in Workspaces module (delegated to WorkspacePaths)
+- [ ] All existing tests continue to pass
+- [ ] Workspace creation still provisions filesystem directory
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces.ex`

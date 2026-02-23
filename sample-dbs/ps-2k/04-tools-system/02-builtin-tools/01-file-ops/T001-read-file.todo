@@ -1,0 +1,143 @@
+---
+id: P4.M2.E1.T001
+title: Implement read_file tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- builtin
+- filesystem
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:24:25.311044'
+started_at: '2026-02-05T22:24:25.311044'
+completed_at: '2026-02-05T22:24:44.120779'
+duration_minutes: 0.31349543333333335
+---
+
+# Implement read_file tool
+
+Create the `read_file` builtin tool for reading file contents.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/read_file.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Handle text and binary files
+- [ ] Validate path is within workspace
+- [ ] Return file contents with metadata (size, encoding, MIME type)
+
+## Acceptance Criteria
+
+- [ ] Reads text files and returns contents as string
+- [ ] Detects file encoding (UTF-8, ASCII, etc.)
+- [ ] Blocks path traversal attacks (`../` outside workspace)
+- [ ] Returns proper error for non-existent files
+- [ ] Handles large files (stream or size limit warning)
+- [ ] Test coverage for valid/invalid paths, encodings, errors
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Sandbox all file operations to workspace directory
+- Security critical: validate paths before access
+- Consider file size limits (warn on >1MB files)
+- Return rich metadata for LLM context
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ReadFile do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "read_file"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "read_file",
+      description: "Read contents of a file in the workspace",
+      parameters: %{
+        type: "object",
+        properties: %{
+          path: %{
+            type: "string",
+            description: "Path to file relative to workspace"
+          }
+        },
+        required: ["path"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"path" => path}, %{workspace: workspace}) do
+    full_path = Path.join(workspace, path)
+    
+    # Validate path is within workspace
+    case validate_path(full_path, workspace) do
+      :ok ->
+        case File.read(full_path) do
+          {:ok, contents} ->
+            {:ok, %{
+              contents: contents,
+              path: path,
+              size: byte_size(contents)
+            }}
+          {:error, reason} ->
+            {:error, "Failed to read file: #{reason}"}
+        end
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp validate_path(full_path, workspace) do
+    real_path = Path.expand(full_path)
+    real_workspace = Path.expand(workspace)
+    
+    if String.starts_with?(real_path, real_workspace) do
+      :ok
+    else
+      {:error, "Path outside workspace"}
+    end
+  end
+end
+```
+
+Security considerations:
+- Always canonicalize paths with `Path.expand/1`
+- Block symlinks that point outside workspace
+- Validate no `../` traversal tricks
+- Consider file size limits to prevent memory issues
+
+Register in Registry startup (T003 of P4.M1.E2).
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:24 UTC
+**Primary task**: P2.M8.E5.T004 - Implement metadata extraction (tool failures, file ops)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M2.E1 vs P2.M8.E5)
+- No dependency chain: ✓ (verified at claim time)

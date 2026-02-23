@@ -1,0 +1,56 @@
+---
+id: P6.M2.E3.T002
+title: Write metrics tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P6.M2.E3.T001
+tags:
+- observability
+- metrics
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-07T01:03:28.939761+00:00'
+started_at: '2026-02-07T01:03:28.939761+00:00'
+completed_at: '2026-02-07T01:09:46.927354+00:00'
+duration_minutes: 6.29979305
+---
+
+# Write metrics tests
+
+Test metric recording and export.
+
+## Requirements
+
+- [ ] Test metric recording:
+  - [ ] Counters increment correctly
+  - [ ] Histograms record values
+  - [ ] Gauges report current state
+- [ ] Test labels applied correctly
+- [ ] Test metric export to OTLP
+- [ ] Use in-memory reader for tests
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Metrics verified
+- [ ] Labels validated
+- [ ] Export tested
+
+## Notes
+
+**Test Example**:
+```elixir
+test "LLM request increments counter" do
+  initial = get_metric_value("llm.requests.total")
+  
+  PagServer.Observability.Metrics.record_llm_request(
+    "claude-3-5-sonnet", 150, 1200, 450
+  )
+  
+  final = get_metric_value("llm.requests.total")
+  assert final == initial + 1
+end
+```

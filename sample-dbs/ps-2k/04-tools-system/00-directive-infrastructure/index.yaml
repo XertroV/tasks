@@ -1,0 +1,68 @@
+id: P4.M0
+name: Directive Infrastructure
+status: pending
+estimate_hours: 24
+complexity: critical
+depends_on: []
+description: Foundational directive-based architecture for tool system, inspired by
+  Jido (Apache 2.0)
+epics:
+- id: E1
+  name: Directive Core
+  path: 01-directive-core
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on: []
+  description: Directive behaviour and core directive structs
+- id: E2
+  name: Coordinator
+  path: 02-coordinator
+  status: pending
+  estimate_hours: 5
+  complexity: medium
+  depends_on:
+  - E1
+  description: Coordinator GenServer for parent-child agent hierarchies
+- id: E3
+  name: Integration
+  path: 03-integration
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on:
+  - E1
+  - E2
+  description: AgentServer integration and event schemas
+- id: E4
+  name: Testing Infrastructure
+  path: 04-testing
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on:
+  - E1
+  - E3
+  description: DirectiveCase test helpers and example tests
+- id: E5
+  name: License Compliance
+  path: 05-compliance
+  status: pending
+  estimate_hours: 1
+  complexity: low
+  depends_on: []
+  description: Apache 2.0 attribution for Jido-inspired patterns
+- id: E6
+  name: Unified Tool Schema
+  path: 06-unified-tool-schema
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,16 @@
+---
+id: P31.M1.E1.T002
+title: Implement SshTunnel GenServer
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:27:58.031889+00:00'
+started_at: '2026-02-18T19:27:58.031889+00:00'
+completed_at: '2026-02-18T19:46:26.274090+00:00'
+duration_minutes: 18.4707032
+---
+GenServer managing SSH tunnel lifecycle: open_tunnel/2 (SSH port forward: local port -> remote MCP stdio), close_tunnel/1, status/1. Uses :ssh OTP library or System.cmd(ssh). Supports SSH key auth. Reconnects on disconnect.

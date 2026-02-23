@@ -1,0 +1,74 @@
+---
+id: P11.M5.E1.T002
+title: Build provider config CRUD endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P11.M5.E1.T001
+tags:
+- api
+- http
+- configuration
+- providers
+claimed_by: cli-user
+claimed_at: '2026-02-12T22:44:53.782757+00:00'
+started_at: '2026-02-12T22:44:53.782757+00:00'
+completed_at: '2026-02-12T22:59:42.369124+00:00'
+duration_minutes: 14.809772583333334
+---
+
+# Build provider config CRUD endpoints
+
+## Requirements
+
+- [ ] Create controller `PagServerWeb.ProviderConfigController`
+- [ ] Implement POST `/api/v1/admin/provider-configs` - Create new provider config
+- [ ] Implement GET `/api/v1/admin/provider-configs` - List all active configs
+- [ ] Implement GET `/api/v1/admin/provider-configs/:id` - Retrieve single config
+- [ ] Implement PUT `/api/v1/admin/provider-configs/:id` - Update config
+- [ ] Implement DELETE `/api/v1/admin/provider-configs/:id` - Soft-delete config
+- [ ] Implement POST `/api/v1/admin/provider-configs/:id/test` - Test provider connectivity
+- [ ] Add request validation and error handling with proper HTTP status codes
+- [ ] Add OpenAPI/Swagger documentation for all endpoints
+- [ ] Protect admin endpoints with authentication/authorization middleware
+
+## Acceptance Criteria
+
+- [ ] POST endpoint validates required fields and returns 400 on invalid input
+- [ ] POST endpoint returns 201 with created config (API key prefix only, not full key)
+- [ ] GET /list endpoint supports filtering by provider_name and is_enabled
+- [ ] GET /list endpoint supports pagination (limit, offset)
+- [ ] GET /:id endpoint returns 404 for non-existent or deleted configs
+- [ ] PUT endpoint updates specific fields without changing others
+- [ ] PUT endpoint validates all fields (same rules as creation)
+- [ ] DELETE endpoint soft-deletes (sets deleted_at, doesn't remove DB record)
+- [ ] DELETE endpoint idempotent (second delete returns 200 or 404)
+- [ ] POST /:id/test endpoint makes test request to provider and returns health status
+- [ ] All endpoints return proper error responses: 400 (validation), 401 (auth), 403 (forbidden), 404 (not found), 500 (server error)
+- [ ] All responses follow OpenAPI schema format
+- [ ] Tests cover happy path, validation errors, authorization failures
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 22:44 UTC
+**Primary task**: P11.M4.E2.T002 - Add Telegram/Slack/Discord config endpoints
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M5.E1 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

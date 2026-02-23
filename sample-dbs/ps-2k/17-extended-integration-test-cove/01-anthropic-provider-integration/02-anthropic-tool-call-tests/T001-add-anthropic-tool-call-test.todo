@@ -1,0 +1,44 @@
+---
+id: P17.M1.E2.T001
+title: Add Anthropic tool call test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:29:32.236881+00:00'
+started_at: '2026-02-14T06:29:32.236881+00:00'
+completed_at: '2026-02-14T06:41:54.857518+00:00'
+duration_minutes: 12.377010416666668
+---
+
+# Add Anthropic tool call test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P17.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 06:29 UTC
+**Sibling tasks**: P17.M1.E2.T002, P17.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P17.M1.E2.T001 → P17.M1.E2.T002 → P17.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P17.M1.E2.T001: .tasks/17-extended-integration-test-cove/01-anthropic-provider-integration/02-anthropic-tool-call-tests/T001-add-anthropic-tool-call-test.todo
+- P17.M1.E2.T002: .tasks/17-extended-integration-test-cove/01-anthropic-provider-integration/02-anthropic-tool-call-tests/T002-add-anthropic-tool-response-ha.todo
+- P17.M1.E2.T003: .tasks/17-extended-integration-test-cove/01-anthropic-provider-integration/02-anthropic-tool-call-tests/T003-add-anthropic-multi-tool-test.todo

@@ -1,0 +1,19 @@
+---
+id: P19.M1.E3.T003
+title: Fix whatsapp.md webhook path
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- integrations
+- whatsapp
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:35:54.372698+00:00'
+started_at: '2026-02-18T01:35:54.372698+00:00'
+completed_at: '2026-02-18T01:38:24.508334+00:00'
+duration_minutes: 2.5022603833333337
+---
+Remove /api prefix: /api/webhooks/whatsapp → /webhooks/whatsapp. Line 58.

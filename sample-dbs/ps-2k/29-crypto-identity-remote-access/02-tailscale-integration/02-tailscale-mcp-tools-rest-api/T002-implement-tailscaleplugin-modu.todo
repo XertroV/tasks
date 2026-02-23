@@ -1,0 +1,17 @@
+---
+id: P29.M2.E2.T002
+title: Implement TailscalePlugin module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P29.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:09:04.456872+00:00'
+started_at: '2026-02-18T19:09:04.456872+00:00'
+completed_at: '2026-02-18T19:13:19.515240+00:00'
+duration_minutes: 4.2509726
+---
+Plugin: name/0 = :tailscale, on_enable/1 (reads config, starts manager if auth_key present), on_disable/1 (stops daemon), mcp_tools/0, config_schema/0 (auth_key, hostname_prefix, tailnet fields), default_enabled?: false.

@@ -1,0 +1,74 @@
+---
+id: P7.M2.E1.T003
+title: Integrate rate limiter
+status: done
+estimate_hours: 1
+complexity: low
+priority: medium
+depends_on:
+- P7.M2.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:19:23.853844+00:00'
+started_at: '2026-02-07T06:19:23.853844+00:00'
+completed_at: '2026-02-07T06:21:59.913876+00:00'
+tags:
+- rate-limiting
+- integration
+- llm
+duration_minutes: 2.601000233333333
+---
+
+# Integrate rate limiter
+
+Integrate rate limiter into LLM provider calls.
+
+## Requirements
+
+- [x] Add RateLimiter to supervision tree
+- [x] Call RateLimiter.consume/3 before LLM requests
+- [x] Handle {:error, :rate_limited} in LLM.Registry
+- [x] Add retry with backoff for rate limit errors
+- [x] Update agent state on rate limit
+- [x] Log rate limit events
+
+## Acceptance Criteria
+
+- [x] All LLM calls check rate limit first
+- [x] Rate limited requests wait and retry
+- [x] Agent receives rate limit notification
+- [x] Metrics track rate limit frequency
+- [x] No breaking changes to LLM API
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M2 (Rate Limiting)
+
+**Key Points**:
+- Check before making request (fail fast)
+- Consume after successful response (account for actual usage)
+- Use exponential backoff for retries
+- Notify user via agent status update
+
+## Notes
+
+Integration pattern:
+```elixir
+defmodule PagServer.LLM.Registry do
+  def chat(provider, model, messages, opts) do
+    # Check rate limit before request
+    with :ok <- RateLimiter.consume(provider, :requests, 1),
+         estimated_tokens <- estimate_tokens(messages),
+         :ok <- RateLimiter.consume(provider, :tokens, estimated_tokens),
+         {:ok, response} <- do_chat(provider, model, messages, opts) do
+      {:ok, response}
+    else
+      {:error, :rate_limited} ->
+        # Wait and retry with exponential backoff
+        Process.sleep(1000)
+        chat(provider, model, messages, Keyword.put(opts, :retry, true))
+      error -> error
+    end
+  end
+end
+```

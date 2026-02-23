@@ -1,0 +1,24 @@
+---
+id: P46.M1.E1.T002
+title: Create PagServerWeb.PowConfig module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P46.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:33:57.799563+00:00'
+started_at: '2026-02-19T20:33:57.799563+00:00'
+completed_at: '2026-02-19T20:41:07.316241+00:00'
+duration_minutes: 7.1586111
+---
+Create lib/pag_server_web/pow_config.ex implementing the Pow.Plug.Session callback. Configure:
+- user: PagServer.Schema.User
+- repo: PagServer.Repo
+- web_module: PagServerWeb
+- session_ttl_datetime: nil (use remember_me)
+- credentials_cache_store: {Pow.Store.CredentialsCache, [ttl: :timer.minutes(15)]}
+Do NOT use Pow's default password-related extensions since we are OAuth-only.
+Acceptance: Module compiles, Pow.Plug.Session can reference it.

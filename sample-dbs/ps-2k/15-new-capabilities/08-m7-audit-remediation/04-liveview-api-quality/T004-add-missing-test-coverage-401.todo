@@ -1,0 +1,35 @@
+---
+id: P15.M8.E4.T004
+title: 'Add missing test coverage: 401 tests, path traversal, pagination limits, error
+  sanitization'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- testing
+- security
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:09:19.044689+00:00'
+started_at: '2026-02-17T16:09:19.044689+00:00'
+completed_at: '2026-02-17T16:47:46.117165+00:00'
+duration_minutes: 38.451207700000005
+---
+Multiple test coverage gaps across E4:
+
+1. Missing 401 unauthenticated tests across all 3 controller test files (E4 M8)
+2. Missing send_bootstrap_message test — form visible but no test for sending
+3. Missing finish_bootstrap event test
+4. No pagination limit cap test (E4 I7): parse_int accepts any integer, needs min(limit, 1000)
+5. inspect(reason) in user-facing errors leaks internal details (E4 I6): Add error sanitization
+
+Source: E4 Audit I6, I7, M8
+
+## Acceptance Criteria
+- [ ] 401 tests for unauthenticated requests on all 3 controllers
+- [ ] Pagination limit capped (e.g., max 1000)
+- [ ] Error messages sanitized (no inspect in user-facing responses)
+- [ ] send_bootstrap_message tested
+- [ ] finish_bootstrap event tested

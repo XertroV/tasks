@@ -1,0 +1,19 @@
+---
+id: B056
+title: 'trying to use groq with openai/gpt-oss-120b, i get thihs error: Provider request
+  failed: {:unknown_provider, :groq}. We might need to refactor things or handle model
+  names with a slash, or separate the idea of an API provider and model ''provider''.'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T04:58:43.917833+00:00'
+started_at: '2026-02-16T04:58:43.917833+00:00'
+completed_at: '2026-02-16T05:08:02.198664+00:00'
+duration_minutes: 9.304680333333332
+---
+
+trying to use groq with openai/gpt-oss-120b, i get thihs error: Provider request failed: {:unknown_provider, :groq}. We might need to refactor things or handle model names with a slash, or separate the idea of an API provider and model 'provider'.

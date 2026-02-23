@@ -1,0 +1,21 @@
+---
+id: B078
+title: Dashboard /dashboard workspace dropdown is empty - doesn't load workspaces
+  from DB
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- bug
+- webui
+- dashboard
+claimed_by: cli-user
+claimed_at: '2026-02-17T12:06:52.990991+00:00'
+started_at: '2026-02-17T12:06:52.990991+00:00'
+completed_at: '2026-02-17T12:52:05.888802+00:00'
+duration_minutes: 45.21496333333334
+---
+
+Dashboard /dashboard workspace dropdown is empty - doesn't load workspaces from DB

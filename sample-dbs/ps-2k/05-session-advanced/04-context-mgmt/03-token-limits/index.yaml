@@ -1,0 +1,53 @@
+# Epic: Token Limits
+# Phase 5, Milestone 04, Epic 3 (P5.M04.E3)
+
+id: P5.M04.E3
+name: Token Limits
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-integrate-tokenizer-module.todo
+    title: Integrate Tokenizer module
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-set-per-model-context-limits.todo
+    title: Set per-model context limits
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-apply-truncation-when-limit-ex.todo
+    title: Apply truncation when limit exceeded
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-test-token-limit-enforcement.todo
+    title: Test token limit enforcement
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T003]
+    
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

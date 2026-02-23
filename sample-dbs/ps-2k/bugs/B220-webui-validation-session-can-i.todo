@@ -1,0 +1,81 @@
+---
+id: B220
+title: WebUI validation session can ignore selected agent/model for tool runs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:05:27.400854+00:00'
+started_at: '2026-02-22T12:05:27.400854+00:00'
+completed_at: '2026-02-22T12:15:19.780335+00:00'
+duration_minutes: 9.872991083333334
+---
+Browser-driven validation sessions can remain bound to a previous pair-programming child agent even after selecting a different workspace agent/model, causing prompts to generate text but not execute tools remotely.\n\nAcceptance criteria:\n- Reproduce from WebUI with clear steps\n- Either fix session binding/switching OR add explicit UI affordance to create/select fresh session tied to chosen agent\n- Add regression coverage for agent/session binding in validation console path\n- Document user-visible behavior
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-22 06:21 UTC
+**Primary task**: B219 - for web, /api/ should provide a description of all the API methods; should be self-describing in that way
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-22 06:21 UTC
+**Primary task**: P55.M1.E2.T001 - Thread list and workspace loading queries on mount
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs P55.M1.E2)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-22 12:05 UTC
+**Primary task**: B219 - for web, /api/ should provide a description of all the API methods; should be self-describing in that way
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

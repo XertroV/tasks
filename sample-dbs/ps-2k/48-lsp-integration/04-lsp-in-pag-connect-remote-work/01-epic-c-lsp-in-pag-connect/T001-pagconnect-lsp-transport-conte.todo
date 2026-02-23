@@ -1,0 +1,16 @@
+---
+id: P48.M4.E1.T001
+title: 'PagConnect.Lsp.Transport: Content-Length JSON-RPC over stdio'
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:36:05.589515+00:00'
+started_at: '2026-02-20T08:36:05.589515+00:00'
+completed_at: '2026-02-20T08:50:51.733775+00:00'
+duration_minutes: 14.769070833333334
+---
+Mirror of pag-server LspTransport. Content-Length framing, request correlation, notification handler, server-request handler (workspace/configuration, window/workDoneProgress/create, client/registerCapability). Same Erlang Port infrastructure already used in pag-connect for Docker exec.

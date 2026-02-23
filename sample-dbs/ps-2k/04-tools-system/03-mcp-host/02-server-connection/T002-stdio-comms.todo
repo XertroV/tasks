@@ -1,0 +1,103 @@
+---
+id: P4.M3.E2.T002
+title: Stdio communication handling
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P4.M3.E2.T001
+tags:
+- tools
+- mcp
+- stdio
+- ipc
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:05:10.695029'
+started_at: '2026-02-06T03:05:10.695029'
+completed_at: '2026-02-06T03:07:37.031210'
+duration_minutes: 2.4389361833333334
+---
+
+# Stdio communication handling
+
+Implement bidirectional stdio communication with MCP servers.
+
+## Requirements
+
+- [ ] Handle JSON-RPC messages over stdin/stdout
+- [ ] Buffer partial messages
+- [ ] Parse newline-delimited JSON
+- [ ] Send requests and receive responses
+- [ ] Match responses to requests by ID
+
+## Acceptance Criteria
+
+- [ ] Sends JSON-RPC to server stdin
+- [ ] Receives JSON-RPC from server stdout
+- [ ] Handles partial/fragmented messages
+- [ ] Request/response correlation by ID
+- [ ] Error handling for malformed JSON
+- [ ] Test with mock server communication
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 351-354 (MCP protocol)
+
+**Key Points**:
+- MCP uses JSON-RPC over stdio
+- Messages are newline-delimited JSON
+- Must handle message fragmentation
+- Async request/response matching
+
+## Notes
+
+Stdio handler:
+```elixir
+def handle_info({port, {:data, data}}, state) do
+  buffer = state.buffer <> data
+  {messages, remaining} = parse_messages(buffer)
+  
+  Enum.each(messages, &handle_server_message/1)
+  
+  {:noreply, %{state | buffer: remaining}}
+end
+
+defp parse_messages(buffer) do
+  case String.split(buffer, "\n", parts: 2) do
+    [line, rest] ->
+      case Jason.decode(line) do
+        {:ok, msg} ->
+          {messages, remaining} = parse_messages(rest)
+          {[msg | messages], remaining}
+        _ ->
+          {[], buffer}
+      end
+    [incomplete] ->
+      {[], incomplete}
+  end
+end
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:24 UTC
+**Primary task**: P4.M1.E3.T003 - Format for OpenAI tools
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M3.E2 vs P4.M1.E3)
+- No dependency chain: ✓ (verified at claim time)

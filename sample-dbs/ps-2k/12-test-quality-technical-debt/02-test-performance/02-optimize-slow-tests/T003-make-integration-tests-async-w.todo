@@ -1,0 +1,38 @@
+---
+id: P12.M2.E2.T003
+title: Make integration tests async where possible
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:19:20.832051+00:00'
+started_at: '2026-02-13T10:19:20.832051+00:00'
+completed_at: '2026-02-13T10:29:16.885918+00:00'
+duration_minutes: 9.93423095
+---
+
+# Make integration tests async where possible
+
+## Description
+
+Review integration tests currently marked `async: false` and convert them to `async: true` where safe. Follow patterns in `TEST_CONTAMINATION_INDEX.md` to prevent test contamination.
+
+## Acceptance Criteria
+
+- [ ] List all integration tests with `async: false`
+- [ ] Analyze each for global state dependencies
+- [ ] Convert tests to use unique names/resources where needed
+- [ ] Add proper cleanup in `on_exit/1` callbacks
+- [ ] Convert at least 3 test files to `async: true`
+- [ ] Run full test suite multiple times to verify no flakiness
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/integrations/` directory
+- Reference: `TEST_CONTAMINATION_INDEX.md` for async test patterns
+- Key: Use unique identifiers, cleanup global state
+- Part of epic: Optimize Slow Tests

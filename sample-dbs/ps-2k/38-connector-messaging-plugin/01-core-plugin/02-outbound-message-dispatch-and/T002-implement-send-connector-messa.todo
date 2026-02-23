@@ -1,0 +1,17 @@
+---
+id: P38.M1.E2.T002
+title: Implement send_connector_message MCP tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P38.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:47:59.756835+00:00'
+started_at: '2026-02-19T04:47:59.756835+00:00'
+completed_at: '2026-02-19T04:53:43.197110+00:00'
+duration_minutes: 5.724004383333334
+---
+MCP tool: send_connector_message. Required args: connector_id (string), message (string). Optional: target (platform-specific destination, e.g. chat_id for Telegram; if omitted uses connector default). Reads workspace_id from tool context. Calls ConnectorDispatcher.dispatch/3. Returns {ok: true, platform, connector_name} on success or {error, reason} on failure. Register in ConnectorPlugin.mcp_tools/0.

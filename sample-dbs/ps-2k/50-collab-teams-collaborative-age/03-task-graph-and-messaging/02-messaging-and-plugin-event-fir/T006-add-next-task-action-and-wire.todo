@@ -1,0 +1,28 @@
+---
+id: P50.M3.E2.T006
+title: Add next_task action and wire all M3.E2 actions into dispatcher
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E2.T002
+- P50.M3.E2.T003
+- P50.M3.E2.T005
+- P50.M3.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:34:34.360584+00:00'
+started_at: '2026-02-23T02:34:34.360584+00:00'
+completed_at: '2026-02-23T02:34:36.794357+00:00'
+duration_minutes: 0.040562633333333334
+---
+## Description
+Implement next_task action: find the highest-priority claimable task for the calling worker (pending state, all dependencies completed, not claimed). If found: automatically claim it (same optimistic lock logic) and return {:ok, %{action: next_task, task_id, title, description, ...}}. If none found: fire worker_idle PolicyHooks event and return {:ok, %{action: next_task, task: nil, message: no tasks available}}. Wire send_message, list_messages, next_task into dispatcher. Replace respective stubs. Full messaging integration test: lead broadcasts, worker sends direct, worker lists messages filtered.
+
+## Acceptance Criteria
+- next_task returns task when available
+- next_task fires worker_idle when nothing available
+- messaging integration test passes
+- all 3 new dispatcher routes work
+- mix test.collab_teams passes

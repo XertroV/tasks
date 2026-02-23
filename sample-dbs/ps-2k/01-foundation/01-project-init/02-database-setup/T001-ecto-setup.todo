@@ -1,0 +1,131 @@
+---
+id: P1.M1.E2.T001
+title: Set up Ecto repository
+status: done
+estimate_hours: 2
+complexity: medium
+priority: high
+depends_on: []
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:49:40.614001'
+started_at: '2026-02-05T07:49:40.614001'
+completed_at: '2026-02-05T07:50:52.348706'
+tags:
+- ecto
+- database
+- repository
+- setup
+---
+
+# Set up Ecto repository
+
+Create the core Ecto repository module and integrate it with the Phoenix application supervision tree.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/repo.ex` with Ecto.Repo module
+- [ ] Add Ecto configuration to `config/config.exs`
+- [ ] Add Repo to application supervision tree in `lib/pag_server/application.ex`
+- [ ] Configure database pool size (10 for dev, 20 for prod)
+- [ ] Set query timeout defaults (15 seconds)
+- [ ] Enable query logging in dev environment
+
+## Acceptance Criteria
+
+- [ ] `mix ecto.create` successfully creates database
+- [ ] `mix ecto.migrate` runs without errors (even with no migrations yet)
+- [ ] `mix ecto.drop` can drop database
+- [ ] Application starts with Repo in supervision tree
+- [ ] `iex -S mix` allows querying via `PagServer.Repo.all/1`
+- [ ] No compilation warnings
+- [ ] Tests can use Ecto.Adapters.SQL.Sandbox
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 2.1 (Module Organization)
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 1.2 (OTP Application Structure)
+
+**Key Points**:
+- Repo is central to all database operations (events, sessions, stats)
+- Must support both PostgreSQL (production) and SQLite (dev/test)
+- Pool configuration critical for handling concurrent agent processes
+- Sandbox mode required for test isolation
+
+## Notes
+
+### lib/pag_server/repo.ex
+
+```elixir
+defmodule PagServer.Repo do
+  use Ecto.Repo,
+    otp_app: :pag_server,
+    adapter: Ecto.Adapters.Postgres
+
+  @doc """
+  Dynamically loads the repository url from the DATABASE_URL environment variable.
+  """
+  def init(_type, config) do
+    {:ok, Keyword.put(config, :url, System.get_env("DATABASE_URL"))}
+  end
+end
+```
+
+### config/config.exs
+
+```elixir
+config :pag_server, PagServer.Repo,
+  timeout: 15_000,
+  pool_timeout: 10_000,
+  ownership_timeout: 60_000,
+  log: :debug,
+  stacktrace: true
+```
+
+### lib/pag_server/application.ex
+
+Add to children list:
+
+```elixir
+children = [
+  # ... existing children
+  PagServer.Repo,
+  # ... more children
+]
+```
+
+### Test Setup
+
+In `test/test_helper.exs`:
+
+```elixir
+Ecto.Adapters.SQL.Sandbox.mode(PagServer.Repo, :manual)
+```
+
+In test cases:
+
+```elixir
+setup tags do
+  :ok = Ecto.Adapters.SQL.Sandbox.checkout(PagServer.Repo)
+
+  unless tags[:async] do
+    Ecto.Adapters.SQL.Sandbox.mode(PagServer.Repo, {:shared, self()})
+  end
+
+  :ok
+end
+```
+
+### Troubleshooting
+
+If `mix ecto.create` fails:
+1. Verify PostgreSQL is running: `sudo systemctl status postgresql`
+2. Check DATABASE_URL format: `postgres://user:pass@localhost/pag_server_dev`
+3. Verify user has CREATE DATABASE permission
+4. Check connection with `psql -U postgres -h localhost`
+
+If supervision tree fails:
+1. Check Repo is correctly configured in `config/config.exs`
+2. Verify DATABASE_URL is set in environment
+3. Check logs for connection errors
+4. Ensure pool_size is reasonable (not too high)

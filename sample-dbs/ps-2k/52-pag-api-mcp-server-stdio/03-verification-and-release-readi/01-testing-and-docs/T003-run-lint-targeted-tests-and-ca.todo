@@ -1,0 +1,56 @@
+---
+id: P52.M3.E1.T003
+title: Run lint/targeted tests and capture launch checklist
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P52.M3.E1.T001
+- P52.M3.E1.T002
+tags:
+- verification
+- release
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:01:48.743328+00:00'
+started_at: '2026-02-21T05:01:48.743328+00:00'
+completed_at: '2026-02-21T05:03:44.893805+00:00'
+duration_minutes: 1.9358411166666667
+---
+
+# Run lint/targeted tests and capture launch checklist
+
+## Verification Notes
+
+- Ran focused MCP verification suite (appended to `recent-mix-tests.log`):
+  - `mix test test/pag_server/mcp/stdio_flow_integration_test.exs test/pag_server/mcp/api_bridge_test.exs test/pag_server/mcp/target_resolver_test.exs test/pag_server/mcp/stdio_runtime_config_test.exs test/pag_server/mcp/stdio_server_test.exs test/pag_server/tools/mcp/messages_test.exs test/pag_server/tools/mcp/protocol_handler_test.exs`
+  - Result: 128 tests, 0 failures.
+- Ran subsystem/changed checks:
+  - `mix test.changed` (fails due pre-existing unrelated failures in dirty changed paths outside MCP scope)
+  - `mix test.tools` (shows pre-existing unrelated approval-manager sandbox ownership instability; MCP-specific tests remain green)
+- Ran `mix lint`:
+  - Credo reports existing repo-wide warnings.
+  - MCP-attributable Credo findings introduced during this work were fixed (`api_bridge` redundant with clauses and `stdio_server` single-condition cond usage).
+
+## Launch Checklist
+
+- Added launch checklist document: `docs/guides/mcp-stdio-launch-checklist.md`
+- Checklist includes:
+  - pre-launch validation
+  - canonical verification commands
+  - known v1 limits
+  - rollback/fallback plan
+
+
+
+## Requirements
+
+- Run lint and targeted test suites for all changed MCP modules.
+- Capture launch checklist for first rollout, including known limits and fallback plan.
+- Record verification artifacts in task notes and `recent-mix-tests.log`.
+
+## Acceptance Criteria
+
+- `mix lint` passes for this scope, or repo-baseline lint failures are documented with confirmation of no new MCP-attributable issues.
+- Targeted tests and `mix test.changed` pass or have documented pre-existing failures.
+- Launch checklist is complete and linked from this task for handoff.

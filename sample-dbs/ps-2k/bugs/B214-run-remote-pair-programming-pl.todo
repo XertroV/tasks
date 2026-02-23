@@ -1,0 +1,16 @@
+---
+id: B214
+title: Run remote pair-programming plugin implementation on x-pi-1
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T22:30:57.231720+00:00'
+started_at: '2026-02-21T22:30:57.231720+00:00'
+completed_at: '2026-02-21T22:38:08.212078+00:00'
+duration_minutes: 7.183005816666666
+---
+Use x-pi-1.local via pag-connect to run a larger end-to-end pair-programming session that implements a useful plugin for pag-server.\n\nAcceptance criteria:\n- Identify and implement one useful plugin in pag-server plugin ecosystem\n- Implement any missing pag-server features required for plugin viability\n- Add tests for new behavior\n- Validate with a live remote run on x-pi-1.local demonstrating command forwarding and plugin usage\n- Commit all code and .tasks updates

@@ -1,0 +1,26 @@
+---
+id: P23.M2.E4.T002
+title: MCP tool end-to-end tests via plugin
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P23.M2.E3.T003
+- P23.M2.E4.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.798555+00:00'
+started_at: '2026-02-18T17:03:35.798555+00:00'
+completed_at: '2026-02-18T17:03:49.216687+00:00'
+duration_minutes: 0.22363538333333333
+---
+Verify MCP tools work end-to-end through the plugin registration.
+
+## Acceptance Criteria
+- [ ] Test: agent calls add_schedule MCP tool → schedule stored in DB → scheduler loads it
+- [ ] Test: agent calls list_schedules → returns all workspace schedules
+- [ ] Test: agent calls remove_schedule → schedule deleted → scheduler no longer fires it
+- [ ] Test: agent calls pause_schedule / resume_schedule → enabled flag toggled correctly
+- [ ] Test: max_schedules limit enforced → add_schedule returns error when limit reached
+- [ ] Test: schedule from workspace A not visible to workspace B

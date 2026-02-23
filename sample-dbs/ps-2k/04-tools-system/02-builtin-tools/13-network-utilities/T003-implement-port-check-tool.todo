@@ -1,0 +1,252 @@
+---
+id: P4.M2.E13.T003
+title: Implement port_check tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- tools
+- network
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:06:42.522715'
+started_at: '2026-02-06T03:06:42.522715'
+completed_at: '2026-02-06T03:07:52.050461'
+duration_minutes: 1.1587955833333334
+---
+
+# Implement port_check tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/port_check.ex` (~90 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use `:gen_tcp` for TCP port connectivity checks
+- [ ] Support timeout parameter
+- [ ] Return port status (open/closed) and response time
+- [ ] Handle connection refused, timeout, host unreachable
+
+## Acceptance Criteria
+
+- [ ] Accepts host, port, and optional timeout parameter
+- [ ] Attempts TCP connection to specified port
+- [ ] Returns port status: open, closed, filtered (timeout)
+- [ ] Returns connection time in milliseconds if successful
+- [ ] Handles errors: connection refused, timeout, invalid host/port, DNS failure
+- [ ] Test coverage: open port, closed port, timeout, invalid host, private IP blocked
+- [ ] Security: SSRF protection - block localhost, private IPs, well-known internal ports
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use `:gen_tcp.connect/3` for lightweight port checks
+- SSRF protection critical (block internal services)
+- Fast timeout for responsiveness
+- Don't send data, just check connectivity
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.PortCheck do
+  @behaviour PAGServer.Tools.Tool
+  @default_timeout 5_000  # 5 seconds
+
+  @impl true
+  def name, do: "port_check"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "port_check",
+      description: "Check if a TCP port is open on a host",
+      parameters: %{
+        type: "object",
+        properties: %{
+          host: %{
+            type: "string",
+            description: "Hostname or IP address"
+          },
+          port: %{
+            type: "integer",
+            minimum: 1,
+            maximum: 65535,
+            description: "Port number to check"
+          },
+          timeout_ms: %{
+            type: "integer",
+            minimum: 100,
+            maximum: 30000,
+            description: "Connection timeout in milliseconds (default: 5000)"
+          }
+        },
+        required: ["host", "port"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"host" => host, "port" => port} = args, _context) do
+    timeout = Map.get(args, "timeout_ms", @default_timeout)
+    
+    with :ok <- validate_host(host),
+         :ok <- validate_port(port),
+         {:ok, result} <- check_port(host, port, timeout) do
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, "Port check failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_host(host) do
+    host_lower = String.downcase(host)
+    
+    blocked_hosts = [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "::1"
+    ]
+    
+    cond do
+      host_lower in blocked_hosts ->
+        {:error, "Localhost connections not allowed"}
+      
+      Regex.match?(~r/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/, host_lower) ->
+        {:error, "Private IP connections not allowed"}
+      
+      Regex.match?(~r/^169\.254\./, host_lower) ->
+        {:error, "Link-local connections not allowed"}
+      
+      not Regex.match?(~r/^[a-z0-9\-\.:]+$/i, host) ->
+        {:error, "Invalid host format"}
+      
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_port(port) do
+    # Block commonly abused internal service ports
+    blocked_ports = [
+      # Cloud metadata services
+      169, 80, 443,  # When combined with 169.254.169.254
+      # Internal services
+      6379,  # Redis
+      5432,  # PostgreSQL
+      3306,  # MySQL
+      27017, # MongoDB
+      9200,  # Elasticsearch
+      # Allow other ports
+    ]
+    
+    # For now, just validate range (additional blocking can be added)
+    if port >= 1 and port <= 65535 do
+      :ok
+    else
+      {:error, "Port must be between 1 and 65535"}
+    end
+  end
+
+  defp check_port(host, port, timeout) do
+    start_time = System.monotonic_time(:millisecond)
+    
+    # Convert host to charlist for :gen_tcp
+    host_charlist = if is_binary(host), do: to_charlist(host), else: host
+    
+    case :gen_tcp.connect(host_charlist, port, [:binary, active: false], timeout) do
+      {:ok, socket} ->
+        :gen_tcp.close(socket)
+        end_time = System.monotonic_time(:millisecond)
+        response_time = end_time - start_time
+        
+        {:ok, %{
+          host: host,
+          port: port,
+          status: "open",
+          response_time_ms: response_time
+        }}
+      
+      {:error, :timeout} ->
+        {:ok, %{
+          host: host,
+          port: port,
+          status: "filtered",
+          message: "Connection timeout (port may be filtered by firewall)"
+        }}
+      
+      {:error, :econnrefused} ->
+        {:ok, %{
+          host: host,
+          port: port,
+          status: "closed",
+          message: "Connection refused (port is closed)"
+        }}
+      
+      {:error, :nxdomain} ->
+        {:error, "Host not found (DNS resolution failed)"}
+      
+      {:error, :ehostunreach} ->
+        {:error, "Host unreachable"}
+      
+      {:error, reason} ->
+        {:error, "Connection failed: #{inspect(reason)}"}
+    end
+  rescue
+    e -> {:error, "Port check error: #{Exception.message(e)}"}
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "host": "example.com",
+  "port": 443,
+  "timeout_ms": 3000
+}
+```
+
+Example response (open port):
+```json
+{
+  "host": "example.com",
+  "port": 443,
+  "status": "open",
+  "response_time_ms": 45
+}
+```
+
+Example response (closed port):
+```json
+{
+  "host": "example.com",
+  "port": 9999,
+  "status": "closed",
+  "message": "Connection refused (port is closed)"
+}
+```
+
+Example response (filtered port):
+```json
+{
+  "host": "example.com",
+  "port": 1234,
+  "status": "filtered",
+  "message": "Connection timeout (port may be filtered by firewall)"
+}
+```
+
+Security considerations:
+- **Critical**: SSRF protection - block localhost, private IPs
+- Consider blocking ports commonly used by internal services
+- Timeout to prevent resource exhaustion
+- No data transmission (connection-only check)
+- Rate limiting may be needed to prevent port scanning abuse

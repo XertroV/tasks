@@ -1,0 +1,18 @@
+---
+id: P22.M3.E1.T002
+title: Integrate CompactionMonitor with existing AutoTruncation and Summarization
+  modules
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:58:59.151349+00:00'
+started_at: '2026-02-18T14:58:59.151349+00:00'
+completed_at: '2026-02-18T15:07:11.392849+00:00'
+duration_minutes: 8.204024516666667
+---
+Update lib/pag_server/context/pruning/auto_truncation.ex to emit token-usage telemetry events that CompactionMonitor can subscribe to. When CompactionMonitor decides to compact, it calls Summarization strategy on the session's message list, replaces old messages with the summary. Use existing Summarization.summarize/2 in lib/pag_server/context/pruning/summarization.ex. Acceptance criteria: - AutoTruncation emits :telemetry event or PubSub message on each token count update - CompactionMonitor receives updates and updates its state - Compaction calls Summarization in a Task (async, non-blocking) - On Task completion, session messages updated atomically

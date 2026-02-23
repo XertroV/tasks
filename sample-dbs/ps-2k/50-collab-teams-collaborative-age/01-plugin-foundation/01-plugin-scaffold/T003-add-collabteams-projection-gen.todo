@@ -1,0 +1,23 @@
+---
+id: P50.M1.E1.T003
+title: Add CollabTeams.Projection GenServer skeleton
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:09:41.886249+00:00'
+started_at: '2026-02-23T02:09:41.886249+00:00'
+completed_at: '2026-02-23T02:09:44.670671+00:00'
+duration_minutes: 0.0464066
+---
+## Description
+Create CollabTeams.Projection as a GenServer with start_link/1, init/1, clean shutdown. on_enable/1 starts it under a named registration; on_disable/1 stops it and calls HookDispatcher.unregister_all(HookDispatcher, collab_teams). No projection logic yet -- lifecycle only.
+
+## Acceptance Criteria
+- GenServer starts and stops cleanly
+- on_enable/1 starts it; on_disable/1 stops it and unregisters hooks
+- no crash on duplicate enable

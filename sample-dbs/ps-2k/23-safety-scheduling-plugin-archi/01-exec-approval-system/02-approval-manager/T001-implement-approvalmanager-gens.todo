@@ -1,0 +1,26 @@
+---
+id: P23.M1.E2.T001
+title: Implement ApprovalManager GenServer
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:18:22.787682+00:00'
+started_at: '2026-02-18T15:18:22.787682+00:00'
+completed_at: '2026-02-18T15:24:54.056275+00:00'
+duration_minutes: 6.521143033333333
+---
+Implement `PagServer.Tools.ApprovalManager` GenServer for managing pending approvals.
+
+## Acceptance Criteria
+- [ ] GenServer holds a map of pending approvals keyed by `approval_id` (UUID)
+- [ ] `request_approval/3` stores pending entry and starts a timeout timer (default 60s, configurable)
+- [ ] `approve/2` and `deny/2` resolve a pending approval, unblocking the waiting caller
+- [ ] On timeout expiry, automatically denies the approval with `{:error, :timeout}`
+- [ ] `list_pending/1` returns all pending approvals for a workspace
+- [ ] GenServer is supervised under the main application supervisor
+- [ ] Calling process blocks synchronously in `request_approval/3` until resolved or timed out
+- [ ] Unit tests cover approve, deny, and timeout paths

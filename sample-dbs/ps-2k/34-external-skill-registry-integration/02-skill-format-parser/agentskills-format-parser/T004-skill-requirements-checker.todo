@@ -1,0 +1,31 @@
+---
+id: P34.M2.E1.T004
+title: Skill Requirements Checker
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- backend
+- parser
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:43:56.275405+00:00'
+started_at: '2026-02-19T00:43:56.275405+00:00'
+completed_at: '2026-02-19T00:45:36.678938+00:00'
+duration_minutes: 1.6733919166666666
+---
+
+# Skill Requirements Checker
+
+Create `PagServer.Skills.Requirements` module:
+
+- `check/2` - Check if requirements are met for a skill
+- Check binary presence on PATH
+- Check environment variables
+- Check config keys
+
+## Acceptance Criteria
+
+- [ ] Returns `{:ok, :met}` or `{:error, missing_requirements}`
+- [ ] Lists all missing requirements, not just first

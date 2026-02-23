@@ -1,0 +1,47 @@
+id: P43.M1.E2
+name: CallRecorder Module
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-callrecorder-insert.todo
+  title: Implement CallRecorder.insert_pending/4 with fire-and-forget Task.start
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-callrecorder-mark-st.todo
+  title: Implement CallRecorder.mark_streaming/1, complete/3, fail/3 with cost calculation
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-callrecorder-extract.todo
+  title: Implement CallRecorder.extract_context/1 to strip context opts from provider_opts
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-stale-record-detection-que.todo
+  title: 'Add stale record detection query: find pending/streaming rows older than
+    5 min'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

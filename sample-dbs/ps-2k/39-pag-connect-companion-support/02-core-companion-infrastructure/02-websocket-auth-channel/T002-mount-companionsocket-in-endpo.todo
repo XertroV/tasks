@@ -1,0 +1,32 @@
+---
+id: P39.M2.E2.T002
+title: Mount CompanionSocket in endpoint.ex
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: high
+depends_on:
+- P39.M2.E2.T001
+tags:
+- companion
+- websocket
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:32:11.144113+00:00'
+started_at: '2026-02-19T11:32:11.144113+00:00'
+completed_at: '2026-02-19T11:40:20.334495+00:00'
+duration_minutes: 8.153172866666667
+---
+Mount the CompanionSocket at /companion in the Phoenix endpoint.
+
+## Modified file
+lib/pag_server_web/endpoint.ex — add socket mount after existing /socket mount:
+
+  socket "/companion", PagServerWeb.CompanionSocket,
+    websocket: [connect_info: [], timeout: 60_000, compress: false],
+    longpoll: false
+
+## Acceptance criteria
+- [ ] WebSocket connections accepted at /companion/websocket
+- [ ] Endpoint compiles without warnings
+- [ ] Existing /socket mount is unaffected

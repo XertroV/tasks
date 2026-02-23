@@ -1,0 +1,32 @@
+id: P29.M2
+name: Tailscale Integration
+status: pending
+estimate_hours: 15.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Tailscale Connection Management
+  path: 01-tailscale-connection-managemen
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Tailscale MCP Tools & REST API
+  path: 02-tailscale-mcp-tools-rest-api
+  status: pending
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

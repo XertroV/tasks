@@ -1,0 +1,45 @@
+---
+id: P18.M1.E3.T002
+title: Create RequireWorkspaceRole plug
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P18.M1.E3.T001
+tags:
+- security
+- workspace
+- plug
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:15:55.899414+00:00'
+started_at: '2026-02-17T17:15:55.899414+00:00'
+completed_at: '2026-02-17T17:16:36.995978+00:00'
+duration_minutes: 0.6849424833333334
+---
+
+# Create RequireWorkspaceRole plug
+
+## Description
+
+Create `PagServerWeb.Plugs.RequireWorkspaceRole` companion plug that checks the workspace role assigned by RequireWorkspaceMembership against a minimum role requirement.
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/plugs/require_workspace_role.ex`
+- [ ] Accept `minimum_role:` init option (e.g., `:admin`, `:owner`)
+- [ ] Read `conn.assigns.workspace_role` (set by RequireWorkspaceMembership)
+- [ ] Use `Roles.role_at_least?/2` to check if the user's role meets the minimum
+- [ ] On success: pass through unchanged
+- [ ] On failure: return 403 JSON response with message indicating required role
+
+## Acceptance Criteria
+
+- [ ] Owner passes all minimum_role checks
+- [ ] Admin passes :admin and :member checks, fails :owner
+- [ ] Member passes only :member check
+- [ ] Returns clear error message indicating the required role
+
+## Context
+
+**Files affected**: `lib/pag_server_web/plugs/require_workspace_role.ex`

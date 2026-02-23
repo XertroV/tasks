@@ -1,0 +1,45 @@
+---
+id: P15.M2.E5.T001
+title: Define settings IA and config key map
+status: done
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on:
+- P15.M2.E4.T001
+tags:
+- planning
+- settings
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:31:34.497890+00:00'
+started_at: '2026-02-16T10:31:34.497890+00:00'
+completed_at: '2026-02-16T10:32:16.789149+00:00'
+duration_minutes: 0.7048541
+---
+
+# Define settings IA and config key map
+
+
+
+## Requirements
+
+- Define the information architecture for a dedicated dashboard settings page with global, session, and agent sections.
+- Map each global UI field to concrete backend config keys and APIs (system/platform/session/agent config sources).
+- Identify which settings are editable in this phase and which are explicitly out of scope.
+- Document dependency touchpoints with existing Validation Console and Agent Manager settings flows.
+
+## Acceptance Criteria
+
+- The task doc lists the initial field set for global, session, and agent sections with source-of-truth mapping.
+- The mapping identifies concrete read/write endpoints or context functions for each field.
+- Out-of-scope items are explicitly captured to prevent implementation drift.
+- A dependency map references existing modules/pages that must stay behaviorally consistent.
+
+## Implementation Notes
+
+- Authored IA and configuration mapping document: `docs/dashboard-settings-ia.md`.
+- Mapped initial global settings to system config keys exposed by `SystemConfigController`.
+- Mapped session and agent editable fields to existing read/write endpoints.
+- Captured dependency touchpoints with Validation Console, Agent Manager, router, and dashboard layout.
+- Listed explicit non-goals for this first implementation increment.

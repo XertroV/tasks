@@ -1,0 +1,41 @@
+id: P29.M1
+name: Crypto Identity Plugin
+status: pending
+estimate_hours: 15.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Key Generation & Storage
+  path: 01-key-generation-storage
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Identity MCP Tools
+  path: 02-identity-mcp-tools
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Crypto Identity Plugin Wiring
+  path: 03-crypto-identity-plugin-wiring
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

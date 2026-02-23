@@ -1,0 +1,16 @@
+---
+id: P48.M1.E1.T006
+title: 'Tests for Epic A: per-session working directory'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:16.863492+00:00'
+started_at: '2026-02-20T08:37:16.863492+00:00'
+completed_at: '2026-02-20T08:50:14.471438+00:00'
+duration_minutes: 12.960132266666667
+---
+Schema migration (reversibility), ToolRunner resolution (nil -> workspace root; set -> subdirectory), ContainerToolExecutor path mapping with subdirectory, API endpoint validation, event emission.

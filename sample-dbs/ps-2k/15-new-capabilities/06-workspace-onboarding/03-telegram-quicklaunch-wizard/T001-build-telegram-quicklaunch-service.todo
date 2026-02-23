@@ -1,0 +1,45 @@
+---
+id: P15.M6.E3.T001
+title: Build Telegram quicklaunch service and token verification
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M6.E2.T002
+tags:
+- telegram
+- backend
+- onboarding
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:41:26.750108+00:00'
+started_at: '2026-02-17T17:41:26.750108+00:00'
+completed_at: '2026-02-17T17:50:41.608460+00:00'
+duration_minutes: 9.247638816666667
+---
+
+# Build Telegram quicklaunch service and token verification
+
+## Owner Outcome
+- I can validate bot token/webhook settings quickly and know whether Telegram is ready.
+
+## Implementation Notes
+SetupAssistant exists at `lib/pag_server/integrations/telegram/setup_assistant.ex` with:
+- `verify_connectivity/3` validates bot token via Telegram `/getMe` API
+- Tests polling mode (`getUpdates`) and webhook mode (`setWebhook` + `getWebhookInfo`)
+- `send_test_message/2` for end-to-end verification
+- Error normalization into user-facing messages
+
+Still missing: workspace-scoped integration state (currently uses global PlatformConfig),
+telemetry/log markers, unit tests with mocked Telegram responses, and wiring service
+output into the workspace-scoped onboarding checklist.
+
+## Acceptance Criteria
+- [x] Implement quicklaunch service that validates bot token, sets webhook (or polling mode), and stores integration state on workspace.
+- [x] Normalize Telegram API failures into user-facing setup errors (invalid token, unreachable webhook, missing permissions).
+- [x] Add telemetry/log markers for onboarding diagnostics.
+  - Three telemetry events: `verify_start`, `verify_complete`, `verify_failed` under `[:pag_server, :telegram, :quicklaunch]` with workspace_id, mode, duration_ms metadata.
+- [x] Add unit tests that mock Telegram responses and verify readiness transitions.
+  - 15 tests using `Req.Test` plug injection: polling/webhook success/failure, invalid token, send_test_message, telemetry events, workspace readiness integration.
+- [x] Ensure service output feeds the <10 minute onboarding checklist.
+  - Successful verification persists bot_token via `PlatformConfig.set`, which is read by `Workspaces.telegram_connected?/1` in the readiness check.

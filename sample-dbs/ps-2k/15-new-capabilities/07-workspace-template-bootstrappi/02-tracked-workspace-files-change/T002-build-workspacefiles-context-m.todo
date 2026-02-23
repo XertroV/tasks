@@ -1,0 +1,47 @@
+---
+id: P15.M7.E2.T002
+title: Build WorkspaceFiles context module
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E2.T001
+tags:
+- context
+- files
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:47:03.156171+00:00'
+started_at: '2026-02-17T08:47:03.156171+00:00'
+completed_at: '2026-02-17T08:56:41.986140+00:00'
+duration_minutes: 9.647165883333335
+---
+## Description
+Context module for managing workspace files with revision tracking. Handles the hybrid approach: files live on disk, key tracked files also get DB changelog entries.
+
+## Module: PagServer.WorkspaceFiles
+
+### Public API
+- write_tracked_file(workspace, file_path, content, opts) - Writes to disk AND creates revision. opts: change_source, changed_by, metadata
+- read_tracked_file(workspace, file_path) - Reads from disk, optionally checks hash against latest revision for drift detection
+- list_tracked_files(workspace) - Returns list of tracked files for this workspace (from workspace settings)
+- get_file_history(workspace, file_path, opts) - Returns revision log. opts: limit, offset
+- get_latest_revision(workspace, file_path) - Latest revision record
+- sync_from_disk(workspace) - Scans all tracked files, detects out-of-band changes by comparing disk hash to latest revision hash, creates sync revisions for changes
+- configure_tracked_files(workspace, file_list) - Sets which files are tracked (stored in workspace.settings)
+- detect_drift(workspace) - Returns list of files where disk differs from latest revision
+
+### Implementation Details
+- Uses workspace.workspace_dir to resolve full paths
+- SHA-256 for content hashing
+- filesystem_adapter pattern (like Workspaces module) for testability
+- All DB writes go through WorkspaceFileRevision.create_revision/1
+
+## Acceptance Criteria
+- [ ] All public API functions implemented
+- [ ] Filesystem operations use injectable adapter for testing
+- [ ] Drift detection works (disk hash != DB hash)
+- [ ] sync_from_disk creates revision entries for detected changes
+- [ ] Proper error handling for missing files, permission errors
+- [ ] Unit tests with mock filesystem
+- [ ] Integration test with real filesystem (tmp dir)

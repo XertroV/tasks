@@ -1,0 +1,26 @@
+---
+id: P50.M4.E3.T003
+title: Achieve mix lint compliance for entire collab_teams plugin
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E3.T001
+- P50.M4.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:51:31.882188+00:00'
+started_at: '2026-02-23T02:51:31.882188+00:00'
+completed_at: '2026-02-23T02:51:34.310637+00:00'
+duration_minutes: 0.04047395
+---
+## Description
+Run mix format --check-formatted for all files in plugins/collab_teams/. Run mix credo for the plugin (no warnings or errors). Dialyzer passes or all new warnings documented with @dialyzer annotations. No compiler warnings from any collab_teams module. Fix all issues found.
+
+## Acceptance Criteria
+- mix format --check-formatted passes
+- mix credo returns clean
+- no compiler warnings
+- dialyzer clean or suppressed with documented rationale
+- mix lint passes end-to-end

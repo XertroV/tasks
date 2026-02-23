@@ -1,0 +1,31 @@
+---
+id: P49.M5.E3.T002
+title: Update trust docs and add adversarial regression tests for Option B
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T10:10:02.600635+00:00'
+started_at: '2026-02-20T10:10:02.600635+00:00'
+completed_at: '2026-02-20T10:15:53.525864+00:00'
+duration_minutes: 5.848753633333333
+---
+
+# Update trust docs and add adversarial regression tests for Option B
+
+
+
+## Requirements
+
+- Update planning, architecture, and plugin developer docs to reflect Option B behavior.
+- Add adversarial regression tests for tampering, spoofed publishers, policy denials, and override expiry.
+- Ensure docs and tests stay aligned with implemented reason codes and policy semantics.
+
+## Acceptance Criteria
+
+- Required docs are updated in sync with implemented behavior.
+- Adversarial tests are added and pass reliably.
+- Review checklist confirms no behavior-doc drift.

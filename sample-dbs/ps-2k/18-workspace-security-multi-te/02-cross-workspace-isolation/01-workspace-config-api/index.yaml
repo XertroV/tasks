@@ -1,0 +1,48 @@
+id: P18.M2.E1
+name: Workspace-Nested Config API
+status: pending
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-workspace-config-routes.todo
+  title: Add workspace config routes to router
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-workspace-config-controller.todo
+  title: Create WorkspaceConfigController with workspace-scoped CRUD
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - P18.M2.E1.T001
+- id: T003
+  file: T003-restrict-flat-config.todo
+  title: Restrict flat /api/v1/config to global keys only
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: critical
+  depends_on:
+  - P18.M2.E1.T002
+- id: T004
+  file: T004-config-api-tests.todo
+  title: Add JSON view and tests for workspace config API
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P18.M2.E1.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

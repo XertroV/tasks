@@ -1,0 +1,24 @@
+---
+id: B107
+title: Sessions should have a model+provider associated with them. That model should
+  be able to be changed after the agent has started. in the future (see I010) we'll
+  have a slash command for this, but for now, update the validation console to support
+  saving/updating this.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:24:18.237835+00:00'
+started_at: '2026-02-17T15:24:18.237835+00:00'
+completed_at: '2026-02-17T15:50:21.546841+00:00'
+duration_minutes: 26.055149833333335
+---
+
+Sessions should have a model+provider associated with them. That model should be able to be changed after the agent has started. in the future (see I010) we'll have a slash command for this, but for now, update the validation console to support saving/updating this.
+
+Also update the database, implement a migraiton, etc, as is required to complete the task. 
+
+For design choices around when the model changes or how to manage that, research ideas and consult the user. see ref-projects too.

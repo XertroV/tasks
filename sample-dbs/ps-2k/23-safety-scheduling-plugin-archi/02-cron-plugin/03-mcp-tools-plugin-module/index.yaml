@@ -1,0 +1,43 @@
+id: P23.M2.E3
+name: MCP Tools & Plugin Module
+status: pending
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-mcp-tools-list-sched.todo
+  title: 'Implement MCP tools: list_schedules, add_schedule, remove_schedule'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M2.E1.T002
+- id: T002
+  file: T002-implement-mcp-tools-pause-sche.todo
+  title: 'Implement MCP tools: pause_schedule, resume_schedule'
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P23.M2.E3.T001
+- id: T003
+  file: T003-implement-cronplugin-module-on.todo
+  title: Implement CronPlugin module (on-by-default plugin)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M2.E2.T001
+  - P23.M2.E3.T001
+  - P23.M2.E3.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

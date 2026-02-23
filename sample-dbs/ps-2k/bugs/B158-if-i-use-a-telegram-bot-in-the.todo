@@ -1,0 +1,20 @@
+---
+id: B158
+title: If i use a telegram bot in the wizard, and the bot is associated with a different
+  session already, then I should have a warning and checkbox confirmation (clientside)
+  that I want to reassign the bot to this workspace's main session. And the wizard
+  should be able to handle reassigning the BotConfig etc to the new session
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T05:08:33.347520+00:00'
+started_at: '2026-02-19T05:08:33.347520+00:00'
+completed_at: '2026-02-19T05:17:23.887293+00:00'
+duration_minutes: 8.842329366666666
+---
+
+If i use a telegram bot in the wizard, and the bot is associated with a different session already, then I should have a warning and checkbox confirmation (clientside) that I want to reassign the bot to this workspace's main session. And the wizard should be able to handle reassigning the BotConfig etc to the new session

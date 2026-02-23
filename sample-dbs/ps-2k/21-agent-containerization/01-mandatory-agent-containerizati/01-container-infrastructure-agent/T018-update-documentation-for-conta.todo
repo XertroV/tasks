@@ -1,0 +1,40 @@
+---
+id: P21.M1.E1.T018
+title: Update documentation for container infrastructure
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P21.M1.E1.T010
+- P21.M1.E1.T012
+- P21.M1.E1.T014
+tags:
+- documentation
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.572452+00:00'
+started_at: '2026-02-18T12:21:44.572452+00:00'
+completed_at: '2026-02-18T13:57:57.802380+00:00'
+duration_minutes: 96.22049861666666
+---
+
+# Update documentation for container infrastructure
+
+Update project documentation to reflect the new containerization system.
+
+## Requirements
+
+- Update AGENTS.md with container architecture
+- Document configuration options
+- Document volume mount structure
+- Add troubleshooting section
+
+## Acceptance Criteria
+
+- [ ] AGENTS.md updated with container infrastructure section
+- [ ] Documents module structure: `lib/pag_server/containers/`
+- [ ] Documents volume mount paths: /workspace, /private, /shared
+- [ ] Documents configuration options: feature flag, workspace settings
+- [ ] Documents how to enable/disable containerization
+- [ ] Troubleshooting: Docker not running, permission issues
+- [ ] README updated if needed for prerequisites

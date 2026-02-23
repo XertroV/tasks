@@ -1,0 +1,57 @@
+---
+id: P12.M3.E3.T001
+title: Implement GitHub Actions route_to_session/2
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:50:16.936321+00:00'
+started_at: '2026-02-13T10:50:16.936321+00:00'
+completed_at: '2026-02-13T11:12:44.498304+00:00'
+duration_minutes: 22.45936615
+---
+
+# Implement GitHub Actions route_to_session/2
+
+## Description
+
+Complete the TODO implementation for `route_to_session/2` in the GitHub Actions handler. This function should route GitHub Actions webhook events to the appropriate agent session.
+
+## Acceptance Criteria
+
+- [ ] Review current placeholder implementation and TODO comments
+- [ ] Design session routing strategy (by repository, workflow, run_id)
+- [ ] Implement using Phoenix.PubSub or similar mechanism
+- [ ] Add proper error handling for missing sessions
+- [ ] Add unit tests for the routing logic
+- [ ] Document the routing strategy
+- [ ] Lint passes
+
+## Context
+
+- Related files: `lib/pag_server/integrations/github/actions/handler.ex`
+- Current state: Has TODO with placeholder logging only
+- May need: Session registry or lookup mechanism
+- Part of epic: Complete TODO Implementations
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 10:50 UTC
+**Sibling tasks**: P12.M3.E3.T002, P12.M3.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M3.E3.T001 → P12.M3.E3.T002 → P12.M3.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M3.E3.T001: .tasks/12-test-quality-technical-debt/03-code-quality-debt/03-complete-todo-implementations/T001-implement-github-actions-route.todo
+- P12.M3.E3.T002: .tasks/12-test-quality-technical-debt/03-code-quality-debt/03-complete-todo-implementations/T002-extract-shared-http-client-pat.todo
+- P12.M3.E3.T003: .tasks/12-test-quality-technical-debt/03-code-quality-debt/03-complete-todo-implementations/T003-plan-dependency-upgrades-hackn.todo

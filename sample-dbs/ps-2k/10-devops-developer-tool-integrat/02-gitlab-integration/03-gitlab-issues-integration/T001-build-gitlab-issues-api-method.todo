@@ -1,0 +1,77 @@
+---
+id: P10.M2.E3.T001
+title: Build GitLab issues API methods
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T01:59:10.448030+00:00'
+started_at: '2026-02-12T01:59:10.448030+00:00'
+completed_at: '2026-02-12T02:13:28.777776+00:00'
+duration_minutes: 14.305495299999999
+---
+
+# Build GitLab issues API methods
+
+
+
+## Requirements
+
+- [ ] Create wrapper module for GitLab Issues API endpoints
+- [ ] List, get, create, update issues for projects
+- [ ] Support filtering by state, labels, assignees, author
+- [ ] Fetch issue comments and notes
+- [ ] Support issue closing and reopening
+- [ ] Implement pagination for large result sets
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/integrations/gitlab/issues.ex`
+- [ ] Functions implemented:
+  - [ ] `list_issues(client, project_id, filters)` - List project issues with pagination
+    - [ ] Filters: `state` (opened/closed/all), `labels`, `assignee_id`, `author_id`
+    - [ ] Return: `{:ok, [issues]}` or `{:error, reason}`
+  - [ ] `get_issue(client, project_id, issue_iid)` - Fetch single issue
+  - [ ] `create_issue(client, project_id, title, description, opts)` - Create new issue
+  - [ ] `update_issue(client, project_id, issue_iid, updates)` - Update issue (title, desc, labels)
+  - [ ] `close_issue(client, project_id, issue_iid)` - Close issue
+  - [ ] `reopen_issue(client, project_id, issue_iid)` - Reopen closed issue
+  - [ ] `get_issue_comments(client, project_id, issue_iid, pagination)` - Fetch comments
+  - [ ] `add_issue_comment(client, project_id, issue_iid, body)` - Add comment
+- [ ] Pagination support:
+  - [ ] Use `page` and `per_page` query params (default per_page=20, max=100)
+  - [ ] Return cursor/next_page info in response
+- [ ] Field mapping:
+  - [ ] GitLab `iid` (internal ID) used for project-scoped operations
+  - [ ] Normalize to `number` in return structs for consistency with GitHub
+- [ ] Error handling:
+  - [ ] 404 when issue not found
+  - [ ] 403 for permission issues
+  - [ ] Rate limit errors bubble up
+- [ ] Tests cover:
+  - [ ] List with various filters
+  - [ ] Create and update operations
+  - [ ] Comment operations
+  - [ ] Pagination handling
+  - [ ] Error responses
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-12 01:59 UTC
+**Sibling tasks**: P10.M2.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M2.E3.T001 → P10.M2.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M2.E3.T001: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/03-gitlab-issues-integration/T001-build-gitlab-issues-api-method.todo
+- P10.M2.E3.T002: .tasks/10-devops-developer-tool-integrat/02-gitlab-integration/03-gitlab-issues-integration/T002-add-gitlab-issues-webhook-hand.todo

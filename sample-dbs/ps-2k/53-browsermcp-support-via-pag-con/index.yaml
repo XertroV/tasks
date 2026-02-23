@@ -1,0 +1,47 @@
+id: P53
+name: BrowserMCP Support via pag-connect
+status: done
+locked: true
+weeks: 2
+estimate_hours: 26.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Execution path and protocol design
+  path: 01-execution-path-and-protocol-de
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Define BrowserMCP execution model, companion routing contract, and
+    security/runtime constraints for browser sessions.
+  locked: false
+- id: M2
+  name: Companion-backed BrowserMCP implementation
+  path: 02-companion-backed-browsermcp-im
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on:
+  - P53.M1
+  description: Implement browsermcp routing through pag-connect, lifecycle handling,
+    and resilient error mapping.
+  locked: false
+- id: M3
+  name: Validation, docs, and rollout guardrails
+  path: 03-validation-docs-and-rollout-gu
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P53.M2
+  description: Add integration tests, operational docs, and launch checklist for browsermcp
+    support.
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

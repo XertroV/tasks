@@ -1,0 +1,23 @@
+---
+id: P50.M4.E2.T001
+title: Declare web_routes/0 and wire into PagServerWeb.Router
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:17:17.981871+00:00'
+started_at: '2026-02-23T02:17:17.981871+00:00'
+completed_at: '2026-02-23T02:17:20.619779+00:00'
+duration_minutes: 0.043964866666666665
+---
+## Description
+CollabTeams.web_routes/0 returns [{:live, /dashboard, CollabTeams.DashboardLive}]. Add to PagServerWeb.Router under plugin_routes macro. Route is reachable (200 or redirect-to-login) when plugin enabled. Compile-time inclusion confirmed.
+
+## Acceptance Criteria
+- web_routes/0 returns correct route tuple
+- route added to router
+- unauthenticated access redirects to login
+- route not present when plugin disabled

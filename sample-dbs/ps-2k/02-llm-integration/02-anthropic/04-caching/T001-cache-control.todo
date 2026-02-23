@@ -1,0 +1,129 @@
+---
+id: P2.M2.E4.T001
+title: Add cache_control to message blocks
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P2.M2.E1.T003
+tags:
+- llm
+- anthropic
+- caching
+- optimization
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:13:34.434191'
+started_at: '2026-02-05T15:13:34.434191'
+completed_at: '2026-02-05T15:16:41.897552'
+duration_minutes: 3.1243891833333333
+---
+
+# Add cache_control to message blocks
+
+Implement Anthropic prompt caching with cache_control breakpoints.
+
+## Requirements
+
+- [x] Add beta header: "anthropic-beta: prompt-caching-2024-07-31"
+- [x] Support cache_control in system messages
+- [x] Support cache_control in tool definitions
+- [x] Support cache_control in messages
+- [x] Add helper to mark cacheable content
+- [x] Document caching strategy in moduledoc
+- [x] Add tests with cache_control examples
+
+## Acceptance Criteria
+
+- [x] Beta header is sent when caching enabled (via existing beta: option)
+- [x] cache_control blocks are correctly formatted
+- [x] System/tools/messages support caching
+- [x] API accepts cache_control requests (pass-through design)
+- [x] Tests verify correct structure (34 tests)
+- [x] >85% test coverage
+- [x] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` (if exists)
+- `ref-projects/anthropix/lib/anthropix.ex` lines 40-45 (beta headers)
+
+**Key Points**:
+- Prompt caching requires beta header
+- cache_control marks breakpoints for caching
+- Reduces cost and latency for repeated content
+
+## Notes
+
+Beta header requirement:
+```elixir
+# In init/1
+headers = [
+  {"x-api-key", api_key},
+  {"anthropic-version", "2023-06-01"},
+  {"anthropic-beta", "prompt-caching-2024-07-31"}
+]
+```
+
+cache_control format:
+```json
+{
+  "system": [
+    {
+      "type": "text",
+      "text": "You are a helpful assistant...",
+      "cache_control": {"type": "ephemeral"}
+    }
+  ],
+  "messages": [...]
+}
+```
+
+Helper implementation:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.Cache do
+  def mark_cacheable(content, opts \\ []) do
+    case opts[:cache] do
+      true ->
+        Map.put(content, :cache_control, %{type: "ephemeral"})
+      _ ->
+        content
+    end
+  end
+  
+  def build_system_with_cache(text) do
+    [
+      %{
+        type: "text",
+        text: text,
+        cache_control: %{type: "ephemeral"}
+      }
+    ]
+  end
+end
+```
+
+Usage:
+```elixir
+# Cache system prompt
+system = Cache.build_system_with_cache("You are a helpful assistant...")
+
+# Cache tool definitions
+tools_with_cache = 
+  tools
+  |> Enum.map(&ToolSchema.convert/1)
+  |> List.update_at(-1, &Map.put(&1, :cache_control, %{type: "ephemeral"}))
+
+{:ok, response} = Anthropic.chat(client, [
+  system: system,
+  tools: tools_with_cache,
+  messages: messages
+])
+```
+
+Caching strategy:
+- Cache system prompt (usually static)
+- Cache tool definitions (usually static)
+- Cache recent context messages (if conversation is long)
+- Don't cache frequently changing content

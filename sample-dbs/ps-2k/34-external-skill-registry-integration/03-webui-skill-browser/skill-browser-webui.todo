@@ -1,0 +1,88 @@
+---
+id: P34.M3.E1
+title: Skill Browser WebUI
+status: pending
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on:
+- P34.M2.E1
+tags:
+- epic
+- frontend
+- webui
+---
+
+# Epic: Skill Browser WebUI
+
+Implement LiveView component for browsing external skills from ClawHub.
+
+## Scope
+
+- Skill list/search UI
+- Skill detail view
+- Install to workspace action
+- Integration with existing Plugin Hub UI
+
+## Tasks
+
+### T1: Skill List LiveView
+
+Create `PagServerWeb.SkillHubLive`:
+
+- Display paginated list of skills
+- Search input with debounced query
+- Show skill name, description, tags
+- Link to detail view
+
+Acceptance Criteria:
+- [ ] Lists skills from ClawHub API
+- [ ] Search updates list in real-time
+- [ ] Pagination controls work
+
+### T2: Skill Detail View
+
+Add skill detail component:
+
+- Show full skill metadata
+- Display requirements (bins, env, config)
+- Show install instructions
+- Install button
+
+Acceptance Criteria:
+- [ ] Shows all skill metadata
+- [ ] Displays requirements checklist
+- [ ] Install button triggers download
+
+### T3: Install Action
+
+Implement skill installation from UI:
+
+- Download skill from ClawHub
+- Extract to workspace skills directory
+- Show success/error feedback
+- Refresh workspace skills list
+
+Acceptance Criteria:
+- [ ] Skill installed to correct location
+- [ ] User sees success confirmation
+- [ ] Errors displayed with actionable message
+
+### T4: Integration with Plugin Hub
+
+Add Skills tab to existing Plugin Hub:
+
+- Tab navigation between Plugins and Skills
+- Consistent styling with existing UI
+- Shared search/pagination patterns
+
+Acceptance Criteria:
+- [ ] Skills tab appears in Plugin Hub
+- [ ] Navigation works between tabs
+- [ ] Consistent UI patterns
+
+## Out of Scope
+
+- Skill creation/editing UI
+- Skill version management
+- Multi-registry support (ClawHub only initially)

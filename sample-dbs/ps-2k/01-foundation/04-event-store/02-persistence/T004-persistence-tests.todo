@@ -1,0 +1,341 @@
+---
+id: P1.M4.E2.T004
+title: Write persistence tests
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:56:22.365085'
+started_at: '2026-02-05T09:56:22.365085'
+completed_at: '2026-02-05T09:56:22.870028'
+tags:
+- event-store
+- testing
+- exunit
+- database
+---
+
+# Write persistence tests
+
+Create comprehensive test suite for event persistence, compression, and query functionality.
+
+## Requirements
+
+- [ ] Create `test/pag_server/events/persistence_test.exs`
+- [ ] Create `test/pag_server/events/compression_test.exs`
+- [ ] Create `test/pag_server/events/queries_test.exs`
+- [ ] Test persistence layer (`Persistence` module):
+  - [ ] `append_event/1` successfully persists events
+  - [ ] `append_event/1` handles compression automatically
+  - [ ] `get_events/1` retrieves events with filters
+  - [ ] `get_events/1` decompresses payloads
+  - [ ] `stream_events/1` streams large event sets
+  - [ ] Error cases (invalid events, db connection failures)
+- [ ] Test compression (`Compression` module):
+  - [ ] `should_compress?/1` threshold logic
+  - [ ] `compress/1` reduces payload size
+  - [ ] `decompress/1` restores original payload
+  - [ ] Round-trip: `decompress(compress(x)) == x`
+  - [ ] Edge cases (empty, very large, binary data)
+  - [ ] Error handling (corrupted data)
+- [ ] Test queries (`Queries` module):
+  - [ ] `by_session/2` filters correctly
+  - [ ] `by_agent/2` filters correctly
+  - [ ] `by_type/2` handles single and multiple types
+  - [ ] `by_time_range/3` filters by time
+  - [ ] `recent/1` returns correct results
+  - [ ] `count_events/1` counts correctly
+  - [ ] Query composition works
+  - [ ] Edge cases (nil params, empty lists)
+- [ ] Test database integration:
+  - [ ] Events inserted have correct timestamps
+  - [ ] Indexes are used (check EXPLAIN output)
+  - [ ] Foreign key constraints work
+  - [ ] Soft deletes (nilify_all) work correctly
+- [ ] Add property-based tests for compression
+- [ ] Add benchmarks for query performance
+
+## Acceptance Criteria
+
+- [ ] All test files created with proper structure
+- [ ] Test coverage >90% for persistence modules
+- [ ] Tests use database sandbox mode
+- [ ] Tests clean up after themselves (no test pollution)
+- [ ] Property tests verify compression invariants
+- [ ] Benchmarks demonstrate query performance
+- [ ] All tests pass with `mix test`
+- [ ] No warnings during test execution
+- [ ] Tests are well-documented with descriptions
+- [ ] Edge cases and error paths covered
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Lines 241-250 (events schema)
+- AGENTS.md Commands section (testing commands)
+
+**Key Requirements**:
+- Use ExUnit for tests
+- Database sandbox mode for isolation
+- Test both happy path and error cases
+- Property-based testing for compression
+- Performance benchmarks for queries
+
+## Notes
+
+### Test Structure
+
+```elixir
+# test/pag_server/events/persistence_test.exs
+defmodule PagServer.Events.PersistenceTest do
+  use PagServer.DataCase
+  
+  alias PagServer.Events.{Event, Persistence}
+  
+  describe "append_event/1" do
+    test "successfully persists event to database" do
+      event = %Event{
+        event_type: "test.event",
+        payload: %{data: "test"}
+      }
+      
+      assert {:ok, saved_event} = Persistence.append_event(event)
+      assert saved_event.id
+      assert saved_event.inserted_at
+      assert saved_event.event_type == "test.event"
+    end
+    
+    test "compresses large payloads automatically" do
+      large_payload = %{content: String.duplicate("x", 2000)}
+      event = %Event{event_type: "test.large", payload: large_payload}
+      
+      {:ok, saved} = Persistence.append_event(event)
+      
+      # Should have compressed payload
+      assert saved.payload_compressed
+      assert byte_size(saved.payload_compressed) < byte_size(Jason.encode!(large_payload))
+    end
+    
+    test "handles database errors gracefully" do
+      invalid_event = %Event{event_type: nil, payload: %{}}
+      
+      assert {:error, changeset} = Persistence.append_event(invalid_event)
+      assert %Ecto.Changeset{} = changeset
+    end
+  end
+  
+  describe "get_events/1" do
+    setup do
+      session_id = Ecto.UUID.generate()
+      
+      # Insert test events
+      events = [
+        %Event{event_type: "type1", session_id: session_id, payload: %{n: 1}},
+        %Event{event_type: "type2", session_id: session_id, payload: %{n: 2}},
+        %Event{event_type: "type1", session_id: session_id, payload: %{n: 3}}
+      ]
+      
+      Enum.each(events, &Persistence.append_event/1)
+      
+      %{session_id: session_id}
+    end
+    
+    test "filters by session_id", %{session_id: session_id} do
+      events = Persistence.get_events(session_id: session_id)
+      assert length(events) == 3
+      assert Enum.all?(events, &(&1.session_id == session_id))
+    end
+    
+    test "filters by event_type", %{session_id: session_id} do
+      events = Persistence.get_events(
+        session_id: session_id,
+        event_type: "type1"
+      )
+      assert length(events) == 2
+    end
+    
+    test "respects limit", %{session_id: session_id} do
+      events = Persistence.get_events(session_id: session_id, limit: 2)
+      assert length(events) == 2
+    end
+  end
+  
+  describe "stream_events/1" do
+    test "streams large event sets without loading all into memory" do
+      session_id = Ecto.UUID.generate()
+      
+      # Insert 2000 events
+      for n <- 1..2000 do
+        event = %Event{
+          event_type: "test.stream",
+          session_id: session_id,
+          payload: %{n: n}
+        }
+        Persistence.append_event(event)
+      end
+      
+      # Stream and process
+      count = 
+        Persistence.stream_events(session_id: session_id)
+        |> Enum.count()
+      
+      assert count == 2000
+    end
+  end
+end
+```
+
+### Compression Tests
+
+```elixir
+# test/pag_server/events/compression_test.exs
+defmodule PagServer.Events.CompressionTest do
+  use ExUnit.Case
+  
+  alias PagServer.Events.Compression
+  
+  describe "should_compress?/1" do
+    test "returns false for small payloads" do
+      small = %{msg: "hi"}
+      refute Compression.should_compress?(small)
+    end
+    
+    test "returns true for large payloads" do
+      large = %{content: String.duplicate("x", 2000)}
+      assert Compression.should_compress?(large)
+    end
+  end
+  
+  describe "compress/1 and decompress/1" do
+    test "round-trip preserves data" do
+      payload = %{
+        type: "test",
+        data: String.duplicate("test data ", 200),
+        nested: %{value: 42}
+      }
+      
+      {:ok, compressed} = Compression.compress(payload)
+      {:ok, decompressed} = Compression.decompress(compressed)
+      
+      assert decompressed == payload
+    end
+    
+    test "compresses to smaller size" do
+      payload = %{content: String.duplicate("x", 2000)}
+      json = Jason.encode!(payload)
+      
+      {:ok, compressed} = Compression.compress(payload)
+      
+      assert byte_size(compressed) < byte_size(json)
+    end
+    
+    test "handles empty payloads" do
+      {:ok, compressed} = Compression.compress(%{})
+      {:ok, decompressed} = Compression.decompress(compressed)
+      assert decompressed == %{}
+    end
+  end
+  
+  # Property-based test
+  @tag :property
+  property "compression round-trip is identity" do
+    check all payload <- map_generator() do
+      {:ok, compressed} = Compression.compress(payload)
+      {:ok, decompressed} = Compression.decompress(compressed)
+      assert decompressed == payload
+    end
+  end
+end
+```
+
+### Query Tests
+
+```elixir
+# test/pag_server/events/queries_test.exs
+defmodule PagServer.Events.QueriesTest do
+  use PagServer.DataCase
+  
+  alias PagServer.Events.{Event, Queries}
+  
+  describe "query composition" do
+    test "chains multiple filters" do
+      session_id = Ecto.UUID.generate()
+      
+      query = 
+        Event
+        |> Queries.by_session(session_id)
+        |> Queries.by_type(["type1", "type2"])
+      
+      # Should compile to valid SQL
+      assert %Ecto.Query{} = query
+    end
+  end
+  
+  describe "recent/1" do
+    test "returns most recent events" do
+      session_id = Ecto.UUID.generate()
+      
+      # Insert events with delays to ensure ordering
+      for n <- 1..5 do
+        insert_event(%{
+          event_type: "test",
+          session_id: session_id,
+          payload: %{n: n}
+        })
+      end
+      
+      recent = Queries.recent(session_id: session_id, limit: 3)
+      
+      assert length(recent) == 3
+      # Should be ordered newest first
+      assert recent |> Enum.map(& &1.payload["n"]) == [5, 4, 3]
+    end
+  end
+end
+```
+
+### Benchmark Example
+
+```elixir
+# test/benchmarks/event_queries_bench.exs
+defmodule EventQueriesBench do
+  use Benchfella
+  
+  alias PagServer.Events.Queries
+  
+  setup_all do
+    # Insert 10k test events
+    session_id = Ecto.UUID.generate()
+    
+    for n <- 1..10_000 do
+      insert_event(session_id: session_id)
+    end
+    
+    {:ok, session_id: session_id}
+  end
+  
+  bench "recent 100 events", [session_id: session_id] do
+    Queries.recent(session_id: session_id, limit: 100)
+    :ok
+  end
+  
+  bench "count events by type", [session_id: session_id] do
+    Queries.count_events(
+      session_id: session_id,
+      event_type: "message.sent"
+    )
+    :ok
+  end
+end
+```
+
+### Test Coverage Goals
+
+- Persistence module: >95%
+- Compression module: >95%
+- Queries module: >90%
+- Overall: >90%
+
+Run with: `mix test --cover`

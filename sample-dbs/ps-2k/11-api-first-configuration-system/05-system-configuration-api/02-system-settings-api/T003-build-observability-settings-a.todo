@@ -1,0 +1,52 @@
+---
+id: P11.M5.E2.T003
+title: Build observability settings API
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P11.M5.E2.T001
+tags:
+- observability
+- telemetry
+- logging
+- monitoring
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:50:00.037517+00:00'
+started_at: '2026-02-12T23:50:00.037517+00:00'
+completed_at: '2026-02-13T00:09:32.115931+00:00'
+duration_minutes: 19.534640083333333
+---
+
+# Build observability settings API
+
+## Requirements
+
+- [ ] Create controller `PagServerWeb.ObservabilityConfigController` for telemetry/logging config
+- [ ] Implement GET `/api/v1/admin/observability/config` - Retrieve observability settings
+- [ ] Implement PUT `/api/v1/admin/observability/config` - Update observability settings
+- [ ] Support config fields: log_level, enable_metrics, enable_traces, metrics_endpoint, trace_sample_rate
+- [ ] Support dynamic log level changes without restart
+- [ ] Implement GET `/api/v1/metrics` - Return Prometheus-format metrics
+- [ ] Implement GET `/api/v1/health` - Return detailed health including traces
+- [ ] Integration with OpenTelemetry collector endpoint configuration
+- [ ] Support trace sampling configuration (sample all, sample 10%, sample errors only, etc.)
+
+## Acceptance Criteria
+
+- [ ] GET /observability/config returns current settings
+- [ ] GET /observability/config requires admin auth (401/403 if unauthorized)
+- [ ] PUT /observability/config updates fields: log_level, enable_metrics, enable_traces, trace_sample_rate
+- [ ] PUT /observability/config validates log_level in [debug, info, warn, error]
+- [ ] PUT /observability/config validates trace_sample_rate in [0.0, 1.0]
+- [ ] Log level changes apply immediately to new log statements (via Application.put_env)
+- [ ] GET /metrics endpoint returns valid Prometheus format
+- [ ] GET /metrics includes: http_request_duration_seconds, llm_request_duration_seconds, agent_action_count
+- [ ] GET /metrics requires admin auth (401/403 if unauthorized)
+- [ ] GET /health returns json with: status, uptime_seconds, memory_mb, agents_active, sessions_active
+- [ ] GET /health does not require authentication
+- [ ] Telemetry integration: span creation configurable, sampling respected
+- [ ] Dynamic span sample rate changes apply to new spans
+- [ ] Tests verify config retrieval, updates, validation, auth, metric format, health response
+- [ ] `mix lint` passes without warnings

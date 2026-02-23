@@ -1,0 +1,30 @@
+id: P15.M12.E5
+name: 'Workspace Browser QoL: Create Button & Navigation Shortcuts'
+status: pending
+estimate_hours: 3.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-new-workspace-button-to-wo.todo
+  title: Add 'New Workspace' button to workspace browser that navigates to setup wizard
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-connector-count-field-to-w.todo
+  title: Add connector_count field to WorkspaceCard and BrowserQuery
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

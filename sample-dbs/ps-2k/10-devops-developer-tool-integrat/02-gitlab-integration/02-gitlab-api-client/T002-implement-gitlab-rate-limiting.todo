@@ -1,0 +1,56 @@
+---
+id: P10.M2.E2.T002
+title: Implement GitLab rate limiting and error handling
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T01:38:52.234650+00:00'
+started_at: '2026-02-12T01:38:52.234650+00:00'
+completed_at: '2026-02-12T01:58:52.129041+00:00'
+duration_minutes: 19.998239333333334
+---
+
+# Implement GitLab rate limiting and error handling
+
+
+
+## Requirements
+
+- [ ] Implement rate limiting to respect GitLab API quota (600 requests/min per user)
+- [ ] Handle X-RateLimit-* response headers from GitLab API
+- [ ] Implement backoff strategy when approaching rate limits
+- [ ] Queue requests when rate limit is hit
+- [ ] Log rate limit events for monitoring
+
+## Acceptance Criteria
+
+- [ ] Rate limiter module created at `lib/pag_server/integrations/gitlab/rate_limiter.ex`
+- [ ] Track rate limits per GitLab instance and token:
+  - [ ] Extract `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` from responses
+  - [ ] Store current state in GenServer or ETS
+  - [ ] Update on each API call
+- [ ] Rate limiting logic:
+  - [ ] Allow requests when `remaining > 10`
+  - [ ] Queue requests when `10 >= remaining > 0`
+  - [ ] Block and backoff when `remaining == 0`, resume after `reset` timestamp
+  - [ ] Exponential backoff for blocked requests (1s, 5s, 10s)
+- [ ] Integration with API client:
+  - [ ] Rate limiter called before each API request
+  - [ ] Wait if needed before making request
+  - [ ] Update rate limiter after each response
+- [ ] Error handling:
+  - [ ] Handle missing rate limit headers gracefully
+  - [ ] Default to conservative limits if headers absent
+  - [ ] Log rate limit exhaustion with reset time
+- [ ] Configuration:
+  - [ ] Min remaining threshold before queuing (default 10)
+  - [ ] Backoff multiplier (default 1.5x)
+- [ ] Tests cover:
+  - [ ] Rate limit tracking updates
+  - [ ] Backoff triggering at correct thresholds
+  - [ ] Queue and resume logic
+  - [ ] Missing header handling

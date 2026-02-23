@@ -1,0 +1,505 @@
+---
+title: Document Reconnection Strategy and Best Practices
+epic: P3.M1.E4-error-handling
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimated_hours: 0.5
+depends_on:
+- P3.M1.E4.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:07:49.907912'
+started_at: '2026-02-06T16:07:49.907912'
+completed_at: '2026-02-06T16:08:43.865166'
+duration_minutes: 0.8992873666666666
+id: P3.M1.E4.T003
+---
+
+# Task: Document Reconnection Strategy and Best Practices
+
+## Context
+When clients experience network issues or temporary disconnects, they need clear guidance on how to reconnect gracefully, what state to expect, and how to resume streaming sessions.
+
+## Goal
+Create comprehensive documentation for client-side reconnection patterns and server-side expectations.
+
+## Requirements
+- Document exponential backoff reconnection strategy
+- Explain state preservation vs. state loss scenarios
+- Provide client-side reconnection examples
+- Document message replay capabilities
+- Explain presence tracking implications
+- Define timeout policies
+
+## Implementation
+
+### File: `docs/channels/reconnection.md`
+
+```markdown
+# Channel Reconnection Strategy
+
+## Overview
+
+Phoenix Channels handle reconnections automatically at the socket level, but clients should implement additional logic for:
+- Exponential backoff retries
+- State reconciliation after reconnect
+- Message replay for missed events
+- User feedback during disconnection
+
+## Automatic Reconnection (Phoenix Client)
+
+The official Phoenix JavaScript client handles reconnections by default:
+
+\`\`\`javascript
+import { Socket } from "phoenix"
+
+const socket = new Socket("/socket", {
+  params: { token: userToken },
+  reconnectAfterMs: (tries) => {
+    // Exponential backoff: 100ms, 200ms, 400ms, 800ms, 1600ms, max 5s
+    return Math.min(100 * Math.pow(2, tries), 5000)
+  }
+})
+
+socket.connect()
+
+const channel = socket.channel("agent:123", {})
+
+channel.join()
+  .receive("ok", resp => console.log("Joined successfully", resp))
+  .receive("error", resp => console.log("Unable to join", resp))
+  .receive("timeout", () => console.log("Networking issue. Still waiting..."))
+
+// Handle reconnection
+channel.onError(e => console.log("Channel error", e))
+channel.onClose(e => console.log("Channel closed", e))
+\`\`\`
+
+## Reconnection Scenarios
+
+### 1. Brief Network Interruption (<30s)
+
+**Client Behavior**:
+- Socket automatically reconnects
+- Channel automatically rejoins
+- PubSub subscriptions restored
+
+**State Preservation**:
+- ✅ Agent state preserved
+- ✅ Current streaming session continues
+- ✅ No missed events (streaming continues from where it left off)
+- ⚠️ Tokens streamed during disconnect are lost (use message replay)
+
+**Client Action**: None required (automatic)
+
+### 2. Extended Disconnection (>30s)
+
+**Client Behavior**:
+- Socket reconnects with exponential backoff
+- Channel rejoins automatically
+- PubSub subscriptions restored
+
+**State Preservation**:
+- ✅ Agent state preserved
+- ⚠️ Streaming session may have completed
+- ❌ Tokens streamed during disconnect are lost
+- ✅ Can request message replay via REST API
+
+**Client Action**: 
+1. Rejoin channel
+2. Fetch latest messages via REST API
+3. Display any missed responses
+
+\`\`\`javascript
+channel.join()
+  .receive("ok", async () => {
+    // Fetch messages since disconnect
+    const lastMessageId = localStorage.getItem("lastMessageId")
+    const response = await fetch(\`/api/v1/agents/123/messages?since=\${lastMessageId}\`)
+    const missedMessages = await response.json()
+    
+    // Display missed messages
+    missedMessages.forEach(msg => displayMessage(msg))
+  })
+\`\`\`
+
+### 3. Agent Crashed/Restarted
+
+**Client Behavior**:
+- Channel push may fail with error
+- Client receives disconnect notification
+
+**State Preservation**:
+- ✅ Agent state restored from event store
+- ✅ Session history preserved
+- ⚠️ In-progress streaming session lost
+- ✅ Can resume with new message
+
+**Client Action**:
+1. Show error notification
+2. Allow user to retry message
+3. Fetch agent status via REST API
+
+\`\`\`javascript
+channel.on("agent_error", payload => {
+  if (payload.error_type === "crashed") {
+    showNotification("Agent restarted. Please retry your message.")
+    enableRetryButton()
+  }
+})
+\`\`\`
+
+## Best Practices
+
+### Exponential Backoff
+
+Always use exponential backoff to prevent thundering herd on reconnection:
+
+\`\`\`javascript
+let reconnectAttempts = 0
+const maxBackoff = 30000  // 30 seconds max
+
+function reconnectWithBackoff() {
+  const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), maxBackoff)
+  
+  setTimeout(() => {
+    channel.join()
+      .receive("ok", () => {
+        reconnectAttempts = 0  // Reset on success
+      })
+      .receive("error", () => {
+        reconnectAttempts++
+        if (reconnectAttempts < 10) {
+          reconnectWithBackoff()
+        } else {
+          showFatalError("Unable to reconnect. Please refresh.")
+        }
+      })
+  }, delay)
+}
+\`\`\`
+
+### State Reconciliation
+
+Track last received message/token to detect gaps:
+
+\`\`\`javascript
+let lastTokenIndex = -1
+
+channel.on("token", payload => {
+  const { message_id, token, index } = payload
+  
+  // Detect gap (missed tokens during disconnect)
+  if (index > lastTokenIndex + 1) {
+    console.warn(\`Missed tokens: \${lastTokenIndex + 1} to \${index - 1}\`)
+    // Optionally fetch full message via API
+  }
+  
+  lastTokenIndex = index
+  displayToken(token)
+})
+
+channel.on("stream_complete", payload => {
+  // Reset for next message
+  lastTokenIndex = -1
+})
+\`\`\`
+
+### Presence Tracking
+
+Use Presence to show connection status:
+
+\`\`\`javascript
+import { Presence } from "phoenix"
+
+const presence = new Presence(channel)
+
+presence.onSync(() => {
+  const users = presence.list()
+  updatePresenceUI(users)
+})
+
+// Show "reconnecting" state
+channel.onError(() => {
+  showReconnectingUI()
+})
+
+channel.on("presence_state", state => {
+  presence.syncState(state)
+})
+
+channel.on("presence_diff", diff => {
+  presence.syncDiff(diff)
+})
+\`\`\`
+
+### Message Replay
+
+For critical messages, implement replay on reconnect:
+
+\`\`\`javascript
+class MessageStore {
+  constructor() {
+    this.lastSyncedMessageId = null
+  }
+  
+  async syncOnReconnect(agentId) {
+    const params = new URLSearchParams({
+      since: this.lastSyncedMessageId || "",
+      limit: 50
+    })
+    
+    const response = await fetch(\`/api/v1/agents/\${agentId}/messages?\${params}\`)
+    const messages = await response.json()
+    
+    messages.forEach(msg => {
+      this.displayMessage(msg)
+      this.lastSyncedMessageId = msg.id
+    })
+  }
+}
+
+channel.join().receive("ok", () => {
+  messageStore.syncOnReconnect(agentId)
+})
+\`\`\`
+
+## Timeout Policies
+
+### Socket Level
+- **Connect timeout**: 10 seconds
+- **Heartbeat interval**: 30 seconds
+- **Heartbeat timeout**: 10 seconds
+
+### Channel Level
+- **Join timeout**: 5 seconds
+- **Push timeout**: 10 seconds
+- **Leave timeout**: 5 seconds
+
+Configure in `config/config.exs`:
+
+\`\`\`elixir
+config :pag_server, PagServerWeb.Endpoint,
+  socket: [
+    connect_timeout: 10_000,
+    heartbeat_interval: 30_000
+  ]
+\`\`\`
+
+## Server-Side Considerations
+
+### Subscription Cleanup
+Server automatically cleans up subscriptions on disconnect (see terminate/2 in AgentChannel).
+
+### State Preservation
+Agent GenServer persists across client disconnections. State is only lost if agent process crashes.
+
+### Grace Period
+Consider implementing grace period before cleaning up expensive resources:
+
+\`\`\`elixir
+def terminate(reason, socket) do
+  agent_id = socket.assigns.agent_id
+  
+  # Delay cleanup for brief disconnections
+  Process.send_after(self(), {:cleanup, agent_id}, 60_000)
+  
+  :ok
+end
+\`\`\`
+
+## Testing Reconnection
+
+### Manual Testing
+\`\`\`javascript
+// Simulate disconnect
+socket.disconnect()
+
+// Simulate reconnect after delay
+setTimeout(() => socket.connect(), 5000)
+\`\`\`
+
+### Network Conditions
+Use browser DevTools to simulate:
+- Offline mode
+- Slow 3G
+- Connection throttling
+
+## References
+- Phoenix Channels Guide: https://hexdocs.pm/phoenix/channels.html
+- Phoenix.Socket reconnection: https://hexdocs.pm/phoenix/js/index.html#socket
+- Phoenix Presence: https://hexdocs.pm/phoenix/presence.html
+\`\`\`
+
+### File: `docs/channels/connection-states.md`
+
+```markdown
+# Channel Connection States
+
+## State Diagram
+
+\`\`\`
+                    ┌─────────────┐
+                    │   Created   │
+                    └──────┬──────┘
+                           │ connect()
+                           ▼
+     ┌─────────────► ┌──────────┐ ◄────────────┐
+     │               │ Connecting │              │
+     │               └──────┬─────┘              │
+     │                      │                    │
+     │            success   │   error/timeout    │
+     │                      ▼                    │
+     │              ┌───────────────┐            │
+     │              │   Connected   │            │
+     │              └───────┬───────┘            │
+     │                      │ join()             │
+     │                      ▼                    │
+     │              ┌───────────────┐            │
+     │        ┌────►│   Joining     │────┐       │
+     │        │     └───────────────┘    │       │
+     │        │                          │       │
+     │     error/timeout            success      │
+     │        │                          │       │
+     │        │     ┌───────────────┐    │       │
+     │        └─────┤    Joined     │◄───┘       │
+     │              └───────┬───────┘            │
+     │                      │                    │
+     │          disconnect/error                 │
+     │                      │                    │
+     │              ┌───────▼───────┐            │
+     └──────────────┤ Disconnected  │────────────┘
+                    └───────────────┘
+                           │ reconnect
+                           └─────────► (back to Connecting)
+\`\`\`
+
+## State Details
+
+### Created
+- Initial state after `new Socket()`
+- No network activity
+- **Actions**: Call `connect()`
+
+### Connecting
+- Socket attempting connection
+- Executing connection handshake
+- **Timeouts**: 10s (configurable)
+- **Next**: Connected or back to Disconnected
+
+### Connected
+- Socket established
+- Heartbeat active
+- Ready for channel joins
+- **Actions**: Call `channel.join()`
+
+### Joining
+- Channel join in progress
+- Waiting for server confirmation
+- **Timeouts**: 5s (configurable)
+- **Next**: Joined or back to Connected
+
+### Joined
+- Channel active
+- Receiving real-time events
+- Can push messages
+- **Actions**: Send messages, receive events
+
+### Disconnected
+- Connection lost
+- Automatic reconnection scheduled
+- **Backoff**: Exponential (configurable)
+- **Actions**: Wait for reconnection
+
+## Client Implementation
+
+\`\`\`javascript
+class ChannelManager {
+  constructor(agentId) {
+    this.agentId = agentId
+    this.state = "created"
+    this.socket = null
+    this.channel = null
+  }
+  
+  connect(token) {
+    this.state = "connecting"
+    this.socket = new Socket("/socket", {
+      params: { token },
+      reconnectAfterMs: this.getBackoff.bind(this)
+    })
+    
+    this.socket.onOpen(() => {
+      this.state = "connected"
+      console.log("Socket connected")
+      this.joinChannel()
+    })
+    
+    this.socket.onClose(() => {
+      this.state = "disconnected"
+      console.log("Socket disconnected")
+    })
+    
+    this.socket.connect()
+  }
+  
+  joinChannel() {
+    this.state = "joining"
+    this.channel = this.socket.channel(\`agent:\${this.agentId}\`, {})
+    
+    this.channel.join()
+      .receive("ok", () => {
+        this.state = "joined"
+        console.log("Channel joined")
+        this.setupHandlers()
+      })
+      .receive("error", resp => {
+        this.state = "connected"
+        console.error("Failed to join", resp)
+      })
+      .receive("timeout", () => {
+        this.state = "connected"
+        console.error("Join timeout")
+      })
+  }
+  
+  setupHandlers() {
+    this.channel.on("token", payload => this.handleToken(payload))
+    this.channel.on("stream_complete", payload => this.handleComplete(payload))
+    this.channel.on("llm_error", payload => this.handleError(payload))
+  }
+  
+  getBackoff(tries) {
+    return Math.min(1000 * Math.pow(2, tries), 10000)
+  }
+  
+  getState() {
+    return this.state
+  }
+}
+\`\`\`
+\`\`\`
+
+## Acceptance Criteria
+- [ ] Reconnection documentation created
+- [ ] Exponential backoff strategy documented
+- [ ] State reconciliation examples provided
+- [ ] Connection states diagram included
+- [ ] Timeout policies documented
+- [ ] Client-side examples complete
+- [ ] Testing strategies documented
+
+## Testing
+Manual review of documentation for completeness and clarity.
+
+## References
+- Phoenix Channels: https://hexdocs.pm/phoenix/channels.html
+- Phoenix.Socket options: https://hexdocs.pm/phoenix/Phoenix.Socket.html
+- WebSocket reconnection patterns: https://web.dev/websockets-guide/
+
+## Notes
+- Keep documentation synchronized with implementation
+- Update examples as API evolves
+- Consider adding to Phoenix LiveView docs if UI added
+- Future: Add interactive reconnection debugger tool

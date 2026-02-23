@@ -1,0 +1,50 @@
+id: P19.M1
+name: Critical Fixes
+status: pending
+estimate_hours: 8.0
+complexity: critical
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Main Docs Fixes
+  path: 01-main-docs-fixes
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Guides Fixes
+  path: 02-guides-fixes
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Integration Docs Fixes
+  path: 03-integration-docs-fixes
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Skills & CLI Docs Fixes
+  path: 04-skills-cli-docs-fixes
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

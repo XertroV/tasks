@@ -1,0 +1,37 @@
+id: P13.M1
+name: AgentServer Decomposition
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Extract MessageDispatcher
+  path: 01-extract-messagedispatcher
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Extract StreamProcessor
+  path: 02-extract-streamprocessor
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Extract CheckpointManager
+  path: 03-extract-checkpointmanager
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

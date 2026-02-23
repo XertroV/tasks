@@ -1,0 +1,94 @@
+id: P45
+name: Credentials Vault Plugin
+status: done
+locked: true
+weeks: 2
+estimate_hours: 28.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Plugin Scaffold & DB Schema
+  path: 01-plugin-scaffold-db-schema
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Create the plugins/credentials_vault/ directory structure, plugin.json
+    manifest, top-level Elixir module, and all DB migrations for vault_secrets, vault_secret_versions,
+    vault_access_grants, and vault_rate_limit_buckets tables.
+  locked: false
+- id: M2
+  name: Core Vault CRUD & History
+  path: 02-core-vault-crud-history
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: Implement the core Elixir context module for secret create/read/update/delete
+    with per-version history, configurable TTL-based version pruning, and soft-delete.
+    All values encrypted via the existing EncryptedString Ecto type.
+  locked: false
+- id: M3
+  name: Agent MCP Tool Interface
+  path: 03-agent-mcp-tool-interface
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Expose the vault as a single 'credentials_vault' MCP tool using the
+    action-dispatch pattern (store/fetch/list/delete/rotate/history). Context plumbing
+    for agent_id, workspace_id, and user_id. Access is gated by scope rules.
+  locked: false
+- id: M4
+  name: Anti-Exfil Rate Limiting
+  path: 04-anti-exfil-rate-limiting
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: 'Per-agent token bucket rate limiter: very small burst capacity (e.g.
+    3 tokens), slow refill (e.g. 1 token/30s). Every secret fetch by an agent costs
+    1 token. Sustained bulk reads are blocked. Persisted in ETS with optional DB fallback
+    for multi-node.'
+  locked: false
+- id: M5
+  name: Scopes & Cross-Workspace Sharing
+  path: 05-scopes-cross-workspace-sharing
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: 'Support workspace-scoped, agent-scoped, and user-scoped secrets. Implement
+    share-by-reference: an owner workspace/user grants read access to another workspace
+    or user via vault_access_grants. Grantees read the original record; no copy is
+    made.'
+  locked: false
+- id: M6
+  name: Human REST API
+  path: 06-human-rest-api
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: 'Phoenix controller/router endpoints for human access: list, get metadata,
+    create, update, delete, reveal (plaintext with explicit action, rate-limited +
+    audit-logged), list versions, revoke share. Auth via existing API key / user session.'
+  locked: false
+- id: M7
+  name: Audit, Observability & Housekeeping
+  path: 07-audit-observability-housekeepi
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Emit telemetry events on all secret accesses (agent and human). Oban
+    worker for TTL-based version pruning. Access log stored in vault_access_log table.
+    Tests for all milestones. mix lint compliance.
+  locked: false
+stats:
+  total_tasks: 27
+  done: 27
+  in_progress: 0
+  blocked: 0
+  pending: 0

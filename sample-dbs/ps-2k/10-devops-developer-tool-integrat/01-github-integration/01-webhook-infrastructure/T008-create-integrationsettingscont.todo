@@ -1,0 +1,60 @@
+---
+id: P10.M1.E1.T008
+title: Create IntegrationSettingsController with encryption
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:10:15.050562+00:00'
+started_at: '2026-02-11T20:10:15.050562+00:00'
+completed_at: '2026-02-11T20:32:07.497550+00:00'
+duration_minutes: 21.874116266666665
+---
+
+# Create IntegrationSettingsController with encryption
+
+
+
+## Requirements
+
+Create an IntegrationSettingsController with endpoints for storing and managing encrypted GitHub credentials with secure update handling.
+
+## Description
+
+The controller provides endpoints for CRUD operations on integration settings: creating new integrations with encrypted tokens, listing integrations, updating tokens/config, and revoking access. Sensitive data is encrypted before storage and decrypted only when needed for API calls.
+
+## Acceptance Criteria
+
+- [ ] Controller at `lib/pag_server_web/controllers/integration_settings_controller.ex`
+- [ ] `POST /api/v1/integrations` - Create integration with encrypted tokens
+- [ ] `GET /api/v1/integrations` - List user's integrations (does NOT return decrypted tokens)
+- [ ] `GET /api/v1/integrations/:id` - Show integration details (does NOT return decrypted tokens)
+- [ ] `PATCH /api/v1/integrations/:id` - Update config or refresh token (requires valid token)
+- [ ] `DELETE /api/v1/integrations/:id` - Revoke integration
+- [ ] Returns 201 on create, 200 on get/update, 204 on delete
+- [ ] Validates API token by making test call to GitHub API (e.g., GET /user)
+- [ ] Returns validation error if token invalid or GitHub unreachable
+- [ ] Permission checks via `RequirePermissions` plug with `manage_integrations` scope
+- [ ] Returns 404 if integration not found or does not belong to user
+
+## Implementation Notes
+
+- Location: `lib/pag_server_web/controllers/integration_settings_controller.ex`
+- REST paths: `/api/v1/integrations` (create, index); `/api/v1/integrations/:id` (show, update, delete)
+- Use pattern from `/home/xertrov/src/pag-server/lib/pag_server_web/controllers/api_key_controller.ex` (lines 1-90)
+- Permissions: Add to auth system - `:manage_integrations` for CRUD operations
+- Create params: `integration_type` (required, enum "github"), `api_token` (required, plaintext), `webhook_secret` (optional), `github_username` (optional), `github_org` (optional), `config` (optional JSONB)
+- Update params: `config`, `webhook_secret` only (CANNOT update `api_token` - must revoke and recreate new)
+- Response JSON: `id`, `integration_type`, `github_username`, `github_org`, `config`, `is_active`, `last_synced_at`, `created_at`, `updated_at` (NEVER include encrypted tokens in response)
+- Token validation flow:
+  1. On create, validate token by calling `GET https://api.github.com/user` with `Authorization: Bearer <token>`
+  2. Return 422 with error code `:invalid_api_token` if request fails or returns non-200
+  3. Log validation attempt (not token value) with timestamp for audit
+- Use `action_fallback PagServerWeb.FallbackController`
+- Implement OpenApiSpex specs with separate `_json.ex` file
+- HTTP status: 201 (create), 200 (show/update), 204 (delete), 422 (invalid token), 404 (not found)
+- Scope to current user: list/show should only return user's own integrations
+- Add module spec and comprehensive docstring with curl examples

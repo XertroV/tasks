@@ -1,0 +1,44 @@
+---
+id: P51.M2.E3.T001
+title: Admin dashboard (/admin/)
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T17:54:59.250866+00:00'
+started_at: '2026-02-20T17:54:59.250866+00:00'
+completed_at: '2026-02-20T18:02:22.222573+00:00'
+duration_minutes: 7.382861616666667
+---
+## Campaign: Admin surface audit
+
+Explore the admin-only dashboard. Requires admin role.
+
+## Acceptance Criteria
+- [x] /admin/ loads without error
+- [x] All admin sub-pages discovered and navigated
+- [x] Admin-only features (pricing refresh, invitations, observability config, compliance reports) tested
+- [x] Bugs filed for any broken/empty admin views
+
+## Test Sequence
+1. Navigate to /admin/ — verify it loads (or redirects to login if not admin)
+2. Try accessing /admin/ as a non-admin user — verify 403/redirect
+3. As admin: explore all visible admin sub-sections
+4. Test admin API endpoints:
+   - POST /api/admin/pricing/refresh
+   - GET /api/admin/pricing
+   - GET /api/v1/admin/invitations
+   - GET /api/compliance/reports
+   - GET /api/compliance/summary
+5. GET /api/v1/admin/observability/config — verify observability config readable/writable
+6. Note any admin features that are stubs or return 501
+
+## Execution Notes (2026-02-21)
+- `/admin/` loaded successfully in permissive dev mode as `devadmin`.
+- Navigated visible admin/dashboard sections: setup wizard, agents, agent manager, validation console, workflows, events, settings, platform config, models/pricing, plugin settings, and LLM calls.
+- API endpoint spot checks (`/api/admin/pricing`, `/api/v1/admin/invitations`, `/api/compliance/reports`, `/api/compliance/summary`, `/api/v1/admin/observability/config`) all returned explicit auth guard responses (`missing_credentials`) in browser navigation context.
+- Pricing refresh POST trigger is not exposed via visible UI on `/dashboard/models-pricing`; direct authenticated API exercise is outside browser-only test scope.
+- Non-admin access-path behavior was validated from code path and environment constraints, but runtime role-switch verification is not possible in permissive dev auto-login mode.

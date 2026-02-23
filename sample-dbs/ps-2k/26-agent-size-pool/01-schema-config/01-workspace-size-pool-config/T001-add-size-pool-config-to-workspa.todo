@@ -1,0 +1,62 @@
+---
+id: P26.M1.E1.T001
+title: Add size pool config to workspace schema (small/medium/large model lists)
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- workspace
+- schema
+- models
+- size-pool
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:57:44.193338+00:00'
+started_at: '2026-02-18T17:57:44.193338+00:00'
+completed_at: '2026-02-18T18:05:43.061852+00:00'
+duration_minutes: 7.9811417166666665
+---
+
+# Add size pool config to workspace schema
+
+Add a `model_pools` (or `size_pool`) configuration to the workspace settings schema
+that maps size categories (small, medium, large) to ordered lists of model identifiers.
+Agents without an explicit model will resolve to a model from the workspace pool.
+
+## Requirements
+
+- Add `model_pools` field to workspace settings/config (typed map or embedded schema)
+- Structure: `%{small: [model_id, ...], medium: [model_id, ...], large: [model_id, ...]}`
+- Each pool is an ordered list; first available/non-rate-limited model is chosen
+- Validate that all model IDs in pools are known to the provider registry
+- Default pool config should be sensible (e.g. haiku for small, sonnet for medium, opus for large)
+- Migration if workspace settings are persisted in DB; otherwise update config schema
+- Document the config shape in a module @moduledoc or inline comment
+
+## Acceptance Criteria
+
+- [ ] `model_pools` field added to workspace settings schema with small/medium/large keys
+- [ ] Changeset validation ensures each pool is a non-empty list of strings
+- [ ] Default values configured for small/medium/large pools
+- [ ] Schema persists correctly (migration passes if DB-backed)
+- [ ] Module documentation explains the pool config structure
+- [ ] Unit tests for changeset validation (valid and invalid pool configs)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P26.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 17:57 UTC
+**Sibling tasks**: P26.M1.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P26.M1.E1.T001 → P26.M1.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P26.M1.E1.T001: .tasks/26-agent-size-pool/01-schema-config/01-workspace-size-pool-config/T001-add-size-pool-config-to-workspa.todo
+- P26.M1.E1.T002: .tasks/26-agent-size-pool/01-schema-config/01-workspace-size-pool-config/T002-add-size-field-to-agent-spawn-r.todo

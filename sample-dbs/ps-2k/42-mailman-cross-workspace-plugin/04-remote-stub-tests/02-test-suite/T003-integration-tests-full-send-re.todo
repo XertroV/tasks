@@ -1,0 +1,22 @@
+---
+id: P42.M4.E2.T003
+title: 'Integration tests: full send/receive flow and plugin lifecycle'
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:37:12.859206+00:00'
+started_at: '2026-02-19T17:37:12.859206+00:00'
+completed_at: '2026-02-19T18:20:10.764273+00:00'
+duration_minutes: 42.965084250000004
+---
+## Acceptance Criteria
+- [ ] test/pag_server/plugins/mailman/integration_test.exs
+- [ ] Full flow: plugin enable -> send message -> orchestrator processes -> message delivered
+- [ ] Plugin on_enable creates mailbox, on_disable deactivates
+- [ ] MCP tool send action enqueues and triggers orchestrator
+- [ ] Workspace-not-found address returns clear error
+- [ ] pag:// address returns not-supported error

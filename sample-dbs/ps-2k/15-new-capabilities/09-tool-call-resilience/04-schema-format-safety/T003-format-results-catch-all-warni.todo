@@ -1,0 +1,42 @@
+---
+id: P15.M9.E4.T003
+title: Change format_results catch-all to raise or log warning instead of silent passthrough
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tool-executor
+- defense-in-depth
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:03:33.857297+00:00'
+started_at: '2026-02-17T14:03:33.857297+00:00'
+completed_at: '2026-02-17T14:07:58.109940+00:00'
+duration_minutes: 4.40421055
+---
+The catch-all clause in `tool_executor.ex` line ~149:
+```elixir
+def format_results(_provider, results), do: results
+```
+silently passes through raw execution structs for any unrecognized provider.
+New providers added in the future will hit this and get malformed messages sent
+to the LLM API.
+
+Fix: Change to log a warning (with the provider atom) and still return results
+as a fallback, OR raise if we prefer fail-fast. A warning + passthrough is
+safer for production; a raise is better for catching issues in dev/test.
+
+Consider: use `Logger.warning` in production and have a test that verifies all
+known providers have explicit format_results clauses.
+
+Source: User notes (format_results catch-all danger)
+
+Files to modify:
+- lib/pag_server/tools/tool_executor.ex (format_results catch-all)
+
+## Acceptance Criteria
+- [ ] Catch-all logs a warning including the unrecognized provider name
+- [ ] Warning is visible in logs for debugging
+- [ ] Existing providers with explicit clauses are unaffected
+- [ ] Test: call format_results with unknown provider, verify warning logged

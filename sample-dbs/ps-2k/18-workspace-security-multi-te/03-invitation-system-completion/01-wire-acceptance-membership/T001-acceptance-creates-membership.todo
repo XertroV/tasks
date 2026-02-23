@@ -1,0 +1,50 @@
+---
+id: P18.M3.E1.T001
+title: Update accept_invitation to create membership on acceptance
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- security
+- workspace
+- invitations
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:19:06.708688+00:00'
+started_at: '2026-02-17T18:19:06.708688+00:00'
+completed_at: '2026-02-17T18:29:18.393555+00:00'
+duration_minutes: 10.1947476
+---
+
+# Update accept_invitation to create membership on acceptance
+
+## Description
+
+The current `accept_invitation/2` only sets `accepted_at` on the invitation record without creating any membership. This task wires it to actually create a `WorkspaceMember` record, making the invitation system functional.
+
+## Requirements
+
+- [ ] Update `WorkspaceInvitations.accept_invitation/2` to use `Ecto.Multi` transaction:
+  1. Validate token and email match (existing logic)
+  2. Update invitation's `accepted_at` (existing logic)
+  3. Call `WorkspaceMembers.add_member(invitation.workspace_id, user_id, invitation.role, invited_by: invitation.created_by)`
+- [ ] Handle duplicate membership gracefully:
+  - If user is already a member, update their role if the invitation role is higher-privilege
+  - If user is already at equal or higher role, skip membership update
+- [ ] If membership creation fails, roll back the entire transaction (invitation stays unaccepted)
+- [ ] Return `{:ok, %{invitation: invitation, membership: membership}}` on success
+
+## Acceptance Criteria
+
+- [ ] Accepting an invitation creates a workspace membership record
+- [ ] Membership role matches the invitation's role field
+- [ ] Accepting when already a member at lower role upgrades the role
+- [ ] Accepting when already at equal or higher role is a no-op for membership
+- [ ] Transaction rolls back cleanly on any failure
+- [ ] After acceptance, `WorkspaceMembers.member?(workspace_id, user_id)` returns true
+
+## Context
+
+**Files affected**: `lib/pag_server/workspace_invitations.ex` (accept_invitation/2, ~line 119-126)
+**Critical fix**: This directly addresses the non-functional invitation system identified in the security review

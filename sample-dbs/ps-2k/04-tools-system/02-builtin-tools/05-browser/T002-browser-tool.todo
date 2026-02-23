@@ -1,0 +1,165 @@
+---
+id: P4.M2.E5.T002
+title: Implement browser tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P4.M2.E5.T001
+tags:
+- tools
+- builtin
+- browser
+- automation
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:00:34.145575'
+started_at: '2026-02-06T03:00:34.145575'
+completed_at: '2026-02-06T03:02:48.538849'
+duration_minutes: 2.2398877500000003
+---
+
+# Implement browser tool
+
+Create the `browser` builtin tool for web automation.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/browser.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support actions: navigate, click, type, screenshot
+- [ ] Execute via agent-browser CLI
+- [ ] Parse and return snapshots with element refs
+- [ ] Handle timeouts and errors
+
+## Acceptance Criteria
+
+- [ ] Executes browser commands via Port
+- [ ] Returns snapshot with element references
+- [ ] Supports common actions (navigate, click, type, submit)
+- [ ] Captures screenshots when requested
+- [ ] Handles browser crashes gracefully
+- [ ] Test coverage for all actions
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` Browser automation
+
+**Key Points**:
+- Uses ref-based element selection (LLM-friendly)
+- Snapshot includes accessible page structure
+- Screenshots stored temporarily and referenced
+- Consider browser session reuse for multi-step flows
+
+## Notes
+
+Implementation:
+```elixir
+defmodule PAGServer.Tools.Builtin.Browser do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "browser"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "browser",
+      description: "Automate browser actions",
+      parameters: %{
+        type: "object",
+        properties: %{
+          action: %{
+            type: "string",
+            enum: ["navigate", "click", "type", "screenshot"],
+            description: "Browser action to perform"
+          },
+          url: %{
+            type: "string",
+            description: "URL to navigate to (for navigate action)"
+          },
+          ref: %{
+            type: "string",
+            description: "Element reference (for click/type actions)"
+          },
+          text: %{
+            type: "string",
+            description: "Text to type (for type action)"
+          }
+        },
+        required: ["action"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"action" => action} = args, context) do
+    case action do
+      "navigate" ->
+        navigate(args["url"], context)
+      "click" ->
+        click(args["ref"], context)
+      "type" ->
+        type_text(args["ref"], args["text"], context)
+      "screenshot" ->
+        screenshot(context)
+      _ ->
+        {:error, "Unknown action: #{action}"}
+    end
+  end
+
+  defp navigate(url, _context) do
+    cmd = build_command(["browse", url, "--snapshot"])
+    
+    case System.cmd("npx", cmd) do
+      {output, 0} ->
+        snapshot = parse_snapshot(output)
+        {:ok, snapshot}
+      {error, code} ->
+        {:error, "Browser failed (#{code}): #{error}"}
+    end
+  end
+
+  defp click(ref, context) do
+    # Execute click action with ref
+    {:ok, %{clicked: ref}}
+  end
+
+  defp type_text(ref, text, context) do
+    # Execute type action
+    {:ok, %{typed: text, into: ref}}
+  end
+
+  defp screenshot(context) do
+    # Capture screenshot
+    {:ok, %{screenshot_path: "/tmp/screenshot.png"}}
+  end
+
+  defp build_command(args) do
+    ["@vercel/agent-browser" | args]
+  end
+
+  defp parse_snapshot(output) do
+    # Parse JSON snapshot from agent-browser
+    %{elements: [], text: output}
+  end
+end
+```
+
+Example usage:
+```elixir
+Browser.execute(%{
+  "action" => "navigate",
+  "url" => "https://example.com"
+}, context)
+# => {:ok, %{elements: [...], text: "..."}}
+
+Browser.execute(%{
+  "action" => "click",
+  "ref" => "button-submit"
+}, context)
+# => {:ok, %{clicked: "button-submit"}}
+```
+
+Register in Registry startup.

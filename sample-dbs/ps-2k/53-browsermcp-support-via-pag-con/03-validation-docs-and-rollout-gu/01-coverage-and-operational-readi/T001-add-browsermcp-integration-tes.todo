@@ -1,0 +1,49 @@
+---
+id: P53.M3.E1.T001
+title: Add browsermcp integration tests with companion mocks
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P53.M2.E2.T002
+tags:
+- browsermcp
+- tests
+claimed_by: cli-user
+claimed_at: '2026-02-21T06:03:50.368550+00:00'
+started_at: '2026-02-21T06:03:50.368550+00:00'
+completed_at: '2026-02-21T06:04:34.196622+00:00'
+duration_minutes: 0.7304676833333333
+---
+
+# Add browsermcp integration tests with companion mocks
+
+
+
+## Requirements
+
+- Add automated tests for browsermcp happy path and key failure paths using companion mocks/fakes.
+- Cover routing, lifecycle cleanup, auth gating, and error normalization.
+- Keep tests fast and deterministic for local development.
+
+## Acceptance Criteria
+
+- Integration tests assert at least one successful browser action flow.
+- Failure-path tests cover auth denied, transport timeout, and companion disconnect.
+- Test suite runs under existing targeted test alias and output can be captured in recent-mix-tests.log.
+
+## Execution Notes (2026-02-21)
+
+- Added dedicated BrowserMCP integration test module using companion mock
+  processes to exercise end-to-end proxy dispatch behavior.
+- Verified happy-path `navigate` flow, including browser session id enrichment,
+  and deterministic failure paths for auth denied, timeout, and companion crash.
+- Re-ran companion proxy suite with new integration tests and appended output
+  to `recent-mix-tests.log`.
+
+## Evidence Artifacts
+
+- `test/pag_server/companions/browsermcp_flow_integration_test.exs`
+- `test/pag_server/companions/companion_proxy_executor_test.exs`
+- `recent-mix-tests.log`

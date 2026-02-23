@@ -1,0 +1,33 @@
+---
+id: P43.M2.E2.T004
+title: 'Add LlmCallRecord query functions: recent/1, in_flight/0, summary_stats/2'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:03:37.142295+00:00'
+started_at: '2026-02-20T00:03:37.142295+00:00'
+completed_at: '2026-02-20T00:08:11.948202+00:00'
+duration_minutes: 4.580098250000001
+---
+
+# Add LlmCallRecord query functions: recent/1, in_flight/0, summary_stats/2
+
+
+
+## Requirements
+
+- The dashboard LiveView needs a stable query API to retrieve in-flight records, recent history with optional filters, and aggregate stats. These functions should live close to the schema (in `LlmCallRecord` or a dedicated context module) and use Ecto queries — not raw SQL.
+
+## Acceptance Criteria
+
+- A function `recent(opts)` exists (in `PagServer.Schema.LlmCallRecord` or a `PagServer.LlmCallRecords` context module). It accepts a keyword list with optional keys: `time_window_hours: integer`, `provider: string | nil`, `model: string | nil`, `limit: integer` (default 100). It returns a list of `LlmCallRecord` structs ordered by `started_at` DESC. When `provider:` or `model:` is non-nil, only matching records are returned. When `time_window_hours:` is provided, only records where `started_at >= now - N hours` are returned.
+- A function `in_flight()` exists with arity 0. It returns all records where `status` is `:pending` or `:streaming`, ordered by `started_at` ASC. It returns an empty list (not an error) when no such records exist.
+- A function `summary_stats(time_window_hours, opts \\ [])` exists. It returns a map with keys: `:total` (integer), `:completed` (integer), `:failed` (integer), `:timed_out` (integer), `:avg_duration_ms` (float or `nil` when no completed records), `:total_cost_millicents` (integer), `:total_tokens` (integer, sum of `input_tokens + output_tokens` for all records in window where those fields are non-nil). All counts are 0 and `:avg_duration_ms` is `nil` when no matching records exist — the function never raises.
+- A function `providers_used(time_window_hours)` exists with arity 1. It returns a list of distinct non-nil provider strings found in records within the time window, sorted alphabetically.
+- A function `models_used(time_window_hours)` exists with arity 1. It returns a list of distinct non-nil model strings found in records within the time window, sorted alphabetically.
+- All five functions use `PagServer.Repo` (not raw SQL) and compile without warnings.
+- Each function is covered by at least a smoke-test assertion in the schema unit tests (T001 or T002) or by the query-function tests asserting correct return types on an empty DB.

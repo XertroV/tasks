@@ -1,0 +1,115 @@
+---
+id: P2.M2.E1.T004
+title: Add error handling and rate limits
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P2.M2.E1.T003
+tags:
+- llm
+- anthropic
+- errors
+- rate-limits
+claimed_by: claude-1
+claimed_at: '2026-02-05T11:59:32.521665'
+started_at: '2026-02-05T11:59:32.521665'
+completed_at: '2026-02-05T12:12:16.736470'
+duration_minutes: 12.736913216666666
+---
+
+# Add error handling and rate limits
+
+Implement comprehensive error handling and rate limit detection for Anthropic API.
+
+## Requirements
+
+- [ ] Parse Anthropic API error responses
+- [ ] Map error types: invalid_request_error, authentication_error, permission_error, rate_limit_error, api_error
+- [ ] Extract rate limit headers: x-ratelimit-requests-limit, x-ratelimit-requests-remaining, x-ratelimit-requests-reset
+- [ ] Add retry logic for 429 (rate limit) and 500 (server error)
+- [ ] Implement exponential backoff (1s, 2s, 4s)
+- [ ] Add telemetry events for errors and retries
+
+## Acceptance Criteria
+
+- [ ] All Anthropic error types are handled
+- [ ] Rate limit info is extracted from headers
+- [ ] 429 errors trigger retry with backoff
+- [ ] 500 errors retry up to 3 times
+- [ ] Telemetry events emitted for monitoring
+- [ ] Tests cover all error scenarios
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- `ref-projects/anthropix/lib/anthropix/api_error.ex` - Error handling reference
+
+**Key Points**:
+- Anthropic uses structured error responses
+- Rate limits are in headers, not body
+- Retry logic must use exponential backoff
+
+## Notes
+
+Anthropic error response format:
+```json
+{
+  "type": "error",
+  "error": {
+    "type": "rate_limit_error",
+    "message": "Rate limit exceeded"
+  }
+}
+```
+
+Rate limit headers:
+- `x-ratelimit-requests-limit: 50`
+- `x-ratelimit-requests-remaining: 0`
+- `x-ratelimit-requests-reset: 2024-02-05T12:00:00Z`
+
+Error type mapping:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic.Error do
+  @type error_type :: 
+    :invalid_request 
+    | :authentication 
+    | :permission 
+    | :rate_limit 
+    | :api_error
+    | :overloaded
+
+  def parse_error(%{status: 400, body: body}), do: {:error, :invalid_request, body["error"]["message"]}
+  def parse_error(%{status: 401, body: body}), do: {:error, :authentication, body["error"]["message"]}
+  def parse_error(%{status: 429, body: body}), do: {:error, :rate_limit, body["error"]["message"]}
+  def parse_error(%{status: 500, body: body}), do: {:error, :api_error, body["error"]["message"]}
+  def parse_error(%{status: 529, body: body}), do: {:error, :overloaded, body["error"]["message"]}
+end
+```
+
+Retry with backoff:
+```elixir
+defp maybe_retry(error, attempt, max_attempts) do
+  case error do
+    {:error, :rate_limit, _} when attempt < max_attempts ->
+      delay = :math.pow(2, attempt) * 1000 |> round()
+      Process.sleep(delay)
+      {:retry, attempt + 1}
+    
+    _ ->
+      {:error, error}
+  end
+end
+```
+
+Emit telemetry:
+```elixir
+:telemetry.execute(
+  [:pag, :llm, :error],
+  %{count: 1},
+  %{provider: :anthropic, error_type: error_type}
+)
+```

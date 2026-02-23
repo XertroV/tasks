@@ -1,0 +1,219 @@
+---
+id: P1.M3.E4.T003
+title: Add state serialization
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P1.M3.E4.T001
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:57:05.096244'
+started_at: '2026-02-05T09:57:05.096244'
+completed_at: '2026-02-05T09:59:58.214537'
+tags:
+- agent
+- state
+- serialization
+- debugging
+---
+
+# Add state serialization
+
+Implement JSON serialization for agent state to support debugging, persistence, and event sourcing.
+
+## Requirements
+
+- [ ] Implement `Jason.Encoder` protocol for `PagServer.Agents.State`
+- [ ] Add custom encoding for non-JSON-serializable fields:
+  - [ ] `:message_queue` - Convert `:queue.queue()` to list
+  - [ ] `:current_request` - Handle nil or convert reference to map
+- [ ] Implement `to_json/1` helper function
+- [ ] Implement `from_json/1` helper function for deserialization
+- [ ] Add `to_debug_string/1` for human-readable output
+- [ ] Handle sensitive data (don't serialize API keys in config)
+- [ ] Add comprehensive documentation
+
+## Acceptance Criteria
+
+- [ ] `Jason.Encoder` protocol implementation exists
+- [ ] State can be serialized to JSON without errors
+- [ ] Queue is converted to list format: `["msg1", "msg2"]`
+- [ ] Sensitive config fields are filtered (api_key, tokens, etc.)
+- [ ] `to_json/1` returns JSON string
+- [ ] `from_json/1` reconstructs state struct from JSON
+- [ ] Round-trip works: `state |> to_json() |> from_json() == state`
+- [ ] `to_debug_string/1` produces readable multi-line output
+- [ ] All functions have `@spec` and `@doc`
+- [ ] Code compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.6 (Events Domain)
+  - Event serialization uses Jason (lines 360-380)
+  - Compression is applied after serialization
+
+**Use Cases**:
+1. **Event Sourcing** - State snapshots in event store
+2. **Debugging** - Inspect agent state via IEx or logs
+3. **Persistence** - Save/restore agent state across restarts
+4. **Broadcasting** - Send state updates via WebSocket
+5. **Monitoring** - Export state to external monitoring tools
+
+**Sensitive Fields to Filter**:
+- `config.api_key`
+- `config.openai_api_key`
+- `config.anthropic_api_key`
+- Any key matching `*_token`, `*_secret`, `*_key`
+
+## Notes
+
+Example implementation:
+
+```elixir
+defimpl Jason.Encoder, for: PagServer.Agents.State do
+  @doc """
+  Encode agent state to JSON format.
+  
+  Special handling:
+  - `:message_queue` converted from Erlang queue to list
+  - Sensitive config fields are filtered
+  - Timestamps converted to ISO8601 strings
+  """
+  def encode(state, opts) do
+    %{
+      id: state.id,
+      session_id: state.session_id,
+      config: filter_sensitive(state.config),
+      status: state.status,
+      context: state.context,
+      message_queue: queue_to_list(state.message_queue),
+      current_request: state.current_request,
+      stats: state.stats,
+      metadata: state.metadata
+    }
+    |> Jason.Encode.map(opts)
+  end
+  
+  defp queue_to_list(queue) do
+    :queue.to_list(queue)
+  end
+  
+  @sensitive_keys ~w(api_key openai_api_key anthropic_api_key)a
+  
+  defp filter_sensitive(config) do
+    config
+    |> Enum.reject(fn {key, _val} ->
+      key in @sensitive_keys or
+      String.ends_with?(Atom.to_string(key), "_token") or
+      String.ends_with?(Atom.to_string(key), "_secret")
+    end)
+    |> Map.new()
+  end
+end
+
+@doc """
+Serialize state to JSON string.
+
+## Examples
+
+    iex> State.to_json(state)
+    ~s({"id":"abc","session_id":"xyz",...})
+"""
+@spec to_json(t()) :: String.t()
+def to_json(%__MODULE__{} = state) do
+  Jason.encode!(state)
+end
+
+@doc """
+Deserialize state from JSON string.
+
+## Parameters
+
+  - `json` - JSON string or map
+
+## Returns
+
+  - `{:ok, state}` if deserialization succeeds
+  - `{:error, reason}` if JSON is invalid
+
+## Examples
+
+    iex> State.from_json(~s({"id":"abc",...}))
+    {:ok, %State{id: "abc", ...}}
+"""
+@spec from_json(String.t() | map()) :: {:ok, t()} | {:error, term()}
+def from_json(json) when is_binary(json) do
+  case Jason.decode(json) do
+    {:ok, map} -> from_json(map)
+    {:error, _} = err -> err
+  end
+end
+def from_json(%{} = map) do
+  state = %__MODULE__{
+    id: map["id"],
+    session_id: map["session_id"],
+    config: map["config"],
+    status: String.to_existing_atom(map["status"]),
+    context: map["context"],
+    message_queue: :queue.from_list(map["message_queue"] || []),
+    current_request: map["current_request"],
+    stats: atomize_keys(map["stats"]),
+    metadata: map["metadata"] || %{}
+  }
+  {:ok, state}
+rescue
+  e -> {:error, e}
+end
+
+@doc """
+Generate human-readable debug output.
+
+Formats state as multi-line string with indentation.
+Useful for logging and IEx inspection.
+
+## Examples
+
+    iex> State.to_debug_string(state)
+    \"\"\"
+    Agent State (abc123)
+      Session: xyz789
+      Status: :processing
+      Context: 12 messages
+      Queue: 2 pending
+      Stats: 1523 tokens, $0.0234
+    \"\"\"
+"""
+@spec to_debug_string(t()) :: String.t()
+def to_debug_string(%__MODULE__{} = state) do
+  """
+  Agent State (#{String.slice(state.id, 0..7)})
+    Session: #{String.slice(state.session_id, 0..7)}
+    Status: #{state.status}
+    Context: #{length(state.context)} messages
+    Queue: #{:queue.len(state.message_queue)} pending
+    Stats: #{state.stats.tokens} tokens, $#{Float.round(state.stats.cost, 4)}
+    Model: #{state.config[:model]}
+  """
+  |> String.trim()
+end
+
+defp atomize_keys(map) when is_map(map) do
+  Map.new(map, fn {k, v} -> {String.to_existing_atom(k), v} end)
+end
+```
+
+**Testing Requirements** (for T004):
+- Test serialization round-trip (to_json -> from_json)
+- Test that sensitive fields are filtered
+- Test queue serialization (empty, single item, multiple items)
+- Test deserialization with missing fields (should error gracefully)
+- Test debug string format and content
+- Test with various status values
+- Test with nil vs. present current_request
+
+**Performance Considerations**:
+- Serialization should be <10ms for typical state (1MB context)
+- Don't serialize state on every message - only when needed
+- Consider using `:erlang.term_to_binary/1` for internal persistence (faster)

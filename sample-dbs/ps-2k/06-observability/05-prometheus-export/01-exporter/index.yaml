@@ -1,0 +1,57 @@
+id: P6.M5.E1
+name: Exporter
+status: pending
+estimate_hours: 4
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-exporter-plug.todo
+  title: Create Prometheus exporter Plug
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-metrics-format.todo
+  title: Format metrics for Prometheus
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - T001
+- id: T003
+  file: T003-tests.todo
+  title: Write exporter tests
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on:
+  - T001
+  - T002
+- id: T004
+  file: T004-add-telemetry-metrics-promethe.todo
+  title: Add telemetry_metrics_prometheus dependency and wire to telemetry
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-define-custom-business-metrics.todo
+  title: Define custom business metrics for Prometheus export
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - T001
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

@@ -1,0 +1,16 @@
+---
+id: B202
+title: Add local pag-connect to pag-server MCP round-trip smoke script
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T15:35:07.907465+00:00'
+started_at: '2026-02-21T15:35:07.907465+00:00'
+completed_at: '2026-02-21T15:36:20.809702+00:00'
+duration_minutes: 1.2150371
+---
+Create a reproducible local smoke script and guide that validates pag-connect joins pag-server, publishes mcp_register, and handles at least one mcp_tool_call round-trip. Include clear prerequisites and expected output for quick local verification.

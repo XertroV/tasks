@@ -1,0 +1,16 @@
+---
+id: B201
+title: ACP cwd validation must resolve symlinks under allowed_root
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T15:01:39.855863+00:00'
+started_at: '2026-02-21T15:01:39.855863+00:00'
+completed_at: '2026-02-21T15:04:06.869551+00:00'
+duration_minutes: 2.4502279666666666
+---
+SessionManager cwd validation currently uses lexical checks and can accept in-root symlink that resolves outside allowed_root. Enforce symlink-aware realpath containment and add tests.

@@ -1,0 +1,25 @@
+---
+id: P50.M3.E2.T005
+title: Wire PolicyHooks firing into task and worker state transitions
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E2.T004
+- P50.M3.E1.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:34:23.336869+00:00'
+started_at: '2026-02-23T02:34:23.336869+00:00'
+completed_at: '2026-02-23T02:34:27.562282+00:00'
+duration_minutes: 0.07042326666666666
+---
+## Description
+After complete_task succeeds: fire PolicyHooks.fire(task_completed, %{team_id, task_id, actor_agent_id}). After fail_task succeeds: fire PolicyHooks.fire(task_failed, %{team_id, task_id, actor_agent_id, reason}). When claim_task or next_task finds no claimable task: fire PolicyHooks.fire(worker_idle, %{team_id, actor_agent_id}). After add_worker completes: fire PolicyHooks.fire(worker_joined, %{team_id, agent_id, role}). Integration test: complete task, assert mock hook handler receives task_completed event with correct fields. on_exit cleanup of hook registration.
+
+## Acceptance Criteria
+- task_completed hook fires after complete_task
+- task_failed hook fires after fail_task
+- worker_idle hook fires when no claimable task
+- integration test verifiable without sleeps using async handler + send/assert_receive

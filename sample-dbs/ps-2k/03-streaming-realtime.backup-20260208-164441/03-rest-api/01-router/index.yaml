@@ -1,0 +1,30 @@
+epic_id: P3.M3.E1
+name: Router
+description: Define API routes with versioning
+milestone: 03-rest-api
+phase: 03-streaming-realtime
+estimated_hours: 2
+priority: medium
+tasks:
+- T001-api-router.todo
+- T002-versioning.todo
+- id: T003
+  file: T003-add-health-and-ready-endpoints.todo
+  title: Add /health and /ready endpoints
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+dependencies:
+- P3.M1.E1
+acceptance_criteria:
+- /api/v1 scope defined
+- JSON pipeline configured
+- Version headers supported
+deliverables:
+- Router configuration
+- API documentation
+stats:
+  total: 1
+  pending: 1

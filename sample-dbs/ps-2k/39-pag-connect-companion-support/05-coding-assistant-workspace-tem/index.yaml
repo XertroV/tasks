@@ -1,0 +1,33 @@
+id: P39.M5
+name: Coding-Assistant Workspace Template & Non-Interactive Bootstrap
+status: done
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: coding-assistant Workspace Template YAML
+  path: 01-coding-assistant-workspace-tem
+  status: done
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Non-Interactive Bootstrap Endpoint
+  path: 02-non-interactive-bootstrap-endp
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on:
+  - P39.M5.E1
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

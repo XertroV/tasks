@@ -1,0 +1,41 @@
+id: P42.M1
+name: Core Infrastructure
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: DB Schemas & Migrations
+  path: 01-db-schemas-migrations
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Mailbox & Message CRUD
+  path: 02-mailbox-message-crud
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Address Resolution
+  path: 03-address-resolution
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

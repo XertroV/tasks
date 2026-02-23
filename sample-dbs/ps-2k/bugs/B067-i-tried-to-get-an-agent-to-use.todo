@@ -1,0 +1,21 @@
+---
+id: B067
+title: 'I tried to get an agent to use a tool call (after discovering tools) and then
+  I get an error like: ''Provider request failed: Invalid request: Tool choice is
+  none, but model called a tool''. Also, the message I sent is not shown in the chat
+  log (but it should be added immediately as soon as I send it), and I do not seem
+  to be able to recover this session.'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T14:55:53.051521+00:00'
+started_at: '2026-02-16T14:55:53.051521+00:00'
+completed_at: '2026-02-16T15:09:31.580368+00:00'
+duration_minutes: 13.6421473
+---
+
+I tried to get an agent to use a tool call (after discovering tools) and then I get an error like: 'Provider request failed: Invalid request: Tool choice is none, but model called a tool'. Also, the message I sent is not shown in the chat log (but it should be added immediately as soon as I send it), and I do not seem to be able to recover this session.

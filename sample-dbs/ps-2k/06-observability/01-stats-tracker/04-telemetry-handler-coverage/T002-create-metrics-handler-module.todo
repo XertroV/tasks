@@ -1,0 +1,108 @@
+---
+id: P6.M1.E4.T002
+title: Create metrics handler module for telemetry-to-counters/histograms conversion
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- P6.M1.E4.T001
+tags:
+- observability
+- telemetry
+- metrics
+- audit-gap
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:13:34.215793'
+started_at: '2026-02-06T17:13:34.215793'
+completed_at: '2026-02-06T17:23:45.467416'
+duration_minutes: 10.187526883333334
+---
+
+# Create metrics handler module for telemetry-to-counters/histograms conversion
+
+Create a dedicated metrics handler module that subscribes to telemetry events (via the handlers
+from T001) and converts them into in-memory counters, histograms, and gauges. These metrics
+serve as the internal data source for Prometheus export (P6.M5), dashboard display, and alerting.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/observability/metrics_handler.ex` module
+- [ ] Use ETS table(s) for lock-free concurrent metric storage
+- [ ] Implement counter metrics:
+  - [ ] `pag_server.llm.requests.total` (labels: provider, model)
+  - [ ] `pag_server.llm.errors.total` (labels: provider, error_type)
+  - [ ] `pag_server.llm.retries.total` (labels: provider, model)
+  - [ ] `pag_server.llm.failovers.total` (labels: from_provider, to_provider)
+  - [ ] `pag_server.agent.crashes.total`
+  - [ ] `pag_server.agent.context_overflows.total`
+  - [ ] `pag_server.cache.hits.total` / `pag_server.cache.misses.total`
+  - [ ] `pag_server.tool.executions.total` (labels: tool_name)
+- [ ] Implement histogram metrics (using configurable bucket boundaries):
+  - [ ] `pag_server.llm.request.duration_ms` (labels: provider, model)
+  - [ ] `pag_server.agent.lifecycle_hook.duration_ms`
+  - [ ] `pag_server.llm.tokens.input` (labels: model)
+  - [ ] `pag_server.llm.tokens.output` (labels: model)
+- [ ] Implement gauge metrics:
+  - [ ] `pag_server.agents.active` (increment on start, decrement on shutdown)
+  - [ ] `pag_server.llm.cache.savings_usd` (running total from cache savings events)
+- [ ] Provide public API:
+  - [ ] `get_counter(name, labels)` -> integer
+  - [ ] `get_histogram(name, labels)` -> %{buckets: [...], sum: float, count: integer}
+  - [ ] `get_all_metrics()` -> list of metric structs for export
+  - [ ] `reset_all()` -> :ok (for testing)
+- [ ] Register as telemetry handler via TelemetryHandlers module (from T001)
+- [ ] Add tests covering counter increments, histogram bucket distribution, gauge updates
+
+## Acceptance Criteria
+
+- [ ] All listed counter metrics increment correctly when telemetry events fire
+- [ ] Histogram metrics correctly bucket values
+- [ ] Gauge metrics track current state (not cumulative)
+- [ ] `get_all_metrics/0` returns complete snapshot suitable for Prometheus formatting
+- [ ] ETS-based storage handles concurrent writes without bottleneck
+- [ ] Metrics survive handler restarts (ETS table owned by supervisor)
+- [ ] Tests cover at least 80% of module
+
+## Context
+
+**Source**: Architecture audit found telemetry events emitted but no conversion to queryable
+metrics. This module bridges the gap between raw telemetry events and exportable metrics.
+
+**Feeds into**: P6.M5 (Prometheus Export) -- the exporter reads from this module's `get_all_metrics/0`.
+
+## Notes
+
+**ETS-based Counter Example**:
+```elixir
+defmodule PagServer.Observability.MetricsHandler do
+  @table :pag_metrics
+
+  def init do
+    :ets.new(@table, [:named_table, :public, :set, {:write_concurrency, true}])
+  end
+
+  def increment_counter(name, labels \\ %{}, amount \\ 1) do
+    key = {name, labels}
+    :ets.update_counter(@table, key, {2, amount}, {key, 0})
+  end
+
+  def record_histogram(name, value, labels \\ %{}) do
+    # Store individual observations or pre-computed buckets
+    key = {:histogram, name, labels}
+    :ets.insert(@table, {key, value, System.monotonic_time()})
+  end
+
+  def get_all_metrics do
+    :ets.tab2list(@table)
+    |> Enum.group_by(fn {key, _} -> elem(key, 0) end)
+    |> format_metrics()
+  end
+end
+```
+
+**Histogram Bucket Boundaries** (following Prometheus conventions):
+```elixir
+@default_duration_buckets [10, 25, 50, 100, 250, 500, 1000, 2500, 5000, 10000]
+@default_token_buckets [10, 50, 100, 500, 1000, 5000, 10000, 50000, 100000]
+```

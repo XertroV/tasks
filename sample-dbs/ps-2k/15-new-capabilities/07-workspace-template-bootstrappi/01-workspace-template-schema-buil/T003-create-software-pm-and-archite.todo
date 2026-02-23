@@ -1,0 +1,45 @@
+---
+id: P15.M7.E1.T003
+title: Create Software PM and Architect workspace template
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E1.T001
+tags:
+- templates
+- content
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:46:29.251519+00:00'
+started_at: '2026-02-17T08:46:29.251519+00:00'
+completed_at: '2026-02-17T08:46:30.527176+00:00'
+duration_minutes: 0.021260816666666668
+---
+## Description
+Create a workspace template for a Software PM & Architect agent. Focused on project management, technical architecture, and development workflow.
+
+## Questionnaire Sections
+1. **Project Context**: Project name, description, stage (greenfield/legacy/etc), team size, timeline
+2. **Tech Stack**: Languages, frameworks, databases, cloud provider, CI/CD, deployment targets
+3. **Team Structure**: Team roles, reporting structure, communication channels (Slack/Discord/etc)
+4. **Workflow Preferences**: Agile/Kanban/etc, sprint length, standup frequency, code review process, branching strategy
+5. **Documentation Standards**: ADR format, RFC process, where docs live, diagram tools
+6. **Architecture Principles**: Preferred patterns (microservices/monolith/etc), key quality attributes, testing philosophy, performance targets
+7. **Agent Role Boundaries**: What decisions can the agent make autonomously? What requires human approval? Escalation paths?
+
+## Default Files
+- SOUL.md - PM/architect personality, communication style, decision-making framework
+- IDENTITY.md - Agent name and role
+- USER.md - About the human lead
+- PROJECT.md - Project overview, goals, constraints
+- ARCHITECTURE.md - Tech stack, patterns, principles
+- CONVENTIONS.md - Coding standards, workflow rules
+- MEMORY.md - Empty template for project decisions and learnings
+
+## Acceptance Criteria
+- [ ] software-pm-architect.yml in priv/workspace_templates/
+- [ ] Bootstrap prompt conducts project-focused onboarding
+- [ ] All sections defined with appropriate question types
+- [ ] Default files populated from questionnaire answers
+- [ ] Template validates via WorkspaceTemplate schema

@@ -1,0 +1,85 @@
+---
+id: P51.M2.E1.T005
+title: 'Level 5: Settings, workspace management & streaming edge cases'
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T16:52:00.725415+00:00'
+started_at: '2026-02-20T16:52:00.725415+00:00'
+completed_at: '2026-02-21T05:20:54.714284+00:00'
+duration_minutes: 748.8998143
+---
+## Campaign: Configuration surfaces, workspace lifecycle, streaming error paths
+
+Higher complexity. Tests stateful configuration and error recovery.
+
+## Acceptance Criteria
+- [x] Settings dashboard — defaults/profile save flows verified with refresh persistence
+- [x] Workspace manager — lanes/detail tabs/config keys explored
+- [x] Streaming error-mode recovery exercised (error banner/timeline events)
+- [x] Platform config browser works
+
+## Test Sequence (simple → complex)
+
+### Settings Dashboard
+1. Navigate to /dashboard/settings
+2. View LLM provider defaults — are providers listed?
+3. Change a failover configuration option — save and verify persistence
+4. Toggle a feature flag — verify it persists across page reload
+5. Navigate to /dashboard/settings/profile — update user context/display name
+6. Verify changes persist after refresh
+
+### Platform Config Browser
+1. Navigate to /dashboard/platform-config
+2. View all config keys for the current workspace
+3. Filter by key prefix (type in search)
+4. Click a key — view value
+5. (If edit available) update a value and verify change persisted
+
+### Workspace Manager
+1. Navigate to /dashboard/workspaces
+2. Verify workspaces appear in status lanes (active/needs-attention/archived)
+3. Search for a workspace by name
+4. Click a workspace → verify detail pane opens
+5. Open each tab: overview / config / plugins / connections
+6. Try creating a new workspace (or bootstrap if UI has that)
+7. Check plugins tab — are installed plugins listed?
+8. Toggle a plugin enable/disable
+9. Check connections tab — SSH, Tailscale, Companion status
+
+### Streaming Edge Cases (in Validation Console)
+1. Send a message — while response is streaming, click cancel
+2. Verify cancellation stops the stream and shows appropriate UI
+3. Disconnect network (or kill server briefly) — verify reconnection banner
+4. Reconnect — verify session state is preserved
+5. Send a very long message (10k+ chars) — verify UI handles it
+6. Rapid-fire: send 5 messages in quick succession — verify queuing/ordering
+
+### Plugin Settings
+1. Navigate to /dashboard/plugin-settings
+2. View list of plugins
+3. Click a plugin with config — verify schema-driven form renders
+4. Update a config value — verify save works
+5. Navigate to plugin schema endpoint (/api/v1/workspaces/:id/plugins/:id/config/schema)
+
+## Expected Missing Features
+- Some settings may have no effect (stubs)
+- Tailscale/SSH may not be configured (expected)
+- Cancel streaming may not be fully implemented
+
+## Execution Notes (2026-02-21)
+- Settings dashboard and profile save flows verified; persisted across refresh.
+- Platform config browser verified for listing/search/view; no inline edit UI exposed in this build.
+- Workspace manager verified: lane switching, workspace detail drawer, overview/config/plugins/connections tabs, connector drawer path.
+- Validation Console streaming path exercised with error-mode outcome (`no_credentials`) and recovery banner/timeline events.
+- Earlier runs were impacted by then-open `B163`; follow-up verification confirms run controls now behave as expected under browser automation.
+- Filed `B164` for plugin settings save path not persisting and not clearing dirty state.
+
+## Evidence Artifacts
+- `.tasks/bugs/B163-validation-console-run-control.todo`
+- `.tasks/bugs/B164-plugin-settings-save-does-not.todo`
+- `test/pag_server_web/live/validation_console_test.exs:130`

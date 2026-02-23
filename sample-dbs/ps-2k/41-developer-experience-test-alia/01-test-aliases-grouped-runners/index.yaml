@@ -1,0 +1,23 @@
+id: P41.M1
+name: Test Aliases & Grouped Runners
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Add mix test.* aliases for all uncovered subdirectories
+  path: 01-add-mix-test-aliases-for-all-u
+  status: done
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

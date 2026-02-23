@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T09:37:18.294415+00:00'
+started_at: '2026-02-13T09:37:18.294415+00:00'
+completed_at: '2026-02-13T09:59:13.231634+00:00'
+duration_minutes: 21.91562015
+---
+# Add email notification templates
+
+## Description
+Create email templates for common notification scenarios using Swoosh's templating support. Include both HTML and plain text versions with proper styling and branding.
+
+## Acceptance Criteria
+- [ ] `PagServer.Emails.NotificationEmail` module created
+- [ ] `session_activity/2` template for session summaries
+- [ ] `task_completed/2` template for task/agent completion
+- [ ] `error_alert/2` template for critical errors
+- [ ] `welcome/1` template for new users
+- [ ] HTML templates using `:phoenix_template` or MJML
+- [ ] Plain text fallback for all templates
+- [ ] Preheader text support for email clients
+- [ ] Template variables properly escaped
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/mailer.ex`, Phoenix template conventions
+- Part of epic: P14.M1.E4 - Email Notifications

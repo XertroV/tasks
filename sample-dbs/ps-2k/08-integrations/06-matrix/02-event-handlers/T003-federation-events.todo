@@ -1,0 +1,126 @@
+---
+id: P8.M6.E2.T003
+title: Handle Matrix federation events
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P8.M6.E2.T001
+tags:
+- matrix
+- federation
+- rooms
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:51:27.632714+00:00'
+started_at: '2026-02-08T10:51:27.632714+00:00'
+completed_at: '2026-02-08T11:17:21.295671+00:00'
+duration_minutes: 25.894382383333333
+---
+
+# Handle Matrix federation events
+
+Process room membership and state events for multi-server rooms.
+
+## Requirements
+
+- [x] Handle `m.room.member` events (join, leave, invite)
+- [x] Track room membership state for context
+- [x] Handle invites (auto-accept or require approval)
+- [x] Process `m.room.name` and `m.room.topic` for context
+- [x] Support federated room discovery
+
+## Acceptance Criteria
+
+- [x] Bot auto-joins invited rooms (configurable)
+- [x] Bot leaves rooms when removed/kicked
+- [x] Room metadata (name, topic) available in agent context
+- [x] Can handle rooms from other homeservers
+- [x] Membership changes logged for audit trail
+- [x] Rate limiting on auto-join (prevent invite spam)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 453-458 (Matrix federation feature)
+
+**Key Points**:
+- Matrix is federated protocol (rooms span servers)
+- Membership events track who's in room
+- Must handle invites, kicks, bans
+- State events provide room metadata
+
+## Notes
+
+Membership event handling:
+```elixir
+def handle(%{
+  "type" => "m.room.member",
+  "content" => %{"membership" => membership},
+  "state_key" => user_id,
+  "room_id" => room_id
+}) do
+  cond do
+    user_id == bot_user_id() && membership == "invite" ->
+      handle_invite(room_id)
+    
+    user_id == bot_user_id() && membership == "leave" ->
+      cleanup_session(room_id)
+    
+    true ->
+      update_room_members(room_id, user_id, membership)
+  end
+end
+
+defp handle_invite(room_id) do
+  if auto_join_enabled?() && !rate_limited?() do
+    Polyjuice.Client.join_room(room_id)
+  else
+    Logger.info("Received invite to #{room_id}, awaiting approval")
+    notify_admin(:pending_invite, room_id)
+  end
+end
+```
+
+Room state tracking:
+```elixir
+defmodule PAGServer.Integrations.Matrix.RoomState do
+  use GenServer
+  
+  # Track room metadata
+  def get_context(room_id) do
+    %{
+      name: get_room_name(room_id),
+      topic: get_room_topic(room_id),
+      members: list_members(room_id),
+      is_encrypted: is_encrypted?(room_id)
+    }
+  end
+end
+```
+
+Auto-join configuration:
+```elixir
+config :pag_server, PAGServer.Integrations.Matrix,
+  auto_join: true,
+  auto_join_filter: [
+    # Only auto-join if invited by admin
+    require_admin: true,
+    # Or only specific servers
+    allowed_servers: ["matrix.org", "trusted.com"]
+  ],
+  max_auto_joins_per_hour: 10
+```
+
+Federation considerations:
+- Events from other servers may arrive out of order
+- State resolution conflicts possible
+- Room aliases are server-specific (#room:server.com)
+- Some events may be redacted by mods
+
+State events to track:
+- `m.room.name` - Room display name
+- `m.room.topic` - Room description
+- `m.room.avatar` - Room icon
+- `m.room.canonical_alias` - Primary room address
+- `m.room.encryption` - E2EE flag

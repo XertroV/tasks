@@ -1,0 +1,56 @@
+---
+id: P9.M5.E2.T005
+title: Add message and context hooks (message received, context build, pre-compact)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E2.T002
+tags:
+- hooks
+- context
+- messages
+claimed_by: cli-user
+claimed_at: '2026-02-07T07:00:36.642512+00:00'
+started_at: '2026-02-07T07:00:36.642512+00:00'
+completed_at: '2026-02-07T07:10:00.826419+00:00'
+duration_minutes: 9.403064866666666
+---
+
+# Add message and context hooks (message received, context build, pre-compact)
+
+
+
+## Requirements
+
+- [ ] Create helper module `lib/pag_server/plugins/hooks/context_hooks.ex`
+- [ ] Implement message hook dispatcher:
+  - [ ] `fire_message_received/3` - (agent_id, message, agent_state_summary)
+  - [ ] Sync dispatch: can return `:continue`, `:deny` (block message), or `{:modify, modified_message}`
+- [ ] Implement context build hook dispatcher:
+  - [ ] `fire_context_build/3` - (agent_id, messages, token_count)
+  - [ ] Sync dispatch: can return `:continue` or `{:inject, additional_context}` to add context
+- [ ] Implement pre-compact hook dispatcher:
+  - [ ] `fire_pre_compact/4` - (agent_id, messages, strategy, token_budget)
+  - [ ] Sync dispatch: can return `:continue` or `{:modify, modified_messages}` to alter pruning input
+- [ ] All hooks receive current agent state summary (agent_id, session_id, message_count, token_usage)
+- [ ] Provide agent state summary builder helper to avoid leaking full agent state to plugins
+
+## Acceptance Criteria
+
+- [ ] `:message_received` hook can block incoming messages by returning `:deny`
+- [ ] `:message_received` hook can modify message content before processing
+- [ ] `:context_build` hook can inject additional context into the context window
+- [ ] `:pre_compact` hook can modify messages before pruning occurs
+- [ ] Agent state summary is sanitized (no internal PIDs, GenServer state, or credentials)
+- [ ] Message processing and context building work normally when no hooks registered
+- [ ] Unit tests cover: message deny, message modify, context injection, pre-compact modification
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/hooks/context_hooks.ex`
+- **Modifies**: `lib/pag_server/agents/agent_server.ex` (message handling), `lib/pag_server/context/` (context building, pruning)
+- **Depends on**: `PagServer.Plugins.HookDispatcher` (T002), `PagServer.Plugins.HookEvent` (T001)
+- **Integrates with**: `PagServer.Context.Pruning` for pre-compact hooks
+- **Security note**: Agent state summary must not expose sensitive internal state

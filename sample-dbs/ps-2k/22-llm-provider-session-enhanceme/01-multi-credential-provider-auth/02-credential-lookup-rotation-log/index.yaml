@@ -1,0 +1,42 @@
+id: P22.M1.E2
+name: Credential Lookup & Rotation Logic
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P22.M1.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-credentialselector-o.todo
+  title: 'Implement CredentialSelector: ordered credential list lookup per provider'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M1.E1.T001
+- id: T002
+  file: T002-implement-credential-rotation.todo
+  title: Implement credential rotation in route_with_failover/7 (try next key on 429/401/403/timeout)
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P22.M1.E2.T001
+- id: T003
+  file: T003-differentiated-cooldown-tracki.todo
+  title: 'Differentiated cooldown tracking: rate-limit vs auth-fail vs timeout'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M1.E2.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

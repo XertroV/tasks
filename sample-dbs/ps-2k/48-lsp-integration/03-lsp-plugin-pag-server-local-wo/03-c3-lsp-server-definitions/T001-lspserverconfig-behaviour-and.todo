@@ -1,0 +1,16 @@
+---
+id: P48.M3.E3.T001
+title: LspServerConfig behaviour and root detection utilities
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:21.649745+00:00'
+started_at: '2026-02-20T08:37:21.649745+00:00'
+completed_at: '2026-02-20T08:50:32.879849+00:00'
+duration_minutes: 13.187168233333333
+---
+Behaviour callbacks: id/0, extensions/0, command(root_path)/1, root_markers/0, initialization_options/0. Root detection utility: NearestRoot - walks up from file directory to workspace boundary looking for root marker files. Must stop at worktree boundary (not continue through .git file to main repo).

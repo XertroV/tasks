@@ -1,0 +1,154 @@
+---
+id: P2.M7.E2.T002
+title: Add provider pricing data
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P2.M7.E2.T001
+tags:
+- pricing
+- providers
+- anthropic
+- openai
+claimed_by: cli-user
+claimed_at: '2026-02-05T19:28:33.752993'
+started_at: '2026-02-05T19:28:33.752993'
+completed_at: '2026-02-05T19:31:46.866093'
+duration_minutes: 3.2185515
+---
+
+# Add provider pricing data
+
+Add current pricing data for all supported LLM providers to the Pricing module.
+
+## Requirements
+
+- [ ] Add Anthropic pricing (Claude models)
+- [ ] Add OpenAI pricing (GPT models)
+- [ ] Add OpenRouter pricing (pass-through + markup)
+- [ ] Add Ollama pricing (local = $0)
+- [ ] Document pricing sources and last updated date
+- [ ] Handle model aliases (e.g., "claude-3-5-sonnet" = "claude-sonnet-3.5")
+- [ ] Add comment with pricing update instructions
+
+## Acceptance Criteria
+
+- [ ] All models from P2.M2-M5 have pricing data
+- [ ] Pricing matches official provider websites (as of Feb 2026)
+- [ ] Cached token pricing is 10% of prompt pricing for Anthropic
+- [ ] Ollama models return $0 cost
+- [ ] Model aliases resolve correctly
+- [ ] Source URLs documented in comments
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.LLM.Pricing do
+  # ... existing code ...
+
+  defp pricing_data do
+    %{
+      # Anthropic Claude models
+      # Source: https://www.anthropic.com/api (Feb 2026)
+      # Last updated: 2026-02-05
+      "claude-sonnet-4" => %{
+        prompt_per_million: 3.0,
+        completion_per_million: 15.0,
+        cached_per_million: 0.3  # 10% of prompt
+      },
+      "claude-opus-4" => %{
+        prompt_per_million: 15.0,
+        completion_per_million: 75.0,
+        cached_per_million: 1.5
+      },
+      "claude-haiku-3.5" => %{
+        prompt_per_million: 0.80,
+        completion_per_million: 4.0,
+        cached_per_million: 0.08
+      },
+      "claude-sonnet-3.5" => %{
+        prompt_per_million: 3.0,
+        completion_per_million: 15.0,
+        cached_per_million: 0.3
+      },
+
+      # OpenAI GPT models
+      # Source: https://openai.com/api/pricing/ (Feb 2026)
+      "gpt-4" => %{
+        prompt_per_million: 30.0,
+        completion_per_million: 60.0,
+        cached_per_million: 30.0  # OpenAI doesn't discount cached
+      },
+      "gpt-4-turbo" => %{
+        prompt_per_million: 10.0,
+        completion_per_million: 30.0,
+        cached_per_million: 10.0
+      },
+      "gpt-3.5-turbo" => %{
+        prompt_per_million: 0.50,
+        completion_per_million: 1.50,
+        cached_per_million: 0.50
+      },
+
+      # OpenRouter (adds ~20% markup)
+      # Source: https://openrouter.ai/docs#pricing
+      "openrouter/anthropic/claude-sonnet-4" => %{
+        prompt_per_million: 3.6,
+        completion_per_million: 18.0,
+        cached_per_million: 0.36
+      },
+
+      # Ollama (local, free)
+      "llama3" => %{
+        prompt_per_million: 0.0,
+        completion_per_million: 0.0,
+        cached_per_million: 0.0
+      },
+      "mistral" => %{
+        prompt_per_million: 0.0,
+        completion_per_million: 0.0,
+        cached_per_million: 0.0
+      }
+    }
+  end
+
+  # Model aliases
+  defp normalize_model(model) do
+    model = super(model)  # Apply lowercase/trim
+    
+    # Handle common aliases
+    case model do
+      "claude-3-5-sonnet" -> "claude-sonnet-3.5"
+      "claude-3.5-sonnet" -> "claude-sonnet-3.5"
+      "gpt4" -> "gpt-4"
+      "gpt-4o" -> "gpt-4-turbo"
+      other -> other
+    end
+  end
+end
+```
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md:689-700` (Example pricing data)
+- Provider documentation for current rates
+
+**Key Points**:
+- Pricing changes frequently - document sources and dates
+- OpenRouter adds markup on top of base provider costs
+- Ollama is local, always free
+- Anthropic offers 10x discount for cached tokens
+- OpenAI does not discount cached tokens
+
+## Notes
+
+**To update pricing**:
+1. Check official provider websites
+2. Update pricing_data/0 map
+3. Update "Last updated" comment
+4. Test with `mix test test/pag_server/llm/pricing_test.exs`
+
+Consider adding a Phoenix LiveView admin page to update pricing dynamically without code changes (future enhancement).

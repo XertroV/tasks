@@ -1,0 +1,46 @@
+id: P19.M3.E2
+name: Archive Completed Docs
+status: done
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-archive-completed-feature-docs.todo
+  title: Archive completed feature docs
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-archive-completed-review-docs.todo
+  title: Archive completed review docs
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T003
+  file: T003-archive-completed-planning-doc.todo
+  title: Archive completed planning docs
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T004
+  file: T004-review-p7-p9-open-issues.todo
+  title: Review P7_P9 open issues
+  status: done
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

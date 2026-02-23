@@ -1,0 +1,17 @@
+---
+id: P22.M2.E4.T002
+title: 'Tests: ModelDiscoveryCache TTL, refresh logic, and ModelCatalog merge'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M2.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:37:45.613690+00:00'
+started_at: '2026-02-18T17:37:45.613690+00:00'
+completed_at: '2026-02-18T17:45:28.575665+00:00'
+duration_minutes: 7.7160327833333335
+---
+Write ExUnit tests: 1. ModelDiscoveryCache: - get_models returns :not_cached initially - After refresh, get_models returns model list - Expired cache (mock time or sleep_fn) triggers re-fetch - Failed fetch keeps previous cache - refresh_all/0 triggers refresh for all providers 2. ModelCatalog merge: - Static models flagged unavailable when not in live list - Live-only models appear with source: :live - source: :both for models in both lists - Falls back gracefully when cache is empty Acceptance criteria: - sleep_fn pattern used for time-dependent tests (no actual sleeps) - All tests async: true - Tests complete <5s total

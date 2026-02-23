@@ -1,0 +1,26 @@
+---
+id: P50.M1.E3.T004
+title: Add dispatcher unit tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E3.T001
+- P50.M1.E3.T002
+- P50.M1.E3.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:13:22.471032+00:00'
+started_at: '2026-02-23T02:13:22.471032+00:00'
+completed_at: '2026-02-23T02:13:25.212013+00:00'
+duration_minutes: 0.04568278333333333
+---
+## Description
+Test file: test/pag_server/plugins/collab_teams/dispatcher_test.exs. Tests: unknown action returns error with known_options listing all 17 actions; missing workspace_id on create_team returns missing_required_context; missing actor_agent_id on create_task returns same; help action succeeds with no workspace_id or actor_agent_id; all @valid_actions dispatch without raising; uppercase CREATE_TEAM routes same as create_team. All async: true.
+
+## Acceptance Criteria
+- All tests pass
+- tests are async: true
+- no sleeps
+- test file follows existing plugin test patterns

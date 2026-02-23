@@ -1,0 +1,359 @@
+---
+id: P1.M2.E6.T003
+title: Create stats aggregation helpers
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P1.M2.E6.T002
+tags:
+- stats
+- aggregation
+- queries
+- reporting
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:30:56.933681'
+started_at: '2026-02-05T08:30:56.933681'
+completed_at: '2026-02-05T08:35:05.688234'
+---
+
+# Create stats aggregation helpers
+
+Create helper functions for aggregating stats across time periods and formatting costs for display.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/stats/aggregator.ex`
+- [ ] Implement hourly/daily rollup functions
+- [ ] Add cost formatting utilities (millicents to dollars)
+- [ ] Create query helpers for common aggregations
+- [ ] Write unit tests in `test/pag_server/stats/aggregator_test.exs`
+- [ ] Run tests: `mix test test/pag_server/stats/aggregator_test.exs`
+
+## Module Structure
+
+```elixir
+defmodule PagServer.Stats.Aggregator do
+  @moduledoc """
+  Functions for aggregating and querying stats across time periods.
+  """
+  
+  import Ecto.Query
+  alias PagServer.Repo
+  alias PagServer.Schema.Stats
+  
+  # Query helpers
+  def for_agent(agent_id, period_type \\ nil)
+  def for_session(session_id)
+  def for_period(period_start, period_end, period_type \\ nil)
+  
+  # Aggregation
+  def rollup_hourly(agent_id, datetime)
+  def rollup_daily(agent_id, date)
+  def total_costs(stats_list)
+  def total_tokens(stats_list)
+  
+  # Formatting
+  def format_cost(millicents)
+  def format_cost_breakdown(stats)
+end
+```
+
+## Query Helpers
+
+```elixir
+@doc """
+Get all stats for an agent, optionally filtered by period_type.
+"""
+def for_agent(agent_id, period_type \\ nil) do
+  query =
+    from s in Stats,
+      where: s.agent_id == ^agent_id,
+      order_by: [desc: s.period_start]
+  
+  query =
+    if period_type do
+      where(query, [s], s.period_type == ^period_type)
+    else
+      query
+    end
+  
+  Repo.all(query)
+end
+
+@doc """
+Get all stats for a session.
+"""
+def for_session(session_id) do
+  from(s in Stats,
+    where: s.session_id == ^session_id,
+    order_by: [asc: s.period_start]
+  )
+  |> Repo.all()
+end
+
+@doc """
+Get stats within a time period, optionally filtered by period_type.
+"""
+def for_period(period_start, period_end, period_type \\ nil) do
+  query =
+    from s in Stats,
+      where: s.period_start >= ^period_start and s.period_end <= ^period_end,
+      order_by: [asc: s.period_start]
+  
+  query =
+    if period_type do
+      where(query, [s], s.period_type == ^period_type)
+    else
+      query
+    end
+  
+  Repo.all(query)
+end
+```
+
+## Rollup Functions
+
+```elixir
+@doc """
+Aggregate all request-level stats for an agent within an hour.
+Returns aggregated Stats struct ready to insert.
+"""
+def rollup_hourly(agent_id, %DateTime{} = datetime) do
+  hour_start = DateTime.truncate(datetime, :second) |> Map.put(:minute, 0) |> Map.put(:second, 0)
+  hour_end = DateTime.add(hour_start, 3600, :second)
+  
+  query =
+    from s in Stats,
+      where: s.agent_id == ^agent_id,
+      where: s.period_type == "request",
+      where: s.period_start >= ^hour_start and s.period_start < ^hour_end,
+      select: %{
+        prompt_tokens: sum(s.prompt_tokens),
+        completion_tokens: sum(s.completion_tokens),
+        cached_tokens: sum(s.cached_tokens),
+        prompt_cost_millicents: sum(s.prompt_cost_millicents),
+        completion_cost_millicents: sum(s.completion_cost_millicents),
+        cached_cost_millicents: sum(s.cached_cost_millicents),
+        total_cost_millicents: sum(s.total_cost_millicents),
+        llm_requests: count(s.id),
+        tool_calls: sum(s.tool_calls),
+        total_latency_ms: sum(s.total_latency_ms),
+        errors: sum(s.errors)
+      }
+  
+  case Repo.one(query) do
+    nil ->
+      nil
+      
+    aggregated ->
+      %Stats{
+        agent_id: agent_id,
+        period_start: hour_start,
+        period_end: hour_end,
+        period_type: "hourly"
+      }
+      |> Map.merge(aggregated)
+  end
+end
+
+@doc """
+Aggregate all hourly stats for an agent within a day.
+"""
+def rollup_daily(agent_id, %Date{} = date) do
+  day_start = DateTime.new!(date, ~T[00:00:00], "Etc/UTC")
+  day_end = DateTime.add(day_start, 86400, :second)
+  
+  # Similar aggregation logic, but over hourly stats
+  # ...
+end
+```
+
+## Aggregation Helpers
+
+```elixir
+@doc """
+Sum total costs across multiple stats records.
+Returns total in millicents.
+"""
+def total_costs(stats_list) when is_list(stats_list) do
+  Enum.reduce(stats_list, 0, fn stat, acc ->
+    acc + stat.total_cost_millicents
+  end)
+end
+
+@doc """
+Sum total tokens across multiple stats records.
+"""
+def total_tokens(stats_list) when is_list(stats_list) do
+  Enum.reduce(stats_list, 0, fn stat, acc ->
+    acc + stat.prompt_tokens + stat.completion_tokens + stat.cached_tokens
+  end)
+end
+```
+
+## Formatting Helpers
+
+```elixir
+@doc """
+Format millicents as dollar string.
+
+## Examples
+
+    iex> format_cost(15_000)
+    "$0.15"
+    
+    iex> format_cost(1_234_567)
+    "$12.35"
+"""
+def format_cost(millicents) when is_integer(millicents) do
+  dollars = millicents / 100_000.0
+  "$#{:erlang.float_to_binary(dollars, decimals: 2)}"
+end
+
+@doc """
+Format cost breakdown for a stats record.
+
+## Examples
+
+    iex> format_cost_breakdown(%Stats{
+      prompt_cost_millicents: 10_000,
+      completion_cost_millicents: 5_000,
+      cached_cost_millicents: 1_000
+    })
+    %{
+      prompt: "$0.10",
+      completion: "$0.05",
+      cached: "$0.01",
+      total: "$0.16"
+    }
+"""
+def format_cost_breakdown(%Stats{} = stats) do
+  %{
+    prompt: format_cost(stats.prompt_cost_millicents),
+    completion: format_cost(stats.completion_cost_millicents),
+    cached: format_cost(stats.cached_cost_millicents),
+    total: format_cost(stats.total_cost_millicents)
+  }
+end
+```
+
+## Tests
+
+Create `test/pag_server/stats/aggregator_test.exs`:
+
+```elixir
+defmodule PagServer.Stats.AggregatorTest do
+  use PagServer.DataCase, async: true
+  alias PagServer.Stats.Aggregator
+  alias PagServer.Schema.Stats
+  
+  describe "for_agent/2" do
+    test "returns all stats for agent"
+    test "filters by period_type when provided"
+    test "orders by period_start desc"
+  end
+  
+  describe "for_session/1" do
+    test "returns all stats for session"
+    test "orders by period_start asc"
+  end
+  
+  describe "for_period/3" do
+    test "returns stats within time range"
+    test "filters by period_type when provided"
+  end
+  
+  describe "rollup_hourly/2" do
+    test "aggregates request stats into hourly stat"
+    test "returns nil when no stats in hour"
+    test "sums all numeric fields correctly"
+  end
+  
+  describe "rollup_daily/2" do
+    test "aggregates hourly stats into daily stat"
+  end
+  
+  describe "total_costs/1" do
+    test "sums costs across multiple stats"
+    test "returns 0 for empty list"
+  end
+  
+  describe "total_tokens/1" do
+    test "sums all tokens across multiple stats"
+  end
+  
+  describe "format_cost/1" do
+    test "formats millicents as dollars with 2 decimals"
+    test "handles zero cost"
+    test "handles large costs"
+  end
+  
+  describe "format_cost_breakdown/1" do
+    test "formats all cost components"
+  end
+end
+```
+
+## Acceptance Criteria
+
+- [ ] Aggregator module created with query helpers
+- [ ] `for_agent/2`, `for_session/1`, `for_period/3` work correctly
+- [ ] `rollup_hourly/2` aggregates request-level stats
+- [ ] `rollup_daily/2` aggregates hourly stats
+- [ ] `total_costs/1` and `total_tokens/1` sum correctly
+- [ ] `format_cost/1` displays costs as `$X.XX` format
+- [ ] `format_cost_breakdown/1` shows all cost components
+- [ ] All aggregation queries work efficiently with indexes
+- [ ] All unit tests pass
+- [ ] Costs display correctly in dollar format
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 269-296 (Stats Schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 3.3 (Stats Tracking)
+
+**Key Points**:
+- **Rollups**: Pre-aggregate stats to reduce query load for dashboards
+- **Formatting**: Always display costs in human-readable `$X.XX` format
+- **Indexes**: Queries leverage composite indexes from T001 migration
+- **Aggregation**: Use Ecto's `sum()`, `count()`, `avg()` for database-level aggregation
+
+## Notes
+
+### Rollup Strategy
+
+```
+Request-level stats (per API call)
+    ↓ (hourly rollup)
+Hourly stats (pre-aggregated)
+    ↓ (daily rollup)
+Daily stats (pre-aggregated)
+```
+
+### Query Performance
+
+All queries use indexes created in T001:
+- `for_agent/2`: Uses `[:agent_id, :period_type, :period_start]`
+- `for_session/1`: Uses `[:session_id]`
+- `for_period/3`: Uses `[:period_type, :period_start]`
+
+### Cost Formatting Examples
+
+```elixir
+iex> Aggregator.format_cost(15_000)
+"$0.15"
+
+iex> Aggregator.format_cost(1_234_567)
+"$12.35"
+
+iex> Aggregator.format_cost_breakdown(stats)
+%{
+  prompt: "$0.10",
+  completion: "$0.05",
+  cached: "$0.01",
+  total: "$0.16"
+}
+```

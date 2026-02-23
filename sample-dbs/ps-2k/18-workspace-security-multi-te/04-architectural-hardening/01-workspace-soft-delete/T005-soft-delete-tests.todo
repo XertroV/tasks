@@ -1,0 +1,47 @@
+---
+id: P18.M4.E1.T005
+title: Add tests for soft-delete, restore, and archived filtering
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P18.M4.E1.T004
+tags:
+- workspace
+- soft-delete
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:15:41.884168+00:00'
+started_at: '2026-02-17T21:15:41.884168+00:00'
+completed_at: '2026-02-17T21:21:36.303277+00:00'
+duration_minutes: 5.906984866666666
+---
+
+# Add tests for soft-delete, restore, and archived filtering
+
+## Description
+
+Comprehensive tests for workspace soft-delete, restore, and default filtering behavior.
+
+## Requirements
+
+- [ ] Test soft-delete: workspace gets archived_at set, not removed from DB
+- [ ] Test hard_delete: workspace is permanently removed with cascades
+- [ ] Test restore: archived workspace is un-archived
+- [ ] Test restore on non-archived workspace returns error
+- [ ] Test list_workspaces excludes archived by default
+- [ ] Test list_workspaces with include_archived: true includes archived
+- [ ] Test get_workspace excludes archived by default
+- [ ] Test API endpoint for restore (owner only)
+- [ ] Test that archived workspace's agents/sessions are not returned in normal queries
+
+## Acceptance Criteria
+
+- [ ] All soft-delete behaviors verified
+- [ ] Edge cases covered
+- [ ] Tests pass with async: true
+
+## Context
+
+**Files affected**: `test/pag_server/workspaces_test.exs` (extend), `test/pag_server_web/controllers/workspaces_controller_test.exs` (extend)

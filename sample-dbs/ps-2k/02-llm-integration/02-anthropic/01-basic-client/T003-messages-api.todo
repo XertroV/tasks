@@ -1,0 +1,106 @@
+---
+id: P2.M2.E1.T003
+title: Implement messages API endpoint
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E1.T002
+tags:
+- llm
+- anthropic
+- messages
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:01:51.643525'
+started_at: '2026-02-05T11:01:51.643525'
+completed_at: '2026-02-05T11:04:33.231979'
+---
+
+# Implement messages API endpoint
+
+Implement the core `/v1/messages` endpoint for non-streaming chat completions.
+
+## Requirements
+
+- [ ] Implement `chat/2` function (client, opts)
+- [ ] Support required params: model, messages, max_tokens
+- [ ] Support optional params: system, temperature, top_p, top_k, stop_sequences
+- [ ] Convert response to standardized format
+- [ ] Handle API errors (400, 401, 429, 500)
+- [ ] Add comprehensive tests with fixtures
+
+## Acceptance Criteria
+
+- [ ] Can send basic chat completion request
+- [ ] Response includes: id, model, role, content, stop_reason, usage
+- [ ] Handles all standard parameters correctly
+- [ ] API errors are converted to meaningful error tuples
+- [ ] Tests use fixtures (no live API calls)
+- [ ] >85% test coverage
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- `ref-projects/anthropix/lib/anthropix.ex` lines 60-74 (chat example)
+
+**Key Points**:
+- Follow Provider behaviour from P2.M1
+- Use Req.post/3 for API calls
+- Convert Anthropic format to internal format
+
+## Notes
+
+API endpoint: `POST /v1/messages`
+
+Request format:
+```json
+{
+  "model": "claude-3-5-sonnet-20241022",
+  "max_tokens": 1024,
+  "messages": [
+    {"role": "user", "content": "Hello!"}
+  ]
+}
+```
+
+Response format:
+```json
+{
+  "id": "msg_123",
+  "type": "message",
+  "role": "assistant",
+  "content": [
+    {"type": "text", "text": "Hello! How can I help?"}
+  ],
+  "model": "claude-3-5-sonnet-20241022",
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 10,
+    "output_tokens": 20
+  }
+}
+```
+
+Implementation pattern:
+```elixir
+def chat(client, opts) do
+  body = build_request(opts)
+  
+  case Req.post(client, url: "/v1/messages", json: body) do
+    {:ok, %{status: 200, body: body}} ->
+      {:ok, parse_response(body)}
+    
+    {:ok, %{status: status, body: body}} ->
+      {:error, parse_error(status, body)}
+    
+    {:error, error} ->
+      {:error, error}
+  end
+end
+```
+
+Reference anthropix for error handling patterns.

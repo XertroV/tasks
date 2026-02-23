@@ -1,0 +1,47 @@
+---
+id: P10.M5.E1.T001
+title: Create Bitbucket API client
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- api-client
+- bitbucket
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:27:49.828648+00:00'
+started_at: '2026-02-12T05:27:49.828648+00:00'
+completed_at: '2026-02-12T05:36:53.035010+00:00'
+duration_minutes: 9.053439066666666
+---
+
+# Create Bitbucket API client
+
+Implement HTTP client module for Bitbucket API integration with authentication and repository operations.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/bitbucket/client.ex` module
+- [ ] Implement Bitbucket API authentication (OAuth2/PAT)
+- [ ] Define HTTP request builder functions:
+  - [ ] Create pull request
+  - [ ] Get PR status
+  - [ ] List issues
+  - [ ] Comment on PR/issue
+  - [ ] Get repository info
+- [ ] Implement error handling for API failures
+- [ ] Add request/response logging and telemetry
+- [ ] Write comprehensive module tests
+
+## Acceptance Criteria
+
+- [ ] Client module compiles with no warnings
+- [ ] Supports Bitbucket API v2 endpoints
+- [ ] Implements retry logic for transient failures
+- [ ] All HTTP calls include telemetry tracking
+- [ ] Error responses wrapped in standardized tuples
+- [ ] Unit tests cover happy path and errors
+- [ ] `mix test` passes for all client tests
+- [ ] `mix lint` passes without warnings

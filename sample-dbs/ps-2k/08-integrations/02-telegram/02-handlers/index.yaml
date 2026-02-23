@@ -1,0 +1,50 @@
+id: P8.M2.E2
+name: Message Handlers
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on:
+- E1
+description: Handle messages, callbacks, inline queries
+tasks:
+- id: T001
+  title: Implement message handler
+  file: T001-message-handler.todo
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  status: pending
+  depends_on: []
+  tags:
+  - telegram
+  - handlers
+- id: T002
+  title: Implement callback handler
+  file: T002-callback-handler.todo
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  status: pending
+  depends_on:
+  - T001
+  tags:
+  - telegram
+  - handlers
+- id: T003
+  title: Add file/media handling
+  file: T003-file-media-handling.todo
+  estimate_hours: 1
+  complexity: medium
+  priority: medium
+  status: pending
+  depends_on:
+  - T001
+  tags:
+  - telegram
+  - media
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

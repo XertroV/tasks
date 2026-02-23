@@ -1,0 +1,38 @@
+---
+id: P16.M1.E1.T005
+title: Register Groq provider in Application
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T001
+- P16.M1.E1.T003
+tags:
+- llm
+- groq
+- application
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:38:51.940147+00:00'
+started_at: '2026-02-14T02:38:51.940147+00:00'
+completed_at: '2026-02-14T02:50:22.749606+00:00'
+duration_minutes: 11.513490749999999
+---
+
+# Register Groq provider in Application
+
+Register the Groq provider in the application startup.
+
+## Requirements
+
+- Update `register_llm_providers/0` in `lib/pag_server/application.ex`
+- Add `Registry.register_provider(:groq, PagServer.LLM.Providers.Groq)` call
+- Only register if `GROQ_API_KEY` is configured (following existing pattern)
+- Add to CircuitBreaker initialization if needed
+
+## Acceptance Criteria
+
+- [ ] Groq provider is registered when `GROQ_API_KEY` is set
+- [ ] Application starts without errors when key is not set
+- [ ] Provider is available via `PagServer.LLM.Registry.get_provider(:groq)`
+- [ ] CircuitBreaker is configured for Groq provider

@@ -1,0 +1,16 @@
+---
+id: B193
+title: CompanionChannel should reject malformed tool_result/tool_error payload types
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:35:05.401106+00:00'
+started_at: '2026-02-21T14:35:05.401106+00:00'
+completed_at: '2026-02-21T14:37:46.336496+00:00'
+duration_minutes: 2.6822563333333336
+---
+Guard tool_result/tool_error handlers against non-string call_id and malformed fields to avoid FunctionClauseError in PendingCalls; add regression tests.

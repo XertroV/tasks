@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:54:06.393138+00:00'
+started_at: '2026-02-13T06:54:06.393138+00:00'
+completed_at: '2026-02-13T07:36:38.233622+00:00'
+duration_minutes: 42.530674516666664
+---
+# Add batching integration tests
+
+## Description
+Create comprehensive integration tests for the batching and pooling system covering correctness, edge cases, and performance characteristics.
+
+## Acceptance Criteria
+- [ ] `test/pag_server/llm/batching/embedding_batcher_test.exs` created
+- [ ] `test/pag_server/llm/batching/coalescer_test.exs` created
+- [ ] `test/pag_server/llm/batching/priority_queue_test.exs` created
+- [ ] `test/pag_server/llm/pool/finch_pool_test.exs` created
+- [ ] Tests cover: concurrent access, timeout handling, error propagation
+- [ ] Tests cover: batch splitting, result mapping, cache invalidation
+- [ ] Tests cover: priority ordering, starvation prevention
+- [ ] Mock LLM API responses for deterministic testing
+- [ ] Performance tests verify batching overhead < 5ms
+- [ ] `mix test` passes
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/batching/`, `lib/pag_server/llm/pool/`
+- Part of epic: P14.M3.E2 - Request Batching

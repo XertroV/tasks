@@ -1,0 +1,19 @@
+---
+id: P19.M4.E1.T002
+title: Create Discord integration docs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- docs
+- integrations
+- discord
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:40:10.642778+00:00'
+started_at: '2026-02-18T02:40:10.642778+00:00'
+completed_at: '2026-02-18T03:12:22.774302+00:00'
+duration_minutes: 32.202191866666666
+---
+Create docs/integrations/discord.md. Document bot setup, events, configuration. Reference lib/pag_server/integrations/discord.ex.

@@ -1,0 +1,55 @@
+---
+id: P53.M2.E1.T002
+title: Implement browser session lifecycle mapping and teardown
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P53.M2.E1.T001
+tags:
+- browsermcp
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:36:20.898740+00:00'
+started_at: '2026-02-21T05:36:20.898740+00:00'
+completed_at: '2026-02-21T05:44:07.278478+00:00'
+duration_minutes: 7.77299545
+---
+
+# Implement browser session lifecycle mapping and teardown
+
+
+
+## Requirements
+
+- Implement creation/reuse/teardown mapping between pag-server session state and companion browser sessions.
+- Ensure abandoned browser sessions are cleaned up on timeout or process termination.
+- Record lifecycle events for observability/debugging.
+
+## Acceptance Criteria
+
+- Browser session lifecycle includes deterministic create, reuse, and close states.
+- Timeout/disconnect paths trigger cleanup and do not leak stale browser sessions.
+- Lifecycle events are visible with session identifiers for troubleshooting.
+
+## Execution Notes (2026-02-21)
+
+- Added ETS-backed browser session lifecycle tracker keyed by
+  `{workspace_id, session_id}` with deterministic `created`, `reused`, and
+  close-path handling.
+- Integrated lifecycle mapping into companion proxy for `browsermcp` calls,
+  enriching payloads with `browser_session_id` and emitting lifecycle logs with
+  workspace/session identifiers.
+- Added cleanup on transport errors (timeout/crash) and close actions so stale
+  browser session mappings are removed.
+- Extended companion routing tests to verify create/reuse/close behavior and
+  timeout cleanup semantics.
+
+## Evidence Artifacts
+
+- `lib/pag_server/companions/browser_session_lifecycle.ex`
+- `lib/pag_server/companions/companion_proxy_executor.ex`
+- `lib/pag_server/companions/companion_supervisor.ex`
+- `test/pag_server/companions/companion_proxy_executor_test.exs`
+- `recent-mix-tests.log`

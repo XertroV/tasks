@@ -1,0 +1,40 @@
+id: P48.M3.E2
+name: 'C2: LSP Client Manager'
+status: done
+estimate_hours: 7.0
+complexity: high
+depends_on:
+- P48.M3.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-lspclient-genserver-per-langua.todo
+  title: 'LspClient GenServer: per-(language, effective_root) client'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-lspregistry-genserver-ets-back.todo
+  title: 'LspRegistry GenServer: ETS-backed (workspace_id, language) -> LspClient
+    pid'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-lspsupervisor-dynamicsuperviso.todo
+  title: LspSupervisor DynamicSupervisor and lazy spawn logic
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

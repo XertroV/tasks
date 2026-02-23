@@ -1,0 +1,16 @@
+---
+id: P48.M4.E1.T007
+title: Register 'lsp' tool with pag-server via companion channel on connect
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:26.095333+00:00'
+started_at: '2026-02-20T08:51:26.095333+00:00'
+completed_at: '2026-02-20T09:06:10.272861+00:00'
+duration_minutes: 14.73629195
+---
+PagConnect.ServerClient.Connection: add 'lsp' to registered tools list in the register event. Only register if lsp_enabled: true in config AND at least one LSP server binary is found in PATH.

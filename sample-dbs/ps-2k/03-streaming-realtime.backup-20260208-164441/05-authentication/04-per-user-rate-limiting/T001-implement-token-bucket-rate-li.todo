@@ -1,0 +1,258 @@
+---
+id: P3.M5.E4.T001
+title: Implement token bucket rate limiter
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P3.M5.E1.T002
+tags:
+- auth
+- rate-limiting
+- performance
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:59:07.892281+00:00'
+started_at: '2026-02-06T18:59:07.892281+00:00'
+completed_at: '2026-02-06T19:12:06.036156+00:00'
+duration_minutes: 12.969064416666667
+---
+
+# Implement token bucket rate limiter
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/plugs/rate_limiter.ex` module
+- [ ] Implement token bucket algorithm using Cachex for state storage
+- [ ] Add configurable rate limits (requests per window, bucket size, refill rate)
+- [ ] Track rate limits per user ID (from authenticated request)
+- [ ] Return HTTP 429 with `Retry-After` header when limit exceeded
+- [ ] Emit telemetry events for rate limit hits and violations
+- [ ] Add proper typespecs and documentation
+- [ ] Handle edge cases (cache failures, missing user context)
+
+## Acceptance Criteria
+
+- [ ] Plug module created at `lib/pag_server_web/plugs/rate_limiter.ex`
+- [ ] Token bucket algorithm correctly implemented:
+  - [ ] Tokens refill at configured rate (e.g., 10 tokens/second)
+  - [ ] Bucket has maximum capacity (e.g., 100 tokens)
+  - [ ] Each request consumes 1 token
+  - [ ] Requests blocked when bucket empty
+- [ ] Rate limit state stored in Cachex with TTL:
+  - [ ] Key format: `"rate_limit:user:#{user_id}"`
+  - [ ] Value: `%{tokens: float(), last_refill: DateTime.t()}`
+  - [ ] TTL set to window duration + grace period
+- [ ] HTTP 429 response includes:
+  - [ ] `Retry-After` header (seconds until next token available)
+  - [ ] `X-RateLimit-Limit` header (requests per window)
+  - [ ] `X-RateLimit-Remaining` header (tokens remaining)
+  - [ ] `X-RateLimit-Reset` header (timestamp when bucket refills)
+  - [ ] JSON error body: `%{error: "rate_limit_exceeded", message: "..."}`
+- [ ] Telemetry events emitted:
+  - [ ] `[:pag_server, :rate_limit, :check]` - Every request check
+  - [ ] `[:pag_server, :rate_limit, :exceeded]` - When limit hit
+  - [ ] `[:pag_server, :rate_limit, :allowed]` - When request allowed
+- [ ] Configuration support via Application environment:
+  - [ ] `:rate_limit_requests_per_second` (default: 10)
+  - [ ] `:rate_limit_bucket_size` (default: 100)
+  - [ ] `:rate_limit_enabled` (default: true)
+- [ ] Graceful degradation:
+  - [ ] If cache unavailable, log warning and allow request
+  - [ ] If user ID missing, skip rate limiting (for unauthenticated endpoints)
+- [ ] Tests pass with >90% coverage
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Plan References**:
+- Epic P3.M5.E4 (Per-user rate limiting)
+- Milestone P3.M5 (Authentication)
+
+**Key Points**:
+- Token bucket is preferred over fixed window to allow bursts while maintaining average rate
+- Must integrate with authentication layer to extract user ID from request
+- Rate limiting happens after authentication but before authorization
+- Inspired by existing rate limit handling in `lib/pag_server/llm/providers/anthropic/error.ex`
+
+## Implementation Notes
+
+### Token Bucket Algorithm
+
+The token bucket algorithm maintains a "bucket" of tokens that refills at a constant rate:
+
+1. **Initialization**: Bucket starts full (e.g., 100 tokens)
+2. **Refill**: Tokens added at constant rate (e.g., 10/second)
+3. **Consumption**: Each request consumes N tokens (usually 1)
+4. **Rejection**: If insufficient tokens, reject with 429
+
+**Refill Calculation**:
+```elixir
+defp refill_tokens(bucket, config) do
+  now = DateTime.utc_now()
+  elapsed_seconds = DateTime.diff(now, bucket.last_refill, :millisecond) / 1000.0
+  
+  tokens_to_add = elapsed_seconds * config.refill_rate
+  new_tokens = min(bucket.tokens + tokens_to_add, config.bucket_size)
+  
+  %{tokens: new_tokens, last_refill: now}
+end
+```
+
+**Request Check**:
+```elixir
+defp check_rate_limit(user_id, cost \\ 1) do
+  key = "rate_limit:user:#{user_id}"
+  
+  case Cache.get(key) do
+    {:ok, nil} ->
+      # First request - initialize bucket
+      bucket = %{tokens: @bucket_size - cost, last_refill: DateTime.utc_now()}
+      Cache.put(key, bucket, @window_ttl)
+      {:ok, @bucket_size - cost}
+      
+    {:ok, bucket} ->
+      # Refill and check
+      bucket = refill_tokens(bucket)
+      
+      if bucket.tokens >= cost do
+        new_bucket = %{bucket | tokens: bucket.tokens - cost}
+        Cache.put(key, new_bucket, @window_ttl)
+        {:ok, new_bucket.tokens}
+      else
+        {:error, :rate_limited, retry_after_seconds(bucket)}
+      end
+  end
+end
+```
+
+### Plug Implementation
+
+```elixir
+defmodule PAGServerWeb.Plugs.RateLimiter do
+  @moduledoc """
+  Token bucket rate limiter for per-user request throttling.
+  
+  Tracks requests per authenticated user using a token bucket algorithm.
+  Blocks requests with HTTP 429 when rate limit exceeded.
+  """
+  
+  import Plug.Conn
+  require Logger
+  alias PAGServer.Cache
+  
+  @behaviour Plug
+  
+  @default_config %{
+    requests_per_second: 10,
+    bucket_size: 100,
+    enabled: true
+  }
+  
+  def init(opts), do: Keyword.merge(@default_config, opts)
+  
+  def call(conn, config) do
+    if config.enabled do
+      check_rate_limit(conn, config)
+    else
+      conn
+    end
+  end
+  
+  defp check_rate_limit(conn, config) do
+    case get_user_id(conn) do
+      nil -> 
+        # No user context - skip rate limiting
+        conn
+        
+      user_id ->
+        case consume_token(user_id, config) do
+          {:ok, remaining} ->
+            emit_telemetry(:allowed, %{user_id: user_id, remaining: remaining})
+            add_rate_limit_headers(conn, remaining, config)
+            
+          {:error, :rate_limited, retry_after} ->
+            emit_telemetry(:exceeded, %{user_id: user_id, retry_after: retry_after})
+            conn
+            |> put_rate_limit_headers(0, retry_after, config)
+            |> send_rate_limit_response()
+            |> halt()
+        end
+    end
+  end
+  
+  defp send_rate_limit_response(conn) do
+    conn
+    |> put_status(429)
+    |> Phoenix.Controller.json(%{
+      error: "rate_limit_exceeded",
+      message: "Too many requests. Please retry after the specified time."
+    })
+  end
+  
+  # Extract user_id from authenticated API key
+  defp get_user_id(conn) do
+    case conn.assigns[:api_key] do
+      %{user_id: user_id} -> user_id
+      _ -> nil
+    end
+  end
+end
+```
+
+### Integration Points
+
+- **Authentication**: Requires `conn.assigns.api_key` to be set by auth plug (Epic E1.T002)
+- **User ID Extraction**: Gets `user_id` from `api_key.user_id` (API keys belong to users)
+- **Cache**: Uses existing `PagServer.Cache` module (Cachex wrapper)
+- **Telemetry**: Follows pattern from `lib/pag_server/llm/providers/anthropic/error.ex`
+- **Error Response**: Matches format in `lib/pag_server_web/controllers/error_json.ex`
+
+### Testing Strategy
+
+Create `test/pag_server_web/plugs/rate_limiter_test.exs`:
+- Test token bucket refills correctly over time
+- Test requests allowed when tokens available
+- Test 429 returned when bucket empty
+- Test burst handling (bucket size > 1)
+- Test headers included in responses
+- Test telemetry events emitted
+- Test graceful degradation (cache failures)
+- Test unauthenticated requests bypass rate limiting
+- Test concurrent requests (race conditions)
+
+### References
+
+- **Token bucket algorithm**: https://en.wikipedia.org/wiki/Token_bucket
+- **Existing rate limit handling**: `lib/pag_server/llm/providers/anthropic/error.ex:68-75`
+- **Retry logic**: `lib/pag_server/llm/providers/anthropic/retry.ex`
+- **Cache module**: `lib/pag_server/cache.ex`
+- **Plug examples**: `lib/pag_server_web/endpoint.ex:41-51`
+
+## Dependencies
+
+- Requires Cachex (already in deps)
+- Requires authentication plug to set `conn.assigns.api_key` (P3.M5.E1.T002)
+- Requires User schema with user_id on ApiKey (P3.M5.E1.T001)
+- No additional database schema needed (rate limit state is ephemeral in cache)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M5.E4)
+**Agent**: cli-user
+**Date**: 2026-02-06 18:59 UTC
+**Sibling tasks**: P3.M5.E4.T002, P3.M5.E4.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M5.E4.T001 → P3.M5.E4.T002 → P3.M5.E4.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M5.E4.T001: .tasks/03-streaming-realtime/05-authentication/04-per-user-rate-limiting/T001-implement-token-bucket-rate-li.todo
+- P3.M5.E4.T002: .tasks/03-streaming-realtime/05-authentication/04-per-user-rate-limiting/T002-add-per-user-quota-tracking.todo
+- P3.M5.E4.T003: .tasks/03-streaming-realtime/05-authentication/04-per-user-rate-limiting/T003-create-rate-limit-exceeded-res.todo

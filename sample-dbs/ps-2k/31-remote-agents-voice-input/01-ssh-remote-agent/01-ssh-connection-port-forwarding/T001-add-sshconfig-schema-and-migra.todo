@@ -1,0 +1,35 @@
+---
+id: P31.M1.E1.T001
+title: Add SshConfig schema and migration
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:27:58.030325+00:00'
+started_at: '2026-02-18T19:27:58.030325+00:00'
+completed_at: '2026-02-18T19:46:24.684859+00:00'
+duration_minutes: 18.444242083333332
+---
+Schema for SSH remote agent configs: workspace_id, host, port, username, private_key_path (or encrypted private key), known_hosts_entry, status. Migration creates workspace_ssh_configs table.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P31.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 19:27 UTC
+**Sibling tasks**: P31.M1.E1.T002, P31.M1.E1.T003, P31.M1.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P31.M1.E1.T001 → P31.M1.E1.T002 → P31.M1.E1.T003 → P31.M1.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P31.M1.E1.T001: .tasks/31-remote-agents-voice-input/01-ssh-remote-agent/01-ssh-connection-port-forwarding/T001-add-sshconfig-schema-and-migra.todo
+- P31.M1.E1.T002: .tasks/31-remote-agents-voice-input/01-ssh-remote-agent/01-ssh-connection-port-forwarding/T002-implement-sshtunnel-genserver.todo
+- P31.M1.E1.T003: .tasks/31-remote-agents-voice-input/01-ssh-remote-agent/01-ssh-connection-port-forwarding/T003-implement-sshsupervisor.todo
+- P31.M1.E1.T004: .tasks/31-remote-agents-voice-input/01-ssh-remote-agent/01-ssh-connection-port-forwarding/T004-write-sshtunnel-tests.todo

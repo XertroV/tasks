@@ -1,0 +1,16 @@
+---
+id: P15.M7.E5.T003
+title: 'T3: Base Workspace Template'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T08:52:43.582372+00:00'
+started_at: '2026-02-18T08:52:43.582372+00:00'
+completed_at: '2026-02-18T09:02:11.108560+00:00'
+duration_minutes: 9.458769583333332
+---
+Create agent-persona-base.yml workspace template, define generic conversational bootstrap flow, configure tracked files (PERSONA.md, MY_TEAM.md, BIRTH.md, SOUL.md, etc.).

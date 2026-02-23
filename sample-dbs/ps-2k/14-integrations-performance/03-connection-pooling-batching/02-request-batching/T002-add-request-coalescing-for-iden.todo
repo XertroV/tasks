@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:54:06.392547+00:00'
+started_at: '2026-02-13T06:54:06.392547+00:00'
+completed_at: '2026-02-13T07:36:35.559268+00:00'
+duration_minutes: 42.48611175
+---
+# Add request coalescing for identical queries
+
+## Description
+Implement request coalescing to deduplicate identical concurrent requests. When multiple agents request the same embedding/completion, execute once and share the result among all callers.
+
+## Acceptance Criteria
+- [ ] `PagServer.LLM.Batching.Coalescer` module created
+- [ ] `with_coalescing/3` wraps request with deduplication
+- [ ] Request fingerprinting for identity detection
+- [ ] Configurable time window for coalescing (default 100ms)
+- [ ] Pending request tracking with ETS
+- [ ] All callers receive same result on cache hit
+- [ ] Proper cleanup on success/failure
+- [ ] Integration with Cachex for result caching
+- [ ] Metrics for coalescing hit rate
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/batching/embedding_batcher.ex`, Cachex patterns in codebase
+- Part of epic: P14.M3.E2 - Request Batching

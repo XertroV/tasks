@@ -1,0 +1,41 @@
+id: P15.M15
+name: LivePromptResolver Enhancements
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Framed File Placeholder Flag
+  path: 01-framed-file-placeholder-flag
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Tool Summary Generation for Prompt Injection
+  path: 02-tool-summary-generation-for-pr
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Agent-Persona System Prompt Rewrite
+  path: 03-agent-persona-system-prompt-re
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,22 @@
+---
+id: P50.M1.E1.T001
+title: Create plugin.json manifest and collab_teams directory scaffold
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:07:06.233348+00:00'
+started_at: '2026-02-23T02:07:06.233348+00:00'
+completed_at: '2026-02-23T02:07:10.431660+00:00'
+duration_minutes: 0.06997156666666667
+---
+## Description
+Create plugins/collab_teams/plugin.json with name collab_teams, transport beam, module CollabTeams, capabilities.tools: [team], events.subscribe agents:* with state_changed filter, permissions.auto_approve: [agent_communicate, agent_spawn]. Create plugins/collab_teams/lib/ directory structure.
+
+## Acceptance Criteria
+- plugin.json exists and is valid JSON with all required fields
+- plugin loads at startup without error
+- directory structure mirrors pair_programming plugin layout

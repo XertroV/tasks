@@ -1,0 +1,32 @@
+---
+id: B114
+title: pair route looks hardcoded in core, can we handle plugin api routes better?
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:37:49.828925+00:00'
+completed_at: '2026-02-18T20:45:00.000000+00:00'
+---
+
+pair route looks hardcoded in core, can we handle plugin api routes better?
+
+## Solution
+
+Added a `/plugins/:plugin_name` namespace for plugin-contributed LiveView routes:
+
+1. **New namespace**: `/plugins/pair_programming/sessions/:session_id` is now the preferred route for the pair programming plugin
+2. **Legacy support**: `/dashboard/pair-sessions/:session_id` kept for backwards compatibility
+3. **Documentation**: Added comments explaining the plugin route pattern
+
+Future plugins should follow the same pattern:
+```
+scope "/plugins", PagServerWeb.Live do
+  live("/my_plugin/resource/:id", MyPluginLive)
+end
+```
+
+This generates routes like: `/plugins/my_plugin/resource/:id`

@@ -1,0 +1,139 @@
+---
+id: P1.M3.E5.T003
+title: Add graceful shutdown handling
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P1.M3.E5.T002
+claimed_by: claude-1
+claimed_at: '2026-02-05T10:12:14.860192'
+started_at: '2026-02-05T10:12:14.860192'
+completed_at: '2026-02-05T10:13:30.654937'
+tags:
+- agent
+- lifecycle
+- shutdown
+- cleanup
+---
+
+# Add graceful shutdown handling
+
+Implement proper shutdown sequence with cleanup and lifecycle hook invocation.
+
+## Requirements
+
+- [ ] Implement `terminate/2` callback in Agent GenServer
+- [ ] Add cleanup logic before shutdown:
+  - [ ] Cancel in-flight LLM requests
+  - [ ] Flush pending events to event store
+  - [ ] Close any open MCP tool connections
+  - [ ] Update agent status to `:terminated` in DB
+- [ ] Call `on_shutdown/2` lifecycle hook with reason and state
+- [ ] Add configurable shutdown timeout (default 5 seconds)
+- [ ] Handle different shutdown reasons:
+  - [ ] `:normal` - Clean shutdown
+  - [ ] `:shutdown` - Supervisor initiated
+  - [ ] `{:shutdown, term}` - With reason
+  - [ ] Other - Abnormal termination
+- [ ] Emit telemetry event for shutdown duration
+- [ ] Log shutdown reason and statistics
+
+## Acceptance Criteria
+
+- [ ] `terminate/2` callback implemented in Agent module
+- [ ] All cleanup tasks complete before shutdown
+- [ ] `on_shutdown/2` hook called for all shutdown reasons
+- [ ] Shutdown completes within timeout (5s default)
+- [ ] Events are flushed to persistence
+- [ ] Database updated with final agent status
+- [ ] Telemetry emitted with shutdown metrics
+- [ ] No orphaned processes or connections after shutdown
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` - OTP supervision tree
+- Graceful shutdown prevents data loss and resource leaks
+
+**Key Points**:
+- `terminate/2` is called by OTP before process exits
+- May not be called on abnormal termination (crash, kill -9)
+- Should complete quickly - blocking operations need timeouts
+- Event flushing is critical for event sourcing integrity
+- MCP tool processes must be notified of shutdown
+
+## Notes
+
+Example terminate implementation:
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  @shutdown_timeout :timer.seconds(5)
+  
+  def terminate(reason, state) do
+    start_time = System.monotonic_time()
+    
+    Logger.info("Agent #{state.id} shutting down: #{inspect(reason)}")
+    
+    # 1. Invoke lifecycle hook
+    invoke_hook(state, :on_shutdown, [reason, state])
+    
+    # 2. Cancel in-flight requests
+    if state.current_request do
+      cancel_llm_request(state.current_request)
+    end
+    
+    # 3. Flush pending events with timeout
+    flush_events(state.id, @shutdown_timeout)
+    
+    # 4. Close MCP tool connections
+    close_tool_connections(state)
+    
+    # 5. Update database status
+    Repo.update_all(
+      from(a in Schema.Agent, where: a.id == ^state.id),
+      set: [status: :terminated, updated_at: DateTime.utc_now()]
+    )
+    
+    # 6. Emit telemetry
+    duration = System.monotonic_time() - start_time
+    :telemetry.execute(
+      [:pag, :agent, :shutdown],
+      %{duration: duration},
+      %{
+        agent_id: state.id,
+        reason: reason,
+        messages_processed: state.stats.messages_processed
+      }
+    )
+    
+    :ok
+  end
+  
+  defp flush_events(agent_id, timeout) do
+    task = Task.async(fn ->
+      Events.Store.flush_pending(agent_id)
+    end)
+    
+    case Task.yield(task, timeout) || Task.shutdown(task) do
+      {:ok, :ok} -> :ok
+      _ -> Logger.warning("Event flush timeout during shutdown")
+    end
+  end
+  
+  defp close_tool_connections(state) do
+    # Notify all MCP servers that agent is shutting down
+    for server_pid <- state.tool_connections do
+      GenServer.cast(server_pid, {:agent_shutdown, state.id})
+    end
+  end
+end
+```
+
+## Related
+
+- Depends on: T002 (Hook execution infrastructure)
+- Next: T004 (Tests for lifecycle scenarios)

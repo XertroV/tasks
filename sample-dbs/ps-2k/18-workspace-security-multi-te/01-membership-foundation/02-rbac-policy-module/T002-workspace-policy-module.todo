@@ -1,0 +1,49 @@
+---
+id: P18.M1.E2.T002
+title: Create WorkspacePolicy authorization module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- P18.M1.E2.T001
+tags:
+- security
+- workspace
+- rbac
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:06:30.035329+00:00'
+started_at: '2026-02-17T17:06:30.035329+00:00'
+completed_at: '2026-02-17T17:07:53.841857+00:00'
+duration_minutes: 1.3967752333333334
+---
+
+# Create WorkspacePolicy authorization module
+
+## Description
+
+Create `PagServer.Workspaces.Policy` module that checks whether a user has permission to perform an action in a workspace, based on their membership role.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/workspaces/policy.ex`
+- [ ] `authorize(workspace_id, user_id, action)` — returns `:ok | {:error, :forbidden} | {:error, :not_member}`
+- [ ] Queries `WorkspaceMembers.get_role/2` to find user's role
+- [ ] Uses `Roles.has_permission?/2` to check the action against the role
+- [ ] `authorize!(workspace_id, user_id, action)` — raises on failure (for use in plugs)
+- [ ] `can?(workspace_id, user_id, action)` — boolean convenience wrapper
+- [ ] Handle nil workspace_id gracefully (return :not_member)
+- [ ] Handle nil user_id gracefully (return :not_member)
+
+## Acceptance Criteria
+
+- [ ] Owner can perform all actions
+- [ ] Admin can perform all actions except :delete_workspace
+- [ ] Member can view resources and send messages but not manage
+- [ ] Non-member gets {:error, :not_member}
+- [ ] Nil inputs return appropriate errors without crashing
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces/policy.ex`
+**Dependencies**: `PagServer.Workspaces.Roles`, `PagServer.WorkspaceMembers`

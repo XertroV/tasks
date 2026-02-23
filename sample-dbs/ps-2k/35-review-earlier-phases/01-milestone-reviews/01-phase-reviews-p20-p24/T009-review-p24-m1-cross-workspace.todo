@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T009
+title: 'Review P24.M1: Cross-Workspace Communication Plugin'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:15:13.893698+00:00'
+started_at: '2026-02-19T02:15:13.893698+00:00'
+completed_at: '2026-02-19T02:26:49.607081+00:00'
+duration_minutes: 11.595222883333333
+---
+Load the review-and-fix skill. Review all epics and tasks under P24.M1 (Cross-Workspace Communication Plugin). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: session_mailbox and mailbox_message Ecto schemas/migrations, MessageRouter GenServer (delivery correctness, broadcast/scope/DM logic), MCP tools (send_message, list_messages, mark_read, subscribe_to_topic), CrossWorkspacePlugin module with workspace discovery, and wake-on-message hook into session activation.

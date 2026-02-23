@@ -1,0 +1,44 @@
+# Epic: Database Setup
+# Phase 1, Milestone 1, Epic 2 (P1.M1.E2)
+
+id: P1.M1.E2
+name: Database Setup
+status: pending
+estimate_hours: 6
+complexity: medium
+depends_on: [P1.M1.E1]
+
+tasks:
+  - id: T001
+    file: T001-ecto-setup.todo
+    title: Set up Ecto repository
+    status: pending
+    estimate_hours: 2
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-postgres-config.todo
+    title: Configure PostgreSQL adapter
+    status: pending
+    estimate_hours: 2
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-sqlite-config.todo
+    title: Configure SQLite adapter
+    status: pending
+    estimate_hours: 2
+    complexity: low
+    priority: medium
+    depends_on: [T001]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

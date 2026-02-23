@@ -1,0 +1,28 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T08:26:55.020976+00:00'
+started_at: '2026-02-13T08:26:55.020976+00:00'
+completed_at: '2026-02-13T08:56:26.837374+00:00'
+duration_minutes: 29.530273083333334
+---
+# Add Teams message handler
+
+## Description
+Implement the message handler module that processes incoming Teams messages, routes them to agents, and manages session context. Should support 1:1 messages, channel messages, and @mentions.
+
+## Acceptance Criteria
+- [ ] `PagServer.Integrations.Teams.MessageHandler` module created
+- [ ] `handle/1` function processes incoming message payloads
+- [ ] Session key generation using team_id, channel_id, and user_id
+- [ ] `get_or_create_session/1` pattern matching existing integrations
+- [ ] Support for @bot mentions in channel messages
+- [ ] Support for direct message (1:1) conversations
+- [ ] Message text extraction and sanitization
+- [ ] Agent lookup/creation with AgentSupervisor integration
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/integrations/telegram/message_handler.ex`, `lib/pag_server/integrations/discord.ex`, `lib/pag_server/integrations/slack/client.ex`
+- Part of epic: P14.M1.E1 - MS Teams Integration

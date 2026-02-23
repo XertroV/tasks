@@ -1,0 +1,198 @@
+---
+id: P1.M3.E2.T001
+title: Create AgentSupervisor
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+claimed_by: claude
+claimed_at: '2026-02-05T09:09:05.775361'
+started_at: '2026-02-05T09:09:05.775361'
+completed_at: '2026-02-05T09:10:09.980564'
+tags:
+- supervision
+- otp
+- agents
+- dynamic-supervisor
+---
+
+# Create AgentSupervisor
+
+Create the `PagServer.Agents.Supervisor` module using DynamicSupervisor to manage agent GenServer processes.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/agents/supervisor.ex`
+- [ ] Implement `start_link/1` with `:name` option
+- [ ] Implement `start_agent/1` to spawn new agent processes
+- [ ] Implement `stop_agent/1` to terminate agent processes
+- [ ] Implement `list_agents/0` to return all running agent PIDs
+- [ ] Use `strategy: :one_for_one` for independent agent failures
+- [ ] Ensure module is under `PagServer.Agents` namespace
+- [ ] Add `@moduledoc` with usage examples
+- [ ] Add `@doc` for each public function with type specs
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] `start_link/1` returns `{:ok, pid}` and registers supervisor
+- [ ] `start_agent/1` spawns a new child under the supervisor
+- [ ] `stop_agent/1` terminates a child process cleanly
+- [ ] `list_agents/0` returns list of current agent PIDs
+- [ ] Supervisor restarts crashed agents automatically (one_for_one)
+- [ ] No runtime errors when starting/stopping multiple agents
+- [ ] Dialyzer passes with no type errors
+- [ ] Code follows architecture.md guidelines (<500 LoC target)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 1.2 (OTP Application Structure)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+
+**Key Design Points**:
+- DynamicSupervisor allows runtime spawning of agent processes
+- Each agent is a separate GenServer process with isolated state
+- `one_for_one` strategy: if one agent crashes, only that agent restarts
+- Agent processes will be registered in `PagServer.AgentRegistry` (future task)
+
+## Implementation Guide
+
+### Module Structure
+
+```elixir
+defmodule PagServer.Agents.Supervisor do
+  @moduledoc """
+  DynamicSupervisor for agent processes.
+
+  Each agent runs as an isolated GenServer process under this supervisor.
+  If an agent crashes, it is automatically restarted with its last known state
+  from the event store.
+
+  ## Usage
+
+      # Start the supervisor
+      {:ok, sup_pid} = Supervisor.start_link([])
+
+      # Start a new agent
+      {:ok, agent_pid} = Supervisor.start_agent(agent_id: "abc123")
+
+      # List all running agents
+      agents = Supervisor.list_agents()
+
+      # Stop an agent
+      :ok = Supervisor.stop_agent(agent_pid)
+  """
+
+  use DynamicSupervisor
+
+  @doc """
+  Start the agent supervisor.
+  """
+  @spec start_link(keyword()) :: Supervisor.on_start()
+  def start_link(opts) do
+    name = Keyword.get(opts, :name, __MODULE__)
+    DynamicSupervisor.start_link(__MODULE__, opts, name: name)
+  end
+
+  @doc """
+  Start a new agent process under this supervisor.
+
+  ## Parameters
+
+    - `opts` - Keyword list with `:agent_id` (required)
+
+  ## Examples
+
+      {:ok, pid} = Supervisor.start_agent(agent_id: "abc123")
+  """
+  @spec start_agent(keyword()) :: DynamicSupervisor.on_start_child()
+  def start_agent(opts) do
+    # TODO: Replace with actual Agent module reference
+    # child_spec = {PagServer.Agents.Agent, opts}
+    # DynamicSupervisor.start_child(__MODULE__, child_spec)
+    
+    # Placeholder for now (until Agent GenServer exists)
+    raise "Agent module not yet implemented"
+  end
+
+  @doc """
+  Stop an agent process.
+
+  ## Parameters
+
+    - `agent_pid` - PID of the agent process to stop
+
+  ## Examples
+
+      :ok = Supervisor.stop_agent(agent_pid)
+  """
+  @spec stop_agent(pid()) :: :ok | {:error, :not_found}
+  def stop_agent(agent_pid) do
+    DynamicSupervisor.terminate_child(__MODULE__, agent_pid)
+  end
+
+  @doc """
+  List all running agent processes.
+
+  Returns a list of PIDs for all agents currently supervised.
+
+  ## Examples
+
+      agents = Supervisor.list_agents()
+      # => [#PID<0.123.0>, #PID<0.124.0>]
+  """
+  @spec list_agents() :: [pid()]
+  def list_agents do
+    __MODULE__
+    |> DynamicSupervisor.which_children()
+    |> Enum.map(fn {_id, pid, _type, _modules} -> pid end)
+  end
+
+  @impl true
+  def init(_opts) do
+    DynamicSupervisor.init(strategy: :one_for_one)
+  end
+end
+```
+
+## Notes
+
+### DynamicSupervisor vs Supervisor
+
+- **DynamicSupervisor**: Children added/removed at runtime (our use case)
+- **Supervisor**: Children defined at compile time
+
+### One-For-One Strategy
+
+When an agent crashes:
+1. Only that agent process is restarted
+2. Other agents continue running unaffected
+3. Event sourcing allows state recovery from events
+
+### Future Integration
+
+This supervisor will integrate with:
+- `PagServer.Agents.Registry` (lookup agents by ID)
+- `PagServer.Agents.Agent` (the actual GenServer implementation)
+- `PagServer.EventStore` (replay events to recover state)
+
+### Testing Strategy
+
+Tests will verify:
+- Supervisor starts and registers correctly
+- Can spawn multiple agents concurrently
+- Agent crashes trigger automatic restart
+- Stopping agents cleans up resources
+- No memory leaks when starting/stopping many agents
+
+## Troubleshooting
+
+**Error**: "Agent module not yet implemented"
+- Expected until `PagServer.Agents.Agent` GenServer is created
+- Replace placeholder with actual child spec once Agent exists
+
+**Error**: Supervisor fails to start
+- Check that name is not already registered
+- Verify DynamicSupervisor.init returns correct structure

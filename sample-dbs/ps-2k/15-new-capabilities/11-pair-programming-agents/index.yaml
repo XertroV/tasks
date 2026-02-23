@@ -1,0 +1,86 @@
+id: P15.M11
+name: Pair Programming Agents
+status: done
+estimate_hours: 48.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Prerequisites & Infrastructure
+  path: 01-prerequisites-infrastructure
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Plugin Module & Manifest
+  path: 02-plugin-module-manifest
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - E1
+  description: ''
+  locked: false
+- id: E3
+  name: Custom Tools
+  path: 03-custom-tools
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - E2
+  description: ''
+  locked: false
+- id: E4
+  name: Observation & Summarization
+  path: 04-observation-summarization
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - E2
+  description: ''
+  locked: false
+- id: E5
+  name: Coordinator Agent
+  path: 05-coordinator-agent
+  status: done
+  estimate_hours: 10.0
+  complexity: high
+  depends_on:
+  - E3
+  - E4
+  description: ''
+  locked: false
+- id: E6
+  name: LiveView UI
+  path: 06-liveview-ui
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - E5
+  description: ''
+  locked: false
+- id: E7
+  name: Testing
+  path: 07-testing
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - E3
+  - E4
+  - E5
+  description: ''
+  locked: false
+stats:
+  total_tasks: 21
+  done: 21
+  in_progress: 0
+  blocked: 0
+  pending: 0

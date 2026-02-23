@@ -1,0 +1,40 @@
+id: P15.M11.E5
+name: Coordinator Agent
+status: done
+estimate_hours: 10.0
+complexity: high
+depends_on:
+- E3
+- E4
+locked: false
+tasks:
+- id: T001
+  file: T001-design-coordinator-and-role-sy.todo
+  title: Design coordinator and role system prompts
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-session-lifecycle-manage.todo
+  title: Build session lifecycle manager
+  status: done
+  estimate_hours: 5.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-build-session-report-generator.todo
+  title: Build session report generator
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

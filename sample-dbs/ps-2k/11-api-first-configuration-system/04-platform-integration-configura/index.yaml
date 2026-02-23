@@ -1,0 +1,37 @@
+id: P11.M4
+name: Platform Integration Configuration API
+status: pending
+estimate_hours: 16.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Integration OAuth & Credentials
+  path: 01-integration-oauth-credentials
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E2
+  name: Platform Config CRUD
+  path: 02-platform-config-crud
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Workspace & Bot Management
+  path: 03-workspace-bot-management
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

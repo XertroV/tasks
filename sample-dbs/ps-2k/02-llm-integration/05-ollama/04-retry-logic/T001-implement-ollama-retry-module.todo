@@ -1,0 +1,138 @@
+---
+id: P2.M5.E4.T001
+title: Implement Ollama retry module with exponential backoff
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- ollama
+- retry
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-06T12:38:49.446724'
+started_at: '2026-02-06T12:38:49.446724'
+completed_at: '2026-02-06T13:12:09.925987'
+duration_minutes: 33.34132088333333
+---
+
+# Implement Ollama retry module with exponential backoff
+
+All cloud providers (Anthropic, OpenAI, OpenRouter) have retry logic with
+exponential backoff, but Ollama has none. When Ollama is temporarily unavailable
+(e.g., loading a model, restarting), requests fail immediately. This task adds
+a retry module tailored to local API characteristics: shorter delays and
+connection-error-specific retry logic.
+
+## Requirements
+
+- [x] Create `lib/pag_server/llm/ollama/retry.ex` module
+- [x] Implement `with_retry/2` function matching the Anthropic.Retry API pattern
+- [x] Support configurable `max_attempts` (default: 3)
+- [x] Use shorter exponential backoff suitable for local API: 500ms, 1000ms, 2000ms
+- [x] Retry on `:ollama_not_running` connection errors
+- [x] Retry on `:timeout` errors (Ollama may be loading a model)
+- [x] Retry on `{:http_error, 500, _}` server errors
+- [x] Retry on `{:http_error, 503, _}` service unavailable (model loading)
+- [x] Do NOT retry on `{:http_error, 400, _}` bad request errors
+- [x] Do NOT retry on `{:http_error, 404, _}` model not found errors
+- [x] Support configurable `sleep_fn` for testing (default: `Process.sleep/1`)
+- [x] Support `on_retry` callback for logging/telemetry
+- [x] Emit telemetry event `[:pag_server, :llm, :retry]` with provider: :ollama metadata
+- [x] Wire retry logic into `PagServer.LLM.Providers.Ollama.do_chat/4` and `do_stream_chat/4`
+- [x] Add `@moduledoc` with retry behavior documentation
+
+## Acceptance Criteria
+
+- [x] Transient `:ollama_not_running` errors are retried up to 3 times
+- [x] After max retries exhausted, the final error is returned cleanly
+- [x] Non-retryable errors (400, 404) fail immediately without retries
+- [x] Backoff delays are 500ms, 1000ms, 2000ms by default
+- [x] `sleep_fn` option allows deterministic testing without actual delays
+- [x] Telemetry events are emitted on each retry attempt
+- [x] Permanent failures (Ollama not installed) are reported cleanly after retries
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.LLM.Ollama.Retry do
+  @moduledoc """
+  Retry logic with exponential backoff for Ollama local API requests.
+
+  Uses shorter delays than cloud providers since Ollama runs locally.
+  Default backoff: 500ms, 1s, 2s (max 4s).
+  """
+
+  @default_max_attempts 3
+  @base_delay_ms 500
+
+  @spec with_retry(
+          (-> {:ok, term()} | {:error, term()}),
+          keyword()
+        ) :: {:ok, term()} | {:error, term()}
+  def with_retry(request_fn, opts \\ []) do
+    max_attempts = Keyword.get(opts, :max_attempts, @default_max_attempts)
+    on_retry = Keyword.get(opts, :on_retry, fn _, _, _ -> :ok end)
+    sleep_fn = Keyword.get(opts, :sleep_fn, &Process.sleep/1)
+
+    do_retry(request_fn, 0, max_attempts, on_retry, sleep_fn)
+  end
+
+  defp do_retry(request_fn, attempt, max_attempts, on_retry, sleep_fn) do
+    case request_fn.() do
+      {:ok, _} = success ->
+        success
+
+      {:error, reason} = error ->
+        if retryable?(reason) and attempt < max_attempts - 1 do
+          delay = backoff_delay(attempt)
+          emit_retry_telemetry(reason, attempt, delay)
+          on_retry.(reason, attempt, delay)
+          sleep_fn.(delay)
+          do_retry(request_fn, attempt + 1, max_attempts, on_retry, sleep_fn)
+        else
+          error
+        end
+    end
+  end
+
+  defp retryable?(:ollama_not_running), do: true
+  defp retryable?(:timeout), do: true
+  defp retryable?({:http_error, status, _}) when status in [500, 502, 503], do: true
+  defp retryable?(_), do: false
+
+  defp backoff_delay(attempt) do
+    # Exponential backoff: 500ms, 1000ms, 2000ms, ...
+    min(@base_delay_ms * :math.pow(2, attempt) |> round(), 4_000)
+  end
+
+  defp emit_retry_telemetry(reason, attempt, delay) do
+    :telemetry.execute(
+      [:pag_server, :llm, :retry],
+      %{count: 1, delay_ms: delay},
+      %{provider: :ollama, error_type: classify_error(reason), attempt: attempt}
+    )
+  end
+
+  defp classify_error(:ollama_not_running), do: :connection_error
+  defp classify_error(:timeout), do: :timeout
+  defp classify_error({:http_error, status, _}), do: :"http_#{status}"
+  defp classify_error(_), do: :unknown
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Reference Files**:
+- `lib/pag_server/llm/providers/anthropic/retry.ex` - Cloud provider retry pattern (1s/2s/4s backoff)
+- `lib/pag_server/llm/providers/ollama.ex` - Current Ollama provider (no retry, errors returned directly)
+- `lib/pag_server/llm/ollama/client.ex` - Ollama HTTP client (returns error tuples)
+
+## Notes
+
+- The Anthropic retry module uses `Error.should_retry?/3` and `Error.backoff_delay/2` from a separate Error module. For Ollama, the retry logic is simpler since errors are plain tuples rather than structured error types.
+- Shorter delays (500ms base vs 1000ms for cloud) are appropriate because Ollama is local and recovery is typically faster.
+- Common transient failure: Ollama is loading a model into GPU memory (can take 10-30 seconds for large models). The 3-retry/4s-max default may not cover this; consider documenting that users can increase `max_attempts` for large model loads.

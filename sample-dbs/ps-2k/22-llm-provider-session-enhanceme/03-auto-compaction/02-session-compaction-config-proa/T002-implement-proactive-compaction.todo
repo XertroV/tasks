@@ -1,0 +1,18 @@
+---
+id: P22.M3.E2.T002
+title: 'Implement proactive compaction: replace old messages with summary when threshold
+  exceeded'
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: medium
+depends_on:
+- P22.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:20:31.741627+00:00'
+started_at: '2026-02-18T15:20:31.741627+00:00'
+completed_at: '2026-02-18T17:03:58.514507+00:00'
+duration_minutes: 103.4462145
+---
+In CompactionMonitor, when token threshold is exceeded: 1. Fetch session messages 2. Call Summarization.summarize/2 to get a summary of the oldest N messages 3. Replace those messages with a single :summary message in the session message list 4. Update compaction tracking state (last_compaction_at, token_reduction) 5. Emit telemetry event :compaction_completed with metadata Keep the most recent messages intact (don't summarize messages from the last 10% of context). Acceptance criteria: - Summary message inserted at the position of the first summarized message - Original messages replaced (not just truncated) - Recent messages (last 10% of context) never summarized - Compaction doesn't block active message processing - Race condition safe: use optimistic locking or message queue serialization

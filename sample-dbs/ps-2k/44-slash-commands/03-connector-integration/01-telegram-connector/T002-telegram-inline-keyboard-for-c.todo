@@ -1,0 +1,24 @@
+---
+id: P44.M3.E1.T002
+title: Telegram inline keyboard for command option responses
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.170030+00:00'
+started_at: '2026-02-19T19:33:54.170030+00:00'
+completed_at: '2026-02-19T19:34:03.358849+00:00'
+duration_minutes: 0.15314681666666666
+---
+## Summary
+Render Response.options as Telegram inline keyboard buttons for interactive command responses (e.g., /model model picker).
+
+## Acceptance Criteria
+- [ ] When Response.options is non-empty, attach inline keyboard to the reply
+- [ ] Each option becomes a button with callback_data encoding the command action (e.g., "cmd:model:anthropic:claude-sonnet-4")
+- [ ] CallbackHandler updated to recognize cmd: prefixed callbacks and dispatch to Commands.Dispatcher
+- [ ] Callback dispatch builds context from callback query's chat/user info
+- [ ] Tests: response with options sends keyboard, callback triggers correct command dispatch

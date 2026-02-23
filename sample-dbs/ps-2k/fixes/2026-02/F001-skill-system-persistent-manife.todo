@@ -1,0 +1,26 @@
+---
+id: F001
+type: fixed
+title: 'Skill system: persistent manifest, context injection, local install, uninstall'
+description: 'Skill system: persistent manifest, context injection, local install,
+  uninstall'
+status: done
+estimate_hours: 0.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- skills
+- features
+created_at: '2026-02-21T15:33:43.367744+00:00'
+completed_at: '2026-02-21T15:33:43.367744+00:00'
+---
+Implemented four skill system features:
+- InstallManifest: JSON lockfile at .skills/.manifest.json (survives page refresh)
+- ContextBuilder: injects installed skills into agent system prompts
+- install_from_path/3: local dir install for dev/testing without ClawHub
+- uninstall_skill/3: removes skill dir, updates manifest, emits audit event
+
+REST endpoints: POST /api/v1/skills/local/install, DELETE /api/v1/skills/clawhub/:slug
+LiveView: uninstall_skill event handler, handle_params loads manifest for installed_slugs
+26 new tests, 107 total passing

@@ -1,0 +1,45 @@
+---
+id: P25.M2.E4.T005
+title: Standardize Pair Programming plugin MCP interface
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- pair-programming
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:18:58.344705+00:00'
+started_at: '2026-02-19T15:18:58.344705+00:00'
+completed_at: '2026-02-19T15:19:00.524045+00:00'
+duration_minutes: 0.03632205
+---
+
+# Standardize Pair Programming plugin MCP interface
+
+## Scope
+
+- Audit `plugins/pair_programming/lib/pair_programming.ex` and underlying tool modules.
+- Plan conversion from:
+  - `pair_approve`
+  - `pair_write_note`
+  - `pair_interrupt`
+  - `pair_request_swap`
+  - `pair_status`
+- to a single pair programming domain tool with subcommand dispatch.
+
+## Requirements
+
+- Build unified schema with operation enum and explicit required args.
+- Preserve pair session behavior and responses.
+- Ensure each action returns operation/action metadata for logs and diagnostics.
+
+## Acceptance Criteria
+
+- [ ] One action/subcommand-based tool target identified for the plugin domain.
+- [ ] All current operations are covered in operation map planning.
+- [ ] Unknown operation returns structured guidance and available operations.
+- [ ] Alias/deprecation strategy for old operation tool names is documented.

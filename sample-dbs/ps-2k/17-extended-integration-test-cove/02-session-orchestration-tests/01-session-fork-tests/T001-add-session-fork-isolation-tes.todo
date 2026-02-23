@@ -1,0 +1,40 @@
+---
+id: P17.M2.E1.T001
+title: Add session fork isolation test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- integration
+- session
+- fork
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:49:34.969761+00:00'
+started_at: '2026-02-14T04:49:34.969761+00:00'
+completed_at: '2026-02-14T05:02:27.931738+00:00'
+duration_minutes: 12.882699433333332
+---
+
+# Add session fork isolation test
+
+Create integration test verifying that forked sessions are isolated - messages
+in one fork do not affect context in another fork.
+
+## Requirements
+
+- Create test file `test/integration/sessions/fork_isolation_test.exs`
+- Use Groq or OpenRouter (free tier) for real LLM calls
+- Test that forked sessions have independent context
+- Test that both forks can make independent LLM calls
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists at `test/integration/sessions/fork_isolation_test.exs`
+- [ ] Test creates parent session with initial message
+- [ ] Test forks session into two separate forks
+- [ ] Test sends different messages to each fork
+- [ ] Test verifies each fork's response only reflects its own context
+- [ ] Test uses `@moduletag :integration` for filtering
+- [ ] Test skips gracefully if no API keys available

@@ -1,0 +1,38 @@
+---
+id: P13.M2.E2.T002
+title: Integrate Phoenix.PubSub for event broadcast
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T22:50:18.575533+00:00'
+started_at: '2026-02-13T22:50:18.575533+00:00'
+completed_at: '2026-02-13T23:05:48.759252+00:00'
+duration_minutes: 15.503061733333334
+---
+
+# Integrate Phoenix.PubSub for event broadcast
+
+## Description
+
+Replace the manual process-based subscription/broadcast in EventStore with Phoenix.PubSub for better scalability and Phoenix Channels integration. This enables WebSocket clients to subscribe to events.
+
+## Acceptance Criteria
+- [ ] Add Phoenix.PubSub subscription in EventStore.subscribe/2
+- [ ] Use PagServer.PubSub (existing) for topic broadcasting
+- [ ] Maintain topic naming: `"all"`, `"agent:<id>"`, `"session:<id>"`, `"<event_type>"`
+- [ ] Remove manual subscriber tracking in EventStore.State
+- [ ] Remove Process.monitor for dead subscriber cleanup (PubSub handles this)
+- [ ] Broadcast events via PubSub.broadcast/3 in append
+- [ ] Maintain backward compatibility for existing subscribers
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/events/event_store.ex` (lines 187-200, 357-366)
+- Related files: `lib/pag_server_web/endpoint.ex` (PubSub configured)
+- Part of epic: P13.M2.E2 - EventStore Integration

@@ -1,0 +1,34 @@
+id: P34.M1
+name: ClawHub Registry Integration
+status: done
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: ClawHub API Client
+  path: clawhub-api-client
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: API client and backend integration with ClawHub (clawhub.ai) skill
+    registry.
+  locked: false
+- id: E2
+  name: ClawHub Context and API Routes
+  path: clawhub-context-api
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - P34.M1.E1
+  description: Context and API routes for ClawHub registry integration.
+  locked: false
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

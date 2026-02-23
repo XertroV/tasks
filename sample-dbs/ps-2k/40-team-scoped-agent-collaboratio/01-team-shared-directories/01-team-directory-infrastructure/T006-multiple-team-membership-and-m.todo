@@ -1,0 +1,36 @@
+---
+id: P40.M1.E1.T006
+title: Multiple team membership and mount aggregation
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P40.M1.E1.T001
+- P40.M1.E1.T002
+tags:
+- multi-agent
+- teams
+- filesystem
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:32:16.091646+00:00'
+started_at: '2026-02-19T14:32:16.091646+00:00'
+completed_at: '2026-02-19T15:35:35.267811+00:00'
+duration_minutes: 63.31960251666667
+---
+## Description
+Implement support for agents belonging to multiple teams simultaneously. An agent's effective directory view is the union of all their team memberships, each mounted at root level as /team-<name>/. This task covers the membership management API and the aggregation logic that computes the full set of mounts for a given agent.
+
+## Requirements
+- Add/remove agent from team (respecting authorization — only team leaders can add members)
+- Compute effective mount set for an agent: union of all team memberships, each producing a /team-<name>/ mount
+- Handle edge cases: agent removed from team mid-session (unmount or deny access), agent added to team mid-session (add mount)
+- Membership changes should emit events (for replay/forking)
+- Query API: list all teams for a given agent, list all agents in a given team
+
+## Acceptance Criteria
+- Agents can be members of multiple teams concurrently
+- Effective mount computation returns one /team-<name>/ entry per team membership
+- Adding/removing team members emits events for the event store
+- Query APIs work: teams_for_agent/1, agents_in_team/1
+- Edge case: removing an agent from a team removes their access to that team's directory

@@ -1,0 +1,72 @@
+id: P39
+name: pag-connect Companion Support
+status: done
+locked: true
+weeks: 2
+estimate_hours: 15.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Prerequisite Cleanup
+  path: 01-prerequisite-cleanup
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: Clean up existing SSH plugin (rename incomplete remote_agent_spawn
+    tool) and fix Tailscale plugin.json mismatch before building companion infrastructure.
+  locked: false
+- id: M2
+  name: Core Companion Infrastructure
+  path: 02-core-companion-infrastructure
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: In-memory state management (PendingCalls ETS, CompanionRegistry, CompanionSupervisor),
+    WebSocket authentication (CompanionSocket), channel protocol (CompanionChannel),
+    and workspace:companion auth scope.
+  locked: false
+- id: M3
+  name: Tool Routing & API
+  path: 03-tool-routing-api
+  status: done
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: CompanionProxyExecutor for remote tool calls, tool routing decision
+    in ToolRunner, REST API for companion status, integration tests, and mix test.companions
+    alias.
+  locked: false
+- id: M4
+  name: Phase 3 ACP Server-Side Support
+  path: 04-phase-3-acp-server-side-suppor
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: 'pag-server changes to support pag-connect Phase 3 ACP bridge: shared
+    API key validation, UserSocket API key auth, and CompanionChannel management events
+    (list_agents, resolve_main_agent, create_session). Enables pag-connect to connect
+    to agent channels and manage sessions without a JWT exchange endpoint.'
+  locked: false
+- id: M5
+  name: Coding-Assistant Workspace Template & Non-Interactive Bootstrap
+  path: 05-coding-assistant-workspace-tem
+  status: done
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: 'Workspace template for pag-connect coding-assistant provisioning:
+    YAML template with code-assistance system prompt and all local tools enabled,
+    plus non-interactive bootstrap path (POST /api/v1/workspaces/bootstrap with template
+    param) for pag-connect to provision a ready-to-use coding workspace without a
+    questionnaire.'
+  locked: false
+stats:
+  total_tasks: 31
+  done: 31
+  in_progress: 0
+  blocked: 0
+  pending: 0

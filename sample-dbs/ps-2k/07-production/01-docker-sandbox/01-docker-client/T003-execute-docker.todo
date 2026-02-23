@@ -1,0 +1,87 @@
+---
+id: P7.M1.E1.T003
+title: Implement Docker execution
+status: done
+estimate_hours: 2
+complexity: high
+priority: high
+depends_on:
+- P7.M1.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:21:28.222158'
+started_at: '2026-02-06T14:21:28.222158'
+completed_at: '2026-02-06T14:27:22.334861'
+tags:
+- docker
+- sandbox
+- execution
+duration_minutes: 5.901878183333333
+---
+
+# Implement Docker execution
+
+Implement Docker container execution with resource limits and timeout handling.
+
+## Requirements
+
+- [x] Implement `execute_docker/2` function
+- [x] Build Docker args with resource limits:
+  - [x] Memory limit (512MB default)
+  - [x] CPU limit (0.5 cores default)
+  - [x] PID limit (100 processes)
+  - [x] Network isolation (--network none)
+- [x] Mount workspace volume read-write
+- [x] Add timeout with Task.async/Task.yield
+- [x] Handle exit codes and stderr
+- [x] Add proper error handling
+
+## Acceptance Criteria
+
+- [x] Docker execution works with test container
+- [x] Resource limits properly enforced
+- [x] Timeout kills runaway containers
+- [x] Error messages include stdout/stderr
+- [x] Function handles all Docker error cases
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1489-1513 (Docker execution)
+- Task breakdown P7.M1.E1 (Docker Client Integration)
+
+**Key Points**:
+- Use System.cmd with docker CLI (simpler than API)
+- Run containers with --rm for auto-cleanup
+- Timeout default: 30 seconds
+- Workspace volume allows file I/O
+
+## Notes
+
+Implementation from architecture:
+```elixir
+defp execute_docker(command, opts) do
+  timeout = Keyword.get(opts, :timeout, 30_000)
+  workspace = Keyword.get(opts, :workspace, "/workspace")
+
+  docker_args = [
+    "run", "--rm",
+    "-v", "#{workspace}:/workspace:rw",
+    "--network", "none",
+    "--memory", "512m",
+    "--cpus", "0.5",
+    "--pids-limit", "100",
+    "pag-sandbox:latest",
+    "sh", "-c", command
+  ]
+
+  task = Task.async(fn ->
+    System.cmd("docker", docker_args, stderr_to_stdout: true)
+  end)
+
+  case Task.yield(task, timeout) || Task.shutdown(task) do
+    {:ok, {output, 0}} -> {:ok, output}
+    {:ok, {output, code}} -> {:error, {:exit_code, code, output}}
+    nil -> {:error, :timeout}
+  end
+end
+```

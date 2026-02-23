@@ -1,0 +1,37 @@
+---
+id: P37.M2.E1.T003
+title: Implement threads export action
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.878305+00:00'
+started_at: '2026-02-19T04:21:05.878305+00:00'
+completed_at: '2026-02-19T04:43:51.893271+00:00'
+duration_minutes: 22.76691578333333
+---
+Implement action_export/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "export", hint: "Export implementation pending"}
+
+The Export module is already aliased: alias PagServer.Context.Export
+
+Required args: thread_id
+Optional args:
+  - format ("markdown" | "json" | "text", default "markdown")
+  - include_tool_calls (boolean, default false)
+  - include_thinking (boolean, default false)
+
+Behaviour:
+- Look up session
+- Call the appropriate Export function to render the session messages
+- Return the export as a string in the result map
+- Return: %{action: "export", thread_id: id, format: format, content: "...", message_count: integer}
+
+Check: lib/pag_server/context/export.ex for available export functions and formats
+
+Tests: markdown export, json export, empty session, with tool calls, unknown thread_id
+File: lib/pag_server/plugins/agent_tools/threads.ex

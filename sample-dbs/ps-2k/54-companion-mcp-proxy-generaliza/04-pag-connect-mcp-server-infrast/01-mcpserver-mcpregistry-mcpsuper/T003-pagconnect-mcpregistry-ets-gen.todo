@@ -1,0 +1,26 @@
+---
+id: P54.M4.E1.T003
+title: PagConnect.MCPRegistry ETS GenServer
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P54.M4.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:24:46.009213+00:00'
+started_at: '2026-02-21T12:24:46.009213+00:00'
+completed_at: '2026-02-21T12:27:16.270900+00:00'
+duration_minutes: 2.504361166666667
+---
+## Acceptance Criteria
+- [ ] PagConnect.MCPRegistry at lib/pag_connect/mcp_registry.ex
+- [ ] ETS table :pag_connect_mcp_registry; key: server_name string -> {pid, [tool_schema_map]}
+- [ ] register(server_name, pid, tools) -> :ok; monitors pid via Process.monitor
+- [ ] lookup(server_name) -> {:ok, pid, tools} | {:error, :not_found}
+- [ ] list_all() -> [%{name: string, pid: pid, tools: [map]}] for all live entries
+- [ ] On :DOWN, automatically removes entry for that pid
+- [ ] Added to PagConnect.Application supervision tree (after Config, before MCPSupervisor)
+- [ ] Tests in test/pag_connect/mcp_registry_test.exs: register/lookup round-trip, list_all, process monitor cleanup
+- [ ] mix compile passes

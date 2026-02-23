@@ -1,0 +1,29 @@
+---
+id: B154
+title: "AgentServer missing handle_cast for {:agent_message, ...} \u2014 SendMessage\
+  \ directive silently dropped"
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- directive
+- send_message
+- agent_server
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.849112+00:00'
+started_at: '2026-02-19T04:21:05.849112+00:00'
+completed_at: '2026-02-19T04:43:10.701298+00:00'
+duration_minutes: 22.080869533333335
+---
+The SendMessage directive executor (send_message_impl.ex line 85) sends:
+  GenServer.cast(target_pid, {:agent_message, message})
+
+But AgentServer has no handle_cast({:agent_message, ...}, state) clause. The cast falls through to the catch-all handle_info (agent_server.ex line 1229–1231) which logs a warning and discards the message. Agent-to-agent messaging via the SendMessage directive is silently broken.
+
+Fix required:
+- Add handle_cast({:agent_message, message}, state) to agent_server.ex
+- Route it through queue_message logic (or inject directly into the message queue) with role: :user and source: :agent
+- Emit appropriate telemetry/broadcast event
+- Add a test: two agents, one sends SendMessage directive to the other, verify the message appears in the target's queue/context

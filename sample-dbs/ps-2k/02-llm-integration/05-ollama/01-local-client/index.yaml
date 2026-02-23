@@ -1,0 +1,57 @@
+id: P2.M5.E1
+name: Local Client
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-ollama-module.todo
+  title: Create Ollama HTTP client module
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+- id: T002
+  file: T002-chat-api.todo
+  title: Implement /api/chat endpoint
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P2.M5.E1.T001
+- id: T003
+  file: T003-streaming.todo
+  title: Add streaming response handling
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P2.M5.E1.T002
+- id: T004
+  file: T004-tests.todo
+  title: Write Ollama client tests
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P2.M5.E1.T003
+- id: T005
+  file: T005-register-ollama-provider-in-ll.todo
+  title: Register Ollama provider in LLM registry and application config
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P2.M5.E1.T001
+  - P2.M1.E1.T002
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

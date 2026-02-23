@@ -1,0 +1,58 @@
+---
+id: P11.M2.E1.T001
+title: Create tools listing endpoint
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T07:40:51.781553+00:00'
+started_at: '2026-02-12T07:40:51.781553+00:00'
+completed_at: '2026-02-12T07:51:21.299180+00:00'
+duration_minutes: 10.49196015
+---
+
+# Create tools listing endpoint
+
+
+
+## Requirements
+
+- [ ] Create `GET /api/v1/tools` endpoint returning available tools
+- [ ] List all registered tools with basic metadata (id, name, description)
+- [ ] Support pagination with `limit` and `offset` query parameters
+- [ ] Support filtering by `category` and `enabled` status
+- [ ] Return JSON response with tool objects and pagination metadata
+- [ ] Implement proper error handling for invalid query parameters
+
+## Acceptance Criteria
+
+- [ ] Endpoint returns 200 with paginated tool list
+- [ ] Response includes at least: id, name, description, category, enabled, created_at
+- [ ] Default pagination limit is 20, max is 100
+- [ ] Filter by category works (e.g., `?category=file-system`)
+- [ ] Filter by enabled status works (e.g., `?enabled=true`)
+- [ ] Invalid query parameters return 400 with descriptive error
+- [ ] Endpoint is authenticated and rate-limited
+- [ ] Tests cover all filters and pagination edge cases
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-12 07:40 UTC
+**Sibling tasks**: P11.M2.E1.T002, P11.M2.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M2.E1.T001 → P11.M2.E1.T002 → P11.M2.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M2.E1.T001: .tasks/11-api-first-configuration-system/02-tools-capabilities-management/01-tools-discovery-api/T001-create-tools-listing-endpoint.todo
+- P11.M2.E1.T002: .tasks/11-api-first-configuration-system/02-tools-capabilities-management/01-tools-discovery-api/T002-add-tool-schema-introspection.todo
+- P11.M2.E1.T003: .tasks/11-api-first-configuration-system/02-tools-capabilities-management/01-tools-discovery-api/T003-implement-tool-search-and-filt.todo

@@ -1,0 +1,37 @@
+---
+id: P15.M4.E3.T002
+title: Implement retry/alternative path/escalate
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M4.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T15:40:16.598447+00:00'
+started_at: '2026-02-13T15:40:16.598447+00:00'
+completed_at: '2026-02-13T17:21:14.969939+00:00'
+duration_minutes: 100.97285796666667
+---
+
+# Implement retry/alternative path/escalate
+
+## Description
+Implement the recovery strategies: automatic retry with exponential backoff, alternative path execution, and user escalation. Handle each failure type appropriately.
+
+## Acceptance Criteria
+- [ ] Implement `execute_recovery(goal, failure, strategy)` function
+- [ ] Add retry with configurable max attempts and backoff
+- [ ] Support alternative sub-goal selection on failure
+- [ ] Implement user escalation with notification
+- [ ] Add recovery action logging and events
+- [ ] Handle recovery exhaustion (max retries reached)
+- [ ] Support manual recovery trigger via API
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/goals/recovery.ex`, `lib/pag_server/schema/goal.ex`, `lib/pag_server/agents/agent.ex`
+- Part of epic: Failure Recovery
+- Integrate with agent notification system

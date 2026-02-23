@@ -1,0 +1,29 @@
+id: P12.M2
+name: Test Performance
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Replace Process.sleep with injectable sleep-fn
+  path: 01-replace-process-sleep-with-inj
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Optimize Slow Tests
+  path: 02-optimize-slow-tests
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

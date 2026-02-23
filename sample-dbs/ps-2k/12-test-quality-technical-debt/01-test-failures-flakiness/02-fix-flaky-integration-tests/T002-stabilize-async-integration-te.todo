@@ -1,0 +1,36 @@
+---
+id: P12.M1.E2.T002
+title: Stabilize async integration tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:01:24.240220+00:00'
+started_at: '2026-02-13T19:01:24.240220+00:00'
+completed_at: '2026-02-13T19:10:19.008634+00:00'
+duration_minutes: 8.912806716666667
+---
+
+# Stabilize async integration tests
+
+## Description
+
+Fix flaky async integration tests that fail intermittently due to race conditions or timing issues. Use proper synchronization patterns instead of relying on fixed delays.
+
+## Acceptance Criteria
+
+- [ ] Identify all flaky async integration tests (review CI failure patterns)
+- [ ] Replace `Process.sleep` with proper synchronization (assert_receive, refs, etc.)
+- [ ] Use unique names/resources to prevent test contamination
+- [ ] All previously flaky tests pass 10 consecutive runs
+- [ ] Follow patterns in `TEST_CONTAMINATION_INDEX.md`
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/integrations/` directory
+- Reference: `TEST_CONTAMINATION_INDEX.md` for contamination prevention patterns
+- Part of epic: Fix Flaky Integration Tests

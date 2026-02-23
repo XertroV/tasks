@@ -1,0 +1,60 @@
+---
+id: P9.M5.E2.T002
+title: Implement HookDispatcher GenServer for event-driven hook dispatch
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E2.T001
+- P9.M5.E1.T004
+tags:
+- hooks
+- dispatcher
+- genserver
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:08:28.606934'
+started_at: '2026-02-06T17:08:28.606934'
+completed_at: '2026-02-06T17:13:25.827245'
+duration_minutes: 4.953671666666667
+---
+
+# Implement HookDispatcher GenServer for event-driven hook dispatch
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/hook_dispatcher.ex` as a GenServer
+- [ ] Maintain handler registry: map of event_type -> list of {plugin_name, handler_fn, priority, mode}
+- [ ] Implement handler registration API:
+  - [ ] `register_handler/4` - (plugin_name, event_type, handler_fn, opts \\ [])
+  - [ ] `unregister_handler/2` - (plugin_name, event_type)
+  - [ ] `unregister_all/1` - Remove all handlers for a plugin
+- [ ] Implement dispatch functions:
+  - [ ] `dispatch_sync/1` - Fire sync handlers in priority order, collect results
+  - [ ] `dispatch_async/1` - Fire async handlers concurrently (fire-and-forget)
+- [ ] Support handler modes:
+  - [ ] `:sync` - Blocking, can return `:allow`, `:deny`, or `{:modify, data}` to alter event data
+  - [ ] `:async` - Non-blocking, fire-and-forget via Task.Supervisor
+- [ ] Implement per-handler timeout protection (configurable, default 5000ms)
+- [ ] Aggregate sync handler results: first `:deny` short-circuits; `:modify` results chain through
+- [ ] Emit telemetry for dispatch timing and handler errors
+
+## Acceptance Criteria
+
+- [ ] Handlers register and dispatch correctly for each event type
+- [ ] Sync handlers execute in priority order (lower number = higher priority)
+- [ ] Sync `:deny` response short-circuits remaining handlers
+- [ ] Sync `:modify` responses chain data through subsequent handlers
+- [ ] Async handlers don't block the dispatch caller
+- [ ] Handler timeout kills slow handlers and returns error (doesn't crash dispatcher)
+- [ ] Unit tests cover: registration, priority ordering, deny/modify/allow flows, timeout handling
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/hook_dispatcher.ex`
+- **Depends on**: `PagServer.Plugins.HookEvent` (T001), `PagServer.Plugins.Registry` (E1.T004)
+- **Supervision**: Should be started under `PagServer.Plugins.Supervisor`
+- **Used by**: All hook integration points (T003-T006), plugin lifecycle (enable/disable registers/unregisters handlers)
+- **Pattern reference**: Similar dispatch pattern to Phoenix.PubSub but with sync/priority support

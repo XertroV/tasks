@@ -1,0 +1,26 @@
+---
+id: P54.M1.E1.T005
+title: 'Tests: verify P53 behavior preserved after adapter refactor'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P54.M1.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:47:37.740887+00:00'
+started_at: '2026-02-21T10:47:37.740887+00:00'
+completed_at: '2026-02-21T10:50:30.520124+00:00'
+duration_minutes: 2.879653783333333
+---
+## Context
+After the adapter extraction refactor, all existing P53 behavior must be preserved. This task runs the full P53 test suite and adds new adapter-dispatch unit tests.
+
+## Acceptance Criteria
+- [ ] All existing tests pass: companion_proxy_executor_test.exs, browsermcp_flow_integration_test.exs, companion_channel_test.exs, tool_runner_companion_routing_test.exs, companion_registry_test.exs, pending_calls_test.exs, workspace_companion_controller_test.exs
+- [ ] New unit tests for `CompanionToolAdapter` default implementations
+- [ ] New unit tests for `BrowserMcpAdapter`: authorize returns error for unknown action, authorize blocks cross-workspace, pre_execute enriches payload with browser_session_id, post_execute cleans up on error, normalize_error delegates to BrowserErrorMapper
+- [ ] New unit test for adapter_for/1 dispatch: "browsermcp" -> BrowserMcpAdapter, unknown -> default adapter
+- [ ] `mix test.companions` (or equivalent) passes, output captured in recent-mix-tests.log
+- [ ] `mix lint` passes

@@ -1,0 +1,41 @@
+---
+id: P46.M3.E3.T001
+title: Implement remember-me cookie with configurable TTL
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P46.M1.E2.T003
+- P46.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:09:39.022166+00:00'
+started_at: '2026-02-20T05:09:39.022166+00:00'
+completed_at: '2026-02-20T05:21:06.096629+00:00'
+duration_minutes: 11.451240833333333
+---
+Implement persistent remember-me sessions:
+1. After successful OAuth login, create a remember_me token via Accounts.create_remember_me_token/1 (32 random bytes, stored in user_tokens with context: 'remember_me')
+2. Set a persistent cookie 'pag_remember_me' with the token (base64-encoded, httpOnly, secure, same_site: Lax). TTL from config :pag_server, :auth, :remember_me_ttl (default: 30 days).
+3. In RequireLogin plug: if Pow session missing but 'pag_remember_me' cookie present → call Accounts.get_user_by_remember_me_token/1 → if valid user found, call Accounts.create_session_token/1, set new Pow session, rotate the remember_me cookie (new token, delete old one from DB).
+4. On logout: delete both the session token AND the remember_me token from DB. Clear the cookie.
+5. On 'delete all sessions' (future settings feature): delete all user_tokens for the user.
+Acceptance: After OAuth login, closing and reopening browser still shows as logged in (within TTL). Logout clears persistent cookie.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-20 05:09 UTC
+**Sibling tasks**: P46.M3.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M3.E3.T001 → P46.M3.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M3.E3.T001: .tasks/46-user-authentication-identity/03-web-session-route-protection/03-remember-me-session-lifecycle/T001-implement-remember-me-cookie-w.todo
+- P46.M3.E3.T002: .tasks/46-user-authentication-identity/03-web-session-route-protection/03-remember-me-session-lifecycle/T002-add-session-token-cleanup-work.todo

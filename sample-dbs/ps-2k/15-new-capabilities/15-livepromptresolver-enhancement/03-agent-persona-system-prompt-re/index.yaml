@@ -1,0 +1,46 @@
+id: P15.M15.E3
+name: Agent-Persona System Prompt Rewrite
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-rewrite-agent-persona-agent-te.todo
+  title: 'Rewrite agent-persona agent template system_prompt (Section 1: Existence)'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-rewrite-agent-persona-workspac.todo
+  title: Rewrite agent-persona workspace template prompt_template (Sections 2-12)
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-update-docs-agent-persona-syst.todo
+  title: Update docs/AGENT_PERSONA_SYSTEM.md for prompt rewrite
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-tests-for-updated-agent-person.todo
+  title: Tests for updated agent-persona templates
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

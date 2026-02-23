@@ -1,0 +1,37 @@
+---
+id: P15.M4.E1.T002
+title: Implement goal decomposition logic
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M4.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T07:52:09.588346+00:00'
+started_at: '2026-02-13T07:52:09.588346+00:00'
+completed_at: '2026-02-13T08:26:41.432258+00:00'
+duration_minutes: 34.530731700000004
+---
+
+# Implement goal decomposition logic
+
+## Description
+Implement logic for decomposing high-level goals into sub-goals. Support LLM-assisted decomposition and manual decomposition with dependency inference.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Goals.Decomposer` module
+- [ ] Implement `decompose(goal, opts)` function returning sub-goals
+- [ ] Add LLM-assisted decomposition using agent's model
+- [ ] Support manual decomposition with sub-goal specification
+- [ ] Implement dependency inference between sub-goals
+- [ ] Add decomposition validation (no circular dependencies)
+- [ ] Store decomposition as events for replay
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/goal.ex`, `lib/pag_server/agents/agent.ex`, `lib/pag_server/llm/` (providers)
+- Part of epic: Goal Decomposition
+- Integrate with existing agent LLM infrastructure

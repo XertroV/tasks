@@ -1,0 +1,39 @@
+---
+id: P37.M1.E1.T003
+title: Implement threads status action
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.869693+00:00'
+started_at: '2026-02-19T04:21:05.869693+00:00'
+completed_at: '2026-02-19T04:43:32.226868+00:00'
+duration_minutes: 22.43928605
+---
+Implement action_status/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "status", hint: "Status implementation pending"}
+
+Required args: thread_id
+
+Behaviour:
+- Look up session by thread_id (with_thread/3 already handles this)
+- Query the associated agent (if any) via AgentRegistry or AgentServer to get live runtime status
+- Return a rich status map:
+  %{
+    action: "status",
+    thread_id: id,
+    session_status: "active" | "paused" | "completed" | "failed",
+    agent_id: id | nil,
+    agent_status: "idle" | "running" | "waiting_for_tool" | nil,
+    last_activity_at: datetime,
+    message_count: integer,
+    current_model: %{provider: ..., model: ...} | nil
+  }
+- If the agent process is not alive (session completed/failed), return session DB state only
+
+Tests: active session with live agent, completed session, failed session, unknown thread_id
+File: lib/pag_server/plugins/agent_tools/threads.ex

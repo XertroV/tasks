@@ -1,0 +1,22 @@
+---
+id: P54.M5.E1.T002
+title: 'plugins/browser_mcp/README.md: user-facing setup guide'
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:50:33.996828+00:00'
+started_at: '2026-02-21T12:50:33.996828+00:00'
+completed_at: '2026-02-21T12:50:59.156610+00:00'
+duration_minutes: 0.41932955
+---
+## Acceptance Criteria
+- [ ] plugins/browser_mcp/README.md created
+- [ ] Prerequisites: Chrome/Chromium, BrowserMCP extension (link), Bun runtime (curl -fsSL https://bun.sh/install | bash)
+- [ ] Local mode section: enable plugin, verify bunx @browsermcp/mcp@latest works, example agent prompt using browsermcp.navigate
+- [ ] Remote mode (pag-connect) section: configure [[mcp_servers]] in pag-connect config.toml, install BrowserMCP extension, connect companion
+- [ ] Available tools table: all tool names (browsermcp.navigate, browsermcp.click, etc.) with one-line descriptions
+- [ ] Troubleshooting: extension not connected, companion not registered, bunx not found

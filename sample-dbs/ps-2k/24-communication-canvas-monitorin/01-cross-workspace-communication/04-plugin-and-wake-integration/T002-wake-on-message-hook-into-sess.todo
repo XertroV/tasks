@@ -1,0 +1,27 @@
+---
+id: P24.M1.E4.T002
+title: Wake-on-message hook into session activation
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:05.426329+00:00'
+started_at: '2026-02-18T17:04:05.426329+00:00'
+completed_at: '2026-02-18T17:04:06.864303+00:00'
+duration_minutes: 0.023966066666666667
+---
+
+# Wake-on-message hook into session activation
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

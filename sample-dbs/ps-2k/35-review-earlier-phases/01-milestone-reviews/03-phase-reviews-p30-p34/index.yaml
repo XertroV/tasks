@@ -1,0 +1,86 @@
+id: P35.M1.E3
+name: Phase Reviews P30-P34
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p30-m1-plugin-marketpla.todo
+  title: 'Review P30.M1: Plugin Marketplace Registry API'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p30-m2-plugin-developme.todo
+  title: 'Review P30.M2: Plugin Development Skill & Docs'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T003
+  file: T003-review-p31-m1-ssh-remote-agent.todo
+  title: 'Review P31.M1: SSH Remote Agent'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-review-p31-m2-telegram-whisper.todo
+  title: 'Review P31.M2: Telegram Whisper STT'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-review-p32-m1-delete-file-cons.todo
+  title: 'Review P32.M1: Delete File Consensus'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-review-p33-m1-pag-mascot-syste.todo
+  title: 'Review P33.M1: Pag Mascot System'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T007
+  file: T007-review-p34-m1-clawhub-registry.todo
+  title: 'Review P34.M1: ClawHub Registry Integration'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T008
+  file: T008-review-p34-m2-skill-format-par.todo
+  title: 'Review P34.M2: Skill Format Parser'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-review-p34-m3-webui-skill-brow.todo
+  title: 'Review P34.M3: WebUI Skill Browser'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 9
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 9

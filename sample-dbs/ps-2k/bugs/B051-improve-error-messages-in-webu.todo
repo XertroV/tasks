@@ -1,0 +1,19 @@
+---
+id: B051
+title: 'Improve error messages in webui, eg i got this but not sure how to fix: Provider
+  request failed: %{reason: %PagServer.LLM.OpenAI.Error{type: :api_error, message:
+  "Failed to authenticate request with Clerk", status: 502, code: 502, ...}, ...}'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T03:43:49.029704+00:00'
+started_at: '2026-02-16T03:43:49.029704+00:00'
+completed_at: '2026-02-16T03:56:40.972285+00:00'
+duration_minutes: 12.865709533333334
+---
+
+Improve error messages in webui, eg i got this but not sure how to fix: Provider request failed: %{reason: %PagServer.LLM.OpenAI.Error{type: :api_error, message: "Failed to authenticate request with Clerk", status: 502, code: 502, ...}, ...}

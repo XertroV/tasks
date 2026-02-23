@@ -1,0 +1,80 @@
+---
+id: P5.M2.E1.T001
+title: Create Session.fork function
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T10:04:27.564534+00:00'
+tags:
+- phase-5
+- session-advanced
+- 2_session_forking
+started_at: '2026-02-07T10:04:27.564534+00:00'
+completed_at: '2026-02-07T10:08:51.607387+00:00'
+duration_minutes: 4.400714033333333
+---
+
+# Create Session.fork function
+
+Duplicate session with parent_id reference
+
+## Requirements
+
+- [ ] Implement core functionality
+- [ ] Add proper error handling
+- [ ] Write comprehensive tests
+- [ ] Update documentation
+
+## Acceptance Criteria
+
+- [ ] Unit tests pass (>85% coverage)
+- [ ] Integration tests pass
+- [ ] No compilation warnings
+- [ ] `mix credo` passes
+- [ ] Code follows architecture guidelines (.plan/architecture.md)
+- [ ] Module size <500 LoC (hard limit 1000)
+- [ ] Function size <30 lines (hard limit 50)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 5 (Message Queue) or Section 7 (Session Management)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Module organization
+
+**Key Points**:
+- Follow event sourcing pattern - emit events for all state changes
+- Use bounded data structures (no unbounded queues/lists)
+- Memory efficiency: Use iolists for streaming, not string concatenation
+- Test both happy path and error cases
+
+## Notes
+
+Related modules:
+- `PagServer.Agents.Agent` - Main GenServer
+- `PagServer.Sessions.Session` - Session management
+- `PagServer.Events.Store` - Event persistence
+
+Refer to architecture docs for module responsibilities and file size limits.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P5.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 10:04 UTC
+**Sibling tasks**: P5.M02.E1.T002, P5.M02.E1.T003, P5.M02.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P5.M02.E1.T001 → P5.M02.E1.T002 → P5.M02.E1.T003 → P5.M02.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P5.M02.E1.T001: .tasks/05-session-advanced/02-session-forking/01-fork-logic/T001-create-session.fork-function.todo
+- P5.M02.E1.T002: .tasks/05-session-advanced/02-session-forking/01-fork-logic/T002-copy-session-metadata.todo
+- P5.M02.E1.T003: .tasks/05-session-advanced/02-session-forking/01-fork-logic/T003-set-fork-point-marker.todo
+- P5.M02.E1.T004: .tasks/05-session-advanced/02-session-forking/01-fork-logic/T004-test-fork-creation.todo

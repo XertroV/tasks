@@ -1,0 +1,46 @@
+id: P15.M2.E6
+name: Session and Agent Settings Panels
+status: pending
+estimate_hours: 5.5
+complexity: high
+depends_on:
+- P15.M2.E5
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-session-settings-pan.todo
+  title: Implement session settings panel (select + edit + persist)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E5.T002
+  - P15.M2.E4.T004
+- id: T002
+  file: T002-implement-agent-settings-panel.todo
+  title: Implement agent settings panel (select + edit + persist)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M2.E5.T002
+  - P15.M2.E4.T004
+- id: T003
+  file: T003-add-test-coverage-for-global-s.todo
+  title: Add test coverage for global/session/agent settings workflows
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P15.M2.E6.T001
+  - P15.M2.E6.T002
+  - P15.M2.E5.T003
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

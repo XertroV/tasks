@@ -1,0 +1,37 @@
+id: P13.M3
+name: Backpressure & Error Handling
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Agent Startup Backpressure
+  path: 01-agent-startup-backpressure
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Thinking Phase Protocol
+  path: 02-thinking-phase-protocol
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Structured Error Types
+  path: 03-structured-error-types
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

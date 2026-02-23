@@ -1,0 +1,41 @@
+id: P44.M4
+name: Plugin Command Extensibility
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Plugin API Command Registration
+  path: 01-plugin-api-command-registratio
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Plugin Lifecycle Integration
+  path: 02-plugin-lifecycle-integration
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Plugin Manifest Commands Capability
+  path: 03-plugin-manifest-commands-capab
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

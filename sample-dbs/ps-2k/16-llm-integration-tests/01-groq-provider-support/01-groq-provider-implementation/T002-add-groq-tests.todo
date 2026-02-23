@@ -1,0 +1,40 @@
+---
+id: P16.M1.E1.T002
+title: Add Groq tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T001
+tags:
+- llm
+- provider
+- groq
+- test
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:38:51.936953+00:00'
+started_at: '2026-02-14T02:38:51.936953+00:00'
+completed_at: '2026-02-14T02:50:19.364225+00:00'
+duration_minutes: 11.457121033333333
+---
+
+# Add Groq tests
+
+Add unit tests for Groq provider module.
+
+## Requirements
+
+- Unit tests for Groq provider in `test/pag_server/llm/providers/groq_test.exs`
+- Tests should mock HTTP requests using existing patterns
+- Cover all Provider behaviour callbacks
+
+## Acceptance Criteria
+
+- [ ] Unit tests exist for `chat/3`
+- [ ] Unit tests exist for `stream_chat/3`
+- [ ] Unit tests exist for `count_tokens/2`
+- [ ] Unit tests exist for `get_pricing/1`
+- [ ] Unit tests exist for `supports_streaming?/1`
+- [ ] Unit tests exist for `supports_tools?/1`
+- [ ] All tests pass

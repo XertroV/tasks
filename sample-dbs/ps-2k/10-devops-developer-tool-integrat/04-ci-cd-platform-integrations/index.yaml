@@ -1,0 +1,45 @@
+id: P10.M4
+name: CI/CD Platform Integrations
+status: pending
+estimate_hours: 20.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: CircleCI Integration
+  path: 01-circleci-integration
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Jenkins Integration
+  path: 02-jenkins-integration
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E3
+  name: Drone CI Integration
+  path: 03-drone-ci-integration
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Generic CI/CD Webhook Handler
+  path: 04-generic-ci-cd-webhook-handler
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

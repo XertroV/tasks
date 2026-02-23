@@ -1,0 +1,41 @@
+id: P15.M8.E1
+name: Template Validation Hardening
+status: pending
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-extract-shared-template-consta.todo
+  title: Extract shared template constants to PagServer.Templates.Shared
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-variable-cross-validation.todo
+  title: Add variable cross-validation between questionnaire, variables map, and default
+    files
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M8.E1.T001
+- id: T003
+  file: T003-use-or-remove-unused-questionn.todo
+  title: Use or remove unused questionnaire variables in built-in templates
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M8.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

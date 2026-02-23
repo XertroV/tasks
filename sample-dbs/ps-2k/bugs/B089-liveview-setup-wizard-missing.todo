@@ -1,0 +1,50 @@
+---
+id: B089
+title: LiveView setup wizard missing workspace ownership verification
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- security
+- webui
+- setup-wizard
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:28:00.844919+00:00'
+started_at: '2026-02-17T11:28:00.844919+00:00'
+completed_at: '2026-02-17T11:40:48.559024+00:00'
+duration_minutes: 12.795234866666668
+---
+select_workspace event handler in setup_wizard.ex:211 accepts workspace_id from form params without verifying user ownership. With maybe_authenticate (which allows current_user: nil), any user can switch to any workspace and modify its settings.
+
+## Fix
+Add ownership verification in select_workspace and all workspace-mutating event handlers.
+
+## Acceptance Criteria
+- [ ] select_workspace verifies user owns workspace
+- [ ] Workspace-mutating events check ownership
+- [ ] Test that user cannot select another user's workspace
+
+Source: E4 Audit C1
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 11:28 UTC
+**Primary task**: B086 - Absolute path injection in workspace template tracked file validation
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

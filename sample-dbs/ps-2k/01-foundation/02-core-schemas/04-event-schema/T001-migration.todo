@@ -1,0 +1,106 @@
+---
+id: P1.M2.E4.T001
+title: Create events table migration
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- migration
+- database
+- event-sourcing
+- core-schema
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:19:41.362708'
+started_at: '2026-02-05T08:19:41.362708'
+completed_at: '2026-02-05T08:20:57.674242'
+---
+
+# Create events table migration
+
+Create an append-only events table for event sourcing with support for payload compression.
+
+## Requirements
+
+- [ ] Run `mix ecto.gen.migration create_events` to generate migration file
+- [ ] Define events table schema with the following fields:
+  - [ ] `id` - bigserial primary key (regular integer, NOT UUID)
+  - [ ] `event_type` - string, not null (e.g., "message_added", "context_built")
+  - [ ] `agent_id` - bigint foreign key to agents table, nullable (some events may not be agent-specific)
+  - [ ] `session_id` - bigint foreign key to sessions table, nullable (some events may not be session-specific)
+  - [ ] `payload` - map/jsonb, not null (event data as JSON)
+  - [ ] `payload_compressed` - binary, nullable (zstd-compressed payload for large events)
+  - [ ] `inserted_at` - timestamp, not null (NO `updated_at` - append-only!)
+- [ ] Add indexes:
+  - [ ] `[:agent_id]` - query events by agent
+  - [ ] `[:session_id]` - query events by session
+  - [ ] `[:event_type]` - filter by event type
+  - [ ] `[:inserted_at]` - temporal queries and replay
+- [ ] Add foreign key constraints with `on_delete: :delete_all` for agent_id and session_id
+- [ ] Add comment to table: "Append-only event log for event sourcing and session replay"
+
+## Acceptance Criteria
+
+- [ ] Migration file created in `priv/repo/migrations/`
+- [ ] `mix ecto.migrate` runs successfully
+- [ ] Table structure verified in database:
+  - [ ] All fields present with correct types
+  - [ ] All indexes created
+  - [ ] Foreign key constraints active
+  - [ ] No `updated_at` column exists (append-only enforcement)
+- [ ] `mix ecto.rollback` works correctly
+- [ ] Can insert test event records
+- [ ] Attempting to update a record works (no DB constraint prevents it, but application logic will)
+- [ ] Payload compression field available for future use
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 242-250 (Events table schema)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 3.2 (Event Sourcing)
+
+**Key Points**:
+- **Append-only**: This table should never have records updated or deleted in normal operation
+- **Event sourcing**: Every state change emits an immutable event for replay/debugging
+- **Bigserial IDs**: Use auto-incrementing integers for strict temporal ordering
+- **Compression**: Large payloads (e.g., full context snapshots) can use zstd compression
+- **Nullable FKs**: Some events (e.g., system events) may not belong to specific agents/sessions
+
+**Dependencies**:
+- Requires sessions table from P1.M2.E2 (session FK)
+- Requires agents table from P1.M2.E1 (agent FK)
+
+## Notes
+
+Example migration structure:
+```elixir
+defmodule PAGServer.Repo.Migrations.CreateEvents do
+  use Ecto.Migration
+
+  def change do
+    create table(:events) do
+      add :event_type, :string, null: false
+      add :agent_id, references(:agents, on_delete: :delete_all)
+      add :session_id, references(:sessions, on_delete: :delete_all)
+      add :payload, :map, null: false
+      add :payload_compressed, :binary
+      
+      # Append-only: only inserted_at, no updated_at
+      timestamps(updated_at: false)
+    end
+
+    create index(:events, [:agent_id])
+    create index(:events, [:session_id])
+    create index(:events, [:event_type])
+    create index(:events, [:inserted_at])
+  end
+end
+```
+
+The `bigserial` primary key provides strict temporal ordering - lower IDs always precede higher IDs, which is critical for deterministic replay.
+
+Consider adding a partial index for compressed events later if needed:
+```elixir
+create index(:events, [:id], where: "payload_compressed IS NOT NULL")
+```

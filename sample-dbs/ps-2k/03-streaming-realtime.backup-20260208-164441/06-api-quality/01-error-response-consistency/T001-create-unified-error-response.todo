@@ -1,0 +1,99 @@
+---
+id: P3.M6.E1.T001
+title: Create unified error response helper
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- error-handling
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-07T00:36:27.408315+00:00'
+started_at: '2026-02-07T00:36:27.408315+00:00'
+completed_at: '2026-02-07T00:44:31.849038+00:00'
+duration_minutes: 8.074011666666667
+---
+
+# Create unified error response helper
+
+## Context
+
+The API currently has 4 different error response shapes across plugs and controllers:
+- `%{error: code, message: msg}` (auth plugs, AuthController)
+- `%{errors: %{detail: msg}}` (FallbackController 404)
+- `%{errors: %{field: [msgs]}}` (changeset errors)
+- `%{status: "error", message: msg}` (AdminAuth, PricingController)
+
+This task creates a single helper module and standardizes on one format.
+
+## Requirements
+
+- [ ] Create `PagServerWeb.ErrorHelpers` module
+  - [ ] `error_response(conn, status, code, message)` - basic error
+  - [ ] `error_response(conn, status, code, message, opts)` - with optional `details` map and `field_errors` map
+  - [ ] Standard shape: `%{error: "code_string", message: "Human-readable text"}`
+  - [ ] Optional keys: `details` (map), `field_errors` (map of field -> [messages])
+  - [ ] Helper always calls `put_status/2`, `json/2`, and `halt/1`
+  - [ ] Never return HTTP 200 for error conditions
+- [ ] Implement `Plug.Exception` protocol for `PagServer.Auth.ForbiddenError`
+  - [ ] Must produce HTTP 403, not 500
+  - [ ] Include `error: "forbidden"` code in response
+- [ ] Expand `FallbackController` to handle additional error tuples
+  - [ ] `{:error, :unauthorized}` -> 401
+  - [ ] `{:error, :forbidden}` -> 403
+  - [ ] `{:error, :not_found}` -> 404
+  - [ ] `{:error, %Ecto.Changeset{}}` -> 422 with field_errors
+  - [ ] `{:error, reason}` (generic atom/string) -> 500 or appropriate status
+- [ ] Create shared `changeset_errors/1` function (currently duplicated in FallbackController, ApiKeyJSON, and PricingController)
+- [ ] Update `PagServerWeb.Schemas.Common.ErrorResponse` OpenApiSpex schema to match the actual format
+- [ ] Write tests for ErrorHelpers module
+- [ ] Write tests for ForbiddenError Plug.Exception implementation
+
+## Acceptance Criteria
+
+- [ ] Single `ErrorHelpers` module provides all error response functions
+- [ ] `ForbiddenError` raises produce 403 responses, not 500
+- [ ] FallbackController handles `:unauthorized`, `:forbidden`, `:not_found`, changeset, and generic errors
+- [ ] Changeset error rendering exists in exactly one place
+- [ ] `ErrorResponse` OpenApiSpex schema matches the implemented format
+- [ ] All tests pass
+- [ ] No endpoint returns HTTP 200 for error conditions
+
+## Implementation Guide
+
+```elixir
+defmodule PagServerWeb.ErrorHelpers do
+  @moduledoc "Unified error response helpers for all API endpoints."
+  import Plug.Conn
+  import Phoenix.Controller, only: [json: 2]
+
+  def error_response(conn, status, code, message, opts \\ []) do
+    body = %{error: code, message: message}
+    body = if opts[:details], do: Map.put(body, :details, opts[:details]), else: body
+    body = if opts[:field_errors], do: Map.put(body, :field_errors, opts[:field_errors]), else: body
+
+    conn
+    |> put_status(status)
+    |> json(body)
+    |> halt()
+  end
+
+  def changeset_errors(%Ecto.Changeset{} = changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+      Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
+    end)
+  end
+end
+```
+
+## Files to Create/Modify
+
+- `lib/pag_server_web/helpers/error_helpers.ex` (new)
+- `lib/pag_server_web/controllers/fallback_controller.ex` (expand)
+- `lib/pag_server/auth/forbidden_error.ex` (add Plug.Exception impl)
+- `lib/pag_server_web/schemas/common.ex` (update ErrorResponse)
+- `test/pag_server_web/helpers/error_helpers_test.exs` (new)

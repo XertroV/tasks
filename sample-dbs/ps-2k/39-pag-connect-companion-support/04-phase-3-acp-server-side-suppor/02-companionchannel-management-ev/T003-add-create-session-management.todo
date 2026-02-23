@@ -1,0 +1,16 @@
+---
+id: P39.M4.E2.T003
+title: Add create_session management event to CompanionChannel
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:52:13.263120+00:00'
+started_at: '2026-02-19T18:52:13.263120+00:00'
+completed_at: '2026-02-19T18:52:15.489630+00:00'
+duration_minutes: 0.03710831666666667
+---
+Handle 'create_session' in CompanionChannel. Accepts optional agent_id (if omitted, auto-resolves workspace main agent via SharedMainAgentRouter). Verifies agent belongs to the socket's workspace. Creates session via Session.create_changeset/1 + Repo.insert/1. Returns {session_id, agent_id, name, status}. Scope check: requires sessions:write or admin:*. Enables pag-connect to create sessions over WebSocket without REST calls or knowing agent_id in advance. Tests cover explicit agent_id, auto-resolve, cross-workspace rejection, empty workspace, and scope enforcement.

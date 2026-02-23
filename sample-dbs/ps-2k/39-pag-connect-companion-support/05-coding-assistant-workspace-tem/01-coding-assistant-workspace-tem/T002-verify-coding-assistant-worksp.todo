@@ -1,0 +1,25 @@
+---
+id: P39.M5.E1.T002
+title: Verify coding-assistant workspace template schema compatibility
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P39.M5.E1.T001
+tags:
+- template
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:29:42.210708+00:00'
+started_at: '2026-02-19T23:29:42.210708+00:00'
+completed_at: '2026-02-19T23:35:07.595514+00:00'
+duration_minutes: 5.423079933333333
+---
+Ensure the new workspace template is fully compatible with the rest of the workspace template infrastructure.
+
+Acceptance criteria:
+- WorkspaceBuiltins.load('coding-assistant') returns {:ok, %WorkspaceTemplate{}} with all fields set correctly
+- WorkspaceTemplateLoader validates the template without errors
+- WorkspaceTemplatesController index and show actions include the coding-assistant template
+- mix test.templates passes (or mix test test/pag_server/templates/ if alias not defined)

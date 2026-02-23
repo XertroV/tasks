@@ -1,0 +1,45 @@
+---
+id: P18.M1.E1.T002
+title: Create WorkspaceMember Ecto schema
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on:
+- P18.M1.E1.T001
+tags:
+- security
+- workspace
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:47:25.497978+00:00'
+started_at: '2026-02-17T16:47:25.497978+00:00'
+completed_at: '2026-02-17T16:51:04.117395+00:00'
+duration_minutes: 3.6436566666666668
+---
+
+# Create WorkspaceMember Ecto schema
+
+## Description
+
+Create the `PagServer.Schema.WorkspaceMember` Ecto schema with belongs_to associations, role validation, and changesets.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/workspace_member.ex`
+- [ ] Schema fields matching migration: workspace_id, user_id, role, invited_by, joined_at
+- [ ] `belongs_to :workspace, PagServer.Schema.Workspace`
+- [ ] `belongs_to :user, PagServer.Schema.User`
+- [ ] `belongs_to :inviter, PagServer.Schema.User, foreign_key: :invited_by`
+- [ ] Role validation: must be one of `~w(owner admin member)`
+- [ ] `create_changeset/2` — validates required fields, casts role, sets joined_at to now if not provided
+- [ ] `update_role_changeset/2` — only allows changing role field
+- [ ] Add `has_many :workspace_memberships, WorkspaceMember` to User schema
+- [ ] Add `has_many :workspace_members, WorkspaceMember` to Workspace schema
+
+## Acceptance Criteria
+
+- [ ] Schema compiles without warnings
+- [ ] Changesets reject invalid roles
+- [ ] Changesets enforce required fields (workspace_id, user_id, role)
+- [ ] Associations are correctly defined and preloadable

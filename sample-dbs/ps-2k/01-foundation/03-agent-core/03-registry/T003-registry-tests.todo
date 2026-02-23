@@ -1,0 +1,199 @@
+---
+id: P1.M3.E3.T003
+title: Write registry tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P1.M3.E3.T002
+claimed_by: claude
+claimed_at: '2026-02-05T09:16:08.929256'
+started_at: '2026-02-05T09:16:08.929256'
+completed_at: '2026-02-05T09:18:18.669197'
+tags:
+- agent
+- registry
+- testing
+- foundation
+---
+
+# Write registry tests
+
+Create comprehensive tests for the Agent Registry module covering lookup, registration, and listing functionality.
+
+## Requirements
+
+- [ ] Create `test/pag_server/agents/registry_test.exs`
+- [ ] Test `lookup/1` function
+  - [ ] Returns `{:ok, pid}` for registered agent
+  - [ ] Returns `{:error, :not_found}` for unregistered agent
+  
+- [ ] Test `via_tuple/1` function
+  - [ ] Returns correct `{:via, Registry, {...}}` tuple
+  - [ ] Can be used with GenServer.start_link
+  
+- [ ] Test `list_all/0` function
+  - [ ] Returns empty list when no agents registered
+  - [ ] Returns all agent_ids when multiple registered
+  - [ ] Handles concurrent registrations correctly
+  
+- [ ] Test `registered?/1` function
+  - [ ] Returns true for registered agent
+  - [ ] Returns false for unregistered agent
+  
+- [ ] Test registration behavior
+  - [ ] Process is automatically registered via via_tuple
+  - [ ] Duplicate registration fails with error
+  - [ ] Process removal on crash
+  
+- [ ] Use ExUnit async: true for parallel test execution
+- [ ] Clean up test processes in setup/teardown
+
+## Acceptance Criteria
+
+- [ ] File `test/pag_server/agents/registry_test.exs` exists
+- [ ] All registry functions have test coverage
+- [ ] Tests cover success and error cases
+- [ ] Tests verify concurrent access (at least 10 processes)
+- [ ] Tests are marked `async: true` where safe
+- [ ] All tests pass with `mix test`
+- [ ] No warnings from test compilation
+- [ ] Test coverage >= 95% for Registry module
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1
+  - Registry module: ~100 LoC
+- AGENTS.md - Testing commands
+
+**Key Points**:
+- Registry is thread-safe (concurrent access is safe)
+- Process cleanup happens automatically on crash
+- Use test helpers to start dummy GenServer processes
+- Tests should verify Registry integration with GenServer lifecycle
+
+## Notes
+
+Example test structure:
+```elixir
+defmodule PagServer.Agents.RegistryTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.Agents.Registry
+  
+  # Helper to start a test GenServer process
+  defp start_test_agent(agent_id) do
+    Agent.start_link(fn -> %{} end, name: Registry.via_tuple(agent_id))
+  end
+  
+  describe "lookup/1" do
+    test "returns {:ok, pid} for registered agent" do
+      agent_id = "test-#{:rand.uniform(1000)}"
+      {:ok, pid} = start_test_agent(agent_id)
+      
+      assert {:ok, ^pid} = Registry.lookup(agent_id)
+    end
+    
+    test "returns {:error, :not_found} for unregistered agent" do
+      assert {:error, :not_found} = Registry.lookup("nonexistent")
+    end
+  end
+  
+  describe "via_tuple/1" do
+    test "returns correct via tuple format" do
+      agent_id = "test-agent"
+      
+      assert {:via, Registry, {PagServer.AgentRegistry, ^agent_id}} =
+               Registry.via_tuple(agent_id)
+    end
+    
+    test "can be used with GenServer.start_link" do
+      agent_id = "test-#{:rand.uniform(1000)}"
+      
+      assert {:ok, pid} =
+               Agent.start_link(fn -> %{} end, name: Registry.via_tuple(agent_id))
+      
+      assert {:ok, ^pid} = Registry.lookup(agent_id)
+    end
+    
+    test "prevents duplicate registration" do
+      agent_id = "test-#{:rand.uniform(1000)}"
+      {:ok, _pid} = start_test_agent(agent_id)
+      
+      assert {:error, {:already_started, _pid}} = start_test_agent(agent_id)
+    end
+  end
+  
+  describe "list_all/0" do
+    test "returns empty list when no agents" do
+      # Each test runs in isolation due to unique IDs
+      assert is_list(Registry.list_all())
+    end
+    
+    test "returns all registered agent IDs" do
+      agent_ids = for i <- 1..5, do: "test-#{:rand.uniform(100000)}-#{i}"
+      
+      for id <- agent_ids, do: start_test_agent(id)
+      
+      all_ids = Registry.list_all()
+      
+      for id <- agent_ids do
+        assert id in all_ids
+      end
+    end
+  end
+  
+  describe "registered?/1" do
+    test "returns true for registered agent" do
+      agent_id = "test-#{:rand.uniform(1000)}"
+      start_test_agent(agent_id)
+      
+      assert Registry.registered?(agent_id)
+    end
+    
+    test "returns false for unregistered agent" do
+      refute Registry.registered?("nonexistent-#{:rand.uniform(1000)}")
+    end
+  end
+  
+  describe "process lifecycle" do
+    test "agent is removed when process crashes" do
+      agent_id = "test-#{:rand.uniform(1000)}"
+      {:ok, pid} = start_test_agent(agent_id)
+      
+      # Kill the process
+      Process.exit(pid, :kill)
+      
+      # Wait for cleanup
+      :timer.sleep(10)
+      
+      assert {:error, :not_found} = Registry.lookup(agent_id)
+    end
+  end
+  
+  describe "concurrent access" do
+    test "handles concurrent registrations" do
+      # Start 20 agents concurrently
+      tasks =
+        for i <- 1..20 do
+          Task.async(fn ->
+            agent_id = "concurrent-#{:rand.uniform(100000)}-#{i}"
+            start_test_agent(agent_id)
+            agent_id
+          end)
+        end
+      
+      agent_ids = Task.await_many(tasks)
+      all_ids = Registry.list_all()
+      
+      for id <- agent_ids do
+        assert id in all_ids
+      end
+    end
+  end
+end
+```
+
+Use unique agent IDs in each test to enable `async: true` for parallel execution.

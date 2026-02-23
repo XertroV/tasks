@@ -1,0 +1,120 @@
+---
+id: P4.M1.E1.T003
+title: Add schema validation
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P4.M1.E1.T002
+tags:
+- tools
+- validation
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-06T01:46:57.326526'
+started_at: '2026-02-06T00:58:38.083218'
+completed_at: '2026-02-06T01:58:38.083218'
+duration_minutes: 323.8689304166667
+---
+
+# Add schema validation
+
+Add validation logic to ensure ToolSchema conforms to JSON Schema specifications.
+
+## Requirements
+
+- [ ] Add `validate/1` function to ToolSchema module
+- [ ] Verify `parameters` is a valid JSON Schema object (type, properties, etc.)
+- [ ] Check required fields are present
+- [ ] Validate parameter types (string, number, boolean, object, array, null)
+- [ ] Return `{:ok, schema}` or `{:error, reason}`
+
+## Acceptance Criteria
+
+- [ ] Validation rejects invalid JSON Schema (missing type, invalid property types)
+- [ ] Validation accepts all common JSON Schema patterns (primitives, objects, arrays, nested)
+- [ ] Error messages clearly indicate what's wrong
+- [ ] Test coverage for valid and invalid schemas
+- [ ] Integration test validates all builtin tool schemas
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 338-342 (Executor validates args)
+
+**Key Points**:
+- Validation happens at registration time, not execution time
+- Prevents invalid tools from being registered
+- JSON Schema validation ensures LLMs get proper parameter info
+- Consider using `ex_json_schema` library for full JSON Schema validation
+
+## Notes
+
+Validation checks:
+1. Name is non-empty string
+2. Description is non-empty string
+3. Parameters has `type: "object"` at root
+4. Properties are valid JSON Schema types
+5. Required array (if present) references existing properties
+
+Example usage:
+```elixir
+schema = %ToolSchema{
+  name: "read_file",
+  description: "Read file contents",
+  parameters: %{
+    type: "object",
+    properties: %{
+      path: %{type: "string"}
+    },
+    required: ["path"]
+  }
+}
+
+ToolSchema.validate(schema)
+# => {:ok, schema}
+```
+
+Invalid schema:
+```elixir
+schema = %ToolSchema{
+  name: "bad_tool",
+  description: "",  # Empty
+  parameters: %{type: "string"}  # Should be object
+}
+
+ToolSchema.validate(schema)
+# => {:error, "description cannot be empty"}
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 07:34 UTC
+**Primary task**: P2.M8.E4.T001 - Define primary/fallback provider config
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E1 vs P2.M8.E4)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Handoff Notes
+
+**From:** cli-user
+**To:** cli-user
+**Date:** 2026-02-06 01:46 UTC
+
+Taking over stale task (no active session).

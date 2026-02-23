@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T004
+title: 'Review P22.M2: Live Model Discovery'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:31:51.314278+00:00'
+started_at: '2026-02-19T01:31:51.314278+00:00'
+completed_at: '2026-02-19T01:41:42.553061+00:00'
+duration_minutes: 9.85397955
+---
+Load the review-and-fix skill. Review all epics and tasks under P22.M2 (Live Model Discovery). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: fetch_models/1 callback added to Provider behaviour, implementations for Anthropic/OpenAI/Ollama/Groq/OpenRouter, ModelDiscoveryCache GenServer (TTL, refresh, supervision), ModelCatalog merge of static+live models, and the GET /api/v1/models/refresh endpoint.

@@ -1,0 +1,154 @@
+---
+id: P8.M1.E3.T001
+title: Create formatter behaviour
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M1.E1.T001
+tags:
+- gateway
+- formatters
+- behaviour
+---
+
+# Create formatter behaviour
+
+Define the `PAGServer.Gateway.Formatter` behaviour for converting agent responses to platform-specific formats.
+
+## Requirements
+
+- [x] Create `lib/pag_server/gateway/formatter.ex` (~90 LoC)
+- [x] Define `@callback format_response/2` for converting agent responses
+- [x] Define `@callback format_error/2` for error messages
+- [x] Define `@callback supports_markdown?/0` to indicate Markdown support
+- [x] Define `@callback supports_attachments?/0` for attachment support
+- [x] Define `@callback max_message_length/0` for platform limits
+- [x] Document formatter implementation requirements
+- [x] Add types for response, platform_response, format_opts
+
+## Acceptance Criteria
+
+- [x] Behaviour module compiles without warnings
+- [x] All callbacks have proper typespecs
+- [x] Response type is well-defined
+- [x] Documentation explains platform differences
+- [x] Tests verify behaviour contract
+- [x] Example implementation included in tests
+
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 516 (Format response for platform)
+
+**Key Points**:
+- Each platform has different formatting requirements
+- Some support Markdown, others don't
+- Attachments are handled differently per platform
+- Errors need platform-appropriate formatting
+- Response length limits vary by platform
+
+## Notes
+
+Behaviour definition:
+```elixir
+defmodule PAGServer.Gateway.Formatter do
+  @moduledoc """
+  Behaviour for formatting agent responses for specific platforms.
+  """
+
+  @type response :: %{
+    content: String.t(),
+    attachments: [map()],
+    metadata: map()
+  }
+
+  @type platform_response :: map()
+
+  @callback format_response(response(), opts :: Keyword.t()) ::
+    {:ok, platform_response()} | {:error, term()}
+
+  @callback format_error(reason :: term(), opts :: Keyword.t()) ::
+    {:ok, platform_response()} | {:error, term()}
+
+  @callback supports_markdown?() :: boolean()
+
+  @callback supports_attachments?() :: boolean()
+
+  @callback max_message_length() :: pos_integer()
+end
+```
+
+Response struct:
+```elixir
+defmodule PAGServer.Gateway.Response do
+  @moduledoc """
+  Agent response to be formatted for platforms.
+  """
+
+  defstruct [
+    :content,        # Main text content
+    :attachments,    # List of attachments
+    :metadata,       # Additional data (tokens, timing, etc.)
+    :formatting      # Formatting hints (bold, italic, code blocks)
+  ]
+
+  @type t :: %__MODULE__{
+    content: String.t(),
+    attachments: [Attachment.t()],
+    metadata: map(),
+    formatting: map()
+  }
+end
+```
+
+Example formatter implementation:
+```elixir
+defmodule PAGServer.Gateway.Formatters.Telegram do
+  @behaviour PAGServer.Gateway.Formatter
+
+  @impl true
+  def format_response(response, _opts) do
+    # Convert Markdown to Telegram's HTML
+    content = convert_markdown(response.content)
+    
+    # Split if exceeds length limit
+    messages = split_message(content, max_message_length())
+    
+    {:ok, %{
+      text: hd(messages),
+      parse_mode: "HTML",
+      reply_markup: build_keyboard(response.metadata)
+    }}
+  end
+
+  @impl true
+  def format_error(reason, _opts) do
+    error_text = """
+    ⚠️ An error occurred: #{format_error_reason(reason)}
+    
+    Please try again or contact support.
+    """
+    
+    {:ok, %{text: error_text, parse_mode: "HTML"}}
+  end
+
+  @impl true
+  def supports_markdown?, do: true
+
+  @impl true
+  def supports_attachments?, do: true
+
+  @impl true
+  def max_message_length, do: 4096
+end
+```
+
+Platform-specific considerations:
+- **Telegram**: HTML or Markdown, 4096 char limit, inline keyboards
+- **Slack**: Markdown, Block Kit, 40K char limit, attachments
+- **Discord**: Markdown, 2000 char limit, embeds, reactions
+- **WhatsApp**: Plain text, 4096 char limit, limited formatting
+- **Matrix**: HTML, unlimited, rich formatting

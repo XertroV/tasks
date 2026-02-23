@@ -1,0 +1,60 @@
+---
+id: P10.M1.E5.T001
+title: Implement GitHub Actions workflow webhook handlers
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- github
+- actions
+- webhook
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:19:14.988716+00:00'
+started_at: '2026-02-12T03:19:14.988716+00:00'
+completed_at: '2026-02-12T03:29:37.051202+00:00'
+duration_minutes: 10.367707866666667
+---
+
+# Implement GitHub Actions workflow webhook handlers
+
+Create webhook handlers for GitHub Actions workflow events in `lib/pag_server/integrations/github/` directory.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/github/actions.ex` module with event handlers
+- [ ] Handle `workflow_run.requested`, `workflow_run.completed` events
+- [ ] Handle `workflow_job.completed` and `workflow_job.in_progress` events
+- [ ] Parse webhook payload and extract workflow metadata (name, run_id, status, conclusion, artifacts)
+- [ ] Route events to agent session based on repository + workflow name
+- [ ] Include workflow run logs and step summaries in event context
+- [ ] Log all incoming webhook events with proper context
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] Webhook handler extracts all workflow fields correctly
+- [ ] Correctly identifies event type and dispatches to router
+- [ ] Session mapping logic routes to correct agent
+- [ ] No unhandled exception cases (defensive error handling)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M1.E5)
+**Agent**: cli-user
+**Date**: 2026-02-12 03:19 UTC
+**Sibling tasks**: P10.M1.E5.T002, P10.M1.E5.T003, P10.M1.E5.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M1.E5.T001 → P10.M1.E5.T002 → P10.M1.E5.T003 → P10.M1.E5.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M1.E5.T001: .tasks/10-devops-developer-tool-integrat/01-github-integration/05-github-actions-integration/T001-implement-github-actions-workf.todo
+- P10.M1.E5.T002: .tasks/10-devops-developer-tool-integrat/01-github-integration/05-github-actions-integration/T002-build-workflow-trigger-and-dis.todo
+- P10.M1.E5.T003: .tasks/10-devops-developer-tool-integrat/01-github-integration/05-github-actions-integration/T003-implement-workflow-run-status.todo
+- P10.M1.E5.T004: .tasks/10-devops-developer-tool-integrat/01-github-integration/05-github-actions-integration/T004-write-tests-for-actions-webhoo.todo

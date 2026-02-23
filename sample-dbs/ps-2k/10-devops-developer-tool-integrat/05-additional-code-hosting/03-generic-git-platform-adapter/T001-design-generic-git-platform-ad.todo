@@ -1,0 +1,68 @@
+---
+id: P10.M5.E3.T001
+title: Design generic Git platform adapter
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- design
+- git
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:43:49.896591+00:00'
+started_at: '2026-02-12T04:43:49.896591+00:00'
+completed_at: '2026-02-12T04:55:27.356443+00:00'
+duration_minutes: 11.6243307
+---
+
+# Design generic Git platform adapter
+
+Design abstraction layer for handling operations across different Git platforms.
+
+## Requirements
+
+- [ ] Design `PagServer.Integrations.Git.Adapter` behaviour
+- [ ] Define standard operations:
+  - [ ] PR creation/update
+  - [ ] Issue creation/update
+  - [ ] Comments
+  - [ ] Repository information
+  - [ ] Webhook management
+- [ ] Document platform-specific implementations:
+  - [ ] GitHub, Bitbucket, Gitea mappings
+  - [ ] Authentication patterns
+  - [ ] Rate limit handling
+- [ ] Design platform detection strategy
+- [ ] Document error handling patterns
+- [ ] Create adapter pattern validation tests
+
+## Acceptance Criteria
+
+- [ ] Behaviour module defined with standard operations
+- [ ] Platform mappings clearly documented
+- [ ] Operation interface supports all platforms
+- [ ] Authentication patterns unified
+- [ ] Example implementations for each platform
+- [ ] Pattern tests verify adapter protocol
+- [ ] `mix test` passes for all tests
+- [ ] `mix lint` passes without warnings
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M5.E3)
+**Agent**: cli-user
+**Date**: 2026-02-12 04:43 UTC
+**Sibling tasks**: P10.M5.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M5.E3.T001 → P10.M5.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M5.E3.T001: .tasks/10-devops-developer-tool-integrat/05-additional-code-hosting/03-generic-git-platform-adapter/T001-design-generic-git-platform-ad.todo
+- P10.M5.E3.T002: .tasks/10-devops-developer-tool-integrat/05-additional-code-hosting/03-generic-git-platform-adapter/T002-implement-common-git-operation.todo

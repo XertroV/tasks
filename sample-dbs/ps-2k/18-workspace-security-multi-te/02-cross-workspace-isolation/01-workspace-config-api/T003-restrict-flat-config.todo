@@ -1,0 +1,44 @@
+---
+id: P18.M2.E1.T003
+title: Restrict flat /api/v1/config to global keys only
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: critical
+depends_on:
+- P18.M2.E1.T002
+tags:
+- security
+- workspace
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:31:51.293368+00:00'
+completed_at: '2026-02-18T18:45:00.000000+00:00'
+---
+
+# Restrict flat /api/v1/config to global keys only
+
+## Description
+
+Update the existing `PlatformConfigController` to reject any operations on workspace-scoped config keys (keys starting with "workspace."), directing users to the new workspace-nested config API.
+
+## Requirements
+
+- [x] Update `PlatformConfigController.index` to filter out keys matching `~r/^workspace\./`
+- [x] Update `PlatformConfigController.show` to reject keys starting with "workspace." — return 400 with message: "Workspace-scoped config must be accessed via /api/v1/workspaces/:workspace_id/config"
+- [x] Update `PlatformConfigController.update` with same rejection
+- [x] Update `PlatformConfigController.delete` with same rejection
+- [x] Add a private helper function `reject_workspace_key/2` to DRY the check
+
+## Acceptance Criteria
+
+- [x] `GET /api/v1/config` no longer returns workspace-scoped keys
+- [x] `GET /api/v1/config/workspace.abc.telegram.bot_token` returns 400
+- [x] `PUT /api/v1/config/workspace.abc.key` returns 400
+- [x] Non-workspace keys (e.g., `system.foo`) still work normally
+- [x] Error response includes redirect message to workspace-nested route
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/platform_config_controller.ex`
+**Critical fix**: This directly addresses the cross-workspace data leak identified in the security review

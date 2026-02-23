@@ -1,0 +1,47 @@
+id: P26
+name: Agent Size Pool
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 32.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Schema & Config
+  path: 01-schema-config
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: Add size pool configuration to workspace schema (small/medium/large
+    model lists) and add size field to agent spawn requests.
+  locked: false
+- id: M2
+  name: Routing & API
+  path: 02-routing
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on:
+  - P26.M1
+  description: Implement model selector that resolves a size (small/medium/large)
+    to a model from the workspace pool, plus API for managing workspace model pools.
+  locked: false
+- id: M3
+  name: Tests
+  path: 03-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P26.M2
+  description: Tests for size-based model selection including workspace config, resolver
+    logic, and API endpoints.
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

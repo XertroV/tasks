@@ -1,0 +1,194 @@
+---
+id: P7.M7.E1.T009
+title: Document error codes and recovery procedures
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P7.M7.E1.T008
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:48:38.504397+00:00'
+started_at: '2026-02-06T21:48:38.504397+00:00'
+completed_at: '2026-02-06T22:11:02.809855+00:00'
+tags:
+- documentation
+- websocket
+- errors
+duration_minutes: 22.405090816666664
+---
+
+# Document error codes and recovery procedures
+
+Create comprehensive error code taxonomy and recovery procedures for WebSocket connections.
+
+## Requirements
+
+- [ ] Create error code taxonomy
+  - [ ] Connection errors (1xxx)
+  - [ ] Authentication errors (2xxx)
+  - [ ] Channel errors (3xxx)
+  - [ ] Agent errors (4xxx)
+  - [ ] LLM provider errors (5xxx)
+  - [ ] Rate limiting errors (6xxx)
+
+- [ ] Document each error code
+  - [ ] Numeric code
+  - [ ] String identifier
+  - [ ] Human-readable message
+  - [ ] Possible causes
+  - [ ] Recovery procedure
+
+- [ ] Document reconnection strategy
+  - [ ] When to reconnect automatically
+  - [ ] Exponential backoff parameters
+  - [ ] Maximum retry attempts
+  - [ ] Session recovery after reconnect
+
+- [ ] Document graceful degradation
+  - [ ] Fallback to REST API
+  - [ ] Offline queue behavior
+  - [ ] Partial response handling
+
+- [ ] Create error response schemas
+  - [ ] WebSocket error event format
+  - [ ] REST API error format
+  - [ ] Consistency between both
+
+## Acceptance Criteria
+
+- [ ] All error codes documented with examples
+- [ ] Recovery procedures are actionable
+- [ ] Reconnection strategy clearly specified
+- [ ] Error handling code examples provided
+- [ ] Documentation in `docs/error-handling.md`
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on T008 (Channel protocol spec)
+- Related to P7.M5 (Error Recovery)
+
+## Implementation Guide
+
+### Error Code Taxonomy
+
+```markdown
+# PAG Server Error Codes
+
+## Error Format
+
+All errors follow this structure:
+
+```json
+{
+  "error": {
+    "code": "rate_limited",
+    "numeric_code": 6001,
+    "message": "Request rate limit exceeded",
+    "details": {
+      "retry_after": 60,
+      "limit": 100,
+      "window": "minute"
+    }
+  }
+}
+```
+
+## Connection Errors (1xxx)
+
+| Code | Identifier | Message | Recovery |
+|------|------------|---------|----------|
+| 1001 | `connection_failed` | WebSocket connection failed | Retry with backoff |
+| 1002 | `connection_closed` | Connection closed by server | Reconnect |
+| 1003 | `heartbeat_timeout` | No heartbeat response | Reconnect |
+
+## Authentication Errors (2xxx)
+
+| Code | Identifier | Message | Recovery |
+|------|------------|---------|----------|
+| 2001 | `invalid_token` | Authentication token invalid | Refresh token |
+| 2002 | `token_expired` | Authentication token expired | Refresh token |
+| 2003 | `insufficient_permissions` | Missing required permissions | Check scopes |
+
+## Channel Errors (3xxx)
+
+| Code | Identifier | Message | Recovery |
+|------|------------|---------|----------|
+| 3001 | `channel_not_found` | Channel does not exist | Check topic |
+| 3002 | `join_rejected` | Channel join rejected | Check permissions |
+| 3003 | `already_joined` | Already joined this channel | Use existing |
+
+## Agent Errors (4xxx)
+
+| Code | Identifier | Message | Recovery |
+|------|------------|---------|----------|
+| 4001 | `agent_not_found` | Agent does not exist | Create agent |
+| 4002 | `agent_busy` | Agent processing another request | Wait or queue |
+| 4003 | `agent_stopped` | Agent has been stopped | Restart agent |
+| 4004 | `invalid_message` | Message validation failed | Fix payload |
+
+## LLM Provider Errors (5xxx)
+
+| Code | Identifier | Message | Recovery |
+|------|------------|---------|----------|
+| 5001 | `provider_unavailable` | LLM provider unavailable | Retry/failover |
+| 5002 | `model_not_found` | Requested model not available | Check model spec |
+| 5003 | `context_too_long` | Context exceeds model limit | Truncate context |
+| 5004 | `content_filtered` | Content blocked by safety filter | Modify request |
+
+## Rate Limiting Errors (6xxx)
+
+| Code | Identifier | Message | Recovery |
+|------|------------|---------|----------|
+| 6001 | `rate_limited` | Request rate limit exceeded | Wait retry_after |
+| 6002 | `token_limit_exceeded` | Token quota exceeded | Wait or upgrade |
+| 6003 | `concurrent_limit` | Too many concurrent requests | Wait for slot |
+```
+
+### Reconnection Strategy
+
+```markdown
+## Reconnection Strategy
+
+### Automatic Reconnection
+
+Implement exponential backoff:
+
+```javascript
+const reconnect = async (attempt = 0) => {
+  const maxAttempts = 10;
+  const baseDelay = 1000; // 1 second
+  const maxDelay = 30000; // 30 seconds
+  
+  if (attempt >= maxAttempts) {
+    throw new Error('Max reconnection attempts reached');
+  }
+  
+  const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
+  const jitter = delay * 0.1 * Math.random();
+  
+  await sleep(delay + jitter);
+  
+  try {
+    await connect();
+  } catch (error) {
+    return reconnect(attempt + 1);
+  }
+};
+```
+
+### Session Recovery
+
+After reconnection:
+1. Re-join channels with same topics
+2. Request missed events since last sequence number
+3. Reconcile local state with server state
+```
+
+## Notes
+
+- Error codes should be stable across versions
+- Include error codes in metrics/logging
+- Provide client SDK helpers for error handling

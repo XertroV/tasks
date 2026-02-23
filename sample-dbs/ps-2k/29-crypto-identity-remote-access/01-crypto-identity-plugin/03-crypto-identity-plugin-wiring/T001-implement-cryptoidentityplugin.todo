@@ -1,0 +1,18 @@
+---
+id: P29.M1.E3.T001
+title: Implement CryptoIdentityPlugin module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P29.M1.E1.T002
+- P29.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:03:25.494247+00:00'
+started_at: '2026-02-18T19:03:25.494247+00:00'
+completed_at: '2026-02-18T19:05:05.281841+00:00'
+duration_minutes: 1.6631262666666666
+---
+Plugin following duck-typed plugin protocol: name/0 = :crypto_identity, description/0, default_enabled?/1, on_enable/1 (generates key pair if missing), on_disable/1, mcp_tools/0 (returns 4 tool modules), handle_tool_call/3, config_schema/0. Located at plugins/crypto_identity/lib/crypto_identity_plugin.ex.

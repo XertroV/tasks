@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T05:37:49.198782+00:00'
+started_at: '2026-02-13T05:37:49.198782+00:00'
+completed_at: '2026-02-13T06:07:14.466252+00:00'
+duration_minutes: 29.42112416666667
+---
+# Implement harmful content detection
+
+## Description
+Implement content moderation using external APIs (OpenAI Moderation API as default) to detect harmful content categories including hate speech, violence, self-harm, sexual content, and harassment.
+
+## Acceptance Criteria
+- [ ] `PagServer.Compliance.Moderation.Providers.OpenAI` module created
+- [ ] Support for all OpenAI moderation categories
+- [ ] Configurable severity thresholds per category
+- [ ] `check/2` returns `{:ok, scores}` or `{:error, reason}`
+- [ ] Batch checking support for multiple messages
+- [ ] Response caching for identical content (TTL configurable)
+- [ ] Rate limit handling with automatic retry
+- [ ] Graceful degradation when API unavailable
+- [ ] Provider abstraction allows swapping implementations
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/compliance/moderation/hook.ex`, `lib/pag_server/llm/providers/openai.ex`
+- Part of epic: P14.M2.E2 - Content Moderation

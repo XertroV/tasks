@@ -1,0 +1,23 @@
+epic_id: P3.M3.E4
+name: Stats Controller
+description: Statistics and metrics endpoints
+milestone: 03-rest-api
+phase: 03-streaming-realtime
+
+estimated_hours: 2
+priority: low
+
+tasks:
+  - T001-agent-stats.todo
+  - T002-global-stats.todo
+
+dependencies:
+  - P3.M3.E2
+
+acceptance_criteria:
+  - Agent-specific stats
+  - Global system stats
+
+deliverables:
+  - StatsController module
+  - Stats aggregation logic

@@ -1,0 +1,23 @@
+---
+id: P50.M1.E1.T002
+title: Implement CollabTeams main module skeleton
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:07:15.818606+00:00'
+started_at: '2026-02-23T02:07:15.818606+00:00'
+completed_at: '2026-02-23T02:07:18.389231+00:00'
+duration_minutes: 0.042843549999999994
+---
+## Description
+Create plugins/collab_teams/lib/collab_teams.ex with on_enable/1, on_disable/1, handle_tool_call/3 (stub returning {:error, :not_implemented}), handle_plugin_events/2 (stub), __plugin_migrations__/0 returning []. Module namespace is CollabTeams (NOT PagServer.CollabTeams).
+
+## Acceptance Criteria
+- Module compiles; on_enable/1 returns :ok
+- handle_tool_call with unknown tool returns {:error, :unknown_tool}
+- __plugin_migrations__/0 returns []

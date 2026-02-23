@@ -1,0 +1,44 @@
+# Epic: Distributed Registry
+# Phase 9, Milestone 4, Epic 1 (P9.M4.E1)
+
+id: P9.M4.E1
+name: Distributed Registry
+status: pending
+estimate_hours: 4.5
+complexity: high
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-horde-integration.todo
+    title: Integrate Horde for distributed registry
+    status: pending
+    estimate_hours: 2.0
+    complexity: high
+    priority: low
+    depends_on: []
+    
+  - id: T002
+    file: T002-distributed-supervisor.todo
+    title: Add Horde.DynamicSupervisor
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: low
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-pg-integration.todo
+    title: Add pg (Process Groups) for PubSub
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: low
+    depends_on: [T001]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

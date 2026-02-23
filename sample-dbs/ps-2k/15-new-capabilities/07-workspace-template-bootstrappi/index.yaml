@@ -1,0 +1,70 @@
+id: P15.M7
+name: Workspace Template Bootstrapping
+status: pending
+estimate_hours: 40.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Workspace Template Schema & Built-in Templates
+  path: 01-workspace-template-schema-buil
+  status: pending
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Tracked Workspace Files & Changelog
+  path: 02-tracked-workspace-files-change
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Conversational Bootstrap Engine
+  path: 03-conversational-bootstrap-engin
+  status: pending
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Setup Wizard Integration
+  path: 04-setup-wizard-integration
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E5
+  name: Agent Persona Bootstrap System
+  path: 05-agent-persona-bootstrap-system
+  status: pending
+  estimate_hours: 80.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E6
+  name: Agent Template Wiring & Bootstrap
+  path: 06-agent-template-wiring-bootstrap
+  status: pending
+  estimate_hours: 16.0
+  complexity: high
+  depends_on: []
+  description: Wire agent-persona workspace template through system with proper agent
+    template, dramatic awakening, temperature progression, and history redaction.
+    Addresses B140.
+  locked: false
+stats:
+  total_tasks: 48
+  done: 48
+  in_progress: 0
+  blocked: 0
+  pending: 0

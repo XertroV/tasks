@@ -1,0 +1,162 @@
+---
+id: P2.M7.E4.T004
+title: Add Anthropic static pricing with future API hook
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P2.M7.E4.T002
+tags:
+- anthropic
+- pricing
+- static
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:06:21.248586'
+started_at: '2026-02-06T15:06:21.248586'
+completed_at: '2026-02-06T15:13:04.414369'
+duration_minutes: 6.719429533333334
+---
+
+# Add Anthropic static pricing with future API hook
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/pricing_fetchers/anthropic.ex` implementing `PricingFetcher` behaviour
+- [ ] Implement `fetch_pricing/1`: return static Anthropic pricing with note for future API integration
+- [ ] Implement `provider_name/0`: return `:anthropic`
+- [ ] Implement `supports_model?/1`: return true for models starting with "claude"
+- [ ] Use current Anthropic pricing from `LLM.Pricing` module as static baseline
+- [ ] Add `@moduledoc` explaining this is static pricing with future API hook
+- [ ] Add `TODO` comment in `fetch_pricing/1` for future Anthropic pricing API integration
+- [ ] Register the fetcher in `Application.start/2` after supervisor starts
+- [ ] Add typespec annotations for all public functions
+- [ ] Handle unknown Claude models gracefully with default pricing
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/llm/pricing_fetchers/anthropic.ex`
+- [ ] `AnthropicPricingFetcher.fetch_pricing("claude-sonnet-4.5")` returns correct static pricing
+- [ ] `AnthropicPricingFetcher.provider_name()` returns `:anthropic`
+- [ ] `AnthropicPricingFetcher.supports_model?("claude-opus-4.6")` returns `true`
+- [ ] `AnthropicPricingFetcher.supports_model?("gpt-4.1")` returns `false`
+- [ ] Pricing matches current Anthropic rates:
+  - [ ] Claude Opus 4.6: $5.00/$25.00 per million tokens
+  - [ ] Claude Sonnet 4.5: $3.00/$15.00 per million tokens
+  - [ ] Claude Haiku 4.5: $1.00/$5.00 per million tokens
+- [ ] `cached_per_million` calculated as 10% of `prompt_per_million`
+- [ ] Unknown Claude models return default pricing ($3.00/$15.00/$0.30)
+- [ ] `PricingFetcher.get_pricing("claude-sonnet-4.5")` uses Anthropic fetcher
+- [ ] Fetcher registered during application startup
+- [ ] No compiler warnings
+- [ ] All functions have `@spec` declarations
+
+## Implementation Notes
+
+### Static Pricing Map
+
+```elixir
+defmodule PagServer.LLM.PricingFetchers.Anthropic do
+  @behaviour PagServer.LLM.PricingFetcher
+
+  @moduledoc """
+  Static pricing fetcher for Anthropic Claude models.
+  
+  This implementation uses hardcoded pricing as a baseline.
+  Future enhancement: integrate with Anthropic's pricing API when available.
+  
+  ## Pricing Source
+  https://www.anthropic.com/pricing (verified Feb 2026)
+  """
+
+  @pricing %{
+    "claude-opus-4.6" => %{
+      prompt_per_million: 5.0,
+      completion_per_million: 25.0,
+      cached_per_million: 0.5
+    },
+    "claude-sonnet-4.5" => %{
+      prompt_per_million: 3.0,
+      completion_per_million: 15.0,
+      cached_per_million: 0.3
+    },
+    "claude-haiku-4.5" => %{
+      prompt_per_million: 1.0,
+      completion_per_million: 5.0,
+      cached_per_million: 0.1
+    },
+    # Legacy models
+    "claude-opus-4.5" => %{
+      prompt_per_million: 5.0,
+      completion_per_million: 25.0,
+      cached_per_million: 0.5
+    },
+    "claude-haiku-3" => %{
+      prompt_per_million: 0.25,
+      completion_per_million: 1.25,
+      cached_per_million: 0.025
+    }
+  }
+
+  @default_pricing %{
+    prompt_per_million: 3.0,
+    completion_per_million: 15.0,
+    cached_per_million: 0.3
+  }
+
+  @impl true
+  def provider_name, do: :anthropic
+
+  @impl true
+  def supports_model?(model) when is_binary(model) do
+    normalized = String.downcase(model)
+    String.starts_with?(normalized, "claude")
+  end
+
+  @impl true
+  def fetch_pricing(model) when is_binary(model) do
+    # TODO: Replace with Anthropic pricing API integration when available
+    # Potential API endpoint: https://api.anthropic.com/v1/models/{model}/pricing
+    
+    normalized = normalize_model(model)
+    pricing = Map.get(@pricing, normalized, @default_pricing)
+    {:ok, pricing}
+  end
+
+  defp normalize_model(model) do
+    model
+    |> String.downcase()
+    |> String.trim()
+  end
+end
+```
+
+### Registration in Application
+
+Add to `register_llm_providers/0` in `lib/pag_server/application.ex`:
+
+```elixir
+defp register_llm_providers do
+  # ... existing provider registrations ...
+  
+  # Register pricing fetchers
+  PagServer.LLM.PricingFetcher.register(:anthropic, PagServer.LLM.PricingFetchers.Anthropic)
+  
+  :ok
+end
+```
+
+## Context
+
+**Dependencies:**
+- T002 (done): PricingFetcher behaviour and registry established
+
+**Future Enhancement:**
+Anthropic does not currently provide a public pricing API. This implementation uses static pricing as a baseline. When Anthropic releases a pricing API, this module should be updated to fetch live data while falling back to static pricing on API failures.
+
+**Reference Files:**
+- `lib/pag_server/llm/pricing_fetcher.ex` - Behaviour definition
+- `lib/pag_server/llm/pricing.ex` - Current static pricing source
+- `lib/pag_server/application.ex` - Registration location

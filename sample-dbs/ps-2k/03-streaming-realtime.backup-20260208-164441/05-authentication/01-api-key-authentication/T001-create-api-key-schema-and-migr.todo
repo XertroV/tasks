@@ -1,0 +1,414 @@
+---
+id: P3.M5.E1.T001
+title: Create API key schema and migration
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- auth
+- database
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:05:42.177871'
+started_at: '2026-02-06T14:05:42.177871'
+completed_at: '2026-02-06T14:09:42.917775'
+duration_minutes: 4.01233155
+---
+
+# Create API key schema and migration
+
+
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_users`
+- [ ] Add `users` table with basic fields (id, email, name, quota fields)
+- [ ] Generate migration: `mix ecto.gen.migration create_api_keys`
+- [ ] Add `api_keys` table with all required fields including `user_id` FK
+- [ ] Add indexes for performance (lookups by key hash, user/project scoping)
+- [ ] Add constraints for data integrity
+- [ ] Verify migration runs: `mix ecto.migrate`
+- [ ] Verify rollback works: `mix ecto.rollback`
+- [ ] Re-run migration: `mix ecto.migrate`
+- [ ] Create `PagServer.Schema.User` Ecto schema
+- [ ] Create `PagServer.Schema.ApiKey` Ecto schema
+- [ ] Add changesets for create, update, and revoke operations
+- [ ] Add validation for required fields and constraints
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] Migration files created in `priv/repo/migrations/`
+- [ ] `users` table includes required fields:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `email` (string, not null, unique)
+  - [ ] `name` (string, not null)
+  - [ ] `quota_tier` (string, default: "free") - For rate limiting
+  - [ ] `quota_requests_daily` (integer, default: 1000)
+  - [ ] `quota_requests_monthly` (integer, default: 10000)
+  - [ ] `usage_requests_daily` (integer, default: 0)
+  - [ ] `usage_requests_monthly` (integer, default: 0)
+  - [ ] `quota_reset_daily` (utc_datetime_usec)
+  - [ ] `quota_reset_monthly` (utc_datetime_usec)
+  - [ ] `metadata` (map, default: %{})
+  - [ ] `inserted_at`, `updated_at` (utc_datetime_usec)
+- [ ] `api_keys` table includes all required fields:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `user_id` (binary_id, not null, FK to users) - Owner of this API key
+  - [ ] `key_hash` (string, not null) - SHA-256 hash of the API key
+  - [ ] `key_prefix` (string, not null, max 12 chars) - First 8 chars of key for identification
+  - [ ] `name` (string, not null) - Human-readable name for the key
+  - [ ] `description` (text, nullable) - Optional description
+  - [ ] `project` (string, nullable) - Project scope for multi-tenancy
+  - [ ] `scopes` (array of strings, default: []) - Permission scopes (e.g., ["agents:read", "sessions:write"])
+  - [ ] `last_used_at` (utc_datetime_usec, nullable) - Timestamp of last use
+  - [ ] `expires_at` (utc_datetime_usec, nullable) - Optional expiration
+  - [ ] `revoked_at` (utc_datetime_usec, nullable) - Soft delete for revocation
+  - [ ] `metadata` (map, default: %{}) - Extensibility (rate limits, IP whitelist, etc.)
+  - [ ] `inserted_at` (utc_datetime_usec, not null)
+  - [ ] `updated_at` (utc_datetime_usec, not null)
+- [ ] Indexes created on `users`:
+  - [ ] Unique index on `email`
+- [ ] Indexes created on `api_keys`:
+  - [ ] Unique index on `key_hash`
+  - [ ] Index on `key_prefix` for fast prefix lookups
+  - [ ] Index on `user_id` for user's keys lookup
+  - [ ] Composite index on `[:project, :revoked_at]` for active key queries
+  - [ ] Index on `expires_at` for cleanup queries
+- [ ] Schema module created at `lib/pag_server/schema/user.ex`
+- [ ] Schema module created at `lib/pag_server/schema/api_key.ex`
+- [ ] Schema follows existing patterns:
+  - [ ] Uses `@primary_key {:id, :binary_id, autogenerate: true}`
+  - [ ] Uses `@foreign_key_type :binary_id`
+  - [ ] Has `@type t :: %__MODULE__{...}` typespec
+  - [ ] Uses `timestamps(type: :utc_datetime_usec)`
+- [ ] Changesets implemented:
+  - [ ] `create_changeset/2` - Validates name, key_hash, key_prefix, scopes
+  - [ ] `update_changeset/2` - Allows updating name, description, scopes, metadata
+  - [ ] `revoke_changeset/1` - Sets revoked_at timestamp
+  - [ ] `touch_last_used_changeset/1` - Updates last_used_at
+- [ ] Validations:
+  - [ ] `name` required, max 255 chars
+  - [ ] `key_hash` required, exactly 64 chars (SHA-256 hex)
+  - [ ] `key_prefix` required, max 12 chars
+  - [ ] `scopes` is list of strings matching pattern `[a-z_]+:[a-z_]+`
+  - [ ] Unique constraint on `key_hash`
+- [ ] Tests pass: `mix test test/pag_server/schema/api_key_test.exs`
+- [ ] Migration runs successfully with no errors
+- [ ] Rollback works correctly
+- [ ] No compilation warnings
+
+## Context
+
+**Purpose**: API keys provide stateless authentication for REST API and WebSocket connections. This is the foundation for securing the PAG-Server API and enabling multi-project/multi-user scenarios.
+
+**Authentication Model**:
+- **Users** own API keys (one user can have multiple keys for different applications)
+- **User quotas** track daily/monthly request limits (Epic E4: Rate Limiting)
+- **API keys** provide the authentication mechanism with scoped permissions
+- **Bootstrap**: First user+key created via mix task (see Epic E1.T003)
+
+**Design Decisions**:
+- **User-based quotas**: Rate limits apply per user, not per key (prevents circumvention by creating multiple keys)
+- **Key Storage**: Store SHA-256 hash, never plaintext (same security principle as password hashing)
+- **Key Prefix**: Store first 8 chars (e.g., `pag_sk_abc123`) for identification in logs/UI without exposing full key
+- **Scopes**: Fine-grained permissions (e.g., `agents:read`, `sessions:write`, `tools:execute`)
+- **Project Scoping**: Optional multi-tenancy - keys can be scoped to specific projects
+- **Soft Delete**: Use `revoked_at` instead of hard delete for audit trail
+- **Expiration**: Optional `expires_at` for temporary keys
+- **Metadata**: Extensibility for rate limits, IP restrictions, custom fields
+
+**Key Format** (generated by application, not stored in DB):
+```
+pag_sk_<random_32_bytes_base62>
+```
+Example: `pag_sk_3nF8mK9pQ7wL2xR5vY1zB6hC4tJ0sG8dA7eM`
+
+**Security Notes**:
+- Keys are hashed with SHA-256 before storage (same as message content hashes)
+- Only prefix is stored in plaintext for UX (safe because prefix alone is useless)
+- Full key shown to user ONCE on creation, never retrievable afterward
+- Revocation is immediate via `revoked_at` check in validation plug
+
+## Implementation Notes
+
+### Users Migration Template
+
+```elixir
+defmodule PagServer.Repo.Migrations.CreateUsers do
+  use Ecto.Migration
+
+  def change do
+    create table(:users, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :email, :string, null: false
+      add :name, :string, null: false
+      
+      # Quota tracking (for Epic E4: Per-User Rate Limiting)
+      add :quota_tier, :string, default: "free"
+      add :quota_requests_daily, :integer, default: 1000
+      add :quota_requests_monthly, :integer, default: 10000
+      add :usage_requests_daily, :integer, default: 0
+      add :usage_requests_monthly, :integer, default: 0
+      add :quota_reset_daily, :utc_datetime_usec
+      add :quota_reset_monthly, :utc_datetime_usec
+      
+      add :metadata, :map, default: %{}
+
+      timestamps(type: :utc_datetime_usec)
+    end
+
+    create unique_index(:users, [:email])
+  end
+end
+```
+
+### API Keys Migration Template
+
+```elixir
+defmodule PagServer.Repo.Migrations.CreateApiKeys do
+  use Ecto.Migration
+
+  def change do
+    create table(:api_keys, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :user_id, references(:users, type: :binary_id, on_delete: :delete_all), null: false
+      add :key_hash, :string, null: false, size: 64  # SHA-256 hex
+      add :key_prefix, :string, null: false, size: 12  # "pag_sk_abc1"
+      add :name, :string, null: false
+      add :description, :text
+      add :project, :string
+      add :scopes, {:array, :string}, default: []
+      add :last_used_at, :utc_datetime_usec
+      add :expires_at, :utc_datetime_usec
+      add :revoked_at, :utc_datetime_usec
+      add :metadata, :map, default: %{}
+
+      timestamps(type: :utc_datetime_usec)
+    end
+
+    # Unique constraint on key hash
+    create unique_index(:api_keys, [:key_hash])
+    
+    # Fast prefix lookup for UI display
+    create index(:api_keys, [:key_prefix])
+    
+    # User's keys lookup
+    create index(:api_keys, [:user_id])
+    
+    # Query active keys by project
+    create index(:api_keys, [:project, :revoked_at])
+    
+    # Cleanup expired keys
+    create index(:api_keys, [:expires_at], where: "expires_at IS NOT NULL")
+  end
+end
+```
+
+### User Schema Template
+
+```elixir
+defmodule PagServer.Schema.User do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @type t :: %__MODULE__{
+    id: Ecto.UUID.t(),
+    email: String.t(),
+    name: String.t(),
+    quota_tier: String.t(),
+    quota_requests_daily: integer(),
+    quota_requests_monthly: integer(),
+    usage_requests_daily: integer(),
+    usage_requests_monthly: integer(),
+    quota_reset_daily: DateTime.t() | nil,
+    quota_reset_monthly: DateTime.t() | nil,
+    metadata: map(),
+    api_keys: [PagServer.Schema.ApiKey.t()],
+    inserted_at: DateTime.t(),
+    updated_at: DateTime.t()
+  }
+
+  schema "users" do
+    field :email, :string
+    field :name, :string
+    field :quota_tier, :string, default: "free"
+    field :quota_requests_daily, :integer, default: 1000
+    field :quota_requests_monthly, :integer, default: 10000
+    field :usage_requests_daily, :integer, default: 0
+    field :usage_requests_monthly, :integer, default: 0
+    field :quota_reset_daily, :utc_datetime_usec
+    field :quota_reset_monthly, :utc_datetime_usec
+    field :metadata, :map, default: %{}
+
+    has_many :api_keys, PagServer.Schema.ApiKey
+
+    timestamps(type: :utc_datetime_usec)
+  end
+
+  @doc "Changeset for creating a user"
+  @spec create_changeset(map()) :: Ecto.Changeset.t()
+  def create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:email, :name, :quota_tier, :metadata])
+    |> validate_required([:email, :name])
+    |> validate_format(:email, ~r/@/)
+    |> unique_constraint(:email)
+  end
+
+  @doc "Changeset for updating a user"
+  @spec update_changeset(t(), map()) :: Ecto.Changeset.t()
+  def update_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:name, :quota_tier, :metadata])
+    |> validate_required([:name])
+  end
+end
+```
+
+### API Key Schema Template
+
+```elixir
+defmodule PagServer.Schema.ApiKey do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @type t :: %__MODULE__{
+    id: Ecto.UUID.t(),
+    user_id: Ecto.UUID.t(),
+    user: PagServer.Schema.User.t() | Ecto.Association.NotLoaded.t(),
+    key_hash: String.t(),
+    key_prefix: String.t(),
+    name: String.t(),
+    description: String.t() | nil,
+    project: String.t() | nil,
+    scopes: [String.t()],
+    last_used_at: DateTime.t() | nil,
+    expires_at: DateTime.t() | nil,
+    revoked_at: DateTime.t() | nil,
+    metadata: map(),
+    inserted_at: DateTime.t(),
+    updated_at: DateTime.t()
+  }
+
+  schema "api_keys" do
+    belongs_to :user, PagServer.Schema.User
+    field :key_hash, :string
+    field :key_prefix, :string
+    field :name, :string
+    field :description, :string
+    field :project, :string
+    field :scopes, {:array, :string}, default: []
+    field :last_used_at, :utc_datetime_usec
+    field :expires_at, :utc_datetime_usec
+    field :revoked_at, :utc_datetime_usec
+    field :metadata, :map, default: %{}
+
+    timestamps(type: :utc_datetime_usec)
+  end
+
+  @doc "Changeset for creating a new API key"
+  @spec create_changeset(map()) :: Ecto.Changeset.t()
+  def create_changeset(attrs) do
+    %__MODULE__{}
+    |> cast(attrs, [:user_id, :key_hash, :key_prefix, :name, :description, :project, :scopes, :expires_at, :metadata])
+    |> validate_required([:user_id, :key_hash, :key_prefix, :name])
+    |> validate_length(:name, min: 1, max: 255)
+    |> validate_length(:key_hash, is: 64)
+    |> validate_length(:key_prefix, max: 12)
+    |> validate_scopes()
+    |> foreign_key_constraint(:user_id)
+    |> unique_constraint(:key_hash)
+  end
+
+  @doc "Changeset for updating an API key"
+  @spec update_changeset(t(), map()) :: Ecto.Changeset.t()
+  def update_changeset(api_key, attrs) do
+    api_key
+    |> cast(attrs, [:name, :description, :scopes, :metadata])
+    |> validate_required([:name])
+    |> validate_length(:name, min: 1, max: 255)
+    |> validate_scopes()
+  end
+
+  @doc "Changeset for revoking an API key"
+  @spec revoke_changeset(t()) :: Ecto.Changeset.t()
+  def revoke_changeset(api_key) do
+    api_key
+    |> change()
+    |> put_change(:revoked_at, DateTime.utc_now())
+  end
+
+  @doc "Changeset for updating last_used_at"
+  @spec touch_last_used_changeset(t()) :: Ecto.Changeset.t()
+  def touch_last_used_changeset(api_key) do
+    api_key
+    |> change()
+    |> put_change(:last_used_at, DateTime.utc_now())
+  end
+
+  # Validate scope format: "resource:action" (e.g., "agents:read")
+  defp validate_scopes(changeset) do
+    validate_change(changeset, :scopes, fn :scopes, scopes ->
+      invalid_scopes =
+        scopes
+        |> Enum.reject(&valid_scope?/1)
+
+      if Enum.empty?(invalid_scopes) do
+        []
+      else
+        [scopes: "invalid scope format: #{Enum.join(invalid_scopes, ", ")}"]
+      end
+    end)
+  end
+
+  defp valid_scope?(scope) when is_binary(scope) do
+    scope =~ ~r/^[a-z_]+:[a-z_]+$/
+  end
+  defp valid_scope?(_), do: false
+end
+```
+
+### Testing Commands
+
+```bash
+# Run migration
+mix ecto.migrate
+
+# Verify table exists
+psql -d pag_server_dev -c "\d api_keys"
+
+# Test rollback
+mix ecto.rollback
+mix ecto.migrate
+
+# Run tests
+mix test test/pag_server/schema/api_key_test.exs
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:05 UTC
+**Sibling tasks**: P3.M5.E1.T002, P3.M5.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M5.E1.T001 → P3.M5.E1.T002 → P3.M5.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M5.E1.T001: .tasks/03-streaming-realtime/05-authentication/01-api-key-authentication/T001-create-api-key-schema-and-migr.todo
+- P3.M5.E1.T002: .tasks/03-streaming-realtime/05-authentication/01-api-key-authentication/T002-implement-api-key-validation-p.todo
+- P3.M5.E1.T003: .tasks/03-streaming-realtime/05-authentication/01-api-key-authentication/T003-add-api-key-management-endpoin.todo

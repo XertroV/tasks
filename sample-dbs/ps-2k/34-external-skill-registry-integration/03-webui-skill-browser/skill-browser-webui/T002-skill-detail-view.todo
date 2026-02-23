@@ -1,0 +1,32 @@
+---
+id: P34.M3.E1.T002
+title: Skill Detail View
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- frontend
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:46:04.398867+00:00'
+started_at: '2026-02-19T00:46:04.398867+00:00'
+completed_at: '2026-02-19T00:46:30.718424+00:00'
+duration_minutes: 0.43865909999999997
+---
+
+# Skill Detail View
+
+Add skill detail component:
+
+- Show full skill metadata
+- Display requirements (bins, env, config)
+- Show install instructions
+- Install button
+
+## Acceptance Criteria
+
+- [ ] Shows all skill metadata
+- [ ] Displays requirements checklist
+- [ ] Install button triggers download

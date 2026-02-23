@@ -1,0 +1,37 @@
+---
+id: P12.M2.E2.T002
+title: Optimize anthropic/tool_executor_test.exs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:19:20.831154+00:00'
+started_at: '2026-02-13T10:19:20.831154+00:00'
+completed_at: '2026-02-13T10:29:15.741548+00:00'
+duration_minutes: 9.915173066666666
+---
+
+# Optimize anthropic/tool_executor_test.exs
+
+## Description
+
+Profile and optimize tests in the Anthropic tool executor test file to reduce execution time while maintaining full coverage.
+
+## Acceptance Criteria
+
+- [ ] Profile the test file to identify bottlenecks
+- [ ] Look for redundant test setup or repeated operations
+- [ ] Consider using shared setup with `setup_all` where appropriate
+- [ ] Mock external calls more efficiently
+- [ ] Reduce unnecessary delays
+- [ ] All tests pass
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/llm/providers/anthropic/tool_executor_test.exs`
+- Related module: `lib/pag_server/llm/providers/anthropic/tool_executor.ex`
+- Part of epic: Optimize Slow Tests

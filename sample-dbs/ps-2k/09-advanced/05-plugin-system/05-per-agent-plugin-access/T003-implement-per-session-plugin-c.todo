@@ -1,0 +1,58 @@
+---
+id: P9.M5.E5.T003
+title: Implement per-session plugin configuration override
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E5.T001
+tags:
+- sessions
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:31:09.492488+00:00'
+started_at: '2026-02-07T05:31:09.492488+00:00'
+completed_at: '2026-02-07T05:55:47.070735+00:00'
+duration_minutes: 24.62630395
+---
+
+# Implement per-session plugin configuration override
+
+
+
+## Requirements
+
+- [x] Allow session-level plugin configuration overrides:
+  - [x] Session config can enable/disable specific plugins for that session
+  - [x] Session config can override plugin settings (from config_schema)
+  - [x] Overrides are additive to agent-level capabilities (can restrict but not expand)
+- [x] Store session plugin config in session metadata:
+  - [x] `session.metadata.plugin_config` map with per-plugin overrides
+  - [x] Format: `%{"plugin_name" => %{enabled: bool, settings: map}}`
+- [x] Apply session config on agent start:
+  - [x] Merge session plugin config with agent capabilities
+  - [x] Session overrides take precedence over agent defaults
+  - [x] Validate overrides don't exceed agent's plugin capabilities
+- [x] Create API for session plugin config updates:
+  - [x] `update_session_plugins/3` - (session_id, plugin_name, config)
+  - [x] Changes take effect on next agent turn (not mid-processing)
+  - [x] Validate config against plugin's config_schema
+- [x] Persist session plugin config with session state
+
+## Acceptance Criteria
+
+- [x] Session can enable/disable plugins independently from agent-level config
+- [x] Session cannot enable plugins the agent doesn't have access to
+- [x] Plugin settings overrides are validated against config_schema
+- [x] Session plugin config persists across session suspension/resume
+- [x] Config changes apply on next turn (don't interrupt current processing)
+- [x] Unit tests cover: enable override, disable override, settings override, validation, persistence
+
+## Context
+
+- **Modifies**: Session management modules in `lib/pag_server/sessions/`
+- **Depends on**: `PagServer.Security.Capabilities` plugin fields (E5.T001)
+- **Integrates with**: `PagServer.Agents.AgentServer` for applying config on start
+- **Used by**: API endpoints for session management
+- **Constraint**: Session overrides can only restrict, never expand beyond agent capabilities

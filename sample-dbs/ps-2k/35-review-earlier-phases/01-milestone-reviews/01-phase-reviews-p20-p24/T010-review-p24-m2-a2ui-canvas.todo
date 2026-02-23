@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T010
+title: 'Review P24.M2: A2UI Canvas'
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:27:02.906263+00:00'
+started_at: '2026-02-19T02:27:02.906263+00:00'
+completed_at: '2026-02-19T02:33:20.499808+00:00'
+duration_minutes: 6.293225566666666
+---
+Load the review-and-fix skill. Review all epics and tasks under P24.M2 (A2UI Canvas). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: canvas_state JSONB field on sessions, canvas element type structs, CanvasManager GenServer (per-session state, element CRUD, concurrent access), Phoenix channel events for canvas push/update, client interaction routing (button click -> agent message), and MCP tools (render_form, render_table, render_button, update_element, clear_canvas).

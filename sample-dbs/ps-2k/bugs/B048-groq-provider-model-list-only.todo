@@ -1,0 +1,18 @@
+---
+id: B048
+title: groq provider model list only has 2 models. it should have more (including
+  gpt OSS models). these must be loaded from the API live
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T02:12:09.585724+00:00'
+started_at: '2026-02-16T02:12:09.585724+00:00'
+completed_at: '2026-02-16T02:35:52.904777+00:00'
+duration_minutes: 23.72198405
+---
+
+groq provider model list only has 2 models. it should have more (including gpt OSS models). these must be loaded from the API live

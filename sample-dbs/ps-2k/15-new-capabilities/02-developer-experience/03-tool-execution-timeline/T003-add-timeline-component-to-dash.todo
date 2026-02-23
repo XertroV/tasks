@@ -1,0 +1,37 @@
+---
+id: P15.M2.E3.T003
+title: Add timeline component to dashboard
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T13:54:55.250701+00:00'
+started_at: '2026-02-13T13:54:55.250701+00:00'
+completed_at: '2026-02-13T14:25:37.285288+00:00'
+duration_minutes: 30.700576249999997
+---
+
+# Add timeline component to dashboard
+
+## Description
+Integrate the timeline visualization into the main agent dashboard. Show recent activity timeline per agent with drill-down capability into specific sessions.
+
+## Acceptance Criteria
+- [ ] Add timeline panel to AgentDashboard LiveView
+- [ ] Show recent events for selected agent
+- [ ] Implement session selection from timeline
+- [ ] Add real-time timeline updates via PubSub
+- [ ] Support timeline filtering by event type
+- [ ] Show tool execution timing inline
+- [ ] Add mini-timeline view in agent list
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server_web/live/agent_dashboard.ex`, `lib/pag_server/cluster/pub_sub.ex`, `lib/pag_server/events/queries.ex`
+- Part of epic: Tool Execution Timeline
+- Integrate with P15.M2.E1 dashboard

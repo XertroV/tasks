@@ -1,0 +1,309 @@
+---
+id: P4.M2.E12.T002
+title: Implement parse_datetime tool
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on: []
+tags:
+- tools
+- time
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:04:35.966230'
+started_at: '2026-02-06T03:04:35.966230'
+completed_at: '2026-02-06T03:07:09.190767'
+duration_minutes: 2.5537421166666667
+---
+
+# Implement parse_datetime tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/parse_datetime.ex` (~120 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use Timex for flexible datetime parsing
+- [ ] Support multiple input formats (ISO8601, RFC3339, Unix timestamp, human-readable)
+- [ ] Support relative time expressions ("2 hours ago", "tomorrow at 3pm")
+- [ ] Handle ambiguous dates with timezone context
+- [ ] Return normalized DateTime struct
+
+## Acceptance Criteria
+
+- [ ] Accepts datetime string and optional format hint
+- [ ] Parses ISO8601, RFC3339, Unix timestamps automatically
+- [ ] Supports relative expressions ("now", "yesterday", "2 hours ago", "next Monday")
+- [ ] Accepts timezone parameter for ambiguous inputs
+- [ ] Returns parsed DateTime with timezone information
+- [ ] Handles errors: invalid format, ambiguous input, out of range values
+- [ ] Test coverage: ISO8601, Unix timestamp, relative expressions, timezone handling, invalid inputs
+- [ ] No security concerns (parsing only)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Timex provides powerful parsing with format strings
+- Relative expressions are valuable for agent workflows
+- Timezone context crucial for ambiguous dates
+- Return standardized format for consistency
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ParseDatetime do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "parse_datetime"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "parse_datetime",
+      description: "Parse a datetime string into structured DateTime",
+      parameters: %{
+        type: "object",
+        properties: %{
+          input: %{
+            type: "string",
+            description: "Datetime string to parse (ISO8601, Unix timestamp, or natural language)"
+          },
+          format: %{
+            type: "string",
+            description: "Format hint (iso8601, unix, rfc3339, auto)"
+          },
+          timezone: %{
+            type: "string",
+            description: "Timezone for ambiguous inputs (default: UTC)"
+          }
+        },
+        required: ["input"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"input" => input} = args, _context) do
+    format = Map.get(args, "format", "auto")
+    timezone = Map.get(args, "timezone", "UTC")
+    
+    with {:ok, dt} <- parse_datetime(input, format, timezone) do
+      {:ok, %{
+        datetime: dt,
+        iso8601: DateTime.to_iso8601(dt),
+        unix: DateTime.to_unix(dt),
+        timezone: dt.time_zone,
+        components: %{
+          year: dt.year,
+          month: dt.month,
+          day: dt.day,
+          hour: dt.hour,
+          minute: dt.minute,
+          second: dt.second
+        }
+      }}
+    else
+      {:error, reason} -> {:error, "Parse datetime failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp parse_datetime(input, "auto", timezone) do
+    cond do
+      # Unix timestamp (all digits)
+      Regex.match?(~r/^\d+$/, input) ->
+        parse_unix(input)
+      
+      # ISO8601 / RFC3339
+      String.contains?(input, "T") or String.contains?(input, "-") ->
+        parse_iso8601(input, timezone)
+      
+      # Relative expression
+      true ->
+        parse_relative(input, timezone)
+    end
+  end
+  
+  defp parse_datetime(input, "unix", _timezone), do: parse_unix(input)
+  defp parse_datetime(input, "iso8601", timezone), do: parse_iso8601(input, timezone)
+  defp parse_datetime(input, "rfc3339", timezone), do: parse_iso8601(input, timezone)
+  defp parse_datetime(_input, format, _timezone), do: {:error, "Unsupported format: #{format}"}
+
+  defp parse_unix(input) do
+    case Integer.parse(input) do
+      {timestamp, ""} ->
+        case DateTime.from_unix(timestamp) do
+          {:ok, dt} -> {:ok, dt}
+          _ -> {:error, "Invalid Unix timestamp"}
+        end
+      
+      _ ->
+        {:error, "Invalid Unix timestamp format"}
+    end
+  end
+
+  defp parse_iso8601(input, timezone) do
+    case Timex.parse(input, "{ISO:Extended}") do
+      {:ok, dt} ->
+        # Convert to specified timezone if no timezone in input
+        dt = if is_nil(dt.time_zone) or dt.time_zone == "Etc/UTC" do
+          Timex.to_datetime(dt, timezone)
+        else
+          dt
+        end
+        {:ok, dt}
+      
+      {:error, _reason} ->
+        # Try other formats
+        try_alternative_formats(input, timezone)
+    end
+  rescue
+    _ -> {:error, "Failed to parse ISO8601 datetime"}
+  end
+
+  defp try_alternative_formats(input, timezone) do
+    formats = [
+      "{YYYY}-{0M}-{0D}",
+      "{YYYY}-{0M}-{0D} {h24}:{m}:{s}",
+      "{0M}/{0D}/{YYYY}",
+      "{0M}/{0D}/{YYYY} {h12}:{m} {AM}"
+    ]
+    
+    Enum.find_value(formats, {:error, "Unrecognized datetime format"}, fn format ->
+      case Timex.parse(input, format) do
+        {:ok, naive_dt} ->
+          {:ok, Timex.to_datetime(naive_dt, timezone)}
+        _ ->
+          nil
+      end
+    end)
+  end
+
+  defp parse_relative(input, timezone) do
+    now = Timex.now(timezone)
+    input_lower = String.downcase(input)
+    
+    result = cond do
+      input_lower == "now" ->
+        {:ok, now}
+      
+      input_lower == "today" ->
+        {:ok, Timex.beginning_of_day(now)}
+      
+      input_lower == "tomorrow" ->
+        {:ok, Timex.shift(now, days: 1) |> Timex.beginning_of_day()}
+      
+      input_lower == "yesterday" ->
+        {:ok, Timex.shift(now, days: -1) |> Timex.beginning_of_day()}
+      
+      # "2 hours ago", "3 days ago"
+      Regex.match?(~r/^(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i, input_lower) ->
+        parse_relative_ago(input_lower, now)
+      
+      # "in 2 hours", "in 3 days"
+      Regex.match?(~r/^in\s+(\d+)\s+(second|minute|hour|day|week|month|year)s?$/i, input_lower) ->
+        parse_relative_future(input_lower, now)
+      
+      # "next Monday", "last Friday"
+      Regex.match?(~r/^(next|last)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i, input_lower) ->
+        parse_relative_weekday(input_lower, now)
+      
+      true ->
+        {:error, "Unrecognized relative expression"}
+    end
+    
+    case result do
+      {:ok, dt} -> {:ok, dt}
+      error -> error
+    end
+  end
+
+  defp parse_relative_ago(input, now) do
+    case Regex.run(~r/^(\d+)\s+(second|minute|hour|day|week|month|year)s?\s+ago$/i, input) do
+      [_, amount, unit] ->
+        amount = String.to_integer(amount)
+        shift_opts = [{String.to_atom(unit <> "s"), -amount}]
+        {:ok, Timex.shift(now, shift_opts)}
+      
+      _ ->
+        {:error, "Invalid relative expression"}
+    end
+  end
+
+  defp parse_relative_future(input, now) do
+    case Regex.run(~r/^in\s+(\d+)\s+(second|minute|hour|day|week|month|year)s?$/i, input) do
+      [_, amount, unit] ->
+        amount = String.to_integer(amount)
+        shift_opts = [{String.to_atom(unit <> "s"), amount}]
+        {:ok, Timex.shift(now, shift_opts)}
+      
+      _ ->
+        {:error, "Invalid relative expression"}
+    end
+  end
+
+  defp parse_relative_weekday(input, now) do
+    case Regex.run(~r/^(next|last)\s+(monday|tuesday|wednesday|thursday|friday|saturday|sunday)$/i, input) do
+      [_, direction, weekday] ->
+        target_day = weekday_to_number(weekday)
+        current_day = Timex.weekday(now)
+        
+        days_diff = if direction == "next" do
+          rem(target_day - current_day + 7, 7)
+        else
+          -rem(current_day - target_day + 7, 7)
+        end
+        
+        {:ok, Timex.shift(now, days: days_diff) |> Timex.beginning_of_day()}
+      
+      _ ->
+        {:error, "Invalid weekday expression"}
+    end
+  end
+
+  defp weekday_to_number("monday"), do: 1
+  defp weekday_to_number("tuesday"), do: 2
+  defp weekday_to_number("wednesday"), do: 3
+  defp weekday_to_number("thursday"), do: 4
+  defp weekday_to_number("friday"), do: 5
+  defp weekday_to_number("saturday"), do: 6
+  defp weekday_to_number("sunday"), do: 7
+end
+```
+
+Example usage:
+```json
+{
+  "input": "2 hours ago",
+  "timezone": "America/Los_Angeles"
+}
+```
+
+Example response:
+```json
+{
+  "datetime": "2026-02-06T08:30:45-08:00",
+  "iso8601": "2026-02-06T08:30:45-08:00",
+  "unix": 1770397845,
+  "timezone": "America/Los_Angeles",
+  "components": {
+    "year": 2026,
+    "month": 2,
+    "day": 6,
+    "hour": 8,
+    "minute": 30,
+    "second": 45
+  }
+}
+```
+
+Security considerations:
+- No security risks (parsing only, no system modifications)
+- Input validation prevents injection attacks
+- No external API calls

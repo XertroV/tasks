@@ -1,0 +1,47 @@
+id: P39.M4.E2
+name: CompanionChannel Management Events
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on:
+- E1
+locked: false
+tasks:
+- id: T001
+  file: T001-add-list-agents-management-eve.todo
+  title: Add list_agents management event to CompanionChannel
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-resolve-main-agent-managem.todo
+  title: Add resolve_main_agent management event to CompanionChannel
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-create-session-management.todo
+  title: Add create_session management event to CompanionChannel
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-write-pag-connect-phase-3-resp.todo
+  title: Write pag-connect Phase 3 response document
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

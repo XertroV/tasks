@@ -1,0 +1,38 @@
+id: P55.M3.E2
+name: Tool Calls and Approvals
+status: done
+estimate_hours: 4.5
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-tool-call-card-component-with.todo
+  title: Tool call card component with state rendering
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-approval-banner-with-approve-d.todo
+  title: Approval banner with approve/deny buttons
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-wire-tool-and-approval-pubsub.todo
+  title: Wire tool and approval PubSub events to LiveView state
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

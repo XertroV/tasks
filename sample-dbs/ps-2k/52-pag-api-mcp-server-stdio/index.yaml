@@ -1,0 +1,47 @@
+id: P52
+name: PAG API MCP Server (stdio)
+status: done
+locked: true
+weeks: 1
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: MCP server scaffold and contract
+  path: 01-mcp-server-scaffold-and-contra
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: Define stdio MCP scope for PAG API access, select packaging approach,
+    and scaffold runnable server entrypoint.
+  locked: false
+- id: M2
+  name: Core MCP-PAG bridge implementation
+  path: 02-core-mcp-pag-bridge-implementa
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P52.M1
+  description: Implement stdio MCP server operations backed by PAG API with robust
+    error mapping and session-aware auth.
+  locked: false
+- id: M3
+  name: Verification and release readiness
+  path: 03-verification-and-release-readi
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on:
+  - P52.M2
+  description: Validate interoperability with MCP clients and document usage, failure
+    modes, and rollout guidance.
+  locked: false
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,17 @@
+---
+id: P15.M12.E1.T004
+title: Write tests for BotConfig session_id migration and schema
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P15.M12.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:40:43.050494+00:00'
+started_at: '2026-02-18T06:40:43.050494+00:00'
+completed_at: '2026-02-18T06:45:06.499946+00:00'
+duration_minutes: 4.390824033333333
+---
+Tests in test/pag_server/bot_configs_test.exs (or new test/pag_server/schema/bot_config_test.exs): (1) create bot_config with valid session_id succeeds; (2) create bot_config without session_id succeeds (nullable); (3) deleting the referenced session nilifies bot_config.session_id (on_delete: :nilify_all behavior); (4) list_bot_configs with preload returns session and agent. Use DataCase, async: true, unique names.

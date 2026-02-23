@@ -1,0 +1,330 @@
+---
+id: P1.M4.E1.T004
+title: Add PubSub subscription support
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P1.M4.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:40:09.494040'
+started_at: '2026-02-05T09:40:09.494040'
+completed_at: '2026-02-05T09:40:21.336749'
+tags:
+- event-store
+- pubsub
+- subscriptions
+- real-time
+---
+
+# Add PubSub subscription support
+
+Add subscription functionality to EventStore for real-time event streaming.
+
+## Requirements
+
+- [ ] Implement `subscribe/1` function to subscribe to event topics
+  - [ ] Client API function (calls GenServer.call)
+  - [ ] Server callback handler
+  - [ ] Track subscriber PIDs by topic
+  - [ ] Monitor subscriber processes for auto-cleanup
+  - [ ] Return `:ok` or `{:error, reason}`
+- [ ] Implement `unsubscribe/1` function to unsubscribe from topics
+  - [ ] Client API function (calls GenServer.call)
+  - [ ] Server callback handler
+  - [ ] Remove subscriber from topic
+  - [ ] Return `:ok`
+- [ ] Update `append_event/1` to broadcast to subscribers
+  - [ ] Broadcast after successful append
+  - [ ] Send to all subscribers of relevant topics
+  - [ ] Topic pattern: `"events:#{session_id}"` and `"events:agent:#{agent_id}"`
+- [ ] Implement `handle_info/2` for process monitoring
+  - [ ] Handle `:DOWN` messages
+  - [ ] Remove dead processes from subscriptions
+- [ ] Add type specifications and documentation
+- [ ] Ensure no memory leaks from orphaned subscriptions
+
+## Acceptance Criteria
+
+- [ ] `subscribe/1` successfully subscribes calling process
+- [ ] Subscribers receive events after subscription
+- [ ] Subscribers only receive events for their subscribed topics
+- [ ] `unsubscribe/1` stops event delivery
+- [ ] Dead subscriber processes are auto-removed via monitoring
+- [ ] Multiple subscribers can subscribe to the same topic
+- [ ] Broadcasting doesn't block the EventStore GenServer
+- [ ] No memory leaks when processes crash without unsubscribing
+- [ ] All functions have proper type specs
+- [ ] Dialyzer passes with no type errors
+- [ ] Module compiles without warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 7.1 (Session Replay)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.6 (Events Domain)
+
+**Key Requirements**:
+- Enable real-time event streaming to agents and clients
+- Support multiple subscribers per topic
+- Auto-cleanup dead subscribers to prevent memory leaks
+- Non-blocking broadcasts (use send, not GenServer.call)
+
+## Implementation Guide
+
+### Subscribe Function
+
+```elixir
+@doc """
+Subscribe the calling process to event notifications for a topic.
+
+The subscriber will receive messages in the format:
+`{:event, topic, event}` for each new event matching the topic.
+
+The subscription is automatically cleaned up when the subscriber process dies.
+
+## Parameters
+
+  - `topic` - Topic string to subscribe to
+
+## Topic Patterns
+
+  - `"events:#{session_id}"` - All events for a specific session
+  - `"events:agent:#{agent_id}"` - All events for a specific agent
+  - `"events:all"` - All events (use sparingly, high traffic)
+
+## Returns
+
+  - `:ok` - Successfully subscribed
+
+## Examples
+
+    # Subscribe to session events
+    :ok = EventStore.subscribe("events:abc123")
+
+    # Receive events in mailbox
+    receive do
+      {:event, topic, event} ->
+        IO.inspect(event, label: "Received event")
+    end
+
+    # Subscribe to agent events
+    :ok = EventStore.subscribe("events:agent:xyz789")
+"""
+@spec subscribe(String.t()) :: :ok
+def subscribe(topic) when is_binary(topic) do
+  GenServer.call(__MODULE__, {:subscribe, topic, self()})
+end
+
+@doc """
+Unsubscribe the calling process from a topic.
+
+## Parameters
+
+  - `topic` - Topic string to unsubscribe from
+
+## Returns
+
+  - `:ok` - Successfully unsubscribed (or was not subscribed)
+
+## Examples
+
+    :ok = EventStore.unsubscribe("events:abc123")
+"""
+@spec unsubscribe(String.t()) :: :ok
+def unsubscribe(topic) when is_binary(topic) do
+  GenServer.call(__MODULE__, {:unsubscribe, topic, self()})
+end
+
+@impl true
+def handle_call({:subscribe, topic, pid}, _from, state) do
+  # Monitor the subscriber process for cleanup
+  Process.monitor(pid)
+
+  # Add subscriber to topic
+  subscribers = Map.get(state.subscriptions, topic, [])
+  new_subscriptions = Map.put(state.subscriptions, topic, [pid | subscribers])
+
+  {:reply, :ok, %{state | subscriptions: new_subscriptions}}
+end
+
+@impl true
+def handle_call({:unsubscribe, topic, pid}, _from, state) do
+  # Remove subscriber from topic
+  subscribers = Map.get(state.subscriptions, topic, [])
+  new_subscribers = List.delete(subscribers, pid)
+
+  new_subscriptions =
+    if new_subscribers == [] do
+      Map.delete(state.subscriptions, topic)
+    else
+      Map.put(state.subscriptions, topic, new_subscribers)
+    end
+
+  {:reply, :ok, %{state | subscriptions: new_subscriptions}}
+end
+```
+
+### Broadcasting on Append
+
+```elixir
+@impl true
+def handle_call({:append_event, event}, _from, state) do
+  case validate_event(event) do
+    :ok ->
+      event_with_id = %{event | id: state.next_id, inserted_at: DateTime.utc_now()}
+      new_state = %{
+        state |
+        events: state.events ++ [event_with_id],
+        next_id: state.next_id + 1
+      }
+
+      # Broadcast to subscribers (non-blocking)
+      broadcast_event(event_with_id, new_state.subscriptions)
+
+      {:reply, {:ok, event_with_id.id}, new_state}
+
+    {:error, reason} ->
+      {:reply, {:error, reason}, state}
+  end
+end
+
+# Private broadcast function
+defp broadcast_event(event, subscriptions) do
+  # Build list of topics to broadcast to
+  topics = build_topics(event)
+
+  # Send to all subscribers of relevant topics
+  for topic <- topics,
+      subscribers <- [Map.get(subscriptions, topic, [])],
+      pid <- subscribers do
+    send(pid, {:event, topic, event})
+  end
+end
+
+defp build_topics(event) do
+  topics = ["events:all"]
+
+  topics =
+    if event.session_id do
+      ["events:#{event.session_id}" | topics]
+    else
+      topics
+    end
+
+  topics =
+    if event.agent_id do
+      ["events:agent:#{event.agent_id}" | topics]
+    else
+      topics
+    end
+
+  topics
+end
+```
+
+### Process Monitoring for Cleanup
+
+```elixir
+@impl true
+def handle_info({:DOWN, _ref, :process, pid, _reason}, state) do
+  # Remove dead process from all subscriptions
+  new_subscriptions =
+    state.subscriptions
+    |> Enum.map(fn {topic, subscribers} ->
+      {topic, List.delete(subscribers, pid)}
+    end)
+    |> Enum.reject(fn {_topic, subscribers} -> subscribers == [] end)
+    |> Enum.into(%{})
+
+  {:noreply, %{state | subscriptions: new_subscriptions}}
+end
+```
+
+## Notes
+
+### Topic Design
+
+**Topic Patterns**:
+- `"events:#{session_id}"` - Session-specific events
+- `"events:agent:#{agent_id}"` - Agent-specific events
+- `"events:all"` - All events (for monitoring/debugging)
+
+**Why These Patterns?**:
+- Simple string matching (no regex needed)
+- Clear hierarchy and scoping
+- Efficient lookup (map keys)
+
+### Process Monitoring
+
+**Why Monitor Subscribers?**:
+- Prevent memory leaks from crashed processes
+- Automatic cleanup without manual unsubscribe
+- No orphaned subscriptions in state
+
+**How It Works**:
+1. `Process.monitor(pid)` on subscribe
+2. Receive `{:DOWN, ...}` when process dies
+3. Remove from all subscriptions in `handle_info/2`
+
+### Broadcasting Strategy
+
+**Why `send/2` instead of `GenServer.call/2`?**:
+- Non-blocking (doesn't wait for acknowledgment)
+- Fast - O(1) per subscriber
+- Subscribers handle events asynchronously
+
+**Delivery Guarantees**:
+- At-most-once delivery (send may fail silently)
+- No ordering guarantees across subscribers
+- Within-subscriber ordering is guaranteed (erlang messaging)
+
+**Alternative**: Phoenix.PubSub (Phase 2)
+- Distributed pub/sub
+- Better for multi-node deployments
+- Built-in presence tracking
+
+### Memory Management
+
+**Subscription Tracking**:
+- Map of topics → list of PIDs
+- Memory: ~16 bytes per subscription
+- 10K subscriptions ≈ 160KB
+
+**Cleanup**:
+- Automatic via process monitoring
+- Empty topic lists removed from map
+- No manual cleanup needed
+
+### Testing Strategy
+
+**Test Cases**:
+1. Subscribe and receive events
+2. Unsubscribe and stop receiving
+3. Multiple subscribers on same topic
+4. Subscriber process crash cleanup
+5. No events to unrelated topics
+6. Broadcasting doesn't block store
+
+## Troubleshooting
+
+**Events not received**:
+- Check topic name matches event attributes
+- Verify subscriber process is alive
+- Check mailbox with `:erlang.process_info(pid, :messages)`
+
+**Memory leak suspicion**:
+- Inspect subscriptions: `GenServer.call(EventStore, :get_subscriptions)` (add for debugging)
+- Check for orphaned PIDs
+- Verify `:DOWN` messages are handled
+
+**Performance issues**:
+- Monitor subscriber count per topic
+- Consider rate limiting if needed
+- Check for slow subscribers blocking their own mailbox
+
+**Lost events**:
+- Remember: at-most-once delivery
+- Subscriber mailbox can overflow (default limit ~10K messages)
+- Consider Phoenix.PubSub for better guarantees (Phase 2)

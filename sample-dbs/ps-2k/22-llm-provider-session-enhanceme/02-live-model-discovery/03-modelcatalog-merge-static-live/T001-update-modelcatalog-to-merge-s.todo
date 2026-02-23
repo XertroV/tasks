@@ -1,0 +1,17 @@
+---
+id: P22.M2.E3.T001
+title: Update ModelCatalog to merge static models with live models from cache
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M2.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:07:30.114266+00:00'
+started_at: '2026-02-18T15:07:30.114266+00:00'
+completed_at: '2026-02-18T15:20:19.242548+00:00'
+duration_minutes: 12.818804433333334
+---
+Update lib/pag_server/llm/model_catalog.ex. In list_models/1 and get_model/2: if ModelDiscoveryCache has cached models for the provider, merge them with static models. Live models take precedence for availability status. If a static model exists in live list -> available=true. If static model not in live list -> mark as unavailable (not removed, just flagged). New live-only models appended. Acceptance criteria: - Static models retained even if not in live list (just flagged unavailable) - Live models with same id as static models update availability - New models from live discovery appear in catalog - Falls back to static-only if cache is empty or GenServer not running

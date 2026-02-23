@@ -1,0 +1,35 @@
+id: P46.M5.E2
+name: User Profile REST API & Integration Tests
+status: done
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-user-profile-rest-api-endp.todo
+  title: Add user profile REST API endpoints
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P46.M1.E3.T001
+  - P46.M3.E1.T003
+- id: T002
+  file: T002-integration-tests-for-full-oau.todo
+  title: Integration tests for full OAuth login and session lifecycle
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M2.E2.T001
+  - P46.M3.E3.T001
+  - P46.M4.E2.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

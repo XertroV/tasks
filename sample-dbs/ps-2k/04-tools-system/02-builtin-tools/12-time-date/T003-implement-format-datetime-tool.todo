@@ -1,0 +1,195 @@
+---
+id: P4.M2.E12.T003
+title: Implement format_datetime tool
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on: []
+tags:
+- tools
+- time
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:07:12.688265'
+started_at: '2026-02-06T03:07:12.688265'
+completed_at: '2026-02-06T03:08:53.618670'
+duration_minutes: 1.6821731333333332
+---
+
+# Implement format_datetime tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/format_datetime.ex` (~80 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use Timex for flexible formatting
+- [ ] Support common presets (iso8601, rfc3339, http, human)
+- [ ] Support custom format strings (strftime-style)
+- [ ] Handle timezone conversion before formatting
+- [ ] Return formatted string
+
+## Acceptance Criteria
+
+- [ ] Accepts datetime (ISO8601 or Unix timestamp) and format specification
+- [ ] Supports preset formats: iso8601, rfc3339, unix, http_date, human
+- [ ] Supports custom format strings using Timex tokens
+- [ ] Optionally converts to different timezone before formatting
+- [ ] Returns formatted string
+- [ ] Handles errors: invalid datetime, invalid format, invalid timezone
+- [ ] Test coverage: preset formats, custom formats, timezone conversion, invalid inputs
+- [ ] No security concerns (formatting only)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Timex format strings are powerful and familiar
+- Presets cover common use cases
+- Timezone conversion before formatting is common need
+- Simple, focused tool
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.FormatDatetime do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "format_datetime"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "format_datetime",
+      description: "Format a datetime value into a string",
+      parameters: %{
+        type: "object",
+        properties: %{
+          datetime: %{
+            type: "string",
+            description: "Datetime to format (ISO8601 or Unix timestamp)"
+          },
+          format: %{
+            type: "string",
+            description: "Format preset (iso8601, rfc3339, unix, http_date, human) or custom Timex format string"
+          },
+          timezone: %{
+            type: "string",
+            description: "Convert to timezone before formatting (optional)"
+          }
+        },
+        required: ["datetime", "format"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"datetime" => dt_input, "format" => format} = args, _context) do
+    with {:ok, dt} <- parse_datetime(dt_input),
+         {:ok, dt} <- maybe_convert_timezone(dt, args),
+         {:ok, formatted} <- format_datetime(dt, format) do
+      {:ok, %{formatted: formatted}}
+    else
+      {:error, reason} -> {:error, "Format datetime failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp parse_datetime(input) do
+    cond do
+      # Unix timestamp
+      Regex.match?(~r/^\d+$/, input) ->
+        case Integer.parse(input) do
+          {timestamp, ""} -> DateTime.from_unix(timestamp)
+          _ -> {:error, "Invalid Unix timestamp"}
+        end
+      
+      # ISO8601
+      true ->
+        case Timex.parse(input, "{ISO:Extended}") do
+          {:ok, dt} -> {:ok, dt}
+          _ -> {:error, "Invalid datetime format"}
+        end
+    end
+  end
+
+  defp maybe_convert_timezone(dt, %{"timezone" => tz}) when not is_nil(tz) do
+    case Timex.Timezone.convert(dt, tz) do
+      %DateTime{} = converted -> {:ok, converted}
+      _ -> {:error, "Invalid timezone: #{tz}"}
+    end
+  rescue
+    _ -> {:error, "Failed to convert timezone"}
+  end
+  defp maybe_convert_timezone(dt, _args), do: {:ok, dt}
+
+  defp format_datetime(dt, "iso8601") do
+    {:ok, DateTime.to_iso8601(dt)}
+  end
+  
+  defp format_datetime(dt, "rfc3339") do
+    {:ok, DateTime.to_iso8601(dt)}
+  end
+  
+  defp format_datetime(dt, "unix") do
+    {:ok, to_string(DateTime.to_unix(dt))}
+  end
+  
+  defp format_datetime(dt, "http_date") do
+    # RFC 7231 HTTP date format
+    {:ok, Timex.format!(dt, "{WDshort}, {D} {Mshort} {YYYY} {h24}:{m}:{s} GMT")}
+  end
+  
+  defp format_datetime(dt, "human") do
+    {:ok, Timex.format!(dt, "{WDfull}, {Mfull} {D}, {YYYY} at {h12}:{m}:{s} {AM}")}
+  end
+  
+  defp format_datetime(dt, custom_format) do
+    # Custom Timex format string
+    case Timex.format(dt, custom_format) do
+      {:ok, formatted} -> {:ok, formatted}
+      {:error, reason} -> {:error, "Invalid format string: #{inspect(reason)}"}
+    end
+  rescue
+    e -> {:error, "Format failed: #{Exception.message(e)}"}
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "datetime": "2026-02-06T15:30:45Z",
+  "format": "{YYYY}-{0M}-{0D} at {h12}:{m} {AM}",
+  "timezone": "America/New_York"
+}
+```
+
+Example response:
+```json
+{
+  "formatted": "2026-02-06 at 10:30 AM"
+}
+```
+
+Common Timex format tokens:
+- `{YYYY}` - 4-digit year
+- `{0M}` - 2-digit month (zero-padded)
+- `{0D}` - 2-digit day (zero-padded)
+- `{h24}` - 24-hour hour
+- `{h12}` - 12-hour hour
+- `{m}` - minute
+- `{s}` - second
+- `{AM}` - AM/PM
+- `{WDfull}` - Full weekday name
+- `{Mfull}` - Full month name
+
+Security considerations:
+- No security risks (formatting only)
+- No system modifications
+- Input validation prevents errors

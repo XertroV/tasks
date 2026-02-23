@@ -1,0 +1,37 @@
+id: P2.M8.E4
+name: Provider Fallback
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-define-primary-fallback-provid.todo
+  title: Define primary/fallback provider config
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-automatic-failover-o.todo
+  title: Implement automatic failover on provider error
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-provider-health-check-inte.todo
+  title: Add provider health check integration
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

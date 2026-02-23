@@ -1,0 +1,151 @@
+---
+id: P1.M1.E1.T004
+title: Verify project setup
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:47:51.698094'
+started_at: '2026-02-05T07:47:51.698094'
+completed_at: '2026-02-05T07:49:16.249655'
+tags:
+- verification
+- testing
+- quality
+---
+
+# Verify project setup
+
+Comprehensive verification that the Phoenix project is correctly configured and ready for development.
+
+## Requirements
+
+### Compilation & Formatting
+- [ ] Run `mix compile --warnings-as-errors` (must pass)
+- [ ] Run `mix format --check-formatted` (must pass)
+- [ ] Run `mix deps.unlock --check-unused` (no unused deps)
+
+### Testing
+- [ ] Run `mix test` (all tests pass)
+- [ ] Verify test coverage setup works
+- [ ] Check that test database is isolated (Ecto Sandbox)
+
+### Code Quality
+- [ ] Run `mix credo --strict` (should pass, may need config tweaks)
+- [ ] Run `mix deps.audit` if available (check for security advisories)
+
+### Application Startup
+- [ ] Start application: `mix phx.server`
+- [ ] Verify it starts without errors
+- [ ] Check Phoenix endpoint is accessible at http://localhost:4000
+- [ ] Verify Phoenix LiveDashboard is accessible at http://localhost:4000/dev/dashboard
+
+### Project Structure
+- [ ] Verify directory structure matches architecture plan:
+  ```
+  lib/
+  ├── pag_server/
+  │   ├── application.ex
+  │   └── repo.ex
+  ├── pag_server_web/
+  │   ├── endpoint.ex
+  │   └── router.ex
+  └── pag_server.ex
+  ```
+- [ ] Verify `test/` mirrors `lib/` structure
+- [ ] Check `config/` has all required files (config.exs, dev.exs, test.exs, prod.exs, runtime.exs)
+
+### Documentation
+- [ ] README.md exists with basic setup instructions
+- [ ] .env.example exists
+- [ ] All environment variables are documented
+
+### Git Status
+- [ ] All changes are committed
+- [ ] Working directory is clean (`git status`)
+- [ ] No ignored files with secrets (check .gitignore)
+
+### Final Checks
+- [ ] Run full verification script:
+  ```bash
+  mix do compile --warnings-as-errors, format --check-formatted, test, credo
+  ```
+- [ ] Document any issues or warnings in task notes
+- [ ] Commit final verification: "Verify Phoenix project setup complete"
+
+## Acceptance Criteria
+
+- [ ] Zero compilation warnings
+- [ ] All tests pass
+- [ ] Application starts successfully
+- [ ] Phoenix LiveDashboard accessible
+- [ ] Code formatting is correct
+- [ ] Credo passes (or documented exceptions)
+- [ ] All files committed to git
+- [ ] Clean git working directory
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 2 (Project Structure)
+- `.plan/2026-02-05-velvet-cascade/testing.md` Section 4.1 (CI/CD Integration)
+
+This verification ensures we have a solid foundation before moving to database setup and schema creation.
+
+## Notes
+
+### Verification Script
+
+Create a simple verification script for future use:
+
+```bash
+#!/bin/bash
+# verify.sh - Run all verification checks
+
+set -e
+
+echo "=== Checking compilation..."
+mix compile --warnings-as-errors
+
+echo "=== Checking formatting..."
+mix format --check-formatted
+
+echo "=== Checking unused deps..."
+mix deps.unlock --check-unused
+
+echo "=== Running tests..."
+mix test
+
+echo "=== Running credo..."
+mix credo --strict || echo "Credo warnings found (non-fatal)"
+
+echo "✅ All checks passed!"
+```
+
+Make it executable:
+```bash
+chmod +x verify.sh
+```
+
+### Common Issues & Solutions
+
+**Issue**: Compilation warnings about unused variables
+- **Solution**: Prefix with underscore: `_unused_var`
+
+**Issue**: Credo complains about module documentation
+- **Solution**: Add `@moduledoc` to all modules, or configure Credo to allow missing docs in test files
+
+**Issue**: Tests fail with database errors
+- **Solution**: Check `config/test.exs` has `pool: Ecto.Adapters.SQL.Sandbox`
+
+**Issue**: Application won't start
+- **Solution**: Check logs for errors, verify database configuration, ensure all required env vars are set
+
+### Next Steps
+
+After verification passes:
+- Move to P1.M1.E2 (Database Setup)
+- Begin creating Ecto migrations for core schemas
+- Set up test infrastructure with ExMachina and Mox

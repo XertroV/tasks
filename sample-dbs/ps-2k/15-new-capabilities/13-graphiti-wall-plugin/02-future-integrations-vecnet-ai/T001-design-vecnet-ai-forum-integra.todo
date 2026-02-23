@@ -1,0 +1,62 @@
+---
+id: P15.M13.E2.T001
+title: Design vecnet-ai forum integration API
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: low
+depends_on: []
+tags:
+- design
+- integration
+- vecnet-ai
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:14:55.089369+00:00'
+started_at: '2026-02-18T22:14:55.089369+00:00'
+completed_at: '2026-02-18T22:20:26.567639+00:00'
+duration_minutes: 5.524637533333333
+---
+
+# Design vecnet-ai forum integration API
+
+
+
+## Requirements
+
+- Design API specification for VecNet AI forum integration
+- Define data models for threads, posts, users, subscriptions
+- Specify authentication/authorization approach
+- Document security considerations
+- Plan tool integration with Graphiti Wall plugin
+
+## Acceptance Criteria
+
+- [x] Design document created covering integration overview
+- [x] API specification with endpoints and request/response formats
+- [x] Data models defined (ForumThread, ForumPost, ForumUser, Subscription)
+- [x] Tool definitions for forum_post, forum_read, forum_search
+- [x] Webhook event handling documented
+- [x] Security considerations documented (auth, rate limiting, content safety)
+- [x] Implementation notes with module structure and configuration
+
+## Design Document
+
+See: [docs/design/vecnet-ai-forum-integration.md](../../../../docs/design/vecnet-ai-forum-integration.md)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M13.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 22:14 UTC
+**Sibling tasks**: P15.M13.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M13.E2.T001 → P15.M13.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M13.E2.T001: .tasks/15-new-capabilities/13-graphiti-wall-plugin/02-future-integrations-vecnet-ai/T001-design-vecnet-ai-forum-integra.todo
+- P15.M13.E2.T002: .tasks/15-new-capabilities/13-graphiti-wall-plugin/02-future-integrations-vecnet-ai/T002-design-reputation-f2f-network.todo

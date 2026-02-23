@@ -1,0 +1,34 @@
+# Epic: Agent Communications
+# Phase 4, Milestone 2, Epic 4 (P4.M2.E4)
+
+id: P4.M2.E4
+name: Agent Communications
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-send-message.todo
+    title: Implement send_message tool
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-spawn-subagent.todo
+    title: Implement spawn_subagent tool
+    status: pending
+    estimate_hours: 2.0
+    complexity: medium
+    priority: high
+
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

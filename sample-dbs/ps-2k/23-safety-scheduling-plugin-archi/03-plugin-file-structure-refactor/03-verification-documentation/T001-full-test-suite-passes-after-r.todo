@@ -1,0 +1,40 @@
+---
+id: P23.M3.E3.T001
+title: Full test suite passes after refactor
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on:
+- P23.M3.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:13:58.889939+00:00'
+started_at: '2026-02-18T16:13:58.889939+00:00'
+completed_at: '2026-02-18T17:28:12.699207+00:00'
+duration_minutes: 74.23015430000001
+---
+Gate task: verify nothing broke.
+
+## Acceptance Criteria
+- [ ] `mix test` passes with zero failures
+- [ ] `mix lint` (format + credo + dialyzer) passes with no new warnings
+- [ ] No Elixir compiler warnings about undefined modules or missing files
+- [ ] `mix compile --warnings-as-errors` succeeds
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P23.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-18 16:13 UTC
+**Sibling tasks**: P23.M3.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P23.M3.E3.T001 → P23.M3.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P23.M3.E3.T001: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/03-verification-documentation/T001-full-test-suite-passes-after-r.todo
+- P23.M3.E3.T002: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/03-verification-documentation/T002-update-plugin-development-md-f.todo

@@ -1,0 +1,53 @@
+id: P4.M2.E9
+name: Git Operations
+status: pending
+estimate_hours: 8.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-git-status-tool.todo
+  title: Implement git_status tool
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-git-diff-tool.todo
+  title: Implement git_diff tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-git-log-tool.todo
+  title: Implement git_log tool
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-implement-git-commit-tool.todo
+  title: Implement git_commit tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-implement-git-clone-tool.todo
+  title: Implement git_clone tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

@@ -1,0 +1,57 @@
+---
+id: P51.M3.E2.T002
+title: Verification pass & Playwright scenario notes
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:01:40.396641+00:00'
+started_at: '2026-02-21T04:01:40.396641+00:00'
+completed_at: '2026-02-21T04:04:59.591356+00:00'
+duration_minutes: 3.31991175
+---
+## Purpose
+Re-test fixed areas via browser and capture Playwright scenario stubs for regression tests.
+
+## Acceptance Criteria
+- [x] Each fixed bug re-tested in browser — confirm resolution
+- [x] Any regressions found filed as new bugs (backlog bug)
+- [x] All fixed bugs have Playwright scenario section populated:
+  - Test name (e.g., 'validation console sends message and receives response')
+  - Preconditions (logged in, workspace exists, agent configured with model X)
+  - Steps (navigate → type → send → wait → assert)
+  - Assertions (response appears, session ID visible, no console errors)
+- [x] docs/browser-testing/playwright-scenarios.md created with all scenario stubs
+
+## Playwright Scenario Format
+```
+test('[test name]', async ({ page }) => {
+  // Preconditions: [describe state]
+  // Steps:
+  //   1. await page.goto('/dashboard/validation-console')
+  //   2. await page.click('[data-testid="new-session"]')
+  //   3. await page.fill('[data-testid="message-input"]', 'Hello')
+  //   4. await page.click('[data-testid="send-button"]')
+  //   5. await expect(page.locator('.message.assistant')).toBeVisible()
+});
+```
+
+## Notes
+The Playwright scenarios don't need to be runnable yet — they're documentation for future test authoring. Focus on capturing the intent clearly.
+
+## Execution Notes (2026-02-21)
+- Re-verified browser behavior for recently fixed Skill Hub bugs:
+  - `B171`: search miss now renders `No skills found.` without fetch error banner.
+  - `B172`: detail interaction renders modal chrome/content (`boof`, action buttons) instead of blank payload render.
+- Re-verified pair plugin route from `B174`: `/plugins/pair_programming/sessions/:session_id` now mounts Pair Session LiveView (no route error).
+- Added/updated Playwright scenario notes in bug records missing structured sections (`B163`, `B165`, `B171`, `B172`, `B174`).
+- Added consolidated scenario catalog at `docs/browser-testing/playwright-scenarios.md` for B163-B170, B171, B172, and B174.
+- New regressions discovered during this pass were already captured as `B173` (UI flow missing) and `B174` (backend bootstrap path); no additional regressions were found in this verification loop.
+- Verification coverage for prior fix-sprint bugs was documented explicitly in bug files:
+  - `B164` plugin settings persistence.
+  - `B166`/`B167` OpenAI-compat envelope + invalid-model validation.
+  - `B168`/`B169` credentials vault 4xx handling (no 500 crash).
+  - `B170` provider-hinted routing behavior.

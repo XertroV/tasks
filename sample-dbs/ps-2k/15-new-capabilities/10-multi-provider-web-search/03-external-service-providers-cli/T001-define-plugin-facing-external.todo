@@ -1,0 +1,33 @@
+---
+id: P15.M10.E3.T001
+title: Define plugin-facing external provider contract for CLI and MCP search
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P15.M10.E1.T001
+tags:
+- plugin
+- web-search
+- mcp
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:41:05.970580+00:00'
+started_at: '2026-02-17T15:41:05.970580+00:00'
+completed_at: '2026-02-17T15:44:27.155250+00:00'
+duration_minutes: 3.3530776500000004
+---
+
+# Define plugin-facing external provider contract for CLI and MCP search
+
+
+
+## Requirements
+
+- Define plugin-oriented external-provider contract for providers executed via CLI and MCP.
+- Include normalization and safety requirements (timeouts, output parsing constraints, error boundaries).
+
+## Acceptance Criteria
+
+- Contract supports external providers without coupling to specific CLI tools.
+- Contract docs specify required adapter guarantees and failure semantics.

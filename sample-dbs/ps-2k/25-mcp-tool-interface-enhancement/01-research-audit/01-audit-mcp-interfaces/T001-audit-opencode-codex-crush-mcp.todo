@@ -1,0 +1,44 @@
+---
+id: P25.M1.E1.T001
+title: Audit opencode/codex/crush MCP tool interfaces from ref-projects/
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- research
+- mcp
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:05:54.543075+00:00'
+started_at: '2026-02-18T18:05:54.543075+00:00'
+completed_at: '2026-02-18T18:17:09.744697+00:00'
+duration_minutes: 11.253360216666666
+---
+
+# Audit opencode/codex/crush MCP tool interfaces from ref-projects/
+
+Read the source code in `ref-projects/` for opencode, codex, crush, and any other
+relevant coding CLIs. For each project, extract the MCP tool definitions for tools
+such as: `bash`/`execute_shell`, `edit`/`str_replace`, `glob`/`find`, `read`/`cat`,
+`write`, `list`/`ls`, and agent spawning / subagent tools.
+
+## Requirements
+
+- Read ref-projects/ for: opencode, codex, crush, and any others present
+- For each tool type in each project, record:
+  - Tool name
+  - Input parameter names and types
+  - Parameter descriptions (verbatim if possible)
+  - Return value structure
+  - Any notable UX affordances (e.g. line-range reading, dry-run mode, etc.)
+- Focus on: bash/exec, file read, file write, file edit, glob/find, list dir, spawn subagent
+
+## Acceptance Criteria
+
+- [ ] All relevant ref-projects/ CLIs audited for MCP tool definitions
+- [ ] Each tool type catalogued with parameter names, types, and descriptions
+- [ ] Notable UX patterns and affordances documented per tool per CLI
+- [ ] Output stored as a markdown document in docs/ or as a finding in T002
+- [ ] Covers at minimum: bash/exec, read, write, edit, glob, list, spawn-agent tools

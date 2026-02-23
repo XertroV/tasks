@@ -1,0 +1,32 @@
+id: P36.M2.E1
+name: Agent Manager UI
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-execution-mode-dropdown-an.todo
+  title: Add execution mode dropdown and auto-start toggle to Agent Manager LiveView
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P36.M1.E1.T001
+- id: T002
+  file: T002-show-execution-mode-badge-and.todo
+  title: Show execution mode badge and auto_start toggle on session list/detail
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on:
+  - P36.M1.E1.T002
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

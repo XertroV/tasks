@@ -1,0 +1,37 @@
+id: P26.M2
+name: Routing & API
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on:
+- P26.M1
+locked: false
+epics:
+- id: E1
+  name: Size-Based Model Selector
+  path: 01-size-based-model-selector
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Implement the model resolver that picks a model from the workspace
+    size pool given a size category. Integrates with rate limiter to skip unavailable
+    models.
+  locked: false
+- id: E2
+  name: Workspace Pool API
+  path: 02-workspace-pool-api
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P26.M2.E1
+  description: REST API endpoints for reading and updating workspace model pool config
+    (get/set pools per workspace).
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

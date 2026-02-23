@@ -1,0 +1,118 @@
+---
+id: P15.M2.E4.T001
+title: Define validation console scope and API interaction map
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- frontend
+- planning
+- devex
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:37:33.069095+00:00'
+started_at: '2026-02-14T12:37:33.069095+00:00'
+completed_at: '2026-02-14T12:45:45.100495+00:00'
+duration_minutes: 8.20052305
+---
+
+# Define validation console scope and API interaction map
+
+
+
+## Requirements
+
+- Define the v1 validation-console scope as an internal dev/test surface, not a public multi-tenant product UI.
+- Map required backend capabilities to existing pag-server endpoints/channels (chat send, streaming, sessions list, agents list, session fork, tool runs where available).
+- Specify data contracts for the core UI panes: chat transcript, session/agent browser, quick actions, settings, and event timeline.
+- Document explicit out-of-scope items (auth redesign, production analytics, advanced role permissions, polished design system).
+
+## Acceptance Criteria
+
+- A short architecture note is added in this task file describing target UX, UI areas, and backend integration points.
+- Every major UI action has a mapped backend endpoint/channel and expected success/error response shape.
+- In-scope and out-of-scope boundaries are clearly listed to prevent implementation drift.
+- Follow-on implementation tasks (T002-T011) are validated against this scope note and remain consistent.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M2.E4)
+**Agent**: cli-user
+**Date**: 2026-02-14 12:37 UTC
+**Sibling tasks**: P15.M2.E4.T002, P15.M2.E4.T003, P15.M2.E4.T004, P15.M2.E4.T005, P15.M2.E4.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M2.E4.T001 → P15.M2.E4.T002 → P15.M2.E4.T003 → P15.M2.E4.T004 → P15.M2.E4.T005 → P15.M2.E4.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M2.E4.T001: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T001-define-validation-console-scop.todo
+- P15.M2.E4.T002: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T002-scaffold-phoenix-liveview-cons.todo
+- P15.M2.E4.T003: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T003-implement-chat-workspace-with.todo
+- P15.M2.E4.T004: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T004-build-sessions-and-agents-brow.todo
+- P15.M2.E4.T005: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T005-add-quick-action-buttons-for-t.todo
+- P15.M2.E4.T006: .tasks/15-new-capabilities/02-developer-experience/04-rapid-validation-web-console/T006-create-settings-panel-for-prov.todo
+
+## Architecture Note (Implemented v1 Scope)
+
+### Target UX and UI Areas
+
+- **Route/surface**: internal LiveView at `/dashboard/validation-console` for local/dev validation loops.
+- **Left pane (browser)**: sessions and agents lists with filtering by query and status, grouped by session status and agent project.
+- **Center pane (chat workspace)**: transcript, streaming assistant preview, prompt composer.
+- **Right pane (utilities)**: quick actions + runtime settings.
+- **Pre-data behavior**: explicit empty states for sessions, agents, and transcript.
+
+### API / Backend Interaction Map
+
+- **List sessions**
+  - Source: `PagServer.Schema.Session` query (equivalent contract to `GET /api/v1/sessions` -> `SessionJSON.index/1`).
+  - Success shape consumed: `%{id, agent_id, status, name, updated_at}`.
+  - Error behavior: empty browser groups + feedback banner.
+- **List agents**
+  - Source: `PagServer.Schema.Agent` query (equivalent contract to `GET /api/v1/agents` -> `AgentJSON.index/1`).
+  - Success shape consumed: `%{id, name, project, status}`.
+  - Error behavior: empty browser groups + feedback banner.
+- **Load transcript**
+  - Source: `PagServer.Context.Messages.get_session_messages/2`.
+  - Success shape consumed: `%{id, role, content, model_used, inserted_at}` ordered by sequence.
+  - Error behavior: transcript remains unchanged with inline error.
+- **Send prompt**
+  - Source: `PagServer.Context.Messages.create_message/2` for user + assistant persistence.
+  - Success shape consumed: `%Message{role: "user" | "assistant", content: binary}`.
+  - Error behavior: inline composer error without transcript corruption.
+- **Streaming preview**
+  - Source: LiveView timed chunk updates before assistant persistence.
+  - Success shape consumed: `%{content: partial_binary}` in `streaming_state`.
+  - Error behavior: streaming aborted + feedback error, persisted transcript left intact.
+- **Fork session quick action**
+  - Source: `PagServer.Sessions.Session.fork/2` (equivalent to `POST /api/v1/sessions/:id/fork`).
+  - Success shape consumed: `%Session{id, agent_id, ...}` and browser/transcript refresh.
+  - Error behavior: user-readable action feedback.
+- **Tool registry quick action**
+  - Source: `PagServer.Tools.Registry.list_schemas/0` (catalog scan for tool-oriented validation).
+  - Success shape consumed: count of registered tool schemas.
+  - Error behavior: action feedback with error text.
+- **Settings update**
+  - Source: validated LiveView form state; propagated to URL query params for refresh persistence.
+  - Success shape consumed: `%{"provider", "model", "temperature", "max_tokens", "streaming"}`.
+  - Error behavior: inline field errors.
+
+### Explicit In-Scope
+
+- Internal dev/test workflow only.
+- LiveView-only shell and interactions.
+- Smoke-level persistence and replay of transcript data.
+- Runtime tuning fields used by composer/assistant response generation metadata.
+
+### Explicit Out-of-Scope
+
+- Auth redesign or multi-tenant permission UX.
+- Production analytics dashboards and KPI instrumentation.
+- Polished design-system work beyond existing dashboard styling.
+- Full run controls (`new/fork/stop/retry`) lifecycle orchestration beyond lightweight quick actions.
+- Full event timeline integration and hardened failure-state UX (deferred to later tasks).

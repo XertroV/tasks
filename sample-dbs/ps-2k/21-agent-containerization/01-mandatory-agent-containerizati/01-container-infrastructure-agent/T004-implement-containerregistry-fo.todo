@@ -1,0 +1,39 @@
+---
+id: P21.M1.E1.T004
+title: Implement ContainerRegistry for container lookup
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- infrastructure
+- registry
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.550388+00:00'
+started_at: '2026-02-18T12:21:44.550388+00:00'
+completed_at: '2026-02-18T12:36:27.897911+00:00'
+duration_minutes: 14.722458516666668
+---
+
+# Implement ContainerRegistry for container lookup
+
+Registry for mapping agent_id to container process and Docker container ID.
+
+## Requirements
+
+- ETS-based registry for fast lookups
+- Map agent_id -> {pid, container_id, config}
+- Handle process exits with automatic cleanup
+- Support batch lookups for sibling agents
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/container_registry.ex` exists
+- [ ] `register/3` - register agent_id with container info
+- [ ] `unregister/1` - remove agent from registry
+- [ ] `lookup/1` - get container info for agent_id
+- [ ] `lookup_container_id/1` - get just the Docker container ID
+- [ ] `list_siblings/1` - find sibling agents for shared volume coordination
+- [ ] Handles process DOWN messages for cleanup
+- [ ] Unit tests for all operations

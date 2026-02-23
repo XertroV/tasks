@@ -1,0 +1,92 @@
+---
+id: I003
+title: 'review the scope of integration tests used with real models and compare these
+  to our featureset, find features that are not tested (eg that fork-thing we can
+  do: forking to answer multiple questsions then recomining answers). Get a comprehensive
+  list of important features that aren''t tested at all with integration tests and
+  build out integration tests for those features. When testing/running integration
+  tests, run them 1 at a time to avoid wasting credits.'
+status: completed
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-14T04:34:00.616954+00:00'
+started_at: '2026-02-14T04:34:00.616954+00:00'
+completed_at: '2026-02-14T04:45:00+00:00'
+---
+
+# Idea Intake: review the scope of integration tests used with real models and compare these to our featureset, find features that are not tested (eg that fork-thing we can do: forking to answer multiple questsions then recomining answers). Get a comprehensive list of important features that aren't tested at all with integration tests and build out integration tests for those features. When testing/running integration tests, run them 1 at a time to avoid wasting credits.
+
+## Original Idea
+
+review the scope of integration tests used with real models and compare these to our featureset, find features that are not tested (eg that fork-thing we can do: forking to answer multiple questsions then recomining answers). Get a comprehensive list of important features that aren't tested at all with integration tests and build out integration tests for those features. When testing/running integration tests, run them 1 at a time to avoid wasting credits.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "review the scope of integration tests used with real models and compare these to our featureset, find features that are not tested (eg that fork-thing we can do: forking to answer multiple questsions then recomining answers). Get a comprehensive list of important features that aren't tested at all with integration tests and build out integration tests for those features. When testing/running integration tests, run them 1 at a time to avoid wasting credits."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+### Phase P17 - Extended Integration Test Coverage (16 tasks)
+
+#### Milestone P17.M1 - Anthropic Provider Integration Tests (6 tasks)
+- **Epic P17.M1.E1** - Anthropic Chat Tests
+  - T001 - Add Anthropic chat completion test (0.5h)
+  - T002 - Add Anthropic multi-turn test (0.5h)
+  - T003 - Add Anthropic streaming test (0.5h)
+
+- **Epic P17.M1.E2** - Anthropic Tool Call Tests
+  - T001 - Add Anthropic tool call test (0.5h)
+  - T002 - Add Anthropic tool response handling test (0.5h)
+  - T003 - Add Anthropic multi-tool test (0.5h)
+
+#### Milestone P17.M2 - Session Orchestration Tests (5 tasks)
+- **Epic P17.M2.E1** - Session Fork Tests (Critical: Fork→recombine workflow)
+  - T001 - Add session fork isolation test (0.5h)
+  - T002 - Add parallel query execution test (0.5h)
+  - T003 - Add fork recombine test (1h)
+
+- **Epic P17.M2.E2** - Multi-Agent Orchestration Tests
+  - T001 - Add parent-child agent test (1h)
+  - T002 - Add agent coordination test (1h)
+
+#### Milestone P17.M3 - Advanced Feature Tests (5 tasks)
+- **Epic P17.M3.E1** - Tool Execution Loop Tests
+  - T001 - Add tool execute-respond loop test (1h)
+
+- **Epic P17.M3.E2** - Context Feature Tests
+  - T001 - Add context summarization test (0.5h)
+  - T002 - Add context truncation test (0.5h)
+
+- **Epic P17.M3.E3** - Cache Feature Tests
+  - T001 - Add semantic cache match test (0.5h)
+  - T002 - Add semantic cache miss test (0.5h)
+
+### Bug IDs
+- None
+
+### Total Estimate: 10 hours (16 tasks)
+
+### Key Gap Analysis Findings
+1. **Anthropic is the biggest gap** - Primary provider has zero integration tests
+2. **Session forking workflow untested** - Critical feature for parallel queries
+3. **Tool execution is shallow** - Full execute→respond→continue loop untested
+4. **Multi-agent coordination mocked** - Risking API incompatibility issues
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

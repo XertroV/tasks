@@ -1,0 +1,38 @@
+id: P15.M7.E1
+name: Workspace Template Schema & Built-in Templates
+status: pending
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-workspacetemplate-embed.todo
+  title: Define WorkspaceTemplate embedded schema and YAML format
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-personal-assistant-work.todo
+  title: Create Personal Assistant workspace template
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-create-software-pm-and-archite.todo
+  title: Create Software PM and Architect workspace template
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

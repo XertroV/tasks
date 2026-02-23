@@ -1,0 +1,182 @@
+---
+id: P7.M5.E4.T003
+title: Tests for Oban error handling and DLQ
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P7.M5.E4.T001
+- P7.M5.E4.T002
+tags:
+- oban
+- testing
+- dlq
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:08:26.264274+00:00'
+started_at: '2026-02-06T18:08:26.264274+00:00'
+completed_at: '2026-02-06T18:26:01.251989+00:00'
+duration_minutes: 17.5831284
+---
+
+# Tests for Oban error handling and DLQ
+
+Comprehensive test coverage for Oban error handling configuration, the dead letter queue,
+and the integration between them. Tests should verify retry behavior, DLQ population,
+admin operations, and telemetry emission.
+
+## Requirements
+
+- [ ] Create `test/pag_server/oban_error_handler_test.exs`:
+  - Test that exception telemetry handler logs structured error details
+  - Test that discard telemetry handler moves jobs to DLQ
+  - Test error classification (transient vs. permanent vs. rate-limited)
+  - Test telemetry events are emitted for failures and discards
+- [ ] Create `test/pag_server/oban_dead_letter_queue_test.exs`:
+  - Test `move_to_dlq/1` creates a DLQ entry with correct attributes
+  - Test `move_to_dlq/1` is idempotent (duplicate job ID is a no-op)
+  - Test `list/1` returns entries filtered by worker and queue
+  - Test `get/1` returns full error details for a single entry
+  - Test `retry/1` creates a new Oban job and marks entry as retried
+  - Test `retry/1` fails gracefully for already-retried entries
+  - Test `count/0` groups DLQ entries by worker correctly
+  - Test `purge/1` removes entries older than threshold
+- [ ] Create integration test for full error lifecycle:
+  - Insert an Oban job that will fail on all attempts
+  - Verify job retries `max_attempts` times with backoff
+  - Verify job is discarded after exhausting attempts
+  - Verify discarded job appears in DLQ with error history
+  - Retry the DLQ entry and verify new job is created
+  - Verify the retried job executes
+- [ ] Test snooze behavior for rate-limited workers:
+  - Simulate a worker returning `{:snooze, 60}`
+  - Verify job is re-scheduled, not retried immediately
+- [ ] Test that Oban plugins are configured:
+  - Verify Lifeline plugin rescues stuck jobs
+  - Verify Pruner plugin configuration
+- [ ] Use `Oban.Testing` helpers for controlled test execution
+- [ ] Ensure all tests use `async: true` where possible, `async: false` for DB-dependent DLQ tests
+
+## Acceptance Criteria
+
+- [ ] Error handler tests verify logging and telemetry for job failures and discards
+- [ ] DLQ tests cover CRUD operations and edge cases (duplicates, already-retried)
+- [ ] Integration test demonstrates full failure-to-DLQ-to-retry lifecycle
+- [ ] Snooze behavior verified for rate-limited errors
+- [ ] All tests pass in CI and do not depend on external services
+- [ ] Test coverage >90% for ObanErrorHandler and ObanDeadLetterQueue modules
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+Testing Oban error handling requires careful use of `Oban.Testing` to control job
+execution timing and verify telemetry side effects. The DLQ tests require database
+access to verify persistence behavior.
+
+**Key Files**:
+- `test/pag_server/oban_error_handler_test.exs` - New test file
+- `test/pag_server/oban_dead_letter_queue_test.exs` - New test file
+- `lib/pag_server/oban_error_handler.ex` - From T001
+- `lib/pag_server/oban_dead_letter_queue.ex` - From T002
+
+## Notes
+
+Test examples using Oban.Testing:
+```elixir
+defmodule PagServer.ObanDeadLetterQueueTest do
+  use PagServer.DataCase, async: false
+
+  alias PagServer.ObanDeadLetterQueue
+  alias PagServer.Schema.ObanDeadLetter
+
+  describe "move_to_dlq/1" do
+    test "creates DLQ entry from discarded Oban job" do
+      job = %Oban.Job{
+        id: 42,
+        worker: "PagServer.Workers.TestWorker",
+        queue: "default",
+        args: %{"task" => "test"},
+        errors: [
+          %{"attempt" => 1, "error" => "timeout"},
+          %{"attempt" => 2, "error" => "timeout"},
+          %{"attempt" => 3, "error" => "timeout"}
+        ],
+        max_attempts: 3,
+        attempted_at: DateTime.utc_now()
+      }
+
+      assert {:ok, entry} = ObanDeadLetterQueue.move_to_dlq(job)
+      assert entry.original_job_id == 42
+      assert entry.worker == "PagServer.Workers.TestWorker"
+      assert entry.queue == "default"
+      assert length(entry.errors) == 3
+    end
+
+    test "is idempotent for same job ID" do
+      job = build_failed_job(id: 42)
+
+      assert {:ok, _} = ObanDeadLetterQueue.move_to_dlq(job)
+      assert {:ok, _} = ObanDeadLetterQueue.move_to_dlq(job)
+
+      assert ObanDeadLetterQueue.count() == %{"PagServer.Workers.TestWorker" => 1}
+    end
+  end
+
+  describe "retry/1" do
+    test "creates new Oban job and marks DLQ entry as retried" do
+      {:ok, entry} = create_dlq_entry()
+
+      assert {:ok, new_job} = ObanDeadLetterQueue.retry(entry.id)
+      assert new_job.id != entry.original_job_id
+
+      updated = Repo.get!(ObanDeadLetter, entry.id)
+      assert updated.retried_at != nil
+      assert updated.retry_job_id == new_job.id
+    end
+  end
+
+  describe "list/1" do
+    test "filters by worker" do
+      create_dlq_entry(worker: "PagServer.Workers.AgentJob")
+      create_dlq_entry(worker: "PagServer.Workers.ToolJob")
+
+      results = ObanDeadLetterQueue.list(worker: "PagServer.Workers.AgentJob")
+      assert length(results) == 1
+      assert hd(results).worker == "PagServer.Workers.AgentJob"
+    end
+  end
+end
+```
+
+Error handler test:
+```elixir
+defmodule PagServer.ObanErrorHandlerTest do
+  use ExUnit.Case, async: true
+
+  import ExUnit.CaptureLog
+
+  test "logs structured error on job exception" do
+    log = capture_log(fn ->
+      PagServer.ObanErrorHandler.handle_event(
+        [:oban, :job, :exception],
+        %{duration: 1_000_000},
+        %{
+          job: %Oban.Job{
+            worker: "TestWorker",
+            queue: "default",
+            attempt: 2,
+            max_attempts: 3
+          },
+          reason: %RuntimeError{message: "test error"}
+        },
+        nil
+      )
+    end)
+
+    assert log =~ "Oban job failed"
+    assert log =~ "TestWorker"
+    assert log =~ "attempt"
+  end
+end
+```

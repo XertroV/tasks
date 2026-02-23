@@ -1,0 +1,105 @@
+---
+id: P7.M5.E1.T001
+title: Exponential backoff implementation
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T03:38:22.037450+00:00'
+started_at: '2026-02-07T03:38:22.037450+00:00'
+completed_at: '2026-02-07T03:49:46.736607+00:00'
+tags:
+- error-handling
+- retry
+- backoff
+duration_minutes: 11.41165245
+---
+
+# Exponential backoff implementation
+
+Implement exponential backoff with jitter for LLM API retries.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/retry.ex` module
+- [ ] Implement `with_retry/3` wrapper
+- [ ] Add exponential backoff calculation
+- [ ] Add random jitter to prevent thundering herd
+- [ ] Support configurable max attempts
+- [ ] Support configurable base delay
+- [ ] Handle different error types (rate limit, network, server)
+
+## Acceptance Criteria
+
+- [ ] Retry logic handles transient failures
+- [ ] Exponential delays calculated correctly
+- [ ] Jitter prevents synchronized retries
+- [ ] Max attempts enforced
+- [ ] Non-retryable errors fail fast
+- [ ] Telemetry tracks retry attempts
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M5 (Error Recovery)
+
+## Notes
+
+```elixir
+defmodule PagServer.Retry do
+  def with_retry(fun, opts \\ []) do
+    max_attempts = Keyword.get(opts, :max_attempts, 3)
+    base_delay = Keyword.get(opts, :base_delay_ms, 1000)
+    
+    do_retry(fun, 1, max_attempts, base_delay)
+  end
+  
+  defp do_retry(fun, attempt, max_attempts, base_delay) do
+    case fun.() do
+      {:ok, result} -> {:ok, result}
+      {:error, reason} = error ->
+        if attempt < max_attempts and retryable?(reason) do
+          delay = calculate_delay(attempt, base_delay)
+          Process.sleep(delay)
+          do_retry(fun, attempt + 1, max_attempts, base_delay)
+        else
+          error
+        end
+    end
+  end
+  
+  defp calculate_delay(attempt, base_delay) do
+    # Exponential backoff: 2^attempt * base_delay
+    exponential = :math.pow(2, attempt - 1) * base_delay
+    # Add jitter: ±25%
+    jitter = exponential * (0.75 + :rand.uniform() * 0.5)
+    trunc(jitter)
+  end
+  
+  defp retryable?(:rate_limited), do: true
+  defp retryable?(:timeout), do: true
+  defp retryable?({:http_error, code}) when code >= 500, do: true
+  defp retryable?(_), do: false
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M5.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 03:38 UTC
+**Sibling tasks**: P7.M5.E1.T002, P7.M5.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M5.E1.T001 → P7.M5.E1.T002 → P7.M5.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M5.E1.T001: .tasks/07-production/05-error-handling/01-retry-logic/T001-exponential-backoff.todo
+- P7.M5.E1.T002: .tasks/07-production/05-error-handling/01-retry-logic/T002-integration.todo
+- P7.M5.E1.T003: .tasks/07-production/05-error-handling/01-retry-logic/T003-tests.todo

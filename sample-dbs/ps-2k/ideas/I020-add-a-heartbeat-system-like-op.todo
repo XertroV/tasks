@@ -1,0 +1,48 @@
+---
+id: I020
+title: Add a heartbeat system like openclaw, should be a plugin. On by default for
+  some workspaces (eg personal assistant), but not others (software PM)
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:13:31.562373+00:00'
+started_at: '2026-02-18T22:13:31.562373+00:00'
+completed_at: '2026-02-18T22:13:33.482014+00:00'
+duration_minutes: 0.031993799999999996
+---
+
+# Idea Intake: Add a heartbeat system like openclaw, should be a plugin. On by default for some workspaces (eg personal assistant), but not others (software PM)
+
+## Original Idea
+
+Add a heartbeat system like openclaw, should be a plugin. On by default for some workspaces (eg personal assistant), but not others (software PM)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add a heartbeat system like openclaw, should be a plugin. On by default for some workspaces (eg personal assistant), but not others (software PM)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P24.M3 (Heartbeat Plugin)
+- P24.M3.E1 (Config Schema — tasks not yet created)
+- P24.M3.E2 (Scheduler — tasks not yet created)
+- P24.M3.E3 (Plugin and MCP Tools — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,53 @@
+id: P10.M1
+name: GitHub Integration
+status: pending
+estimate_hours: 24.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Webhook Infrastructure
+  path: 01-webhook-infrastructure
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: GitHub API Client
+  path: 02-github-api-client
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Issues Integration
+  path: 03-issues-integration
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Pull Requests Integration
+  path: 04-pull-requests-integration
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E5
+  name: GitHub Actions Integration
+  path: 05-github-actions-integration
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 32
+  done: 32
+  in_progress: 0
+  blocked: 0
+  pending: 0

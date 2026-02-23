@@ -1,0 +1,37 @@
+---
+id: P15.M4.E2.T003
+title: Integrate with session forking
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M4.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T14:54:03.052855+00:00'
+started_at: '2026-02-13T14:54:03.052855+00:00'
+completed_at: '2026-02-13T15:32:26.885505+00:00'
+duration_minutes: 38.3972106
+---
+
+# Integrate with session forking
+
+## Description
+Integrate goal progress with session forking. When forking a session, optionally fork the associated goals to explore alternative approaches without affecting the original goal progress.
+
+## Acceptance Criteria
+- [ ] Add goal forking when session is forked
+- [ ] Implement `fork_goals(session_id, fork_session_id)` function
+- [ ] Preserve goal hierarchy in forked goals
+- [ ] Update parent_goal_id references to new fork IDs
+- [ ] Track goal lineage (original goal -> forked goal)
+- [ ] Support comparing progress between forked goals
+- [ ] Add option to merge forked goal progress back
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/session.ex`, `lib/pag_server/schema/goal.ex`, `lib/pag_server/agents/agent.ex`
+- Part of epic: Progress Tracking
+- Reference Session.fork_changeset patterns

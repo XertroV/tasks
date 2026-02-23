@@ -1,0 +1,14 @@
+---
+id: B221
+title: We probably want to use /workspace/:workspace_id/chat instead of /chat/:workspace_id;
+  or at least we want to ensure we have a good sustainable heirarchy and maybe refactor
+  how URLs are structured if we need to.
+status: blocked
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+---
+
+We probably want to use /workspace/:workspace_id/chat instead of /chat/:workspace_id; or at least we want to ensure we have a good sustainable heirarchy and maybe refactor how URLs are structured if we need to.

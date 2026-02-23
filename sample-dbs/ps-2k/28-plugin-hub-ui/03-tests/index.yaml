@@ -1,0 +1,26 @@
+id: P28.M3
+name: Tests
+status: pending
+estimate_hours: 8.0
+complexity: low
+depends_on:
+- P28.M2.E1
+locked: false
+epics:
+- id: E1
+  name: Plugin API Tests
+  path: 01-plugin-api-tests
+  status: pending
+  estimate_hours: 8.0
+  complexity: low
+  depends_on:
+  - P28.M2.E1
+  description: Comprehensive API-level tests for plugin registry listing, enable/disable,
+    and config GET/PATCH/schema endpoints.
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,27 @@
+---
+id: P44.M3.E3.T001
+title: Refactor Discord interaction handler to use unified Dispatcher
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.174831+00:00'
+started_at: '2026-02-19T19:33:54.174831+00:00'
+completed_at: '2026-02-19T19:34:09.037891+00:00'
+duration_minutes: 0.24771741666666666
+---
+## Summary
+Replace bespoke Discord slash command dispatch with unified Commands.Dispatcher.
+
+## Acceptance Criteria
+- [ ] discord.ex handle_slash_command/1 maps interaction.data.name -> unified command name
+- [ ] /ask remains Discord-native: extracts question, routes to agent as message (not a unified command)
+- [ ] /stats, /agent action:status route to unified Stats and Status handlers
+- [ ] /agent action:reset, /agent action:fork remain as Discord-specific stubs (deferred, return "not yet implemented")
+- [ ] Context map built from interaction: guild_id, channel_id -> session lookup for agent_id/session_id, platform: :discord, sender from interaction.member.user
+- [ ] Response sent as ephemeral interaction response via Nostrum
+- [ ] Discord.Commands.register_global_commands/0 updated to keep /ask, /agent, /stats
+- [ ] Tests: /stats routes to unified handler, /agent status routes to unified handler

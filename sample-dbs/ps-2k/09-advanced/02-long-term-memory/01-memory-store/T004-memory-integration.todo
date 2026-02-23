@@ -1,0 +1,55 @@
+---
+id: P9.M2.E1.T004
+title: Integrate with agent context
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P9.M2.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:31:33.339013'
+tags:
+- advanced
+- future
+- phase9
+started_at: '2026-02-06T14:31:33.339013'
+completed_at: '2026-02-06T14:44:14.638619'
+duration_minutes: 12.6883266
+---
+
+# Integrate with agent context
+
+Inject relevant memories into agent context automatically.
+
+## Requirements
+
+- [ ] Search memories by current query
+- [ ] Rank by relevance + recency
+- [ ] Inject top-k into context
+- [ ] Track token budget
+- [ ] Test memory improves responses
+
+## Acceptance Criteria
+
+- [ ] Implementation complete
+- [ ] Unit tests pass (>80% coverage)
+- [ ] Integration tests pass
+- [ ] Documentation updated
+- [ ] No compilation warnings
+- [ ] Passes `mix credo --strict`
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md`
+- `.plan/2026-02-05-velvet-cascade/architecture.md`
+
+**Key Points**:
+- Phase 9 is low priority - implement after core features
+- Memory efficiency: <512MB per session, <4GB total
+- All advanced features should be optional/configurable
+
+## Notes
+
+This is an advanced feature for Phase 9. Focus on core functionality first (Phases 1-6) before implementing.

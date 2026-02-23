@@ -1,0 +1,118 @@
+---
+id: P7.M3.E6.T002
+title: Add MCP server capability negotiation
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P7.M3.E6.T001
+tags:
+- security
+- mcp
+- capabilities
+- negotiation
+claimed_by: cli-user
+claimed_at: '2026-02-07T02:49:45.272640+00:00'
+started_at: '2026-02-07T02:49:45.272640+00:00'
+completed_at: '2026-02-07T03:07:26.566386+00:00'
+duration_minutes: 17.688228933333335
+---
+
+# Add MCP server capability negotiation
+
+MCP servers currently have full trust - any tool discovered from an MCP server is automatically
+registered and executable. There is no capability negotiation during the MCP handshake, no
+validation that a server should be allowed to provide certain tool types, and no handling of
+capability mismatches.
+
+This task adds capability negotiation during MCP server connection, allowing the host to
+restrict which tools an MCP server can provide based on declared capabilities.
+
+## Requirements
+
+- [ ] Extend MCP server connection handshake to query server capabilities:
+  - During `initialize` response handling in `MCP.Server` or `MCP.ServerLifecycle`, parse the
+    `capabilities` field from the server's response
+  - Store discovered capabilities in the server's GenServer state
+- [ ] Define a capability allowlist configuration per MCP server:
+  ```elixir
+  config :pag_server, PagServer.Tools.MCP,
+    server_capabilities: %{
+      "filesystem" => %{
+        allowed_tools: :all,  # or {:allow, ["read_file", "write_file"]}
+        allowed_capabilities: [:tools, :resources],
+        blocked_capabilities: [:prompts]
+      },
+      "web-browser" => %{
+        allowed_tools: {:allow, ["browse", "screenshot"]},
+        allowed_capabilities: [:tools]
+      }
+    }
+  ```
+- [ ] Filter tool discovery based on capability allowlist:
+  - In `MCP.Discovery`, after discovering tools from a server, filter out tools not in the allowlist
+  - Log warnings for tools that were blocked by capability config
+- [ ] Handle capability mismatches gracefully:
+  - If server declares capabilities not in the allowlist, log a warning but continue
+  - If server provides tools outside its declared capabilities, reject those tools
+  - Return `{:error, :capability_mismatch}` for blocked tool executions
+- [ ] Add a `capabilities/1` function to query a server's stored capabilities:
+  ```elixir
+  MCP.Server.capabilities("filesystem")
+  #=> {:ok, %{tools: true, resources: true, prompts: false}}
+  ```
+- [ ] Emit telemetry events:
+  - `[:pag_server, :mcp, :capability, :mismatch]` when a tool is blocked
+  - `[:pag_server, :mcp, :capability, :negotiated]` on successful handshake
+- [ ] Write tests:
+  - Test capability filtering blocks undeclared tools
+  - Test allowlist configuration is respected
+  - Test graceful handling of servers with no capabilities field
+  - Test telemetry events emitted on mismatches
+
+## Acceptance Criteria
+
+- [ ] MCP server capabilities are queried and stored during connection handshake
+- [ ] Tool discovery is filtered based on capability allowlist configuration
+- [ ] Capability mismatches are handled gracefully with clear error messages
+- [ ] Telemetry events emitted for capability negotiation and mismatches
+- [ ] Unconfigured servers default to permissive behavior (backward compatible)
+- [ ] Tests cover filtering, mismatch handling, and default behavior
+
+## Context
+
+**Source**: Architecture audit - tool system security gap analysis (2026-02-06)
+**Severity**: MEDIUM - prevents MCP servers from providing unauthorized tools
+
+**Related tasks**:
+- P4.M3 (MCP Host) - original MCP implementation
+- P7.M3.E6.T001 (MCP rate limiting) - complements this with rate-based restrictions
+
+## Notes
+
+MCP protocol `initialize` response includes a `capabilities` object:
+```json
+{
+  "protocolVersion": "2024-11-05",
+  "capabilities": {
+    "tools": { "listChanged": true },
+    "resources": { "subscribe": true, "listChanged": true },
+    "prompts": { "listChanged": true }
+  },
+  "serverInfo": { "name": "filesystem", "version": "1.0.0" }
+}
+```
+
+Current server lifecycle in `lib/pag_server/tools/mcp/server_lifecycle.ex` likely handles the
+initialize response but may not parse/store capabilities.
+
+Current tool discovery in `lib/pag_server/tools/mcp/discovery.ex` registers all discovered
+tools without filtering.
+
+**Key files**:
+- `lib/pag_server/tools/mcp/server_lifecycle.ex` (handshake)
+- `lib/pag_server/tools/mcp/server.ex` (server GenServer state)
+- `lib/pag_server/tools/mcp/discovery.ex` (tool filtering)
+- `lib/pag_server/tools/mcp/proxy_tool.ex` (execution gating)
+- `config/config.exs` (capability configuration)

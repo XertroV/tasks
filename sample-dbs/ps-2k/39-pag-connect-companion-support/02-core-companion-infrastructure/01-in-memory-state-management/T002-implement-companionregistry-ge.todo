@@ -1,0 +1,40 @@
+---
+id: P39.M2.E1.T002
+title: Implement CompanionRegistry GenServer
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- companion
+- infrastructure
+- genserver
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:28:22.457599+00:00'
+started_at: '2026-02-19T11:28:22.457599+00:00'
+completed_at: '2026-02-19T11:31:59.344762+00:00'
+duration_minutes: 3.6147859
+---
+Create the CompanionRegistry that tracks connected pag-connect companions by workspace_id.
+
+## New file
+lib/pag_server/companions/companion_registry.ex
+
+## Design (from companion-support plan §2)
+- GenServer owning a named ETS table :companion_registry for O(1) reads
+- Each entry: {workspace_id, channel_pid, registered_tools, connected_at}
+- Public API:
+  - register(workspace_id, channel_pid, tools) — GenServer.call, also Process.monitor(channel_pid)
+  - lookup(workspace_id) — direct ETS lookup, returns {:ok, map} | {:error, :not_found}
+  - unregister(workspace_id) — GenServer.cast, deletes ETS entry
+  - connected?(workspace_id) — convenience boolean wrapper
+- handle_info({:DOWN, ...}) — auto-remove entries when channel pid dies (ets.match_delete)
+- ETS config: :named_table, :set, :public, read_concurrency: true
+
+## Acceptance criteria
+- [ ] register/3 + lookup/1 round-trips correctly
+- [ ] unregister/1 removes the entry
+- [ ] connected?/1 returns true/false correctly
+- [ ] When channel pid dies, entry is auto-removed via :DOWN monitor
+- [ ] Multiple workspaces don't interfere with each other

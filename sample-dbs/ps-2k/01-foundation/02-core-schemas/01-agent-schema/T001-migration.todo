@@ -1,0 +1,119 @@
+---
+id: P1.M2.E1.T001
+title: Create agents table migration
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:09:52.584371'
+started_at: '2026-02-05T08:09:52.584371'
+completed_at: '2026-02-05T08:11:28.215149'
+tags:
+- database
+- migration
+- agents
+- schema
+---
+
+# Create agents table migration
+
+Create the database migration for the `agents` table with all required fields.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_agents`
+- [ ] Add `agents` table with all fields from spec
+- [ ] Add indexes for performance
+- [ ] Add constraints for data integrity
+- [ ] Verify migration runs: `mix ecto.migrate`
+- [ ] Verify rollback works: `mix ecto.rollback`
+- [ ] Re-run migration: `mix ecto.migrate`
+- [ ] Commit with message "Add agents table migration"
+
+## Acceptance Criteria
+
+- [ ] Migration file created in `priv/repo/migrations/`
+- [ ] Table includes all required fields:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `name` (string, not null)
+  - [ ] `display_name` (string, nullable)
+  - [ ] `system_prompt` (text, nullable)
+  - [ ] `model_provider` (string, not null, default: "anthropic")
+  - [ ] `model_name` (string, not null, default: "claude-sonnet-4")
+  - [ ] `project` (string, nullable)
+  - [ ] `capabilities` (map, default: `%{}`)
+  - [ ] `metadata` (map, default: `%{}`)
+  - [ ] `parent_agent_id` (references agents, nullable, on_delete: nilify_all)
+  - [ ] `status` (string, default: "idle")
+  - [ ] `archived_at` (utc_datetime_usec, nullable)
+  - [ ] `inserted_at` (utc_datetime_usec, not null)
+  - [ ] `updated_at` (utc_datetime_usec, not null)
+- [ ] Indexes created:
+  - [ ] Index on `project`
+  - [ ] Index on `status`
+  - [ ] Index on `parent_agent_id`
+- [ ] Migration runs successfully with no errors
+- [ ] Rollback works correctly
+- [ ] No compilation warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 192-208 (agents table schema)
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 313-314 (agents indexes)
+
+**Key Points**:
+- Use `binary_id` for primary key (UUID-based, better for distributed systems)
+- `capabilities` map stores allowed tools, file access, network access, etc.
+- `metadata` map is for extensibility (tags, custom fields, etc.)
+- `parent_agent_id` enables hierarchical agents (sub-agents)
+- `archived_at` for soft deletes
+
+## Notes
+
+### Migration Template
+
+```elixir
+defmodule PagServer.Repo.Migrations.CreateAgents do
+  use Ecto.Migration
+
+  def change do
+    create table(:agents, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :name, :string, null: false
+      add :display_name, :string
+      add :system_prompt, :text
+      add :model_provider, :string, null: false, default: "anthropic"
+      add :model_name, :string, null: false, default: "claude-sonnet-4"
+      add :project, :string
+      add :capabilities, :map, default: %{}
+      add :metadata, :map, default: %{}
+      add :parent_agent_id, references(:agents, type: :binary_id, on_delete: :nilify_all)
+      add :status, :string, default: "idle"
+      add :archived_at, :utc_datetime_usec
+
+      timestamps(type: :utc_datetime_usec)
+    end
+
+    create index(:agents, [:project])
+    create index(:agents, [:status])
+    create index(:agents, [:parent_agent_id])
+  end
+end
+```
+
+### Testing
+
+```bash
+# Run migration
+mix ecto.migrate
+
+# Verify table exists
+psql -d pag_server_dev -c "\d agents"
+
+# Test rollback
+mix ecto.rollback
+mix ecto.migrate
+```

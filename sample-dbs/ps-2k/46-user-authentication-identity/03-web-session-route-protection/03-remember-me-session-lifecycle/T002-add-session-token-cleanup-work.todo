@@ -1,0 +1,25 @@
+---
+id: P46.M3.E3.T002
+title: Add session token cleanup worker for expired tokens
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on:
+- P46.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:09:39.023968+00:00'
+started_at: '2026-02-20T05:09:39.023968+00:00'
+completed_at: '2026-02-20T05:21:11.896856+00:00'
+duration_minutes: 11.547881133333334
+---
+Add a periodic cleanup job to delete expired user_tokens:
+- Create lib/pag_server/accounts/token_cleanup.ex as a simple GenServer with Process.send_after loop
+- Runs every 24 hours by default (configurable)
+- Deletes remember_me tokens older than TTL
+- Deletes orphaned session tokens (older than 7 days as a safety floor)
+- Logs count of deleted tokens at :info level
+- Add to application supervision tree under Accounts supervisor (or use an existing Oban worker if Oban is present)
+Check mix.exs for Oban — if present, use Oban.Worker instead of a GenServer.
+Acceptance: Expired tokens are cleaned up. Worker starts with application. No memory leaks from accumulated tokens.

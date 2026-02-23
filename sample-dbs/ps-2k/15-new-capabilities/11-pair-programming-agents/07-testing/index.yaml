@@ -1,0 +1,49 @@
+id: P15.M11.E7
+name: Testing
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- E3
+- E4
+- E5
+locked: false
+tasks:
+- id: T001
+  file: T001-unit-tests-for-custom-tools.todo
+  title: Unit tests for custom tools
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-unit-tests-for-observation-sub.todo
+  title: Unit tests for observation subscriber
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-integration-test-for-full-pair.todo
+  title: Integration test for full pair session
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-unit-tests-for-git-worktree-to.todo
+  title: Unit tests for git_worktree tool
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

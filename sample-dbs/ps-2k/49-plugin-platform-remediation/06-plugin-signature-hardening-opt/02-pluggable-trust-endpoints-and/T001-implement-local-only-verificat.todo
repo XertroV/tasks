@@ -1,0 +1,31 @@
+---
+id: P49.M6.E2.T001
+title: Implement local-only verification mode with managed trust roots
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:42:06.438412+00:00'
+started_at: '2026-02-20T18:42:06.438412+00:00'
+completed_at: '2026-02-20T18:47:32.975006+00:00'
+duration_minutes: 5.442276383333334
+---
+
+# Implement local-only verification mode with managed trust roots
+
+
+
+## Requirements
+
+- Implement local-only signature verification mode with managed trust roots and no mandatory external network dependency.
+- Support importing and rotating trust roots in local deployments.
+- Ensure local-only mode remains compatible with policy and audit contracts.
+
+## Acceptance Criteria
+
+- Signature verification can run with local trust roots only.
+- Trust-root import and rotation flows are documented and test-covered.
+- Decision outputs and audit events match online verification mode shape.

@@ -1,0 +1,16 @@
+---
+id: P39.M4.E1.T001
+title: Add PagServer.Auth.ApiKeyValidator shared module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:51:37.329508+00:00'
+started_at: '2026-02-19T18:51:37.329508+00:00'
+completed_at: '2026-02-19T18:51:39.400880+00:00'
+duration_minutes: 0.03452265
+---
+Extract API key validation pipeline (format check, SHA-256 hash lookup, revoked/expired check, optional scope check) from CompanionSocket into a reusable module at lib/pag_server/auth/api_key_validator.ex. Exposes validate/2 and has_scope?/2. Accepts either a full ApiKey struct or a plain map with :scopes key. Includes unit tests in test/pag_server/auth/api_key_validator_test.exs covering all error paths and the admin:* wildcard scope.

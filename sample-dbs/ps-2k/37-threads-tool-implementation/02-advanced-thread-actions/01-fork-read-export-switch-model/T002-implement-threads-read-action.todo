@@ -1,0 +1,37 @@
+---
+id: P37.M2.E1.T002
+title: Implement threads read action
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.876007+00:00'
+started_at: '2026-02-19T04:21:05.876007+00:00'
+completed_at: '2026-02-19T04:43:46.258017+00:00'
+duration_minutes: 22.67303295
+---
+Implement action_read/2 in lib/pag_server/plugins/agent_tools/threads.ex.
+
+Currently returns: %{action: "read", hint: "Full read implementation pending"}
+
+Required args: thread_id
+Optional args:
+  - limit (integer, default 50 — last N messages)
+  - offset (integer, default 0)
+  - include_tool_calls (boolean, default false — whether to include tool call/result messages)
+  - since_message_id (only return messages after this ID)
+
+Behaviour:
+- Look up session
+- Query messages via PagServer.Context.Messages or direct Repo query
+- Format messages for agent consumption (role, content, timestamp, id)
+- Respect fork ancestry — if the session is a fork, optionally include parent messages up to the fork point
+- Return: %{action: "read", thread_id: id, messages: [...], total: integer, has_more: boolean}
+
+Check: lib/pag_server/context/messages.ex, lib/pag_server/context/export.ex (Export module is already aliased in threads.ex)
+
+Tests: read messages, pagination, since_message_id filter, forked session includes parent context, empty session
+File: lib/pag_server/plugins/agent_tools/threads.ex

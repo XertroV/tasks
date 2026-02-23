@@ -1,0 +1,18 @@
+---
+id: B224
+title: Unreplied GenServer requests on agent error/shutdown
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on: []
+tags:
+- agent
+- data-integrity
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:42:29.023346+00:00'
+started_at: '2026-02-23T05:42:29.023346+00:00'
+completed_at: '2026-02-23T05:51:56.634792+00:00'
+duration_minutes: 9.4601906
+---
+agent_server.ex:1189-1191, 2137-2142 - When :llm_error arrives and current_request[:from] is nil, caller hangs until GenServer.call timeout

@@ -1,0 +1,50 @@
+---
+id: P15.M8.E4.T001
+title: Make external API calls async in setup wizard LiveView
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- liveview
+- performance
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:09:19.038583+00:00'
+started_at: '2026-02-17T16:09:19.038583+00:00'
+completed_at: '2026-02-17T16:47:41.492738+00:00'
+duration_minutes: 38.37423571666667
+---
+verify_connectivity and send_test_message make synchronous Telegram API calls in handle_event. If API is slow/unreachable, LiveView process blocks and UI freezes. Phoenix LiveView docs explicitly warn against this.
+
+Fix: Use Task.async with handle_async or start_async (LiveView 0.20+). Show loading state while waiting.
+
+Source: E4 Audit C2
+
+## Acceptance Criteria
+- [ ] verify_connectivity uses async task (no blocking handle_event)
+- [ ] send_test_message uses async task
+- [ ] Loading state shown while external calls in progress
+- [ ] Error states handled for timeout/failure
+- [ ] Tests for async flow
+- [ ] Existing tests pass
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M8.E4)
+**Agent**: cli-user
+**Date**: 2026-02-17 16:09 UTC
+**Sibling tasks**: P15.M8.E4.T002, P15.M8.E4.T003, P15.M8.E4.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M8.E4.T001 → P15.M8.E4.T002 → P15.M8.E4.T003 → P15.M8.E4.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M8.E4.T001: .tasks/15-new-capabilities/08-m7-audit-remediation/04-liveview-api-quality/T001-make-external-api-calls-async.todo
+- P15.M8.E4.T002: .tasks/15-new-capabilities/08-m7-audit-remediation/04-liveview-api-quality/T002-extract-shared-workspace-autho.todo
+- P15.M8.E4.T003: .tasks/15-new-capabilities/08-m7-audit-remediation/04-liveview-api-quality/T003-decompose-setup-wizard-livevie.todo
+- P15.M8.E4.T004: .tasks/15-new-capabilities/08-m7-audit-remediation/04-liveview-api-quality/T004-add-missing-test-coverage-401.todo

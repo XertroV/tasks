@@ -1,0 +1,44 @@
+---
+id: P26.M2.E2.T001
+title: API for configuring workspace model pools (get/set per size)
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- api
+- workspace
+- models
+- size-pool
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:17:26.617805+00:00'
+started_at: '2026-02-18T18:17:26.617805+00:00'
+completed_at: '2026-02-18T18:34:02.902927+00:00'
+duration_minutes: 16.604751883333332
+---
+
+# API for configuring workspace model pools
+
+Add REST API endpoints that allow workspace admins to read and update the model pool
+configuration (small/medium/large lists) for a workspace.
+
+## Requirements
+
+- `GET /api/workspaces/:id/model_pools` - return current pool config
+- `PUT /api/workspaces/:id/model_pools` - replace pool config
+- `PATCH /api/workspaces/:id/model_pools/:size` - update a single size pool
+- Require workspace admin role (auth check)
+- Validate that model IDs in the pool are known providers/models
+- Return 422 with field errors for invalid model IDs
+- Response format consistent with existing workspace API responses
+
+## Acceptance Criteria
+
+- [ ] GET endpoint returns current pool config (or defaults if not configured)
+- [ ] PUT endpoint replaces entire pool config with validation
+- [ ] PATCH endpoint updates a single size pool (small/medium/large)
+- [ ] Auth check: only workspace admin can modify pools
+- [ ] 422 returned for unknown model IDs
+- [ ] Controller tests cover get, put, patch, and unauthorized access
+- [ ] Routes added to router.ex

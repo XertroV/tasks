@@ -1,0 +1,20 @@
+---
+id: P54.M3.E1.T001
+title: Create plugins/browser_mcp/ plugin scaffold and manifest
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T11:11:19.245513+00:00'
+started_at: '2026-02-21T11:11:19.245513+00:00'
+completed_at: '2026-02-21T11:12:13.258957+00:00'
+duration_minutes: 0.9002237833333333
+---
+## Acceptance Criteria
+- [ ] `plugins/browser_mcp/` directory created
+- [ ] `plugins/browser_mcp/plugin.json` manifest: name "browser_mcp", version "1.0.0", transport "beam", module "PagServer.Plugins.BrowserMcp.BrowserMcpPlugin", capabilities: {tools: [], hooks: []}
+- [ ] Manifest loads without errors via Plugins.Loader
+- [ ] `mix lint` passes

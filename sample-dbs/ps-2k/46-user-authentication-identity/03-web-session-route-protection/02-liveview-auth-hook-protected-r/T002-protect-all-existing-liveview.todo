@@ -1,0 +1,39 @@
+---
+id: P46.M3.E2.T002
+title: Protect all existing LiveView routes with authentication
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P46.M3.E2.T001
+- P46.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:56:49.102558+00:00'
+started_at: '2026-02-19T22:56:49.102558+00:00'
+completed_at: '2026-02-19T23:16:56.141472+00:00'
+duration_minutes: 20.117314933333333
+---
+Audit all existing live_session and live route declarations in router.ex. Move each into the appropriate live_session scope with the correct on_mount hook:
+
+Routes requiring :default (any logged-in user):
+- /workspaces, /workspaces/:id/*
+- /agents, /agents/:id/*
+- /sessions, /sessions/:id/*
+- /dashboard
+- Any other workspace-scoped LiveViews
+
+Routes requiring :admin:
+- /admin/*
+- Any analytics/stats LiveViews with sensitive data
+
+Public routes (no auth):
+- /login
+- Any landing/docs pages
+
+For each protected LiveView, ensure:
+- current_user is available in socket.assigns
+- Workspace membership is checked where needed (may need workspace-aware hook variant)
+Run full LiveView test suite and fix any connection/mount issues.
+Acceptance: mix test.web passes. Manual smoke test: unauthenticated browser visits protected route → /login redirect.

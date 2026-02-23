@@ -1,0 +1,16 @@
+---
+id: P31.M2.E1.T003
+title: Write Whisper client tests
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:50.674519+00:00'
+started_at: '2026-02-18T19:46:50.674519+00:00'
+completed_at: '2026-02-18T19:46:55.311318+00:00'
+duration_minutes: 0.07727981666666667
+---
+Tests with injected cmd_fn. Test successful transcription, timeout, model selection, not_installed error. Test HealthCheck against mocked whisper.

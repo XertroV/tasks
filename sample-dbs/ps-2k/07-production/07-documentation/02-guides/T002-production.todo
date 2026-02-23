@@ -1,0 +1,43 @@
+---
+id: P7.M7.E2.T002
+title: Production setup guide
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M7.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:27:25.248054+00:00'
+started_at: '2026-02-08T07:27:25.248054+00:00'
+completed_at: '2026-02-08T07:31:09.141831+00:00'
+tags:
+- production
+- hardening
+duration_minutes: 3.7315627333333334
+---
+
+# Production setup guide
+
+Document production configuration
+
+## Requirements
+
+- [x] Create production setup guide
+- [x] Document configuration files and environment variables
+- [x] Cover release builds and reverse proxy setup
+
+## Acceptance Criteria
+
+- [x] Production setup guide covers config/release/proxy topics
+- [x] Database setup and migrations documented
+- [x] Monitoring and performance tuning included
+
+## Context
+
+**Plan References**:
+- Task breakdown P7 (Production Hardening)
+
+## Notes
+
+See architecture documentation for implementation details.

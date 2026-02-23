@@ -1,0 +1,45 @@
+epic_id: P3.M1.E3
+name: Token Streaming
+description: Implement efficient per-token streaming from LLM to channels
+milestone: 01-phoenix-channels
+phase: 03-streaming-realtime
+estimated_hours: 4
+priority: high
+tasks:
+- T001-stream-handler.todo
+- T002-backpressure.todo
+- T003-iolist-optimization.todo
+- T004-streaming-tests.todo
+- id: T005
+  file: T005-implement-stream-cancellation.todo
+  title: Implement stream cancellation via channel message
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-wire-channel-cancel-to-agentse.todo
+  title: Wire channel cancel to AgentServer and provider stream cancellation
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: critical
+  depends_on:
+  - P3.M1.E3.T005
+  - P2.M3.E2.T003
+  - P2.M2.E2.T005
+dependencies:
+- P3.M1.E2
+acceptance_criteria:
+- Tokens stream to channel as they arrive
+- Backpressure prevents memory overflow
+- iolists used for efficient concatenation
+- Large payload tests pass
+deliverables:
+- Updated AgentChannel with streaming
+- Stream.Handler module
+- Streaming tests
+stats:
+  total: 2
+  pending: 2

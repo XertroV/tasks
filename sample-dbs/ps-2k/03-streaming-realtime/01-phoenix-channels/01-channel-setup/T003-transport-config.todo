@@ -1,0 +1,187 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-08T03:19:12.149357+00:00'
+started_at: '2026-02-08T03:19:12.149357+00:00'
+completed_at: '2026-02-08T03:20:58.491159+00:00'
+duration_minutes: 1.7723631666666668
+---
+# Task: Set up WebSocket transport configuration
+# Epic: P3.M1.E1 - Channel Setup
+# Phase 3 - Streaming & Real-Time
+
+id: P3.M1.E1.T003
+title: Set up WebSocket transport configuration
+status: pending
+complexity: medium
+priority: high
+estimate_hours: 1.0
+depends_on: [P3.M1.E1.T002]
+
+---
+
+## Context
+
+WebSocket transport needs proper configuration for production use, including timeouts, connection limits, and serialization options.
+
+## Goal
+
+Configure WebSocket transport with appropriate timeouts, serializers, and production settings.
+
+## Requirements
+
+1. **Serializer Configuration**:
+   - Use Phoenix.Socket.V2.JSONSerializer
+   - Configure for JSON encoding/decoding
+   - Handle binary payloads efficiently
+
+2. **Connection Management**:
+   - Max connections per socket: 10000 (configurable)
+   - Connection timeout: 60 seconds
+   - Heartbeat interval: 30 seconds
+   - Max frame size: 8MB (for large tool outputs)
+
+3. **Environment-Specific Config**:
+   - Development: Debug logging enabled
+   - Production: Minimal logging, optimized performance
+
+## Implementation
+
+### Config Files
+
+**config/config.exs**:
+
+```elixir
+config :pag_server, PagServerWeb.Endpoint,
+  # ... existing config ...
+  websocket: [
+    timeout: 60_000,
+    max_frame_size: 8_388_608,  # 8MB
+    compress: true,
+    serializer: [
+      {Phoenix.Socket.V2.JSONSerializer, "~> 2.0.0"}
+    ]
+  ]
+```
+
+**config/dev.exs**:
+
+```elixir
+config :pag_server, PagServerWeb.Endpoint,
+  # ... existing config ...
+  debug_errors: true,
+  check_origin: false,
+  watchers: [],
+  websocket: [
+    log: :debug
+  ]
+```
+
+**config/prod.exs**:
+
+```elixir
+config :pag_server, PagServerWeb.Endpoint,
+  # ... existing config ...
+  check_origin: [
+    "https://yourdomain.com",
+    "https://www.yourdomain.com"
+  ],
+  websocket: [
+    log: false,
+    timeout: 60_000
+  ]
+```
+
+### Update UserSocket
+
+Update `lib/pag_server_web/channels/user_socket.ex`:
+
+```elixir
+defmodule PagServerWeb.UserSocket do
+  use Phoenix.Socket
+
+  # Channels
+  channel "agent:*", PagServerWeb.AgentChannel
+
+  # Socket params for connection
+  # Heartbeat every 30 seconds
+  @impl true
+  def connect(_params, socket, _connect_info) do
+    socket = assign(socket, :heartbeat_interval, 30_000)
+    {:ok, socket}
+  end
+
+  @impl true
+  def id(_socket), do: nil
+end
+```
+
+## File Locations
+
+- `config/config.exs`
+- `config/dev.exs`
+- `config/prod.exs`
+- `lib/pag_server_web/channels/user_socket.ex`
+
+## Acceptance Criteria
+
+- [ ] WebSocket serializer configured to use V2 JSON
+- [ ] Timeout set to 60 seconds
+- [ ] Max frame size set to 8MB
+- [ ] Compression enabled
+- [ ] Environment-specific logging configured
+- [ ] Heartbeat interval set to 30 seconds
+- [ ] Check origin configured for production
+- [ ] All config files compile without warnings
+
+## Testing
+
+### Connection Test
+
+```elixir
+# test/pag_server_web/channels/transport_test.exs
+defmodule PagServerWeb.TransportTest do
+  use PagServerWeb.ChannelCase
+  
+  test "socket accepts connection with proper config" do
+    {:ok, socket} = connect(PagServerWeb.UserSocket, %{})
+    assert socket.assigns[:heartbeat_interval] == 30_000
+  end
+  
+  test "socket handles large payloads" do
+    # Test with payload near 8MB limit
+    large_payload = String.duplicate("a", 8_000_000)
+    {:ok, socket} = connect(PagServerWeb.UserSocket, %{})
+    # Will be tested in E3 with actual token streaming
+  end
+end
+```
+
+### Manual WebSocket Test
+
+```bash
+# Test connection
+wscat -c ws://localhost:4000/socket/websocket
+
+# Should receive heartbeat pings every 30s
+# Should handle large messages up to 8MB
+```
+
+## Performance Considerations
+
+- **Max frame size**: 8MB allows for large tool outputs without fragmentation
+- **Compression**: Reduces bandwidth for text-heavy streaming
+- **Heartbeat**: 30s keeps connections alive without excessive overhead
+- **Timeout**: 60s allows for LLM response times while cleaning up dead connections
+
+## References
+
+- Phoenix WebSocket Configuration: https://hexdocs.pm/phoenix/Phoenix.Endpoint.html#socket/3
+- Phoenix.Socket.V2.JSONSerializer: https://hexdocs.pm/phoenix/Phoenix.Socket.V2.JSONSerializer.html
+- WebSocket Protocol: https://datatracker.ietf.org/doc/html/rfc6455
+
+## Notes
+
+- 8MB frame size accommodates large tool outputs from shell commands, file reads, etc.
+- Check origin in production prevents CSRF attacks
+- Heartbeat prevents NAT/firewall timeouts

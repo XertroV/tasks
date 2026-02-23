@@ -1,0 +1,252 @@
+---
+id: P4.M2.E13.T002
+title: Implement ping tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- tools
+- network
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:05:08.208691'
+started_at: '2026-02-06T03:05:08.208691'
+completed_at: '2026-02-06T03:06:38.965608'
+duration_minutes: 1.5126151166666666
+---
+
+# Implement ping tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/ping.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Use System.cmd with ping command
+- [ ] Support count parameter (number of pings)
+- [ ] Parse ping output for latency statistics
+- [ ] Return min/max/avg latency and packet loss
+- [ ] Handle host unreachable, timeout errors
+
+## Acceptance Criteria
+
+- [ ] Accepts hostname/IP and optional count parameter (default: 4)
+- [ ] Executes ping command with timeout
+- [ ] Parses ping output for statistics
+- [ ] Returns min/max/avg latency in milliseconds
+- [ ] Returns packet loss percentage
+- [ ] Handles errors: host unreachable, timeout, invalid host, permission denied
+- [ ] Test coverage: successful ping, timeout, unreachable host, private IP blocked
+- [ ] Security: SSRF protection - block localhost, private IPs
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use System.cmd for cross-platform ping
+- Parse output varies by OS (Linux vs macOS)
+- SSRF protection essential
+- Timeout to prevent hanging
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.Ping do
+  @behaviour PAGServer.Tools.Tool
+  @default_count 4
+  @timeout 10_000  # 10 seconds total
+
+  @impl true
+  def name, do: "ping"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "ping",
+      description: "Ping a host and measure latency",
+      parameters: %{
+        type: "object",
+        properties: %{
+          host: %{
+            type: "string",
+            description: "Hostname or IP address to ping"
+          },
+          count: %{
+            type: "integer",
+            minimum: 1,
+            maximum: 10,
+            description: "Number of ping packets to send (default: 4)"
+          }
+        },
+        required: ["host"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"host" => host} = args, _context) do
+    count = Map.get(args, "count", @default_count)
+    
+    with :ok <- validate_host(host),
+         {:ok, result} <- run_ping(host, count) do
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, "Ping failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_host(host) do
+    host_lower = String.downcase(host)
+    
+    blocked = [
+      "localhost",
+      "127.0.0.1",
+      "0.0.0.0",
+      "::1"
+    ]
+    
+    cond do
+      host_lower in blocked ->
+        {:error, "Localhost ping not allowed"}
+      
+      Regex.match?(~r/^(10\.|172\.(1[6-9]|2[0-9]|3[01])\.|192\.168\.)/, host_lower) ->
+        {:error, "Private IP ping not allowed"}
+      
+      Regex.match?(~r/^169\.254\./, host_lower) ->
+        {:error, "Link-local ping not allowed"}
+      
+      not Regex.match?(~r/^[a-z0-9\-\.:]+$/i, host) ->
+        {:error, "Invalid host format"}
+      
+      true ->
+        :ok
+    end
+  end
+
+  defp run_ping(host, count) do
+    # Detect OS for platform-specific ping arguments
+    args = case :os.type() do
+      {:unix, :darwin} -> ["-c", to_string(count), host]  # macOS
+      {:unix, _} -> ["-c", to_string(count), "-W", "2", host]  # Linux
+      {:win32, _} -> ["-n", to_string(count), host]  # Windows
+    end
+    
+    case System.cmd("ping", args, stderr_to_stdout: true, timeout: @timeout) do
+      {output, 0} ->
+        parse_ping_output(output, host, count)
+      
+      {output, _exit_code} ->
+        cond do
+          String.contains?(output, "Unknown host") or String.contains?(output, "cannot resolve") ->
+            {:error, "Host not found"}
+          
+          String.contains?(output, "Destination Host Unreachable") or String.contains?(output, "100% packet loss") ->
+            {:error, "Host unreachable"}
+          
+          true ->
+            {:error, "Ping failed: #{String.slice(output, 0..200)}"}
+        end
+    end
+  rescue
+    e -> {:error, "Ping error: #{Exception.message(e)}"}
+  end
+
+  defp parse_ping_output(output, host, count) do
+    # Parse statistics - try multiple patterns for cross-platform support
+    stats = cond do
+      # Linux format: "rtt min/avg/max/mdev = 10.1/20.5/30.2/5.3 ms"
+      match = Regex.run(~r/rtt min\/avg\/max\/mdev = ([\d.]+)\/([\d.]+)\/([\d.]+)\/[\d.]+ ms/, output) ->
+        [_, min, avg, max] = match
+        {String.to_float(min), String.to_float(avg), String.to_float(max)}
+      
+      # macOS format: "round-trip min/avg/max/stddev = 10.1/20.5/30.2/5.3 ms"
+      match = Regex.run(~r/round-trip min\/avg\/max\/stddev = ([\d.]+)\/([\d.]+)\/([\d.]+)\/[\d.]+ ms/, output) ->
+        [_, min, avg, max] = match
+        {String.to_float(min), String.to_float(avg), String.to_float(max)}
+      
+      # Windows format: "Minimum = 10ms, Maximum = 30ms, Average = 20ms"
+      match = Regex.run(~r/Minimum = (\d+)ms, Maximum = (\d+)ms, Average = (\d+)ms/, output) ->
+        [_, min, max, avg] = match
+        {String.to_float(min), String.to_float(avg), String.to_float(max)}
+      
+      true ->
+        # Fallback: extract individual ping times
+        extract_individual_times(output)
+    end
+    
+    # Parse packet loss
+    packet_loss = case Regex.run(~r/([\d.]+)% packet loss/, output) do
+      [_, loss] -> String.to_float(loss)
+      _ -> 0.0
+    end
+    
+    case stats do
+      {min, avg, max} ->
+        {:ok, %{
+          host: host,
+          packets_sent: count,
+          packets_received: count - round(count * packet_loss / 100),
+          packet_loss_percent: packet_loss,
+          latency_ms: %{
+            min: min,
+            avg: avg,
+            max: max
+          }
+        }}
+      
+      nil ->
+        {:error, "Could not parse ping statistics"}
+    end
+  end
+
+  defp extract_individual_times(output) do
+    # Extract individual "time=X.X ms" values
+    times = Regex.scan(~r/time=([\d.]+) ms/, output)
+            |> Enum.map(fn [_, time] -> String.to_float(time) end)
+    
+    if length(times) > 0 do
+      min = Enum.min(times)
+      max = Enum.max(times)
+      avg = Enum.sum(times) / length(times)
+      {min, avg, max}
+    else
+      nil
+    end
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "host": "example.com",
+  "count": 4
+}
+```
+
+Example response:
+```json
+{
+  "host": "example.com",
+  "packets_sent": 4,
+  "packets_received": 4,
+  "packet_loss_percent": 0.0,
+  "latency_ms": {
+    "min": 10.2,
+    "avg": 15.7,
+    "max": 22.3
+  }
+}
+```
+
+Security considerations:
+- **Critical**: SSRF protection - block localhost, private IPs, link-local
+- Command injection prevention (validate host format)
+- Timeout to prevent hanging
+- Limit count to prevent resource exhaustion

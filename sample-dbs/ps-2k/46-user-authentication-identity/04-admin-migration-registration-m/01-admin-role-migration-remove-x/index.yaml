@@ -1,0 +1,32 @@
+id: P46.M4.E1
+name: 'Admin Role Migration: Remove x-admin-key'
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-remove-adminauth-plug-and-x-ad.todo
+  title: Remove AdminAuth plug and x-admin-key config
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M3.E1.T002
+- id: T002
+  file: T002-add-is-admin-check-for-api-adm.todo
+  title: Add is_admin check for API admin endpoints
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M4.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,94 @@
+---
+id: P6.M2.E1.T002
+title: Configure OTel with runtime config
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P6.M2.E1.T001
+tags:
+- observability
+- opentelemetry
+- configuration
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:53:05.225935+00:00'
+started_at: '2026-02-06T19:53:05.225935+00:00'
+completed_at: '2026-02-06T20:00:34.789701+00:00'
+duration_minutes: 7.492729283333333
+---
+
+# Configure OTel with runtime config
+
+Set up OpenTelemetry configuration for tracer, resource attributes, and sampling.
+
+## Requirements
+
+- [ ] Add OTel config to `config/runtime.exs`:
+  - [ ] Service name: "pag-server"
+  - [ ] Service version from Mix.Project
+  - [ ] Environment (dev/test/prod)
+  - [ ] Sampling rate (1.0 for dev, 0.1 for prod)
+- [ ] Configure resource attributes:
+  - [ ] `service.name`
+  - [ ] `service.version`
+  - [ ] `deployment.environment`
+  - [ ] `host.name`
+- [ ] Set up tracer provider in Application.start/2
+- [ ] Configure batch span processor
+- [ ] Add config for exporter endpoint (default: localhost:4318)
+
+## Acceptance Criteria
+
+- [ ] Config loads correctly in all environments
+- [ ] Tracer provider starts successfully
+- [ ] Resource attributes populated
+- [ ] Sampling configured per environment
+- [ ] Batch processor active
+
+## Context
+
+**Key Points**:
+- Use runtime.exs for environment-specific config
+- Batch processor reduces overhead vs. simple processor
+- Sample less in production to reduce data volume
+
+## Notes
+
+**config/runtime.exs**:
+```elixir
+import Config
+
+if config_env() != :test do
+  config :opentelemetry,
+    resource: [
+      service: [
+        name: "pag-server",
+        version: Mix.Project.config()[:version]
+      ],
+      "deployment.environment": config_env()
+    ],
+    traces_exporter: {:otlp,
+      protocol: :http_protobuf,
+      endpoint: System.get_env("OTEL_EXPORTER_OTLP_ENDPOINT", "http://localhost:4318")
+    },
+    sampler: {:parent_based, %{
+      root: {:trace_id_ratio_based, if(config_env() == :prod, do: 0.1, else: 1.0)}
+    }}
+end
+```
+
+**Application.start/2**:
+```elixir
+def start(_type, _args) do
+  # Configure OTel
+  OpentelemetryPhoenix.setup()
+
+  children = [
+    # ... existing children
+  ]
+
+  opts = [strategy: :one_for_one, name: PagServer.Supervisor]
+  Supervisor.start_link(children, opts)
+end
+```

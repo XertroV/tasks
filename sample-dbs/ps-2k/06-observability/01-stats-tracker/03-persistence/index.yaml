@@ -1,0 +1,43 @@
+# Epic: Stats Persistence
+# Phase 6, Milestone 1, Epic 3 (P6.M1.E3)
+
+id: P6.M1.E3
+name: Stats Persistence
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: [E1]
+
+tasks:
+  - id: T001
+    file: T001-database-persistence.todo
+    title: Create database persistence module
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-rollup-archival.todo
+    title: Implement rollup and archival logic
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: medium
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-tests.todo
+    title: Write persistence tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

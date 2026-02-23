@@ -1,0 +1,25 @@
+---
+id: P50.M3.E2.T001
+title: Add CollabTeams.Schema.Message Ecto schema
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:33:53.017970+00:00'
+started_at: '2026-02-23T02:33:53.017970+00:00'
+completed_at: '2026-02-23T02:33:56.401663+00:00'
+duration_minutes: 0.05639441666666667
+---
+## Description
+Create CollabTeams.Schema.Message backed by plugin_collab_teams_messages migration. Changeset validates: from_agent_id present, content non-empty, team_id present. to_agent_id nullable (NULL = broadcast). type validates inclusion in [direct, broadcast, system]. Indexes on (team_id, inserted_at) and (to_agent_id, team_id).
+
+## Acceptance Criteria
+- Schema compiles
+- changeset rejects empty content
+- NULL to_agent_id accepted
+- type validation works
+- indexes declared in migration

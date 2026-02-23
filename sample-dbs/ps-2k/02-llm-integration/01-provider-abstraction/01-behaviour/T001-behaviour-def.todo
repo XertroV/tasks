@@ -1,0 +1,251 @@
+---
+id: P2.M1.E1.T001
+title: Define LLM.Provider behaviour
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+claimed_by: claude-1
+claimed_at: '2026-02-05T10:26:39.124168'
+started_at: '2026-02-05T10:26:39.124168'
+completed_at: '2026-02-05T10:30:56.237146'
+tags:
+- llm
+- behaviour
+- abstraction
+- foundation
+---
+
+# Define LLM.Provider behaviour
+
+Create the core behaviour module that all LLM provider implementations must follow.
+
+## Requirements
+
+### Behaviour Definition
+- [ ] Create `lib/pag_server/llm/provider.ex`
+- [ ] Define `@callback chat/3` with specs:
+  - Input: `(model_spec :: String.t(), messages :: list(map()), opts :: keyword()) :: {:ok, response} | {:error, term()}`
+  - Handles both streaming and non-streaming modes via opts
+- [ ] Define `@callback stream_chat/3` with specs:
+  - Input: `(model_spec :: String.t(), messages :: list(map()), opts :: keyword()) :: {:ok, Stream.t()} | {:error, term()}`
+  - Returns a stream of SSE events or tokens
+- [ ] Define `@callback count_tokens/2` with specs:
+  - Input: `(model_spec :: String.t(), messages :: list(map())) :: {:ok, integer()} | {:error, term()}`
+  - Returns approximate token count for context
+- [ ] Define `@callback get_pricing/1` with specs:
+  - Input: `(model_spec :: String.t()) :: {:ok, %{input: float(), output: float()}} | {:error, term()}`
+  - Returns cost per 1M tokens (input/output)
+- [ ] Define `@callback supports_streaming?/1` with specs:
+  - Input: `(model_spec :: String.t()) :: boolean()`
+  - Indicates if model supports streaming
+- [ ] Define `@callback supports_tools?/1` with specs:
+  - Input: `(model_spec :: String.t()) :: boolean()`
+  - Indicates if model supports tool calling
+
+### Documentation
+- [ ] Add comprehensive `@moduledoc` explaining:
+  - Purpose of the behaviour
+  - How model specs work (format: `provider:model` or `provider:model@version`)
+  - Common options (`:stream`, `:temperature`, `:max_tokens`, etc.)
+  - Response format expectations
+- [ ] Add `@doc` for each callback explaining:
+  - Purpose and use case
+  - Parameter details
+  - Return value structure
+  - Error cases
+
+### Response Structs
+- [ ] Define `PagServer.LLM.Response` struct:
+  - `content` (string)
+  - `role` (atom: `:assistant`)
+  - `tool_calls` (list of tool call maps, optional)
+  - `stop_reason` (atom: `:end_turn`, `:max_tokens`, `:tool_use`, etc.)
+  - `usage` (map with `:input_tokens`, `:output_tokens`, `:cache_creation_tokens`, `:cache_read_tokens`)
+  - `model` (string, actual model used)
+  - `provider` (atom, e.g., `:anthropic`)
+- [ ] Define `PagServer.LLM.StreamEvent` struct:
+  - `type` (atom: `:content_delta`, `:tool_call_delta`, `:thinking_delta`, `:usage`, `:done`)
+  - `delta` (string, for delta events)
+  - `tool_call` (map, for tool call events)
+  - `usage` (map, for usage events)
+
+### Tests
+- [ ] Create `test/pag_server/llm/provider_test.exs`
+- [ ] Test that behaviour module compiles
+- [ ] Test that Response and StreamEvent structs are created correctly
+- [ ] Add documentation examples that compile
+
+### Commit
+- [ ] Run `mix format`
+- [ ] Run `mix compile --warnings-as-errors`
+- [ ] Run `mix test`
+- [ ] Commit with message "Add LLM.Provider behaviour and response structs"
+
+## Acceptance Criteria
+
+- [ ] Behaviour compiles without warnings
+- [ ] All callbacks have proper typespecs
+- [ ] Response and StreamEvent structs are well-documented
+- [ ] Tests pass
+- [ ] Documentation is clear and includes examples
+- [ ] File is under 200 LoC (behaviour definitions should be concise)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- Architecture specifies ~50 LoC for provider.ex
+
+**Design Philosophy**:
+- **Provider-agnostic**: Behaviour must work for Anthropic, OpenAI, OpenRouter, Ollama, etc.
+- **Streaming-first**: Both streaming and non-streaming modes supported
+- **Cost-aware**: Token counting and pricing callbacks are first-class
+- **Tool-calling support**: Explicit callback to check tool support
+
+**Model Spec Format**:
+- `anthropic:claude-3-7-sonnet-20250219` - Full spec with version
+- `anthropic:claude-3-7-sonnet` - Latest version
+- `openai:gpt-4o` - OpenAI model
+- `openrouter:anthropic/claude-3-7-sonnet` - OpenRouter routing format
+- `ollama:llama3.2` - Local Ollama model
+
+## Notes
+
+### Example Behaviour Definition
+
+```elixir
+defmodule PagServer.LLM.Provider do
+  @moduledoc """
+  Behaviour for LLM provider implementations.
+
+  All LLM providers (Anthropic, OpenAI, OpenRouter, Ollama) implement this behaviour
+  to provide a unified interface for chat completion, streaming, token counting, and pricing.
+
+  ## Model Spec Format
+
+  Model specs follow the format: `provider:model` or `provider:model@version`
+
+  Examples:
+  - `anthropic:claude-3-7-sonnet-20250219`
+  - `openai:gpt-4o`
+  - `openrouter:anthropic/claude-3-7-sonnet`
+  - `ollama:llama3.2`
+
+  ## Common Options
+
+  - `:stream` - Boolean, whether to stream responses (default: `false`)
+  - `:temperature` - Float, sampling temperature (default: `1.0`)
+  - `:max_tokens` - Integer, maximum output tokens
+  - `:tools` - List of tool schemas for tool calling
+  - `:system` - String or list, system prompt(s)
+  """
+
+  alias PagServer.LLM.{Response, StreamEvent}
+
+  @doc """
+  Sends a chat request to the LLM provider.
+
+  ## Parameters
+
+  - `model_spec` - Model specification (e.g., "anthropic:claude-3-7-sonnet")
+  - `messages` - List of message maps with `:role` and `:content` keys
+  - `opts` - Keyword list of options (see module doc)
+
+  ## Returns
+
+  - `{:ok, %Response{}}` on success
+  - `{:error, reason}` on failure
+  """
+  @callback chat(model_spec :: String.t(), messages :: list(map()), opts :: keyword()) ::
+              {:ok, Response.t()} | {:error, term()}
+
+  @doc """
+  Streams a chat request to the LLM provider.
+
+  Returns a stream of SSE events or tokens.
+  """
+  @callback stream_chat(model_spec :: String.t(), messages :: list(map()), opts :: keyword()) ::
+              {:ok, Enumerable.t(StreamEvent.t())} | {:error, term()}
+
+  @doc """
+  Counts tokens for the given messages and model.
+
+  Used for context budget management and cost estimation.
+  """
+  @callback count_tokens(model_spec :: String.t(), messages :: list(map())) ::
+              {:ok, integer()} | {:error, term()}
+
+  @doc """
+  Gets pricing information for the model.
+
+  Returns cost per 1M tokens for input and output.
+  """
+  @callback get_pricing(model_spec :: String.t()) ::
+              {:ok, %{input: float(), output: float()}} | {:error, term()}
+
+  @doc """
+  Checks if the model supports streaming.
+  """
+  @callback supports_streaming?(model_spec :: String.t()) :: boolean()
+
+  @doc """
+  Checks if the model supports tool calling.
+  """
+  @callback supports_tools?(model_spec :: String.t()) :: boolean()
+end
+```
+
+### Response Struct Example
+
+```elixir
+defmodule PagServer.LLM.Response do
+  @moduledoc """
+  Response from an LLM provider chat completion.
+  """
+
+  @type t :: %__MODULE__{
+          content: String.t(),
+          role: :assistant,
+          tool_calls: list(map()) | nil,
+          stop_reason: atom(),
+          usage: %{
+            input_tokens: integer(),
+            output_tokens: integer(),
+            cache_creation_tokens: integer() | nil,
+            cache_read_tokens: integer() | nil
+          },
+          model: String.t(),
+          provider: atom()
+        }
+
+  defstruct [
+    :content,
+    :role,
+    :tool_calls,
+    :stop_reason,
+    :usage,
+    :model,
+    :provider
+  ]
+end
+```
+
+### Verification Commands
+
+```bash
+# Compile and check
+mix compile --warnings-as-errors
+
+# Run tests
+mix test test/pag_server/llm/provider_test.exs
+
+# Check documentation
+mix docs
+# Open docs/_build/dev/lib/pag_server/doc/PagServer.LLM.Provider.html
+
+# Verify file size
+wc -l lib/pag_server/llm/provider.ex
+# Should be under 200 LoC
+```

@@ -1,0 +1,53 @@
+id: P10.M2
+name: GitLab Integration
+status: pending
+estimate_hours: 22.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: GitLab Webhook Handler
+  path: 01-gitlab-webhook-handler
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: GitLab API Client
+  path: 02-gitlab-api-client
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: GitLab Issues Integration
+  path: 03-gitlab-issues-integration
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Merge Requests Integration
+  path: 04-merge-requests-integration
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E5
+  name: GitLab CI/CD Integration
+  path: 05-gitlab-ci-cd-integration
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

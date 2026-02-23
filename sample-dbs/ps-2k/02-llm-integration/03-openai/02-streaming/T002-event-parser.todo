@@ -1,0 +1,105 @@
+---
+id: P2.M3.E2.T002
+title: Parse SSE events and accumulate tokens
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M3.E2.T001
+tags:
+- parsing
+- sse
+- streaming
+- tokens
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:41:57.116630'
+started_at: '2026-02-05T15:41:57.116630'
+completed_at: '2026-02-05T15:44:56.150437'
+duration_minutes: 2.9838966166666667
+---
+
+# Parse SSE events and accumulate tokens
+
+Parse incoming SSE events and extract delta tokens for streaming responses.
+
+## Requirements
+
+- [ ] Implement SSE event parsing following WHATWG spec
+- [ ] Parse `data:` lines and accumulate multi-line events
+- [ ] Handle `[DONE]` sentinel value
+- [ ] Extract delta content from `choices[0].delta.content`
+- [ ] Accumulate role, content, and tool_calls from deltas
+- [ ] Build complete message from stream of deltas
+- [ ] Use iolists for efficient token accumulation
+
+## Acceptance Criteria
+
+- [ ] Can parse SSE event format correctly
+- [ ] Multi-line data events are reassembled
+- [ ] `[DONE]` signals end of stream
+- [ ] Delta tokens are extracted and emitted
+- [ ] Complete message can be reconstructed from deltas
+- [ ] Uses iolists (not string concatenation) for efficiency
+- [ ] Tests verify parsing edge cases
+
+## Context
+
+**Plan References**:
+- `ref-projects/openai_ex/lib/openai_ex/http_sse.ex` Lines 7-10 (WHATWG spec reference)
+- AGENTS.md memory efficiency requirement (use iolists, not string concat)
+
+**Key Points**:
+- SSE format: `data: {...}\n\n` per event
+- OpenAI sends `data: [DONE]` to signal completion
+- Each event contains delta: `{delta: {content: "token"}}`
+- MUST use iolists for accumulation (memory efficiency)
+- Final message needs role + accumulated content
+
+## Implementation Notes
+
+SSE event structure:
+```
+data: {"choices":[{"delta":{"content":"Hello"},"index":0}]}\n
+\n
+data: {"choices":[{"delta":{"content":" world"},"index":0}]}\n
+\n
+data: [DONE]\n
+\n
+```
+
+Parse and accumulate:
+```elixir
+defmodule SSEParser do
+  # Parse event lines
+  def parse_event(data) do
+    data
+    |> String.split("\n")
+    |> Enum.filter(&String.starts_with?(&1, "data: "))
+    |> Enum.map(&String.trim_leading(&1, "data: "))
+    |> Enum.reject(&(&1 == ""))
+  end
+  
+  # Accumulate with iolists
+  def accumulate_content(acc, delta) do
+    case delta["content"] do
+      nil -> acc
+      content -> [acc, content]  # iolist append
+    end
+  end
+end
+```
+
+Delta message format:
+```json
+{
+  "choices": [{
+    "delta": {
+      "role": "assistant",
+      "content": "token"
+    },
+    "index": 0,
+    "finish_reason": null
+  }]
+}
+```

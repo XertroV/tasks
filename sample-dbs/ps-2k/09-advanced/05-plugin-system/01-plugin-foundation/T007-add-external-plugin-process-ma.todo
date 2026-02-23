@@ -1,0 +1,59 @@
+---
+id: P9.M5.E1.T007
+title: Add external plugin process management (stdio/HTTP MCP transport)
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- mcp
+- transport
+- external
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:07:41.088305'
+started_at: '2026-02-06T17:07:41.088305'
+completed_at: '2026-02-06T17:07:41.839567'
+duration_minutes: 0.012520666666666668
+---
+
+# Add external plugin process management (stdio/HTTP MCP transport)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/external.ex` module
+- [ ] Launch external plugins as supervised child processes under `Plugins.Supervisor`
+- [ ] Support MCP stdio transport (reuse `PagServer.Tools.MCP.Server` infrastructure):
+  - [ ] Start external command as a Port with JSON-RPC communication
+  - [ ] Pass plugin config as environment variables and/or init params
+  - [ ] Handle stdin/stdout message framing
+- [ ] Support HTTP transport for remote plugins:
+  - [ ] Connect to plugin's declared HTTP endpoint
+  - [ ] Use SSE or WebSocket for bidirectional communication
+  - [ ] Configurable base URL and auth headers
+- [ ] Implement health checking:
+  - [ ] Periodic ping/health endpoint calls (configurable interval, default 30s)
+  - [ ] Mark plugin as `:error` after configurable consecutive failures (default 3)
+- [ ] Auto-restart crashed external processes via supervisor
+- [ ] Implement graceful shutdown with timeout (send shutdown signal, wait, then force kill)
+
+## Acceptance Criteria
+
+- [ ] External plugins launch as supervised processes via stdio transport
+- [ ] HTTP transport connects to remote plugin endpoints
+- [ ] Health checks detect unresponsive plugins and update status to `:error`
+- [ ] Crashed external processes are automatically restarted by supervisor
+- [ ] Plugin config is correctly passed as environment variables to stdio processes
+- [ ] Graceful shutdown sends termination signal before force-killing
+- [ ] Unit tests cover process launching, health check failure, and restart scenarios
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/external.ex`
+- **Reuses**: `PagServer.Tools.MCP.Server`, `PagServer.Tools.MCP.Transport.Stdio` for MCP communication
+- **Depends on**: `PagServer.Plugins.Supervisor` (T005), `PagServer.Plugins.Registry` (T004)
+- **Supervision**: Child processes started under `Plugins.Supervisor` DynamicSupervisor
+- **Pattern reference**: Follow `PagServer.Tools.MCP.Server` for stdio transport patterns

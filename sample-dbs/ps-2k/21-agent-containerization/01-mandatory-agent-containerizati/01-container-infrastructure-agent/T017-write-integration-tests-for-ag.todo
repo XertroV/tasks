@@ -1,0 +1,43 @@
+---
+id: P21.M1.E1.T017
+title: Write integration tests for agent container lifecycle
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T010
+- P21.M1.E1.T011
+- P21.M1.E1.T012
+tags:
+- testing
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.570882+00:00'
+started_at: '2026-02-18T12:21:44.570882+00:00'
+completed_at: '2026-02-18T13:57:56.147260+00:00'
+duration_minutes: 96.19293945
+---
+
+# Write integration tests for agent container lifecycle
+
+Integration tests that verify the full container lifecycle with real Docker.
+
+## Requirements
+
+- Tests require Docker to be running
+- Test actual container creation, execution, cleanup
+- Test tool execution through container
+- Use testcontainers or similar for isolation
+
+## Acceptance Criteria
+
+- [ ] `test/pag_server/integration/container_lifecycle_test.exs` exists
+- [ ] Tests tagged with `@tag :integration` and `@tag :docker`
+- [ ] Test: agent starts with container
+- [ ] Test: tool execution in container
+- [ ] Test: volume mounts accessible
+- [ ] Test: container cleanup on agent stop
+- [ ] Test: sibling sharing works correctly
+- [ ] Tests skip gracefully if Docker unavailable
+- [ ] Tests clean up containers after completion

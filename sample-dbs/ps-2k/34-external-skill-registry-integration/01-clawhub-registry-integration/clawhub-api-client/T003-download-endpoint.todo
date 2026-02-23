@@ -1,0 +1,31 @@
+---
+id: P34.M1.E1.T003
+title: Download Endpoint
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- backend
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:36:52.855405+00:00'
+started_at: '2026-02-19T00:36:52.855405+00:00'
+completed_at: '2026-02-19T00:36:58.878252+00:00'
+duration_minutes: 0.1003806
+---
+
+# Download Endpoint
+
+Implement skill download:
+
+- `download(slug, version, opts)` - Download skill bundle as zip
+- Extract to temp directory
+- Return path to extracted skill folder
+
+## Acceptance Criteria
+
+- [ ] Downloads skill zip from ClawHub
+- [ ] Extracts to temp directory
+- [ ] Returns path to SKILL.md location

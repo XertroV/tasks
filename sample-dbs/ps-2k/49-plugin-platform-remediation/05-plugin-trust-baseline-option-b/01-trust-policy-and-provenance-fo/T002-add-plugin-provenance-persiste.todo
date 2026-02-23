@@ -1,0 +1,31 @@
+---
+id: P49.M5.E1.T002
+title: Add plugin provenance persistence model and migrations
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:53:16.405941+00:00'
+started_at: '2026-02-20T09:53:16.405941+00:00'
+completed_at: '2026-02-20T10:54:13.324901+00:00'
+duration_minutes: 60.94864915
+---
+
+# Add plugin provenance persistence model and migrations
+
+
+
+## Requirements
+
+- Add persistence model for plugin provenance including source URI, publisher identity, artifact digest, and verifier backend.
+- Capture provenance on install and update operations.
+- Ensure provenance records are queryable for incident reconstruction.
+
+## Acceptance Criteria
+
+- Schema migration and data model are implemented and documented.
+- Install/update flows persist provenance records transactionally.
+- Tests cover provenance writes and reads for success and failure paths.

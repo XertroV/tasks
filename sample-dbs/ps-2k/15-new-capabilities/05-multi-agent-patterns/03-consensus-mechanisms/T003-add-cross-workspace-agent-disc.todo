@@ -1,0 +1,37 @@
+---
+id: P15.M5.E3.T003
+title: Add cross-workspace agent discovery
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M5.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T17:26:35.406954+00:00'
+started_at: '2026-02-13T17:26:35.406954+00:00'
+completed_at: '2026-02-13T18:25:59.491370+00:00'
+duration_minutes: 59.40140666666667
+---
+
+# Add cross-workspace agent discovery
+
+## Description
+Implement agent discovery across workspaces for multi-agent collaboration. Enable agents to find and communicate with agents in other workspaces based on capabilities.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Agents.Discovery` module
+- [ ] Implement `find_by_capability(capability, opts)` across workspaces
+- [ ] Add agent registration with capability metadata
+- [ ] Implement capability-based search with filtering
+- [ ] Add workspace boundary controls (allowed/blocked)
+- [ ] Cache discovery results with TTL
+- [ ] Add discovery metrics and logging
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/registry.ex`, `lib/pag_server/schema/agent.ex`, `lib/pag_server/schema/workspace.ex`
+- Part of epic: Consensus Mechanisms
+- Extend existing agent registry

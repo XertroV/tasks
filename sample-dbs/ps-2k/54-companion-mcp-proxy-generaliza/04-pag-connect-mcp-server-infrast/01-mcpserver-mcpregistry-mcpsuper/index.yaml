@@ -1,0 +1,83 @@
+id: P54.M4.E1
+name: MCPServer, MCPRegistry, MCPSupervisor, and Connection integration
+status: done
+estimate_hours: 13.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-config-parse-mcp-servers-table.todo
+  title: 'Config: parse [[mcp_servers]] table from pag-connect config.toml'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-pagconnect-mcpserver-genserver.todo
+  title: 'PagConnect.MCPServer GenServer: stdio MCP client via Erlang Port'
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M4.E1.T001
+- id: T003
+  file: T003-pagconnect-mcpregistry-ets-gen.todo
+  title: PagConnect.MCPRegistry ETS GenServer
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M4.E1.T002
+- id: T004
+  file: T004-pagconnect-mcpsupervisor-dynam.todo
+  title: PagConnect.MCPSupervisor DynamicSupervisor
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M4.E1.T001
+  - P54.M4.E1.T002
+  - P54.M4.E1.T003
+- id: T005
+  file: T005-connection-push-mcp-register-o.todo
+  title: 'Connection: push mcp_register on channel join'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M4.E1.T003
+  - P54.M4.E1.T004
+- id: T006
+  file: T006-connection-handle-mcp-tool-cal.todo
+  title: 'Connection: handle mcp_tool_call and push mcp_tool_result/mcp_tool_error'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M4.E1.T005
+- id: T007
+  file: T007-tests-mcpserver-mcpregistry-mc.todo
+  title: 'Tests: MCPServer, MCPRegistry, MCPSupervisor, Connection MCP integration'
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M4.E1.T002
+  - P54.M4.E1.T003
+  - P54.M4.E1.T004
+  - P54.M4.E1.T005
+  - P54.M4.E1.T006
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

@@ -1,0 +1,30 @@
+---
+id: P46.M2.E3.T002
+title: Implement dev permissive auto-login for web sessions
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P46.M1.E3.T003
+- P46.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:11:18.443093+00:00'
+started_at: '2026-02-19T22:11:18.443093+00:00'
+completed_at: '2026-02-19T22:16:26.567014+00:00'
+duration_minutes: 5.1353985
+---
+In :permissive auth mode, web sessions should auto-login as the seeded dev user without OAuth.
+
+Implement in a new plug lib/pag_server_web/plugs/dev_auto_login.ex:
+- Only active when Application.get_env(:pag_server, :auth_mode) == :permissive
+- Checks if conn already has Pow session (current_user assigned) — if so, no-op
+- Reads dev admin email from config :pag_server, :dev_auto_login_email
+- Loads user from DB by email
+- Creates a session token via Accounts.create_session_token/1
+- Calls Pow.Plug.create_authenticated_session(conn, user) to set session
+- Logs a warning: "[DevAutoLogin] Automatically logged in as #{user.email}. This plug is only active in :permissive mode."
+
+Mount this plug BEFORE RequireLogin in the :browser pipeline, but ONLY in dev config (use a compile-time flag or runtime check).
+Acceptance: In dev, visiting any page automatically shows as logged in. In test/prod, this plug is a no-op.

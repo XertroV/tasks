@@ -1,0 +1,29 @@
+id: P7.M3.E6
+name: MCP Security Hardening
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-rate-limiting-for-mcp-tool.todo
+  title: Add rate limiting for MCP tool calls
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-mcp-server-capability-nego.todo
+  title: Add MCP server capability negotiation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

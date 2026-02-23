@@ -1,0 +1,16 @@
+---
+id: P48.M2.E1.T004
+title: 'System prompt injection: working environment section for coding agents'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:16.465001+00:00'
+started_at: '2026-02-20T08:51:16.465001+00:00'
+completed_at: '2026-02-20T09:06:16.882777+00:00'
+duration_minutes: 15.006962783333334
+---
+When coding_mode=worktree and worktree is active, inject a 'Working Environment' section into the agent's effective system prompt: worktree path, branch name, git workflow guidance ('all file operations should be relative to this directory'). Implement as a ContextInjector plugin.

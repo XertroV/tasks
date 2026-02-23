@@ -1,0 +1,44 @@
+---
+id: P18.M3.E1.T003
+title: Add tests for invitation to membership to access flow
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P18.M3.E1.T002
+tags:
+- security
+- workspace
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:45:48.316397+00:00'
+started_at: '2026-02-17T21:45:48.316397+00:00'
+completed_at: '2026-02-17T21:55:09.819905+00:00'
+duration_minutes: 9.358391466666665
+---
+
+# Add tests for invitation to membership to access flow
+
+## Description
+
+End-to-end tests verifying the complete flow from invitation creation to acceptance to workspace access.
+
+## Requirements
+
+- [ ] Test full happy path: create workspace → invite user → accept → verify membership → verify API access
+- [ ] Test role propagation: admin invitation → admin membership → admin-level API access
+- [ ] Test member invitation → member membership → read-only access, cannot manage
+- [ ] Test duplicate acceptance: accepting again is graceful (no error, no duplicate membership)
+- [ ] Test that after acceptance, user can access workspace endpoints that previously returned 403
+- [ ] Test PubSub events fire during the flow
+
+## Acceptance Criteria
+
+- [ ] End-to-end flow works for all three roles
+- [ ] Access levels are correctly enforced after invitation acceptance
+- [ ] Tests pass with async: true
+
+## Context
+
+**Files affected**: `test/pag_server/workspace_invitations_test.exs` (extend), new integration test file

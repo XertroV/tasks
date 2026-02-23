@@ -1,0 +1,111 @@
+---
+id: P2.M9.E1.T003
+title: Integrate cloud provider health checks into Registry failover
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P2.M9.E1.T001
+- P2.M9.E1.T002
+tags:
+- registry
+- health-check
+- failover
+claimed_by: cli-user
+claimed_at: '2026-02-06T12:56:54.471956'
+started_at: '2026-02-06T12:56:54.471956'
+completed_at: '2026-02-06T13:30:00.000000'
+---
+
+# Integrate cloud provider health checks into Registry failover
+
+The Registry already has health-check-based failover logic (P2.M8.E4.T003, done).
+This task ensures the new Anthropic and OpenAI health checks work correctly
+within that existing infrastructure, adds periodic health check scheduling,
+and implements health result caching to avoid excessive API calls.
+
+## Requirements
+
+- [x] Verify Registry `check_provider_health/1` correctly discovers and calls new Anthropic `health_check/0`
+- [x] Verify Registry `check_provider_health/1` correctly discovers and calls new OpenAI `health_check/0`
+- [x] Add health check result caching with configurable TTL (default: 30 seconds)
+- [x] Cache healthy results to avoid repeated API calls during normal operation
+- [x] Cache unhealthy results with shorter TTL (10 seconds) for faster recovery detection
+- [ ] Add periodic health check polling (optional, configurable interval, default: 60 seconds)
+- [x] Add `force_health_check/1` function to bypass cache when needed
+- [x] Write integration tests: unhealthy Anthropic -> failover to OpenAI
+- [x] Write integration tests: unhealthy OpenAI -> failover to Anthropic
+- [x] Write integration tests: both unhealthy -> return error
+- [x] Add telemetry events for health check transitions (healthy -> unhealthy, unhealthy -> healthy)
+- [x] Update `provider_health/1` to return cached results when available
+
+## Acceptance Criteria
+
+- [x] Anthropic returning `{:error, _}` from `health_check/0` triggers failover to OpenAI
+- [x] OpenAI returning `{:error, _}` from `health_check/0` triggers failover to Anthropic
+- [x] Both providers unhealthy returns `:no_providers_available` error
+- [x] Health check results are cached for 30 seconds (not called on every request)
+- [x] Forced health check bypasses cache
+- [x] Integration tests pass with mock providers
+- [x] No performance regression: cached health checks add <1ms to request routing
+
+## Implementation Details
+
+Health check caching in the Registry state:
+
+```elixir
+defmodule State do
+  defstruct providers: %{},
+            model_cache: %{},
+            cache_order: [],
+            context_limits: %{},
+            provider_routing: %{},
+            health_cache: %{}  # %{provider_atom => {status, cached_at}}
+end
+
+@health_cache_ttl_ms 30_000
+@unhealthy_cache_ttl_ms 10_000
+
+defp check_provider_health_cached(module, provider, state) do
+  case Map.get(state.health_cache, provider) do
+    {status, cached_at} ->
+      ttl = if status == :healthy, do: @health_cache_ttl_ms, else: @unhealthy_cache_ttl_ms
+      if System.monotonic_time(:millisecond) - cached_at < ttl do
+        {status, state}
+      else
+        do_health_check(module, provider, state)
+      end
+
+    nil ->
+      do_health_check(module, provider, state)
+  end
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Depends On**:
+- P2.M9.E1.T001 (Anthropic health_check/0)
+- P2.M9.E1.T002 (OpenAI health_check/0)
+
+**Existing Infrastructure**:
+- `PagServer.LLM.Registry.check_provider_health/1` (line 665) - already works with optional health_check/0
+- `PagServer.LLM.Registry.provider_health/1` (line 163) - returns health status map
+- `PagServer.LLM.Registry.attempt_provider_route/9` - already skips unhealthy providers
+
+**Reference Files**:
+- `lib/pag_server/llm/registry.ex` - Registry module with existing health check integration
+- `test/pag_server/llm/registry_test.exs` - Existing registry tests
+
+## Notes
+
+- The Registry already handles the `function_exported?(module, :health_check, 0)` check and normalizes results. The main work here is:
+  1. Verifying end-to-end integration with real provider health checks
+  2. Adding caching to prevent excessive health check API calls
+  3. Writing integration tests with mock providers
+- Consider using `System.monotonic_time(:millisecond)` for cache timestamps (monotonic = no clock skew issues)
+- The periodic health check polling could be implemented as a `Process.send_after/3` loop in the Registry GenServer
+- NOTE: Periodic polling requirement deferred - not strictly needed since health checks are already triggered on routing and cached with TTL

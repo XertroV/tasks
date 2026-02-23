@@ -1,0 +1,28 @@
+---
+id: P50.M3.E1.T007
+title: Wire task graph actions into dispatcher and add integration tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E1.T002
+- P50.M3.E1.T004
+- P50.M3.E1.T005
+- P50.M3.E1.T006
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:20:12.466657+00:00'
+started_at: '2026-02-23T02:20:12.466657+00:00'
+completed_at: '2026-02-23T02:20:15.063326+00:00'
+duration_minutes: 0.04327756666666667
+---
+## Description
+Replace stubs for create_task, claim_task, complete_task, fail_task, cancel_task, set_task_blocked in Dispatcher. Response envelopes include action, team_id, task_id, event_id. Integration test: lead creates 3 tasks in chain (A->B->C), two workers concurrently claim A (one wins), winner completes A, B becomes claimable, second worker claims B, completes B, C becomes claimable. All async: true, unique team IDs, no sleeps, run under 20s.
+
+## Acceptance Criteria
+- All 6 task actions routed correctly
+- integration test passes
+- response envelopes correct
+- concurrent claim test deterministic
+- mix test.collab_teams passes

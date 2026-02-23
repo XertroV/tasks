@@ -1,0 +1,24 @@
+---
+id: P50.M1.E1.T004
+title: Add smoke tests and mix test.collab_teams alias
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E1.T002
+- P50.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:09:49.767406+00:00'
+started_at: '2026-02-23T02:09:49.767406+00:00'
+completed_at: '2026-02-23T02:09:52.472146+00:00'
+duration_minutes: 0.045078799999999995
+---
+## Description
+Create test/pag_server/plugins/collab_teams/collab_teams_test.exs covering: module loads, on_enable returns :ok, on_disable returns :ok, handle_tool_call with unknown action returns error tuple. Add test.collab_teams alias to mix.exs targeting test/pag_server/plugins/collab_teams/.
+
+## Acceptance Criteria
+- mix test.collab_teams runs without error
+- all smoke tests pass
+- alias format matches existing subsystem aliases in mix.exs

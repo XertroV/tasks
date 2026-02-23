@@ -1,0 +1,23 @@
+---
+id: P36.M1.E5.T002
+title: Tests for AgentWaker
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P36.M1.E5.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:09:08.567917+00:00'
+started_at: '2026-02-19T03:09:08.567917+00:00'
+completed_at: '2026-02-19T03:09:11.109634+00:00'
+duration_minutes: 0.04236171666666667
+---
+## Acceptance Criteria
+- Test: agent already in registry → returns {:ok, pid} without starting new process
+- Test: agent not running, valid session → starts successfully and returns {:ok, pid}
+- Test: session not found in DB → returns {:error, :not_found}
+- Test: session archived/completed → returns {:error, :already_archived}
+- Test: concurrent calls for same session → no duplicate start (lock prevents it)
+- Tests are async: true using start_supervised!

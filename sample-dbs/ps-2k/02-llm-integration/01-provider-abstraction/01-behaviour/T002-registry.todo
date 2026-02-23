@@ -1,0 +1,292 @@
+---
+id: P2.M1.E1.T002
+title: Create provider registry GenServer
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M1.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-05T10:31:05.466068'
+started_at: '2026-02-05T10:31:05.466068'
+completed_at: '2026-02-05T10:33:53.362318'
+tags:
+- llm
+- registry
+- genserver
+- routing
+---
+
+# Create provider registry GenServer
+
+Build a GenServer that manages provider registration and routes requests to the correct provider implementation.
+
+## Requirements
+
+### Registry GenServer
+- [ ] Create `lib/pag_server/llm/registry.ex`
+- [ ] Implement GenServer behavior:
+  - `init/1` - Initialize empty registry state
+  - `handle_call(:list_providers)` - Return list of registered providers
+  - `handle_call({:get_provider, provider_name})` - Return provider module
+  - `handle_call({:register, provider_name, module})` - Register new provider
+- [ ] Add state struct with:
+  - `providers` - Map of provider name (atom) to module
+  - `model_cache` - Cached model specs for fast lookup
+
+### Public API Functions
+- [ ] `start_link/1` - Start the registry GenServer
+- [ ] `register_provider/2` - Register a provider module
+  - Input: `(provider_name :: atom(), module :: module()) :: :ok`
+  - Validates module implements `PagServer.LLM.Provider` behaviour
+- [ ] `get_provider/1` - Get provider module by name
+  - Input: `(provider_name :: atom()) :: {:ok, module()} | {:error, :not_found}`
+- [ ] `list_providers/0` - List all registered providers
+  - Returns: `list(atom())`
+- [ ] `chat/3` - Route chat request to appropriate provider
+  - Input: `(model_spec :: String.t(), messages :: list(map()), opts :: keyword())`
+  - Parses model spec, finds provider, delegates to provider module
+  - Returns: `{:ok, Response.t()} | {:error, term()}`
+- [ ] `stream_chat/3` - Route streaming chat request
+  - Same as `chat/3` but for streaming
+- [ ] `count_tokens/2` - Route token counting request
+  - Input: `(model_spec :: String.t(), messages :: list(map()))`
+  - Returns: `{:ok, integer()} | {:error, term()}`
+
+### Startup & Initialization
+- [ ] Add to application supervision tree in `lib/pag_server/application.ex`
+- [ ] Place registry after `PagServer.Repo` in supervision tree
+- [ ] Auto-register built-in providers on startup (in future tasks)
+
+### Error Handling
+- [ ] Handle unknown provider errors with helpful messages
+- [ ] Handle invalid model spec format errors
+- [ ] Handle provider module not implementing behaviour
+- [ ] Add telemetry events for:
+  - Provider registration
+  - Request routing
+  - Provider errors
+
+### Tests
+- [ ] Create `test/pag_server/llm/registry_test.exs`
+- [ ] Test GenServer starts successfully
+- [ ] Test registering a provider
+- [ ] Test getting a provider by name
+- [ ] Test listing providers
+- [ ] Test routing requests (with mock provider)
+- [ ] Test error cases:
+  - Unknown provider
+  - Invalid model spec
+  - Module doesn't implement behaviour
+
+### Documentation
+- [ ] Add `@moduledoc` explaining:
+  - Purpose of the registry
+  - How providers are registered
+  - Request routing mechanism
+- [ ] Add `@doc` for all public functions
+- [ ] Include usage examples
+
+### Commit
+- [ ] Run `mix format`
+- [ ] Run `mix compile --warnings-as-errors`
+- [ ] Run `mix test`
+- [ ] Commit with message "Add LLM provider registry GenServer"
+
+## Acceptance Criteria
+
+- [ ] Registry GenServer starts in supervision tree
+- [ ] Can register and retrieve providers
+- [ ] Routing functions parse model specs correctly
+- [ ] All tests pass
+- [ ] File is under 250 LoC (target per architecture.md)
+- [ ] No compilation warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- Architecture specifies ~150 LoC for registry.ex
+
+**Design Philosophy**:
+- **Centralized routing**: Single entry point for all LLM requests
+- **Runtime registration**: Providers can be added dynamically
+- **Fail-fast validation**: Validate provider modules implement behaviour
+- **Telemetry-instrumented**: All routing decisions emit telemetry
+
+**Supervision Tree Placement**:
+```
+PagServer.Application
+├── PagServer.Repo
+├── PagServer.LLM.Registry       # <-- Add here
+├── PagServer.Agents.Supervisor
+└── ...
+```
+
+## Notes
+
+### Example Registry Implementation
+
+```elixir
+defmodule PagServer.LLM.Registry do
+  @moduledoc """
+  GenServer that manages LLM provider registration and request routing.
+
+  The registry maintains a mapping of provider names to their implementation modules,
+  and routes incoming chat/stream requests to the appropriate provider based on
+  the model specification.
+
+  ## Usage
+
+      # Register a provider
+      Registry.register_provider(:anthropic, PagServer.LLM.Providers.Anthropic)
+
+      # Route a request
+      {:ok, response} = Registry.chat("anthropic:claude-3-7-sonnet", messages, [])
+
+  ## Model Spec Format
+
+  Model specs follow the format: `provider:model` or `provider:model@version`
+  """
+
+  use GenServer
+  require Logger
+
+  alias PagServer.LLM.Provider
+
+  defmodule State do
+    @moduledoc false
+    defstruct providers: %{}, model_cache: %{}
+  end
+
+  # Client API
+
+  def start_link(opts \\\\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+
+  def register_provider(provider_name, module) when is_atom(provider_name) do
+    unless Provider in (module.module_info(:attributes)[:behaviour] || []) do
+      raise ArgumentError, "#{inspect(module)} does not implement PagServer.LLM.Provider"
+    end
+
+    GenServer.call(__MODULE__, {:register, provider_name, module})
+  end
+
+  def get_provider(provider_name) when is_atom(provider_name) do
+    GenServer.call(__MODULE__, {:get_provider, provider_name})
+  end
+
+  def list_providers do
+    GenServer.call(__MODULE__, :list_providers)
+  end
+
+  def chat(model_spec, messages, opts \\\\ []) do
+    with {:ok, provider, model} <- parse_model_spec(model_spec),
+         {:ok, module} <- get_provider(provider) do
+      :telemetry.execute([:pag, :llm, :chat], %{}, %{provider: provider, model: model})
+      module.chat(model_spec, messages, opts)
+    end
+  end
+
+  # Similar for stream_chat/3, count_tokens/2
+
+  # Server Callbacks
+
+  @impl true
+  def init(_opts) do
+    {:ok, %State{}}
+  end
+
+  @impl true
+  def handle_call({:register, provider_name, module}, _from, state) do
+    Logger.info("Registering LLM provider: #{provider_name} -> #{inspect(module)}")
+    new_state = %{state | providers: Map.put(state.providers, provider_name, module)}
+    :telemetry.execute([:pag, :llm, :provider_registered], %{}, %{provider: provider_name})
+    {:reply, :ok, new_state}
+  end
+
+  @impl true
+  def handle_call({:get_provider, provider_name}, _from, state) do
+    result =
+      case Map.fetch(state.providers, provider_name) do
+        {:ok, module} -> {:ok, module}
+        :error -> {:error, :not_found}
+      end
+
+    {:reply, result, state}
+  end
+
+  @impl true
+  def handle_call(:list_providers, _from, state) do
+    {:reply, Map.keys(state.providers), state}
+  end
+
+  # Helpers
+
+  defp parse_model_spec(model_spec) do
+    case String.split(model_spec, ":", parts: 2) do
+      [provider, model] -> {:ok, String.to_atom(provider), model}
+      _ -> {:error, :invalid_model_spec}
+    end
+  end
+end
+```
+
+### Telemetry Events
+
+```elixir
+# Emit these events:
+:telemetry.execute(
+  [:pag, :llm, :provider_registered],
+  %{},
+  %{provider: :anthropic}
+)
+
+:telemetry.execute(
+  [:pag, :llm, :chat],
+  %{},
+  %{provider: :anthropic, model: "claude-3-7-sonnet"}
+)
+```
+
+### Application Supervisor Integration
+
+Add to `lib/pag_server/application.ex`:
+
+```elixir
+children = [
+  # Database
+  PagServer.Repo,
+  
+  # LLM Provider Registry
+  PagServer.LLM.Registry,
+  
+  # Agents
+  PagServer.Agents.Supervisor,
+  
+  # ...
+]
+```
+
+### Verification Commands
+
+```bash
+# Test in IEx
+iex -S mix
+
+# Register a mock provider
+defmodule MockProvider do
+  @behaviour PagServer.LLM.Provider
+  # ... implement callbacks ...
+end
+
+PagServer.LLM.Registry.register_provider(:mock, MockProvider)
+PagServer.LLM.Registry.list_providers()
+# => [:mock]
+
+# Verify supervision
+:observer.start()
+# Check that PagServer.LLM.Registry is running
+```

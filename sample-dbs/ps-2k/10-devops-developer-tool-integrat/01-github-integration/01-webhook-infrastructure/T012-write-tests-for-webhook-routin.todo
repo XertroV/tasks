@@ -1,0 +1,58 @@
+---
+id: P10.M1.E1.T012
+title: Write tests for webhook routing and filtering
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:10:15.053763+00:00'
+started_at: '2026-02-11T20:10:15.053763+00:00'
+completed_at: '2026-02-11T20:32:11.911883+00:00'
+duration_minutes: 21.947635133333332
+---
+
+# Write tests for webhook routing and filtering
+
+
+
+## Requirements
+
+Write comprehensive tests for the webhook filter matching engine, event router, and controller endpoints to ensure correct behavior under normal and edge case scenarios.
+
+## Description
+
+Test coverage includes unit tests for FilterMatcher and EventRouter, integration tests for controller endpoints, and end-to-end scenarios combining filter matching with routing. Tests verify correct handling of glob patterns, branch matching, file path filtering, priority sorting, and error conditions.
+
+## Acceptance Criteria
+
+- [ ] FilterMatcher unit tests: glob patterns, branch matching, file paths, event types, empty filters
+- [ ] FilterMatcher tests verify AND logic (all filters must match to return true)
+- [ ] FilterMatcher edge cases: missing fields, null values, empty arrays, special characters
+- [ ] EventRouter unit tests: subscription matching, priority sorting, deduplication
+- [ ] EventRouter tests verify queries fetch only active subscriptions
+- [ ] IntegrationSettingsController tests: create with token validation, list scoped to user, delete
+- [ ] WebhookSubscriptionController tests: CRUD operations, nested resource access, filter validation
+- [ ] Controller tests verify 404 when accessing other user's integrations/subscriptions
+- [ ] Test endpoint (`POST /subscriptions/:id/test`) with valid/invalid event_types and payloads
+- [ ] All tests follow `async: true` default with cleanup via `on_exit/1`
+- [ ] No assertions on specific counter values (test behavior, not metrics)
+- [ ] Tests use Repo fixtures or Factory for consistent test data (see `/home/xertrov/src/pag-server/test/support/factory.ex`)
+
+## Implementation Notes
+
+- Test locations:
+  - `test/pag_server/webhooks/filter_matcher_test.exs` (unit)
+  - `test/pag_server/webhooks/event_router_test.exs` (unit)
+  - `test/pag_server_web/controllers/integration_settings_controller_test.exs` (integration)
+  - `test/pag_server_web/controllers/webhook_subscription_controller_test.exs` (integration)
+- Use `use PagServer.DataCase, async: true` for DB tests (transactions provide isolation)
+- Use `use PagServerWeb.ConnCase, async: true` for controller tests
+- Mock GitHub API calls in integration tests using `Mox` (see config in `test/test_helper.exs`)
+- Test sample glob patterns: `main`, `release/*`, `hotfix-*`, `src/**`, `*.md`, `[a-z]*.ex`
+- Verify telemetry events emitted at correct levels with correct tags
+- Controller tests should test auth failures (401, 403) in addition to happy path
+- Use unique names for async tests: `name: "test-#{System.unique_integer([:positive])}"`
+- Reference pattern: `/home/xertrov/src/pag-server/test/pag_server_web/controllers/api_key_controller_test.exs`

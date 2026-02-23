@@ -1,0 +1,16 @@
+---
+id: B205
+title: discord_bridge PoC should include manifest validation and scope note
+status: done
+estimate_hours: 0.75
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T15:54:47.528920+00:00'
+started_at: '2026-02-21T15:54:47.528920+00:00'
+completed_at: '2026-02-21T15:57:29.683418+00:00'
+duration_minutes: 2.702574783333333
+---
+B204 added discord_bridge module tests only. Add manifest/loader validation coverage for plugins/discord_bridge/plugin.json and make scope behavior explicit (workspace guard or docs note).

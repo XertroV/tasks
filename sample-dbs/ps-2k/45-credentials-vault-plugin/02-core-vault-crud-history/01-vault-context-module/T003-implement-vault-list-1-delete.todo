@@ -1,0 +1,17 @@
+---
+id: P45.M2.E1.T003
+title: Implement Vault.list/1, delete/2, rotate/2, history/2
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P45.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.185019+00:00'
+started_at: '2026-02-19T19:17:35.185019+00:00'
+completed_at: '2026-02-19T19:50:09.942172+00:00'
+duration_minutes: 32.5792857
+---
+list/1: return all non-deleted secrets matching scope (metadata only, no values). delete/2: soft-delete (sets deleted_at). rotate/2: insert new version, keeping all previous versions. history/2: return all versions for a secret (metadata + version_number, no values). All functions must respect scope boundaries — an agent-scoped secret for agent_id='A' must not be returned when querying with agent_id='B'.

@@ -1,0 +1,25 @@
+id: P54.M5
+name: Documentation Updates
+status: done
+estimate_hours: 4.0
+complexity: low
+depends_on:
+- P54.M3
+- P54.M4
+locked: false
+epics:
+- id: E1
+  name: 'Docs: architecture, plugin guide, developer reference'
+  path: 01-docs-architecture-plugin-guide
+  status: done
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: null
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

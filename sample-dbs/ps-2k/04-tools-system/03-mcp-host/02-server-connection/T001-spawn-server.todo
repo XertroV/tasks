@@ -1,0 +1,88 @@
+---
+id: P4.M3.E2.T001
+title: Spawn MCP server processes
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on: []
+tags:
+- tools
+- mcp
+- process
+- spawn
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:24:47.823491'
+started_at: '2026-02-05T22:24:47.823491'
+completed_at: '2026-02-05T22:24:49.791045'
+duration_minutes: 0.03279201666666667
+---
+
+# Spawn MCP server processes
+
+Implement MCP server process spawning and management.
+
+## Requirements
+
+- [ ] Create MCP.Server GenServer module
+- [ ] Spawn MCP server as OS process via Port
+- [ ] Configure server command, args, env from config
+- [ ] Monitor process health and crashes
+- [ ] Add to supervision tree
+
+## Acceptance Criteria
+
+- [ ] Spawns configured MCP servers on startup
+- [ ] Monitors process liveness
+- [ ] Restarts crashed servers
+- [ ] Test with mock MCP server
+- [ ] Logs server output for debugging
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 351-354 (MCP server)
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 78-93 (MCP config)
+
+**Key Points**:
+- Each MCP server runs as separate OS process
+- Communication via stdio (JSON-RPC over stdin/stdout)
+- Supervisor restarts failed servers
+- Configuration includes command, args, env vars
+
+## Notes
+
+Implementation uses Port for process spawning:
+```elixir
+defmodule PAGServer.Tools.MCP.Server do
+  use GenServer
+
+  def start_link(config) do
+    GenServer.start_link(__MODULE__, config, name: via_tuple(config.name))
+  end
+
+  @impl true
+  def init(config) do
+    port = Port.open({:spawn_executable, config.command}, [
+      :binary,
+      :exit_status,
+      args: config.args,
+      env: format_env(config.env),
+      cd: config.workdir || "/"
+    ])
+    
+    {:ok, %{port: port, config: config, buffer: ""}}
+  end
+end
+```
+
+Configuration example:
+```elixir
+config :pag_server, :mcp_servers, [
+  %{
+    name: "filesystem",
+    command: "mcp-server-filesystem",
+    args: ["--root", "/workspace"]
+  }
+]
+```

@@ -1,0 +1,24 @@
+id: P32
+name: Collaborative Safety & Agent Consensus
+status: pending
+locked: false
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Delete File Consensus
+  path: 01-delete-file-consensus
+  status: pending
+  estimate_hours: 20.0
+  complexity: high
+  depends_on: []
+  description: Vote-based deletion approval using forked agent instances
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,38 @@
+---
+id: P12.M3.E3.T003
+title: Plan dependency upgrades (hackney, logger_json, sentry)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:50:16.939899+00:00'
+started_at: '2026-02-13T10:50:16.939899+00:00'
+completed_at: '2026-02-13T11:12:47.133072+00:00'
+duration_minutes: 22.5032193
+---
+
+# Plan dependency upgrades (hackney, logger_json, sentry)
+
+## Description
+
+Create an upgrade plan for outdated dependencies (hackney, logger_json, sentry). Document breaking changes, required code changes, and testing strategy.
+
+## Acceptance Criteria
+
+- [ ] Run `mix hex.outdated` to identify all outdated deps
+- [ ] Focus on: hackney, logger_json, sentry
+- [ ] Review changelogs for breaking changes
+- [ ] Document required code changes for each upgrade
+- [ ] Identify test coverage gaps for upgrade validation
+- [ ] Create prioritized upgrade order with risk assessment
+- [ ] Output: upgrade plan document or task breakdown
+
+## Context
+
+- Related files: `mix.exs`
+- Check: `mix.lock` for current versions
+- Consider: Deps with security advisories should be prioritized
+- Part of epic: Complete TODO Implementations

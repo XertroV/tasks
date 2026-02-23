@@ -1,0 +1,93 @@
+---
+id: P9.M1.E1.T001
+title: Install pgvector extension
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:25:00.971101+00:00'
+tags:
+- vector-search
+- pgvector
+- database
+- extension
+started_at: '2026-02-11T02:25:00.971101+00:00'
+completed_at: '2026-02-11T02:35:07.536096+00:00'
+duration_minutes: 10.109416416666667
+---
+
+# Install pgvector extension
+
+Add pgvector PostgreSQL extension support to enable vector similarity search in production.
+
+## Requirements
+
+- [ ] Add pgvector to PostgreSQL container/setup instructions
+- [ ] Create migration to enable pgvector extension
+- [ ] Verify extension loads correctly
+- [ ] Document installation steps in README
+- [ ] Add Docker Compose configuration for pgvector-enabled PostgreSQL
+
+## Acceptance Criteria
+
+- [ ] Migration runs successfully: `CREATE EXTENSION IF NOT EXISTS vector`
+- [ ] Can create tables with `vector` column type
+- [ ] Extension version is documented (target: pgvector 0.5.0+)
+- [ ] Docker development setup includes pgvector
+- [ ] PostgreSQL version >= 12 (minimum for pgvector)
+- [ ] Unit tests verify extension is available
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` (vector search patterns)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 8 (Memory Efficiency)
+
+**Key Points**:
+- pgvector is production-grade vector storage in PostgreSQL
+- Eliminates need for separate vector database
+- Enables vector similarity search with SQL queries
+- Target: 50,000 vectors max for development (300MB @ 1536 dims)
+
+## Notes
+
+pgvector supports multiple distance metrics:
+- L2 distance: `<->`
+- Inner product: `<#>`
+- Cosine distance: `<=>`
+
+Example schema:
+```sql
+CREATE TABLE embeddings (
+  id BIGSERIAL PRIMARY KEY,
+  content TEXT NOT NULL,
+  embedding VECTOR(1536),  -- OpenAI ada-002 dimension
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+Installation varies by platform - document all scenarios (Docker, native PostgreSQL, managed databases).
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:25 UTC
+**Primary task**: P9.M5.E4.T001 - Implement plugin agent spawning via Coordinator integration
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P9.M1.E1 vs P9.M5.E4)
+- No dependency chain: ✓ (verified at claim time)

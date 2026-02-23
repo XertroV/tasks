@@ -1,0 +1,41 @@
+---
+id: P21.M1.E1.T006
+title: Implement VolumeManager for mount path computation
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T004
+tags:
+- volumes
+- filesystem
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.553494+00:00'
+started_at: '2026-02-18T12:21:44.553494+00:00'
+completed_at: '2026-02-18T12:44:23.822935+00:00'
+duration_minutes: 22.65449046666667
+---
+
+# Implement VolumeManager for mount path computation
+
+Central module for computing and managing volume mount paths for containers.
+
+## Requirements
+
+- Compute host and container paths for workspace, private, shared volumes
+- Create host directories if needed
+- Handle path validation and security (prevent path traversal)
+- Support for sibling agent shared volume resolution
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/volume_manager.ex` exists
+- [ ] `prepare_volumes/3` - prepare all volumes for agent (agent_id, workspace_id, opts)
+- [ ] `workspace_mount/2` - compute workspace volume spec
+- [ ] `private_mount/2` - compute private volume spec for agent
+- [ ] `shared_mount/2` - compute shared volume spec for sibling sharing
+- [ ] `cleanup_volumes/1` - cleanup volumes on agent stop
+- [ ] Path validation prevents directory traversal attacks
+- [ ] Creates host directories with proper permissions
+- [ ] Unit tests for path computation

@@ -1,0 +1,52 @@
+id: P46.M1.E2
+name: 'Schema: Users Extension & Auth Tables'
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-migration-extend-users-table-w.todo
+  title: 'Migration: extend users table with username, is_admin, confirmed_at'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-migration-create-user-identiti.todo
+  title: 'Migration: create user_identities table'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M1.E2.T001
+- id: T003
+  file: T003-migration-create-user-tokens-t.todo
+  title: 'Migration: create user_tokens table'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M1.E2.T001
+- id: T004
+  file: T004-configure-user-schema-as-pow-u.todo
+  title: Configure User schema as Pow user with PowAssent
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M1.E2.T001
+  - P46.M1.E2.T002
+  - P46.M1.E2.T003
+  - P46.M1.E1.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

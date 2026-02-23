@@ -1,0 +1,21 @@
+---
+id: P46.M2.E1.T003
+title: Add logout action and session deletion
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P46.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:30:25.133128+00:00'
+started_at: '2026-02-19T21:30:25.133128+00:00'
+completed_at: '2026-02-19T21:38:23.534527+00:00'
+duration_minutes: 7.973356483333333
+---
+Add to OAuthLoginController (or a dedicated SessionController):
+- delete/2 — logs out current user. Deletes session token from user_tokens table via Accounts.delete_session_token/1. Clears Pow session. Redirects to /login with flash 'Logged out successfully'.
+Add route: DELETE /logout -> SessionController.delete (or OAuthLoginController.delete).
+Also add GET /logout as alias for convenience (some clients don't support DELETE from links).
+Acceptance: Visiting /logout clears the session cookie and redirects to login page. Subsequent requests to protected routes redirect back to /login.

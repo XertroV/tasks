@@ -1,0 +1,16 @@
+---
+id: P31.M1.E2.T002
+title: Implement SshPlugin module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:36.936598+00:00'
+started_at: '2026-02-18T19:46:36.936598+00:00'
+completed_at: '2026-02-18T19:46:40.043091+00:00'
+duration_minutes: 0.051774716666666665
+---
+Plugin: name=ssh_agent, default_enabled?=false, mcp_tools=[remote_agent_spawn, list_ssh_connections, close_ssh_connection], config_schema includes known_hosts, default_user, key_path.

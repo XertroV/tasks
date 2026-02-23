@@ -1,0 +1,18 @@
+---
+id: B243
+title: Content block token counting ignores images
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- llm
+- tokens
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.103402+00:00'
+started_at: '2026-02-23T07:29:02.103402+00:00'
+completed_at: '2026-02-23T07:43:45.951680+00:00'
+duration_minutes: 14.7308045
+---
+provider.ex:362-375 - Only text block types counted; images/vision content ignored

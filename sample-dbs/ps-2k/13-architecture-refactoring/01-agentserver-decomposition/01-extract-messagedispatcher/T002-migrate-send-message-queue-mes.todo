@@ -1,0 +1,35 @@
+---
+id: P13.M1.E1.T002
+title: Migrate send_message/queue_message handling
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:14:18.501286+00:00'
+started_at: '2026-02-13T19:14:18.501286+00:00'
+completed_at: '2026-02-13T19:34:28.805080+00:00'
+duration_minutes: 20.171729616666667
+---
+
+# Migrate send_message/queue_message handling
+
+## Description
+
+Migrate the `handle_call({:send_message, ...})` and `handle_cast({:queue_message, ...})` implementations to use the new `MessageDispatcher` module. Update AgentServer to delegate to the new module while maintaining backward compatibility.
+
+## Acceptance Criteria
+- [ ] Refactor `handle_call({:send_message, ...})` to use `MessageDispatcher.dispatch_send_message/4`
+- [ ] Refactor `handle_cast({:queue_message, ...})` to use MessageDispatcher for routing
+- [ ] All existing message-related tests continue to pass
+- [ ] No regression in synchronous/asynchronous message handling
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex` (lines 565-694)
+- Related files: `lib/pag_server/agents/message_dispatcher.ex` (new)
+- Part of epic: P13.M1.E1 - Extract MessageDispatcher

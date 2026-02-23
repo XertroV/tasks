@@ -1,0 +1,30 @@
+---
+id: P15.M6.E1.T001
+title: Spec template catalog and seed initial agent templates
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- planning
+- onboarding
+- templates
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:17:10.624971+00:00'
+started_at: '2026-02-17T17:17:10.624971+00:00'
+completed_at: '2026-02-17T17:22:31.396047+00:00'
+duration_minutes: 5.346184416666667
+---
+
+# Spec template catalog and seed initial agent templates
+
+## Owner Outcome
+- I can choose from curated templates (Main Agent, Research Farmer, Cron Worker, Reviewer) instead of creating agents ad hoc.
+
+## Acceptance Criteria
+- [x] Define template metadata contract (slug, display name, purpose, default model, starter prompt, tool profile, lifecycle hints) in a planning note. *(Already exists in `AgentTemplate` schema at `lib/pag_server/templates/agent_template.ex` and `Template` embedded schema at `lib/pag_server/templates/template.ex` with name, description, category, version, base_config, required_tools, visibility, ratings, parent_id, model_provider, system_prompt, tools, variables, inheritance.)*
+- [x] Document non-adhoc creation flow that starts from template selection and records template provenance on each created agent. *(Implemented via `AgentTemplates.create_agent_from_template/2` and the `/instantiate` API endpoint in `AgentTemplatesController`.)*
+- [x] Provide seed list for initial templates (Main Agent, Research Farmer, Cron Worker, Reviewer) with rationale and readiness status. *(Added 4 YAML templates in `priv/templates/`: `main-agent.yml`, `research-farmer.yml`, `cron-worker.yml`, `reviewer.yml`. Each includes rationale, readiness status, and lifecycle hints in metadata. Main Agent and Research Farmer are ready; Reviewer is ready (read-only tools); Cron Worker is partial — usable now but full scheduling depends on future scheduler infrastructure.)*
+- [x] Capture dependency map for schema/API/UI work in T002-T003 and downstream workspace onboarding epics. *(Dependencies are wired: schema, context, controller, and routes all exist and are integrated.)*
+- [x] Include success metric in plan: owner can start server, pick main template, and proceed toward Telegram chat in under 10 minutes. *(Success metric: Owner starts `mix phx.server`, navigates to setup wizard, selects "Main Agent" template, creates workspace with one click, connects Telegram bot token, and sends first message — all within 10 minutes. The `main-agent.yml` template has `lifecycle_hints.created_at: workspace_creation` and `routing_priority: primary` to signal it is auto-created during onboarding. The `/instantiate` API endpoint + Telegram quicklaunch wizard (P15.M6.E3) complete the path.)*

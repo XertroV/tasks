@@ -1,0 +1,43 @@
+---
+id: P17.M3.E2.T001
+title: Add context summarization test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:47:19.931117+00:00'
+started_at: '2026-02-14T06:47:19.931117+00:00'
+completed_at: '2026-02-14T07:10:04.364491+00:00'
+duration_minutes: 22.740556050000002
+---
+
+# Add context summarization test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P17.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 06:47 UTC
+**Sibling tasks**: P17.M3.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P17.M3.E2.T001 → P17.M3.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P17.M3.E2.T001: .tasks/17-extended-integration-test-cove/03-advanced-feature-tests/02-context-feature-tests/T001-add-context-summarization-test.todo
+- P17.M3.E2.T002: .tasks/17-extended-integration-test-cove/03-advanced-feature-tests/02-context-feature-tests/T002-add-context-truncation-test.todo

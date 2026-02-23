@@ -1,0 +1,30 @@
+id: P19.M4.E2
+name: Provider Docs Creation
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-document-zai-zai-coding-provid.todo
+  title: Document ZAI/ZAI Coding providers
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-document-web-search-provider-b.todo
+  title: Document web search provider behaviour
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

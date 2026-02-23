@@ -1,0 +1,27 @@
+---
+id: P50.M4.E2.T005
+title: Add LiveView integration tests for dashboard
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E2.T002
+- P50.M4.E2.T003
+- P50.M4.E2.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:43:39.438828+00:00'
+started_at: '2026-02-23T02:43:39.438828+00:00'
+completed_at: '2026-02-23T02:43:41.936916+00:00'
+duration_minutes: 0.041634616666666666
+---
+## Description
+Tests: unauthenticated GET redirects to login; authenticated mount lists seeded team correctly (ConnCase/LiveViewTest); PubSub broadcast updates team list without page reload (assert_html or assert_patch). Use async: false for LiveView tests. Complete in under 5s.
+
+## Acceptance Criteria
+- All 3 tests pass
+- unauthenticated redirect confirmed
+- seeded team appears in list
+- PubSub update reflected in LiveView assigns
+- async: false; under 5s

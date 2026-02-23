@@ -1,0 +1,23 @@
+---
+id: P44.M1.E2.T002
+title: Register built-in commands at application startup
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:29:49.165061+00:00'
+started_at: '2026-02-19T18:29:49.165061+00:00'
+completed_at: '2026-02-19T18:35:33.113353+00:00'
+duration_minutes: 5.732471383333333
+---
+## Summary
+Boot-time registration of all built-in command handler modules into the Commands.Registry.
+
+## Acceptance Criteria
+- [ ] All 5 built-in handlers (model, help, stats, status, compact) are registered on app start
+- [ ] Registration happens in Commands.Supervisor or a dedicated init task
+- [ ] Order of registration does not matter (no implicit priority)
+- [ ] Duplicate registration at startup is a logged warning, not a crash

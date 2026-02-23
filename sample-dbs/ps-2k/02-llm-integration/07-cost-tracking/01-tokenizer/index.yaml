@@ -1,0 +1,46 @@
+id: P2.M7.E1
+name: Tokenizer
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-tokenizer-module.todo
+  title: Create Tokenizer module
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-model-specific-counting.todo
+  title: Add model-specific token counting
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-tokenizer-tests.todo
+  title: Write tokenizer tests
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+- id: T004
+  file: T004-research-and-integrate-native.todo
+  title: Research and integrate native tokenizer libraries for accurate counting
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

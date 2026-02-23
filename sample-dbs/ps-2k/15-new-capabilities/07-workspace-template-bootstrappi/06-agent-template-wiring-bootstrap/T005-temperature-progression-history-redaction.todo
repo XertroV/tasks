@@ -1,0 +1,68 @@
+---
+id: P15.M7.E6.T005
+title: Temperature Progression & History Redaction
+epic: P15.M7.E6
+estimate_hours: 3.0
+complexity: high
+priority: high
+status: done
+depends_on:
+- P15.M7.E6.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T13:32:48.216239+00:00'
+started_at: '2026-02-18T13:32:48.216239+00:00'
+completed_at: '2026-02-18T13:56:22.540450+00:00'
+duration_minutes: 23.57207
+---
+
+# Temperature Progression & History Redaction
+
+Implement dynamic temperature progression and ephemeral history redaction during bootstrap.
+
+## Temperature Progression
+
+### Session State Tracking
+
+Track `message_count` in session state. After each message:
+- If `message_count >= bootstrap_config.temperature_message_count`: dial temperature down to `normal_temperature`
+- Otherwise use `initial_temperature`
+
+### Files to Modify
+
+- `lib/pag_server/bootstrap/session.ex` - Add message counting and temperature state
+- `lib/pag_server/agents/agent_server.ex` (or LLM call config builder) - Read temperature from bootstrap session when active
+
+## History Redaction
+
+### Initial Message TTL
+
+- If `message_count >= bootstrap_config.initial_message_ttl`: mark `initial_message_redacted: true`
+
+### Ephemeral Filter
+
+When `initial_message_redacted: true`:
+- Filter the initial_message out of messages list before sending to LLM
+- User-visible chat history remains unchanged
+- **Important:** This is an ephemeral filter only - DB/event store unchanged
+
+### Files to Modify
+
+- `lib/pag_server/bootstrap/session.ex` - Add redaction flag
+- `lib/pag_server/agents/agent_server.ex` - Apply filter at LLM send time
+
+## Default Values
+
+- `initial_temperature`: 1.0
+- `normal_temperature`: 0.7
+- `temperature_message_count`: 6
+- `initial_message_ttl`: 4
+
+## Acceptance Criteria
+
+- [ ] Message count tracked in bootstrap session
+- [ ] Temperature starts at initial_temperature and dials down after message threshold
+- [ ] After initial_message_ttl messages, initial_message is filtered from LLM context
+- [ ] Chat history in DB remains unchanged (ephemeral filter only)
+- [ ] Temperature progression respects bootstrap_config overrides
+- [ ] Tests cover temperature progression and history redaction logic

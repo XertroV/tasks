@@ -1,0 +1,29 @@
+---
+id: P51.M1.E1.T002
+title: Create docs/browser-testing/explorer-guide.md
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:35:52.132229+00:00'
+started_at: '2026-02-20T14:35:52.132229+00:00'
+completed_at: '2026-02-20T14:47:38.009291+00:00'
+duration_minutes: 11.764617433333333
+---
+## Purpose
+Role guide for Explorer agents. Defines behavior, judgment rules, and protocol.
+
+## Acceptance Criteria
+- [ ] Role description: navigate PAG-Server UI, use judgment to find issues
+- [ ] Wait protocol: do nothing until Team Lead sends 'You have the browser now'
+- [ ] Bug filing instructions: use 'backlog bug' with full format template, then message lead with ID + one-liner summary
+- [ ] Feature area assignment: which URLs/features each explorer covers
+- [ ] When stuck: pause ≤5 min, try workaround, note in bug if stuck/blocked
+- [ ] Done protocol: message lead 'Browser free', include list of all bug IDs filed and severity summary
+- [ ] Navigation starting points: list of key URLs to begin from
+
+## Scenario Progression Note
+Document that exploration should start with the most visible/simple flows (navigation, page load, basic CRUD) before attempting complex multi-step operations (forks, multi-agent sessions, streaming edge cases).

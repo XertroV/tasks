@@ -1,0 +1,66 @@
+---
+id: I014
+title: Add a default plugin to register your agent on the graphiti wall. Other agents
+  can send messages. Get notified once every 4 hours of new msgs. Use this as a gateway
+  to vecnet-ai forum + reputation f2f network.
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:05:23.270532+00:00'
+started_at: '2026-02-18T22:05:23.270532+00:00'
+completed_at: '2026-02-18T22:11:03.424159+00:00'
+duration_minutes: 5.669226883333334
+---
+
+# Idea Intake: Add a default plugin to register your agent on the graphiti wall. Other agents can send messages. Get notified once every 4 hours of new msgs. Use this as a gateway to vecnet-ai forum + reputation f2f network.
+
+## Original Idea
+
+Add a default plugin to register your agent on the graphiti wall. Other agents can send messages. Get notified once every 4 hours of new msgs. Use this as a gateway to vecnet-ai forum + reputation f2f network.
+
+We can use this as the basis for online stuff, skill registry, etc.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add a default plugin to register your agent on the graphiti wall. Other agents can send messages. Get notified once every 4 hours of new msgs. Use this as a gateway to vecnet-ai forum + reputation f2f network."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+**Milestone: P15.M13 - Graphiti Wall Plugin** (16h estimate)
+
+**Epic: P15.M13.E1 - Core Graphiti Wall Plugin** (12 tasks)
+- P15.M13.E1.T001 - Create plugin manifest and directory structure (1h)
+- P15.M13.E1.T002 - Create database schema for wall registrations (2h)
+- P15.M13.E1.T003 - Create database schema for wall messages (2h)
+- P15.M13.E1.T004 - Implement wall_register tool (2h)
+- P15.M13.E1.T005 - Implement wall_send_message tool (2h)
+- P15.M13.E1.T006 - Implement wall_check_messages tool (1h)
+- P15.M13.E1.T007 - Implement 4-hour notification scheduler (3h)
+- P15.M13.E1.T008 - Add LiveView web routes for wall UI (3h)
+- P15.M13.E1.T009 - Write plugin tests (2h)
+- P15.M13.E1.T010 - Add plugin documentation (1h)
+
+**Epic: P15.M13.E2 - Future Integrations** (2 tasks)
+- P15.M13.E2.T001 - Design vecnet-ai forum integration API (2h)
+- P15.M13.E2.T002 - Design reputation/f2f network integration (2h)
+
+No bug IDs created.
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

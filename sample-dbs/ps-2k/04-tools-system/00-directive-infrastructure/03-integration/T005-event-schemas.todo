@@ -1,0 +1,256 @@
+---
+id: P4.M0.E3.T005
+title: Define directive event schemas
+status: done
+estimate_hours: 3
+complexity: medium
+priority: high
+depends_on:
+- P4.M0.E1.T001
+tags:
+- events
+- event-sourcing
+- schemas
+claimed_by: claude-1
+claimed_at: '2026-02-05T20:28:15.590901'
+started_at: '2026-02-05T20:28:15.590901'
+completed_at: '2026-02-05T20:33:13.763388'
+duration_minutes: 4.969541266666667
+---
+
+# Define directive event schemas
+
+Add new event types for directive execution to the event sourcing system.
+
+## Requirements
+
+- [ ] Extend `lib/pag_server/events/schemas.ex` (existing file)
+- [ ] Define event schemas:
+  - [ ] `directive_issued` - Before directive execution
+  - [ ] `directive_completed` - After successful execution
+  - [ ] `directive_failed` - On execution error
+- [ ] Add helper functions to `lib/pag_server/events.ex`:
+  - [ ] `emit_directive_issued/2`
+  - [ ] `emit_directive_completed/2,3`
+  - [ ] `emit_directive_failed/3`
+- [ ] Use existing `Events.Persistence.append_event/1` pattern
+- [ ] Include telemetry spans
+
+## Acceptance Criteria
+
+- [ ] DirectiveIssued event includes directive_type and full directive data
+- [ ] DirectiveCompleted event includes result and duration_ms
+- [ ] DirectiveFailed event includes error reason
+- [ ] Events compressed if >1KB (existing pattern)
+- [ ] Telemetry spans emitted (existing pattern)
+- [ ] Events link to previous event hash (hash-chain preserved)
+- [ ] Test coverage for event emission and retrieval
+
+## Context
+
+**Plan References**:
+- `docs/plans/2026-02-06-feat-directive-system-infrastructure-plan.md` (Section 2, Component 5)
+
+**Existing Patterns**:
+- Events: `lib/pag_server/events/persistence.ex:98-114` (append_event/1)
+- Event schemas: `lib/pag_server/events/schemas.ex`
+- Emission helpers: `lib/pag_server/events.ex`
+- Hash-chain: `lib/pag_server/agents/agent_server.ex:886-889`
+
+## Notes
+
+### Event schema definitions
+
+```elixir
+# In lib/pag_server/events/schemas.ex
+
+@type directive_issued :: %{
+  type: String.t(),  # "directive_issued"
+  agent_id: String.t(),
+  session_id: String.t(),
+  data: %{
+    directive_type: String.t(),  # "spawn_agent", "send_message", etc.
+    directive: map(),  # Full directive struct as map
+    tool_name: String.t() | nil,  # Which tool issued it
+    timestamp: DateTime.t()
+  },
+  previous_hash: String.t()
+}
+
+@type directive_completed :: %{
+  type: String.t(),  # "directive_completed"
+  agent_id: String.t(),
+  session_id: String.t(),
+  data: %{
+    directive_type: String.t(),
+    result: term(),  # Execution result
+    duration_ms: non_neg_integer(),
+    timestamp: DateTime.t()
+  },
+  previous_hash: String.t()
+}
+
+@type directive_failed :: %{
+  type: String.t(),  # "directive_failed"
+  agent_id: String.t(),
+  session_id: String.t(),
+  data: %{
+    directive_type: String.t(),
+    error: term(),  # Error reason
+    timestamp: DateTime.t()
+  },
+  previous_hash: String.t()
+}
+```
+
+### Helper functions
+
+```elixir
+# In lib/pag_server/events.ex
+
+def emit_directive_issued(agent_id, directive) do
+  directive_type = directive.__struct__
+    |> Module.split()
+    |> List.last()
+    |> Macro.underscore()
+  
+  event = %Event{
+    type: "directive_issued",
+    agent_id: agent_id,
+    session_id: get_session_id(agent_id),
+    data: %{
+      directive_type: directive_type,
+      directive: struct_to_map(directive),
+      timestamp: DateTime.utc_now()
+    }
+  }
+  
+  Persistence.append_event(event)
+end
+
+def emit_directive_completed(agent_id, directive, result \\ nil) do
+  directive_type = directive.__struct__
+    |> Module.split()
+    |> List.last()
+    |> Macro.underscore()
+  
+  event = %Event{
+    type: "directive_completed",
+    agent_id: agent_id,
+    session_id: get_session_id(agent_id),
+    data: %{
+      directive_type: directive_type,
+      result: result,
+      timestamp: DateTime.utc_now()
+    }
+  }
+  
+  Persistence.append_event(event)
+end
+
+def emit_directive_failed(agent_id, directive, reason) do
+  directive_type = directive.__struct__
+    |> Module.split()
+    |> List.last()
+    |> Macro.underscore()
+  
+  event = %Event{
+    type: "directive_failed",
+    agent_id: agent_id,
+    session_id: get_session_id(agent_id),
+    data: %{
+      directive_type: directive_type,
+      error: inspect(reason),
+      timestamp: DateTime.utc_now()
+    }
+  }
+  
+  Persistence.append_event(event)
+end
+
+defp struct_to_map(%{__struct__: _} = struct) do
+  struct
+  |> Map.from_struct()
+  |> Enum.reject(fn {_k, v} -> is_nil(v) end)
+  |> Map.new()
+end
+```
+
+### Test coverage
+
+```elixir
+test "emit_directive_issued creates event" do
+  directive = %Directive.SpawnAgent{
+    role: "worker",
+    system_prompt: "Do work"
+  }
+  
+  Events.emit_directive_issued("agent-123", directive)
+  
+  events = Events.get_events(agent_id: "agent-123", type: "directive_issued")
+  assert length(events) == 1
+  
+  [event] = events
+  assert event.data.directive_type == "spawn_agent"
+  assert event.data.directive.role == "worker"
+end
+
+test "directive events maintain hash chain" do
+  # Emit sequence of events
+  Events.emit_directive_issued("agent-123", directive1)
+  Events.emit_directive_completed("agent-123", directive1)
+  Events.emit_directive_issued("agent-123", directive2)
+  
+  events = Events.get_events(agent_id: "agent-123")
+  
+  # Verify chain links
+  assert events[1].previous_hash == hash(events[0])
+  assert events[2].previous_hash == hash(events[1])
+end
+```
+
+Follow existing event persistence patterns, ensure compression and telemetry.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 06:09 UTC
+**Primary task**: P2.M7.E4.T001 - Create pricing database schema and context
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E3 vs P2.M7.E4)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 07:28 UTC
+**Primary task**: P2.M8.E3.T003 - Create configurable pruning policy
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M0.E3 vs P2.M8.E3)
+- No dependency chain: ✓ (verified at claim time)

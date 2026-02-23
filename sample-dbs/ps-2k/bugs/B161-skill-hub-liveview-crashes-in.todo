@@ -1,0 +1,38 @@
+---
+id: B161
+title: Skill Hub LiveView crashes in loop on /dashboard/skills/hub
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- browser-testing
+- skills-hub
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-20T15:35:41.224339+00:00'
+started_at: '2026-02-20T15:35:41.224339+00:00'
+completed_at: '2026-02-20T15:38:01.169611+00:00'
+duration_minutes: 2.3324210166666663
+---
+## Repro
+1. Start pag-server in dev mode.
+2. Open `/dashboard/skills/hub` while authenticated (auto-auth in permissive mode is sufficient).
+3. Observe the page repeatedly reconnecting/crashing.
+
+## Expected
+Skill Hub loads skills list or shows a graceful empty/error state.
+
+## Actual
+LiveView crashes repeatedly and enters a reconnect loop. Browser shows repeated `view crashed` errors.
+
+## Evidence
+- Server log shows repeated `CaseClauseError` in `PagServerWeb.Live.SkillHubLive.do_fetch/2`.
+- Stack includes:
+  - `lib/pag_server_web/live/skill_hub_live.ex:333`
+  - `lib/pag_server_web/live/skill_hub_live.ex:315`
+- Exception starts around `/tmp/pag-server.log` line 524 during `:load_skills`.
+
+## Suspected Cause
+`do_fetch/2` pattern matches an older response shape and does not handle the current success tuple payload returned by the skills API.

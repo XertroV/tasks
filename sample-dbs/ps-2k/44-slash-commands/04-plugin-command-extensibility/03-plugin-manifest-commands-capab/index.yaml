@@ -1,0 +1,22 @@
+id: P44.M4.E3
+name: Plugin Manifest Commands Capability
+status: done
+estimate_hours: 1.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-commands-capability-to-plu.todo
+  title: Add commands capability to plugin manifest schema
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

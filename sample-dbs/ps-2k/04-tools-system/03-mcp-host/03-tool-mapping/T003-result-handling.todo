@@ -1,0 +1,80 @@
+---
+id: P4.M3.E3.T003
+title: Handle MCP tool results
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P4.M3.E3.T002
+tags:
+- tools
+- mcp
+- results
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:51:52.818762'
+started_at: '2026-02-05T22:51:52.818762'
+completed_at: '2026-02-05T23:02:32.424098'
+duration_minutes: 10.660088783333332
+---
+
+# Handle MCP tool results
+
+Parse and normalize MCP tool execution results.
+
+## Requirements
+
+- [ ] Parse MCP tool result format
+- [ ] Extract text/data/error content
+- [ ] Convert to standard result format
+- [ ] Handle multi-part results
+- [ ] Log result metadata
+
+## Acceptance Criteria
+
+- [ ] Parses all MCP result types
+- [ ] Extracts text content
+- [ ] Handles errors appropriately
+- [ ] Returns normalized format
+- [ ] Test coverage for result types
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` MCP specification
+
+## Notes
+
+Result parsing:
+```elixir
+defp parse_mcp_result(%{"content" => content}) do
+  text = content
+  |> Enum.filter(&(&1["type"] == "text"))
+  |> Enum.map(&(&1["text"]))
+  |> Enum.join("\n")
+  
+  {:ok, text}
+end
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:51 UTC
+**Primary task**: P4.M2.E4.T002 - Implement spawn_subagent tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M3.E3 vs P4.M2.E4)
+- No dependency chain: ✓ (verified at claim time)

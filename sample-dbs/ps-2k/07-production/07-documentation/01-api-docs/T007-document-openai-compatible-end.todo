@@ -1,0 +1,162 @@
+---
+id: P7.M7.E1.T007
+title: Document OpenAI-compatible endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P7.M7.E1.T002
+- P3.M4.E1.T003
+- P3.M4.E2.T003
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:57:38.479961+00:00'
+started_at: '2026-02-08T05:57:38.479961+00:00'
+completed_at: '2026-02-08T06:03:39.652671+00:00'
+tags:
+- documentation
+- openapi
+- rest
+- openai-compat
+duration_minutes: 6.019545033333333
+---
+
+# Document OpenAI-compatible endpoints
+
+Add OpenAPI schemas for the OpenAI-compatible chat completions endpoint.
+
+## Requirements
+
+- [ ] Create OpenAI-compat schemas module
+  - [ ] `ChatCompletionRequest`: Mirrors OpenAI request format
+  - [ ] `ChatCompletionResponse`: Mirrors OpenAI response format
+  - [ ] `ChatCompletionChunk`: SSE streaming chunk format
+
+- [ ] Document `POST /v1/chat/completions`
+  - [ ] Request body matching OpenAI spec
+  - [ ] Non-streaming response (200)
+  - [ ] Streaming response (SSE)
+  - [ ] Error responses matching OpenAI format
+
+- [ ] Document supported parameters
+  - [ ] `model`: Model specification
+  - [ ] `messages`: Conversation history
+  - [ ] `stream`: Enable streaming
+  - [ ] `temperature`, `max_tokens`, etc.
+
+- [ ] Document PAG-specific extensions
+  - [ ] `x-pag-agent-id`: Route to specific agent
+  - [ ] `x-pag-session-id`: Continue existing session
+  - [ ] Tool/function calling support
+
+- [ ] Document streaming format
+  - [ ] SSE event structure
+  - [ ] `data: [DONE]` termination
+  - [ ] Error events in stream
+
+## Acceptance Criteria
+
+- [ ] Endpoint documented as OpenAI-compatible drop-in
+- [ ] Request/response schemas match OpenAI spec
+- [ ] Streaming format clearly documented
+- [ ] PAG extensions documented separately
+- [ ] Examples show both streaming and non-streaming
+- [ ] Compatibility notes for OpenAI clients
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on P3.M4 (OpenAI-Compatible API implementation)
+
+## Implementation Guide
+
+### OpenAI-Compat Schemas
+
+```elixir
+defmodule PagServerWeb.Schemas.OpenAICompat do
+  require OpenApiSpex
+  alias OpenApiSpex.Schema
+
+  defmodule ChatCompletionRequest do
+    OpenApiSpex.schema(%{
+      title: "ChatCompletionRequest",
+      type: :object,
+      properties: %{
+        model: %Schema{type: :string, description: "Model ID or PAG model spec",
+                       example: "gpt-4"},
+        messages: %Schema{type: :array, items: %Schema{
+          type: :object,
+          properties: %{
+            role: %Schema{type: :string, enum: ["system", "user", "assistant"]},
+            content: %Schema{type: :string}
+          },
+          required: [:role, :content]
+        }},
+        stream: %Schema{type: :boolean, default: false},
+        temperature: %Schema{type: :number, minimum: 0, maximum: 2},
+        max_tokens: %Schema{type: :integer, minimum: 1},
+        # PAG extensions
+        "x-pag-agent-id": %Schema{type: :string, format: :uuid,
+                                   description: "PAG extension: Route to agent"},
+        "x-pag-session-id": %Schema{type: :string, format: :uuid,
+                                     description: "PAG extension: Continue session"}
+      },
+      required: [:model, :messages]
+    })
+  end
+
+  defmodule ChatCompletionResponse do
+    OpenApiSpex.schema(%{
+      title: "ChatCompletionResponse",
+      type: :object,
+      properties: %{
+        id: %Schema{type: :string, example: "chatcmpl-abc123"},
+        object: %Schema{type: :string, enum: ["chat.completion"]},
+        created: %Schema{type: :integer, description: "Unix timestamp"},
+        model: %Schema{type: :string},
+        choices: %Schema{type: :array, items: %Schema{
+          type: :object,
+          properties: %{
+            index: %Schema{type: :integer},
+            message: %Schema{type: :object, properties: %{
+              role: %Schema{type: :string},
+              content: %Schema{type: :string}
+            }},
+            finish_reason: %Schema{type: :string, enum: ["stop", "length", "tool_calls"]}
+          }
+        }},
+        usage: %Schema{type: :object, properties: %{
+          prompt_tokens: %Schema{type: :integer},
+          completion_tokens: %Schema{type: :integer},
+          total_tokens: %Schema{type: :integer}
+        }}
+      }
+    })
+  end
+end
+```
+
+### Streaming Documentation
+
+```markdown
+## Streaming Response
+
+When `stream: true`, the response is sent as Server-Sent Events:
+
+```
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"content":"Hello"}}]}
+
+data: {"id":"chatcmpl-abc","choices":[{"delta":{"content":" world"}}]}
+
+data: [DONE]
+```
+
+Each chunk contains a `delta` with incremental content.
+```
+
+## Notes
+
+- Maintain strict compatibility with OpenAI SDK expectations
+- Document deviations clearly as "PAG extensions"
+- Include curl examples for both streaming and non-streaming

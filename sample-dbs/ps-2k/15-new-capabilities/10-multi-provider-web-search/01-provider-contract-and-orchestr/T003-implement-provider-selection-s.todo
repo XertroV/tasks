@@ -1,0 +1,35 @@
+---
+id: P15.M10.E1.T003
+title: Implement provider selection strategy with health-aware randomization
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P15.M10.E1.T001
+tags:
+- tools
+- web-search
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:08:31.601383+00:00'
+started_at: '2026-02-17T15:08:31.601383+00:00'
+completed_at: '2026-02-17T15:10:30.186951+00:00'
+duration_minutes: 1.9764259
+---
+
+# Implement provider selection strategy with health-aware randomization
+
+
+
+## Requirements
+
+- Implement selection logic that chooses randomly among currently healthy enabled providers.
+- Ensure selection is deterministic under test via injectable RNG.
+- Implement selection as a reusable orchestrator primitive, parameterized by provider health/capability inputs.
+
+## Acceptance Criteria
+
+- Orchestrator selects only healthy providers and falls back when chosen provider errors.
+- Tests verify random healthy selection behavior and deterministic test control of provider choice.
+- Selection primitive can be reused by other tools without web-search-specific coupling.

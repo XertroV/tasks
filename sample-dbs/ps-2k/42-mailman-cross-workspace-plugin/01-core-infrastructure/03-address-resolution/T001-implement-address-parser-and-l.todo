@@ -1,0 +1,23 @@
+---
+id: P42.M1.E3.T001
+title: Implement Address parser and local resolver
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:16:00.988443+00:00'
+started_at: '2026-02-19T17:16:00.988443+00:00'
+completed_at: '2026-02-19T17:19:20.558729+00:00'
+duration_minutes: 3.3261712833333332
+---
+## Context
+plugins/mailman/lib/address.ex
+
+## Acceptance Criteria
+- [ ] parse/1 parses address strings into typed structs: {:workspace, slug}, {:agent, workspace_slug, agent_name}, {:remote, host, workspace_slug} for pag:// URLs, {:error, :invalid_address} for malformed
+- [ ] resolve_local/1 maps parsed address to {workspace_id, agent_id | nil} via DB lookup
+- [ ] format/1 canonical string from struct
+- [ ] Slug validation against [a-z0-9][a-z0-9_-]* pattern

@@ -1,0 +1,48 @@
+id: P43.M2.E3
+name: Tests
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-schema-changeset-unit-tests-fo.todo
+  title: Schema/changeset unit tests for LlmCallRecord
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-callrecorder-unit-tests-insert.todo
+  title: 'CallRecorder unit tests: insert/complete/fail with Ecto sandbox, verify
+    non-blocking behavior'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-registry-integration-test-veri.todo
+  title: 'Registry integration test: verify llm_call_record row is inserted for a
+    real LLM call'
+  status: pending
+  estimate_hours: 0.75
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-liveview-tests-for-llmcallsdas.todo
+  title: 'LiveView tests for LlmCallsDashboardLive: renders in-flight, history, filters'
+  status: pending
+  estimate_hours: 0.75
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

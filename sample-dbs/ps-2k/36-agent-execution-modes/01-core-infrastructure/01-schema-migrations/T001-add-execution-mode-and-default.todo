@@ -1,0 +1,21 @@
+---
+id: P36.M1.E1.T001
+title: Add execution_mode and default_auto_start to agents table
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:38:22.760649+00:00'
+started_at: '2026-02-19T02:38:22.760649+00:00'
+completed_at: '2026-02-19T02:42:49.783018+00:00'
+duration_minutes: 4.450372616666667
+---
+## Acceptance Criteria
+- Migration adds `execution_mode TEXT NOT NULL DEFAULT 'discrete'` to agents table
+- Migration adds `default_auto_start BOOLEAN NOT NULL DEFAULT FALSE` to agents table
+- `PagServer.Schema.Agent` updated with Ecto.Enum field for execution_mode (:continuous | :discrete) and boolean default_auto_start
+- All existing agents default to :discrete (migration conservative default)
+- Migration is reversible

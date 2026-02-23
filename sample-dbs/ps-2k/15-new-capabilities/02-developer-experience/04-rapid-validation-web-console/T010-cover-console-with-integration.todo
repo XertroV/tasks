@@ -1,0 +1,46 @@
+---
+id: P15.M2.E4.T010
+title: Cover console with integration tests and rapid validation smoke script
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P15.M2.E4.T007
+- P15.M2.E4.T008
+- P15.M2.E4.T009
+tags:
+- testing
+- integration
+- devex
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:36:20.459917+00:00'
+started_at: '2026-02-14T14:36:20.459917+00:00'
+completed_at: '2026-02-14T14:42:46.832717+00:00'
+duration_minutes: 6.439546516666667
+---
+
+# Cover console with integration tests and rapid validation smoke script
+
+
+
+## Requirements
+
+- Add integration tests for the key validation workflows (send chat prompt, switch session, run quick action, adjust settings).
+- Keep test runtime fast and deterministic by stubbing slow waits and external provider dependencies.
+- Add a simple smoke script/command to verify end-to-end console viability in local development.
+- Ensure test coverage includes at least one failure path for each major interaction area.
+
+## Acceptance Criteria
+
+- Automated tests cover happy-path interactions across chat, browser, settings, and controls.
+- Failure scenarios are tested for API/channel errors and confirm graceful UI behavior.
+- Smoke workflow can be executed locally with documented command(s) and expected output.
+- Newly added tests meet project speed expectations and do not introduce long sleeps.
+
+## Implementation Notes (2026-02-15)
+
+- Extended `test/pag_server_web/live/validation_console_test.exs` with integration coverage for run controls (new session, fork, stop), session switching behavior, and timeline filtering/tool event rendering.
+- Kept tests deterministic and fast by using existing in-process simulated streaming/failure hooks, avoiding added sleeps.
+- Added rapid smoke script at `scripts/validation_console_smoke.sh` to run focused LiveView tests and optionally probe local route availability.
+- Maintained existing failure-path coverage for chat/settings/controls while adding additional run-control and timeline scenarios.

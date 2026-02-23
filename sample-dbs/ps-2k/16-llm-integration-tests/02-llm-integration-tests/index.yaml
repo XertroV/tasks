@@ -1,0 +1,53 @@
+id: P16.M2
+name: LLM Integration Tests
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Basic Chat Integration Tests
+  path: 01-basic-chat-integration-tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Streaming Integration Tests
+  path: 02-streaming-integration-tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Tool Call Integration Tests
+  path: 03-tool-call-integration-tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Multi-Model Integration Tests
+  path: 04-multi-model-integration-tests
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E5
+  name: Integration Test Documentation
+  path: 05-integration-test-documentation
+  status: pending
+  estimate_hours: 0.5
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

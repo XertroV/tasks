@@ -1,0 +1,41 @@
+---
+id: P23.M3.E2.T002
+title: Migrate existing plugins from lib/pag_server/plugins/ to plugins/
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M3.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:54:02.098712+00:00'
+started_at: '2026-02-18T15:54:02.098712+00:00'
+completed_at: '2026-02-18T16:04:24.824315+00:00'
+duration_minutes: 10.378759833333334
+---
+Move all plugin files to the new location. Conservative approach — just move files.
+
+## Acceptance Criteria
+- [ ] Each plugin directory from `lib/pag_server/plugins/<name>/` is moved to `plugins/<name>/`
+- [ ] Module names are NOT changed (keep `PagServer.Plugins.Foo` namespace — only file location changes)
+- [ ] All existing `alias` and `import` references in non-plugin lib code continue to work (module names unchanged)
+- [ ] `lib/pag_server/plugins/` directory is emptied (or removed if no non-plugin files remain there)
+- [ ] `mix compile` and `mix test` pass after migration
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P23.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 15:54 UTC
+**Sibling tasks**: P23.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P23.M3.E2.T002 → P23.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P23.M3.E2.T002: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/02-pluginloader-update-migration/T002-migrate-existing-plugins-from.todo
+- P23.M3.E2.T003: .tasks/23-safety-scheduling-plugin-archi/03-plugin-file-structure-refactor/02-pluginloader-update-migration/T003-remove-lib-pag-server-plugins.todo

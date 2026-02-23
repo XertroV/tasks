@@ -1,0 +1,16 @@
+---
+id: P48.M3.E5.T001
+title: LSP plugin module, manifest, and lifecycle
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:06:33.166098+00:00'
+started_at: '2026-02-20T09:06:33.166098+00:00'
+completed_at: '2026-02-20T09:43:08.518217+00:00'
+duration_minutes: 36.589201816666666
+---
+Directory: plugins/lsp/. Module: PagServer.Plugins.Lsp. Implements plugin behaviour: init/1, enable/1, disable/1, tools/0, hooks/0. On enable: start LspSupervisor and LspRegistry. On disable: shutdown all LspClient processes, unregister tools and hooks. plugin.json manifest: on-by-default, :beam transport.

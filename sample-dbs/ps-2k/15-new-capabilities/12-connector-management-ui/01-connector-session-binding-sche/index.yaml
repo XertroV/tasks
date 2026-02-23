@@ -1,0 +1,49 @@
+id: P15.M12.E1
+name: 'Connector-Session Binding: Schema & Migration'
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-session-id-fk-column-to-bo.todo
+  title: Add session_id FK column to bot_configs table
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-update-botconfig-schema-belong.todo
+  title: 'Update BotConfig schema: belongs_to :session and changesets'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P15.M12.E1.T001
+- id: T003
+  file: T003-add-session-preload-helper-and.todo
+  title: Add session preload helper and session_id to BotConfigs context
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P15.M12.E1.T002
+- id: T004
+  file: T004-write-tests-for-botconfig-sess.todo
+  title: Write tests for BotConfig session_id migration and schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P15.M12.E1.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

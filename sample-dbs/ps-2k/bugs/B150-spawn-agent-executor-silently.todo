@@ -1,0 +1,33 @@
+---
+id: B150
+title: "spawn_agent executor silently ignores resume_session_id \u2014 always spawns\
+  \ new agent"
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- threads
+- spawn_subagent
+- coordinator
+- directive
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.832520+00:00'
+started_at: '2026-02-19T04:21:05.832520+00:00'
+completed_at: '2026-02-19T04:43:01.069107+00:00'
+duration_minutes: 21.920609566666666
+---
+B148 wired resume_session_id into the SpawnAgent directive opts, but the executor and coordinator never read it.
+
+Current path:
+1. spawn_subagent.ex validates session exists, sets opts[:resume_session_id]
+2. spawn_agent_impl.ex execute/2 ignores resume_session_id — calls Coordinator.spawn_child unconditionally
+3. coordinator.ex do_spawn_child/2 always creates a new DB agent record and spawns a new OTP process
+4. AgentServer.start_link DOES accept a session_id: kwarg (agent_server.ex:386) but coordinator never passes it
+
+Fix required:
+- spawn_agent_impl.ex: detect opts[:resume_session_id] and take a different path (call resume, not spawn)
+- coordinator.ex build_start_opts/2 (lines 259–271): extract resume_session_id and pass as session_id: to AgentServer.start_link
+- coordinator.ex do_spawn_child/2: when resume_session_id is present, skip creating a new agent DB record; instead look up the existing agent (or create a lightweight reattach record) and reuse the session
+- Add integration test: spawn_subagent with session_id, verify the returned agent is attached to the existing session not a new one

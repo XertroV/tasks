@@ -1,0 +1,116 @@
+---
+id: P11.M4.E2.T001
+title: Build platform configuration controller
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P11.M4.E1.T001
+tags:
+- api
+- controller
+- database
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:37:10.239163+00:00'
+started_at: '2026-02-12T11:37:10.239163+00:00'
+completed_at: '2026-02-12T22:38:34.563904+00:00'
+duration_minutes: 661.4054121333334
+---
+
+# Build platform configuration controller
+
+Create schema and API endpoints for platform-specific configuration.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_platform_configs`
+- [ ] Create `PlatformConfig` Ecto schema
+- [ ] Create `PlatformConfigController` with CRUD endpoints
+- [ ] Create changesets for validation
+- [ ] Implement per-agent platform configuration
+- [ ] Add indexes for fast lookups
+- [ ] Write tests for controller and schema
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] Migration creates `platform_configs` table:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `user_id` (binary_id, not null, FK to users)
+  - [ ] `agent_id` (binary_id, nullable, FK to agents) - Config scoped to specific agent
+  - [ ] `platform` (string, not null) - "telegram", "slack", "discord", "custom"
+  - [ ] `name` (string, not null) - User-friendly name for this config
+  - [ ] `enabled` (boolean, default: true) - Whether this platform is active
+  - [ ] `webhook_url` (string, nullable) - Incoming webhook endpoint
+  - [ ] `webhook_secret` (string, nullable, encrypted) - Secret for webhook validation
+  - [ ] `config` (map) - Platform-specific configuration (serialized JSON)
+  - [ ] `metadata` (map, default: %{}) - Additional metadata
+  - [ ] `inserted_at`, `updated_at` (utc_datetime_usec)
+- [ ] Indexes:
+  - [ ] Composite index on `[:user_id, :platform, :agent_id]` for lookups
+  - [ ] Index on `agent_id` for agent's platforms query
+  - [ ] Unique index on `[:user_id, :platform, :agent_id]` (one config per combo)
+  - [ ] Index on `enabled` for active configs query
+- [ ] `PlatformConfig` schema:
+  - [ ] Uses `@primary_key {:id, :binary_id, autogenerate: true}`
+  - [ ] Uses `@foreign_key_type :binary_id`
+  - [ ] Has `@type t :: %__MODULE__{...}` typespec
+  - [ ] Belongs to User
+  - [ ] Belongs to Agent (optional)
+  - [ ] Uses `timestamps(type: :utc_datetime_usec)`
+- [ ] `POST /api/platform-configs` - Create configuration:
+  - [ ] Accepts: `platform`, `name`, `enabled`, `config`, `agent_id` (optional)
+  - [ ] Validates platform is supported
+  - [ ] Validates config structure per platform
+  - [ ] Encrypts webhook_secret if provided
+  - [ ] Returns created config with id
+  - [ ] Returns 400 for validation errors
+  - [ ] Returns 401 if not authenticated
+  - [ ] Returns 409 if config already exists for platform+agent combo
+- [ ] `GET /api/platform-configs` - List configurations:
+  - [ ] Lists all configs for authenticated user
+  - [ ] Supports filtering by `platform` query param
+  - [ ] Supports filtering by `agent_id` query param
+  - [ ] Supports filtering by `enabled` query param
+  - [ ] Returns paginated results
+  - [ ] Does not return webhook_secret in response
+  - [ ] Returns 401 if not authenticated
+- [ ] `GET /api/platform-configs/:id` - Get configuration:
+  - [ ] Returns config by id
+  - [ ] Validates user ownership
+  - [ ] Does not return webhook_secret
+  - [ ] Returns 404 if not found
+  - [ ] Returns 401 if not owned by user
+- [ ] `PATCH /api/platform-configs/:id` - Update configuration:
+  - [ ] Allows updating: `name`, `enabled`, `config`, `metadata`
+  - [ ] Does not allow changing `platform` or `agent_id`
+  - [ ] Validates config structure per platform
+  - [ ] Encrypts new webhook_secret if provided
+  - [ ] Returns updated config
+  - [ ] Returns 404 if not found
+  - [ ] Returns 401 if not owned by user
+  - [ ] Returns 400 for validation errors
+- [ ] `DELETE /api/platform-configs/:id` - Delete configuration:
+  - [ ] Soft-deletes by setting enabled=false (recommended)
+  - [ ] Or hard-deletes with user confirmation
+  - [ ] Returns 204 on success
+  - [ ] Returns 404 if not found
+  - [ ] Returns 401 if not owned by user
+- [ ] Changesets:
+  - [ ] `create_changeset/2` - Validates all required fields
+  - [ ] `update_changeset/2` - Partial updates
+  - [ ] `enable_changeset/1` - Set enabled=true
+  - [ ] `disable_changeset/1` - Set enabled=false
+- [ ] Validations:
+  - [ ] `platform` must be one of: telegram, slack, discord, custom
+  - [ ] `name` required, max 255 chars
+  - [ ] `config` must be valid JSON map
+  - [ ] `agent_id` must belong to same user if provided
+  - [ ] Unique constraint on `[user_id, platform, agent_id]`
+- [ ] Tests:
+  - [ ] CRUD operations tested
+  - [ ] Validation tested
+  - [ ] User isolation tested
+  - [ ] `mix lint` passes without warnings

@@ -1,0 +1,24 @@
+---
+id: P15.M15.E3.T004
+title: Tests for updated agent-persona templates
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- persona
+- tests
+- templates
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-19T13:57:19.656390+00:00'
+---
+Verify agent template loads and validates with new system_prompt.
+Verify workspace template loads and validates with new prompt_template.
+Verify default EGO.md placeholder format.
+
+Acceptance criteria:
+- Template loading tests pass
+- Validation tests pass

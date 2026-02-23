@@ -1,0 +1,16 @@
+---
+id: B209
+title: Investigate rate limiter regressions in fast test suite
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T16:23:46.423311+00:00'
+started_at: '2026-02-21T16:23:46.423311+00:00'
+completed_at: '2026-02-21T16:25:25.428707+00:00'
+duration_minutes: 1.6500897666666667
+---
+Recent fast-suite audit reported rate limiter tests failing (missing x-ratelimit headers and no 429 on exhaustion). Reproduce failures in pag_server_web/plugs/rate_limiter* tests, identify root cause, and restore expected behavior with focused coverage.

@@ -1,0 +1,41 @@
+id: P42.M4
+name: Remote Stub & Tests
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Remote Server TOFU Stub
+  path: 01-remote-server-tofu-stub
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Test Suite
+  path: 02-test-suite
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Documentation
+  path: 03-documentation
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

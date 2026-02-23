@@ -1,0 +1,25 @@
+id: P53.M3
+name: Validation, docs, and rollout guardrails
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- P53.M2
+locked: false
+epics:
+- id: E1
+  name: Coverage and operational readiness
+  path: 01-coverage-and-operational-readi
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Verify BrowserMCP end-to-end behavior and document deployment/usage
+    constraints.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,19 @@
+---
+id: P19.M1.E3.T002
+title: Fix whatsapp.md send_template_message module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- integrations
+- whatsapp
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:35:54.371899+00:00'
+started_at: '2026-02-18T01:35:54.371899+00:00'
+completed_at: '2026-02-18T01:38:23.012659+00:00'
+duration_minutes: 2.4773457
+---
+send_template_message is in Templates module, not CloudAPI. Template is a map not keyword args. Lines 182-189.

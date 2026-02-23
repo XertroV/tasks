@@ -1,0 +1,56 @@
+---
+id: I057
+title: LSP multiplexer one server per workspace shared across sibling agents via ID-rewriting
+  proxy like ra-multiplex
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: null
+---
+
+# Idea Intake: LSP multiplexer one server per workspace shared across sibling agents via ID-rewriting proxy like ra-multiplex
+
+## Original Idea
+
+LSP multiplexer one server per workspace shared across sibling agents via ID-rewriting proxy like ra-multiplex
+
+## Notes
+
+One LSP server per (language, workspace_root) shared across sibling agents via ID-rewriting proxy (ra-multiplex pattern). Reduces indexing overhead when multiple agents work in same worktree. Requires proxy to rewrite JSON-RPC IDs per-client and route server-initiated notifications (publishDiagnostics) per-client. Limited by LSP spec: 'no support in the protocol to share one server between different tools'. See docs/plans/2026-02-20-lsp-integration.md Epic D6.
+
+**Status**: Blocked pending human review of architectural approach.
+
+## What This Is
+
+A performance optimization that allows one LSP server per `(language, workspace_root)` to be
+shared across sibling agents working in the same workspace, rather than each agent spawning its own.
+
+## Implementation Approach
+
+Based on the `ra-multiplex` pattern (https://github.com/pr2502/ra-multiplex):
+- A proxy GenServer intercepts all JSON-RPC messages between clients and the server
+- Rewrites numeric request IDs to include a per-client tag (`"client_id:original_id"`)
+- Routes responses back to the correct client by parsing the rewritten ID
+- Broadcasts server-pushed notifications (e.g. `textDocument/publishDiagnostics`) to all clients
+
+## Limitations
+
+Per the LSP spec: "The protocol currently assumes that one server serves one tool. There is
+currently no support in the protocol to share one server between different tools."
+- Server-initiated requests (e.g. `window/showMessageRequest`) cannot be routed to a specific client
+- The proxy must handle or drop these gracefully
+
+## Blocked Pending
+
+Human review: does the resource savings (shared indexing, lower RAM) justify the implementation
+complexity? Must have Epic C (pag-server LSP plugin) fully working first.
+
+See: `docs/plans/2026-02-20-lsp-integration.md` section "Epic D6"

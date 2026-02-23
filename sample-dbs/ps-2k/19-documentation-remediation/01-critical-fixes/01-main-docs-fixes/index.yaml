@@ -1,0 +1,30 @@
+id: P19.M1.E1
+name: Main Docs Fixes
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fix-agents-md-model-names.todo
+  title: Fix AGENTS.md model names
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-fix-agents-md-typo.todo
+  title: Fix AGENTS.md typo
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

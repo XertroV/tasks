@@ -1,0 +1,38 @@
+---
+id: P19.M4.E1.T001
+title: Create Telegram integration docs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- docs
+- integrations
+- telegram
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:40:10.641462+00:00'
+started_at: '2026-02-18T02:40:10.641462+00:00'
+completed_at: '2026-02-18T03:12:20.842357+00:00'
+duration_minutes: 32.170014566666666
+---
+Create docs/integrations/telegram.md. Document webhook setup, env vars, configuration. Reference TelegramWebhookController implementation.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M4.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 02:40 UTC
+**Sibling tasks**: P19.M4.E1.T002, P19.M4.E1.T003, P19.M4.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M4.E1.T001 → P19.M4.E1.T002 → P19.M4.E1.T003 → P19.M4.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M4.E1.T001: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T001-create-telegram-integration-do.todo
+- P19.M4.E1.T002: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T002-create-discord-integration-doc.todo
+- P19.M4.E1.T003: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T003-create-teams-integration-docs.todo
+- P19.M4.E1.T004: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T004-create-bluesky-integration-doc.todo

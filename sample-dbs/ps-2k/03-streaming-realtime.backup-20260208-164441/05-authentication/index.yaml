@@ -1,0 +1,46 @@
+id: P3.M5
+name: Authentication & Authorization
+status: pending
+estimate_hours: 16
+complexity: high
+depends_on:
+- P3.M3
+epics:
+- id: E1
+  name: API Key Authentication
+  path: 01-api-key-authentication
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Bearer Token Support
+  path: 02-bearer-token-support
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E3
+  name: Authorization Middleware
+  path: 03-authorization-middleware
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Per-User Rate Limiting
+  path: 04-per-user-rate-limiting
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

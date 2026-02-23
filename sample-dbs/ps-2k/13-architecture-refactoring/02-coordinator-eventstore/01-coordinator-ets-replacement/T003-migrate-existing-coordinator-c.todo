@@ -1,0 +1,38 @@
+---
+id: P13.M2.E1.T003
+title: Migrate existing Coordinator callers
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T20:53:51.685072+00:00'
+started_at: '2026-02-13T20:53:51.685072+00:00'
+completed_at: '2026-02-13T21:18:41.728390+00:00'
+duration_minutes: 24.8340549
+---
+
+# Migrate existing Coordinator callers
+
+## Description
+
+Update all code that calls Coordinator functions to ensure compatibility with the new Registry-based implementation. Verify no callers depend on ETS-specific behavior.
+
+## Acceptance Criteria
+- [ ] Audit all Coordinator callers in codebase
+- [ ] Update `Directive.SpawnAgent` integration if needed
+- [ ] Update `Directive.StopChild` integration if needed
+- [ ] Update `Directive.Delegate` integration if needed
+- [ ] Verify AgentServer spawn_child usage works correctly
+- [ ] All existing Coordinator tests pass without modification
+- [ ] Integration tests pass
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/coordinator.ex`
+- Related files: `lib/pag_server/agents/directive/` (spawn_agent, stop_child, delegate)
+- Part of epic: P13.M2.E1 - Coordinator ETS Replacement

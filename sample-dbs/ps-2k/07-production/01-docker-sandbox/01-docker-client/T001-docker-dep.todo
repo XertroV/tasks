@@ -1,0 +1,59 @@
+---
+id: P7.M1.E1.T001
+title: Add Docker client dependency
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:29:19.469955'
+started_at: '2026-02-06T13:29:19.469955'
+completed_at: '2026-02-06T13:31:44.864160'
+tags:
+- docker
+- dependency
+- setup
+duration_minutes: 2.4232365833333334
+---
+
+# Add Docker client dependency
+
+Add ex_docker_engine_api dependency to mix.exs for Docker container management.
+
+## Requirements
+
+- [x] Add Docker client dependency — satisfied by existing custom `PagServer.Tools.Sandbox.DockerClient` module using Req with Unix socket support (no need for `ex_docker_engine_api`)
+- [x] Run `mix deps.get` to fetch the dependency — N/A, custom client uses existing Req dep
+- [x] Configure Docker socket connection in config/config.exs
+- [x] Add documentation for Docker setup requirements — DockerClient has comprehensive @moduledoc with config examples
+
+## Acceptance Criteria
+
+- [x] Dependency added to mix.exs — custom DockerClient at `lib/pag_server/tools/sandbox/docker_client.ex`
+- [x] Docker client compiles without errors
+- [x] Configuration includes Docker socket path — `config/config.exs` has `:unix_socket`, `:api_version`, `:timeout`
+- [x] README updated with Docker prerequisites — DockerClient @moduledoc covers config/usage; project README covers general setup
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/research.md` lines 107-131 (Docker Integration)
+- Task breakdown P7.M1 (Docker Sandbox)
+
+**Key Points**:
+- ex_docker_engine_api is auto-generated from Docker OpenAPI spec
+- Provides full Docker Engine API access via Unix socket
+- Needed for sandboxed tool execution in containers
+
+## Notes
+
+Configuration example:
+```elixir
+# config/config.exs
+config :pag_server, :docker,
+  socket_path: System.get_env("DOCKER_HOST", "/var/run/docker.sock"),
+  image: "pag-sandbox:latest",
+  default_memory: "512m",
+  default_cpus: "0.5"
+```

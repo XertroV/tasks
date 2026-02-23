@@ -1,0 +1,64 @@
+---
+id: P34.M3.E2
+title: Multi-Registry Architecture
+status: pending
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P34.M3.E1
+tags:
+- epic
+- backend
+- architecture
+---
+
+# Epic: Multi-Registry Architecture
+
+Design architecture for integrating with multiple skill registries beyond ClawHub.
+
+## Scope
+
+- Registry behaviour for pluggable skill sources
+- Configuration for multiple registries
+- Unified search across registries
+
+## Tasks
+
+### T1: Skill Registry Behaviour
+
+Define `PagServer.Skills.Registry` behaviour:
+
+- `list/1` - List skills
+- `search/2` - Search skills
+- `get/2` - Get skill details
+- `download/3` - Download skill
+
+Acceptance Criteria:
+- [ ] Behaviour defined with callbacks
+- [ ] ClawHub client implements behaviour
+- [ ] Can add new registries without core changes
+
+### T2: Registry Configuration
+
+Add config for multiple registries:
+
+```elixir
+config :pag_server, :skill_registries, [
+  clawhub: [
+    module: PagServer.Skills.ClawHub,
+    base_url: "https://clawhub.ai",
+    enabled: true
+  ],
+  # Future: agentskills_io: [...]
+]
+```
+
+Acceptance Criteria:
+- [ ] Registries configured via app env
+- [ ] Can enable/disable individual registries
+
+## Out of Scope
+
+- Additional registry implementations (just architecture)
+- Registry priority/merging logic

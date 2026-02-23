@@ -1,0 +1,76 @@
+---
+id: P15.M1.E2.T001
+title: Design user preference storage
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:22:41.101228+00:00'
+started_at: '2026-02-13T23:22:41.101228+00:00'
+completed_at: '2026-02-13T23:37:28.510911+00:00'
+duration_minutes: 14.790161216666666
+---
+
+# Design user preference storage
+
+## Description
+Design a schema for storing user preferences including communication style, format preferences, domain expertise levels, and interaction patterns. Preferences should be scoped per user-agent combination.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Schema.UserPreference` with fields for user_id, agent_id, preference_type, value, confidence, metadata
+- [ ] Define preference types: communication_style, format_preference, expertise_level, language_preference, detail_level
+- [ ] Add confidence scoring (0.0-1.0) for learned vs explicit preferences
+- [ ] Include source tracking (explicit, inferred, learned)
+- [ ] Database migration created and tested
+- [ ] Add indexes for efficient user-agent queries
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/user.ex`, `lib/pag_server/schema/agent.ex`, `lib/pag_server/schema/memory.ex`
+- Part of epic: User Preference Learning
+- Reference Memory schema for patterns
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-13 10:51 UTC
+**Primary task**: P13.M1.E2.T001 - Create AgentServer.StreamProcessor module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P15.M1.E2 vs P13.M1.E2)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 23:22 UTC
+**Sibling tasks**: P15.M1.E2.T002, P15.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M1.E2.T001 → P15.M1.E2.T002 → P15.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M1.E2.T001: .tasks/15-new-capabilities/01-agent-memory-learning/02-user-preference-learning/T001-design-user-preference-storage.todo
+- P15.M1.E2.T002: .tasks/15-new-capabilities/01-agent-memory-learning/02-user-preference-learning/T002-implement-style-format-prefere.todo
+- P15.M1.E2.T003: .tasks/15-new-capabilities/01-agent-memory-learning/02-user-preference-learning/T003-add-preference-injection-into.todo

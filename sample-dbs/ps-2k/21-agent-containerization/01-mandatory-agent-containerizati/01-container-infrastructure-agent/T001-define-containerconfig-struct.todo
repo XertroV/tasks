@@ -1,0 +1,38 @@
+---
+id: P21.M1.E1.T001
+title: Define ContainerConfig struct and types
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- foundation
+- types
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.543691+00:00'
+started_at: '2026-02-18T12:21:44.543691+00:00'
+completed_at: '2026-02-18T12:36:24.917723+00:00'
+duration_minutes: 14.672900349999999
+---
+
+# Define ContainerConfig struct and types
+
+Define the core configuration struct for container settings used throughout the containerization system.
+
+## Requirements
+
+- Define `%ContainerConfig{}` struct with all necessary fields
+- Include image, memory, CPU, network settings
+- Include volume mount specifications (workspace, private, shared)
+- Include isolation profile reference
+- Add type specs and documentation
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/container_config.ex` exists with struct definition
+- [ ] Struct includes: `image`, `memory`, `cpus`, `network_mode`, `volumes`, `isolation_profile`, `env`
+- [ ] All fields have proper `@type` specs
+- [ ] `new/1` function with sensible defaults
+- [ ] `from_workspace_config/1` to derive from workspace settings
+- [ ] Module documented with examples

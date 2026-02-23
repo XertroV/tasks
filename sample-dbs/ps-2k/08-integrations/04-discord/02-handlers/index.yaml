@@ -1,0 +1,52 @@
+id: P8.M4.E2
+name: Message Handlers
+status: pending
+estimate_hours: 5
+complexity: medium
+depends_on:
+- E1
+description: |
+  Implement Discord message handlers for mentions, DMs, and commands.
+  Add slash command support and streaming response updates.
+
+tasks:
+- id: T001
+  title: Implement message handler
+  path: task-001-message-handler.todo
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  tags:
+  - handlers
+  - messages
+  - core
+- id: T002
+  title: Add slash command support
+  path: task-002-slash-commands.todo
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  tags:
+  - commands
+  - slash
+  - interaction
+- id: T003
+  title: Implement streaming responses
+  path: task-003-streaming.todo
+  status: pending
+  estimate_hours: 1.0
+  complexity: high
+  priority: medium
+  tags:
+  - streaming
+  - responses
+  - updates
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

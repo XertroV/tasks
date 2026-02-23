@@ -1,0 +1,44 @@
+id: P3.M3
+name: REST API
+status: pending
+estimate_hours: 10
+complexity: medium
+depends_on:
+- P3.M6
+epics:
+- id: E1
+  name: Router
+  path: 01-router
+  estimate_hours: 2
+  complexity: low
+  description: API routes and versioning
+- id: E2
+  name: Agent Controller
+  path: 02-agent-controller
+  estimate_hours: 2
+  complexity: low
+  description: CRUD operations for agents
+- id: E3
+  name: Session Controller
+  path: 03-session-controller
+  estimate_hours: 2
+  complexity: medium
+  description: Session management endpoints
+- id: E4
+  name: Stats Controller
+  path: 04-stats-controller
+  estimate_hours: 2
+  complexity: low
+  description: Token and cost statistics
+- id: E5
+  name: JSON API Format
+  path: 05-json-api-format
+  estimate_hours: 2
+  complexity: low
+  description: Standardized JSON responses
+stats:
+  total_tasks: 22
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 19

@@ -1,0 +1,393 @@
+---
+id: P3.M5.E3.T002
+title: Implement authorization check plug
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P3.M5.E1.T001
+- P3.M5.E3.T001
+tags:
+- auth
+- authorization
+- plug
+claimed_by: cli-user
+claimed_at: '2026-02-06T18:42:14.619936+00:00'
+started_at: '2026-02-06T18:42:14.619936+00:00'
+completed_at: '2026-02-06T18:58:46.147849+00:00'
+duration_minutes: 16.525464966666668
+---
+
+# Implement authorization check plug
+
+
+
+## Requirements
+
+- [ ] Create `PAGServerWeb.Plugs.RequireAuth` plug for API authentication
+- [ ] Implement `PAGServerWeb.Plugs.RequirePermissions` plug for authorization checks
+- [ ] Load API key capabilities into `conn.assigns` after authentication
+- [ ] Support permission requirement declaration via plug options
+- [ ] Return proper HTTP status codes (401 Unauthorized, 403 Forbidden)
+- [ ] Add telemetry events for auth successes and failures
+- [ ] Handle missing or invalid permissions gracefully
+- [ ] Support both single permission and multiple permission requirements
+
+## Acceptance Criteria
+
+- [ ] Plug created at `lib/pag_server_web/plugs/require_auth.ex`
+- [ ] `RequireAuth` plug functionality:
+  - [ ] Extracts API key from `Authorization` header or `api_key` query param
+  - [ ] Validates API key exists and is not revoked
+  - [ ] Loads associated capabilities into `conn.assigns.capabilities`
+  - [ ] Stores API key ID in `conn.assigns.api_key_id`
+  - [ ] Returns 401 with JSON error if authentication fails
+  - [ ] Continues pipeline if authentication succeeds
+- [ ] Plug created at `lib/pag_server_web/plugs/require_permissions.ex`
+- [ ] `RequirePermissions` plug functionality:
+  - [ ] Accepts `:permissions` option (atom or list of atoms)
+  - [ ] Checks `conn.assigns.capabilities` for required permissions
+  - [ ] Returns 403 with JSON error if permissions missing
+  - [ ] Continues pipeline if all permissions present
+  - [ ] Provides detailed error message listing missing permissions
+- [ ] Error responses follow JSON API format:
+  ```json
+  {
+    "error": "Unauthorized",
+    "message": "Invalid or missing API key",
+    "code": "auth_failed"
+  }
+  ```
+- [ ] Telemetry events emitted:
+  - [ ] `[:pag_server, :auth, :success]` with metadata `%{api_key_id: id}`
+  - [ ] `[:pag_server, :auth, :failure]` with metadata `%{reason: reason}`
+  - [ ] `[:pag_server, :authz, :denied]` with metadata `%{required: [...], present: [...]}`
+- [ ] Plugs can be composed in router pipelines:
+  ```elixir
+  pipeline :api_authenticated do
+    plug :accepts, ["json"]
+    plug PAGServerWeb.Plugs.RequireAuth
+  end
+  
+  pipeline :api_with_write do
+    plug :api_authenticated
+    plug PAGServerWeb.Plugs.RequirePermissions, permissions: [:create_agent, :update_agent]
+  end
+  ```
+- [ ] Tests cover all authentication scenarios:
+  - [ ] Valid API key allows access
+  - [ ] Invalid API key returns 401
+  - [ ] Revoked API key returns 401
+  - [ ] Missing API key returns 401
+- [ ] Tests cover all authorization scenarios:
+  - [ ] All required permissions present allows access
+  - [ ] Missing any permission returns 403
+  - [ ] Admin permission bypasses specific checks
+  - [ ] Empty permission list allows access
+- [ ] No compilation warnings
+- [ ] All functions have typespecs
+
+## Context
+
+These plugs form the core authorization middleware for PAG-Server's API endpoints. They work together in a two-stage process:
+
+1. **Authentication** (`RequireAuth`): Validates the API key and loads capabilities
+2. **Authorization** (`RequirePermissions`): Checks if capabilities include required permissions
+
+This separation allows flexible composition:
+- Some endpoints require only authentication (read operations)
+- Others require specific permissions (write operations)
+- Critical endpoints can require multiple permissions
+
+The plugs integrate with the permission model defined in T001 and will use API keys from Epic E1 (API Key Authentication).
+
+## Implementation Notes
+
+### RequireAuth Plug
+
+```elixir
+defmodule PAGServerWeb.Plugs.RequireAuth do
+  @moduledoc """
+  Plug to require API key authentication.
+  
+  Extracts API key from Authorization header or query param,
+  validates it, and loads associated capabilities into conn.assigns.
+  
+  ## Usage
+  
+      pipeline :api_authenticated do
+        plug :accepts, ["json"]
+        plug PAGServerWeb.Plugs.RequireAuth
+      end
+  
+  ## Assigns
+  
+  - `:capabilities` - Map of permissions and constraints
+  - `:api_key_id` - ID of authenticated API key
+  - `:authenticated` - Boolean flag (true if authenticated)
+  """
+  
+  import Plug.Conn
+  import Phoenix.Controller, only: [json: 2]
+  
+  require Logger
+  
+  alias PAGServer.Auth.APIKeys
+  
+  def init(opts), do: opts
+  
+  def call(conn, _opts) do
+    with {:ok, api_key_token} <- extract_api_key(conn),
+         {:ok, api_key} <- APIKeys.validate_api_key(api_key_token),
+         {:ok, capabilities} <- load_capabilities(api_key) do
+      
+      emit_telemetry(:success, %{api_key_id: api_key.id})
+      
+      conn
+      |> assign(:capabilities, capabilities)
+      |> assign(:api_key_id, api_key.id)
+      |> assign(:authenticated, true)
+    else
+      {:error, reason} ->
+        emit_telemetry(:failure, %{reason: reason})
+        
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{
+          error: "Unauthorized",
+          message: format_error(reason),
+          code: "auth_failed"
+        })
+        |> halt()
+    end
+  end
+  
+  # Extract API key from Authorization header or query param
+  defp extract_api_key(conn) do
+    case get_req_header(conn, "authorization") do
+      ["Bearer " <> token] -> 
+        {:ok, token}
+      
+      _ -> 
+        # Fallback to query param (for development/testing)
+        case conn.params["api_key"] do
+          nil -> {:error, :missing_api_key}
+          token -> {:ok, token}
+        end
+    end
+  end
+  
+  defp load_capabilities(%{capabilities: capabilities}) do
+    {:ok, capabilities}
+  end
+  
+  defp format_error(:missing_api_key), do: "Missing API key in Authorization header or query param"
+  defp format_error(:invalid_api_key), do: "Invalid API key"
+  defp format_error(:revoked_api_key), do: "API key has been revoked"
+  defp format_error(reason), do: "Authentication failed: #{inspect(reason)}"
+  
+  defp emit_telemetry(event, metadata) do
+    :telemetry.execute([:pag_server, :auth, event], %{count: 1}, metadata)
+  end
+end
+```
+
+### RequirePermissions Plug
+
+```elixir
+defmodule PAGServerWeb.Plugs.RequirePermissions do
+  @moduledoc """
+  Plug to require specific permissions.
+  
+  Checks if the authenticated user's capabilities include required permissions.
+  Must be used after RequireAuth plug.
+  
+  ## Usage
+  
+      # Single permission
+      plug PAGServerWeb.Plugs.RequirePermissions, permissions: :create_agent
+      
+      # Multiple permissions (all required)
+      plug PAGServerWeb.Plugs.RequirePermissions, 
+        permissions: [:read_agent, :update_agent]
+  
+  ## Options
+  
+  - `:permissions` - Atom or list of atoms for required permissions
+  """
+  
+  import Plug.Conn
+  import Phoenix.Controller, only: [json: 2]
+  
+  require Logger
+  
+  alias PAGServer.Auth.Permissions
+  
+  def init(opts) do
+    permissions = opts[:permissions] || []
+    permissions = List.wrap(permissions)
+    
+    %{permissions: permissions}
+  end
+  
+  def call(conn, %{permissions: []}), do: conn
+  
+  def call(conn, %{permissions: required_permissions}) do
+    capabilities = conn.assigns[:capabilities] || %{}
+    
+    if Permissions.has_all_permissions?(capabilities, required_permissions) do
+      conn
+    else
+      present_permissions = get_present_permissions(capabilities, required_permissions)
+      missing_permissions = required_permissions -- present_permissions
+      
+      emit_telemetry(:denied, %{
+        required: required_permissions,
+        present: present_permissions,
+        missing: missing_permissions,
+        api_key_id: conn.assigns[:api_key_id]
+      })
+      
+      Logger.warning("Authorization denied: missing permissions #{inspect(missing_permissions)}")
+      
+      conn
+      |> put_status(:forbidden)
+      |> json(%{
+        error: "Forbidden",
+        message: "Missing required permissions: #{format_permissions(missing_permissions)}",
+        code: "insufficient_permissions",
+        required: required_permissions,
+        missing: missing_permissions
+      })
+      |> halt()
+    end
+  end
+  
+  defp get_present_permissions(capabilities, required_permissions) do
+    Enum.filter(required_permissions, &Permissions.has_permission?(capabilities, &1))
+  end
+  
+  defp format_permissions(permissions) do
+    permissions
+    |> Enum.map(&to_string/1)
+    |> Enum.join(", ")
+  end
+  
+  defp emit_telemetry(event, metadata) do
+    :telemetry.execute([:pag_server, :authz, event], %{count: 1}, metadata)
+  end
+end
+```
+
+### Router Integration Example
+
+```elixir
+defmodule PAGServerWeb.Router do
+  use PAGServerWeb, :router
+  
+  # Base API pipeline (no auth required)
+  pipeline :api do
+    plug :accepts, ["json"]
+  end
+  
+  # Authenticated API (requires valid API key)
+  pipeline :api_authenticated do
+    plug :api
+    plug PAGServerWeb.Plugs.RequireAuth
+  end
+  
+  # Read-only operations
+  pipeline :api_read do
+    plug :api_authenticated
+    plug PAGServerWeb.Plugs.RequirePermissions, permissions: [:read_agent, :read_session]
+  end
+  
+  # Write operations
+  pipeline :api_write do
+    plug :api_authenticated
+    plug PAGServerWeb.Plugs.RequirePermissions, 
+      permissions: [:create_agent, :update_agent]
+  end
+  
+  # Admin operations
+  pipeline :api_admin do
+    plug :api_authenticated
+    plug PAGServerWeb.Plugs.RequirePermissions, permissions: :admin_access
+  end
+  
+  scope "/api", PAGServerWeb do
+    pipe_through :api_read
+    
+    get "/agents", AgentController, :index
+    get "/agents/:id", AgentController, :show
+  end
+  
+  scope "/api", PAGServerWeb do
+    pipe_through :api_write
+    
+    post "/agents", AgentController, :create
+    put "/agents/:id", AgentController, :update
+  end
+  
+  scope "/api/admin", PAGServerWeb do
+    pipe_through :api_admin
+    
+    get "/metrics", MetricsController, :show
+    post "/api_keys", APIKeyController, :create
+  end
+end
+```
+
+### Testing Plan
+
+Create `test/pag_server_web/plugs/require_auth_test.exs`:
+
+```elixir
+defmodule PAGServerWeb.Plugs.RequireAuthTest do
+  use PAGServerWeb.ConnCase, async: true
+  
+  alias PAGServerWeb.Plugs.RequireAuth
+  alias PAGServer.Auth.APIKeys
+  
+  describe "call/2" do
+    test "authenticates with valid API key in Authorization header", %{conn: conn}
+    test "authenticates with valid API key in query param", %{conn: conn}
+    test "rejects missing API key", %{conn: conn}
+    test "rejects invalid API key", %{conn: conn}
+    test "rejects revoked API key", %{conn: conn}
+    test "loads capabilities into conn.assigns", %{conn: conn}
+    test "emits telemetry on success", %{conn: conn}
+    test "emits telemetry on failure", %{conn: conn}
+  end
+end
+```
+
+Create `test/pag_server_web/plugs/require_permissions_test.exs`:
+
+```elixir
+defmodule PAGServerWeb.Plugs.RequirePermissionsTest do
+  use PAGServerWeb.ConnCase, async: true
+  
+  alias PAGServerWeb.Plugs.RequirePermissions
+  
+  describe "call/2" do
+    test "allows access with all required permissions", %{conn: conn}
+    test "denies access with missing permissions", %{conn: conn}
+    test "allows access with admin_access permission", %{conn: conn}
+    test "allows access with empty permission list", %{conn: conn}
+    test "handles single permission requirement", %{conn: conn}
+    test "handles multiple permission requirement", %{conn: conn}
+    test "returns detailed error with missing permissions", %{conn: conn}
+    test "emits telemetry on denial", %{conn: conn}
+  end
+end
+```
+
+## Notes
+
+- Authentication and authorization are separate concerns for flexibility
+- Error responses include enough detail for debugging but don't leak sensitive info
+- Telemetry enables monitoring of auth failures and permission denials
+- Query param authentication useful for development but should be disabled in production
+- Consider adding rate limiting on authentication failures (see Epic E4)

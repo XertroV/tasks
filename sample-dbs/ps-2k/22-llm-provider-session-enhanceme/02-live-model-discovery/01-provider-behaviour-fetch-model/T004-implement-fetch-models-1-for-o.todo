@@ -1,0 +1,17 @@
+---
+id: P22.M2.E1.T004
+title: Implement fetch_models/1 for Ollama, Groq, and OpenRouter providers
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P22.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:40:05.813567+00:00'
+started_at: '2026-02-18T14:40:05.813567+00:00'
+completed_at: '2026-02-18T14:50:08.308839+00:00'
+duration_minutes: 10.041587683333335
+---
+Implement fetch_models/1 for: - Ollama: GET http://{host}:{port}/api/tags, map models list. No auth needed. - Groq: GET https://api.groq.com/openai/v1/models with Bearer token. - OpenRouter: GET https://openrouter.ai/api/v1/models with Authorization header. Include context_length from OpenRouter's context_length field. Acceptance criteria: - Each provider returns {:ok, [model_info()]} on success - Ollama handles connection refused gracefully -> {:error, :unavailable} - OpenRouter context_length field populated from response - Groq supports_tools: true for llama-3 based models

@@ -1,0 +1,125 @@
+---
+id: P2.M4.E1.T002
+title: Implement OpenAI-compatible request formatting
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P2.M4.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T08:49:04.996874'
+started_at: '2026-02-06T08:49:04.996874'
+completed_at: '2026-02-06T08:52:44.922708'
+tags:
+- llm
+- openrouter
+- formatting
+- api
+duration_minutes: 3.6654303500000003
+---
+
+# Implement OpenAI-compatible request formatting
+
+Implement request formatting functions that convert internal request format to OpenRouter's OpenAI-compatible API format.
+
+## Requirements
+
+- [x] Create private function `format_request/2` that converts internal request to OpenRouter format
+- [ ] Map internal message format to OpenAI format:
+  - [x] User messages → `{role: "user", content: "..."}`
+  - [x] Assistant messages → `{role: "assistant", content: "..."}`
+  - [x] System messages → `{role: "system", content: "..."}`
+  - [x] Tool calls → `tool_calls` array
+  - [x] Tool results → `{role: "tool", content: "..."}`
+- [ ] Support streaming parameters:
+  - [x] `stream: true` for streaming requests
+  - [x] `stream_options: {include_usage: true}` for token tracking
+- [ ] Add OpenRouter-specific parameters:
+  - [x] `route: "fallback"` for automatic model fallbacks
+  - [x] `models: [...]` for model preferences
+- [x] Create private function `format_headers/1` for custom headers
+- [x] Handle response parsing in `parse_response/1`
+
+## Acceptance Criteria
+
+- [x] `format_request/2` converts all message types correctly
+- [x] Streaming parameters are included when streaming enabled
+- [x] OpenRouter-specific parameters are supported
+- [x] `format_headers/1` includes `HTTP-Referer` and `X-Title` headers
+- [x] `parse_response/1` handles OpenRouter response format
+- [x] Response includes model, usage, and metadata
+- [x] Code handles errors gracefully (invalid model, rate limits, etc.)
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` lines 1114-1115 (OpenRouter Provider)
+- OpenRouter API: https://openrouter.ai/docs#completions
+- Reference OpenAI provider implementation for format compatibility
+
+**Key Points**:
+- OpenRouter accepts OpenAI `/v1/chat/completions` format
+- Can specify multiple preferred models with fallbacks
+- Returns OpenRouter-specific metadata (model used, cost, etc.)
+- Supports all OpenAI parameters (temperature, max_tokens, etc.)
+
+**Request Format Example**:
+```json
+{
+  "model": "anthropic/claude-3-5-sonnet",
+  "messages": [
+    {"role": "system", "content": "You are a helpful assistant"},
+    {"role": "user", "content": "Hello!"}
+  ],
+  "temperature": 0.7,
+  "max_tokens": 1000,
+  "stream": true,
+  "route": "fallback",
+  "models": [
+    "anthropic/claude-3-5-sonnet",
+    "openai/gpt-4"
+  ]
+}
+```
+
+## Notes
+
+Example implementation:
+```elixir
+defp format_request(config, request) do
+  %{
+    model: request.model,
+    messages: format_messages(request.messages),
+    temperature: request.temperature,
+    max_tokens: request.max_tokens,
+    stream: request.stream || false,
+    stream_options: %{include_usage: true}
+  }
+  |> maybe_add_route(request)
+  |> maybe_add_tools(request.tools)
+end
+
+defp format_headers(config) do
+  [
+    {"Authorization", "Bearer #{config.api_key}"},
+    {"Content-Type", "application/json"},
+    {"HTTP-Referer", config.site_url || "https://pag-server.local"},
+    {"X-Title", config.site_name || "PAG-Server"}
+  ]
+end
+
+defp parse_response({:ok, %{status: 200, body: body}}) do
+  decoded = Jason.decode!(body)
+  
+  %{
+    content: get_in(decoded, ["choices", Access.at(0), "message", "content"]),
+    model: decoded["model"],
+    usage: parse_usage(decoded["usage"]),
+    metadata: %{
+      provider: decoded["provider"],
+      cost: decoded["cost"]
+    }
+  }
+end
+```

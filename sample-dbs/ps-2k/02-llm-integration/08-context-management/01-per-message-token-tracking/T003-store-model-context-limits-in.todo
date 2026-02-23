@@ -1,0 +1,56 @@
+---
+id: P2.M8.E1.T003
+title: Store model context limits in registry
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- tokens
+- models
+- config
+claimed_by: claude-1
+claimed_at: '2026-02-05T19:15:42.381164'
+started_at: '2026-02-05T19:15:42.381164'
+completed_at: '2026-02-05T19:23:11.441029'
+duration_minutes: 7.484330833333333
+---
+
+# Store model context limits in registry
+
+
+
+## Requirements
+
+- [x] Store model context limits in LLM registry
+- [x] Provide registry APIs for get/set context limits
+- [x] Use registry limits when config does not override
+
+## Acceptance Criteria
+
+- [x] Registry returns limits by model spec/name and supports updates
+- [x] Agent context overflow uses registry limits as fallback
+- [x] Tests cover registry and overflow behavior
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: claude-1 (primary agent)
+**Delegation date**: 2026-02-06 06:15 UTC
+**Primary task**: P2.M7.E3.T002 - Write end-to-end cost tests
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (claude-1)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M8.E1 vs P2.M7.E3)
+- No dependency chain: ✓ (verified at claim time)

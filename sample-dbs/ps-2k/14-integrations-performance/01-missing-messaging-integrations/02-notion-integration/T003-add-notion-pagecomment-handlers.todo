@@ -1,0 +1,30 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T08:56:55.852183+00:00'
+started_at: '2026-02-13T08:56:55.852183+00:00'
+completed_at: '2026-02-13T09:15:11.883045+00:00'
+duration_minutes: 18.26718085
+---
+# Add Notion page/comment handlers
+
+## Description
+Implement page and comment operations for Notion workspaces. Enable agents to create pages with rich content, retrieve page content, and manage comments on pages and blocks.
+
+## Acceptance Criteria
+- [ ] `PagServer.Integrations.Notion.Pages` module created
+- [ ] `get_page/2` to retrieve page properties and content
+- [ ] `create_page/3` with parent (page or database) support
+- [ ] `update_page/3` to modify page properties
+- [ ] `append_blocks/3` to add content blocks to pages
+- [ ] `get_blocks/2` to retrieve page content as blocks
+- [ ] `PagServer.Integrations.Notion.Comments` module created
+- [ ] `list_comments/2` to get page discussion
+- [ ] `create_comment/3` to add to discussion
+- [ ] Rich text formatting support (bold, code, links)
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/integrations/notion/client.ex`, `lib/pag_server/integrations/notion/databases.ex`, `lib/pag_server/integrations/github/issues.ex`
+- Part of epic: P14.M1.E2 - Notion Integration

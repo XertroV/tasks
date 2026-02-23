@@ -1,0 +1,30 @@
+id: P5.M4.E6
+name: Conversation Export
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-conversation-export.todo
+  title: Implement conversation export module
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-conversation-export-tests.todo
+  title: Add conversation export tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P5.M4.E6.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

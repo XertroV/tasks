@@ -1,0 +1,68 @@
+---
+id: P10.M4.E2.T001
+title: Create Jenkins API client with auth
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- api-client
+- jenkins
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-12T04:30:27.124546+00:00'
+started_at: '2026-02-12T04:30:27.124546+00:00'
+completed_at: '2026-02-12T04:42:37.059680+00:00'
+duration_minutes: 12.165585366666667
+---
+
+# Create Jenkins API client with auth
+
+Implement HTTP client module for Jenkins API integration with authentication, job operations, and build management.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/jenkins/client.ex` module
+- [ ] Implement Jenkins API authentication using:
+  - [ ] Basic auth (username/API token)
+  - [ ] API token management and refresh
+- [ ] Define HTTP request builder functions:
+  - [ ] Trigger job build with parameters
+  - [ ] Get job status and build info
+  - [ ] Retrieve build logs and console output
+  - [ ] Cancel running builds
+- [ ] Implement error handling for API failures and Jenkins-specific errors
+- [ ] Add request/response logging and telemetry tracking
+- [ ] Write comprehensive module tests with HTTP mocking
+
+## Acceptance Criteria
+
+- [ ] Client module compiles with no warnings
+- [ ] Supports Jenkins API endpoints (job triggers, build queries)
+- [ ] Implements retry logic for transient failures
+- [ ] API rate limiting handled gracefully
+- [ ] All HTTP calls include telemetry span tracking
+- [ ] Error responses parsed and wrapped in standardized error tuples
+- [ ] Unit tests cover happy path and error scenarios
+- [ ] `mix test` passes for all client tests
+- [ ] `mix lint` passes without warnings
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M4.E2)
+**Agent**: cli-user
+**Date**: 2026-02-12 04:30 UTC
+**Sibling tasks**: P10.M4.E2.T002, P10.M4.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M4.E2.T001 → P10.M4.E2.T002 → P10.M4.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M4.E2.T001: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/02-jenkins-integration/T001-create-jenkins-api-client-with.todo
+- P10.M4.E2.T002: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/02-jenkins-integration/T002-build-jenkins-webhook-handler.todo
+- P10.M4.E2.T003: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/02-jenkins-integration/T003-implement-jenkins-job-triggeri.todo

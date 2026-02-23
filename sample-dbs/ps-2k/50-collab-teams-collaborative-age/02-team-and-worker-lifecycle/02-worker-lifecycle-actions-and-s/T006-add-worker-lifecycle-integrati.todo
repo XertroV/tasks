@@ -1,0 +1,28 @@
+---
+id: P50.M2.E2.T006
+title: Add worker lifecycle integration tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E2.T001
+- P50.M2.E2.T002
+- P50.M2.E2.T003
+- P50.M2.E2.T004
+- P50.M2.E2.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:30:42.892888+00:00'
+started_at: '2026-02-23T02:30:42.892888+00:00'
+completed_at: '2026-02-23T02:30:45.516732+00:00'
+duration_minutes: 0.043730566666666665
+---
+## Description
+End-to-end smoke test in test/pag_server/plugins/collab_teams/worker_lifecycle_test.exs: create team -> add worker (mock spawn via test double or stub) -> set_worker_state idle -> remove_worker -> cleanup_team. Additional tests: concurrent add_worker race (unique agent IDs); spawn failure cleanup (no orphaned rows); state machine full path starting->active->idle->shutting_down->stopped. All async: true, unique team/agent IDs, no sleeps.
+
+## Acceptance Criteria
+- Full smoke test passes
+- spawn failure leaves no orphaned rows
+- state machine path verified in single test
+- all async: true; mix test.collab_teams passes

@@ -1,0 +1,72 @@
+id: P50.M3.E2
+name: Messaging and Plugin Event Firing
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-collabteams-schema-message.todo
+  title: Add CollabTeams.Schema.Message Ecto schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E2.T003
+- id: T002
+  file: T002-implement-send-message-action.todo
+  title: Implement send_message action
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E2.T001
+  - P50.M2.E2.T002
+- id: T003
+  file: T003-implement-list-messages-action.todo
+  title: Implement list_messages action
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E2.T002
+- id: T004
+  file: T004-implement-collabteams-policyho.todo
+  title: Implement CollabTeams.PolicyHooks event firing module
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-wire-policyhooks-firing-into-t.todo
+  title: Wire PolicyHooks firing into task and worker state transitions
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E2.T004
+  - P50.M3.E1.T005
+- id: T006
+  file: T006-add-next-task-action-and-wire.todo
+  title: Add next_task action and wire all M3.E2 actions into dispatcher
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M3.E2.T002
+  - P50.M3.E2.T003
+  - P50.M3.E2.T005
+  - P50.M3.E1.T004
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

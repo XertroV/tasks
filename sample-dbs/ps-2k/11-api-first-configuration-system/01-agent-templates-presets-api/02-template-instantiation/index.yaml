@@ -1,0 +1,37 @@
+id: P11.M1.E2
+name: Template Instantiation
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-agent-creation-from.todo
+  title: Implement agent creation from template
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-template-variable-substitu.todo
+  title: Add template variable substitution
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-write-template-instantiation-t.todo
+  title: Write template instantiation tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

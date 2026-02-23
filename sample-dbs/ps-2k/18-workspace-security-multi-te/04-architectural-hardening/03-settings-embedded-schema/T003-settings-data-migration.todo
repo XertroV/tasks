@@ -1,0 +1,42 @@
+---
+id: P18.M4.E3.T003
+title: Write data migration for existing settings JSONB
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P18.M4.E3.T002
+tags:
+- workspace
+- migration
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:56:19.994635+00:00'
+started_at: '2026-02-17T20:56:19.994635+00:00'
+completed_at: '2026-02-17T21:15:19.362645+00:00'
+duration_minutes: 18.989466616666668
+---
+
+# Write data migration for existing settings JSONB
+
+## Description
+
+Write a data migration ensuring existing JSONB settings data is compatible with the new embedded schema format.
+
+## Requirements
+
+- [ ] Inspect existing settings data to identify all keys in use
+- [ ] Write migration that normalizes existing data to match embedded schema structure
+- [ ] Handle nil settings (set to default empty struct)
+- [ ] Handle unexpected keys (move to metadata field)
+- [ ] Migration must be idempotent
+
+## Acceptance Criteria
+
+- [ ] Migration runs cleanly on databases with existing workspace data
+- [ ] All existing settings data is preserved and accessible via the new schema
+- [ ] No data loss during migration
+
+## Context
+
+**Files affected**: `priv/repo/migrations/`

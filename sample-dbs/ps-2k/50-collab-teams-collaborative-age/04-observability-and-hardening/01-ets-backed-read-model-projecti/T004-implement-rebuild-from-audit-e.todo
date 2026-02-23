@@ -1,0 +1,24 @@
+---
+id: P50.M4.E1.T004
+title: Implement rebuild-from-audit-events for projection recovery
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M4.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:25.014702+00:00'
+started_at: '2026-02-23T02:42:25.014702+00:00'
+completed_at: '2026-02-23T02:42:27.489105+00:00'
+duration_minutes: 0.04123975
+---
+## Description
+CollabTeams.Projection.rebuild/1 (team_id) resets ETS state then replays all events from plugin_collab_teams_audit_events for given team_id ordered by inserted_at. Called automatically on GenServer init (cold start = rebuild). Callable externally for test verification and operator recovery. Uses Persistence.stream_events or direct Repo query on the plugin audit table.
+
+## Acceptance Criteria
+- rebuild/1 resets and replays correctly
+- cold start calls rebuild/1
+- calling rebuild/1 twice produces same state
+- test: insert 5 audit events, call rebuild, assert ETS matches expected state

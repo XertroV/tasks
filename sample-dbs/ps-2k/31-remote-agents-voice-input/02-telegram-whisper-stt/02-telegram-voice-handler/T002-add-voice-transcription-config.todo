@@ -1,0 +1,16 @@
+---
+id: P31.M2.E2.T002
+title: Add voice transcription configuration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:47:04.195503+00:00'
+started_at: '2026-02-18T19:47:04.195503+00:00'
+completed_at: '2026-02-18T19:47:07.282597+00:00'
+duration_minutes: 0.05145136666666667
+---
+App config: whisper_executable (path), whisper_model (default: base), whisper_language (nil = auto-detect), max_audio_size_mb (20). Read in Whisper.Config. Allow per-workspace override via WorkspaceSettings.

@@ -1,0 +1,119 @@
+---
+id: P4.M1.E2.T003
+title: Auto-register tools on startup
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P4.M1.E2.T002
+tags:
+- tools
+- registry
+- startup
+claimed_by: cli-user
+claimed_at: '2026-02-05T21:38:18.325986'
+started_at: '2026-02-05T21:38:18.325986'
+completed_at: '2026-02-05T21:48:21.696425'
+duration_minutes: 10.056173833333334
+---
+
+# Auto-register tools on startup
+
+Automatically register builtin tools when the Registry starts.
+
+## Requirements
+
+- [x] Add `register_builtin_tools/1` private function
+- [x] Call from `init/1` after ETS table creation
+- [x] List all builtin tool modules to register (empty for now - P4.M2)
+- [x] Log successful/failed registrations
+- [x] Handle registration failures gracefully
+- [x] Extract registration logic to `do_register/2` helper
+
+## Acceptance Criteria
+
+- [x] All builtin tools are registered on startup (empty list until P4.M2)
+- [x] Registration failures are logged but don't crash startup
+- [x] Tools are available immediately after Registry starts
+- [x] Test verifies auto-registration infrastructure
+- [x] Documentation updated in moduledoc
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Builtin tools are always available
+- Registration happens synchronously during init
+- Failures should log warnings but not crash
+- MCP tools register separately (later epic)
+
+## Notes
+
+Implementation in `init/1`:
+```elixir
+@impl true
+def init(_opts) do
+  table = :ets.new(:tools_registry, [:set, :public, :named_table])
+  state = %{ets_table: table, tools: %{}}
+  
+  register_builtin_tools(state)
+  
+  {:ok, state}
+end
+
+defp register_builtin_tools(state) do
+  builtin_modules = [
+    # File operations (to be implemented in later epics)
+    # PAGServer.Tools.Builtin.ReadFile,
+    # PAGServer.Tools.Builtin.WriteFile,
+    # PAGServer.Tools.Builtin.ListDirectory,
+    # PAGServer.Tools.Builtin.ExecuteShell,
+    # PAGServer.Tools.Builtin.WebSearch,
+    # PAGServer.Tools.Builtin.SendMessage
+  ]
+  
+  Enum.each(builtin_modules, fn module ->
+    case do_register(module, state) do
+      {:ok, _state} ->
+        Logger.info("Registered builtin tool: #{module}")
+      {:error, reason} ->
+        Logger.warning("Failed to register #{module}: #{inspect(reason)}")
+    end
+  end)
+  
+  state
+end
+
+defp do_register(module, state) do
+  # Registration logic extracted from handle_call
+end
+```
+
+Note: The builtin_modules list will be populated as tools are implemented in P4.M2 (Built-in Tools milestone).
+
+This task sets up the infrastructure; actual tools register in later milestones.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 08:38 UTC
+**Primary task**: P2.M3.E3.T004 - Implement tool result submission loop for OpenAI
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M1.E2 vs P2.M3.E3)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,32 @@
+---
+id: P34.M3.E1.T003
+title: Install Action
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- frontend
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:46:04.400311+00:00'
+started_at: '2026-02-19T00:46:04.400311+00:00'
+completed_at: '2026-02-19T00:46:34.111179+00:00'
+duration_minutes: 0.49518095
+---
+
+# Install Action
+
+Implement skill installation from UI:
+
+- Download skill from ClawHub
+- Extract to workspace skills directory
+- Show success/error feedback
+- Refresh workspace skills list
+
+## Acceptance Criteria
+
+- [ ] Skill installed to correct location
+- [ ] User sees success confirmation
+- [ ] Errors displayed with actionable message

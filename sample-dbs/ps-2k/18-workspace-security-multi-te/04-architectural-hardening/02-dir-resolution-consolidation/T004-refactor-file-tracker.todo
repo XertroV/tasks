@@ -1,0 +1,41 @@
+---
+id: P18.M4.E2.T004
+title: Refactor FileTracker to use WorkspacePaths
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P18.M4.E2.T001
+tags:
+- workspace
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.652099+00:00'
+started_at: '2026-02-17T20:48:56.652099+00:00'
+completed_at: '2026-02-17T20:55:46.879524+00:00'
+duration_minutes: 6.837123416666667
+---
+
+# Refactor FileTracker to use WorkspacePaths
+
+## Description
+
+Replace path resolution logic in `PagServer.Bootstrap.FileTracker` with calls to `WorkspacePaths`.
+
+## Requirements
+
+- [ ] Replace the workspace-from-absolute-path lookup logic with WorkspacePaths functions
+- [ ] Update `maybe_track_write/3` to use WorkspacePaths for path resolution
+- [ ] Update `sync_from_disk/2` call sites to use WorkspacePaths
+- [ ] Remove any duplicated root path resolution
+
+## Acceptance Criteria
+
+- [ ] No path resolution logic remains in FileTracker (delegated to WorkspacePaths)
+- [ ] All existing tests continue to pass
+- [ ] FileTracker periodic sync still works correctly
+
+## Context
+
+**Files affected**: `lib/pag_server/bootstrap/file_tracker.ex`

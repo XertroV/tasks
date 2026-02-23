@@ -1,0 +1,22 @@
+id: P24.M4.E1
+name: Automatic File Change Logging Infrastructure
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-automatic-file-change-logging.todo
+  title: Automatic file change logging for agent core files (XXX.md.log)
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

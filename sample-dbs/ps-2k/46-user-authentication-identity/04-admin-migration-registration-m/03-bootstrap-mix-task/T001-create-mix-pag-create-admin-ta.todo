@@ -1,0 +1,30 @@
+---
+id: P46.M4.E3.T001
+title: Create mix pag.create_admin task
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P46.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:44:25.698900+00:00'
+started_at: '2026-02-20T05:44:25.698900+00:00'
+completed_at: '2026-02-20T05:51:57.863283+00:00'
+duration_minutes: 7.5360728833333335
+---
+Create lib/mix/tasks/pag/create_admin.ex implementing mix pag.create_admin.
+
+Usage:
+  mix pag.create_admin --email admin@example.com
+  mix pag.create_admin --email admin@example.com --create-if-missing
+
+Behaviour:
+1. Load user by email from DB
+2. If user not found and --create-if-missing flag given: create a bare User record (email, auto-generate username from email local part, confirmed_at: now, is_admin: true). Print instructions: 'User created. They must log in via OAuth to link an identity before accessing the web UI.'
+3. If user not found and no flag: print error and exit with non-zero status
+4. If user found and already admin: print 'User is already an admin' and exit 0
+5. If user found and not admin: set is_admin: true, print 'User admin@example.com is now an admin'
+Include a guard: if no admin users exist yet, always allow this task even if in a restrictive environment.
+Acceptance: mix pag.create_admin --email test@test.com --create-if-missing works end-to-end in a fresh DB. Running twice is idempotent.

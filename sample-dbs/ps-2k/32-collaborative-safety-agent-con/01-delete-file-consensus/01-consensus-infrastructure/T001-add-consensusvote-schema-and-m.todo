@@ -1,0 +1,19 @@
+---
+id: P32.M1.E1.T001
+title: Add ConsensusVote schema and migration
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- schema
+- database
+- consensus
+claimed_by: cli-user
+claimed_at: '2026-02-18T20:03:15.231326+00:00'
+started_at: '2026-02-18T20:03:15.231326+00:00'
+completed_at: '2026-02-18T22:09:15.439658+00:00'
+duration_minutes: 126.00347185000001
+---
+Add ConsensusVote Ecto schema and Ecto migration.\n\nFields:\n- operation_type (string) - e.g. 'file_delete'\n- agent_id (string) - requesting agent\n- session_id (string)\n- votes (jsonb) - map of agent_id => yes|no\n- status (enum) - pending | approved | rejected | timeout\n- expires_at (utc_datetime)\n\nAcceptance criteria:\n- [ ] Migration creates consensus_votes table\n- [ ] Schema validates all required fields\n- [ ] Status enum enforced at schema level\n- [ ] mix ecto.reset runs cleanly

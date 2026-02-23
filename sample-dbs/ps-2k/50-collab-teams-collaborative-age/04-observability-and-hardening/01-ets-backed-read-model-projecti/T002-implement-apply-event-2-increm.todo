@@ -1,0 +1,24 @@
+---
+id: P50.M4.E1.T002
+title: Implement apply_event/2 incremental update handler for all collab_ event types
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M4.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:10.575545+00:00'
+started_at: '2026-02-23T02:42:10.575545+00:00'
+completed_at: '2026-02-23T02:42:13.044971+00:00'
+duration_minutes: 0.04115683333333333
+---
+## Description
+Private function apply_event/2 handles all collab_ event types: collab_team_created, collab_worker_joined, collab_worker_state_changed, collab_task_created, collab_task_claimed, collab_task_completed, collab_task_failed, collab_message_sent, collab_shutdown_requested, collab_team_cleaned_up. Each handler updates correct ETS table entries atomically. Unknown event types logged as warnings and ignored (no crash).
+
+## Acceptance Criteria
+- All 10 event types handled
+- unknown events log warning and return :ok
+- ETS updates are atomic (single :ets.insert call per event)
+- unit tests cover each event type's ETS mutation

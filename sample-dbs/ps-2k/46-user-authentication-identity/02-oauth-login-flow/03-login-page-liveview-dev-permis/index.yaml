@@ -1,0 +1,34 @@
+id: P46.M2.E3
+name: Login Page LiveView & Dev Permissive Auto-Login
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-login-liveview-page-wit.todo
+  title: Create Login LiveView page with OAuth provider buttons
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P46.M2.E1.T001
+  - P46.M2.E1.T002
+- id: T002
+  file: T002-implement-dev-permissive-auto.todo
+  title: Implement dev permissive auto-login for web sessions
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P46.M1.E3.T003
+  - P46.M2.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

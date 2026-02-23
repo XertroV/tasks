@@ -1,0 +1,48 @@
+---
+id: P15.M9.E5.T002
+title: Audit E1-E4 implementations for correctness and completeness
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P15.M9.E1
+- P15.M9.E2
+- P15.M9.E3
+- P15.M9.E4
+tags:
+- audit
+- review
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:17:20.856032+00:00'
+started_at: '2026-02-17T14:17:20.856032+00:00'
+completed_at: '2026-02-17T14:34:54.348433+00:00'
+duration_minutes: 17.558206433333332
+---
+After all E1-E4 tasks are complete, perform a thorough audit:
+
+1. **E1 (Crash Safety)**: Verify pending_tool_calls tracking covers all entry/exit
+   points. Check that no code path can leave pending_tool_calls set after execution
+   completes. Simulate crash scenarios mentally.
+
+2. **E2 (Sanitizer)**: Verify algorithm handles all message orderings correctly.
+   Check for off-by-one errors in ID tracking. Ensure synthetic messages have
+   correct structure for downstream formatting.
+
+3. **E3 (Fork/Repair)**: Verify fork chain walking produces correct context.
+   Check that repair transactions are atomic. Verify archived messages are
+   excluded from future loads.
+
+4. **E4 (Schema/Format)**: Verify UUID fallback doesn't mask real bugs (should
+   log). Check schema validation doesn't break existing create paths.
+
+5. **Cross-epic integration**: Verify E1+E2 together handle the full lifecycle
+   (runtime prevention + submission-time repair). Verify E3 repair uses E2
+   sanitizer correctly.
+
+## Acceptance Criteria
+- [ ] Each epic's implementation reviewed with specific findings
+- [ ] No correctness issues found (or all issues fixed)
+- [ ] Cross-epic integration verified
+- [ ] All code follows project style conventions
+- [ ] mix lint passes

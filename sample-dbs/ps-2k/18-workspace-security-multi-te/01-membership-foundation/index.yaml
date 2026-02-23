@@ -1,0 +1,43 @@
+id: P18.M1
+name: Workspace Membership Foundation
+status: done
+estimate_hours: 22.0
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: WorkspaceMember Schema & Context
+  path: 01-workspace-member-schema
+  status: done
+  estimate_hours: 7.0
+  complexity: medium
+  depends_on: []
+  description: Create workspace_members table, Ecto schema, and context module with
+    CRUD operations. Auto-create owner membership on workspace creation.
+- id: E2
+  name: RBAC Permission Matrix & Policy Module
+  path: 02-rbac-policy-module
+  status: done
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on:
+  - P18.M1.E1
+  description: Define role-permission matrix and WorkspacePolicy authorization module
+    for owner/admin/member roles.
+- id: E3
+  name: RequireWorkspaceMembership Plug
+  path: 03-membership-plug
+  status: done
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on:
+  - P18.M1.E2
+  description: Plug-level workspace membership enforcement. Extract workspace_id from
+    URL, validate membership, assign role to conn. Integrate into router pipelines
+    and migrate existing controllers.
+stats:
+  total_tasks: 14
+  done: 14
+  in_progress: 0
+  blocked: 0
+  pending: 0

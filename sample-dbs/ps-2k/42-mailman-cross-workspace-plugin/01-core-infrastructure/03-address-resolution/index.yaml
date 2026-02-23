@@ -1,0 +1,22 @@
+id: P42.M1.E3
+name: Address Resolution
+status: done
+estimate_hours: 1.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-address-parser-and-l.todo
+  title: Implement Address parser and local resolver
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

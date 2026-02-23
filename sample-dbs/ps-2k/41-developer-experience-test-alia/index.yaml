@@ -1,0 +1,35 @@
+id: P41
+name: 'Developer Experience: Test Aliases & CI Partitioning'
+status: done
+locked: true
+weeks: 1
+estimate_hours: 10.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Test Aliases & Grouped Runners
+  path: 01-test-aliases-grouped-runners
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Add mix test.* aliases for all 43 uncovered subdirectories plus grouped
+    meta-aliases (test.core, test.provider, test.infra, test.fast)
+  locked: false
+- id: M2
+  name: CI Partitioning & Test Discovery
+  path: 02-ci-partitioning-test-discovery
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: Add GitHub Actions parallel test partitions (--partitions 4) and a
+    mix test.changed script for running only tests affected by recent git changes
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

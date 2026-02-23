@@ -1,0 +1,45 @@
+---
+id: P53.M1.E1.T002
+title: Decide companion vs headless fallback strategy
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P53.M1.E1.T001
+tags:
+- browsermcp
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:29:19.737361+00:00'
+started_at: '2026-02-21T05:29:19.737361+00:00'
+completed_at: '2026-02-21T05:29:45.444296+00:00'
+duration_minutes: 0.42844875
+---
+
+# Decide companion vs headless fallback strategy
+
+
+
+## Requirements
+
+- Evaluate whether Browser MCP should default to companion-backed execution versus local headless execution.
+- Document security, reliability, and UX tradeoffs for each mode.
+- Produce explicit default and fallback decision rules with failure handling.
+
+## Acceptance Criteria
+
+- A decision record states default mode and fallback triggers.
+- Decision includes rationale covering sandboxing, auth boundary, and platform portability.
+- Risks/open questions are listed with concrete follow-up tasks or out-of-scope notes.
+
+## Execution Notes (2026-02-21)
+
+- Added execution-mode decision record selecting companion-backed BrowserMCP as
+  default and documenting explicit fallback conditions for headless local mode.
+- Documented rationale across sandboxing, auth boundary, and portability.
+- Captured risk/open-question list with references to follow-up tasks.
+
+## Evidence Artifacts
+
+- `docs/plans/browsermcp-execution-mode-decision.md`

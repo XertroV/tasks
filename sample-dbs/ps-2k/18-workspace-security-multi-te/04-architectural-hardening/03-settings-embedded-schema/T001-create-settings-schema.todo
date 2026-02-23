@@ -1,0 +1,43 @@
+---
+id: P18.M4.E3.T001
+title: Create WorkspaceSettings embedded Ecto schema
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- workspace
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.932686+00:00'
+started_at: '2026-02-17T18:30:42.932686+00:00'
+completed_at: '2026-02-17T20:47:55.306219+00:00'
+duration_minutes: 137.20622538333333
+---
+
+# Create WorkspaceSettings embedded Ecto schema
+
+## Description
+
+Create a typed embedded Ecto schema replacing the unvalidated `settings` JSONB map on workspaces.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/schema/workspace_settings.ex`
+- [ ] Define as `embedded_schema` with typed fields:
+  - `tracked_files` — `{:array, :string}`, default `[]`
+  - (Add other known settings keys if they exist in the codebase)
+- [ ] Changeset validation: tracked_files must be list of strings, each non-empty
+- [ ] Handle unknown keys gracefully (store in a `metadata` map field for extensibility)
+
+## Acceptance Criteria
+
+- [ ] Embedded schema compiles without warnings
+- [ ] Changeset rejects invalid tracked_files values
+- [ ] Existing settings data can be loaded into the new schema
+
+## Context
+
+**Files affected**: `lib/pag_server/schema/workspace_settings.ex` (new)
+**Current usage**: `workspace.settings["tracked_files"]` in `workspace_files.ex`

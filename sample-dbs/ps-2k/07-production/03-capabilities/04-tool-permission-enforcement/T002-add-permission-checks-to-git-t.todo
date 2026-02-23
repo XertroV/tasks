@@ -1,0 +1,107 @@
+---
+id: P7.M3.E4.T002
+title: Add permission checks to git tools
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: critical
+depends_on:
+- P7.M3.E3.T001
+tags:
+- security
+- permissions
+- git
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-06T17:36:53.344451'
+started_at: '2026-02-06T17:36:53.344451'
+completed_at: '2026-02-06T18:05:41.020035+00:00'
+duration_minutes: 28.794592883333333
+---
+
+# Add permission checks to git tools
+
+5 git tools currently execute without permission checks: `git_status`, `git_diff`, `git_log`,
+`git_commit`, and `git_clone`. Any agent can read repository state and make commits/clones
+regardless of its authorization level.
+
+This task adds granular `:git_read` and `:git_write` permission checks to git tools, where
+read-only operations (status, diff, log) require `:git_read` and mutating operations
+(commit, clone) require `:git_write`.
+
+## Requirements
+
+- [ ] Define two permission atoms for git operations:
+  - `:git_read` - for read-only operations (git_status, git_diff, git_log)
+  - `:git_write` - for mutating operations (git_commit, git_clone)
+- [ ] Add permission check at the start of `execute/2` in each git tool:
+  - [ ] `lib/pag_server/tools/builtin/git_status.ex` - requires `:git_read`
+  - [ ] `lib/pag_server/tools/builtin/git_diff.ex` - requires `:git_read`
+  - [ ] `lib/pag_server/tools/builtin/git_log.ex` - requires `:git_read`
+  - [ ] `lib/pag_server/tools/builtin/git_commit.ex` - requires `:git_write`
+  - [ ] `lib/pag_server/tools/builtin/git_clone.ex` - requires `:git_write`
+- [ ] Follow the established pattern from `execute_shell.ex`:
+  ```elixir
+  def execute(args, %{workspace: workspace} = context) do
+    permissions = context[:permissions] || []
+    if :git_read in permissions do
+      # ... existing logic
+    else
+      {:error, "Permission denied: git_read required"}
+    end
+  end
+  ```
+- [ ] For git_commit and git_clone, return:
+  `{:error, "Permission denied: git_write required"}`
+- [ ] Add unit tests for permission denial in each tool
+- [ ] Document the required permission in each tool's `@moduledoc`
+
+## Acceptance Criteria
+
+- [ ] git_status, git_diff, git_log check for `:git_read` permission
+- [ ] git_commit, git_clone check for `:git_write` permission
+- [ ] Tools return descriptive error messages when permission is missing
+- [ ] Tools execute normally when the appropriate permission is present
+- [ ] Existing tests updated to include required permissions in context
+- [ ] Each tool's `@moduledoc` documents the required permission
+
+## Context
+
+**Source**: Architecture audit - tool system security gap analysis (2026-02-06)
+**Severity**: CRITICAL - git tools execute without authorization checks; git_commit and git_clone can modify repositories
+**Depends on**: P7.M3.E3.T001 (wire permissions into tool context) for end-to-end functionality
+
+**Related tasks**:
+- P7.M3.E4.T001 (network tools permissions)
+- P7.M3.E4.T003 (remaining tools permissions)
+
+## Notes
+
+Current code in `lib/pag_server/tools/builtin/git_status.ex` (line 71):
+```elixir
+def execute(args, %{workspace: workspace} = _context) do
+  # No permission check - any agent can read git status
+  work_dir = Map.get(args, "path", workspace)
+  ...
+end
+```
+
+After fix:
+```elixir
+def execute(args, %{workspace: workspace} = context) do
+  permissions = context[:permissions] || []
+  if :git_read in permissions do
+    work_dir = Map.get(args, "path", workspace)
+    ...
+  else
+    {:error, "Permission denied: git_read required"}
+  end
+end
+```
+
+**Affected files**:
+- `lib/pag_server/tools/builtin/git_status.ex`
+- `lib/pag_server/tools/builtin/git_diff.ex`
+- `lib/pag_server/tools/builtin/git_log.ex`
+- `lib/pag_server/tools/builtin/git_commit.ex`
+- `lib/pag_server/tools/builtin/git_clone.ex`

@@ -1,0 +1,81 @@
+id: P7
+name: Production Hardening
+status: pending
+weeks: 2
+estimate_hours: 58
+complexity: high
+depends_on:
+- P6
+milestones:
+- id: M1
+  name: Docker Sandbox
+  path: 01-docker-sandbox
+  status: pending
+  estimate_hours: 10
+  complexity: high
+  depends_on: []
+  description: Docker container management for sandboxed tool execution
+- id: M2
+  name: Rate Limiting
+  path: 02-rate-limiting
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on: []
+  description: Token bucket rate limiting for API and agent operations
+- id: M3
+  name: Capabilities
+  path: 03-capabilities
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on: []
+  description: Capability-based security model for agents
+- id: M4
+  name: Resource Limits
+  path: 04-resource-limits
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on:
+  - M3
+  description: Enforcement of resource quotas and limits
+- id: M5
+  name: Error Recovery
+  path: 05-error-handling
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on: []
+  description: Retry logic and supervision strategies
+- id: M6
+  name: Memory Patterns
+  path: 06-memory-efficiency
+  status: pending
+  estimate_hours: 8
+  complexity: high
+  depends_on: []
+  description: Memory-efficient patterns (iolists, truncation, monitoring)
+- id: M7
+  name: Documentation
+  path: 07-documentation
+  status: pending
+  estimate_hours: 12
+  complexity: medium
+  depends_on:
+  - M1
+  - M2
+  - M3
+  - M4
+  - M5
+  - M6
+  - P3.M3
+  - P3.M4
+  - P3.M6
+  description: API docs, deployment guides, examples
+stats:
+  total_tasks: 82
+  done: 82
+  in_progress: 0
+  blocked: 0
+  pending: 0

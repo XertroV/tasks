@@ -1,0 +1,51 @@
+---
+id: I059
+title: 'USER_REQUIRED: With the worktree stuff, we want to create a git worktree for features or
+  grouped implementations. With LSP integration: we should have 1 LSP per directory
+  root. So the main repo might have an LSP, but also the worktree dir should have
+  an LSP too. So like we create a new coding agent which gets its own worktree and
+  thus we also need a new LSP. Now within that worktree dir, the agent can spawn subagents
+  to parallelize the task. Those agents dont get a new LSP becuase the existing one
+  works fine. We need to analyze how workspaces + worktrees + LSPs works atm and consider
+  if we need to redesign anything. We have the working_dir thing now, but should this
+  count as the same workspace? Probably because we want to maintain shared access,
+  workspace-level-mail, etc. Let''s consider all aspects when we are reconsidering
+  these feature designs.'
+status: blocked
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+blocked: USER_REQUIRED
+depends_on: []
+tags:
+- idea
+- planning
+---
+
+# Idea Intake: With the worktree stuff, we want to create a git worktree for features or grouped implementations. With LSP integration: we should have 1 LSP per directory root. So the main repo might have an LSP, but also the worktree dir should have an LSP too. So like we create a new coding agent which gets its own worktree and thus we also need a new LSP. Now within that worktree dir, the agent can spawn subagents to parallelize the task. Those agents dont get a new LSP becuase the existing one works fine. We need to analyze how workspaces + worktrees + LSPs works atm and consider if we need to redesign anything. We have the working_dir thing now, but should this count as the same workspace? Probably because we want to maintain shared access, workspace-level-mail, etc. Let's consider all aspects when we are reconsidering these feature designs.
+
+## Original Idea
+
+With the worktree stuff, we want to create a git worktree for features or grouped implementations. With LSP integration: we should have 1 LSP per directory root. So the main repo might have an LSP, but also the worktree dir should have an LSP too. So like we create a new coding agent which gets its own worktree and thus we also need a new LSP. Now within that worktree dir, the agent can spawn subagents to parallelize the task. Those agents dont get a new LSP becuase the existing one works fine. We need to analyze how workspaces + worktrees + LSPs works atm and consider if we need to redesign anything. We have the working_dir thing now, but should this count as the same workspace? Probably because we want to maintain shared access, workspace-level-mail, etc. Let's consider all aspects when we are reconsidering these feature designs.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "With the worktree stuff, we want to create a git worktree for features or grouped implementations. With LSP integration: we should have 1 LSP per directory root. So the main repo might have an LSP, but also the worktree dir should have an LSP too. So like we create a new coding agent which gets its own worktree and thus we also need a new LSP. Now within that worktree dir, the agent can spawn subagents to parallelize the task. Those agents dont get a new LSP becuase the existing one works fine. We need to analyze how workspaces + worktrees + LSPs works atm and consider if we need to redesign anything. We have the working_dir thing now, but should this count as the same workspace? Probably because we want to maintain shared access, workspace-level-mail, etc. Let's consider all aspects when we are reconsidering these feature designs."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Add created task IDs
+- Add created bug IDs (if any)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

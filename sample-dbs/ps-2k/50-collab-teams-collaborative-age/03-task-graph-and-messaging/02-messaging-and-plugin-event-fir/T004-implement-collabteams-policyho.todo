@@ -1,0 +1,23 @@
+---
+id: P50.M3.E2.T004
+title: Implement CollabTeams.PolicyHooks event firing module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:07:27.565845+00:00'
+started_at: '2026-02-23T02:07:27.565845+00:00'
+completed_at: '2026-02-23T02:07:30.423999+00:00'
+duration_minutes: 0.04763475
+---
+## Description
+Create CollabTeams.PolicyHooks module with fire/2 (subtype :: String.t(), data :: map()). Calls HookDispatcher.dispatch/2 with HookEvent.new!(:plugin_event, data: %{plugin: collab_teams, subtype: subtype} |> Map.merge(data)). Always async (mode: :async). Returns :ok immediately. Test standalone: register mock async handler, call fire/2, assert handler receives event with correct plugin and subtype fields. Supported subtypes: task_completed, task_failed, worker_idle, worker_joined, team_created, shutdown_requested.
+
+## Acceptance Criteria
+- PolicyHooks.fire/2 dispatches via HookDispatcher
+- mock handler receives correct plugin+subtype
+- fire/2 returns :ok without blocking
+- all 6 subtypes work

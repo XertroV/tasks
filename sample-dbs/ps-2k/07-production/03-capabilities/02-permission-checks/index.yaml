@@ -1,0 +1,17 @@
+id: P7.M3.E2
+name: Permission Checks
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on:
+- E1
+tasks:
+- T001-tool-checks.todo
+- T002-file-checks.todo
+- T003-resource-checks.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,30 @@
+---
+id: P34.M1.E1.T004
+title: Caching Layer
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- backend
+- performance
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:36:52.858207+00:00'
+started_at: '2026-02-19T00:36:52.858207+00:00'
+completed_at: '2026-02-19T00:37:02.410114+00:00'
+duration_minutes: 0.15919825
+---
+
+# Caching Layer
+
+Add Cachex-backed caching:
+
+- 5-minute TTL for list/search results
+- Cache bust option for fresh data
+- Per-query cache keys
+
+## Acceptance Criteria
+
+- [ ] Results cached with configurable TTL
+- [ ] Cache can be busted via option flag

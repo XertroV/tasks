@@ -1,0 +1,117 @@
+---
+id: P8.M1.E2.T002
+title: Implement get_or_create_session
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P8.M1.E2.T001
+tags:
+- gateway
+- router
+- session
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:45:57.973219+00:00'
+started_at: '2026-02-08T07:45:57.973219+00:00'
+completed_at: '2026-02-08T08:07:24.982376+00:00'
+duration_minutes: 21.450152433333336
+---
+
+# Implement get_or_create_session
+
+Create logic to get existing session or create new one based on session key, with proper agent initialization.
+
+## Requirements
+
+- [ ] Implement `get_or_create_session/2` in Router (~60 LoC)
+- [ ] Query SessionManager for existing session by key
+- [ ] Create new session if none exists
+- [ ] Initialize agent for new sessions
+- [ ] Store platform and context metadata
+- [ ] Handle concurrent creation races
+- [ ] Add error handling for session creation failures
+
+## Acceptance Criteria
+
+- [ ] Function returns `{:ok, session}` or `{:error, reason}`
+- [ ] Existing sessions are reused correctly
+- [ ] New sessions are created with proper metadata
+- [ ] Race conditions during concurrent creation are handled
+- [ ] Agent is initialized and ready before returning
+- [ ] Session state is persisted to database
+- [ ] Tests verify idempotent behavior
+- [ ] Tests verify concurrent creation safety
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 506-510 (Get or create session)
+
+**Key Points**:
+- Sessions bridge platform messages to agents
+- Each session has one agent
+- Session creation must be atomic
+- Platform-specific metadata is stored
+- Agent should be initialized with appropriate config
+
+## Notes
+
+Integration with SessionManager:
+```elixir
+def get_or_create_session(session_key, opts \\ []) do
+  case SessionManager.get_by_key(session_key) do
+    {:ok, session} ->
+      {:ok, session}
+    
+    {:error, :not_found} ->
+      create_session(session_key, opts)
+  end
+end
+
+defp create_session(session_key, opts) do
+  # Prepare session params
+  platform = opts[:platform] || extract_platform(session_key)
+  context = opts[:context] || %{}
+  
+  # Create session with agent
+  with {:ok, session} <- SessionManager.create_session(
+         key: session_key,
+         platform: platform,
+         metadata: %{
+           context: context,
+           created_via: :gateway
+         }
+       ),
+       {:ok, agent} <- Agent.create(session_id: session.id) do
+    
+    # Update session with agent_id
+    SessionManager.set_agent(session.id, agent.id)
+    
+    {:ok, %{session | agent_id: agent.id}}
+  end
+end
+```
+
+Handle race conditions with unique constraint on session_key:
+```elixir
+defp create_session(session_key, opts) do
+  case SessionManager.create_session(...) do
+    {:ok, session} -> 
+      initialize_agent_for_session(session)
+    
+    {:error, %{errors: [key: {"has already been taken", _}]}} ->
+      # Another process created it, fetch again
+      get_or_create_session(session_key, opts)
+    
+    {:error, reason} ->
+      {:error, reason}
+  end
+end
+```
+
+Session metadata should include:
+- Platform type
+- Context (channel, thread, etc.)
+- Initial message timestamp
+- Platform-specific settings

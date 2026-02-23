@@ -1,0 +1,36 @@
+---
+id: P15.M11.E2.T001
+title: Create pair programming plugin module with manifest
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.214419+00:00'
+started_at: '2026-02-17T18:46:51.214419+00:00'
+completed_at: '2026-02-17T19:21:47.793333+00:00'
+duration_minutes: 34.942981616666664
+---
+## Description
+Create the main plugin module and JSON manifest for the pair programming plugin. This is the entry point that the plugin system loads.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming.ex` — Elixir beam plugin module
+- `priv/plugins/pair_programming/plugin.json` — manifest file
+
+## Acceptance Criteria
+- [ ] Plugin loads and validates successfully via `Manifest.from_map/1` + `Manifest.validate/1`
+- [ ] Plugin can be enabled/disabled via `Lifecycle.enable/2` and `Lifecycle.disable/2`
+- [ ] Event subscriptions registered (agents:* for tool_start, tool_complete, state_changed)
+- [ ] `handle_plugin_events/2` callback routes events to ObservationSubscriber (async, non-blocking — see Gotcha #8)
+- [ ] `on_enable/1` callback logs and returns :ok
+- [ ] Manifest declares `limits.max_agents: 10` (requires E1.T001)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+- Manifest hooks declared are no-op :allow pass-through (Gotcha #7) — custom handlers registered separately
+- Plugin tool namespacing: tools registered as `pair_programming.tool_name` (Gotcha #2)
+- See plan: .plan/pair-programming-agents.md, Epic 1, Task 1.1 for full code examples

@@ -1,0 +1,331 @@
+---
+title: Create Broadcast Helper Functions
+epic: P3.M2.E1-broadcaster-module
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimated_hours: 1
+depends_on:
+- P3.M2.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:09:13.842329'
+started_at: '2026-02-06T16:09:13.842329'
+completed_at: '2026-02-06T16:19:20.922250'
+duration_minutes: 10.117998533333333
+id: P3.M2.E1.T003
+---
+
+# Task: Create Broadcast Helper Functions
+
+## Context
+Agent processes need convenient helpers for common broadcast patterns (token, tool_start, tool_complete, etc.) to reduce boilerplate and ensure consistent event structure.
+
+## Goal
+Add helper functions to Broadcaster for common event types.
+
+## Requirements
+- `broadcast_token/3` - Stream a single token
+- `broadcast_tool_start/3` - Tool execution started
+- `broadcast_tool_complete/4` - Tool execution finished
+- `broadcast_thinking/3` - Thinking block
+- `broadcast_status_change/3` - Agent status update
+- Consistent event structure
+
+## Implementation
+
+### File: `lib/pag_server/agents/broadcaster.ex`
+
+Add helper functions:
+
+```elixir
+defmodule PagServer.Agents.Broadcaster do
+  # ... existing code ...
+  
+  @doc """
+  Broadcast a single token from LLM streaming.
+  """
+  @spec broadcast_token(agent_id :: String.t(), message_id :: String.t(), token :: String.t()) :: :ok
+  def broadcast_token(agent_id, message_id, token) do
+    event = %{
+      type: :token,
+      agent_id: agent_id,
+      message_id: message_id,
+      token: token,
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast stream completion event.
+  """
+  @spec broadcast_stream_complete(agent_id :: String.t(), message_id :: String.t(), metadata :: map()) :: :ok
+  def broadcast_stream_complete(agent_id, message_id, metadata) do
+    event = %{
+      type: :stream_complete,
+      agent_id: agent_id,
+      message_id: message_id,
+      total_tokens: metadata[:total_tokens],
+      finish_reason: metadata[:finish_reason],
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast tool execution start.
+  """
+  @spec broadcast_tool_start(agent_id :: String.t(), tool_name :: String.t(), args :: map()) :: :ok
+  def broadcast_tool_start(agent_id, tool_name, args) do
+    event = %{
+      type: :tool_start,
+      agent_id: agent_id,
+      tool_name: tool_name,
+      args: sanitize_tool_args(args),
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast tool execution complete.
+  """
+  @spec broadcast_tool_complete(agent_id :: String.t(), tool_name :: String.t(), result :: term(), duration_ms :: integer()) :: :ok
+  def broadcast_tool_complete(agent_id, tool_name, result, duration_ms) do
+    event = %{
+      type: :tool_complete,
+      agent_id: agent_id,
+      tool_name: tool_name,
+      result: sanitize_tool_result(result),
+      duration_ms: duration_ms,
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast tool execution error.
+  """
+  @spec broadcast_tool_error(agent_id :: String.t(), tool_name :: String.t(), error :: term()) :: :ok
+  def broadcast_tool_error(agent_id, tool_name, error) do
+    event = %{
+      type: :tool_error,
+      agent_id: agent_id,
+      tool_name: tool_name,
+      error: format_error(error),
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast thinking block from Claude models.
+  """
+  @spec broadcast_thinking(agent_id :: String.t(), message_id :: String.t(), thinking_text :: String.t()) :: :ok
+  def broadcast_thinking(agent_id, message_id, thinking_text) do
+    event = %{
+      type: :thinking,
+      agent_id: agent_id,
+      message_id: message_id,
+      thinking: thinking_text,
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast agent status change.
+  """
+  @spec broadcast_status_change(agent_id :: String.t(), old_status :: atom(), new_status :: atom()) :: :ok
+  def broadcast_status_change(agent_id, old_status, new_status) do
+    event = %{
+      type: :status_change,
+      agent_id: agent_id,
+      old_status: old_status,
+      new_status: new_status,
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  @doc """
+  Broadcast LLM error.
+  """
+  @spec broadcast_llm_error(agent_id :: String.t(), message_id :: String.t(), error :: term(), provider :: String.t()) :: :ok
+  def broadcast_llm_error(agent_id, message_id, error, provider) do
+    event = %{
+      type: :llm_error,
+      agent_id: agent_id,
+      message_id: message_id,
+      error_type: classify_error(error),
+      error_message: format_error(error),
+      provider: provider,
+      timestamp: System.system_time(:millisecond)
+    }
+    
+    broadcast_agent_event(agent_id, event)
+  end
+  
+  # Private helpers
+  
+  defp sanitize_tool_args(args) when is_map(args) do
+    # Remove sensitive fields like API keys, passwords
+    sensitive_keys = [:api_key, :password, :token, :secret]
+    
+    Map.drop(args, sensitive_keys)
+  end
+  
+  defp sanitize_tool_result(result) do
+    # Truncate large results
+    max_size = 10_000  # 10KB
+    
+    result_str = inspect(result, limit: :infinity, printable_limit: :infinity)
+    
+    if byte_size(result_str) > max_size do
+      String.slice(result_str, 0, max_size) <> "... (truncated)"
+    else
+      result
+    end
+  end
+  
+  defp format_error(error) when is_binary(error), do: error
+  defp format_error(error) when is_atom(error), do: Atom.to_string(error)
+  defp format_error(%{message: message}), do: message
+  defp format_error(error), do: inspect(error)
+  
+  defp classify_error(%{__exception__: true} = error) do
+    error.__struct__
+    |> Module.split()
+    |> List.last()
+    |> Macro.underscore()
+    |> String.to_atom()
+  end
+  
+  defp classify_error(_), do: :unknown
+end
+```
+
+## Usage Examples
+
+```elixir
+# In agent process
+alias PagServer.Agents.Broadcaster
+
+# Stream token
+Broadcaster.broadcast_token(agent_id, message_id, "Hello")
+
+# Tool execution
+Broadcaster.broadcast_tool_start(agent_id, "read_file", %{path: "/tmp/file.txt"})
+result = execute_tool(...)
+Broadcaster.broadcast_tool_complete(agent_id, "read_file", result, 150)
+
+# Status change
+Broadcaster.broadcast_status_change(agent_id, :idle, :processing)
+
+# Thinking block
+Broadcaster.broadcast_thinking(agent_id, message_id, "Let me analyze this problem...")
+```
+
+## Acceptance Criteria
+- [ ] Helper functions for all common event types
+- [ ] Consistent event structure across helpers
+- [ ] Sensitive data sanitized in tool args
+- [ ] Large results truncated
+- [ ] Error formatting handles all types
+- [ ] Documented with examples
+
+## Testing
+
+```elixir
+# test/pag_server/agents/broadcaster_helpers_test.exs
+defmodule PagServer.Agents.BroadcasterHelpersTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.Agents.Broadcaster
+  alias PagServer.PubSub
+  
+  setup do
+    start_supervised!(Broadcaster)
+    agent_id = "test-agent-#{:rand.uniform(1000)}"
+    Phoenix.PubSub.subscribe(PubSub, "agent:#{agent_id}")
+    
+    {:ok, agent_id: agent_id}
+  end
+  
+  test "broadcast_token sends token event", %{agent_id: agent_id} do
+    Broadcaster.broadcast_token(agent_id, "msg-1", "Hello")
+    
+    assert_receive {:agent_event, event}
+    assert event.type == :token
+    assert event.token == "Hello"
+    assert event.message_id == "msg-1"
+  end
+  
+  test "broadcast_tool_start includes sanitized args", %{agent_id: agent_id} do
+    args = %{
+      path: "/tmp/file.txt",
+      api_key: "secret123"  # Should be removed
+    }
+    
+    Broadcaster.broadcast_tool_start(agent_id, "read_file", args)
+    
+    assert_receive {:agent_event, event}
+    assert event.type == :tool_start
+    assert event.tool_name == "read_file"
+    assert event.args[:path] == "/tmp/file.txt"
+    refute Map.has_key?(event.args, :api_key)  # Sensitive field removed
+  end
+  
+  test "broadcast_tool_complete includes duration", %{agent_id: agent_id} do
+    Broadcaster.broadcast_tool_complete(agent_id, "shell_exec", "output", 250)
+    
+    assert_receive {:agent_event, event}
+    assert event.type == :tool_complete
+    assert event.duration_ms == 250
+  end
+  
+  test "broadcast_thinking includes text", %{agent_id: agent_id} do
+    Broadcaster.broadcast_thinking(agent_id, "msg-1", "Analyzing the problem...")
+    
+    assert_receive {:agent_event, event}
+    assert event.type == :thinking
+    assert event.thinking == "Analyzing the problem..."
+  end
+  
+  test "broadcast_status_change includes old and new status", %{agent_id: agent_id} do
+    Broadcaster.broadcast_status_change(agent_id, :idle, :processing)
+    
+    assert_receive {:agent_event, event}
+    assert event.type == :status_change
+    assert event.old_status == :idle
+    assert event.new_status == :processing
+  end
+  
+  test "broadcast_llm_error formats error message", %{agent_id: agent_id} do
+    Broadcaster.broadcast_llm_error(agent_id, "msg-1", :rate_limit_exceeded, "anthropic")
+    
+    assert_receive {:agent_event, event}
+    assert event.type == :llm_error
+    assert event.provider == "anthropic"
+    assert is_binary(event.error_message)
+  end
+end
+```
+
+## References
+- Elixir pattern matching
+- Map manipulation
+- Phoenix.PubSub
+
+## Notes
+- Keep helper functions focused on single responsibility
+- Always timestamp events
+- Future: Add batch broadcast helper for multiple tokens

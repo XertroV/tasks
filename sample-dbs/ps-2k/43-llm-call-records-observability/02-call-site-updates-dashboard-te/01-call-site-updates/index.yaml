@@ -1,0 +1,49 @@
+id: P43.M2.E1
+name: Call Site Updates
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-update-agent-server-ex-do-llm.todo
+  title: Update agent_server.ex do_llm_stream_request to pass agent_id, session_id,
+    workspace_id, caller_context
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-update-openai-chat-completions.todo
+  title: Update openai_chat_completions_controller.ex to extract and pass x-pag-agent-id
+    / x-pag-session-id headers
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-update-validation-console-ex-c.todo
+  title: 'Update validation_console.ex call sites to pass caller_context: validation_console'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-thread-agent-id-session-id-thr.todo
+  title: Thread agent_id/session_id through context pruning and summarization call
+    sites
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

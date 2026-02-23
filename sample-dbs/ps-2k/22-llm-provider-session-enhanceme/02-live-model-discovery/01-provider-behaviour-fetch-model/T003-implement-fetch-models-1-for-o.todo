@@ -1,0 +1,17 @@
+---
+id: P22.M2.E1.T003
+title: Implement fetch_models/1 for OpenAI provider (GET /v1/models)
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:41:43.787847+00:00'
+started_at: '2026-02-18T14:41:43.787847+00:00'
+completed_at: '2026-02-18T14:50:04.432627+00:00'
+duration_minutes: 8.344079483333333
+---
+Implement fetch_models/1 in lib/pag_server/llm/providers/openai.ex. Hit GET https://api.openai.com/v1/models with Bearer token. Filter to chat-completion capable models (id starts with 'gpt-' or 'o1'). Map to model_info(). Acceptance criteria: - Returns only chat-completion models (filter out embedding/audio/image models) - context_length populated where available - supports_tools: true for gpt-4+ models, false for older ones

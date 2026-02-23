@@ -1,0 +1,39 @@
+---
+id: P21.M1.E1.T014
+title: Add per-workspace containerization settings
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P21.M1.E1.T013
+tags:
+- configuration
+- workspace
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.566747+00:00'
+started_at: '2026-02-18T12:21:44.566747+00:00'
+completed_at: '2026-02-18T13:23:22.138506+00:00'
+duration_minutes: 61.62619576666667
+---
+
+# Add per-workspace containerization settings
+
+Allow workspace-level override of containerization settings.
+
+## Requirements
+
+- Workspace settings table/field for container config
+- Override global feature flag per-workspace
+- Per-workspace isolation profile selection
+- Per-workspace Docker image selection
+
+## Acceptance Criteria
+
+- [ ] Workspace schema has `container_config` JSONB field
+- [ ] Migration adds container_config column
+- [ ] `Workspace.containerization_enabled?/1` checks workspace + global flags
+- [ ] API endpoint to update workspace container settings
+- [ ] Workspace isolation profile stored in settings
+- [ ] AgentServer reads workspace config on init
+- [ ] Unit tests for workspace-level settings

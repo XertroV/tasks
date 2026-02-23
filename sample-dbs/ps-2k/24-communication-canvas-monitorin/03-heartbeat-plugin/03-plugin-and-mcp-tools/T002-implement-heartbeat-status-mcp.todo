@@ -1,0 +1,22 @@
+---
+id: P24.M3.E3.T002
+title: Implement heartbeat_status MCP tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:08:24.243910+00:00'
+started_at: '2026-02-19T14:08:24.243910+00:00'
+completed_at: '2026-02-19T14:16:17.514197+00:00'
+duration_minutes: 7.887837950000001
+---
+## Description
+MCP tool for agents to query heartbeat status.
+
+## Acceptance Criteria
+- [ ] Tool name: heartbeat_status
+- [ ] Returns: last_heartbeat_at, next_heartbeat_at, idle_seconds, enabled status
+- [ ] Registered in heartbeat plugin tool list

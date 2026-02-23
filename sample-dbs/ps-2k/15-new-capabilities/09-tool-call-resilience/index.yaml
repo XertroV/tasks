@@ -1,0 +1,79 @@
+id: P15.M9
+name: Tool Call Resilience
+status: pending
+estimate_hours: 24.0
+complexity: high
+depends_on: []
+locked: false
+description: Prevent and recover from session poisoning caused by orphaned/malformed
+  tool_result messages. Covers runtime crash safety, context sanitization before LLM
+  submission, session fork recovery, DB repair for already-poisoned sessions, and
+  schema-level defense in depth. See .plan/tool-call-resilience.md for full background.
+epics:
+- id: E1
+  name: Pending Tool Call Tracking & Crash Safety
+  path: 01-pending-tool-call-tracking
+  status: pending
+  estimate_hours: 5.5
+  complexity: medium
+  depends_on: []
+  description: Prevent future session poisoning by tracking pending tool calls in
+    agent state and ensuring every failure path (crash, timeout, startup failure)
+    produces properly-paired error results with correct tool_call_ids.
+  locked: false
+- id: E2
+  name: Context Sanitization
+  path: 02-context-sanitization
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Create a non-destructive sanitizer that repairs tool_call/result pairing
+    before LLM submission. Inserts synthetic error results for unmatched tool_calls,
+    drops orphaned tool_results, and deduplicates. Wired into build_llm_messages.
+  locked: false
+- id: E3
+  name: Session Fork & Recovery
+  path: 03-session-fork-recovery
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on:
+  - P15.M9.E2
+  description: Enable forking away from poisoned sessions by wiring Session.build_context/1
+    into agent startup. Provide DB-level session repair tooling for already-broken
+    sessions using the sanitizer algorithm.
+  locked: false
+- id: E4
+  name: Schema & Format Safety
+  path: 04-schema-format-safety
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  depends_on:
+  - P15.M9.E1
+  description: 'Defense in depth: UUID fallback for nil tool_call_ids, schema validation
+    requiring tool_call_id on tool_result messages, and warning/raise on the format_results
+    catch-all to prevent silent format bypass for new providers.'
+  locked: false
+- id: E5
+  name: Audit & Verification
+  path: 05-audit-verification
+  status: pending
+  estimate_hours: 4.5
+  complexity: medium
+  depends_on:
+  - P15.M9.E1
+  - P15.M9.E2
+  - P15.M9.E3
+  - P15.M9.E4
+  description: Thorough audit of all tool call resilience work including the previously
+    completed MessageFormatter changes. Verify each epic's implementation is correct,
+    test coverage is comprehensive, and the full system works end-to-end.
+  locked: false
+stats:
+  total_tasks: 16
+  done: 16
+  in_progress: 0
+  blocked: 0
+  pending: 0

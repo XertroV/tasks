@@ -1,0 +1,30 @@
+id: P9.M4
+name: Cluster Preparation
+status: pending
+estimate_hours: 8
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Distributed Registry
+  path: 01-distributed-registry
+  status: pending
+  estimate_hours: 4.5
+  complexity: high
+  depends_on: []
+  description: Horde-based distributed registry and supervisor for multi-node deployments
+- id: E2
+  name: Cluster Configuration
+  path: 02-cluster-config
+  status: pending
+  estimate_hours: 5
+  complexity: high
+  depends_on:
+  - E1
+  description: libcluster setup, telemetry, session persistence, deployment docs
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

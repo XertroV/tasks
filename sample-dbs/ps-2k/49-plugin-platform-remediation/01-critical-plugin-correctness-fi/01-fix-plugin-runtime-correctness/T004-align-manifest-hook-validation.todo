@@ -1,0 +1,31 @@
+---
+id: P49.M1.E1.T004
+title: Align manifest hook validation with lifecycle dispatcher
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:01.535282+00:00'
+started_at: '2026-02-20T08:51:01.535282+00:00'
+completed_at: '2026-02-20T09:10:45.853128+00:00'
+duration_minutes: 19.73863055
+---
+
+# Align manifest hook validation with lifecycle dispatcher
+
+
+
+## Requirements
+
+- Align manifest hook validation with lifecycle hook dispatch mappings so declared supported hooks are accepted consistently.
+- Reject unknown hooks with structured errors listing supported hook names.
+- Update docs/examples to match the canonical supported hook set.
+
+## Acceptance Criteria
+
+- All hooks supported by lifecycle dispatch are accepted by manifest validation.
+- Unknown hooks produce deterministic, actionable validation errors.
+- Tests cover accepted hook names, rejected names, and docs/examples stay in sync.

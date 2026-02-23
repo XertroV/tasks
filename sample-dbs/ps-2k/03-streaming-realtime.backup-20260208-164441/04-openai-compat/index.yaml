@@ -1,0 +1,26 @@
+id: P3.M4
+name: OpenAI Compatible API
+status: pending
+estimate_hours: 8
+complexity: high
+depends_on:
+- P3.M3
+epics:
+- id: E1
+  name: Endpoint
+  path: 01-endpoint
+  estimate_hours: 4
+  complexity: high
+  description: /v1/chat/completions endpoint
+- id: E2
+  name: Translation Layer
+  path: 02-translation-layer
+  estimate_hours: 4
+  complexity: high
+  description: OpenAI format translation
+stats:
+  total_tasks: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

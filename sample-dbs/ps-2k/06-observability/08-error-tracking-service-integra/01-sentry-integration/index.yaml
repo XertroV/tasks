@@ -1,0 +1,39 @@
+id: P6.M8.E1
+name: Sentry Integration
+status: pending
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-sentry-dependency-and-conf.todo
+  title: Add Sentry dependency and configure error reporting
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-configure-context-enrichment-f.todo
+  title: Configure context enrichment for error reports
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: low
+  depends_on:
+  - T001
+- id: T003
+  file: T003-add-sensitive-data-scrubbing-f.todo
+  title: Add sensitive data scrubbing for error reports
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on:
+  - T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,33 @@
+---
+id: B034
+title: stabilize EventTimeline LiveView tests in full suite
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- liveview
+- tests
+- stability
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:00:24.196593+00:00'
+started_at: '2026-02-15T18:00:24.196593+00:00'
+completed_at: '2026-02-15T18:00:45.255899+00:00'
+duration_minutes: 0.35098825
+---
+
+# stabilize EventTimeline LiveView tests in full suite
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe intermittent failures in `PagServerWeb.Live.EventTimelineTest` where expected events are missing from rendered HTML.
+
+## Expected Behavior
+
+EventTimeline LiveView tests should reliably render created events and interaction targets across full-suite execution.
+
+## Actual Behavior
+
+During full-suite runs, several EventTimeline tests fail with missing content/selectors, indicating flaky test isolation or async timing issues.

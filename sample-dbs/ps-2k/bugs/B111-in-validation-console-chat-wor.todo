@@ -1,0 +1,41 @@
+---
+id: B111
+title: in validation console chat workspace, really long text goes off the RHS and
+  creates a horizontal scroll bar.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:57:26.804251+00:00'
+started_at: '2026-02-17T15:57:26.804251+00:00'
+completed_at: '2026-02-17T17:56:16.859203+00:00'
+duration_minutes: 118.83424896666666
+---
+
+in validation console chat workspace, really long text goes off the RHS and creates a horizontal scroll bar.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 15:57 UTC
+**Primary task**: B110 - Whenever I send a message from the validation console to z.ai glm-4.7, I get check provider credentials error. Oh, I see now. Turns out telegrams errors are better than the validation console! (We should fix that, improve the vlaidaiton console to use the friendly error formatter thing). Anyway, the error from telegram: LLM request failed (provider=zai model=glm-4.7) (failed after 1 attempt):
+  1. [zai/glm-4.7] unknown_provider: :zai
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

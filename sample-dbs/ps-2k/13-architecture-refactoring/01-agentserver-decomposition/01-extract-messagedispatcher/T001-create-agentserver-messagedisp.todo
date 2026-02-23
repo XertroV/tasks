@@ -1,0 +1,76 @@
+---
+id: P13.M1.E1.T001
+title: Create AgentServer.MessageDispatcher module
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:14:18.500246+00:00'
+started_at: '2026-02-13T19:14:18.500246+00:00'
+completed_at: '2026-02-13T19:34:28.059493+00:00'
+duration_minutes: 20.1593206
+---
+
+# Create AgentServer.MessageDispatcher module
+
+## Description
+
+Extract message dispatching logic from the monolithic `AgentServer` into a dedicated `AgentServer.MessageDispatcher` module. This module will handle message routing, correlation tracking, and request/response coordination.
+
+## Acceptance Criteria
+- [ ] Create `lib/pag_server/agents/message_dispatcher.ex` with dispatch functions
+- [ ] Implement `dispatch_send_message/4` to handle synchronous message dispatch
+- [ ] Implement `dispatch_llm_request/5` for LLM request coordination
+- [ ] Module is stateless (pure functions operating on state)
+- [ ] Add module documentation with examples
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/agent_server.ex` (lines 565-584, 1555-1620)
+- Part of epic: P13.M1.E1 - Extract MessageDispatcher
+- Reference: See `dispatch_send_message/4` and `dispatch_llm_request/5` in AgentServer
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-13 09:38 UTC
+**Primary task**: P12.M1.E3.T001 - Fix dialyzer warnings in deployment_guide_test.exs
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P13.M1.E1 vs P12.M1.E3)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P13.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 19:14 UTC
+**Sibling tasks**: P13.M1.E1.T002, P13.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P13.M1.E1.T001 → P13.M1.E1.T002 → P13.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P13.M1.E1.T001: .tasks/13-architecture-refactoring/01-agentserver-decomposition/01-extract-messagedispatcher/T001-create-agentserver-messagedisp.todo
+- P13.M1.E1.T002: .tasks/13-architecture-refactoring/01-agentserver-decomposition/01-extract-messagedispatcher/T002-migrate-send-message-queue-mes.todo
+- P13.M1.E1.T003: .tasks/13-architecture-refactoring/01-agentserver-decomposition/01-extract-messagedispatcher/T003-add-unit-tests-for-messagedisp.todo

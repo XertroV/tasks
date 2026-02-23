@@ -1,0 +1,34 @@
+# Epic: Stats Aggregation
+# Phase 6, Milestone 1, Epic 2 (P6.M1.E2)
+
+id: P6.M1.E2
+name: Stats Aggregation
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: [E1]
+
+tasks:
+  - id: T001
+    file: T001-aggregator.todo
+    title: Implement Stats.Aggregator module
+    status: pending
+    estimate_hours: 2.0
+    complexity: low
+    priority: medium
+    depends_on: []
+    
+  - id: T002
+    file: T002-tests.todo
+    title: Write aggregation tests
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: medium
+
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

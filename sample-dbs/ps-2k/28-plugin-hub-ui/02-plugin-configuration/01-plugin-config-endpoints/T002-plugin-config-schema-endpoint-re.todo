@@ -1,0 +1,49 @@
+---
+id: P28.M2.E1.T002
+title: Plugin config schema endpoint (returns JSON Schema for plugin settings)
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: medium
+depends_on:
+- P28.M2.E1.T001
+tags:
+- plugin
+- config
+- schema
+- json-schema
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:22.182026+00:00'
+started_at: '2026-02-18T18:34:22.182026+00:00'
+completed_at: '2026-02-18T18:44:28.185519+00:00'
+duration_minutes: 10.100058066666666
+---
+
+# Plugin config schema endpoint
+
+Implement `GET /api/v1/workspaces/:workspace_id/plugins/:plugin_id/config/schema` to
+return a JSON Schema document describing the plugin's configuration options. This
+enables frontend UIs to dynamically render configuration forms without hardcoding
+knowledge of each plugin's settings.
+
+## Requirements
+
+- Route: `GET /api/v1/workspaces/:workspace_id/plugins/:plugin_id/config/schema`
+- Response: a valid JSON Schema (draft-07 or later) document describing the plugin config
+- Each plugin behaviour must expose a `config_schema/0` callback returning the schema map
+- Schema should include titles, descriptions, types, defaults, and enum constraints
+  where applicable
+- Plugins with no configurable settings should return `{"type": "object", "properties": {}}`
+- The schema is workspace-agnostic (same schema for all workspaces using the plugin)
+
+## Acceptance Criteria
+
+- [ ] `GET .../config/schema` returns 200 with a valid JSON Schema document
+- [ ] Schema matches the structure validated by the PATCH config endpoint
+- [ ] Plugin behaviour defines `config_schema/0` callback; at least one plugin implements it
+- [ ] Plugins without settings return a valid empty-properties schema
+- [ ] Unknown plugin_id returns 404
+- [ ] No auth required beyond workspace membership (schema is not sensitive)
+- [ ] Controller test verifies schema is returned and is a valid JSON object
+- [ ] Schema includes `title` and `description` fields for at least the top-level object

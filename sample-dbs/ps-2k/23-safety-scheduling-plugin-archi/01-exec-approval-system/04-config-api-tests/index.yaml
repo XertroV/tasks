@@ -1,0 +1,43 @@
+id: P23.M1.E4
+name: Config, API & Tests
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-workspace-config-fields-fo.todo
+  title: Add workspace config fields for exec approval
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-rest-api-endpoints-for-listing.todo
+  title: REST API endpoints for listing and resolving pending approvals
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M1.E2.T001
+  - P23.M1.E4.T001
+- id: T003
+  file: T003-end-to-end-approval-flow-integ.todo
+  title: End-to-end approval flow integration tests
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M1.E1.T002
+  - P23.M1.E3.T001
+  - P23.M1.E4.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,16 @@
+---
+id: B195
+title: pag-connect should bound concurrent tool_call task fanout
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:40:20.181111+00:00'
+started_at: '2026-02-21T14:40:20.181111+00:00'
+completed_at: '2026-02-21T14:44:15.585726+00:00'
+duration_minutes: 3.923410066666667
+---
+Connection currently spawns unbounded task workers for tool_call/mcp_tool_call. Add bounded concurrency/admission control to prevent process and memory exhaustion under bursty input, with tests.

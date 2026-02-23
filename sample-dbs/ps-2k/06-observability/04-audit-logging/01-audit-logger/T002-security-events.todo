@@ -1,0 +1,72 @@
+---
+id: P6.M4.E1.T002
+title: Log security events
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P6.M4.E1.T001
+tags:
+- observability
+- audit
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:23:02.157545+00:00'
+started_at: '2026-02-06T20:23:02.157545+00:00'
+completed_at: '2026-02-06T20:33:48.492992+00:00'
+duration_minutes: 10.772257283333333
+---
+
+# Log security events
+
+Instrument security-relevant events for compliance and threat detection.
+
+## Requirements
+
+- [ ] Log authentication events:
+  - [ ] Login attempts (success/failure)
+  - [ ] Logout
+  - [ ] Token generation
+  - [ ] API key usage
+- [ ] Log authorization events:
+  - [ ] Permission checks
+  - [ ] Access denials
+  - [ ] Role changes
+- [ ] Log data access:
+  - [ ] PII access
+  - [ ] Sensitive data reads
+  - [ ] Export operations
+- [ ] Log configuration changes:
+  - [ ] Settings modified
+  - [ ] Secrets accessed
+  - [ ] Admin actions
+
+## Acceptance Criteria
+
+- [ ] All security events logged
+- [ ] Failed attempts captured
+- [ ] PII access audited
+- [ ] Admin actions tracked
+
+## Notes
+
+**Examples**:
+```elixir
+# Authentication
+Audit.log_security_event("auth.login.failed", %{
+  username: "user@example.com",
+  ip: "192.168.1.1",
+  reason: "invalid_password"
+})
+
+# Authorization
+Audit.log_security_event("authz.access_denied", %{
+  actor: actor_id,
+  resource: "agent:#{agent_id}",
+  required_permission: "agent:read"
+})
+
+# Data access
+Audit.log_access(actor, %{type: "pii", id: user_id}, "read")
+```

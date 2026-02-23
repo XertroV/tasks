@@ -1,0 +1,71 @@
+# Epic: Switch Logic
+# Phase 5, Milestone 05, Epic 1 (P5.M05.E1)
+
+id: P5.M05.E1
+name: Switch Logic
+status: pending
+estimate_hours: 6
+complexity: low
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-add-switch_model-to-agent-api.todo
+    title: Add switch_model to Agent API
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-validate-new-model-spec.todo
+    title: Validate new model spec
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-update-agent-state-with-new-mo.todo
+    title: Update agent state with new model
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-emit-model_switched-event.todo
+    title: Emit model_switched event
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: [T003]
+    
+  - id: T005
+    file: T005-handle-incompatible-transition.todo
+    title: Handle incompatible transitions
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T004]
+    
+  - id: T006
+    file: T006-test-model-switching.todo
+    title: Test model switching
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T005]
+    
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

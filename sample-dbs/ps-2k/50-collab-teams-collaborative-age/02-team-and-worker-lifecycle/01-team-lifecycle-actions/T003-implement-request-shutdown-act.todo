@@ -1,0 +1,25 @@
+---
+id: P50.M2.E1.T003
+title: Implement request_shutdown action and draining transition
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:21:40.299455+00:00'
+started_at: '2026-02-23T02:21:40.299455+00:00'
+completed_at: '2026-02-23T02:21:42.971831+00:00'
+duration_minutes: 0.04453938333333333
+---
+## Description
+Runtime.request_shutdown/2 (team_id, actor_agent_id) transitions team from active->draining. Reject if already draining or closed with {:error, :invalid_transition, %{from, to, known_options}}. Write collab_shutdown_requested audit event. Fire :plugin_event via HookDispatcher async with %{plugin: collab_teams, subtype: shutdown_requested, team_id, actor_agent_id}. Return {:ok, %{action: request_shutdown, team_id, state: draining, event_id}}.
+
+## Acceptance Criteria
+- Active team transitions to draining
+- draining team returns :invalid_transition
+- audit event written
+- :plugin_event fired async
+- closed team also returns :invalid_transition

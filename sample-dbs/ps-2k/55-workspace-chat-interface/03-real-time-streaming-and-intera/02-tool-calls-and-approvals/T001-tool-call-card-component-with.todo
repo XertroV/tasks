@@ -1,0 +1,25 @@
+---
+id: P55.M3.E2.T001
+title: Tool call card component with state rendering
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- component
+- tools
+claimed_by: cli-user
+claimed_at: '2026-02-22T11:21:07.124755+00:00'
+started_at: '2026-02-22T11:21:07.124755+00:00'
+completed_at: '2026-02-22T12:02:50.106693+00:00'
+duration_minutes: 41.716365366666665
+---
+Create lib/pag_server_web/live/workspace_chat/tool_call_card.ex as function component. Four visual states: pending (spinner), running (spinner + tool name), completed (green check icon), failed (red X icon). Tool name as header. Collapsible args JSON in <details> element. Collapsible result (also in details). Duration badge when completed (show elapsed time). Use monospace for JSON display.
+
+## Acceptance Criteria
+- Four states render with correct icons/colors
+- Tool name displayed as header
+- Args JSON collapsible and formatted
+- Result collapsible and formatted
+- Duration badge shown when completed

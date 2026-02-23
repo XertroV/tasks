@@ -1,0 +1,40 @@
+---
+id: B045
+title: some text inputs do not look good (no padding around characters / between chars
+  and border)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T01:31:13.790536+00:00'
+started_at: '2026-02-16T01:31:13.790536+00:00'
+completed_at: '2026-02-16T01:37:06.371098+00:00'
+duration_minutes: 5.876342533333333
+---
+
+some text inputs do not look good (no padding around characters / between chars and border)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-16 01:31 UTC
+**Primary task**: B043 - web ui: model dropdown uses existing entry to filter models (but it should only do that after the user *types* not on dropdown because otherwise ALL models get hidden)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,22 @@
+id: P17.M4.E1
+name: Groq Provider Integration Tests
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-run-integration-tests-one-by-o.todo
+  title: Run integration tests one-by-one with Groq backend
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

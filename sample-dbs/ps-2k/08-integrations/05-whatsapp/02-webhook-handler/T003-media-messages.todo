@@ -1,0 +1,130 @@
+---
+id: P8.M5.E2.T003
+title: Handle WhatsApp media messages
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P8.M5.E2.T002
+tags:
+- whatsapp
+- media
+- files
+claimed_by: cli-user
+claimed_at: '2026-02-08T13:08:25.678483+00:00'
+started_at: '2026-02-08T13:08:25.678483+00:00'
+completed_at: '2026-02-09T00:00:00+00:00'
+---
+
+# Handle WhatsApp media messages - COMPLETED
+
+## Implementation Summary
+
+WhatsApp media message handling has been fully implemented with support for images, documents, audio, video, and other media types.
+
+### Files Created/Modified
+
+1. **`lib/pag_server/integrations/whatsapp/media_handler.ex`** (319 lines)
+   - Downloads media from WhatsApp CDN to temporary files
+   - Validates media types and size limits
+   - Cleans up files after processing
+   - Supports: image, document, audio, video, location, contacts
+
+2. **`lib/pag_server/integrations/whatsapp/message_handler.ex`** (updated)
+   - Extends message handler to process media types
+   - Passes media files to agent as attachments
+
+### Media Type Support
+
+**Supported Types**:
+- **Image**: 5MB (JPEG, PNG)
+- **Document**: 100MB (PDF, DOCX, etc.)
+- **Audio**: 16MB (AAC, MP3, OGG)
+- **Video**: 16MB (MP4, 3GPP)
+- **Location**: Geographic coordinates
+- **Contacts**: Contact cards
+
+### Key Features
+
+- **Download**: Fetches media from WhatsApp CDN to temporary directory
+- **Size Validation**: Enforces WhatsApp size limits
+- **Type Validation**: Only accepts supported media types
+- **Cleanup**: Automatically deletes files after processing
+- **Error Handling**: Returns clear errors for invalid/expired media
+
+### API
+
+#### `download_media/2`
+Downloads media from WhatsApp CDN to temporary file.
+
+```elixir
+{:ok, %{path: "/tmp/media.jpg", mime_type: "image/jpeg", size: 12345}} =
+  MediaHandler.download_media("media_id_123")
+```
+
+#### `extract_media_info/1`
+Extracts media information from a WhatsApp message.
+
+```elixir
+{:ok, %{id: "media_123", type: :image, mime_type: "image/jpeg", caption: "My image"}} =
+  MediaHandler.extract_media_info(%{"image" => %{...}})
+```
+
+#### `cleanup_media/1`
+Deletes downloaded media files.
+
+```elixir
+:ok = MediaHandler.cleanup_media("/tmp/media.jpg")
+```
+
+#### `validate_media_type/1`
+Validates media type against allowed types.
+
+```elixir
+:ok = MediaHandler.validate_media_type(:image)
+{:error, :invalid_media_type} = MediaHandler.validate_media_type(:unknown)
+```
+
+### Configuration
+
+Environment variables/config:
+- `media_temp_dir`: Temporary directory for downloads (default: `System.tmp_dir!()`)
+- `media_max_size_image`: 5MB
+- `media_max_size_document`: 100MB
+- `media_max_size_audio`: 16MB
+- `media_max_size_video`: 16MB
+
+### Acceptance Criteria Met
+
+- [x] Extends message handler to process media types (image, document, audio, video)
+- [x] Implements media download from WhatsApp CDN
+- [x] Stores media in local temp directory
+- [x] Passes media file path to agent as attachment (via message handler)
+- [x] Validates media type
+- [x] Enforces size limits
+- [x] Agent receives images with proper MIME type
+- [x] Documents (PDF, DOCX) are downloaded and accessible
+- [x] Media files are deleted after processing
+- [x] Upload supports images up to 5MB, documents up to 100MB
+- [x] Invalid media types return clear error to user
+- [x] Audio messages are supported (transcription via agent STT tools)
+
+### Tests
+
+1. **`test/pag_server/integrations/whatsapp/media_handler_test.exs`**
+   - Tests for all media types
+   - Validation tests
+   - Cleanup tests
+   - Edge cases covered
+
+### Code Quality
+
+- **Credo**: No issues
+- **Format**: Correctly formatted
+- **Line count**: 319 LoC (within <1000 LoC limit)
+
+### Known Issues
+
+- Media URL expiration requires prompt processing
+- STT (speech-to-text) integration is handled by agent tools, not MediaHandler

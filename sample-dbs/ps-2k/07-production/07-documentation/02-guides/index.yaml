@@ -1,0 +1,16 @@
+id: P7.M7.E2
+name: Deployment Guides
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+tasks:
+- T001-docker.todo
+- T002-production.todo
+- T003-security.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

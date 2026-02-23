@@ -1,0 +1,26 @@
+---
+id: P46.M5.E1.T002
+title: Add user profile and API key management links to authenticated nav
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on:
+- P46.M3.E2.T003
+- P46.M5.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:00:59.045657+00:00'
+started_at: '2026-02-20T06:00:59.045657+00:00'
+completed_at: '2026-02-20T06:09:46.669491+00:00'
+duration_minutes: 8.793730383333333
+---
+Update the authenticated navigation layout to include:
+- User avatar / username dropdown menu with:
+  - 'Settings' → /settings/profile
+  - 'API Keys' → /api-keys (if LiveView exists) or link to API key docs
+  - Separator
+  - 'Log out' → DELETE /logout
+- If user is admin: add 'Admin' link in the nav pointing to /admin dashboard
+Ensure the nav is responsive (mobile-friendly if the existing UI has responsive patterns).
+Acceptance: Nav renders correctly on all authenticated pages. Dropdown accessible and functional.

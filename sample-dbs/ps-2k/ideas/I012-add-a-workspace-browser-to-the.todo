@@ -1,0 +1,61 @@
+---
+id: I012
+title: Add a workspace browser to the webui dashboard that shows all workspaces, allows
+  you to edit workspace configuration, enable/disable plugins, skills, etc. Lets get
+  creative and brainstorm some amazing ideas!
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:49:55.117979+00:00'
+started_at: '2026-02-18T03:49:55.117979+00:00'
+completed_at: '2026-02-18T03:53:38.421032+00:00'
+duration_minutes: 3.7217172666666665
+---
+
+# Idea Intake: Add a workspace browser to the webui dashboard that shows all workspaces, allows you to edit workspace configuration, enable/disable plugins, skills, etc. Lets get creative and brainstorm some amazing ideas!
+
+## Original Idea
+
+Add a workspace browser to the webui dashboard that shows all workspaces, allows you to edit workspace configuration, enable/disable plugins, skills, etc. Lets get creative and brainstorm some amazing ideas!
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add a workspace browser to the webui dashboard that shows all workspaces, allows you to edit workspace configuration, enable/disable plugins, skills, etc. Lets get creative and brainstorm some amazing ideas!"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- Epic: `P15.M2.E7` - Workspace Browser Control Center
+- Tasks:
+  - `P15.M2.E7.T001` Define workspace browser IA and permission model
+  - `P15.M2.E7.T002` Create workspace browser query surface and view models
+  - `P15.M2.E7.T003` Build dashboard workspace browser with search and status lanes
+  - `P15.M2.E7.T004` Implement inline workspace config editor with staged changes
+  - `P15.M2.E7.T005` Add plugin and skill toggles with dependency guardrails
+  - `P15.M2.E7.T006` Add workspace command palette and quick actions
+  - `P15.M2.E7.T007` Add change preview and rollback timeline for workspace operations
+  - `P15.M2.E7.T008` Cover workspace browser with integration tests and operator playbook
+  - `P15.M2.E7.T009` Add edit checkpoints with version labels and rollback anchors
+- Bugs: none
+
+## Planning Notes
+
+- IA in this plan means information architecture: how the workspace browser organizes navigation, grouping, and action placement for operator workflows.
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

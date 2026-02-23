@@ -1,0 +1,40 @@
+---
+id: P10.M1.E3.T005
+title: Write tests for issue webhook integration
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- github
+- issues
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:21:22.384169+00:00'
+started_at: '2026-02-12T00:21:22.384169+00:00'
+completed_at: '2026-02-12T00:35:46.958142+00:00'
+duration_minutes: 14.409565916666667
+---
+
+# Write tests for issue webhook integration
+
+Write comprehensive test suite for issue webhook handlers and API methods.
+
+## Requirements
+
+- [ ] Test issue.opened webhook handling (creates session, dispatches to agent)
+- [ ] Test issue.closed and issue.reopened webhooks
+- [ ] Test issue_comment.created webhook with multi-line comments
+- [ ] Test API methods: create_issue, update_issue, add/remove labels
+- [ ] Test session mapping with multiple repositories
+- [ ] Test context building with comments truncation
+- [ ] Mock external GitHub API calls using existing patterns
+
+## Acceptance Criteria
+
+- [ ] All test cases pass (use async: true by default, see CLAUDE.md)
+- [ ] Coverage >80% for webhook and API modules
+- [ ] No test contamination (proper cleanup via on_exit/1)
+- [ ] Tests run in <5s total
+- [ ] Mock HTTP responses for all GitHub API calls

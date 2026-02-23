@@ -1,0 +1,22 @@
+id: P41.M2.E2
+name: test.changed script for targeted local runs
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-mix-test-changed-alias-tha.todo
+  title: Add mix test.changed alias that runs tests for files touched since last commit
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

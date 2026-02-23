@@ -1,0 +1,154 @@
+---
+id: P2.M7.E2.T003
+title: Write pricing tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- testing
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-05T19:42:18.581951'
+started_at: '2026-02-05T19:42:18.581951'
+completed_at: '2026-02-05T19:45:48.000000'
+duration_minutes: 3.5
+---
+
+# Write pricing tests
+
+Create comprehensive tests for the Pricing module.
+
+## Requirements
+
+- [ ] Create `test/pag_server/llm/pricing_test.exs`
+- [ ] Test `get_pricing/1` for all providers
+- [ ] Test `calculate_cost/3` with realistic values
+- [ ] Test model aliases resolve correctly
+- [ ] Test unknown models fall back to defaults
+- [ ] Test millicent precision (no floating point errors)
+- [ ] Verify Ollama models return $0
+
+## Acceptance Criteria
+
+- [ ] All tests pass with `mix test test/pag_server/llm/pricing_test.exs`
+- [ ] 100% code coverage for Pricing module
+- [ ] Tests verify correct millicent calculations
+- [ ] Tests document expected pricing per provider
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.LLM.PricingTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.LLM.Pricing
+
+  describe "get_pricing/1" do
+    test "returns Anthropic Claude pricing" do
+      pricing = Pricing.get_pricing("claude-sonnet-4")
+      
+      assert pricing.prompt_per_million == 3.0
+      assert pricing.completion_per_million == 15.0
+      assert pricing.cached_per_million == 0.3
+    end
+
+    test "returns OpenAI GPT pricing" do
+      pricing = Pricing.get_pricing("gpt-4")
+      
+      assert pricing.prompt_per_million == 30.0
+      assert pricing.completion_per_million == 60.0
+    end
+
+    test "returns $0 for Ollama models" do
+      pricing = Pricing.get_pricing("llama3")
+      
+      assert pricing.prompt_per_million == 0.0
+      assert pricing.completion_per_million == 0.0
+      assert pricing.cached_per_million == 0.0
+    end
+
+    test "handles model aliases" do
+      pricing1 = Pricing.get_pricing("claude-3-5-sonnet")
+      pricing2 = Pricing.get_pricing("claude-sonnet-3.5")
+      
+      assert pricing1 == pricing2
+    end
+
+    test "returns default pricing for unknown models" do
+      pricing = Pricing.get_pricing("unknown-model-xyz")
+      
+      assert pricing.prompt_per_million == 3.0
+      assert pricing.completion_per_million == 15.0
+      assert pricing.cached_per_million == 0.3
+    end
+
+    test "handles case insensitive model names" do
+      pricing1 = Pricing.get_pricing("CLAUDE-SONNET-4")
+      pricing2 = Pricing.get_pricing("claude-sonnet-4")
+      
+      assert pricing1 == pricing2
+    end
+  end
+
+  describe "calculate_cost/3" do
+    test "calculates prompt cost in millicents" do
+      # 1M tokens @ $3/M = $3 = 300,000 millicents
+      cost = Pricing.calculate_cost(1_000_000, "claude-sonnet-4", :prompt)
+      assert cost == 300_000
+    end
+
+    test "calculates completion cost in millicents" do
+      # 1M tokens @ $15/M = $15 = 1,500,000 millicents
+      cost = Pricing.calculate_cost(1_000_000, "claude-sonnet-4", :completion)
+      assert cost == 1_500_000
+    end
+
+    test "calculates cached cost in millicents" do
+      # 1M tokens @ $0.30/M = $0.30 = 30,000 millicents
+      cost = Pricing.calculate_cost(1_000_000, "claude-sonnet-4", :cached)
+      assert cost == 30_000
+    end
+
+    test "handles small token counts accurately" do
+      # 100 tokens @ $3/M = $0.0003 = 30 millicents
+      cost = Pricing.calculate_cost(100, "claude-sonnet-4", :prompt)
+      assert cost == 30
+    end
+
+    test "returns 0 for Ollama models" do
+      cost_prompt = Pricing.calculate_cost(1_000_000, "llama3", :prompt)
+      cost_completion = Pricing.calculate_cost(1_000_000, "llama3", :completion)
+      
+      assert cost_prompt == 0
+      assert cost_completion == 0
+    end
+
+    test "rounds to nearest millicent" do
+      # Test that we don't lose precision with floating point
+      cost = Pricing.calculate_cost(333, "claude-sonnet-4", :prompt)
+      
+      # 333 * 3.0 / 1M * 100K = 99.9 millicents → rounds to 100
+      assert cost == 100
+    end
+  end
+end
+```
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md:1268-1280` (Cost calculation example)
+
+**Key Points**:
+- Use realistic token counts (not just 1M)
+- Verify millicent precision doesn't lose accuracy
+- Test all token types (prompt, completion, cached)
+- Verify $0 cost for local models
+
+## Notes
+
+These tests serve as documentation for expected pricing. When pricing changes, tests should be updated to reflect new rates.
+
+Millicent precision is critical - floating point errors can accumulate over many requests and lead to incorrect billing.

@@ -1,0 +1,78 @@
+epic_id: P3.M3.E2
+name: Agent Controller
+description: CRUD endpoints for agent resources
+milestone: 03-rest-api
+phase: 03-streaming-realtime
+estimated_hours: 2
+priority: high
+tasks:
+- T001-list-agents.todo
+- T002-get-agent.todo
+- T003-send-message.todo
+- id: T004
+  file: T004-post-agents-endpoint-to-create.todo
+  title: POST /agents endpoint to create agent
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-patch-agents-id-endpoint-to-up.todo
+  title: PATCH /agents/:id endpoint to update agent
+  status: pending
+  estimate_hours: 0.75
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-delete-agents-id-endpoint-to-d.todo
+  title: DELETE /agents/:id endpoint to delete agent
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T007
+  file: T007-add-sse-endpoint-for-agent-tok.todo
+  title: Add SSE endpoint for agent token streaming
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: critical
+  depends_on:
+  - P3.M2.E1.T003
+  - P3.M3.E2.T003
+- id: T008
+  file: T008-add-rest-cancel-endpoint-for-a.todo
+  title: Add REST cancel endpoint for active agent stream
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: critical
+  depends_on:
+  - P3.M3.E2.T003
+  - P3.M1.E3.T006
+- id: T009
+  file: T009-validate-agent-message-payload.todo
+  title: Validate agent message payloads and enforce size limits
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P3.M3.E2.T003
+  - P3.M3.E5.T002
+dependencies:
+- P3.M3.E1
+acceptance_criteria:
+- List all agents
+- Get agent details
+- Send message to agent
+deliverables:
+- AgentController module
+- JSON views
+- Controller tests
+stats:
+  total: 6
+  pending: 6

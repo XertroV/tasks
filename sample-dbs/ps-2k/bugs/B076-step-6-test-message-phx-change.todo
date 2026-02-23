@@ -1,0 +1,21 @@
+---
+id: B076
+title: 'Step 6 test message: phx-change on standalone input doesn''t fire - must wrap
+  in form'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- bug
+- webui
+- setup-wizard
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:28:05.815647+00:00'
+started_at: '2026-02-17T11:28:05.815647+00:00'
+completed_at: '2026-02-17T11:28:07.139588+00:00'
+duration_minutes: 0.022065483333333333
+---
+
+Step 6 test message: phx-change on standalone input doesn't fire - must wrap in form

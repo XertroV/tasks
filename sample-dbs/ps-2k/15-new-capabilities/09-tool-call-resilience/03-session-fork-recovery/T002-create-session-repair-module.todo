@@ -1,0 +1,45 @@
+---
+id: P15.M9.E3.T002
+title: Create PagServer.Context.SessionRepair module for DB-level repair
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: medium
+depends_on:
+- P15.M9.E2.T001
+tags:
+- context
+- repair
+- new-module
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:57:36.981264+00:00'
+started_at: '2026-02-17T13:57:36.981264+00:00'
+completed_at: '2026-02-17T14:03:21.211856+00:00'
+duration_minutes: 5.737176216666667
+---
+Create `lib/pag_server/context/session_repair.ex` that repairs broken message
+sequences in DB-persisted sessions. Uses the Sanitizer algorithm to identify
+structural issues, then:
+
+- Inserts synthetic error tool_result messages for orphaned tool_calls
+- Archives (soft-deletes via `archived_at`) orphaned tool_result messages
+- Returns a report of changes made
+
+All operations happen within a DB transaction.
+
+Could also be exposed as a mix task or API endpoint for manual intervention
+(future work, not in scope for this task).
+
+Source: .plan/tool-call-resilience.md — Gap 6
+
+Files to create:
+- lib/pag_server/context/session_repair.ex
+
+## Acceptance Criteria
+- [ ] Module exists at `PagServer.Context.SessionRepair`
+- [ ] `repair_session/1` accepts a session_id and returns `{:ok, report}` or `{:error, term}`
+- [ ] Synthetic error results are inserted as real DB messages
+- [ ] Orphaned tool_results are archived (not hard-deleted)
+- [ ] All DB changes happen in a single transaction
+- [ ] Report includes counts of inserted and archived messages
+- [ ] Reuses Sanitizer logic to avoid duplicating the pairing algorithm

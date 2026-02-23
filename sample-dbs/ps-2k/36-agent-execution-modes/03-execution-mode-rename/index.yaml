@@ -1,0 +1,28 @@
+id: P36.M3
+name: Execution Mode Rename
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on:
+- P36.M1
+- P36.M2
+locked: false
+epics:
+- id: E1
+  name: Rename to Three-Mode System
+  path: 01-rename-to-three-mode-system
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on:
+  - P36.M1
+  - P36.M2
+  description: Rename continuous/discrete to persistent/transient/amnesiac three-mode
+    system across all modules, schemas, UI, and DB.
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

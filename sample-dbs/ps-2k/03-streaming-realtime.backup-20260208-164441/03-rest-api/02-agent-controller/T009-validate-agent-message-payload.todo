@@ -1,0 +1,57 @@
+---
+id: P3.M3.E2.T009
+title: Validate agent message payloads and enforce size limits
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P3.M3.E2.T003
+- P3.M3.E5.T002
+tags:
+- rest
+- validation
+- limits
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:08:21.833720+00:00'
+started_at: '2026-02-08T05:08:21.833720+00:00'
+completed_at: '2026-02-08T05:13:53.340564+00:00'
+duration_minutes: 5.525113833333333
+---
+
+# Validate agent message payloads and enforce size limits
+
+
+
+## Requirements
+
+- [ ] Validate required fields for agent message payloads in PagServerWeb.AgentController.
+- [ ] Enforce size limits for message content and attachments at the REST boundary.
+- [ ] Map validation to consistent error codes and JSON error shape.
+- [ ] Ensure AgentServer receives only validated, normalized payloads.
+- [ ] Keep validation logic aligned with channel payload validation.
+
+## Context
+
+- [ ] REST endpoints should reject malformed or oversized payloads before AgentServer processing.
+- [ ] Validation should match channel expectations to avoid divergent behavior.
+
+## Acceptance Criteria
+
+- [ ] Missing required fields return 400 with field-level errors.
+- [ ] Invalid types return 400 with clear error messages.
+- [ ] Payloads exceeding size limits return 413 with a structured error body.
+- [ ] Valid payloads are passed through to AgentServer unchanged except for normalization.
+- [ ] Channel and REST payload validation behave consistently.
+
+## Notes
+
+- [ ] Validation errors should include a stable error code (for example `invalid_payload`) and field list.
+- [ ] Size limits should be enforced before reading large bodies when possible.
+- [ ] Keep error codes consistent with existing REST error responses.
+
+## Testing
+
+- [ ] Add controller validation tests in `test/pag_server_web/controllers/agent_controller_test.exs`.
+- [ ] Add payload validation tests in `test/pag_server_web/channels/agent_channel_test.exs` for parity.
+- [ ] Add unit tests for validation helpers if they live outside the controller.

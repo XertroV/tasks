@@ -1,0 +1,108 @@
+---
+id: P2.M6.E3.T001
+title: Create thinking extractor module
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- streaming
+- thinking
+- anthropic
+- content-parsing
+claimed_by: claude-1
+claimed_at: '2026-02-05T18:39:40.660660'
+started_at: '2026-02-05T18:39:40.660660'
+completed_at: '2026-02-05T18:42:45.789302'
+duration_minutes: 3.0854771833333334
+---
+
+# Create thinking extractor module
+
+Implement a module to extract and separate `<thinking>` blocks from LLM responses.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/thinking_extractor.ex` module
+- [ ] Implement `extract/1` function that takes message text
+- [ ] Detect and extract `<thinking>...</thinking>` blocks
+- [ ] Support multiple thinking blocks in one message
+- [ ] Handle nested tags (gracefully ignore or warn)
+- [ ] Return structured output:
+  ```elixir
+  %{
+    thinking: ["Thinking block 1", "Thinking block 2"],
+    response: "The actual response text"
+  }
+  ```
+- [ ] Handle edge cases:
+  - [ ] Incomplete thinking tags (unclosed)
+  - [ ] Empty thinking blocks
+  - [ ] Thinking blocks at start, middle, end of response
+  - [ ] No thinking blocks (passthrough)
+- [ ] Preserve whitespace in response text
+
+## Acceptance Criteria
+
+- [ ] Module compiles without warnings
+- [ ] Correctly extracts single thinking block
+- [ ] Correctly extracts multiple thinking blocks
+- [ ] Returns clean response text without thinking tags
+- [ ] Handles unclosed tags gracefully (treat as regular text)
+- [ ] Empty thinking blocks extracted correctly
+- [ ] No thinking blocks → returns original text in `:response`
+- [ ] Whitespace preserved in both thinking and response
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` Line 1121-1124 (P2.M6 Stream Processing)
+- Anthropic's extended thinking feature documentation
+
+**Key Points**:
+- Anthropic models (Claude 3.5+) can emit thinking blocks
+- Thinking is internal reasoning, not shown to user by default
+- Format: `<thinking>analysis here</thinking>`
+- Need to separate for:
+  - UI display (optional toggle to show thinking)
+  - Token counting (thinking costs tokens but not shown)
+  - Logging/debugging (helpful for analysis)
+
+**Example Input/Output**:
+```elixir
+# Input
+text = """
+<thinking>
+Let me analyze this problem step by step.
+The user wants to know about X.
+</thinking>
+
+The answer to your question is Y.
+"""
+
+# Output
+ThinkingExtractor.extract(text)
+# => %{
+#   thinking: ["Let me analyze this problem step by step.\nThe user wants to know about X."],
+#   response: "The answer to your question is Y."
+# }
+```
+
+## Notes
+
+**State Machine Approach**:
+1. Scan for `<thinking>` tag
+2. Accumulate text until `</thinking>`
+3. Store in `:thinking` list
+4. Continue scanning for more blocks
+5. Everything else goes to `:response`
+
+**Regex Approach** (simpler but less robust):
+```elixir
+thinking_regex = ~r/<thinking>(.*?)<\/thinking>/s
+```
+
+Consider state machine for better handling of partial/malformed tags.
+
+Future: Support streaming extraction (partial buffers during token processing).

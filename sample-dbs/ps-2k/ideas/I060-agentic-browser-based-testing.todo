@@ -1,0 +1,78 @@
+---
+id: I060
+title: agentic browser based testing of all major features, plugins, teams, worktrees,
+  pair coding, etc. opportunity for deep iterative work and fixes.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-20T12:28:29.500619+00:00'
+started_at: '2026-02-20T12:28:29.500619+00:00'
+completed_at: '2026-02-20T12:59:39.079409+00:00'
+duration_minutes: 31.159646216666665
+---
+
+# Idea Intake: agentic browser based testing of all major features, plugins, teams, worktrees, pair coding, etc. opportunity for deep iterative work and fixes.
+
+## Original Idea
+
+agentic browser based testing of all major features, plugins, teams, worktrees, pair coding, etc. opportunity for deep iterative work and fixes.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "agentic browser based testing of all major features, plugins, teams, worktrees, pair coding, etc. opportunity for deep iterative work and fixes."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+### Phase P51: Agentic Browser Testing (18h estimate, 3 weeks)
+
+**M1: Team Infrastructure**
+- P51.M1.E1.T001 — Create docs/browser-testing/TEAM.md (team CLAUDE.md, roles, bug format, handoff protocol)
+- P51.M1.E1.T002 — Create docs/browser-testing/explorer-guide.md
+- P51.M1.E1.T003 — Create docs/browser-testing/fix-agent-guide.md
+- P51.M1.E1.T004 — Create scripts/run-browser-testing-team.sh (prereq checker + instructions)
+- P51.M1.E1.T005 — Implement 'backlog fixed' CLI command (or shell wrapper)
+
+**M2: Exploratory Testing Campaigns** (simple → complex within each epic)
+
+E1: Core UI Exploration
+- P51.M2.E1.T001 — Level 1: Navigation sanity & page load audit (all pages load?)
+- P51.M2.E1.T002 — Level 2: Auth flow & setup wizard (login, onboarding)
+- P51.M2.E1.T003 — Level 3: Agent CRUD & validation console basic (create agent, send msg)
+- P51.M2.E1.T004 — Level 4: Sessions, forking, event browser & LLM calls dashboard
+- P51.M2.E1.T005 — Level 5: Settings, workspace management & streaming edge cases
+
+E2: Plugin UI Exploration
+- P51.M2.E2.T001 — Level 1-2: Skill Hub, Models/Pricing & Graphiti Wall
+- P51.M2.E2.T002 — Level 3-4: Pair programming plugin — session creation and role management
+- P51.M2.E2.T003 — Level 5: Device auth flow, LLM provider config, & tool approvals
+
+**M3: Fix Loop**
+- P51.M3.E1.T001 — Triage M2 bugs: assign P0/P1/P2/P3 severity & group by area
+- P51.M3.E2.T001 — Fix P0 and P1 bugs from triage (fix agents run in parallel)
+- P51.M3.E2.T002 — Verification pass & Playwright scenario notes
+
+### Key Design Decisions
+- Explorers should EXPECT missing/broken features (pre-alpha) — file everything
+- 'backlog fixed B_xxx' registers inline quick fixes during exploration
+- Single Chrome instance, explicit 'You have the browser' handoff from Team Lead
+- Scenarios progress Level 1→5 (simple to complex) within each explorer's area
+- Bug reports must include Playwright scenario stubs for future regression tests
+
+## Completion Criteria
+
+- [x] Idea has been decomposed into concrete `.tasks` work items.
+- [x] New items include clear acceptance criteria and dependencies.
+- [x] This idea intake is updated with created IDs and marked done.

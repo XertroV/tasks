@@ -1,0 +1,36 @@
+---
+id: P12.M3.E1.T003
+title: Fix single-clause with to use case
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T10:29:37.245220+00:00'
+started_at: '2026-02-13T10:29:37.245220+00:00'
+completed_at: '2026-02-13T10:37:24.757577+00:00'
+duration_minutes: 7.79187245
+---
+
+# Fix single-clause with to use case
+
+## Description
+
+Fix Credo warnings about using `with` with only a single clause. When `with` has only one pattern match, a `case` expression is more appropriate.
+
+## Acceptance Criteria
+
+- [ ] Run `mix credo` to identify all single-clause `with` usages
+- [ ] Convert single-clause `with` to `case` expressions
+- [ ] Preserve the same behavior and error handling
+- [ ] All related warnings resolved
+- [ ] Tests pass
+- [ ] Lint passes (including `mix credo`)
+
+## Context
+
+- Related files: Various files in `lib/pag_server/`
+- Credo check: `Credo.Check.Refactor.WithSingleClause`
+- Part of epic: Resolve Credo Warnings

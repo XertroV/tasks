@@ -1,0 +1,17 @@
+---
+id: P29.M1.E2.T003
+title: Implement get_public_key and export_identity MCP tools
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P29.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:03:35.091792+00:00'
+started_at: '2026-02-18T19:03:35.091792+00:00'
+completed_at: '2026-02-18T19:03:36.575048+00:00'
+duration_minutes: 0.024720766666666668
+---
+get_public_key(workspace_id) -> {public_key: base64, fingerprint: hex}. export_identity(workspace_id) -> {public_key, fingerprint, created_at}. Fingerprint is SHA256 of public key.

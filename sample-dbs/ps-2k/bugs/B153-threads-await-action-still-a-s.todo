@@ -1,0 +1,33 @@
+---
+id: B153
+title: "threads await action still a stub \u2014 does not delegate to AwaitThread\
+  \ tool"
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- threads
+- await_thread
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.844289+00:00'
+started_at: '2026-02-19T04:21:05.844289+00:00'
+completed_at: '2026-02-19T04:43:08.436048+00:00'
+duration_minutes: 22.043195733333334
+---
+The threads plugin action_await/2 in lib/pag_server/plugins/agent_tools/threads.ex (lines 110–114) returns a placeholder hint and never actually awaits a thread.
+
+The AwaitThread builtin tool (lib/pag_server/tools/builtin/await_thread.ex) was implemented as part of B147 and is fully functional. The threads await action just needs to delegate to it.
+
+Fix required:
+defp action_await(args, ctx) do
+  with_thread(args, ctx, fn session ->
+    timeout_ms = Common.get_integer(args, "timeout_ms", 30_000)
+    AwaitThread.execute(%{"session_id" => session.id, "timeout_ms" => timeout_ms}, ctx)
+  end)
+end
+
+Also wire up the await action in P37 task list (P37.M1 should cover this).
+
+Tests: await completed thread returns output, await active thread polls, timeout, failed thread error

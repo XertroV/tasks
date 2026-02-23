@@ -1,0 +1,25 @@
+---
+id: P55.M2.E3.T001
+title: Message list container with AutoScrollTranscript hook
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- component
+- messages
+claimed_by: cli-user
+claimed_at: '2026-02-22T09:11:43.790829+00:00'
+started_at: '2026-02-22T09:11:43.790829+00:00'
+completed_at: '2026-02-22T10:51:17.098584+00:00'
+duration_minutes: 99.55512896666667
+---
+Create lib/pag_server_web/live/workspace_chat/message_list.ex as function component. Scrollable container with phx-hook='AutoScrollTranscript' for auto-scroll. Iterates @entries (pre-merged messages + tool calls from helpers.chat_entries). Delegates to message_bubble/tool_call_card/approval_banner based on entry type. Shows streaming_state as live-updating assistant bubble at bottom. Empty state when no messages ('Start a conversation...'). Load earlier button at top for pagination.
+
+## Acceptance Criteria
+- Scrollable container with auto-scroll hook
+- Iterates entries and delegates to correct sub-component
+- Streaming state renders as live bubble
+- Empty state shown when no messages
+- Load earlier button at top

@@ -1,0 +1,16 @@
+---
+id: P35.M1.E1.T011
+title: 'Review P24.M3: Heartbeat Plugin'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:33:35.480921+00:00'
+started_at: '2026-02-19T02:33:35.480921+00:00'
+completed_at: '2026-02-19T02:37:23.744814+00:00'
+duration_minutes: 3.8043980333333334
+---
+Load the review-and-fix skill. Review all epics and tasks under P24.M3 (Heartbeat Plugin). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: heartbeat config fields in plugin KV store, workspace-type-aware defaults, HeartbeatScheduler GenServer (interval correctness, supervision), and missed heartbeat alert mechanism via PubSub.

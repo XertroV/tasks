@@ -1,0 +1,50 @@
+id: P44.M3
+name: Connector Integration
+status: done
+estimate_hours: 14.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Telegram Connector
+  path: 01-telegram-connector
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Slack Connector Migration
+  path: 02-slack-connector-migration
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Discord Connector Migration
+  path: 03-discord-connector-migration
+  status: done
+  estimate_hours: 3.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Web Channel Connector
+  path: 04-web-channel-connector
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

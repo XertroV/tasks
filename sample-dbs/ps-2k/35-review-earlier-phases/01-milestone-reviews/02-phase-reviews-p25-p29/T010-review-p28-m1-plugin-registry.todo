@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T010
+title: 'Review P28.M1: Plugin Registry API'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T02:27:02.909453+00:00'
+started_at: '2026-02-19T02:27:02.909453+00:00'
+completed_at: '2026-02-19T02:33:22.625455+00:00'
+duration_minutes: 6.328599816666666
+---
+Load the review-and-fix skill. Review all epics and tasks under P28.M1 (Plugin Hub UI - Plugin Registry API). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: REST API listing all available plugins with metadata, enable/disable per workspace, auth enforcement, and correct persistence of plugin enabled/disabled state.

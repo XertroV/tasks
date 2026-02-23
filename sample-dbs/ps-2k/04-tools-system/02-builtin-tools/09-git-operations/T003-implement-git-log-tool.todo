@@ -1,0 +1,262 @@
+---
+id: P4.M2.E9.T003
+title: Implement git_log tool
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tools
+- git
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T03:00:17.314182'
+started_at: '2026-02-06T03:00:17.314182'
+completed_at: '2026-02-06T03:01:45.147671'
+duration_minutes: 1.4638913333333332
+---
+
+# Implement git_log tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/git_log.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Execute `git log` with machine-readable format
+- [ ] Validate workspace path is within allowed workspace
+- [ ] Parse log output into structured commit data
+- [ ] Use System.cmd for safe command execution
+- [ ] Support pagination and commit count limits
+
+## Acceptance Criteria
+
+- [ ] Executes `git log --pretty=format:...` in workspace directory
+- [ ] Validates workspace path is within allowed workspace boundaries
+- [ ] Prevents command injection through all parameters (refs, paths)
+- [ ] Parses log output into structured data: hash, author, date, message, files changed
+- [ ] Supports optional limit parameter (default 50, max 500 commits)
+- [ ] Supports optional ref parameter to start from specific commit/branch
+- [ ] Supports optional path parameter to filter log for specific files
+- [ ] Returns commit metadata: hash, author name/email, timestamp, message, parent hashes
+- [ ] Handles errors: not a git repo, invalid ref, command failure
+- [ ] Test coverage: basic log, with limit, with ref, with path filter, invalid ref, non-git directory, path outside workspace
+- [ ] Security: validates all inputs, prevents injection, validates refs
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use structured format for machine parsing
+- Limit number of commits to prevent excessive output
+- Support filtering by ref and path
+- Validate all refs to prevent injection
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.GitLog do
+  @behaviour PAGServer.Tools.Tool
+  @default_limit 50
+  @max_limit 500
+
+  @impl true
+  def name, do: "git_log"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "git_log",
+      description: "Show git commit history",
+      parameters: %{
+        type: "object",
+        properties: %{
+          workspace: %{
+            type: "string",
+            description: "Repository path (must be within workspace)"
+          },
+          limit: %{
+            type: "integer",
+            description: "Maximum number of commits (default: 50, max: 500)",
+            default: 50
+          },
+          ref: %{
+            type: "string",
+            description: "Starting ref (commit/branch/tag, default: HEAD)"
+          },
+          path: %{
+            type: "string",
+            description: "Optional file/directory path to filter commits"
+          }
+        },
+        required: ["workspace"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"workspace" => workspace} = args, context) do
+    with :ok <- validate_workspace_path(workspace, context.workspace_root),
+         :ok <- validate_log_params(args),
+         {:ok, output} <- run_git_log(workspace, args),
+         {:ok, commits} <- parse_log(output) do
+      {:ok, %{commits: commits, count: length(commits)}}
+    else
+      {:error, reason} -> {:error, "git log failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_workspace_path(path, root) do
+    abs_path = Path.expand(path)
+    abs_root = Path.expand(root)
+    
+    cond do
+      not String.starts_with?(abs_path, abs_root) ->
+        {:error, "Path outside workspace"}
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      not File.dir?(abs_path) ->
+        {:error, "Directory does not exist"}
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_log_params(args) do
+    limit = Map.get(args, "limit", @default_limit)
+    
+    cond do
+      limit < 1 -> {:error, "Limit must be at least 1"}
+      limit > @max_limit -> {:error, "Limit cannot exceed #{@max_limit}"}
+      true -> :ok
+    end
+    |> case do
+      :ok -> validate_ref_if_present(args)
+      error -> error
+    end
+  end
+
+  defp validate_ref_if_present(%{"ref" => ref}) do
+    validate_ref(ref)
+  end
+  defp validate_ref_if_present(_), do: :ok
+
+  defp validate_ref(ref) do
+    # Block dangerous characters in refs
+    dangerous = ["../", "..\\", ";", "|", "&", "$", "`", "\n", "\r"]
+    
+    if Enum.any?(dangerous, &String.contains?(ref, &1)) do
+      {:error, "Invalid git ref: contains dangerous characters"}
+    else
+      :ok
+    end
+  end
+
+  defp run_git_log(workspace, args) do
+    limit = Map.get(args, "limit", @default_limit)
+    ref = Map.get(args, "ref", "HEAD")
+    
+    # Use custom format for machine parsing
+    # Format: COMMIT_START|hash|author_name|author_email|timestamp|message|COMMIT_END
+    format = "%H%x00%an%x00%ae%x00%at%x00%s%x00%P%x00COMMIT_END"
+    
+    cmd_args = ["log", "--pretty=format:#{format}", "-n", "#{limit}", ref]
+    cmd_args = if path = args["path"], do: cmd_args ++ ["--", path], else: cmd_args
+    
+    case System.cmd("git", cmd_args, cd: workspace, stderr_to_stdout: true) do
+      {output, 0} -> {:ok, output}
+      {error, code} -> {:error, {code, error}}
+    end
+  end
+
+  defp parse_log(output) do
+    commits =
+      output
+      |> String.split("COMMIT_END", trim: true)
+      |> Enum.map(&parse_commit/1)
+      |> Enum.reject(&is_nil/1)
+    
+    {:ok, commits}
+  end
+
+  defp parse_commit(commit_str) do
+    case String.split(commit_str, <<0>>, parts: 6) do
+      [hash, author_name, author_email, timestamp, message, parents | _] ->
+        %{
+          hash: String.trim(hash),
+          author: %{
+            name: String.trim(author_name),
+            email: String.trim(author_email)
+          },
+          timestamp: parse_timestamp(timestamp),
+          message: String.trim(message),
+          parents: parse_parents(parents)
+        }
+      _ ->
+        nil
+    end
+  end
+
+  defp parse_timestamp(timestamp_str) do
+    case Integer.parse(String.trim(timestamp_str)) do
+      {timestamp, _} -> DateTime.from_unix!(timestamp)
+      _ -> nil
+    end
+  end
+
+  defp parse_parents(parents_str) do
+    parents_str
+    |> String.trim()
+    |> String.split(" ", trim: true)
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "workspace": "/workspace/my-project",
+  "limit": 10,
+  "ref": "main"
+}
+```
+
+Example usage (with path filter):
+```json
+{
+  "workspace": "/workspace/my-project",
+  "limit": 20,
+  "path": "lib/app.ex"
+}
+```
+
+Example response:
+```json
+{
+  "commits": [
+    {
+      "hash": "abc123def456...",
+      "author": {
+        "name": "John Doe",
+        "email": "john@example.com"
+      },
+      "timestamp": "2026-02-06T10:30:00Z",
+      "message": "Add new feature",
+      "parents": ["parent_hash_1"]
+    }
+  ],
+  "count": 10
+}
+```
+
+Security considerations:
+- Validate refs to prevent injection attacks
+- Limit number of commits to prevent excessive output
+- Use System.cmd with list arguments only
+- Validate workspace path boundaries
+- Parse output safely with null-byte delimiters

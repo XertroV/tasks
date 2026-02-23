@@ -1,0 +1,45 @@
+# Epic: Event Handlers
+# Phase 8, Milestone 3, Epic 2 (P8.M3.E2)
+
+id: P8.M3.E2
+name: Event Handlers
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on:
+- E1
+
+tasks:
+  - id: T001
+    file: T001-message-event-handler.todo
+    title: Implement message event handler
+    status: pending
+    estimate_hours: 1.5
+    complexity: high
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-thread-context.todo
+    title: Handle thread context
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-interactive-components.todo
+    title: Add interactive component handling
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: medium
+    depends_on: [T001]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

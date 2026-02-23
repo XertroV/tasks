@@ -1,0 +1,263 @@
+---
+id: P4.M2.E11.T001
+title: Implement archive_create tool (zip/tar)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- archive
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:41:47.769499'
+started_at: '2026-02-06T02:41:47.769499'
+completed_at: '2026-02-06T02:41:48.399561'
+duration_minutes: 0.010500866666666666
+---
+
+# Implement archive_create tool (zip/tar)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/archive_create.ex` (~180 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support ZIP format using `:zip` Erlang module
+- [ ] Support TAR/TAR.GZ using System.cmd with tar
+- [ ] Accept list of files/directories to include
+- [ ] Validate all paths within workspace boundary
+- [ ] Prevent directory traversal in archive entries
+- [ ] Handle symbolic links safely (follow or skip)
+
+## Acceptance Criteria
+
+- [ ] Accepts archive path, format (zip/tar/tar.gz), and list of source paths
+- [ ] Creates archive at specified path
+- [ ] Supports wildcards in source paths (*.txt, src/*.ex)
+- [ ] Preserves directory structure in archive
+- [ ] Returns archive path, file count, total compressed size
+- [ ] Handles errors: invalid paths, permission denied, disk full, empty source list
+- [ ] Test coverage: zip creation, tar creation, tar.gz creation, multiple files, directories, wildcards, path outside workspace
+- [ ] Security: validates all input paths, prevents zip bomb creation, blocks path traversal in archive entries
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use Erlang :zip for ZIP files (built-in, no dependencies)
+- Use System.cmd("tar", ...) for TAR formats
+- Must validate every file before adding to archive
+- Strip workspace prefix from archive paths for portability
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.ArchiveCreate do
+  @behaviour PAGServer.Tools.Tool
+  @max_files 10_000  # Prevent excessive archive creation
+
+  @impl true
+  def name, do: "archive_create"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "archive_create",
+      description: "Create an archive file (zip, tar, tar.gz)",
+      parameters: %{
+        type: "object",
+        properties: %{
+          output: %{
+            type: "string",
+            description: "Output archive path (relative to workspace)"
+          },
+          format: %{
+            type: "string",
+            enum: ["zip", "tar", "tar.gz"],
+            description: "Archive format (default: zip)"
+          },
+          sources: %{
+            type: "array",
+            items: %{type: "string"},
+            description: "List of files/directories to include (supports wildcards)"
+          },
+          compression_level: %{
+            type: "integer",
+            minimum: 0,
+            maximum: 9,
+            description: "Compression level 0-9 (default: 6)"
+          }
+        },
+        required: ["output", "sources"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"output" => output, "sources" => sources} = args, context) do
+    with :ok <- validate_path(output, context.workspace_path),
+         {:ok, output_path} <- prepare_output_path(output, context.workspace_path),
+         {:ok, source_files} <- resolve_sources(sources, context.workspace_path),
+         :ok <- validate_file_count(source_files),
+         {:ok, result} <- create_archive(output_path, source_files, args, context.workspace_path) do
+      {:ok, result}
+    else
+      {:error, reason} -> {:error, "Archive creation failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_path(path, workspace) do
+    cond do
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      Path.type(path) == :absolute and not String.starts_with?(path, workspace) ->
+        {:error, "Absolute paths outside workspace not allowed"}
+      true ->
+        :ok
+    end
+  end
+
+  defp prepare_output_path(path, workspace) do
+    full_path = 
+      if Path.type(path) == :absolute do
+        path
+      else
+        Path.join(workspace, path)
+      end
+      |> Path.expand()
+    
+    if String.starts_with?(full_path, workspace) do
+      File.mkdir_p!(Path.dirname(full_path))
+      {:ok, full_path}
+    else
+      {:error, "Output path outside workspace"}
+    end
+  end
+
+  defp resolve_sources(sources, workspace) do
+    files = 
+      sources
+      |> Enum.flat_map(fn pattern ->
+        pattern = if Path.type(pattern) == :absolute, do: pattern, else: Path.join(workspace, pattern)
+        
+        # Expand wildcards
+        case Path.wildcard(pattern) do
+          [] -> 
+            # Not a wildcard, check if file exists
+            if File.exists?(pattern), do: [pattern], else: []
+          matches -> 
+            matches
+        end
+      end)
+      |> Enum.uniq()
+      |> Enum.filter(&String.starts_with?(&1, workspace))  # Security: only workspace files
+    
+    if Enum.empty?(files) do
+      {:error, "No valid source files found"}
+    else
+      {:ok, files}
+    end
+  end
+
+  defp validate_file_count(files) when length(files) > @max_files do
+    {:error, "Too many files (max #{@max_files})"}
+  end
+  defp validate_file_count(_), do: :ok
+
+  defp create_archive(output, files, args, workspace) do
+    format = Map.get(args, "format", "zip")
+    
+    case format do
+      "zip" -> create_zip(output, files, args, workspace)
+      "tar" -> create_tar(output, files, args, workspace, false)
+      "tar.gz" -> create_tar(output, files, args, workspace, true)
+    end
+  end
+
+  defp create_zip(output, files, args, workspace) do
+    compression = Map.get(args, "compression_level", 6)
+    
+    # Build file list with relative paths in archive
+    file_list = Enum.map(files, fn file ->
+      archive_path = Path.relative_to(file, workspace) |> to_charlist()
+      {archive_path, file}
+    end)
+    
+    case :zip.create(to_charlist(output), file_list, compress: compression) do
+      {:ok, _zip_file} ->
+        stat = File.stat!(output)
+        {:ok, %{
+          path: output,
+          format: "zip",
+          file_count: length(files),
+          size: stat.size
+        }}
+      
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp create_tar(output, files, args, workspace, gzip) do
+    compression = Map.get(args, "compression_level", 6)
+    
+    # Create relative path list
+    relative_files = Enum.map(files, &Path.relative_to(&1, workspace))
+    
+    tar_args = if gzip do
+      ["czf", output, "--transform", "s,^,archive/,"] ++ relative_files
+    else
+      ["cf", output, "--transform", "s,^,archive/,"] ++ relative_files
+    end
+    
+    case System.cmd("tar", tar_args, cd: workspace, stderr_to_stdout: true) do
+      {_output, 0} ->
+        stat = File.stat!(output)
+        {:ok, %{
+          path: output,
+          format: if(gzip, do: "tar.gz", else: "tar"),
+          file_count: length(files),
+          size: stat.size
+        }}
+      
+      {error, _code} ->
+        {:error, "tar command failed: #{error}"}
+    end
+  rescue
+    e -> {:error, Exception.message(e)}
+  end
+end
+```
+
+Example usage:
+```json
+{
+  "output": "backups/project.zip",
+  "format": "zip",
+  "sources": ["src/*.ex", "config/", "README.md"],
+  "compression_level": 9
+}
+```
+
+Example response:
+```json
+{
+  "path": "backups/project.zip",
+  "format": "zip",
+  "file_count": 47,
+  "size": 125678
+}
+```
+
+Security considerations:
+- Validate all source paths before archiving
+- Prevent path traversal in archive entries
+- Limit number of files to prevent resource exhaustion
+- Strip absolute paths from archive (use relative paths)
+- Check for zip bombs (excessive compression ratios)

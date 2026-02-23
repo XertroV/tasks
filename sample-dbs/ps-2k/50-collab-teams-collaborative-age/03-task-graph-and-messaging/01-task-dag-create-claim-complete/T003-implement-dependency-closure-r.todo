@@ -1,0 +1,25 @@
+---
+id: P50.M3.E1.T003
+title: Implement dependency-closure recursive CTE query
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:19:41.866849+00:00'
+started_at: '2026-02-23T02:19:41.866849+00:00'
+completed_at: '2026-02-23T02:19:44.448210+00:00'
+duration_minutes: 0.043022366666666666
+---
+## Description
+CollabTeams.TaskGraph.all_dependencies_completed?/2 (task_id, opts) runs a recursive CTE (WITH RECURSIVE) that returns true iff every transitive dependency is in completed state. Test with: linear chain (A->B->C), diamond (A->B, A->C, B->D, C->D), no dependencies (always true), partially completed chain (returns false). Single DB round-trip -- no app-level recursion.
+
+## Acceptance Criteria
+- Returns true for task with no deps
+- returns false for task with pending dep
+- recursive diamond resolved correctly
+- single DB query per call
+- tests cover all 4 topology cases

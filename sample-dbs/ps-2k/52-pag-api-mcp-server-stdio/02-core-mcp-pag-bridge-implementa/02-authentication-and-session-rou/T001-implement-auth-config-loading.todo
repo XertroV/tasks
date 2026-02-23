@@ -1,0 +1,57 @@
+---
+id: P52.M2.E2.T001
+title: Implement auth/config loading for stdio runtime
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- implementation
+- auth
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:36:19.940700+00:00'
+started_at: '2026-02-21T04:36:19.940700+00:00'
+completed_at: '2026-02-21T04:37:22.875909+00:00'
+duration_minutes: 1.0489199
+---
+
+# Implement auth/config loading for stdio runtime
+
+## Implementation Notes
+
+- Extended runtime config loader in `lib/pag_server/mcp/stdio_runtime_config.ex`.
+  - Supports env vars and optional JSON config file via `--config-path` or `PAG_MCP_CONFIG_PATH`.
+  - Load precedence is `CLI opts > environment > config file defaults`.
+  - Required auth (`api_key`) still fails fast with actionable remediation text.
+- Updated mix task `lib/mix/tasks/pag.mcp.stdio.ex` to accept `--config-path`.
+- Secret handling remains safe:
+  - No API key value is logged or echoed in errors.
+  - Errors reference only missing/invalid config keys and file path context.
+
+## Verification Notes
+
+- Expanded unit coverage in `test/pag_server/mcp/stdio_runtime_config_test.exs`:
+  - env-only config loading
+  - file-based config loading
+  - missing/unreadable config file error
+  - missing required API key path
+  - invalid log level path
+- Ran:
+  - `mix test test/pag_server/mcp/stdio_runtime_config_test.exs test/pag_server/mcp/stdio_server_test.exs`
+  - Result: 8 tests, 0 failures (appended to `recent-mix-tests.log`).
+
+
+
+## Requirements
+
+- Support auth token/API key loading from environment and optional config file path.
+- Validate required auth/config at startup with explicit remediation guidance.
+- Keep auth handling consistent with existing PAG server credential expectations.
+
+## Acceptance Criteria
+
+- Runtime accepts valid auth config and rejects invalid/missing credentials with clear messages.
+- Secret values are never printed in logs or returned in errors.
+- Unit tests cover env-only, file-based, and missing-config startup paths.

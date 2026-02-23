@@ -1,0 +1,46 @@
+---
+id: P10.M5.E1.T002
+title: Build Bitbucket webhook handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P10.M5.E1.T001
+tags:
+- webhooks
+- bitbucket
+- event-handling
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:40:06.826468+00:00'
+started_at: '2026-02-12T05:40:06.826468+00:00'
+completed_at: '2026-02-12T05:54:21.902154+00:00'
+duration_minutes: 14.251261266666667
+---
+
+# Build Bitbucket webhook handler
+
+Implement webhook receiver and event processor for Bitbucket events (PR, issues, pushes).
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/bitbucket/webhook_handler.ex` module
+- [ ] Define webhook event parsing:
+  - [ ] Push events
+  - [ ] Pull request events
+  - [ ] Issue events
+- [ ] Implement event signature verification
+- [ ] Route events to appropriate handlers
+- [ ] Implement idempotent event processing
+- [ ] Add comprehensive logging
+- [ ] Write tests for webhooks
+
+## Acceptance Criteria
+
+- [ ] Webhook receiver validates signatures correctly
+- [ ] Event parsing handles all documented types
+- [ ] Invalid signatures rejected with 403
+- [ ] Webhook events trigger appropriate handlers
+- [ ] All events logged with repo and event info
+- [ ] `mix test` passes for all webhook tests
+- [ ] `mix lint` passes without warnings

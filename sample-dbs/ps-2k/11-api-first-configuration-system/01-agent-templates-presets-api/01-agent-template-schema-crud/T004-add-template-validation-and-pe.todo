@@ -1,0 +1,117 @@
+---
+id: P11.M1.E1.T004
+title: Add template validation and permissions
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P11.M1.E1.T003
+tags:
+- validation
+- permissions
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-12T09:05:24.233230+00:00'
+started_at: '2026-02-12T09:05:24.233230+00:00'
+completed_at: '2026-02-12T09:40:29.027260+00:00'
+duration_minutes: 35.0799002
+---
+
+# Add template validation and permissions
+
+Implement advanced validation for agent templates and permission/ownership checks for CRUD operations.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/templates/template_validator.ex` module with:
+  - [ ] `validate_base_config/1` - Verify config structure is valid
+  - [ ] `validate_required_tools/1` - Check all tools exist or are valid
+  - [ ] `validate_semver/1` - Version string format validation
+  - [ ] `validate_config_constraints/1` - Check config values are within reasonable ranges
+- [ ] Add permission checks in controller:
+  - [ ] Only template owner can update their template
+  - [ ] Only template owner can delete their template
+  - [ ] Anyone can view public templates
+  - [ ] Only owner can view private templates
+- [ ] Create `lib/pag_server/templates/permissions.ex` module:
+  - [ ] `can_view?/2` - Check if user can view template
+  - [ ] `can_edit?/2` - Check if user can edit template
+  - [ ] `can_delete?/2` - Check if user can delete template
+  - [ ] Helper for admin override (for system templates)
+- [ ] Update AgentTemplate schema:
+  - [ ] Add custom validations for base_config
+  - [ ] Add creator_id constraint validations
+- [ ] Add validation tests covering:
+  - [ ] Valid configurations accepted
+  - [ ] Invalid configs rejected with clear errors
+  - [ ] Permission checks for all operations
+  - [ ] Owner/creator access control
+
+## Acceptance Criteria
+
+- [ ] base_config validation rejects malformed configs
+- [ ] required_tools validation prevents non-existent tools
+- [ ] Version format validation enforces semver
+- [ ] Permission checks prevent unauthorized modifications
+- [ ] Owner can always modify their templates
+- [ ] Non-owners cannot modify templates
+- [ ] Public templates visible to all
+- [ ] Private templates only visible to owner
+- [ ] System templates (creator_id = nil) are read-only
+- [ ] All tests pass with various permission scenarios
+
+## Context
+
+**Key Points**:
+- base_config must validate against expected structure
+- Semver format: major.minor.patch[-prerelease][+build]
+- Creator-based permissions enable multi-user system
+- System templates are built-in, immutable
+- Public/private distinction for template marketplace
+
+## Notes
+
+### Valid Configuration Example
+
+```elixir
+%{
+  "model" => "claude-3-sonnet",
+  "temperature" => 0.7,  # Must be 0.0-2.0
+  "max_tokens" => 4096,  # Must be 1-100000
+  "top_p" => 1.0,
+  "frequency_penalty" => 0,  # Must be -2.0 to 2.0
+  "system_prompt" => "You are helpful",
+  "tools" => {
+    "web_search" => true,
+    "code_exec" => false
+  }
+}
+```
+
+### Invalid Configurations (rejected)
+
+```elixir
+# temperature out of range
+%{"model" => "claude-3-sonnet", "temperature" => 3.0}
+
+# max_tokens negative
+%{"model" => "claude-3-sonnet", "max_tokens" => -1}
+
+# missing required fields
+%{}
+```
+
+### Permission Check Pattern
+
+```elixir
+def update(conn, %{"id" => id, "template" => attrs}) do
+  template = Repo.get!(AgentTemplate, id)
+
+  unless Permissions.can_edit?(template, current_user(conn)) do
+    render(conn, error: "Unauthorized", status: 403)
+  end
+
+  # proceed with update
+end
+```

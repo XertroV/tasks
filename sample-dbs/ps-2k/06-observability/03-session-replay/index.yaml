@@ -1,0 +1,30 @@
+id: P6.M3
+name: Session Replay
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Replay Engine
+  path: 01-replay-engine
+  status: pending
+  estimate_hours: 5
+  complexity: medium
+  depends_on: []
+  description: Event sourcing replay engine for deterministic session reconstruction
+- id: E2
+  name: Event Application
+  path: 02-event-application
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Apply events to rebuild agent state deterministically
+stats:
+  total_tasks: 7
+  done: 7
+  in_progress: 0
+  blocked: 0
+  pending: 0

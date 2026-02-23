@@ -1,0 +1,51 @@
+---
+id: P53.M2.E1.T003
+title: Expose browser backend health and capability introspection
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P53.M2.E1.T001
+tags:
+- browsermcp
+- observability
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:44:15.330129+00:00'
+started_at: '2026-02-21T05:44:15.330129+00:00'
+completed_at: '2026-02-21T05:46:07.239690+00:00'
+duration_minutes: 1.8651591666666667
+---
+
+# Expose browser backend health and capability introspection
+
+
+
+## Requirements
+
+- Surface health/capability status for configured browser backend in diagnostics.
+- Include availability details needed to explain routing failures.
+- Keep response shape stable for UI/API consumption.
+
+## Acceptance Criteria
+
+- A health endpoint/report includes browser backend readiness and mode.
+- Capability output clearly indicates supported browser actions.
+- Unhealthy backend states produce actionable messages instead of generic failures.
+
+## Execution Notes (2026-02-21)
+
+- Added `BrowserBackendHealth` helper that computes stable readiness/status
+  payloads from BrowserMCP config and companion connectivity.
+- Extended workspace companion status endpoint to include
+  `data.browser_backend` with mode, readiness, supported actions, and
+  actionable failure guidance.
+- Added controller coverage for disabled defaults, companion-ready state, and
+  companion-missing actionable guidance.
+
+## Evidence Artifacts
+
+- `lib/pag_server/companions/browser_backend_health.ex`
+- `lib/pag_server_web/controllers/workspace_companion_controller.ex`
+- `test/pag_server_web/controllers/workspace_companion_controller_test.exs`
+- `recent-mix-tests.log`

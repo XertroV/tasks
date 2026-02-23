@@ -1,0 +1,18 @@
+---
+id: B238
+title: Missing catch-all error handler exposes stack traces
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- security
+- web
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.685008+00:00'
+started_at: '2026-02-23T05:59:32.685008+00:00'
+completed_at: '2026-02-23T05:59:53.241384+00:00'
+duration_minutes: 0.34260589999999996
+---
+endpoint.ex - Unhandled exceptions return raw 500 with Phoenix default

@@ -1,0 +1,17 @@
+---
+id: P15.M7.E5.T021
+title: 'T21: Supervisor-Subordinate Coordination'
+status: done
+estimate_hours: 6.0
+complexity: high
+priority: high
+depends_on:
+- P15.M7.E5.T020
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T09:03:53.569682+00:00'
+started_at: '2026-02-18T09:03:53.569682+00:00'
+completed_at: '2026-02-18T10:32:03.459884+00:00'
+duration_minutes: 88.16483655
+---
+Communication patterns (PubSub, Blackboard). Task delegation mechanisms. Results aggregation.

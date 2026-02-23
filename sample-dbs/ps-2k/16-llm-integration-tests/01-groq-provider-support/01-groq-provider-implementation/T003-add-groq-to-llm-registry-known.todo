@@ -1,0 +1,39 @@
+---
+id: P16.M1.E1.T003
+title: Add Groq to LLM Registry known providers
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T001
+tags:
+- llm
+- registry
+- groq
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:38:51.938271+00:00'
+started_at: '2026-02-14T02:38:51.938271+00:00'
+completed_at: '2026-02-14T02:50:20.506535+00:00'
+duration_minutes: 11.476137566666667
+---
+
+# Add Groq to LLM Registry known providers
+
+Update the LLM Registry and related files to include Groq as a known provider.
+
+## Requirements
+
+- Update `@known_providers` list in `PagServer.LLM.Registry` to include `:groq`
+- Add `:groq` to `@rate_limited_providers` list (Groq has rate limits)
+- Update `@provider_retry_defaults` to include Groq retry configuration
+- Update `@known_providers` in `lib/pag_server/templates/template.ex` if applicable
+- Add test for Groq in registry tests
+
+## Acceptance Criteria
+
+- [ ] `:groq` added to `@known_providers` list in Registry (registry.ex:43)
+- [ ] `:groq` added to `@rate_limited_providers` list (registry.ex:119)
+- [ ] Groq retry configuration added to `@provider_retry_defaults` (registry.ex:111-116)
+- [ ] Unit test added to `test/pag_server/llm/registry_test.exs` verifies Groq is recognized
+- [ ] No compilation warnings

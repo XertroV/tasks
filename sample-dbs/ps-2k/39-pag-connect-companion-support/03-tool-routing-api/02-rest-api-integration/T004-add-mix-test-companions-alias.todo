@@ -1,0 +1,31 @@
+---
+id: P39.M3.E2.T004
+title: Add mix test.companions alias and final verification
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P39.M3.E1.T003
+- P39.M3.E2.T003
+tags:
+- companion
+- testing
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.842186+00:00'
+started_at: '2026-02-19T11:40:33.842186+00:00'
+completed_at: '2026-02-19T11:47:25.639255+00:00'
+duration_minutes: 6.863284283333333
+---
+Add a mix test.companions alias for running all companion-related tests, and do final verification.
+
+## Modified file
+mix.exs — add to aliases:
+  "test.companions": ["test test/pag_server/companions/ test/pag_server_web/channels/companion_channel_test.exs test/pag_server_web/sockets/companion_socket_test.exs test/pag_server_web/controllers/workspace_companion_controller_test.exs"]
+
+## Final verification
+- [ ] mix test.companions passes (all companion tests)
+- [ ] mix lint passes (format + credo + dialyzer)
+- [ ] mix test passes (no regressions in full test suite)
+- [ ] Application boots cleanly with companion infrastructure

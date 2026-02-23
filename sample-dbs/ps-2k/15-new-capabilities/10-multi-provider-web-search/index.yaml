@@ -1,0 +1,50 @@
+id: P15.M10
+name: Multi-Provider Web Search
+status: pending
+estimate_hours: 32.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Provider Contract and Orchestrator
+  path: 01-provider-contract-and-orchestr
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Native API Providers (Brave, ZAI, DuckDuckGo)
+  path: 02-native-api-providers-brave-zai
+  status: pending
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: External Service Providers (CLI/MCP)
+  path: 03-external-service-providers-cli
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E4
+  name: Reliability, Telemetry, and Docs
+  path: 04-reliability-telemetry-and-docs
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 17
+  done: 17
+  in_progress: 0
+  blocked: 0
+  pending: 0

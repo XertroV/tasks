@@ -1,0 +1,37 @@
+---
+id: B184
+title: Browser backend health mismatches MCP registration state
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:03:44.576650+00:00'
+started_at: '2026-02-21T14:03:44.576650+00:00'
+completed_at: '2026-02-21T14:08:17.810268+00:00'
+duration_minutes: 4.55389345
+---
+browser_backend_health readiness checks companion base tool registry instead of MCP server registry, causing false not-ready when browsermcp.* tools are available. Also align headless_local readiness messaging with implemented plugin behavior and update docs/tests.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-21 14:03 UTC
+**Primary task**: B182 - pag-connect mcp tool task replies can target wrong process
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

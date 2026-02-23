@@ -1,0 +1,61 @@
+id: P4
+name: Tools System
+status: pending
+weeks: 4
+estimate_hours: 80
+complexity: high
+depends_on:
+- P3
+milestones:
+- id: M0
+  name: Directive Infrastructure
+  path: 00-directive-infrastructure
+  status: pending
+  estimate_hours: 24
+  complexity: critical
+  depends_on: []
+  description: Foundational directive-based architecture for tool system (Jido-inspired,
+    Apache 2.0)
+- id: M1
+  name: Tool Registry
+  path: 01-registry
+  status: pending
+  estimate_hours: 8
+  complexity: medium
+  depends_on:
+  - M0
+  description: Tool behaviour definition, registry GenServer, schema builder for LLM
+- id: M2
+  name: Built-in Tools
+  path: 02-builtin-tools
+  status: pending
+  estimate_hours: 20
+  complexity: high
+  depends_on:
+  - M0
+  - M1
+  description: File ops, shell execution, web search, agent comms, browser integration
+- id: M3
+  name: MCP Host
+  path: 03-mcp-host
+  status: pending
+  estimate_hours: 12
+  complexity: high
+  depends_on:
+  - M1
+  description: Model Context Protocol integration for external tool servers
+- id: M4
+  name: Sandboxing
+  path: 04-sandboxing
+  status: pending
+  estimate_hours: 16
+  complexity: critical
+  depends_on:
+  - M2
+  description: Port-based executor, Docker integration, resource limits
+stats:
+  total_tasks: 77
+  done: 77
+  in_progress: 0
+  blocked: 0
+  pending: 0

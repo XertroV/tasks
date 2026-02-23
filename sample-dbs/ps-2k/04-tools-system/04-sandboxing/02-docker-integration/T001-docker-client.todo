@@ -1,0 +1,69 @@
+---
+id: P4.M4.E2.T001
+title: Implement Docker API client
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags:
+- sandboxing
+- docker
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:24:48.493345'
+started_at: '2026-02-05T22:24:48.493345'
+completed_at: '2026-02-05T22:24:50.472522'
+duration_minutes: 0.03298611666666666
+---
+
+# Implement Docker API client
+
+Create Docker API client for container management.
+
+## Requirements
+
+- [ ] Implement HTTP client for Docker API
+- [ ] Support Unix socket and TCP connections
+- [ ] Authenticate with Docker daemon
+- [ ] Implement container CRUD operations
+- [ ] Handle API errors gracefully
+
+## Acceptance Criteria
+
+- [ ] Connects to Docker daemon
+- [ ] Creates containers via API
+- [ ] Lists and inspects containers
+- [ ] Handles auth and errors
+- [ ] Test with local Docker daemon
+- [ ] Works with Docker Desktop and Linux
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Docker integration
+
+## Notes
+
+Docker client:
+```elixir
+defmodule PAGServer.Tools.Sandbox.DockerClient do
+  use Tesla
+
+  plug Tesla.Middleware.BaseUrl, "http+unix://%2Fvar%2Frun%2Fdocker.sock"
+  plug Tesla.Middleware.JSON
+
+  def create_container(image, opts \\ []) do
+    body = %{
+      Image: image,
+      Cmd: opts[:cmd],
+      WorkingDir: opts[:workdir],
+      HostConfig: %{
+        Binds: opts[:binds]
+      }
+    }
+    
+    post("/containers/create", body)
+  end
+end
+```

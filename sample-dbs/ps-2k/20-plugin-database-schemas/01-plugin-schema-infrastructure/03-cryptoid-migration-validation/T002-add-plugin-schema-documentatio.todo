@@ -1,0 +1,20 @@
+---
+id: P20.M1.E3.T002
+title: Add plugin schema documentation and developer guide
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P20.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:30:55.410529+00:00'
+started_at: '2026-02-18T10:30:55.410529+00:00'
+completed_at: '2026-02-18T10:38:01.042829+00:00'
+duration_minutes: 7.093871433333334
+---
+## Acceptance Criteria
+- Update docs/PLUGIN_DEVELOPMENT.md (or create if needed) with section on plugin DB schemas
+- Document: how to declare migrations, table naming rules, KV store usage, migration versioning
+- Include CryptoId as a worked example

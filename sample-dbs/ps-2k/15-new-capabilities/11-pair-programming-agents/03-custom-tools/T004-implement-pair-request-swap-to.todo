@@ -1,0 +1,31 @@
+---
+id: P15.M11.E3.T004
+title: Implement pair_request_swap tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.220414+00:00'
+started_at: '2026-02-17T18:46:51.220414+00:00'
+completed_at: '2026-02-17T19:21:54.789460+00:00'
+duration_minutes: 35.059483883333336
+---
+## Description
+Either agent can request a role swap (coder becomes observer, observer becomes coder). The coordinator evaluates the request.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/tools/request_swap.ex`
+
+## Acceptance Criteria
+- [ ] Implements `@behaviour PagServer.Tools.Tool`
+- [ ] Sends swap request message to coordinator with reason
+- [ ] Includes requesting agent's current role in the message
+- [ ] Loads coordinator_id and pair_role from Blackboard config (Gotcha #1)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+See plan: .plan/pair-programming-agents.md, Epic 2, Task 2.4 for full code

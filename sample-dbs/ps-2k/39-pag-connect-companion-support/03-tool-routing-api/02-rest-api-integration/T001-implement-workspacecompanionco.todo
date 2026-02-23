@@ -1,0 +1,34 @@
+---
+id: P39.M3.E2.T001
+title: Implement WorkspaceCompanionController
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P39.M2.E1.T002
+tags:
+- companion
+- rest
+- controller
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.838678+00:00'
+started_at: '2026-02-19T11:40:33.838678+00:00'
+completed_at: '2026-02-19T11:45:10.781702+00:00'
+duration_minutes: 4.61571695
+---
+Create a REST controller for checking companion connection status.
+
+## New file
+lib/pag_server_web/controllers/workspace_companion_controller.ex
+
+## Design (from companion-support plan §10)
+- Single action: status/2
+- Checks CompanionRegistry.lookup(workspace_id)
+- Returns JSON:
+  - Connected: {connected: true, connected_at: ISO8601, registered_tools: [...]}
+  - Not connected: {connected: false, registered_tools: []}
+
+## Acceptance criteria
+- [ ] Controller compiles and renders correct JSON for both states
+- [ ] Follows existing controller patterns in the codebase

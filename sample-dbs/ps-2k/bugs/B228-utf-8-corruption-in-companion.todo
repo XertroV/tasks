@@ -1,0 +1,18 @@
+---
+id: B228
+title: UTF-8 corruption in companion output truncation
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- companion
+- encoding
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.093522+00:00'
+started_at: '2026-02-23T07:29:02.093522+00:00'
+completed_at: '2026-02-23T07:43:45.530687+00:00'
+duration_minutes: 14.723952633333333
+---
+companion_channel.ex:643-647 - binary_part can split multi-byte UTF-8 chars; use String.slice instead

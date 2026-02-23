@@ -1,0 +1,68 @@
+---
+id: P10.M4.E4.T001
+title: Design generic CI/CD webhook interface
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- design
+- ci-cd
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:07:57.256395+00:00'
+started_at: '2026-02-12T05:07:57.256395+00:00'
+completed_at: '2026-02-12T05:27:31.183713+00:00'
+duration_minutes: 19.565455133333334
+---
+
+# Design generic CI/CD webhook interface
+
+Design abstraction layer for handling webhooks from various CI/CD platforms.
+
+## Requirements
+
+- [ ] Design `PagServer.Integrations.CiCd.WebhookAdapter` behaviour
+- [ ] Define standard webhook event interface:
+  - [ ] Build/pipeline ID
+  - [ ] Status (pending, running, success, failure)
+  - [ ] Timestamp information
+  - [ ] URL/log references
+  - [ ] Associated repository/project info
+- [ ] Document platform-specific implementations:
+  - [ ] CircleCI adapter mapping
+  - [ ] Jenkins adapter mapping
+  - [ ] Drone adapter mapping
+- [ ] Design event routing based on webhook type
+- [ ] Document signature verification patterns
+- [ ] Create adapter integration tests
+
+## Acceptance Criteria
+
+- [ ] Behaviour module defined with required callbacks
+- [ ] Standard event struct supports all platform variations
+- [ ] Platform mappings clearly documented
+- [ ] Routing logic handles different event schemas
+- [ ] Example implementations for each platform
+- [ ] Integration tests verify adapter pattern works
+- [ ] `mix test` passes for all tests
+- [ ] `mix lint` passes without warnings
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M4.E4)
+**Agent**: cli-user
+**Date**: 2026-02-12 05:07 UTC
+**Sibling tasks**: P10.M4.E4.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M4.E4.T001 → P10.M4.E4.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M4.E4.T001: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/04-generic-ci-cd-webhook-handler/T001-design-generic-ci-cd-webhook-i.todo
+- P10.M4.E4.T002: .tasks/10-devops-developer-tool-integrat/04-ci-cd-platform-integrations/04-generic-ci-cd-webhook-handler/T002-implement-common-ci-cd-operati.todo

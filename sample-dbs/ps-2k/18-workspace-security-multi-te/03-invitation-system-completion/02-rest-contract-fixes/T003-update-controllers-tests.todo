@@ -1,0 +1,43 @@
+---
+id: P18.M3.E2.T003
+title: Update controllers and tests for param rename
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P18.M3.E2.T001
+tags:
+- api
+- workspace
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.645985+00:00'
+started_at: '2026-02-17T20:48:56.645985+00:00'
+completed_at: '2026-02-17T20:55:35.001005+00:00'
+duration_minutes: 6.6392500000000005
+---
+
+# Update controllers and tests for param rename
+
+## Description
+
+After normalizing route params, update all workspace controllers and their tests to use `workspace_id` instead of `id` for workspace identification.
+
+## Requirements
+
+- [ ] Update WorkspacesController: all `%{"id" => id}` patterns → `%{"workspace_id" => workspace_id}`
+- [ ] Update BotConfigsController: same pattern change
+- [ ] Update WorkspaceInvitationsController: same pattern change (some already use workspace_id)
+- [ ] Update all controller tests to use the new URL format `/workspaces/#{workspace_id}/...`
+- [ ] Verify all tests pass after changes
+
+## Acceptance Criteria
+
+- [ ] All controllers compile without unused variable warnings
+- [ ] All existing tests pass with updated URLs
+- [ ] No remaining references to `params["id"]` for workspace identification in workspace controllers
+
+## Context
+
+**Files affected**: All workspace-related controllers and their test files

@@ -1,0 +1,31 @@
+---
+id: P15.M11.E7.T002
+title: Unit tests for observation subscriber
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.232583+00:00'
+started_at: '2026-02-17T18:46:51.232583+00:00'
+completed_at: '2026-02-17T19:22:08.177267+00:00'
+duration_minutes: 35.28241123333333
+---
+## Description
+Test the ObservationSubscriber GenServer in isolation.
+
+## Files to Create
+- `test/pag_server/plugins/pair_programming/observation_subscriber_test.exs`
+
+## Acceptance Criteria
+- [ ] Test PubSub event handling and buffering
+- [ ] Test summarization trigger at correct interval
+- [ ] Test context injection via Api.inject_context
+- [ ] Test fallback when summarization fails
+- [ ] Test event formatting and truncation
+- [ ] Use `sleep_fn` pattern for timing-dependent tests
+- [ ] async: true
+- [ ] Tests pass
+- [ ] Lint passes

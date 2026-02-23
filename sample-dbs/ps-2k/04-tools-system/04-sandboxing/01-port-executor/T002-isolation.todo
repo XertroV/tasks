@@ -1,0 +1,59 @@
+---
+id: P4.M4.E1.T002
+title: Implement process isolation
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: critical
+depends_on:
+- P4.M4.E1.T001
+tags:
+- sandboxing
+- isolation
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:47:55.286734'
+started_at: '2026-02-05T11:47:55.286734'
+completed_at: '2026-02-05T11:56:25.314759'
+duration_minutes: 8.500466866666667
+---
+
+# Implement process isolation
+
+Add process isolation to prevent harmful operations.
+
+## Requirements
+
+- [ ] Restrict filesystem access to workspace
+- [ ] Drop privileges if running as root
+- [ ] Set process resource limits
+- [ ] Disable network access (optional)
+- [ ] Use process namespaces (Linux)
+
+## Acceptance Criteria
+
+- [ ] Process cannot access files outside workspace
+- [ ] Resource limits enforced
+- [ ] Runs with minimal privileges
+- [ ] Security test suite passes
+- [ ] Works on Linux and macOS
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Sandboxing domain
+
+## Notes
+
+Isolation using chroot/namespaces (Linux):
+```bash
+# Wrapped command execution
+unshare --user --pid --mount -- \
+  chroot /workspace \
+  /bin/sh -c "command"
+```
+
+For macOS, use sandbox-exec:
+```bash
+sandbox-exec -p profile.sb command
+```

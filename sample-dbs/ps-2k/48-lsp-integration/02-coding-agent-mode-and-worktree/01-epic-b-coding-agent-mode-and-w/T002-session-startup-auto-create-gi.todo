@@ -1,0 +1,16 @@
+---
+id: P48.M2.E1.T002
+title: 'Session startup: auto-create git worktree for coding_mode=worktree agents'
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:16.462347+00:00'
+started_at: '2026-02-20T08:51:16.462347+00:00'
+completed_at: '2026-02-20T09:06:08.305253+00:00'
+duration_minutes: 14.864048183333333
+---
+When agent with coding_mode=worktree starts a new session: check if workspace root is a git repo, create worktree at .worktrees/session-<session_id> on branch session/<session_id>, set session.working_directory and session.git_branch. Fall back to 'direct' mode with warning if not a git repo. Emit WorktreeCreated event.

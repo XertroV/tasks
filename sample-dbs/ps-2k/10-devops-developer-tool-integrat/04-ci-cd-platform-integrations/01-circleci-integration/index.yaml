@@ -1,0 +1,37 @@
+id: P10.M4.E1
+name: CircleCI Integration
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-circleci-api-client.todo
+  title: Create CircleCI API client
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-build-circleci-webhook-handler.todo
+  title: Build CircleCI webhook handler
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-circleci-build-trigg.todo
+  title: Implement CircleCI build trigger and monitoring
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

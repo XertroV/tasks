@@ -1,0 +1,107 @@
+---
+id: P11.M1.E1.T002
+title: Build AgentTemplate Ecto schema
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on:
+- P11.M1.E1.T001
+tags:
+- ecto
+- schema
+- model
+claimed_by: cli-user
+claimed_at: '2026-02-12T09:05:24.230867+00:00'
+started_at: '2026-02-12T09:05:24.230867+00:00'
+completed_at: '2026-02-12T09:40:27.091003+00:00'
+duration_minutes: 35.04766873333333
+---
+
+# Build AgentTemplate Ecto schema
+
+Create Ecto schema module `PagServer.Templates.AgentTemplate` to map agent_templates table with validation and embedded schemas.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/templates/agent_template.ex` module
+- [ ] Define AgentTemplate schema with:
+  - [ ] All fields from migration (id, name, description, category, etc.)
+  - [ ] `field :base_config` as map type (or embedded_schema if structured)
+  - [ ] `field :required_tools` as array
+  - [ ] `field :tags` as array
+  - [ ] Timestamps (inserted_at, updated_at)
+- [ ] Add changeset function with validations:
+  - [ ] `name` - required, string, length 1-100
+  - [ ] `description` - optional, string, max 1000 chars
+  - [ ] `category` - required, one of valid categories
+  - [ ] `version` - required, format validation (semver)
+  - [ ] `base_config` - required, must be valid map
+  - [ ] `is_public` - optional, boolean
+  - [ ] `required_tools` - optional, list of strings
+  - [ ] `tags` - optional, list of strings
+- [ ] Use `@primary_key {:id, :binary_id, autogenerate: true}`
+- [ ] Document valid category enum values
+- [ ] Add helper functions:
+  - [ ] `new_changeset/1` for creation
+  - [ ] `update_changeset/2` for updates
+
+## Acceptance Criteria
+
+- [ ] Schema compiles without warnings
+- [ ] Changeset validation rejects invalid data
+- [ ] Changeset accepts valid data
+- [ ] Timestamps work correctly
+- [ ] Field types match database column types
+- [ ] Struct can be created and inspected
+- [ ] Tests verify all validations
+
+## Context
+
+**Key Points**:
+- Changeset validations mirror database constraints
+- UUID primary key matches migration
+- base_config flexible storage for agent configuration
+- Category must be constrained to valid values
+- Version field supports template versioning
+
+## Notes
+
+Valid categories (expandable):
+- "research" - data analysis, information gathering
+- "coding" - code generation, debugging
+- "analysis" - document analysis, summarization
+- "creative" - content generation, brainstorming
+- "problem-solving" - planning, reasoning
+
+Example valid changeset:
+```elixir
+AgentTemplate.new_changeset(%{
+  name: "Research Assistant",
+  description: "Agent for gathering and analyzing information",
+  category: "research",
+  version: "1.0.0",
+  base_config: %{"model" => "claude-3-sonnet", "temperature" => 0.7},
+  is_public: true,
+  tags: ["research", "information-gathering"]
+})
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P11.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-12 09:05 UTC
+**Sibling tasks**: P11.M1.E1.T003, P11.M1.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P11.M1.E1.T002 → P11.M1.E1.T003 → P11.M1.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P11.M1.E1.T002: .tasks/11-api-first-configuration-system/01-agent-templates-presets-api/01-agent-template-schema-crud/T002-build-agenttemplate-ecto-schem.todo
+- P11.M1.E1.T003: .tasks/11-api-first-configuration-system/01-agent-templates-presets-api/01-agent-template-schema-crud/T003-create-agenttemplatecontroller.todo
+- P11.M1.E1.T004: .tasks/11-api-first-configuration-system/01-agent-templates-presets-api/01-agent-template-schema-crud/T004-add-template-validation-and-pe.todo

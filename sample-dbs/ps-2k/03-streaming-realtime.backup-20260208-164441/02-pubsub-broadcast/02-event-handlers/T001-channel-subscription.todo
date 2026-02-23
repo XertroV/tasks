@@ -1,0 +1,83 @@
+---
+title: Subscribe AgentChannel to agent PubSub topic on join
+epic: P3.M2.E2-02-event-handlers
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimated_hours: 1
+depends_on:
+- P3.M2.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:19:59.724565'
+started_at: '2026-02-06T16:19:59.724565'
+completed_at: '2026-02-06T16:23:44.215144'
+duration_minutes: 3.7415094666666664
+id: P3.M2.E2.T001
+---
+
+# Task: Subscribe AgentChannel to agent PubSub topic on join
+
+## Context
+Subscribe AgentChannel to agent PubSub topic on join as part of Phase 3 streaming and real-time functionality.
+
+## Goal
+Implement subscribe agentchannel to agent pubsub topic on join.
+
+## Requirements
+- Follow Phoenix/Elixir best practices
+- Include comprehensive tests
+- Add proper error handling
+- Document public APIs
+
+## Implementation
+
+### File: `lib/pag_server/...`
+
+```elixir
+# Implementation details go here
+# See architecture docs for specifics
+```
+
+## Acceptance Criteria
+- [ ] Implementation complete
+- [ ] Tests passing
+- [ ] Documentation updated
+- [ ] Error cases handled
+
+## Testing
+
+```elixir
+# test/pag_server/...
+defmodule PagServer...Test do
+  use ExUnit.Case, async: true
+  
+  # Test cases here
+end
+```
+
+## References
+- Phoenix documentation
+- Project architecture docs
+
+## Notes
+- Follow existing patterns
+- Consider edge cases
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 03:19 UTC
+**Sibling tasks**: P3.M2.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M2.E2.T001 → P3.M2.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M2.E2.T001: .tasks/03-streaming-realtime/02-pubsub-broadcast/02-event-handlers/T001-channel-subscription.todo
+- P3.M2.E2.T002: .tasks/03-streaming-realtime/02-pubsub-broadcast/02-event-handlers/T002-event-routing.todo

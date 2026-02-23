@@ -1,0 +1,41 @@
+---
+id: B007
+title: theh list of models for each prpovider should be dynamically updated (where
+  we hahve an API key) and should be sent to the webui when it needs them. this should
+  be available over our provided API, too. The webui should load these automatically.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:45:46.971725+00:00'
+started_at: '2026-02-15T16:45:46.971725+00:00'
+completed_at: '2026-02-15T16:53:55.298149+00:00'
+duration_minutes: 8.138773500000001
+---
+
+theh list of models for each prpovider should be dynamically updated (where we hahve an API key) and should be sent to the webui when it needs them. this should be available over our provided API, too. The webui should load these automatically.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 16:45 UTC
+**Primary task**: B006 - web ui: when provider is changed under settings, the list of models does not update
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

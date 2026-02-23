@@ -1,0 +1,45 @@
+---
+id: P18.M1.E1.T001
+title: Create workspace_members migration
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- security
+- workspace
+- migration
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:45:29.388701+00:00'
+started_at: '2026-02-17T16:45:29.388701+00:00'
+completed_at: '2026-02-17T16:47:02.432526+00:00'
+duration_minutes: 1.5507300833333335
+---
+
+# Create workspace_members migration
+
+## Description
+
+Create an Ecto migration adding the `workspace_members` table to support workspace-level RBAC.
+
+## Requirements
+
+- [ ] Create migration file with `mix ecto.gen.migration create_workspace_members`
+- [ ] Table columns: `id` (binary_id PK), `workspace_id` (references workspaces, on_delete: delete_all, not null), `user_id` (references users, on_delete: delete_all, not null), `role` (string, not null, default "member"), `invited_by` (references users, on_delete: nilify_all, nullable), `joined_at` (utc_datetime_usec, not null)
+- [ ] Add timestamps (inserted_at, updated_at as utc_datetime_usec)
+- [ ] Create unique index on `(workspace_id, user_id)`
+- [ ] Create index on `user_id`
+- [ ] Create index on `(workspace_id, role)`
+
+## Acceptance Criteria
+
+- [ ] Migration runs cleanly with `mix ecto.migrate`
+- [ ] Migration rolls back cleanly with `mix ecto.rollback`
+- [ ] Unique constraint prevents duplicate (workspace_id, user_id) pairs
+- [ ] Cascade delete works when workspace or user is deleted
+
+## Context
+
+**Files affected**: `priv/repo/migrations/`
+**Related schemas**: `PagServer.Schema.Workspace`, `PagServer.Schema.User`

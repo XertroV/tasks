@@ -1,0 +1,17 @@
+---
+id: P22.M1.E1.T002
+title: Migrate existing llm_providers.api_key_encrypted to new credentials table
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:53:14.487646+00:00'
+started_at: '2026-02-18T14:53:14.487646+00:00'
+completed_at: '2026-02-18T14:58:44.174395+00:00'
+duration_minutes: 5.494778800000001
+---
+Write a data migration (mix task or Ecto migration) that copies the existing api_key_encrypted from llm_providers into llm_provider_credentials with label='default', priority=1, status=:active. Do NOT drop api_key_encrypted from llm_providers yet (keep for backward compat). Acceptance criteria: - All existing providers get exactly one credential row after migration - label is 'default', priority=1, status=:active - Migration is idempotent (safe to re-run)

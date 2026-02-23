@@ -1,0 +1,50 @@
+id: P15.M12.E3
+name: 'BotConfigs Context: Public API Enhancements'
+status: pending
+estimate_hours: 3.0
+complexity: low
+depends_on:
+- P15.M12.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-promote-upsert-default-telegra.todo
+  title: Promote upsert_default_telegram_connector to BotConfigs context
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-bind-session-2-and-unbind.todo
+  title: Add bind_session/2 and unbind_session/1 to BotConfigs context
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on:
+  - P15.M12.E1.T003
+- id: T003
+  file: T003-add-create-connector-with-sess.todo
+  title: Add create_connector_with_session/3 to Workspaces context
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E3.T002
+- id: T004
+  file: T004-write-tests-for-botconfigs-con.todo
+  title: Write tests for BotConfigs context new public API
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P15.M12.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

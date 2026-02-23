@@ -1,0 +1,27 @@
+---
+id: P15.M7.E5.T015
+title: 'T15: Create Social Media Advisor Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:29:50.584428+00:00'
+started_at: '2026-02-18T10:29:50.584428+00:00'
+completed_at: '2026-02-18T10:32:24.159764+00:00'
+duration_minutes: 2.55958875
+---
+
+# T15: Create Social Media Advisor Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

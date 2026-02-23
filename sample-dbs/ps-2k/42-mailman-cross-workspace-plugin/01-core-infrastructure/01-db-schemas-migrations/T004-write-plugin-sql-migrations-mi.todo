@@ -1,0 +1,16 @@
+---
+id: P42.M1.E1.T004
+title: Write plugin SQL migrations (Migrations.V1)
+status: done
+estimate_hours: 0.7
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:13:36.045400+00:00'
+started_at: '2026-02-19T17:13:36.045400+00:00'
+completed_at: '2026-02-19T17:15:51.598891+00:00'
+duration_minutes: 2.2592246833333336
+---
+## Context\nUsing PagServer.Plugins.Schema.Migration pattern (see plugins/crypto_id/lib/migrations.ex for reference).\n\n## Acceptance Criteria\n- [ ] migrations.ex at plugins/mailman/lib/migrations.ex\n- [ ] V1 creates all three tables with raw SQL: plugin_mailman_mailboxes, plugin_mailman_messages, plugin_mailman_remote_servers\n- [ ] All FK references with ON DELETE CASCADE where appropriate\n- [ ] All indexes defined\n- [ ] down/0 drops tables in correct order\n- [ ] __plugin_migrations__/0 callback declared in MailmanPlugin module

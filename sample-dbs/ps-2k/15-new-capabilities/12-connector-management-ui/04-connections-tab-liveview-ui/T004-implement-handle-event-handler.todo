@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T004
+title: 'Implement handle_event handlers for connector drawer: open, save, delete'
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P15.M12.E4.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.181426+00:00'
+started_at: '2026-02-18T07:31:33.181426+00:00'
+completed_at: '2026-02-18T07:51:04.815719+00:00'
+duration_minutes: 19.527238033333333
+---
+Add to workspace_browser_live.ex: (1) handle_event('open_connector_drawer', %{'mode' => 'create'}, socket) — opens drawer in create mode, resets connector_form, loads workspace agents into assigns; (2) handle_event('open_connector_drawer', %{'mode' => 'edit', 'id' => id}, socket) — loads bot_config with session preload, populates connector_form; (3) handle_event('close_connector_drawer', ...) — closes drawer; (4) handle_event('save_connector', %{'connector' => attrs}, socket) — validates, calls Workspaces.create_connector_with_session/3 (create mode) or BotConfigs.update_bot_config + BotConfigs.bind_session/unbind_session (edit mode), refreshes connectors list; (5) handle_event('delete_connector', %{'id' => id}, socket) — permission check, BotConfigs.delete_bot_config, refresh. All require :manage_config permission check (use existing check_permission/3 helper). Emit audit log for create/delete/bind actions.

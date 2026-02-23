@@ -1,0 +1,56 @@
+---
+id: P4.M1.E2.T004
+title: Implement ToolExecutor for registered tools
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- P4.M1.E2.T002
+- P4.M1.E1.T003
+tags:
+- tools
+- executor
+- registry
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:06:02.517973'
+started_at: '2026-02-06T02:06:02.517973'
+completed_at: '2026-02-06T02:18:13.586918'
+duration_minutes: 12.18448225
+---
+
+# Implement ToolExecutor for registered tools
+
+
+
+## Requirements
+
+- [ ] Implement ToolExecutor module that executes tools registered in the tool registry by name and validates inputs against the registry schema.
+- [ ] Resolve tools via ToolRegistry/Registry GenServer (no direct module lookup) and handle missing tool name with a structured error.
+- [ ] Accept ToolCall schema payloads and normalize to a canonical internal structure (tool name, arguments map, call id, provider metadata).
+- [ ] Return provider-specific tool result formatting adapters to emit correct response shapes per LLM provider.
+- [ ] Support sync execution path and return timing metadata for tracing and persistence.
+
+## Context
+
+- [ ] Tool registry owns tool definitions and schemas; ToolExecutor should be the single execution entrypoint for registered tools.
+- [ ] ToolCall schema defines input contract between LLM requests and executor; ensure compatibility with schema builder output.
+- [ ] AgentServer will integrate ToolExecutor to run tools as part of the agent loop and submit formatted results back to providers.
+
+## Notes
+
+- [ ] Keep ToolExecutor error surface consistent with ToolCall schema (invalid args, unknown tool, execution failure).
+- [ ] Provider formatting must handle differences in tool result envelopes (e.g. provider id fields, result content fields).
+
+## Testing
+
+- [ ] Add or update tests in `test/pag_server/tools/tool_executor_test.exs`.
+- [ ] Add integration coverage in `test/pag_server/tools/registry_genserver_test.exs` for registry lookup + execution.
+- [ ] Add provider formatting unit tests in `test/pag_server/llm/tool_result_formatting_test.exs`.
+
+## Acceptance Criteria
+
+- [ ] ToolExecutor executes a registry tool by name using ToolCall schema inputs and returns a normalized result.
+- [ ] Unknown tool names and invalid args return structured errors without raising.
+- [ ] Provider-specific tool result formatting matches expected shape for at least one provider adapter.
+- [ ] Registry GenServer is the authoritative source for tool resolution in ToolExecutor.

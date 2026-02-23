@@ -1,0 +1,36 @@
+---
+id: P29.M2.E2.T001
+title: Implement Tailscale MCP tools
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P29.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:09:04.455612+00:00'
+started_at: '2026-02-18T19:09:04.455612+00:00'
+completed_at: '2026-02-18T19:13:17.987022+00:00'
+duration_minutes: 4.225523333333333
+---
+MCP tools: tailscale_connect(workspace_id, auth_key) -> {ip, hostname}, tailscale_disconnect(workspace_id), tailscale_status(workspace_id) -> {connected, ip, peers}. Located in plugins/tailscale/lib/.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P29.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 19:09 UTC
+**Sibling tasks**: P29.M2.E2.T002, P29.M2.E2.T003, P29.M2.E2.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P29.M2.E2.T001 → P29.M2.E2.T002 → P29.M2.E2.T003 → P29.M2.E2.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P29.M2.E2.T001: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/02-tailscale-mcp-tools-rest-api/T001-implement-tailscale-mcp-tools.todo
+- P29.M2.E2.T002: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/02-tailscale-mcp-tools-rest-api/T002-implement-tailscaleplugin-modu.todo
+- P29.M2.E2.T003: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/02-tailscale-mcp-tools-rest-api/T003-add-tailscale-rest-api-endpoin.todo
+- P29.M2.E2.T004: .tasks/29-crypto-identity-remote-access/02-tailscale-integration/02-tailscale-mcp-tools-rest-api/T004-write-tailscale-plugin-and-api.todo

@@ -1,0 +1,37 @@
+---
+id: P15.M5.E2.T002
+title: Implement contract net coordinator
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M5.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T17:04:22.344402+00:00'
+started_at: '2026-02-13T17:04:22.344402+00:00'
+completed_at: '2026-02-13T17:19:57.338026+00:00'
+duration_minutes: 15.583226716666667
+---
+
+# Implement contract net coordinator
+
+## Description
+Implement the coordinator that manages task auctions. Handle auction announcement, bid collection, winner selection, and contract monitoring.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.ContractNet.Coordinator` GenServer
+- [ ] Implement `announce_task(task_spec, eligible_agents)` function
+- [ ] Add bid collection with deadline enforcement
+- [ ] Implement winner selection with configurable strategy
+- [ ] Add contract award notification to winner
+- [ ] Implement contract monitoring and timeout handling
+- [ ] Add auction history and metrics tracking
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/coordinator.ex`, `lib/pag_server/cluster/pub_sub.ex`, `lib/pag_server/schema/agent.ex`
+- Part of epic: Contract Net Protocol
+- Use PubSub for auction announcements

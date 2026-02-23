@@ -1,0 +1,15 @@
+---
+id: F007
+type: fixed
+title: 'M3: Add recursive receive with catch-all for mismatched call_ids in CompanionMCPProxy'
+description: 'M3: Add recursive receive with catch-all for mismatched call_ids in
+  CompanionMCPProxy'
+status: done
+estimate_hours: 0.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+created_at: '2026-02-22T12:59:41.392640+00:00'
+completed_at: '2026-02-22T12:59:41.392640+00:00'
+---

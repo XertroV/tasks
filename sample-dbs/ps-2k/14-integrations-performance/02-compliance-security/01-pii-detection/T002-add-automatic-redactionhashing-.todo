@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T04:28:25.183768+00:00'
+started_at: '2026-02-13T04:28:25.183768+00:00'
+completed_at: '2026-02-13T05:18:39.156967+00:00'
+duration_minutes: 50.23288645
+---
+# Add automatic redaction/hashing options
+
+## Description
+Implement configurable strategies for handling detected PII including redaction, masking, hashing, and tokenization. Allow per-workspace configuration of which strategy to use for each PII type.
+
+## Acceptance Criteria
+- [ ] `PagServer.Compliance.PIIRedactor` module created
+- [ ] `redact/2` function applies redaction strategy to text
+- [ ] Strategies: `:mask` (partial masking), `:hash` (SHA256), `:tokenize` (reversible)
+- [ ] `:remove` strategy completely removes PII
+- [ ] `:replace` strategy substitutes with placeholder text
+- [ ] Per-PII-type strategy configuration
+- [ ] `PagServer.Compliance.PIIConfig` for workspace-level settings
+- [ ] Reversible tokenization for legitimate needs (encrypted store)
+- [ ] Audit trail of what was redacted
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/compliance/pii_detector.ex`
+- Part of epic: P14.M2.E1 - PII Detection

@@ -1,0 +1,54 @@
+id: P18
+name: Workspace Security & Multi-Tenancy Hardening
+status: pending
+weeks: 4
+estimate_hours: 78.0
+complexity: high
+depends_on: []
+milestones:
+- id: M1
+  name: Workspace Membership Foundation
+  path: 01-membership-foundation
+  status: pending
+  estimate_hours: 22.0
+  complexity: high
+  depends_on: []
+  description: Build workspace_members table, RBAC permission matrix, WorkspacePolicy
+    module, and RequireWorkspaceMembership plug. Foundation for all cross-workspace
+    isolation and invitation wiring.
+- id: M2
+  name: Cross-Workspace Isolation
+  path: 02-cross-workspace-isolation
+  status: pending
+  estimate_hours: 24.0
+  complexity: high
+  depends_on:
+  - P18.M1
+  description: Enforce workspace boundaries on PlatformConfig, agents, and sessions.
+    Add workspace-nested config API, scope flat agent/session routes by membership,
+    and add workspace-nested agent/session routes.
+- id: M3
+  name: Invitation System Completion
+  path: 03-invitation-system-completion
+  status: pending
+  estimate_hours: 14.0
+  complexity: medium
+  depends_on:
+  - P18.M1
+  description: Wire invitation acceptance to membership creation, fix REST contract
+    violations, normalize workspace path params, and add admin member management endpoints.
+- id: M4
+  name: Architectural Hardening
+  path: 04-architectural-hardening
+  status: pending
+  estimate_hours: 18.0
+  complexity: medium
+  depends_on: []
+  description: Workspace soft-delete, directory resolution consolidation into WorkspacePaths
+    module, and settings JSONB to embedded schema migration. Independent of M1-M3.
+stats:
+  total_tasks: 51
+  done: 51
+  in_progress: 0
+  blocked: 0
+  pending: 0

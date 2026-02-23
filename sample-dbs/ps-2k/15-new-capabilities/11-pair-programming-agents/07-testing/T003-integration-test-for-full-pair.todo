@@ -1,0 +1,34 @@
+---
+id: P15.M11.E7.T003
+title: Integration test for full pair session
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.233771+00:00'
+started_at: '2026-02-17T18:46:51.233771+00:00'
+completed_at: '2026-02-17T19:22:09.517203+00:00'
+duration_minutes: 35.30472366666667
+---
+## Description
+End-to-end test with mock LLM responses covering the complete pair session lifecycle.
+
+## Files to Create
+- `test/pag_server/plugins/pair_programming/integration_test.exs`
+
+## Acceptance Criteria
+- [ ] Start a pair session with mock config
+- [ ] Coder performs some tool calls (mocked)
+- [ ] Observer receives events and writes notes
+- [ ] Observer interrupts coder
+- [ ] Both enter review phase
+- [ ] Both approve
+- [ ] Session report generated correctly
+- [ ] Worktree cleaned up (if created)
+- [ ] All agents stopped after session complete
+- [ ] Use `async: false` (modifies global state)
+- [ ] Tests pass
+- [ ] Lint passes

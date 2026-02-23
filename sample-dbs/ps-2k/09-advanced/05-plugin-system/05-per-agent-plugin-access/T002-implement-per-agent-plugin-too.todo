@@ -1,0 +1,60 @@
+---
+id: P9.M5.E5.T002
+title: Implement per-agent plugin tool filtering in ToolExecutor
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E5.T001
+- P9.M5.E3.T001
+tags:
+- tools
+- filtering
+- per-agent
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:31:09.491336+00:00'
+started_at: '2026-02-07T05:31:09.491336+00:00'
+completed_at: '2026-02-07T05:55:46.210397+00:00'
+duration_minutes: 24.611984183333334
+---
+
+# Implement per-agent plugin tool filtering in ToolExecutor
+
+
+
+## Requirements
+
+- [x] Modify `ToolExecutor` to filter available tools based on agent's plugin capabilities:
+  - [x] Before listing available tools, filter plugin-namespaced tools
+  - [x] Only include tools from plugins the agent has access to (`:plugins` field)
+  - [x] Further filter by specific tool patterns (`:plugin_tools` field)
+- [x] Integrate with existing capability permission checks:
+  - [x] Plugin tool access checked alongside existing tool permissions
+  - [x] Both plugin access AND tool permission must be satisfied
+  - [x] Denied plugin tools excluded from tool list sent to LLM
+- [x] Cache filtered tool lists per agent to avoid repeated filtering:
+  - [x] Cache key: agent_id + plugin capabilities hash
+  - [x] Invalidate cache on: plugin enable/disable, capability change
+  - [x] Use Cachex or ETS for caching
+- [x] Handle edge cases:
+  - [x] Agent with no plugin access sees no plugin tools (only built-in tools)
+  - [x] Agent with `:all` plugins access sees all enabled plugin tools
+  - [x] Plugin disabled at runtime: tools removed from all agents' filtered lists
+
+## Acceptance Criteria
+
+- [x] Agents only see tools from plugins they have access to
+- [x] Plugin tool patterns correctly filter available tools (wildcard matching)
+- [x] Built-in (non-plugin) tools are unaffected by plugin filtering
+- [x] Filtered tool list is cached and cache invalidates correctly
+- [x] Runtime plugin disable removes tools from all affected agents
+- [x] Unit tests cover: full access, no access, partial access, wildcard, cache invalidation
+
+## Context
+
+- **Modifies**: `lib/pag_server/tools/executor.ex` (or equivalent ToolExecutor module)
+- **Depends on**: `PagServer.Security.Capabilities` plugin fields (E5.T001), `PagServer.Plugins.ToolRegistrar` (E3.T001)
+- **Uses**: `PagServer.Security.Capabilities.has_plugin_tool_access?/2` for access checks
+- **Caching**: Use existing Cachex infrastructure or ETS for filtered tool list cache
+- **Performance**: Filtering should add <1ms overhead with cache hit

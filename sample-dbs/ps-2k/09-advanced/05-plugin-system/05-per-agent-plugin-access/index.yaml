@@ -1,0 +1,52 @@
+id: P9.M5.E5
+name: Per-Agent Plugin Access
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- E1
+- E3
+tasks:
+- id: T001
+  file: T001-extend-agent-capabilities-sche.todo
+  title: Extend agent capabilities schema with plugin access control
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T002
+  file: T002-implement-per-agent-plugin-too.todo
+  title: Implement per-agent plugin tool filtering in ToolExecutor
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E5.T001
+  - P9.M5.E3.T001
+- id: T003
+  file: T003-implement-per-session-plugin-c.todo
+  title: Implement per-session plugin configuration override
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P9.M5.E5.T001
+- id: T004
+  file: T004-add-plugin-access-audit-loggin.todo
+  title: Add plugin access audit logging
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P9.M5.E5.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

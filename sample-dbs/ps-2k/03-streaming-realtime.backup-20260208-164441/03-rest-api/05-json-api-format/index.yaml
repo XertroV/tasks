@@ -1,0 +1,23 @@
+epic_id: P3.M3.E5
+name: JSON API Format
+description: Standardized JSON responses
+milestone: 03-rest-api
+phase: 03-streaming-realtime
+
+estimated_hours: 2
+priority: medium
+
+tasks:
+  - T001-json-views.todo
+  - T002-error-formatting.todo
+
+dependencies:
+  - P3.M3.E2
+
+acceptance_criteria:
+  - Consistent JSON format
+  - Standard error responses
+
+deliverables:
+  - JSON views
+  - Error formatter

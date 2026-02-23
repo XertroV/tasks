@@ -1,0 +1,60 @@
+---
+id: P9.M5.E4.T004
+title: Implement custom pruning strategy registration from plugins
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on:
+- P9.M5.E1.T004
+tags:
+- pruning
+- context
+claimed_by: cli-user
+claimed_at: '2026-02-11T07:04:27.891786+00:00'
+started_at: '2026-02-11T07:04:27.891786+00:00'
+completed_at: '2026-02-11T07:12:19.496434+00:00'
+duration_minutes: 7.860077283333334
+---
+
+# Implement custom pruning strategy registration from plugins
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/pruning_registrar.ex` module
+- [ ] Allow plugins to register custom pruning strategies:
+  - [ ] Strategy must implement `PagServer.Context.Pruning` behaviour callbacks
+  - [ ] `register_strategy/3` - (plugin_name, strategy_name, strategy_module)
+  - [ ] `unregister_strategy/2` - (plugin_name, strategy_name)
+- [ ] Namespace strategy names with plugin prefix:
+  - [ ] Registered as `:"<plugin_name>.<strategy_name>"` in strategy map
+  - [ ] Example: `:myplugin.semantic_pruning`
+- [ ] Validate strategy implementation:
+  - [ ] Check that module implements required `Pruning` behaviour callbacks
+  - [ ] Return `{:error, :invalid_strategy}` if callbacks are missing
+  - [ ] Validate at registration time, not at execution time
+- [ ] Register in `Pruning.Policy` strategy map:
+  - [ ] Add to available strategies list for agent configuration
+  - [ ] Strategy becomes selectable in agent/session config
+- [ ] Remove strategy on plugin disable:
+  - [ ] Agents using the strategy fall back to default pruning strategy
+  - [ ] Log warning when fallback occurs
+
+## Acceptance Criteria
+
+- [ ] Plugins can register pruning strategies implementing the Pruning behaviour
+- [ ] Strategy names are namespaced with plugin prefix
+- [ ] Invalid strategies (missing callbacks) are rejected at registration
+- [ ] Registered strategies appear in available strategy list
+- [ ] Disabling a plugin removes its strategies and agents fall back to default
+- [ ] Unit tests cover: registration, validation, namespace, execution, fallback on disable
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/pruning_registrar.ex`
+- **Integrates with**: `PagServer.Context.Pruning` behaviour, `PagServer.Context.Pruning.Policy`
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004)
+- **Used by**: `PagServer.Plugins.API` (E4.T006)
+- **Fallback**: Default pruning strategy used when plugin strategy becomes unavailable

@@ -1,0 +1,54 @@
+---
+id: P5.M1.E1.T007
+title: Add tests for session timeout and cleanup
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P5.M1.E1.T006
+tags:
+- session
+- lifecycle
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-07T08:00:46.415542+00:00'
+started_at: '2026-02-07T08:00:46.415542+00:00'
+completed_at: '2026-02-07T08:01:26.447611+00:00'
+duration_minutes: 0.6672009
+---
+
+# Add tests for session timeout and cleanup
+
+
+
+## Requirements
+
+- [ ] Add tests for session idle tracking updates and timeout enforcement.
+- [ ] Add tests for SessionJanitor closing idle sessions and invoking AgentSupervisor stop.
+- [ ] Cover configurable timeout values and default timeout behavior.
+- [ ] Use the sleep_fn pattern for any time-based assertions.
+- [ ] Keep tests fast and deterministic without real sleeps.
+
+## Acceptance Criteria
+
+- [ ] Tests confirm last_activity_at updates on message activity.
+- [ ] Tests confirm idle sessions are detected when timeout elapses.
+- [ ] Tests confirm SessionJanitor closes sessions and stops agents via AgentSupervisor.
+- [ ] Tests confirm configurable timeout overrides default behavior.
+- [ ] No non-ASCII characters added; YAML frontmatter unchanged.
+
+## Context
+
+- [ ] T005 adds session idle tracking; T006 adds SessionJanitor cleanup behavior.
+- [ ] This task ensures timeout and cleanup logic are verified by automated tests.
+
+## Notes
+
+- [ ] Prefer unit tests around SessionJanitor logic with mocked time via sleep_fn.
+- [ ] Include any required fixtures for sessions and agents without cross-test leakage.
+
+## Testing
+
+- [ ] Add unit tests for idle tracking and timeout calculations.
+- [ ] Add integration-style tests for SessionJanitor cleanup flow using sleep_fn.

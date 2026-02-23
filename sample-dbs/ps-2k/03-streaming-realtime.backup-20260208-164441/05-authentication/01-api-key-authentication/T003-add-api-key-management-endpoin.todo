@@ -1,0 +1,594 @@
+---
+id: P3.M5.E1.T003
+title: Add API key management endpoints
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P3.M5.E1.T001
+- P3.M5.E1.T002
+tags:
+- auth
+- api
+- crud
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:05:42.180555'
+started_at: '2026-02-06T14:05:42.180555'
+completed_at: '2026-02-06T14:15:31.057174'
+duration_minutes: 9.814610133333334
+---
+
+# Add API key management endpoints
+
+
+
+## Requirements
+
+- [ ] Create mix task `lib/mix/tasks/pag_server.create_api_key.ex` for bootstrap
+- [ ] Mix task creates first user + API key securely without HTTP
+- [ ] Create `lib/pag_server_web/controllers/api_key_controller.ex`
+- [ ] Create `lib/pag_server_web/controllers/api_key_json.ex` for JSON rendering
+- [ ] Implement CRUD endpoints:
+  - [ ] `POST /api/v1/keys` - Create new API key
+  - [ ] `GET /api/v1/keys` - List API keys (without full keys)
+  - [ ] `GET /api/v1/keys/:id` - Get single API key details
+  - [ ] `PATCH /api/v1/keys/:id` - Update API key (name, description, scopes)
+  - [ ] `DELETE /api/v1/keys/:id` - Revoke API key (soft delete)
+- [ ] Generate secure random API keys with format `pag_sk_<random>`
+- [ ] Return full key ONLY on creation (never retrievable afterward)
+- [ ] Add route definitions to `router.ex` with authentication required
+- [ ] Add comprehensive controller tests
+- [ ] Document API endpoints with examples
+- [ ] Update README.md with mix task usage for initial setup
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] Controller created at `lib/pag_server_web/controllers/api_key_controller.ex`
+- [ ] JSON view created at `lib/pag_server_web/controllers/api_key_json.ex`
+- [ ] Routes added to `router.ex`:
+  ```elixir
+  scope "/api/v1", PagServerWeb do
+    pipe_through :api_auth  # Requires authentication
+    
+    resources "/keys", ApiKeyController, only: [:create, :index, :show, :update, :delete]
+  end
+  ```
+- [ ] Mix task created at `lib/mix/tasks/pag_server.create_api_key.ex`
+- [ ] Mix task prompts for user email, name, and key name
+- [ ] Mix task creates user (if doesn't exist) and generates API key
+- [ ] Mix task outputs key once (not stored, not retrievable)
+- [ ] Mix task has --help documentation
+- [ ] README.md updated with setup instructions including mix task
+- [ ] `create/2` action:
+  - [ ] Accepts JSON: `{"name": "My Key", "description": "...", "scopes": [...], "project": "...", "expires_at": "..."}`
+  - [ ] Generates secure random key: `pag_sk_<32_bytes_base62>`
+  - [ ] Hashes key with SHA-256 before storing
+  - [ ] Extracts key prefix (first 12 chars)
+  - [ ] Inserts API key into database
+  - [ ] Returns 201 with full key in response (ONLY time it's visible)
+  - [ ] Returns validation errors as 422 if invalid
+- [ ] `index/2` action:
+  - [ ] Lists all API keys (scoped by project if `current_project` in assigns)
+  - [ ] Excludes revoked keys by default
+  - [ ] Supports `?include_revoked=true` query param
+  - [ ] Returns array of keys with safe fields (no key_hash)
+  - [ ] Includes: id, name, description, key_prefix, scopes, last_used_at, expires_at, revoked_at, inserted_at
+- [ ] `show/2` action:
+  - [ ] Returns single API key by ID
+  - [ ] Returns 404 if not found or wrong project scope
+  - [ ] Same safe fields as index
+- [ ] `update/2` action:
+  - [ ] Accepts JSON: `{"name": "...", "description": "...", "scopes": [...]}`
+  - [ ] Updates only allowed fields (cannot change key_hash, key_prefix, project)
+  - [ ] Returns 200 with updated key
+  - [ ] Returns 404 if not found
+  - [ ] Returns 422 on validation errors
+- [ ] `delete/2` action:
+  - [ ] Soft deletes by setting `revoked_at`
+  - [ ] Returns 204 No Content on success
+  - [ ] Returns 404 if not found
+  - [ ] Cannot revoke already-revoked key (idempotent)
+- [ ] JSON rendering:
+  - [ ] `render("index.json", %{api_keys: keys})` - Array of keys
+  - [ ] `render("show.json", %{api_key: key})` - Single key
+  - [ ] `render("create.json", %{api_key: key, raw_key: raw_key})` - Key with full raw_key
+  - [ ] `render("error.json", %{changeset: changeset})` - Validation errors
+- [ ] Error handling:
+  - [ ] 404 for not found
+  - [ ] 422 for validation errors
+  - [ ] 500 for unexpected errors (logged)
+- [ ] Security:
+  - [ ] Raw key NEVER stored in database
+  - [ ] Raw key NEVER returned except on creation
+  - [ ] Key generation uses `:crypto.strong_rand_bytes/1`
+  - [ ] Project scoping enforced (if applicable)
+- [ ] Tests cover all scenarios:
+  - [ ] Create key with valid params
+  - [ ] Create key with invalid params (validation errors)
+  - [ ] List keys (empty, single, multiple)
+  - [ ] List keys with project scoping
+  - [ ] Show key by ID
+  - [ ] Show non-existent key (404)
+  - [ ] Update key fields
+  - [ ] Update with invalid params
+  - [ ] Delete (revoke) key
+  - [ ] Delete already-revoked key (idempotent)
+  - [ ] Raw key only returned on creation
+- [ ] Documentation:
+  - [ ] Module docs with endpoint examples
+  - [ ] Function docs for each action
+  - [ ] Example curl commands in comments
+- [ ] No compilation warnings
+- [ ] Tests pass: `mix test test/pag_server_web/controllers/api_key_controller_test.exs`
+
+## Context
+
+**Purpose**: API key management endpoints allow users/admins to create, list, update, and revoke API keys programmatically. These endpoints form the control plane for authentication.
+
+**Design Decisions**:
+
+1. **Bootstrap Problem**: First key creation cannot require auth (chicken-egg). Solution:
+   - **Mix Task (Recommended)**: Create initial key via: `mix pag_server.create_api_key`
+   - Secure: No HTTP exposure, runs during deployment
+   - Creates first user + API key, outputs key once
+   - All subsequent keys require authentication
+   - Documented in README.md setup section
+
+2. **Key Generation**: Use `:crypto.strong_rand_bytes/1` + Base62 encoding for URL-safe keys
+3. **One-Time Display**: Raw key shown ONLY on creation response, never retrievable
+4. **Soft Delete**: Revocation sets `revoked_at`, doesn't delete row (audit trail)
+5. **Project Scoping**: If `current_project` set by auth plug, filter keys by project
+
+**Security Considerations**:
+- **Key Entropy**: 32 bytes (256 bits) provides strong security against brute force
+- **Storage**: Only hash stored, raw key never persisted
+- **Transport**: HTTPS required in production (raw key transmitted on creation)
+- **Logging**: Never log raw keys, only prefix
+
+**API Design**:
+- RESTful design: `/api/v1/keys` resource
+- JSON request/response bodies
+- Standard HTTP status codes
+- Consistent error format: `{"errors": {...}}`
+
+## Implementation Notes
+
+### Mix Task for Bootstrap
+
+Create `lib/mix/tasks/pag_server.create_api_key.ex`:
+
+```elixir
+defmodule Mix.Tasks.PagServer.CreateApiKey do
+  @moduledoc """
+  Creates a new user and API key for initial setup.
+  
+  This task is used during deployment to create the first admin API key
+  without requiring HTTP authentication.
+  
+  ## Examples
+  
+      mix pag_server.create_api_key
+      mix pag_server.create_api_key --email admin@example.com --name "Admin User"
+  """
+  
+  use Mix.Task
+  
+  alias PagServer.Repo
+  alias PagServer.Schema.{User, ApiKey}
+  
+  @shortdoc "Creates initial user and API key for authentication"
+  
+  @impl Mix.Task
+  def run(args) do
+    Mix.Task.run("app.start")
+    
+    {opts, _} = OptionParser.parse!(args, 
+      strict: [email: :string, name: :string, key_name: :string]
+    )
+    
+    email = opts[:email] || prompt("Enter user email")
+    name = opts[:name] || prompt("Enter user name")
+    key_name = opts[:key_name] || "Initial API Key"
+    
+    # Create or find user
+    user = case Repo.get_by(User, email: email) do
+      nil ->
+        Mix.shell().info("Creating new user: #{email}")
+        %User{}
+        |> User.create_changeset(%{email: email, name: name})
+        |> Repo.insert!()
+      
+      existing_user ->
+        Mix.shell().info("User already exists: #{email}")
+        existing_user
+    end
+    
+    # Generate API key
+    raw_key = generate_key()
+    key_hash = hash_key(raw_key)
+    key_prefix = String.slice(raw_key, 0, 12)
+    
+    api_key = %ApiKey{}
+    |> ApiKey.create_changeset(%{
+      user_id: user.id,
+      key_hash: key_hash,
+      key_prefix: key_prefix,
+      name: key_name,
+      scopes: ["admin:*"]  # Full admin access
+    })
+    |> Repo.insert!()
+    
+    Mix.shell().info("")
+    Mix.shell().info("API Key created successfully!")
+    Mix.shell().info("")
+    Mix.shell().info("User: #{user.email} (#{user.name})")
+    Mix.shell().info("Key Name: #{api_key.name}")
+    Mix.shell().info("Key Prefix: #{api_key.key_prefix}")
+    Mix.shell().info("")
+    Mix.shell().info("IMPORTANT: Save this key - it will not be shown again!")
+    Mix.shell().info("")
+    Mix.shell().info("API Key: #{raw_key}")
+    Mix.shell().info("")
+  end
+  
+  defp prompt(message) do
+    Mix.shell().prompt("#{message}: ") |> String.trim()
+  end
+  
+  defp generate_key do
+    random_bytes = :crypto.strong_rand_bytes(32)
+    encoded = Base.encode62(random_bytes)
+    "pag_sk_#{encoded}"
+  end
+  
+  defp hash_key(key) do
+    :crypto.hash(:sha256, key)
+    |> Base.encode16(case: :lower)
+  end
+end
+```
+
+### Key Generation Module
+
+Create `lib/pag_server/api_keys.ex` (context module):
+
+```elixir
+defmodule PagServer.ApiKeys do
+  @moduledoc """
+  Context module for API key management.
+  
+  Handles key generation, validation, and CRUD operations.
+  """
+
+  import Ecto.Query
+  alias PagServer.Repo
+  alias PagServer.Schema.ApiKey
+
+  @doc """
+  Generate a new secure API key.
+  
+  Format: pag_sk_<32_bytes_base62>
+  Example: pag_sk_3nF8mK9pQ7wL2xR5vY1zB6hC4tJ0sG8dA7eM
+  
+  Returns: {raw_key, key_hash, key_prefix}
+  """
+  @spec generate_key() :: {String.t(), String.t(), String.t()}
+  def generate_key do
+    raw_key = "pag_sk_" <> random_base62(32)
+    key_hash = hash_key(raw_key)
+    key_prefix = String.slice(raw_key, 0, 12)
+    
+    {raw_key, key_hash, key_prefix}
+  end
+
+  @doc "Create a new API key"
+  @spec create_api_key(map()) :: {:ok, ApiKey.t(), String.t()} | {:error, Ecto.Changeset.t()}
+  def create_api_key(attrs) do
+    {raw_key, key_hash, key_prefix} = generate_key()
+    
+    attrs =
+      attrs
+      |> Map.put(:key_hash, key_hash)
+      |> Map.put(:key_prefix, key_prefix)
+
+    case attrs
+         |> ApiKey.create_changeset()
+         |> Repo.insert() do
+      {:ok, api_key} -> {:ok, api_key, raw_key}
+      {:error, changeset} -> {:error, changeset}
+    end
+  end
+
+  @doc "List API keys (optionally filtered by project)"
+  @spec list_api_keys(keyword()) :: [ApiKey.t()]
+  def list_api_keys(opts \\ []) do
+    query = from(k in ApiKey, order_by: [desc: k.inserted_at])
+    
+    query =
+      if opts[:project] do
+        from(k in query, where: k.project == ^opts[:project])
+      else
+        query
+      end
+
+    query =
+      if opts[:include_revoked] do
+        query
+      else
+        from(k in query, where: is_nil(k.revoked_at))
+      end
+
+    Repo.all(query)
+  end
+
+  @doc "Get API key by ID"
+  @spec get_api_key(String.t(), keyword()) :: {:ok, ApiKey.t()} | {:error, :not_found}
+  def get_api_key(id, opts \\ []) do
+    query = from(k in ApiKey, where: k.id == ^id)
+    
+    query =
+      if opts[:project] do
+        from(k in query, where: k.project == ^opts[:project])
+      else
+        query
+      end
+
+    case Repo.one(query) do
+      nil -> {:error, :not_found}
+      api_key -> {:ok, api_key}
+    end
+  end
+
+  @doc "Update API key"
+  @spec update_api_key(ApiKey.t(), map()) :: {:ok, ApiKey.t()} | {:error, Ecto.Changeset.t()}
+  def update_api_key(api_key, attrs) do
+    api_key
+    |> ApiKey.update_changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc "Revoke API key (soft delete)"
+  @spec revoke_api_key(ApiKey.t()) :: {:ok, ApiKey.t()} | {:error, Ecto.Changeset.t()}
+  def revoke_api_key(api_key) do
+    api_key
+    |> ApiKey.revoke_changeset()
+    |> Repo.update()
+  end
+
+  # Private helpers
+
+  defp hash_key(key) do
+    :crypto.hash(:sha256, key)
+    |> Base.encode16(case: :lower)
+  end
+
+  defp random_base62(length) do
+    # Base62: a-zA-Z0-9 (URL-safe, readable)
+    chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    char_list = String.graphemes(chars)
+    
+    :crypto.strong_rand_bytes(length)
+    |> :binary.bin_to_list()
+    |> Enum.map(fn byte -> Enum.at(char_list, rem(byte, 62)) end)
+    |> Enum.join()
+  end
+end
+```
+
+### Controller Implementation
+
+```elixir
+defmodule PagServerWeb.ApiKeyController do
+  use PagServerWeb, :controller
+  
+  alias PagServer.ApiKeys
+
+  @doc """
+  Create a new API key.
+  
+  ## Example
+  
+      curl -X POST http://localhost:4000/api/v1/keys \\
+        -H "Content-Type: application/json" \\
+        -d '{
+          "name": "Production Key",
+          "description": "Key for production deployment",
+          "scopes": ["agents:read", "agents:write"],
+          "project": "my-project"
+        }'
+  """
+  def create(conn, params) do
+    case ApiKeys.create_api_key(params) do
+      {:ok, api_key, raw_key} ->
+        conn
+        |> put_status(:created)
+        |> render("create.json", api_key: api_key, raw_key: raw_key)
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render("error.json", changeset: changeset)
+    end
+  end
+
+  @doc "List all API keys"
+  def index(conn, params) do
+    opts = [
+      project: conn.assigns[:current_project],
+      include_revoked: params["include_revoked"] == "true"
+    ]
+    
+    api_keys = ApiKeys.list_api_keys(opts)
+    render(conn, "index.json", api_keys: api_keys)
+  end
+
+  @doc "Show single API key"
+  def show(conn, %{"id" => id}) do
+    case ApiKeys.get_api_key(id, project: conn.assigns[:current_project]) do
+      {:ok, api_key} ->
+        render(conn, "show.json", api_key: api_key)
+
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> render("error.json", message: "API key not found")
+    end
+  end
+
+  @doc "Update API key"
+  def update(conn, %{"id" => id} = params) do
+    with {:ok, api_key} <- ApiKeys.get_api_key(id, project: conn.assigns[:current_project]),
+         {:ok, updated_key} <- ApiKeys.update_api_key(api_key, params) do
+      render(conn, "show.json", api_key: updated_key)
+    else
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> render("error.json", message: "API key not found")
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render("error.json", changeset: changeset)
+    end
+  end
+
+  @doc "Revoke API key"
+  def delete(conn, %{"id" => id}) do
+    with {:ok, api_key} <- ApiKeys.get_api_key(id, project: conn.assigns[:current_project]),
+         {:ok, _revoked_key} <- ApiKeys.revoke_api_key(api_key) do
+      send_resp(conn, :no_content, "")
+    else
+      {:error, :not_found} ->
+        conn
+        |> put_status(:not_found)
+        |> render("error.json", message: "API key not found")
+
+      {:error, changeset} ->
+        conn
+        |> put_status(:unprocessable_entity)
+        |> render("error.json", changeset: changeset)
+    end
+  end
+end
+```
+
+### JSON View Implementation
+
+```elixir
+defmodule PagServerWeb.ApiKeyJSON do
+  alias PagServer.Schema.ApiKey
+
+  @doc "Render list of API keys"
+  def index(%{api_keys: api_keys}) do
+    %{data: Enum.map(api_keys, &data/1)}
+  end
+
+  @doc "Render single API key"
+  def show(%{api_key: api_key}) do
+    %{data: data(api_key)}
+  end
+
+  @doc "Render newly created API key with raw key"
+  def create(%{api_key: api_key, raw_key: raw_key}) do
+    %{
+      data: data(api_key),
+      key: raw_key,
+      warning: "This is the only time you will see the full API key. Store it securely."
+    }
+  end
+
+  @doc "Render error"
+  def error(%{changeset: changeset}) do
+    %{
+      errors: Ecto.Changeset.traverse_errors(changeset, fn {msg, opts} ->
+        Regex.replace(~r"%{(\w+)}", msg, fn _, key ->
+          opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+        end)
+      end)
+    }
+  end
+
+  def error(%{message: message}) do
+    %{errors: %{detail: message}}
+  end
+
+  # Private helper - safe API key representation (never includes key_hash)
+  defp data(%ApiKey{} = api_key) do
+    %{
+      id: api_key.id,
+      name: api_key.name,
+      description: api_key.description,
+      key_prefix: api_key.key_prefix,
+      project: api_key.project,
+      scopes: api_key.scopes,
+      last_used_at: api_key.last_used_at,
+      expires_at: api_key.expires_at,
+      revoked_at: api_key.revoked_at,
+      inserted_at: api_key.inserted_at,
+      updated_at: api_key.updated_at
+    }
+  end
+end
+```
+
+### Router Configuration
+
+Add to `lib/pag_server_web/router.ex`:
+
+```elixir
+scope "/api/v1", PagServerWeb do
+  pipe_through :api_optional_auth  # Bootstrap: allow unauthenticated key creation
+  
+  resources "/keys", ApiKeyController, only: [:create, :index, :show, :update, :delete]
+end
+```
+
+### Example Usage
+
+```bash
+# Create first API key (no auth required)
+curl -X POST http://localhost:4000/api/v1/keys \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Admin Key",
+    "scopes": ["*"]
+  }'
+
+# Response:
+{
+  "data": {
+    "id": "abc-123-...",
+    "name": "Admin Key",
+    "key_prefix": "pag_sk_3nF8m",
+    "scopes": ["*"],
+    ...
+  },
+  "key": "pag_sk_3nF8mK9pQ7wL2xR5vY1zB6hC4tJ0sG8dA7eM",
+  "warning": "This is the only time you will see the full API key. Store it securely."
+}
+
+# List keys (with auth)
+curl http://localhost:4000/api/v1/keys \
+  -H "Authorization: Bearer pag_sk_3nF8mK9pQ7wL2xR5vY1zB6hC4tJ0sG8dA7eM"
+
+# Revoke key
+curl -X DELETE http://localhost:4000/api/v1/keys/abc-123 \
+  -H "Authorization: Bearer pag_sk_..."
+```
+
+## Dependencies
+
+- Requires T001 (API key schema) to be complete
+- Requires T002 (validation plug) to be complete for protected routes
+- Context module `PagServer.ApiKeys` should be created before controller
+
+## Notes
+
+- **Production Setup**: After first key created, change pipeline from `:api_optional_auth` to `:api_auth` and require authentication
+- **Mix Task**: Consider adding `mix pag_server.create_api_key` for initial key generation
+- **Admin Scopes**: Define scope like `admin:*` or `keys:*` for key management permissions
+- **Rate Limiting**: Should be added to prevent brute force attacks on key creation
+- **Audit Log**: Future enhancement - log all key creation/revocation events

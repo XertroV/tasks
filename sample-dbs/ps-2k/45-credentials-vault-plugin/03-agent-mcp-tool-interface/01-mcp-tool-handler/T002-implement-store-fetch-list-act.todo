@@ -1,0 +1,17 @@
+---
+id: P45.M3.E1.T002
+title: Implement store, fetch, list action handlers
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P45.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.188983+00:00'
+started_at: '2026-02-19T19:17:35.188983+00:00'
+completed_at: '2026-02-19T19:50:48.968895+00:00'
+duration_minutes: 33.229665016666665
+---
+store: validate required args (name, value), optional (type, description, scope), call Vault.store/2, apply rate limiter on store (1 token cost). fetch: validate name, apply rate limiter (1 token cost for agent callers), call Vault.fetch_current/2, log access to vault_access_log. list: no rate limit cost, return metadata only (never values). All handlers must set scope from context defaults if not specified in args.

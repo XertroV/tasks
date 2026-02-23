@@ -1,0 +1,35 @@
+---
+id: P43.M2.E3.T003
+title: 'Registry integration test: verify llm_call_record row is inserted for a real
+  LLM call'
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:12:49.243028+00:00'
+started_at: '2026-02-20T00:12:49.243028+00:00'
+completed_at: '2026-02-20T00:17:24.885630+00:00'
+duration_minutes: 4.5940432
+---
+
+# Registry integration test: verify llm_call_record row is inserted for a real LLM call
+
+
+
+## Requirements
+
+- Confirm that the end-to-end path — Registry.chat → CallRecorder.insert_pending → provider call → CallRecorder.complete/fail — produces a persisted `llm_call_record` with correct metadata, without affecting the return value seen by the caller.
+
+## Acceptance Criteria
+
+- Test file `test/pag_server/llm/call_recorder_registry_integration_test.exs` exists (or tests are added to an existing registry test file) and uses `use PagServer.DataCase, async: true`.
+- A test configures a mock/stub LLM provider (using `Mox` or a test double registered for the test's provider key) that returns a successful response without making real HTTP calls.
+- The test calls `PagServer.LLM.Registry.chat/3` (or the equivalent entry-point) with opts that include `agent_id: "test-agent-123"`, `session_id: "test-session-456"`, and any other required fields.
+- After the call returns, the test polls the DB (max 300 ms) and asserts that at least one `LlmCallRecord` row exists with `agent_id: "test-agent-123"`, `session_id: "test-session-456"`, and `status` in `[:completed, :failed]` (either is acceptable depending on mock setup).
+- The test asserts that `provider` and `model` on the saved row match the values used in the call.
+- The test asserts that `Registry.chat/3` returns the mock LLM response to the caller (i.e. the recorder does not swallow or alter the return value).
+- A second test calls `Registry.chat/3` WITHOUT `agent_id`/`session_id` in opts and asserts it still succeeds (recorder is non-blocking and does not crash on missing context keys).
+- All tests pass with `mix test` on the relevant test file and complete in under 3 seconds.

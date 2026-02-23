@@ -1,0 +1,44 @@
+---
+id: P21.M1.E1.T005
+title: Implement ContainerManager GenServer for lifecycle
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P21.M1.E1.T001
+- P21.M1.E1.T002
+tags:
+- core
+- lifecycle
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.552015+00:00'
+started_at: '2026-02-18T12:21:44.552015+00:00'
+completed_at: '2026-02-18T12:44:22.247513+00:00'
+duration_minutes: 22.628258116666665
+---
+
+# Implement ContainerManager GenServer for lifecycle
+
+Core GenServer managing a single agent's container lifecycle.
+
+## Requirements
+
+- GenServer per agent container
+- Create container on init with proper volume mounts
+- Execute commands in container via Docker API
+- Handle container health monitoring
+- Graceful cleanup on terminate
+
+## Acceptance Criteria
+
+- [ ] `lib/pag_server/containers/container_manager.ex` exists
+- [ ] `start_link/1` with agent_id, workspace_id, session_type opts
+- [ ] `init/1` creates Docker container using existing `Docker.ex` module
+- [ ] `execute/3` runs command in container, returns result
+- [ ] `get_container_id/1` returns Docker container ID
+- [ ] `health_check/1` verifies container is running
+- [ ] `terminate/2` stops and removes container
+- [ ] Handles Docker API errors gracefully
+- [ ] Uses existing `DockerClient.ex` for API calls
+- [ ] Unit tests with mocked Docker client

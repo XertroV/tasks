@@ -1,0 +1,31 @@
+---
+id: P15.M6.E1.T003
+title: Expose template catalog via API and onboarding docs
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M6.E1.T002
+tags:
+- api
+- docs
+- onboarding
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:31:11.374825+00:00'
+started_at: '2026-02-17T17:31:11.374825+00:00'
+completed_at: '2026-02-17T17:31:55.676571+00:00'
+duration_minutes: 0.7383622666666666
+---
+
+# Expose template catalog via API and onboarding docs
+
+## Owner Outcome
+- I can discover templates through API/UI docs and reliably create a main agent without guessing fields.
+
+## Acceptance Criteria
+- [x] Add API endpoints (or equivalent existing router extension) for listing templates and creating agents from selected templates. *(Controller at `lib/pag_server_web/controllers/agent_templates_controller.ex` (1333 LoC) with 15+ endpoints including list, search, discover, instantiate, share, rate, version. Routes defined in `router.ex`.)*
+- [x] Include explicit error responses for unknown template slug, invalid model profile, and duplicate workspace agent name. *(Error handling exists in the controller for these cases.)*
+- [x] Update onboarding docs with request/response examples for template-driven creation. *(See `docs/guides/workspace-onboarding.md` — includes curl examples for listing templates, instantiating agents from templates, and expected error responses for 404/422 cases.)*
+- [x] Add acceptance note confirming this endpoint is consumed by workspace onboarding flow. *(The `/api/v1/templates/$TEMPLATE_ID/instantiate` endpoint is documented in the onboarding guide and consumed by the setup wizard LiveView via `AgentTemplates.create_agent_from_template/2`.)*
+- [x] Verify docs describe the <10 minute path: boot server, pick template, create main agent, move to Telegram connection. *(See `docs/guides/workspace-onboarding.md` section "Time budget (target <10 minutes)" with step-by-step breakdown.)*

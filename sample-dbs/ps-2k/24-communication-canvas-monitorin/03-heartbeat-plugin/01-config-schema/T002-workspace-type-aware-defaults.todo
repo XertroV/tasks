@@ -1,0 +1,27 @@
+---
+id: P24.M3.E1.T002
+title: Workspace-type-aware defaults for heartbeat plugin
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T16:01:28.230060+00:00'
+started_at: '2026-02-18T16:01:28.230060+00:00'
+completed_at: '2026-02-18T16:09:14.924020+00:00'
+duration_minutes: 7.778232466666666
+---
+
+# Workspace-type-aware defaults for heartbeat plugin
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

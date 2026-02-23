@@ -1,0 +1,21 @@
+---
+id: P54.M5.E1.T001
+title: Update browsermcp-companion-contract.md with generic MCP proxy protocol
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T12:49:31.548177+00:00'
+started_at: '2026-02-21T12:49:31.548177+00:00'
+completed_at: '2026-02-21T12:50:12.782061+00:00'
+duration_minutes: 0.6872312333333334
+---
+## Acceptance Criteria
+- [ ] docs/guides/browsermcp-companion-contract.md updated to describe the generic mcp_register/mcp_tool_call/mcp_tool_result/mcp_tool_error wire protocol with full JSON examples
+- [ ] BrowserMCP described as an instance of the generic protocol (not the only supported tool)
+- [ ] CompanionToolAdapter pattern documented: how to add new MCP-backed tools via adapter
+- [ ] ASCII diagram showing both deployment modes: local (plugin starts bunx on pag-server machine) and remote (pag-connect runs bunx on user's machine, proxies via mcp_register)
+- [ ] All JSON examples valid and consistent with actual implementation

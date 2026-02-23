@@ -1,0 +1,48 @@
+---
+id: P15.M9.E2.T001
+title: Create PagServer.Context.Sanitizer module with pairing repair algorithm
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- context
+- sanitizer
+- new-module
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:52:20.611650+00:00'
+started_at: '2026-02-17T13:52:20.611650+00:00'
+completed_at: '2026-02-17T13:57:26.166443+00:00'
+duration_minutes: 5.092579733333333
+---
+Create `lib/pag_server/context/sanitizer.ex` that repairs tool_call/result pairing
+in a message list. Non-destructive: operates on a copy of messages, does not modify
+state.context or DB.
+
+Algorithm:
+1. Walk messages in order, tracking pending tool call IDs from assistant messages
+2. When a tool_result arrives, consume the matching pending ID
+3. When a non-tool message arrives while pending IDs exist, flush synthetic error
+   results for all pending IDs before it
+4. Drop tool_result messages that don't match any pending ID (orphans)
+5. At end of list, flush any remaining pending IDs as synthetic errors
+
+Returns `{sanitized_messages, report}` where report includes counts of
+inserted_synthetic, dropped_orphans, and deduplicated.
+
+Reference: OpenClaw's `session-transcript-repair.ts` and `sanitizeSessionHistory()`
+Source: .plan/tool-call-resilience.md — Gap 4
+
+Files to create:
+- lib/pag_server/context/sanitizer.ex
+
+## Acceptance Criteria
+- [ ] Module exists at `PagServer.Context.Sanitizer`
+- [ ] `sanitize/2` accepts a list of context maps and returns `{list, report}`
+- [ ] Unmatched tool_calls get synthetic error results inserted
+- [ ] Orphaned tool_results (no matching tool_call) are dropped
+- [ ] Duplicate tool_results for the same call_id are deduplicated
+- [ ] Messages already correctly paired pass through unchanged
+- [ ] Report accurately reflects all modifications made
+- [ ] Synthetic error content tells the LLM the result was lost/interrupted

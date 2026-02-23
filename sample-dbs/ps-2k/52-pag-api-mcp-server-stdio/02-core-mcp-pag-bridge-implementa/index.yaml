@@ -1,0 +1,35 @@
+id: P52.M2
+name: Core MCP-PAG bridge implementation
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P52.M1
+locked: false
+epics:
+- id: E1
+  name: Protocol handlers and API bridge
+  path: 01-protocol-handlers-and-api-brid
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: Implement initialize/tools/list/tools/call handling and map MCP requests
+    to PAG API workflows.
+  locked: false
+- id: E2
+  name: Authentication and session routing
+  path: 02-authentication-and-session-rou
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: Support API key/token loading and workspace/session selection for tool
+    calls.
+  locked: false
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

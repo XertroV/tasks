@@ -1,0 +1,224 @@
+---
+id: P4.M2.E9.T001
+title: Implement git_status tool
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- tools
+- git
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:42:11.710788'
+started_at: '2026-02-06T02:42:11.710788'
+completed_at: '2026-02-06T02:53:29.631918'
+duration_minutes: 11.298685299999999
+---
+
+# Implement git_status tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/git_status.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Execute `git status --porcelain=v2` for machine-readable output
+- [ ] Validate workspace path is within allowed workspace
+- [ ] Parse porcelain v2 format into structured data
+- [ ] Use System.cmd or Porcelain for command execution
+- [ ] Support optional file path filtering
+
+## Acceptance Criteria
+
+- [ ] Executes `git status --porcelain=v2` in workspace directory
+- [ ] Validates workspace path exists and is within allowed workspace boundaries
+- [ ] Prevents path traversal attacks (blocks ../, absolute paths outside workspace)
+- [ ] Parses porcelain v2 output into structured data: modified, added, deleted, untracked, renamed files
+- [ ] Returns file paths relative to repository root
+- [ ] Handles errors: not a git repo, command not found, permission denied
+- [ ] Supports optional path parameter to filter status for specific files/directories
+- [ ] Returns branch name and tracking information (ahead/behind)
+- [ ] Returns conflict state if in merge/rebase
+- [ ] Test coverage: clean repo, modified files, untracked files, staged changes, non-git directory, path outside workspace
+- [ ] Security: validates all path inputs, prevents command injection through parameters
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use porcelain v2 format for machine-readable, stable output
+- Path validation essential: all paths must be within workspace
+- Command injection prevention: never interpolate user input into shell commands
+- Use System.cmd with list arguments or Porcelain for safe execution
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.GitStatus do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "git_status"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "git_status",
+      description: "Get git repository status",
+      parameters: %{
+        type: "object",
+        properties: %{
+          workspace: %{
+            type: "string",
+            description: "Repository path (must be within workspace)"
+          },
+          path: %{
+            type: "string",
+            description: "Optional file/directory path to filter status"
+          }
+        },
+        required: ["workspace"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"workspace" => workspace} = args, context) do
+    with :ok <- validate_workspace_path(workspace, context.workspace_root),
+         {:ok, output} <- run_git_status(workspace, args),
+         {:ok, status} <- parse_status(output) do
+      {:ok, status}
+    else
+      {:error, reason} -> {:error, "git status failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_workspace_path(path, root) do
+    abs_path = Path.expand(path)
+    abs_root = Path.expand(root)
+    
+    cond do
+      not String.starts_with?(abs_path, abs_root) ->
+        {:error, "Path outside workspace"}
+      String.contains?(path, "..") ->
+        {:error, "Path traversal not allowed"}
+      not File.dir?(abs_path) ->
+        {:error, "Directory does not exist"}
+      true ->
+        :ok
+    end
+  end
+
+  defp run_git_status(workspace, args) do
+    # Use list args to prevent shell injection
+    cmd_args = ["status", "--porcelain=v2", "--branch"]
+    cmd_args = if path = args["path"], do: cmd_args ++ [path], else: cmd_args
+    
+    case System.cmd("git", cmd_args, cd: workspace, stderr_to_stdout: true) do
+      {output, 0} -> {:ok, output}
+      {error, code} -> {:error, {code, error}}
+    end
+  end
+
+  defp parse_status(output) do
+    lines = String.split(output, "\n", trim: true)
+    
+    status = %{
+      branch: nil,
+      ahead: 0,
+      behind: 0,
+      modified: [],
+      added: [],
+      deleted: [],
+      untracked: [],
+      renamed: [],
+      conflicts: []
+    }
+    
+    parsed = Enum.reduce(lines, status, fn line, acc ->
+      parse_line(line, acc)
+    end)
+    
+    {:ok, parsed}
+  end
+
+  defp parse_line("# branch.head " <> branch, acc) do
+    %{acc | branch: String.trim(branch)}
+  end
+  
+  defp parse_line("# branch.ab +" <> rest, acc) do
+    [ahead, behind] = String.split(rest, " -")
+    %{acc | ahead: String.to_integer(ahead), behind: String.to_integer(String.trim(behind))}
+  end
+  
+  defp parse_line("1 " <> rest, acc) do
+    # Modified file: "1 .M N... 100644 100644 000000 <hash> <hash> file.txt"
+    parts = String.split(rest)
+    xy = Enum.at(parts, 0)
+    path = Enum.at(parts, -1)
+    
+    cond do
+      String.contains?(xy, "M") -> %{acc | modified: [path | acc.modified]}
+      String.contains?(xy, "A") -> %{acc | added: [path | acc.added]}
+      String.contains?(xy, "D") -> %{acc | deleted: [path | acc.deleted]}
+      true -> acc
+    end
+  end
+  
+  defp parse_line("? " <> path, acc) do
+    # Untracked file
+    %{acc | untracked: [String.trim(path) | acc.untracked]}
+  end
+  
+  defp parse_line("2 " <> rest, acc) do
+    # Renamed file
+    parts = String.split(rest)
+    path = parts |> Enum.drop(8) |> Enum.join(" ")
+    %{acc | renamed: [path | acc.renamed]}
+  end
+  
+  defp parse_line("u " <> rest, acc) do
+    # Unmerged/conflict
+    parts = String.split(rest)
+    path = Enum.at(parts, -1)
+    %{acc | conflicts: [path | acc.conflicts]}
+  end
+  
+  defp parse_line(_, acc), do: acc
+end
+```
+
+Example usage:
+```json
+{
+  "workspace": "/workspace/my-project",
+  "path": "src/"
+}
+```
+
+Example response:
+```json
+{
+  "branch": "main",
+  "ahead": 2,
+  "behind": 0,
+  "modified": ["src/app.ex", "mix.exs"],
+  "added": ["lib/new_module.ex"],
+  "deleted": [],
+  "untracked": ["temp.txt"],
+  "renamed": [],
+  "conflicts": []
+}
+```
+
+Security considerations:
+- Always validate workspace path is within allowed root
+- Use System.cmd with list arguments (never shell interpolation)
+- Block path traversal (../, absolute paths)
+- Validate git is available on system

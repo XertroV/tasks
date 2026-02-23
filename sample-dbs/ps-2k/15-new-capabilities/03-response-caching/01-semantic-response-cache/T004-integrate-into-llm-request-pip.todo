@@ -1,0 +1,37 @@
+---
+id: P15.M3.E1.T004
+title: Integrate into LLM request pipeline
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M3.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T21:21:45.256053+00:00'
+started_at: '2026-02-13T21:21:45.256053+00:00'
+completed_at: '2026-02-13T21:48:08.057763+00:00'
+duration_minutes: 26.380028316666667
+---
+
+# Integrate into LLM request pipeline
+
+## Description
+Integrate the semantic cache into the LLM request pipeline. Check cache before making API calls and store responses after successful completions. Add bypass option for cache-free requests.
+
+## Acceptance Criteria
+- [ ] Add cache check hook in LLM request pipeline
+- [ ] Implement cache lookup before API call
+- [ ] Store successful responses in cache with embeddings
+- [ ] Add `skip_cache` option for explicit cache bypass
+- [ ] Emit telemetry for cache hits/misses
+- [ ] Add response latency comparison (cached vs fresh)
+- [ ] Handle streaming responses (cache only after completion)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/` (provider modules), `lib/pag_server/agents/agent_server.ex`
+- Part of epic: Semantic Response Cache
+- Hook into existing LLM adapter infrastructure

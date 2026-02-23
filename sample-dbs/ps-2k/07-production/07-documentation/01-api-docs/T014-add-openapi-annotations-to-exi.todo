@@ -1,0 +1,93 @@
+---
+id: P7.M7.E1.T014
+title: Add OpenAPI annotations to existing endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P3.M6.E1.T003
+tags:
+- openapi
+- documentation
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:04:05.912236+00:00'
+started_at: '2026-02-08T06:04:05.912236+00:00'
+completed_at: '2026-02-08T06:10:31.898985+00:00'
+duration_minutes: 6.433112133333334
+---
+
+# Add OpenAPI annotations to existing endpoints
+
+## Context
+
+The OpenAPI infrastructure is scaffolded (spec module, Redoc UI, common schemas) but no controllers have `OpenApiSpex.operation` callbacks. The `/api/openapi.json` endpoint returns an empty `paths: %{}`. This task adds annotations to all existing (pre-P3.M3) endpoints so the spec is useful before the new agent/session endpoints are even built.
+
+## Requirements
+
+- [ ] Add `use OpenApiSpex.ControllerSpecs` to all existing controllers
+- [ ] Create request/response schemas in `lib/pag_server_web/schemas/`:
+  - [ ] `HealthSchemas` - health/ready response schemas
+  - [ ] `AuthSchemas` - refresh token request/response schemas
+  - [ ] `ApiKeySchemas` - CRUD request/response schemas (create, update, list, show)
+  - [ ] `PricingSchemas` - admin pricing list/show/refresh schemas
+- [ ] Add `operation` callbacks to each controller action:
+  - [ ] `HealthController.health` - GET /health
+  - [ ] `HealthController.ready` - GET /ready
+  - [ ] `AuthController.refresh` - POST /api/auth/refresh
+  - [ ] `ApiKeyController.create` - POST /api/v1/keys
+  - [ ] `ApiKeyController.index` - GET /api/v1/keys
+  - [ ] `ApiKeyController.show` - GET /api/v1/keys/:id
+  - [ ] `ApiKeyController.update` - PATCH /api/v1/keys/:id
+  - [ ] `ApiKeyController.delete` - DELETE /api/v1/keys/:id
+  - [ ] `Admin.PricingController.index` - GET /api/admin/pricing
+  - [ ] `Admin.PricingController.show` - GET /api/admin/pricing/:provider/:model
+  - [ ] `Admin.PricingController.refresh` - POST /api/admin/pricing/refresh
+- [ ] Document security requirements per endpoint (api_key, bearer, admin_key)
+- [ ] Add operation tags for Redoc grouping (Health, Authentication, API Keys, Admin)
+- [ ] Wire `OpenApiSpex.Plug.CastAndValidate` into `:api_auth` pipeline for request validation
+- [ ] Remove hardcoded `paths: %{}` from `ApiSpec.spec/0` (let resolve_schema_modules populate it)
+- [ ] Verify `/api/docs` (Redoc) renders all 12 endpoints correctly
+- [ ] Write test that `/api/openapi.json` returns non-empty paths
+
+## Acceptance Criteria
+
+- [ ] All 12 existing endpoints appear in `/api/openapi.json` with correct methods, paths, and schemas
+- [ ] Redoc UI at `/api/docs` renders all endpoints grouped by tag
+- [ ] Request/response schemas match actual controller behavior
+- [ ] Security requirements documented per endpoint
+- [ ] `CastAndValidate` plug validates incoming requests against schemas
+- [ ] `mix lint` passes
+- [ ] Tests pass
+
+## Files to Create/Modify
+
+- `lib/pag_server_web/schemas/health_schemas.ex` (new)
+- `lib/pag_server_web/schemas/auth_schemas.ex` (new)
+- `lib/pag_server_web/schemas/api_key_schemas.ex` (new)
+- `lib/pag_server_web/schemas/pricing_schemas.ex` (new)
+- `lib/pag_server_web/controllers/health_controller.ex` (add operations)
+- `lib/pag_server_web/controllers/auth_controller.ex` (add operations)
+- `lib/pag_server_web/controllers/api_key_controller.ex` (add operations)
+- `lib/pag_server_web/controllers/admin/pricing_controller.ex` (add operations)
+- `lib/pag_server_web/api_spec.ex` (remove hardcoded empty paths)
+- `lib/pag_server_web/router.ex` (add CastAndValidate)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 06:04 UTC
+**Sibling tasks**: P7.M7.E1.T015
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T014 → P7.M7.E1.T015
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T014: .tasks/07-production/07-documentation/01-api-docs/T014-add-openapi-annotations-to-exi.todo
+- P7.M7.E1.T015: .tasks/07-production/07-documentation/01-api-docs/T015-update-error-documentation-for.todo

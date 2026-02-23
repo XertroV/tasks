@@ -1,0 +1,19 @@
+---
+id: P19.M4.E3.T004
+title: Document workspace model
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- docs
+- architecture
+- workspaces
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:06:45.886179+00:00'
+started_at: '2026-02-18T03:06:45.886179+00:00'
+completed_at: '2026-02-18T03:16:05.798064+00:00'
+duration_minutes: 9.331864483333334
+---
+Document workspace/workspaces feature: lib/pag_server/workspaces.ex, lib/pag_server/schema/workspace.ex. Explain workspace scope, configuration hierarchy.

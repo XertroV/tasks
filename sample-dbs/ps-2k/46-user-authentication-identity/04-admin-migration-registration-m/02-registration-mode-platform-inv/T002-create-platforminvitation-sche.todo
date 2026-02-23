@@ -1,0 +1,38 @@
+---
+id: P46.M4.E2.T002
+title: Create PlatformInvitation schema and admin REST API
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P46.M4.E1.T002
+- P46.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:44:25.695933+00:00'
+started_at: '2026-02-20T05:44:25.695933+00:00'
+completed_at: '2026-02-20T05:51:53.680803+00:00'
+duration_minutes: 7.466414299999999
+---
+Platform-level invitations (separate from workspace invitations) allow admins to invite new users to the platform.
+
+Migration: create platform_invitations table:
+- id, email (unique per pending), token_hash (SHA-256), invited_by (user_id FK), expires_at (default 7 days), accepted_at, inserted_at, updated_at
+- Index on token_hash (unique), email+accepted_at
+
+Schema: lib/pag_server/accounts/platform_invitation.ex
+Context functions in Accounts:
+- create_platform_invitation/2 (admin_user, email) — generate token, hash, store. Return {:ok, invitation, raw_token}
+- get_platform_invitation_by_token/1 — lookup by hash, check not expired/accepted
+- accept_platform_invitation/1 — set accepted_at
+- list_pending_platform_invitations/0
+- revoke_platform_invitation/1
+
+Admin REST API (under :require_admin_api_key pipeline):
+  POST   /api/v1/admin/invitations        — create invitation
+  GET    /api/v1/admin/invitations        — list pending
+  DELETE /api/v1/admin/invitations/:id   — revoke
+
+Note: actual invitation email delivery is out of scope for this task (mark as TODO). The token can be sent manually or via future email integration.
+Acceptance: Admin can create/list/revoke platform invitations via API. UserProvisioner checks these in invite-only mode.

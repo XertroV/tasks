@@ -1,0 +1,22 @@
+id: P19.M3.E1
+name: Delete Low-Value Docs
+status: done
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-delete-more-things-to-do-md.todo
+  title: Delete MORE_THINGS_TO_DO.md
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

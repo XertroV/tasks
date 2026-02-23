@@ -1,0 +1,28 @@
+---
+id: P44.M3.E2.T001
+title: Refactor SlackCommandsController to use unified Dispatcher
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.171841+00:00'
+started_at: '2026-02-19T19:33:54.171841+00:00'
+completed_at: '2026-02-19T19:34:05.283136+00:00'
+duration_minutes: 0.1851881
+---
+## Summary
+Replace bespoke Slack command dispatch with unified Commands.Dispatcher. Migrate stats/help handlers.
+
+## Acceptance Criteria
+- [ ] SlackCommandsController.create/2 maps Slack subcommand -> unified command name and calls Commands.Dispatcher.dispatch/3
+- [ ] Context map includes: agent_id/session_id from Slack workspace session lookup, workspace_id, platform: :slack, sender from Slack user
+- [ ] /pag ask <question> remains: text is extracted and forwarded to agent (not a unified command — it's the default message path)
+- [ ] /pag stats, /pag help now route to unified Stats and Help handlers
+- [ ] Existing Commands.Stats and Commands.Help modules removed (logic absorbed into unified handlers)
+- [ ] Commands.Ask and Commands.Fork removed (ask -> default agent path, fork -> deferred)
+- [ ] CommandParser updated: removes ask/fork subcommands; maps stats/help to unified names
+- [ ] Async execution pattern preserved (Slack requires 3s ack + async response via response_url)
+- [ ] Tests: stats routes to unified handler, help routes to unified handler, unknown subcommand returns help

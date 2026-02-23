@@ -1,0 +1,23 @@
+id: P37.M1
+name: Core Thread Actions
+status: done
+estimate_hours: 20.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: send, spawn, status, interrupt
+  path: 01-send-spawn-status-interrupt
+  status: done
+  estimate_hours: 4.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

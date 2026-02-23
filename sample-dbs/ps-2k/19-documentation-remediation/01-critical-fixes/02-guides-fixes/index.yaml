@@ -1,0 +1,38 @@
+id: P19.M1.E2
+name: Guides Fixes
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-fix-workspace-onboarding-md-ap.todo
+  title: Fix workspace-onboarding.md API format
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-fix-security-hardening-md-rate.todo
+  title: Fix security-hardening.md RateLimiter config
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+- id: T003
+  file: T003-fix-production-setup-md-promet.todo
+  title: Fix production-setup.md PrometheusMetrics config
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: critical
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

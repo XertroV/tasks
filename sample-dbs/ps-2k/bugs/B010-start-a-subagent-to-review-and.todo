@@ -1,0 +1,40 @@
+---
+id: B010
+title: start a subagent to review and fix lint warnings. minimum 20. while there are
+  lint warnings remaining, add another bug back to keep fixing lint warnings.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-15T16:54:08.656430+00:00'
+started_at: '2026-02-15T16:54:08.656430+00:00'
+completed_at: '2026-02-15T17:02:25.180673+00:00'
+duration_minutes: 8.2754038
+---
+
+start a subagent to review and fix lint warnings. minimum 20. while there are lint warnings remaining, add another bug back to keep fixing lint warnings.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 16:54 UTC
+**Primary task**: B009 - hotreload not implemented for webui -- if hotreload is posisble, implement it
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

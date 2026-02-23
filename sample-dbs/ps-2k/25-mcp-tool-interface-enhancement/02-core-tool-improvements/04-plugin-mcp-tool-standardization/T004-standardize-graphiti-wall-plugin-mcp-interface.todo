@@ -1,0 +1,43 @@
+---
+id: P25.M2.E4.T004
+title: Standardize Graphiti Wall plugin MCP interface
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- mcp
+- plugin
+- tool-interface
+- graphiti-wall
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:18:52.830936+00:00'
+started_at: '2026-02-19T15:18:52.830936+00:00'
+completed_at: '2026-02-19T15:18:54.686861+00:00'
+duration_minutes: 0.030931916666666667
+---
+
+# Standardize Graphiti Wall plugin MCP interface
+
+## Scope
+
+- Audit `plugins/graphiti_wall/lib/graphiti_wall_plugin.ex`.
+- Plan conversion from:
+  - `wall_register`
+  - `wall_send_message`
+  - `wall_check_messages`
+- into one wall domain tool with operation dispatch.
+
+## Requirements
+
+- Define unified schema with operation enum and operation-specific argument docs.
+- Keep message/register semantics unchanged in planned behavior.
+- Document deterministic responses for each operation and explicit validation failures.
+
+## Acceptance Criteria
+
+- [ ] Single MCP tool schema defined with dispatch enum.
+- [ ] `wall_register`, `wall_send_message`, `wall_check_messages` mapped and documented.
+- [ ] Unknown operation errors include supported operations and context.
+- [ ] Migration/alias path for legacy tool names is specified.

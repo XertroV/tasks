@@ -1,0 +1,89 @@
+---
+id: P3.M6.E1.T002
+title: Migrate all plugs and controllers to unified error format
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P3.M6.E1.T001
+tags:
+- error-handling
+- api
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-08T03:27:23.954103+00:00'
+started_at: '2026-02-08T03:27:23.954103+00:00'
+completed_at: '2026-02-08T03:34:56.615442+00:00'
+duration_minutes: 7.5443554666666675
+---
+
+# Migrate all plugs and controllers to unified error format
+
+## Context
+
+After T001 creates the unified `ErrorHelpers` module, this task migrates all existing plugs and controllers to use it. Currently each plug/controller constructs its own JSON error responses with inconsistent shapes.
+
+## Requirements
+
+### Plug Migrations
+
+- [ ] `ApiKeyAuth` - replace inline `Jason.encode!` error responses with `ErrorHelpers.error_response/5`
+  - `invalid_api_key` -> 401
+  - `api_key_revoked` -> 401
+  - `api_key_expired` -> 401
+  - `missing_api_key` -> 401
+  - `insufficient_scopes` -> 403
+- [ ] `AdminAuth` - replace `%{status: "error", message: ...}` with `ErrorHelpers.error_response/4`
+  - `unauthorized` -> 401
+- [ ] `RequireAuth` - replace inline JSON with ErrorHelpers (already uses `%{error, message}` but manual)
+- [ ] `RequireBearerToken` - replace inline JSON with ErrorHelpers
+- [ ] `RequirePermissions` - replace inline JSON, preserve `missing_permissions` in `details`
+- [ ] `AuthorizeResource` - replace inline JSON with ErrorHelpers
+- [ ] `RateLimiter` - replace inline JSON, preserve rate limit info in `details`
+
+### Controller Migrations
+
+- [ ] `AuthController` - replace inline error handling with `action_fallback FallbackController`
+  - Or continue inline but use `ErrorHelpers.error_response/4`
+- [ ] `Admin.PricingController` - replace `%{status: "error", ...}` format
+  - Replace private `translate_errors/1` with shared `ErrorHelpers.changeset_errors/1`
+- [ ] `ApiKeyController` - already uses FallbackController, verify format matches
+  - Remove `ApiKeyJSON.error/1` changeset clause (use FallbackController instead)
+- [ ] `HealthController` - verify no error responses return 200
+
+### Cleanup
+
+- [ ] Remove duplicated changeset traversal from `ApiKeyJSON`
+- [ ] Remove duplicated changeset traversal from `PricingController`
+- [ ] Update `ErrorJSON` templates to use consistent format
+  - 429 template already has `%{error, message}` - verify consistency
+  - 402 template already has `%{error, message}` - verify consistency
+  - Catch-all template uses `%{errors: %{detail: msg}}` - update to `%{error, message}`
+
+## Acceptance Criteria
+
+- [ ] All plugs use `ErrorHelpers.error_response/4` or `/5` instead of manual JSON construction
+- [ ] All controllers return errors via FallbackController or ErrorHelpers
+- [ ] No more `%{status: "error", ...}` format anywhere
+- [ ] No more `%{errors: %{detail: ...}}` format anywhere (replaced with `%{error, message}`)
+- [ ] Changeset error rendering exists in exactly one place (`ErrorHelpers.changeset_errors/1`)
+- [ ] All existing plug tests pass (update assertions for new format)
+- [ ] All existing controller tests pass (update assertions for new format)
+- [ ] `mix lint` passes
+
+## Files to Modify
+
+- `lib/pag_server_web/plugs/api_key_auth.ex`
+- `lib/pag_server_web/plugs/admin_auth.ex`
+- `lib/pag_server_web/plugs/require_auth.ex`
+- `lib/pag_server_web/plugs/require_bearer_token.ex`
+- `lib/pag_server_web/plugs/require_permissions.ex`
+- `lib/pag_server_web/plugs/authorize_resource.ex`
+- `lib/pag_server_web/plugs/rate_limiter.ex`
+- `lib/pag_server_web/controllers/auth_controller.ex`
+- `lib/pag_server_web/controllers/admin/pricing_controller.ex`
+- `lib/pag_server_web/controllers/api_key_controller.ex`
+- `lib/pag_server_web/controllers/api_key_json.ex`
+- `lib/pag_server_web/controllers/error_json.ex`
+- Tests: update all affected test assertions for new error format

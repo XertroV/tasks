@@ -1,0 +1,42 @@
+---
+id: P39.M2.E1.T004
+title: Write PendingCalls and CompanionRegistry tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P39.M2.E1.T001
+- P39.M2.E1.T002
+tags:
+- companion
+- tests
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:28:22.463186+00:00'
+started_at: '2026-02-19T11:28:22.463186+00:00'
+completed_at: '2026-02-19T11:32:02.511281+00:00'
+duration_minutes: 3.667468083333333
+---
+Write comprehensive tests for PendingCalls and CompanionRegistry.
+
+## New files
+- test/pag_server/companions/pending_calls_test.exs
+- test/pag_server/companions/companion_registry_test.exs
+
+## PendingCalls test cases
+- register/2 + resolve/2 delivers {:companion_tool_result, call_id, result} to caller
+- register/2 + reject/2 delivers {:companion_tool_error, call_id, msg} to caller
+- Resolving unknown call_id returns {:error, :not_found}
+- ets.take ensures each call resolved exactly once (second resolve returns :not_found)
+
+## CompanionRegistry test cases
+- register/3 inserts entry, lookup/1 returns it
+- unregister/1 removes entry
+- connected?/1 returns true/false correctly
+- Monitoring: when channel pid dies, entry is auto-removed
+- Multiple workspaces don't interfere
+
+## Acceptance criteria
+- [ ] All test cases listed above are implemented and pass
+- [ ] Tests are async: true
+- [ ] Tests use unique names/IDs to avoid interference

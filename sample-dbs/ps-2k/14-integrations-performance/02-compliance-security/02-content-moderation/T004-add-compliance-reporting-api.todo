@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T05:37:49.199327+00:00'
+started_at: '2026-02-13T05:37:49.199327+00:00'
+completed_at: '2026-02-13T06:07:17.165236+00:00'
+duration_minutes: 29.466098199999998
+---
+# Add compliance reporting API
+
+## Description
+Create API endpoints for generating compliance reports summarizing moderation actions, PII detections, and policy violations over configurable time periods.
+
+## Acceptance Criteria
+- [ ] `PagServerWeb.Api.ComplianceController` created
+- [ ] `GET /api/compliance/reports` endpoint with date range params
+- [ ] Report includes: total scans, violations by type, actions taken
+- [ ] `GET /api/compliance/reports/export` for file download
+- [ ] Export formats: CSV, JSON (via `format` param)
+- [ ] Streaming response for large reports
+- [ ] Rate limited to prevent abuse
+- [ ] Admin-only access with workspace scope
+- [ ] Summary statistics endpoint for dashboards
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/compliance/audit_log.ex`, `lib/pag_server_web/controllers/`
+- Part of epic: P14.M2.E2 - Content Moderation

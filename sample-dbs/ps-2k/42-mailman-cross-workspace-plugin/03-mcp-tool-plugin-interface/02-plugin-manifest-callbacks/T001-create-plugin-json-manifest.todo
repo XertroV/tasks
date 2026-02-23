@@ -1,0 +1,21 @@
+---
+id: P42.M3.E2.T001
+title: Create plugin.json manifest
+status: done
+estimate_hours: 0.3
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:30:13.887918+00:00'
+started_at: '2026-02-19T17:30:13.887918+00:00'
+completed_at: '2026-02-19T17:36:55.896972+00:00'
+duration_minutes: 6.700150733333333
+---
+## Acceptance Criteria
+- [ ] plugins/mailman/plugin.json with name: mailman, version: 1.0.0, description
+- [ ] config.module: PagServer.Plugins.Mailman.MailmanPlugin
+- [ ] capabilities.tools: [workspace_mail]
+- [ ] events.subscribe: mailman:* topic (for cross-workspace PubSub)
+- [ ] limits: max_agents: 1 per workspace (the mailman agent)

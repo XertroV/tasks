@@ -1,0 +1,170 @@
+---
+id: P2.M7.E3.T001
+title: Integrate tokenizer and pricing
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- integration
+- cost
+- stats
+claimed_by: claude-1
+claimed_at: '2026-02-05T19:02:32.525527'
+started_at: '2026-02-05T19:02:32.525527'
+completed_at: '2026-02-05T19:14:22.388756'
+duration_minutes: 11.83105365
+---
+
+# Integrate tokenizer and pricing
+
+Create a unified Stats module that integrates tokenizer and pricing for comprehensive cost tracking.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/stats.ex` module (if not exists)
+- [ ] Add `calculate_request_cost/3` function (messages, model, response)
+- [ ] Count prompt tokens from input messages
+- [ ] Count completion tokens from response
+- [ ] Identify cached tokens (Anthropic prompt caching)
+- [ ] Calculate costs using Pricing module
+- [ ] Return comprehensive stats map
+- [ ] Add helper for session-level aggregation
+
+## Acceptance Criteria
+
+- [ ] `Stats.calculate_request_cost/3` returns complete cost breakdown
+- [ ] Prompt, completion, and cached tokens counted separately
+- [ ] Costs calculated in millicents for all token types
+- [ ] Total cost is sum of all token type costs
+- [ ] Module integrates Tokenizer and Pricing correctly
+- [ ] Documentation explains input/output format
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.Stats do
+  @moduledoc """
+  LLM usage statistics and cost calculation.
+  
+  Integrates tokenizer and pricing for comprehensive
+  tracking of LLM costs per request and session.
+  """
+
+  alias PagServer.Context.Tokenizer
+  alias PagServer.LLM.Pricing
+
+  @doc """
+  Calculate cost for a single LLM request.
+  
+  Returns detailed breakdown of tokens and costs.
+  
+  ## Example
+  
+      iex> messages = [%{"role" => "user", "content" => "Hello"}]
+      iex> response = %{"content" => "Hi there!", "usage" => %{...}}
+      iex> Stats.calculate_request_cost(messages, "claude-sonnet-4", response)
+      %{
+        prompt_tokens: 100,
+        completion_tokens: 50,
+        cached_tokens: 0,
+        prompt_cost_millicents: 300,
+        completion_cost_millicents: 750,
+        cached_cost_millicents: 0,
+        total_cost_millicents: 1050
+      }
+  """
+  @spec calculate_request_cost(list(map()), String.t(), map()) :: map()
+  def calculate_request_cost(messages, model, response) do
+    # Count tokens
+    prompt_tokens = count_prompt_tokens(messages, model)
+    completion_tokens = count_completion_tokens(response, model)
+    cached_tokens = get_cached_tokens(response)
+
+    # Calculate costs
+    prompt_cost = Pricing.calculate_cost(prompt_tokens, model, :prompt)
+    completion_cost = Pricing.calculate_cost(completion_tokens, model, :completion)
+    cached_cost = Pricing.calculate_cost(cached_tokens, model, :cached)
+
+    %{
+      prompt_tokens: prompt_tokens,
+      completion_tokens: completion_tokens,
+      cached_tokens: cached_tokens,
+      prompt_cost_millicents: prompt_cost,
+      completion_cost_millicents: completion_cost,
+      cached_cost_millicents: cached_cost,
+      total_cost_millicents: prompt_cost + completion_cost + cached_cost
+    }
+  end
+
+  @doc """
+  Aggregate stats for a session.
+  
+  Sums token counts and costs across multiple requests.
+  """
+  @spec aggregate_session_stats(list(map())) :: map()
+  def aggregate_session_stats(request_stats) do
+    Enum.reduce(request_stats, %{
+      prompt_tokens: 0,
+      completion_tokens: 0,
+      cached_tokens: 0,
+      prompt_cost_millicents: 0,
+      completion_cost_millicents: 0,
+      cached_cost_millicents: 0,
+      total_cost_millicents: 0
+    }, fn stats, acc ->
+      %{
+        prompt_tokens: acc.prompt_tokens + stats.prompt_tokens,
+        completion_tokens: acc.completion_tokens + stats.completion_tokens,
+        cached_tokens: acc.cached_tokens + stats.cached_tokens,
+        prompt_cost_millicents: acc.prompt_cost_millicents + stats.prompt_cost_millicents,
+        completion_cost_millicents: acc.completion_cost_millicents + stats.completion_cost_millicents,
+        cached_cost_millicents: acc.cached_cost_millicents + stats.cached_cost_millicents,
+        total_cost_millicents: acc.total_cost_millicents + stats.total_cost_millicents
+      }
+    end)
+  end
+
+  # Private functions
+
+  defp count_prompt_tokens(messages, model) do
+    messages
+    |> Enum.map(& &1["content"])
+    |> Enum.join(" ")
+    |> Tokenizer.count_tokens(model)
+  end
+
+  defp count_completion_tokens(response, model) do
+    content = response["content"] || ""
+    Tokenizer.count_tokens(content, model)
+  end
+
+  defp get_cached_tokens(response) do
+    # Extract from usage metadata if available
+    get_in(response, ["usage", "cache_read_input_tokens"]) || 0
+  end
+end
+```
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md:1268-1280` (Stats calculation example)
+- `.plan/2026-02-05-velvet-cascade/index.md:278-287` (Stats schema)
+
+**Key Points**:
+- Stats module orchestrates Tokenizer + Pricing
+- Supports per-request and per-session aggregation
+- Cached tokens come from LLM response usage metadata
+- All costs in millicents for database storage
+
+## Notes
+
+This integration enables tracking at multiple levels:
+1. **Request level**: Individual LLM call
+2. **Session level**: Entire conversation
+3. **Agent level**: All sessions for an agent
+4. **Time period**: Hourly/daily aggregations
+
+The Stats schema (.plan/index.md:269) stores these in the database for observability and billing.

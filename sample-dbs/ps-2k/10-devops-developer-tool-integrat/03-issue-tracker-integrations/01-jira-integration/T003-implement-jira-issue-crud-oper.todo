@@ -1,0 +1,115 @@
+---
+id: P10.M3.E1.T003
+title: Implement Jira issue CRUD operations
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T02:33:32.512331+00:00'
+started_at: '2026-02-12T02:33:32.512331+00:00'
+completed_at: '2026-02-12T02:59:08.991702+00:00'
+duration_minutes: 25.607988983333332
+---
+
+# Implement Jira issue CRUD operations
+
+Implement complete CRUD operations for Jira issues with workflow state management.
+
+## Requirements
+
+### Create (POST /rest/api/3/issues)
+- [ ] Accept fields: project key, issue type, summary, description, assignee, priority, labels
+- [ ] Validate required fields before API call
+- [ ] Return created issue key, id, and full issue object
+- [ ] Support custom field mapping via configuration
+- [ ] Handle validation errors with field-level detail
+
+### Read (GET /rest/api/3/issues/{issueKey})
+- [ ] Fetch single issue with all fields expanded
+- [ ] Return issue key, id, summary, description, status, assignee, priority, labels, timestamps
+- [ ] Include custom fields based on configuration
+- [ ] Handle 404 (issue not found) gracefully
+- [ ] Support bulk fetch (max 50 issues per request)
+
+### Update (PUT /rest/api/3/issues/{issueKey})
+- [ ] Support field updates: summary, description, priority, assignee, labels, custom fields
+- [ ] Implement batch updates (multiple fields in single request)
+- [ ] Add comments via separate endpoint (POST /rest/api/3/issues/{issueKey}/comments)
+- [ ] Validate update payloads and field compatibility
+- [ ] Return updated issue object after changes
+
+### Delete (DELETE /rest/api/3/issues/{issueKey})
+- [ ] Soft-delete support (move to archive/deleted status)
+- [ ] Hard-delete via API if permitted
+- [ ] Return success/failure confirmation
+- [ ] Handle permission errors
+
+### Workflow Management
+- [ ] Fetch available transitions: GET /rest/api/3/issues/{issueKey}/transitions
+- [ ] Transition issue to new status: POST /rest/api/3/issues/{issueKey}/transitions
+- [ ] Support transition comments
+- [ ] Validate target states are available
+
+## Acceptance Criteria
+
+- [ ] Create returns new issue with all provided fields
+- [ ] Read fetches all standard and configured custom fields
+- [ ] Update applies changes atomically (all-or-nothing)
+- [ ] Bulk update handles partial failures appropriately
+- [ ] Comments are added to issue and visible immediately
+- [ ] Delete marks issue as deleted (or soft-deletes if configured)
+- [ ] Transitions list available workflow states
+- [ ] Transition executes and updates status
+- [ ] Error messages include field-level details for validation errors
+- [ ] Handle permission errors (403) clearly
+- [ ] Unit tests cover all operations, error cases, field mapping
+- [ ] Integration test verifies CRUD with Jira sandbox
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Field Mapping Configuration**:
+```elixir
+config :pag_server, :jira_fields,
+  custom_fields: %{
+    "customfield_10000" => :epic_link,
+    "customfield_10001" => :story_points
+  }
+```
+
+**Bulk Fetch**:
+```elixir
+# Fetch multiple issues
+[issues] = Client.get_issues(["PROJ-1", "PROJ-2", "PROJ-3"], client)
+```
+
+**API Endpoints**:
+- Create: POST /rest/api/3/issues
+- Get: GET /rest/api/3/issues/{issueKey}
+- Update: PUT /rest/api/3/issues/{issueKey}
+- Delete: DELETE /rest/api/3/issues/{issueKey}
+- Transitions: GET|POST /rest/api/3/issues/{issueKey}/transitions
+- Comments: POST /rest/api/3/issues/{issueKey}/comments
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/jira/operations_test.exs
+
+# Integration with Jira sandbox
+JIRA_ISSUE_PROJECT=TEST mix test test/pag_server/integrations/jira/operations_test.exs --include integration
+```
+
+## Verification
+
+```bash
+# Verify field mapping is correct
+mix test test/pag_server/integrations/jira/operations_test.exs -k "field"
+
+# Check file size
+wc -l lib/pag_server/integrations/jira/operations.ex
+```

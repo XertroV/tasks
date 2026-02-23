@@ -1,0 +1,35 @@
+---
+id: P15.M10.E4.T002
+title: Add provider adapter tests with mocked HTTP and malformed payload coverage
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M10.E2.T001
+- P15.M10.E2.T002
+- P15.M10.E2.T003
+tags:
+- test
+- web-search
+- providers
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:12:10.265041+00:00'
+started_at: '2026-02-17T16:12:10.265041+00:00'
+completed_at: '2026-02-17T16:14:05.994933+00:00'
+duration_minutes: 1.9288312833333334
+---
+
+# Add provider adapter tests with mocked HTTP and malformed payload coverage
+
+
+
+## Requirements
+
+- Add adapter tests for Brave, ZAI, and DuckDuckGo with mocked HTTP responses.
+- Cover malformed payload, timeout, and rate-limit/error-body handling for each adapter.
+
+## Acceptance Criteria
+
+- Adapter tests verify normalization of happy-path payloads across providers.
+- Failure-mode tests assert provider-specific responses are mapped to shared error taxonomy.

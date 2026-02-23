@@ -1,0 +1,43 @@
+---
+id: P39.M3.E1.T002
+title: Add companion routing to ToolRunner
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P39.M3.E1.T001
+- P39.M2.E2.T003
+tags:
+- companion
+- tools
+- routing
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:40:33.835728+00:00'
+started_at: '2026-02-19T11:40:33.835728+00:00'
+completed_at: '2026-02-19T11:45:07.378004+00:00'
+duration_minutes: 4.559037783333333
+---
+Modify ToolRunner to check for a connected companion before executing tools locally.
+
+## Modified file
+lib/pag_server/agents/tool_runner.ex
+
+## Design (from companion-support plan §8)
+- In execute_tool_call_with_retries/3, before calling ToolExecutor.execute/3:
+  1. Call use_companion?(tool_call.name, context)
+  2. If true: use CompanionProxyExecutor.execute/3 instead
+  3. If false: use existing local ToolExecutor.execute/3
+- use_companion?/2 checks:
+  1. workspace_id is present and non-empty
+  2. CompanionRegistry.lookup(workspace_id) returns {:ok, %{tools: tools}}
+  3. tool_name is in the registered tools list
+- Companion-routed calls skip retry logic (retries don't make sense for remote execution)
+- Add alias for PagServer.Companions.CompanionProxyExecutor
+
+## Acceptance criteria
+- [ ] When companion connected + tool in list: use_companion? returns true, routes to proxy
+- [ ] When companion not connected: falls through to local ToolExecutor
+- [ ] When companion connected but tool not registered: falls through to local ToolExecutor
+- [ ] Companion-routed calls do not retry
+- [ ] No regression for existing local tool execution

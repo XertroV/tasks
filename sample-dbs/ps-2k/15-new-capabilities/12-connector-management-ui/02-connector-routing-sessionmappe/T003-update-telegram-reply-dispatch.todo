@@ -1,0 +1,17 @@
+---
+id: P15.M12.E2.T003
+title: Update Telegram reply dispatch to use message metadata chat_id
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P15.M12.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.284267+00:00'
+started_at: '2026-02-18T06:45:12.284267+00:00'
+completed_at: '2026-02-18T07:52:00.147142+00:00'
+duration_minutes: 66.79771441666666
+---
+lib/pag_server/integrations/telegram/message_handler.ex and gateway/formatters/telegram.ex: When sending a reply, look up the originating chat_id from message metadata ('telegram_reply_chat_id'). If present, use it. If absent (legacy per-chat session), use the session's TelegramChatMapping.chat_id as before. This change must be backward-compatible: connectors without session_id continue to work exactly as before. Add a TODO/warning log if reply metadata is missing and fallback is used.

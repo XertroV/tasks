@@ -1,0 +1,24 @@
+---
+id: P55.M3.E3.T001
+title: Fork button on message hover and session fork call
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- fork
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.963805+00:00'
+started_at: '2026-02-22T12:15:57.963805+00:00'
+completed_at: '2026-02-22T12:33:03.102265+00:00'
+duration_minutes: 17.085640833333333
+---
+Add fork button that appears on message hover in message_bubble.ex (already stubbed in E5 tasks). Fork button click fires phx-click='fork_thread' with message sequence_num. Handle_event calls existing session fork infrastructure to create a forked session from the specified message point. Handle fork errors gracefully.
+
+## Acceptance Criteria
+- Fork button visible on message hover
+- Click creates forked session from message point
+- Fork errors shown as flash/alert
+- Fork preserves message history up to fork point

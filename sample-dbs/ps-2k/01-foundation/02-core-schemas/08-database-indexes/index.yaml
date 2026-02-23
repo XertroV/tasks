@@ -1,0 +1,14 @@
+id: P1.M2.E8
+title: Database Performance Indexes
+description: Add missing database indexes identified in architectural review
+status: done
+estimate_hours: 1.5
+priority: high
+tasks:
+  - T001-migration.todo
+  - T002-verification.todo
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  pending: 0

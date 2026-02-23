@@ -1,0 +1,74 @@
+---
+id: P8.M3.E1.T002
+title: Implement OAuth flow
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P8.M3.E1.T001
+tags:
+- slack
+- oauth
+- authentication
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-08T12:02:49.624659+00:00'
+---
+
+# Implement OAuth flow
+
+Implement Slack OAuth 2.0 flow for app installation and workspace authorization.
+
+## Requirements
+
+- [x] Create `lib/pag_server_web/controllers/slack_auth_controller.ex` (~80 LoC)
+- [x] Add `/slack/install` route for OAuth initiation
+- [x] Add `/slack/oauth_redirect` route for callback
+- [x] Store workspace tokens in `slack_workspaces` table
+- [x] Handle token refresh and revocation
+- [x] Add `lib/pag_server/integrations/slack/workspace.ex` schema (~40 LoC)
+
+## Acceptance Criteria
+
+- [x] OAuth flow redirects to Slack authorize URL
+- [x] Callback exchanges code for access token
+- [x] Workspace tokens persist in database with encryption
+- [x] Multiple workspaces can install the app
+- [x] Token expiration handled gracefully
+- [ ] Tests cover success and error paths
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 238-286 (Slack integration)
+
+**Key Points**:
+- OAuth v2 flow for app installation (not legacy tokens)
+- Workspace tokens include bot token and user token
+- Store team_id, team_name, bot_user_id for routing
+- Each workspace gets isolated agent sessions
+
+## Notes
+
+Migration for `slack_workspaces`:
+```elixir
+create table(:slack_workspaces) do
+  add :team_id, :string, null: false
+  add :team_name, :string
+  add :bot_token, :binary, null: false  # encrypted
+  add :bot_user_id, :string
+  add :scope, :string
+  add :app_id, :string
+  timestamps()
+end
+
+create unique_index(:slack_workspaces, [:team_id])
+```
+
+OAuth scopes required:
+- `chat:write` - Send messages
+- `commands` - Slash commands
+- `users:read` - User info
+- `channels:read` - Channel info

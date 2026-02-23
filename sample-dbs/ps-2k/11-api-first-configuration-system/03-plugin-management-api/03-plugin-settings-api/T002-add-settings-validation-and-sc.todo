@@ -1,0 +1,67 @@
+---
+id: P11.M3.E3.T002
+title: Add settings validation and schema support
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:05:41.457739+00:00'
+started_at: '2026-02-12T11:05:41.457739+00:00'
+completed_at: '2026-02-12T11:33:52.345316+00:00'
+duration_minutes: 28.18145945
+---
+
+# Add settings validation and schema support
+
+Implement schema-based validation for plugin settings with type checking and constraints.
+
+## Requirements
+
+- [ ] Create settings schema validator `lib/pag_server/plugins/settings_schema.ex`:
+  - [ ] Define schema types: string, number, boolean, object, array, enum, url, email
+  - [ ] Support constraints: min, max, pattern, enum values, required, default
+  - [ ] `validate_value(value, schema)` -> :ok or {:error, reasons}
+
+- [ ] Extend plugin manifest schema with settings:
+  - [ ] Parse `settings` array from plugin.json
+  - [ ] Each setting: `{key, description, type, required, default, constraints}`
+  - [ ] Support nested objects with sub-settings
+
+- [ ] Implement per-type validators:
+  - [ ] String: pattern matching, min/max length, enum
+  - [ ] Number: min/max, integer/float, step
+  - [ ] Boolean: true/false with descriptions
+  - [ ] Array: item type, min/max length
+  - [ ] Object: required/optional properties, nested validation
+  - [ ] Enum: list of allowed values
+  - [ ] URL: valid URL format
+  - [ ] Email: valid email format
+
+- [ ] Add settings validation endpoints:
+  - [ ] `POST /api/plugins/:id/settings/validate` - validate settings before save
+  - [ ] Body: `{key: "...", value: ...}`
+  - [ ] Return: `{valid: bool, errors: [...]}`
+
+- [ ] Integrate validation with settings update:
+  - [ ] Validate before storing in database
+  - [ ] Return validation errors with helpful messages
+  - [ ] Prevent invalid settings from being saved
+
+- [ ] Create settings schema retrieval:
+  - [ ] `GET /api/plugins/:id/settings/schema` - return full settings schema
+  - [ ] Include descriptions, types, constraints for UI rendering
+
+## Acceptance Criteria
+
+- [ ] String validation supports patterns, length constraints
+- [ ] Number validation supports min/max, integer/float
+- [ ] Enum validation checks against allowed values
+- [ ] URL and email formats validated correctly
+- [ ] Nested object validation works recursively
+- [ ] Validation errors include field names and expected format
+- [ ] 400 returned for invalid settings in PUT endpoint
+- [ ] Schema endpoint returns all metadata needed for form UI
+- [ ] Tests cover 25+ validation scenarios per type

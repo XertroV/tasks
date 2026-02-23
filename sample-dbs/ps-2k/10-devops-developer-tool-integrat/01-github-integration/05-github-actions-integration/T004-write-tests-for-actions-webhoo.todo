@@ -1,0 +1,40 @@
+---
+id: P10.M1.E5.T004
+title: Write tests for Actions webhook integration
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- github
+- actions
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:19:14.991610+00:00'
+started_at: '2026-02-12T03:19:14.991610+00:00'
+completed_at: '2026-02-12T03:29:40.195055+00:00'
+duration_minutes: 10.420056716666666
+---
+
+# Write tests for Actions webhook integration
+
+Write comprehensive test suite for Actions webhook handlers and API methods.
+
+## Requirements
+
+- [ ] Test workflow_run.requested webhook handling (creates/updates session)
+- [ ] Test workflow_run.completed webhook with success and failure conclusions
+- [ ] Test workflow_job events with in_progress and completed statuses
+- [ ] Test API methods: trigger_workflow, cancel_workflow_run, get_workflow_run
+- [ ] Test status monitoring and caching behavior
+- [ ] Test PubSub event publication on status changes
+- [ ] Mock external GitHub API calls using existing patterns
+
+## Acceptance Criteria
+
+- [ ] All test cases pass (use async: true by default, see CLAUDE.md)
+- [ ] Coverage >80% for webhook and API modules
+- [ ] No test contamination (proper cleanup via on_exit/1)
+- [ ] Tests run in <5s total
+- [ ] Mock HTTP responses for all GitHub API calls

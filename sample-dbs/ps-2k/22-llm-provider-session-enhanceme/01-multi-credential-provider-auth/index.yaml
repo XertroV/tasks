@@ -1,0 +1,53 @@
+id: P22.M1
+name: Multi-Credential Provider Auth
+status: pending
+estimate_hours: 20.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: 'DB Schema: llm_provider_credentials table'
+  path: 01-db-schema-llm-provider-credent
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Credential Lookup & Rotation Logic
+  path: 02-credential-lookup-rotation-log
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  depends_on:
+  - P22.M1.E1
+  description: ''
+  locked: false
+- id: E3
+  name: Credential Management API
+  path: 03-credential-management-api
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - P22.M1.E1
+  description: ''
+  locked: false
+- id: E4
+  name: 'Tests: Multi-Credential Auth'
+  path: 04-tests-multi-credential-auth
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on:
+  - P22.M1.E2
+  description: ''
+  locked: false
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

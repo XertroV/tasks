@@ -1,0 +1,39 @@
+id: P5.M2
+name: Session Forking
+status: pending
+estimate_hours: 10
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Fork Logic
+  path: 01-fork-logic
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on: []
+  description: Core session forking with context inheritance
+- id: E2
+  name: Context Building
+  path: 02-context-building
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Collect messages recursively from parent sessions
+- id: E3
+  name: Fork Point Tracking
+  path: 03-fork-point-tracking
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Track fork relationships and parent message references
+stats:
+  total_tasks: 12
+  done: 12
+  in_progress: 0
+  blocked: 0
+  pending: 0

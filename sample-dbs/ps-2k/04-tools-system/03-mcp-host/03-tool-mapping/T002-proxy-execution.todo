@@ -1,0 +1,95 @@
+---
+id: P4.M3.E3.T002
+title: Proxy tool execution to MCP
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P4.M3.E3.T001
+tags:
+- tools
+- mcp
+- proxy
+- execution
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:45:42.346526'
+started_at: '2026-02-05T22:45:42.346526'
+completed_at: '2026-02-05T22:51:33.801703'
+duration_minutes: 5.857586116666667
+---
+
+# Proxy tool execution to MCP
+
+Proxy tool calls to appropriate MCP servers.
+
+## Requirements
+
+- [ ] Create MCP proxy tool module
+- [ ] Route execute/2 calls to MCP server
+- [ ] Convert arguments to MCP format
+- [ ] Send `tools/call` request
+- [ ] Parse and return MCP response
+
+## Acceptance Criteria
+
+- [ ] Proxies execution to correct server
+- [ ] Converts args to MCP format
+- [ ] Handles execution timeouts
+- [ ] Returns standardized results
+- [ ] Error handling for server failures
+- [ ] Test with mock MCP tool
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` MCP proxy tools
+
+## Notes
+
+Proxy tool:
+```elixir
+defmodule PAGServer.Tools.MCP.ProxyTool do
+  @behaviour PAGServer.Tools.Tool
+
+  defstruct [:name, :schema, :server_name]
+
+  @impl true
+  def execute(args, _context) do
+    request = %{
+      method: "tools/call",
+      params: %{
+        name: __MODULE__.name,
+        arguments: args
+      }
+    }
+    
+    case MCP.Server.call(__MODULE__.server_name, request) do
+      {:ok, result} -> {:ok, result}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+end
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:45 UTC
+**Primary task**: P4.M2.E4.T001 - Implement send_message tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M3.E3 vs P4.M2.E4)
+- No dependency chain: ✓ (verified at claim time)

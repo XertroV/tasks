@@ -1,0 +1,48 @@
+epic_id: P3.M3.E3
+name: Session Controller
+description: Session management endpoints
+milestone: 03-rest-api
+phase: 03-streaming-realtime
+estimated_hours: 2
+priority: medium
+tasks:
+- T001-list-sessions.todo
+- T002-get-session.todo
+- T003-fork-session.todo
+- id: T004
+  file: T004-post-sessions-endpoint-to-crea.todo
+  title: POST /sessions endpoint to create session
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-patch-sessions-id-endpoint-to.todo
+  title: PATCH /sessions/:id endpoint to update session
+  status: pending
+  estimate_hours: 0.75
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T006
+  file: T006-delete-sessions-id-endpoint-to.todo
+  title: DELETE /sessions/:id endpoint to delete session
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+dependencies:
+- P3.M3.E2
+acceptance_criteria:
+- List sessions
+- Get session with context
+- Fork session
+deliverables:
+- SessionController module
+- Session views
+- Fork logic
+stats:
+  total: 3
+  pending: 3

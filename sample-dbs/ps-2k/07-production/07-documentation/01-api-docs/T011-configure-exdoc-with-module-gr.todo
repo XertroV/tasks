@@ -1,0 +1,205 @@
+---
+id: P7.M7.E1.T011
+title: Configure ExDoc with module groupings
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:57:38.481193+00:00'
+started_at: '2026-02-08T05:57:38.481193+00:00'
+completed_at: '2026-02-08T06:03:40.527152+00:00'
+tags:
+- documentation
+- exdoc
+- setup
+duration_minutes: 6.034099100000001
+---
+
+# Configure ExDoc with module groupings
+
+Configure ExDoc for comprehensive Elixir documentation with logical module groupings.
+
+## Requirements
+
+- [ ] Configure ExDoc in mix.exs
+  - [ ] Set project name and version
+  - [ ] Configure source URL for GitHub links
+  - [ ] Set logo and assets
+
+- [ ] Define module groups
+  - [ ] Agents - Agent lifecycle modules
+  - [ ] Sessions - Session management
+  - [ ] LLM - Provider adapters
+  - [ ] Tools - Tool system modules
+  - [ ] Events - Event store
+  - [ ] Web - Controllers and channels
+
+- [ ] Configure extras
+  - [ ] README.md as landing page
+  - [ ] Architecture overview
+  - [ ] Getting started guide
+  - [ ] API reference (link to Redoc)
+
+- [ ] Set up syntax highlighting
+  - [ ] Elixir code blocks
+  - [ ] JSON examples
+  - [ ] Shell commands
+
+- [ ] Configure before_closing_body_tag for custom JS
+
+## Acceptance Criteria
+
+- [ ] `mix docs` generates documentation successfully
+- [ ] Modules are grouped logically in sidebar
+- [ ] Source links work for all modules
+- [ ] Extra pages render correctly
+- [ ] Documentation is navigable and searchable
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- No dependencies - can be done early
+
+## Implementation Guide
+
+### mix.exs Configuration
+
+```elixir
+defp project do
+  [
+    app: :pag_server,
+    version: "0.1.0",
+    # ... other config ...
+    
+    # Docs
+    name: "PAG Server",
+    source_url: "https://github.com/your-org/pag-server",
+    homepage_url: "https://pag-server.dev",
+    docs: docs()
+  ]
+end
+
+defp docs do
+  [
+    main: "readme",
+    logo: "priv/static/images/logo.png",
+    extras: [
+      "README.md",
+      "docs/architecture.md",
+      "docs/getting-started.md",
+      "docs/websocket-protocol.md",
+      "docs/error-handling.md"
+    ],
+    groups_for_modules: [
+      "Agents": [
+        PagServer.Agents,
+        PagServer.Agents.Agent,
+        PagServer.Agents.Supervisor,
+        PagServer.Agents.Registry,
+        PagServer.Agents.State
+      ],
+      "Sessions": [
+        PagServer.Sessions,
+        PagServer.Sessions.Session,
+        PagServer.Sessions.Fork
+      ],
+      "LLM Providers": [
+        PagServer.LLM,
+        PagServer.LLM.Provider,
+        PagServer.LLM.Anthropic,
+        PagServer.LLM.OpenAI,
+        PagServer.LLM.Ollama
+      ],
+      "Tools": [
+        PagServer.Tools,
+        PagServer.Tools.Registry,
+        PagServer.Tools.Executor,
+        PagServer.Tools.MCP
+      ],
+      "Events": [
+        PagServer.Events,
+        PagServer.Events.Store,
+        PagServer.Events.Event
+      ],
+      "Context": [
+        PagServer.Context,
+        PagServer.Context.Builder,
+        PagServer.Context.Truncation
+      ],
+      "Web": [
+        PagServerWeb,
+        PagServerWeb.AgentChannel,
+        PagServerWeb.AgentController,
+        PagServerWeb.SessionController
+      ],
+      "Schemas": [
+        PagServer.Schema.Agent,
+        PagServer.Schema.Session,
+        PagServer.Schema.Message,
+        PagServer.Schema.Event
+      ]
+    ],
+    groups_for_extras: [
+      "Guides": [
+        "docs/getting-started.md",
+        "docs/architecture.md"
+      ],
+      "Reference": [
+        "docs/websocket-protocol.md",
+        "docs/error-handling.md"
+      ]
+    ],
+    nest_modules_by_prefix: [
+      PagServer.Agents,
+      PagServer.Sessions,
+      PagServer.LLM,
+      PagServer.Tools,
+      PagServerWeb
+    ],
+    before_closing_body_tag: &before_closing_body_tag/1
+  ]
+end
+
+defp before_closing_body_tag(:html) do
+  """
+  <script>
+    // Custom search enhancement or analytics
+  </script>
+  """
+end
+
+defp before_closing_body_tag(_), do: ""
+```
+
+### deps for ExDoc
+
+```elixir
+defp deps do
+  [
+    # ... other deps ...
+    {:ex_doc, "~> 0.31", only: :dev, runtime: false}
+  ]
+end
+```
+
+### Generate Docs
+
+```bash
+# Generate documentation
+mix docs
+
+# Open in browser
+open doc/index.html
+
+# Generate and publish to Hex (if publishing)
+mix hex.publish docs
+```
+
+## Notes
+
+- Group modules by domain, not by technical layer
+- Keep extras focused on high-level concepts
+- Link to Redoc for REST API details

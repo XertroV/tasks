@@ -1,0 +1,80 @@
+---
+id: P7.M7.E1.T012
+title: Run final documentation audit sweep
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P7.M7.E1.T011
+- P7.M7.E1.T016
+- P7.M7.E1.T017
+- P7.M7.E1.T018
+- P7.M7.E1.T019
+- P7.M7.E1.T020
+- P7.M7.E1.T021
+- P7.M7.E1.T022
+- P7.M7.E1.T023
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:52:37.563264+00:00'
+started_at: '2026-02-08T06:52:37.563264+00:00'
+completed_at: '2026-02-08T06:58:40.064924+00:00'
+tags:
+- documentation
+- exdoc
+- coverage
+duration_minutes: 6.041694116666666
+---
+
+# Run final documentation audit sweep
+
+Final verification pass after module-level documentation tasks are complete.
+This task does not implement broad new docs; it validates coverage and consistency
+across all previously scoped documentation tasks.
+
+## Requirements
+
+- [x] Verify all dependent module documentation tasks are complete and integrated
+- [x] Re-enumerate all public modules under `lib/pag_server/` and `lib/pag_server_web/`
+- [x] Confirm no module has regressed on `@moduledoc`, `@doc`, `@spec`, `@typedoc`
+- [x] Run `mix docs` and check for documentation warnings
+- [x] Record final gaps (if any) and create narrowly scoped follow-up tasks
+- [x] Confirm documentation structure and navigation remain coherent in ExDoc
+
+## Acceptance Criteria
+
+- [x] All public modules are accounted for in the final audit inventory
+- [x] No unresolved documentation warning regressions from `mix docs`
+- [x] Any remaining gaps are tracked as explicit follow-up tasks
+- [x] Final audit results are captured in task notes or task file updates
+
+## Final Audit Results
+
+- Public inventory audited: 322 ExDoc-visible modules (274 in `lib/pag_server/`,
+  48 in `lib/pag_server_web/`)
+- Dependent tasks T016-T023 integrated; no scoped documentation regressions found
+- `mix docs` succeeds; remaining warning set is tracked explicitly via follow-up
+  tasks and not treated as untracked regressions
+- Follow-up tasks created from remaining gaps:
+  - `P7.M7.E1.T024` missing docs for `PagServer.Events.Queries.by_session/3` and `by_agent/3`
+  - `P7.M7.E1.T025` missing typedoc for `PagServerWeb.Plugs.RateLimiter.bucket_state/0`
+  - `P7.M7.E1.T026` remaining ExDoc warning cleanup + baseline moduledocs for `PagServer.Mailer` and `PagServer.Repo`
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on T011 (ExDoc configuration)
+
+## Implementation Guide
+
+### Coverage Check
+
+```bash
+mix docs
+```
+
+## Notes
+
+- This is a validation/audit task after dependency completion
+- Do not re-open broad scope; create small follow-up tasks for any new gaps

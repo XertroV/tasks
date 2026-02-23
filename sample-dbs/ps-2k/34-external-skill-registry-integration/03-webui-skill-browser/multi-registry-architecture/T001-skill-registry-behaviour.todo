@@ -1,0 +1,32 @@
+---
+id: P34.M3.E2.T001
+title: Skill Registry Behaviour
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- backend
+- architecture
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:46:54.613513+00:00'
+started_at: '2026-02-19T00:46:54.613513+00:00'
+completed_at: '2026-02-19T00:48:34.522584+00:00'
+duration_minutes: 1.6651510166666665
+---
+
+# Skill Registry Behaviour
+
+Define `PagServer.Skills.Registry` behaviour:
+
+- `list/1` - List skills
+- `search/2` - Search skills
+- `get/2` - Get skill details
+- `download/3` - Download skill
+
+## Acceptance Criteria
+
+- [ ] Behaviour defined with callbacks
+- [ ] ClawHub client implements behaviour
+- [ ] Can add new registries without core changes

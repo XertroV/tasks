@@ -1,0 +1,39 @@
+---
+id: P15.M9.E2.T003
+title: Comprehensive sanitizer tests covering all edge cases
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M9.E2.T001
+tags:
+- testing
+- sanitizer
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:52:23.493200+00:00'
+started_at: '2026-02-17T13:52:23.493200+00:00'
+completed_at: '2026-02-17T13:57:28.746881+00:00'
+duration_minutes: 5.0875612
+---
+Write thorough tests for `PagServer.Context.Sanitizer` covering:
+
+1. Clean context (no modifications needed) — passthrough
+2. Assistant with tool_calls followed by missing tool_results — synthetic inserted
+3. Orphaned tool_result with no preceding tool_call — dropped
+4. Duplicate tool_results for same call_id — deduplicated
+5. Multiple tool_calls in one assistant message, partial results received
+6. tool_calls followed by non-tool message (user message) before results — flush
+7. End-of-list flush for trailing unmatched tool_calls
+8. Mixed scenario: some matched, some orphaned, some missing
+9. Empty message list
+10. Report accuracy for all scenarios
+
+Files to create:
+- test/pag_server/context/sanitizer_test.exs
+
+## Acceptance Criteria
+- [ ] All 10 scenarios above have passing tests
+- [ ] Tests use `async: true`
+- [ ] Tests verify both the sanitized message list and the report
+- [ ] No flaky tests or timing dependencies

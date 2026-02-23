@@ -1,0 +1,66 @@
+---
+id: P52.M2.E1.T003
+title: Normalize API and transport errors into MCP responses
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- implementation
+- error-handling
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:47:29.511430+00:00'
+started_at: '2026-02-21T04:47:29.511430+00:00'
+completed_at: '2026-02-21T04:49:42.612217+00:00'
+duration_minutes: 2.2183462666666665
+---
+
+# Normalize API and transport errors into MCP responses
+
+## Implementation Notes
+
+- Added centralized error mapper `lib/pag_server/mcp/error_mapper.ex`.
+  - Normalizes bridge failures into deterministic JSON-RPC error codes:
+    - `-32602` invalid params
+    - `-32601` tool not found
+    - `-32610` upstream API failure
+    - `-32611` transport failure
+    - `-32612` bridge config failure
+    - `-32613` unexpected upstream response
+    - `-32614` upstream auth/authorization failure (401/403)
+  - Provides `safe_log_context/1` to avoid leaking secrets in logs.
+- Updated `lib/pag_server/tools/mcp/protocol_handler.ex` to use `ErrorMapper` for bridge failures and emit safe structured warning logs.
+- Updated `lib/pag_server/mcp/api_bridge.ex` to drain async error bodies (`Req.Response.Async`) before mapping API errors, avoiding generic/empty failure messages.
+- Hardened argument validation path:
+  - `lib/pag_server/tools/mcp/messages.ex` now enforces `tools/call.arguments` to be an object.
+  - `lib/pag_server/mcp/api_bridge.ex` defensively rejects non-map arguments.
+
+## Verification Notes
+
+- Expanded error mapping tests in:
+  - `test/pag_server/tools/mcp/protocol_handler_test.exs`
+  - `test/pag_server/mcp/api_bridge_test.exs`
+  - `test/pag_server/mcp/stdio_server_test.exs`
+- Added coverage for:
+  - malformed arguments (`-32602` with preserved request id)
+  - API not found/auth errors mapped to deterministic codes
+  - transport errors mapped to deterministic code
+  - async streamed error body draining for status errors
+- Ran and appended to `recent-mix-tests.log`:
+  - `mix test test/pag_server/mcp/api_bridge_test.exs test/pag_server/tools/mcp/protocol_handler_test.exs test/pag_server/mcp/stdio_server_test.exs`
+  - Result: 57 tests, 0 failures.
+
+
+
+## Requirements
+
+- Create error mapper for network failures, API validation errors, auth failures, and unexpected exceptions.
+- Standardize MCP error codes/messages and attach safe context for debugging.
+- Ensure async/streamed error bodies are fully drained before returning failures.
+
+## Acceptance Criteria
+
+- Error mapping tests cover each major failure class with deterministic MCP outputs.
+- No raw stack traces or sensitive tokens leak through user-facing MCP errors.
+- Logging captures sufficient context to debug failing tool calls without exposing secrets.

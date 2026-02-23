@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T005
+title: Implement connector verify connectivity event and async result
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E4.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.182864+00:00'
+started_at: '2026-02-18T07:31:33.182864+00:00'
+completed_at: '2026-02-18T07:51:06.849349+00:00'
+duration_minutes: 19.5611076
+---
+Add handle_event('verify_connector', %{'id' => id}, socket): reads bot_token and mode from connector_form or loaded bot_config, calls start_async(socket, {:verify_connector, id}, fn -> SetupAssistant.verify_connectivity(token, mode, webhook_url, workspace_id: workspace_id) end). Add handle_async({:verify_connector, id}, result, socket): on {:ok, _} sets connector_verify_status to :connected and calls BotConfigs.mark_active(bot_config); on {:error, reason} sets to :failed with error message. Show a status pill in the drawer footer (like setup wizard's :validating/:connected/:failed/:idle states). Reuse SetupAssistant from lib/pag_server/integrations/telegram/setup_assistant.ex.

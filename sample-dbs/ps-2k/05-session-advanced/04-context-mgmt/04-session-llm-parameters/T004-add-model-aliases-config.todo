@@ -1,0 +1,159 @@
+---
+id: P5.M4.E4.T004
+title: Add model aliases config
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:29:00.088305+00:00'
+started_at: '2026-02-07T14:29:00.088305+00:00'
+completed_at: '2026-02-07T14:29:40.755979+00:00'
+duration_minutes: 0.6777944
+---
+
+# Add model aliases config
+
+Add to config/config.exs: model_aliases config for aliases like opus-4.5-high, thinking_levels config for named thinking levels (off, low, medium, high, xhigh), model_defaults config for per-model default parameters
+
+## Requirements
+
+- [ ] Add `model_aliases` configuration to `config/config.exs`
+- [ ] Add `thinking_levels` configuration to `config/config.exs`
+- [ ] Add `model_defaults` configuration to `config/config.exs`
+- [ ] Define common model aliases (sonnet, opus, haiku, gpt4, gpt4o-mini)
+- [ ] Define all five thinking levels (off, low, medium, high, xhigh)
+- [ ] Define per-model defaults for common models
+- [ ] Document each configuration section
+- [ ] Follow existing config formatting conventions
+
+## Acceptance Criteria
+
+- [ ] `model_aliases` config added under `:pag_server` key
+- [ ] Model aliases defined for:
+  - [ ] "sonnet" → "anthropic:claude-sonnet-4"
+  - [ ] "opus" → "anthropic:claude-opus-4"
+  - [ ] "haiku" → "anthropic:claude-haiku-4"
+  - [ ] "gpt4o" → "openai:gpt-4o"
+  - [ ] "gpt4o-mini" → "openai:gpt-4o-mini"
+  - [ ] At least 2-3 additional useful aliases
+- [ ] `thinking_levels` config added with documentation
+- [ ] Thinking levels defined for all five levels:
+  - [ ] "off" → disabled
+  - [ ] "low" → 3000 token budget
+  - [ ] "medium" → 10000 token budget
+  - [ ] "high" → 30000 token budget
+  - [ ] "xhigh" → 100000 token budget
+- [ ] `model_defaults` config added under `:pag_server` key
+- [ ] Model defaults defined for at least:
+  - [ ] "claude-sonnet-4" (temperature, max_tokens)
+  - [ ] "claude-opus-4" (temperature, max_tokens)
+  - [ ] "gpt-4o" (temperature, max_tokens)
+- [ ] Each config section has clear documentation comments
+- [ ] Configuration follows Elixir style guide formatting
+- [ ] Configuration accessible via `Application.get_env/3`
+- [ ] No syntax errors or compilation warnings
+
+## Context
+
+Configuration provides centralized management of:
+1. **Model aliases** - Short names for commonly used models
+2. **Thinking levels** - Named presets for extended thinking budgets
+3. **Model defaults** - Per-model parameter defaults
+
+This configuration is consumed by the ModelResolver module to resolve
+aliases and merge parameters with appropriate defaults.
+
+**Design Decisions**:
+- Aliases enable user-friendly model selection
+- Thinking levels provide intuitive presets (avoid magic numbers)
+- Model defaults ensure reasonable behavior even without explicit params
+
+## Implementation Notes
+
+Add to `config/config.exs`:
+
+```elixir
+# Model aliases - convenient shortcuts for common models
+config :pag_server, :model_aliases, %{
+  # Anthropic Claude models
+  "sonnet" => "anthropic:claude-sonnet-4",
+  "opus" => "anthropic:claude-opus-4",
+  "haiku" => "anthropic:claude-haiku-4",
+  "sonnet-3.5" => "anthropic:claude-sonnet-3-5",
+  
+  # OpenAI models
+  "gpt4o" => "openai:gpt-4o",
+  "gpt4o-mini" => "openai:gpt-4o-mini",
+  "o1" => "openai:o1",
+  "o1-mini" => "openai:o1-mini",
+  
+  # Local models (Ollama)
+  "llama" => "ollama:llama3.2",
+  "qwen" => "ollama:qwen2.5"
+}
+
+# Extended thinking levels for Anthropic models
+# Maps named levels to token budgets
+config :pag_server, :thinking_levels, %{
+  "off" => %{"type" => "disabled"},
+  "low" => %{"type" => "enabled", "budget" => 3000},
+  "medium" => %{"type" => "enabled", "budget" => 10000},
+  "high" => %{"type" => "enabled", "budget" => 30000},
+  "xhigh" => %{"type" => "enabled", "budget" => 100000}
+}
+
+# Per-model default parameters
+# Applied before agent and session parameters
+config :pag_server, :model_defaults, %{
+  # Anthropic Claude models
+  "claude-sonnet-4" => %{
+    "temperature" => 1.0,
+    "max_tokens" => 8192
+  },
+  "claude-opus-4" => %{
+    "temperature" => 1.0,
+    "max_tokens" => 16384
+  },
+  "claude-haiku-4" => %{
+    "temperature" => 1.0,
+    "max_tokens" => 4096
+  },
+  
+  # OpenAI models
+  "gpt-4o" => %{
+    "temperature" => 1.0,
+    "max_tokens" => 4096
+  },
+  "gpt-4o-mini" => %{
+    "temperature" => 1.0,
+    "max_tokens" => 16384
+  },
+  
+  # o1 models have different defaults (no temperature control)
+  "o1" => %{
+    "max_tokens" => 32768
+  },
+  "o1-mini" => %{
+    "max_tokens" => 65536
+  }
+}
+```
+
+Verification:
+```elixir
+iex> Application.get_env(:pag_server, :model_aliases)
+%{"sonnet" => "anthropic:claude-sonnet-4", ...}
+
+iex> Application.get_env(:pag_server, :thinking_levels)
+%{"low" => %{"type" => "enabled", "budget" => 3000}, ...}
+```
+
+## Notes
+
+- Thinking levels are Anthropic-specific but configuration is provider-agnostic
+- Model defaults should reflect provider documentation recommendations
+- Aliases can be overridden in environment-specific configs (dev.exs, prod.exs)
+- Consider adding environment variables for dynamic alias configuration in production

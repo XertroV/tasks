@@ -1,0 +1,144 @@
+---
+id: P6.M4.E1.T001
+title: Create Audit.Logger module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- audit
+- security
+- compliance
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:23:02.156388+00:00'
+started_at: '2026-02-06T20:23:02.156388+00:00'
+completed_at: '2026-02-06T20:33:47.730251+00:00'
+duration_minutes: 10.759564233333332
+---
+
+# Create Audit.Logger module
+
+Implement structured audit logging for security and compliance.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/audit/logger.ex` module
+- [ ] Define audit log schema:
+  - [ ] timestamp (UTC)
+  - [ ] event_type
+  - [ ] actor (user/agent/system)
+  - [ ] action
+  - [ ] resource (what was accessed)
+  - [ ] result (success/failure)
+  - [ ] metadata (additional context)
+- [ ] Implement logging functions:
+  - [ ] `log_event(type, actor, action, resource, opts)`
+  - [ ] `log_access(actor, resource, action)`
+  - [ ] `log_security_event(type, details)`
+- [ ] Persist to database and file
+- [ ] Support JSON structured logging
+- [ ] Tamper-evident logs (append-only)
+
+## Acceptance Criteria
+
+- [ ] Audit logger implemented
+- [ ] Events logged to DB and file
+- [ ] JSON structured format
+- [ ] Append-only (no edits/deletes)
+- [ ] Performance: >1000 events/sec
+
+## Context
+
+**Key Points**:
+- Audit logs are immutable
+- Required for SOC 2 compliance
+- Must include who, what, when, where, why
+- Sensitive data must be redacted
+
+## Notes
+
+**Audit Log Schema**:
+```elixir
+defmodule PagServer.Audit.AuditLog do
+  use Ecto.Schema
+
+  schema "audit_logs" do
+    field :timestamp, :utc_datetime_usec
+    field :event_type, :string
+    field :actor_type, :string  # user, agent, system
+    field :actor_id, :string
+    field :action, :string      # create, read, update, delete, execute
+    field :resource_type, :string
+    field :resource_id, :string
+    field :result, :string      # success, failure
+    field :ip_address, :string
+    field :user_agent, :string
+    field :metadata, :map
+
+    timestamps(updated_at: false)  # append-only
+  end
+end
+```
+
+**Logger Module**:
+```elixir
+defmodule PagServer.Audit.Logger do
+  alias PagServer.Repo
+  alias PagServer.Audit.AuditLog
+  require Logger
+
+  def log_event(type, actor, action, resource, opts \\ []) do
+    log = %AuditLog{
+      timestamp: DateTime.utc_now(),
+      event_type: type,
+      actor_type: actor.type,
+      actor_id: actor.id,
+      action: action,
+      resource_type: resource.type,
+      resource_id: resource.id,
+      result: Keyword.get(opts, :result, "success"),
+      ip_address: Keyword.get(opts, :ip),
+      metadata: Keyword.get(opts, :metadata, %{})
+    }
+
+    # Persist to DB
+    Repo.insert!(log)
+
+    # Log to file (JSON)
+    Logger.info("[AUDIT] #{Jason.encode!(log)}")
+
+    log
+  end
+
+  def log_access(actor, resource, action) do
+    log_event("access", actor, action, resource)
+  end
+
+  def log_security_event(type, details) do
+    log_event("security", %{type: :system, id: "system"}, type, 
+              %{type: "security", id: type}, metadata: details)
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M4.E1)
+**Agent**: cli-user
+**Date**: 2026-02-06 20:23 UTC
+**Sibling tasks**: P6.M4.E1.T002, P6.M4.E1.T003, P6.M4.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M4.E1.T001 → P6.M4.E1.T002 → P6.M4.E1.T003 → P6.M4.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M4.E1.T001: .tasks/06-observability/04-audit-logging/01-audit-logger/T001-logger-module.todo
+- P6.M4.E1.T002: .tasks/06-observability/04-audit-logging/01-audit-logger/T002-security-events.todo
+- P6.M4.E1.T003: .tasks/06-observability/04-audit-logging/01-audit-logger/T003-compliance.todo
+- P6.M4.E1.T004: .tasks/06-observability/04-audit-logging/01-audit-logger/T004-tests.todo

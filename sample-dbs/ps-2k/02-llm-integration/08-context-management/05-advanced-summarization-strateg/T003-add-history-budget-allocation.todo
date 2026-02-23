@@ -1,0 +1,130 @@
+---
+id: P2.M8.E5.T003
+title: Add history budget allocation with cascading summaries
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- context
+- budget
+- cascading
+- openclaw
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:23:45.732102'
+started_at: '2026-02-05T22:23:45.732102'
+completed_at: '2026-02-05T22:23:46.379276'
+duration_minutes: 0.010786066666666667
+---
+
+# Add history budget allocation with cascading summaries
+
+Implement fixed percentage allocation between history and new content, with two-stage cascading summarization. Prevents runaway history growth and ensures new content always gets space.
+
+**Reference**: `ref-projects/openclaw/src/agents/pi-extensions/compaction-safeguard.ts:204-268`
+
+## Requirements
+
+### Budget Allocation
+
+1. Define `max_history_share` (default: 50% of context window)
+2. Before summarization, check if new content exceeds history budget:
+   - `new_content_tokens = total_before_summarization - summarizable_tokens`
+   - `max_history_tokens = context_window * max_history_share * SAFETY_MARGIN`
+3. If `new_content_tokens > max_history_tokens`, prune oldest chunks
+
+### Cascading Summarization
+
+When pruning occurs:
+1. **Stage 1**: Summarize dropped/pruned chunks → `dropped_summary`
+2. **Stage 2**: Summarize retained history with `dropped_summary` as `previousSummary`
+3. This chains summaries so dropped information is preserved
+
+### Implementation Flow
+
+```
+┌─────────────────────────────────────┐
+│ Check: new_content > history_budget?│
+└───────────┬─────────────────────────┘
+            │
+        Yes │
+            ▼
+┌─────────────────────────────────────┐
+│ Prune oldest chunks to fit budget   │
+│ (use token-share splitting)         │
+└───────────┬─────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│ Summarize dropped chunks → S1       │
+└───────────┬─────────────────────────┘
+            │
+            ▼
+┌─────────────────────────────────────┐
+│ Summarize retained with S1 → S2     │
+└─────────────────────────────────────┘
+```
+
+## Acceptance Criteria
+
+- [x] History budget calculation
+  - [x] Calculate `max_history_share` (default 50%, configurable)
+  - [x] Apply SAFETY_MARGIN (1.2x) to account for token estimation inaccuracy
+  - [x] Determine if new content exceeds history budget
+
+- [x] Chunk pruning
+  - [x] Split messages into chunks by token share (default: 2 parts)
+  - [x] Remove oldest chunks until within budget
+  - [x] Track dropped vs retained messages
+
+- [x] Cascading summarization
+  - [x] Summarize dropped chunks (if any)
+  - [x] Feed dropped summary as `previousSummary` to main summarization
+  - [x] Merge summaries correctly
+
+- [x] Configuration
+  - [x] Configurable `max_history_share` (default: 0.5)
+  - [x] Configurable pruning parts (default: 2)
+  - [x] Option to disable budget allocation (use all context for history)
+
+- [x] Tests
+  - [x] Unit test: budget calculation
+  - [x] Unit test: chunk pruning logic
+  - [x] Integration test: cascading summarization produces merged summary
+  - [x] Test: no pruning when within budget
+
+## Implementation Notes
+
+### Integration with Existing Code
+
+In `PagServer.Context.Pruning.Summarization.do_prune/3`, add budget check:
+
+```elixir
+defp do_prune(messages, max_tokens, opts) do
+  # ... existing system message partition ...
+  
+  # NEW: Check if we need to prune for budget
+  max_history_share = Keyword.get(opts, :max_history_share, 0.5)
+  tokens_before = Keyword.get(opts, :tokens_before)
+  
+  {pruned_messages, dropped_summary} = 
+    maybe_prune_for_budget(
+      other_messages, 
+      max_tokens,
+      max_history_share,
+      tokens_before
+    )
+  
+  # Continue with existing logic, using dropped_summary as previousSummary
+  # ...
+end
+```
+
+### Key OpenClaw Constants
+
+- `maxHistoryShare`: 0.5 (50%)
+- `SAFETY_MARGIN`: 1.2 (20% buffer)
+- `parts`: 2 (split into 2 chunks for pruning)
+
+This ensures history never exceeds 60% of context (50% * 1.2 safety margin).

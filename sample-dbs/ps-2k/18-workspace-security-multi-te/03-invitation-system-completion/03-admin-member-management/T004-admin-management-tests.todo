@@ -1,0 +1,53 @@
+---
+id: P18.M3.E3.T004
+title: Add tests for admin and member management endpoints
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P18.M3.E3.T003
+tags:
+- workspace
+- members
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T21:45:54.147039+00:00'
+started_at: '2026-02-17T21:45:54.147039+00:00'
+completed_at: '2026-02-17T21:55:11.573315+00:00'
+duration_minutes: 9.2904377
+---
+
+# Add tests for admin and member management endpoints
+
+## Description
+
+Tests for invitation permission changes and member management endpoints.
+
+## Requirements
+
+- [ ] Test admin can create and revoke invitations
+- [ ] Test member cannot create invitations (403)
+- [ ] Test member listing endpoint:
+  - Any member can view list
+  - Non-member gets 403
+  - Response includes correct data
+- [ ] Test role update:
+  - Owner can update roles
+  - Admin cannot update roles (403)
+  - Cannot demote last owner
+- [ ] Test member removal:
+  - Admin can remove members
+  - Admin cannot remove other admins
+  - Owner can remove anyone
+  - Cannot remove last owner
+
+## Acceptance Criteria
+
+- [ ] All tests pass with async: true
+- [ ] Role-based access control verified for each endpoint
+- [ ] Edge cases covered: last owner, self-removal attempts
+
+## Context
+
+**Files affected**: New test files for member management endpoints

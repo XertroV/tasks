@@ -1,0 +1,54 @@
+id: P55.M1.E1
+name: Routes and LiveView Shell
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-chat-scope-routes-and-live.todo
+  title: Add chat scope, routes, and live_session to router.ex
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-workspace-chat-ex-with.todo
+  title: Create workspace_chat.ex with mount and full assigns struct
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-create-workspace-chat-html-hee.todo
+  title: Create workspace_chat.html.heex full-viewport layout
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-add-chat-nav-link-to-app-layou.todo
+  title: Add Chat nav link to app layout header
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-implement-handle-params-thread.todo
+  title: Implement handle_params thread switching with PubSub swap
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

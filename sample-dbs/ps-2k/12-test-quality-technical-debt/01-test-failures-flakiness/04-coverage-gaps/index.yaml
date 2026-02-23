@@ -1,0 +1,45 @@
+id: P12.M1.E4
+name: Coverage Gaps
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-tests-for-agent-crash-reco.todo
+  title: Add tests for agent crash recovery edge cases
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-tests-for-stream-cancellat.todo
+  title: Add tests for stream cancellation during active streaming
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-tests-for-concurrent-sessi.todo
+  title: Add tests for concurrent session access race conditions
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-tests-for-circuit-breaker.todo
+  title: Add tests for circuit breaker state transitions under load
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

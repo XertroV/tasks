@@ -1,0 +1,61 @@
+id: P50
+name: collab_teams Collaborative Agent Plugin
+status: done
+locked: true
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Plugin Foundation
+  path: 01-plugin-foundation
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Plugin scaffold, DB migrations for all 5 tables, action dispatcher
+    skeleton and error contract.
+  locked: false
+- id: M2
+  name: Team and Worker Lifecycle
+  path: 02-team-and-worker-lifecycle
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P50.M1
+  description: Team state machine (active->draining->closed), worker state machine
+    (starting->active->idle->shutting_down->stopped), all CRUD actions, Plugins.Api.spawn_agent/2
+    integration, system prompt injection, audit events.
+  locked: false
+- id: M3
+  name: Task Graph and Messaging
+  path: 03-task-graph-and-messaging
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P50.M2
+  description: Full task DAG lifecycle (create/claim/complete/fail/cancel/block),
+    dependency-closure recursive CTE, optimistic-lock claim, team-scoped messaging,
+    :plugin_event firing for task and worker transitions.
+  locked: false
+- id: M4
+  name: Observability and Hardening
+  path: 04-observability-and-hardening
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P50.M3
+  description: ETS-backed read model projections rebuildable from audit events, LiveView
+    dashboard, concurrent claim contention tests, replay verification, mix lint pass,
+    operator docs.
+  locked: false
+stats:
+  total_tasks: 52
+  done: 0
+  in_progress: 0
+  blocked: 1
+  pending: 51

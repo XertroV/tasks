@@ -1,0 +1,329 @@
+---
+id: P1.M4.E2.T003
+title: Create query helpers (by session, by agent, by type)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M4.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-05T09:51:42.839558'
+started_at: '2026-02-05T09:51:42.839558'
+completed_at: '2026-02-05T09:55:36.462033'
+tags:
+- event-store
+- query
+- ecto
+- database
+---
+
+# Create query helpers (by session, by agent, by type)
+
+Build convenient query helper functions for common event filtering patterns used across the application.
+
+## Requirements
+
+- [ ] Create `PagServer.Events.Queries` module
+- [ ] Implement `by_session/2` query builder:
+  - [ ] Filter events by session_id
+  - [ ] Support ordering (asc/desc by inserted_at)
+  - [ ] Support limit
+  - [ ] Return Ecto.Query
+- [ ] Implement `by_agent/2` query builder:
+  - [ ] Filter events by agent_id
+  - [ ] Support ordering
+  - [ ] Support limit
+  - [ ] Return Ecto.Query
+- [ ] Implement `by_type/2` query builder:
+  - [ ] Filter events by event_type
+  - [ ] Support list of types (OR condition)
+  - [ ] Support ordering
+  - [ ] Return Ecto.Query
+- [ ] Implement `by_time_range/3` query builder:
+  - [ ] Filter by inserted_at >= start_time
+  - [ ] Filter by inserted_at <= end_time
+  - [ ] Return Ecto.Query
+- [ ] Implement `recent/2` helper:
+  - [ ] Get N most recent events
+  - [ ] Supports filters (session_id, agent_id, event_type)
+  - [ ] Returns list of events (already executed)
+- [ ] Implement `count_events/1` helper:
+  - [ ] Count events matching filters
+  - [ ] Returns integer
+- [ ] Create composable query API (chainable filters)
+- [ ] Add comprehensive documentation with examples
+
+## Acceptance Criteria
+
+- [ ] All query builders return composable `Ecto.Query` structs
+- [ ] Queries leverage database indexes efficiently
+- [ ] Chainable API works correctly:
+  ```elixir
+  Event
+  |> Queries.by_session(session_id)
+  |> Queries.by_type(["message.sent", "tool.executed"])
+  |> Queries.recent(100)
+  ```
+- [ ] Helper functions execute queries and return results
+- [ ] All functions support common options (limit, order, etc.)
+- [ ] Edge cases handled:
+  - [ ] nil parameters (skip filter)
+  - [ ] empty lists (return no results)
+  - [ ] invalid UUIDs (raise descriptive error)
+- [ ] Module compiles with zero warnings
+- [ ] Dialyzer passes with no type errors
+- [ ] All functions have `@doc` and `@spec`
+- [ ] Documentation includes usage examples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Lines 319-322 (Event indexes)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Lines 358-380 (Events Domain)
+
+**Key Requirements**:
+- Queries should leverage indexes: agent_id, session_id, event_type, inserted_at
+- Support both query builders (composable) and direct helpers (execute immediately)
+- Common patterns: recent events, events by session, events by type
+- Memory efficiency: use streaming for large result sets
+
+## Notes
+
+### Example Implementation
+
+```elixir
+defmodule PagServer.Events.Queries do
+  @moduledoc """
+  Query helpers for event filtering and retrieval.
+  
+  Provides composable query builders and convenience functions
+  for common event lookup patterns.
+  
+  ## Query Builders
+  
+  Query builders return `Ecto.Query` structs that can be composed:
+  
+      Event
+      |> Queries.by_session(session_id)
+      |> Queries.by_type(["message.sent"])
+      |> order_by([e], desc: e.inserted_at)
+      |> limit(100)
+      |> Repo.all()
+  
+  ## Convenience Helpers
+  
+  Helpers execute queries and return results directly:
+  
+      Queries.recent(session_id: session_id, limit: 10)
+      # => [%Event{}, ...]
+  """
+  
+  import Ecto.Query
+  alias PagServer.Events.Event
+  alias PagServer.Repo
+  
+  @type query_opts :: [
+    session_id: Ecto.UUID.t(),
+    agent_id: Ecto.UUID.t(),
+    event_type: String.t() | [String.t()],
+    since: DateTime.t(),
+    until: DateTime.t(),
+    limit: pos_integer(),
+    order: :asc | :desc
+  ]
+  
+  # Query Builders (composable)
+  
+  @doc """
+  Filter events by session ID.
+  
+  ## Examples
+  
+      iex> Event |> Queries.by_session(session_id) |> Repo.all()
+      [%Event{session_id: ^session_id}, ...]
+  """
+  @spec by_session(Ecto.Queryable.t(), Ecto.UUID.t()) :: Ecto.Query.t()
+  def by_session(query \\ Event, session_id) do
+    from e in query, where: e.session_id == ^session_id
+  end
+  
+  @doc """
+  Filter events by agent ID.
+  
+  ## Examples
+  
+      iex> Event |> Queries.by_agent(agent_id) |> Repo.all()
+      [%Event{agent_id: ^agent_id}, ...]
+  """
+  @spec by_agent(Ecto.Queryable.t(), Ecto.UUID.t()) :: Ecto.Query.t()
+  def by_agent(query \\ Event, agent_id) do
+    from e in query, where: e.agent_id == ^agent_id
+  end
+  
+  @doc """
+  Filter events by type.
+  
+  Accepts a single type string or a list of types (OR condition).
+  
+  ## Examples
+  
+      iex> Event |> Queries.by_type("message.sent") |> Repo.all()
+      [%Event{event_type: "message.sent"}, ...]
+      
+      iex> Event |> Queries.by_type(["message.sent", "tool.executed"]) |> Repo.all()
+      [%Event{}, ...]
+  """
+  @spec by_type(Ecto.Queryable.t(), String.t() | [String.t()]) :: Ecto.Query.t()
+  def by_type(query \\ Event, type) when is_binary(type) do
+    from e in query, where: e.event_type == ^type
+  end
+  
+  def by_type(query \\ Event, types) when is_list(types) do
+    from e in query, where: e.event_type in ^types
+  end
+  
+  @doc """
+  Filter events by time range.
+  
+  ## Examples
+  
+      iex> start = ~U[2026-01-01 00:00:00Z]
+      iex> end_time = ~U[2026-01-31 23:59:59Z]
+      iex> Event |> Queries.by_time_range(start, end_time) |> Repo.all()
+      [%Event{}, ...]
+  """
+  @spec by_time_range(Ecto.Queryable.t(), DateTime.t(), DateTime.t()) :: Ecto.Query.t()
+  def by_time_range(query \\ Event, start_time, end_time) do
+    query
+    |> where([e], e.inserted_at >= ^start_time)
+    |> where([e], e.inserted_at <= ^end_time)
+  end
+  
+  @doc """
+  Filter events since a timestamp.
+  
+  ## Examples
+  
+      iex> since = DateTime.add(DateTime.utc_now(), -3600, :second)
+      iex> Event |> Queries.since(since) |> Repo.all()
+      [%Event{}, ...]  # Events from last hour
+  """
+  @spec since(Ecto.Queryable.t(), DateTime.t()) :: Ecto.Query.t()
+  def since(query \\ Event, timestamp) do
+    from e in query, where: e.inserted_at >= ^timestamp
+  end
+  
+  # Convenience Helpers (execute immediately)
+  
+  @doc """
+  Get the N most recent events matching filters.
+  
+  ## Options
+  
+    * `:session_id` - Filter by session
+    * `:agent_id` - Filter by agent
+    * `:event_type` - Filter by type (string or list)
+    * `:limit` - Max events to return (default: 100)
+    * `:order` - :asc or :desc (default: :desc)
+  
+  ## Examples
+  
+      iex> Queries.recent(session_id: session_id, limit: 10)
+      [%Event{}, ...]
+      
+      iex> Queries.recent(event_type: ["message.sent"], limit: 5)
+      [%Event{}, ...]
+  """
+  @spec recent(query_opts()) :: [Event.t()]
+  def recent(opts \\ []) do
+    limit = Keyword.get(opts, :limit, 100)
+    order = Keyword.get(opts, :order, :desc)
+    
+    query = build_query(opts)
+    
+    query
+    |> order_by([e], [{^order, e.inserted_at}])
+    |> limit(^limit)
+    |> Repo.all()
+    |> decompress_events()
+  end
+  
+  @doc """
+  Count events matching filters.
+  
+  ## Examples
+  
+      iex> Queries.count_events(session_id: session_id)
+      42
+  """
+  @spec count_events(query_opts()) :: non_neg_integer()
+  def count_events(opts \\ []) do
+    opts
+    |> build_query()
+    |> Repo.aggregate(:count)
+  end
+  
+  # Private Helpers
+  
+  defp build_query(opts) do
+    query = Event
+    
+    query
+    |> apply_filter(:session_id, opts[:session_id], &by_session/2)
+    |> apply_filter(:agent_id, opts[:agent_id], &by_agent/2)
+    |> apply_filter(:event_type, opts[:event_type], &by_type/2)
+    |> apply_filter(:since, opts[:since], &since/2)
+  end
+  
+  defp apply_filter(query, _key, nil, _filter_fn), do: query
+  defp apply_filter(query, _key, value, filter_fn), do: filter_fn.(query, value)
+  
+  defp decompress_events(events) do
+    Enum.map(events, &PagServer.Events.Persistence.decompress_event/1)
+  end
+end
+```
+
+### Query Performance
+
+Ensure queries use indexes:
+
+```sql
+-- These queries should use indexes
+EXPLAIN ANALYZE 
+  SELECT * FROM events 
+  WHERE session_id = 'uuid' 
+  ORDER BY inserted_at DESC 
+  LIMIT 100;
+
+EXPLAIN ANALYZE 
+  SELECT * FROM events 
+  WHERE event_type IN ('message.sent', 'tool.executed')
+  ORDER BY inserted_at DESC 
+  LIMIT 100;
+```
+
+### Common Query Patterns
+
+```elixir
+# Get all events for a session
+Queries.recent(session_id: session_id, limit: :infinity)
+
+# Get recent tool executions
+Queries.recent(event_type: "tool.executed", limit: 50)
+
+# Count events by type in last hour
+since = DateTime.add(DateTime.utc_now(), -3600, :second)
+Event
+|> Queries.by_type("message.sent")
+|> Queries.since(since)
+|> Queries.count_events()
+
+# Stream large result sets
+Event
+|> Queries.by_session(session_id)
+|> Repo.stream(max_rows: 1000)
+|> Stream.map(&process_event/1)
+|> Enum.to_list()
+```

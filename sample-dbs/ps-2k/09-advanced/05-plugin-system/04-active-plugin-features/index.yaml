@@ -1,0 +1,72 @@
+id: P9.M5.E4
+name: Active Plugin Features
+status: pending
+estimate_hours: 10.0
+complexity: high
+depends_on:
+- E1
+- E2
+- E3
+tasks:
+- id: T001
+  file: T001-implement-plugin-agent-spawnin.todo
+  title: Implement plugin agent spawning via Coordinator integration
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T002
+  file: T002-implement-plugin-message-injec.todo
+  title: Implement plugin message injection into active sessions
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T003
+  file: T003-implement-custom-directive-reg.todo
+  title: Implement custom directive registration from plugins
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on:
+  - P9.M5.E1.T004
+- id: T004
+  file: T004-implement-custom-pruning-strat.todo
+  title: Implement custom pruning strategy registration from plugins
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on:
+  - P9.M5.E1.T004
+- id: T005
+  file: T005-implement-llm-provider-registr.todo
+  title: Implement LLM provider registration from plugins
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P9.M5.E1.T004
+- id: T006
+  file: T006-add-plugin-api-surface-module.todo
+  title: Add plugin API surface module with sandboxed access to PAG internals
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E4.T001
+  - P9.M5.E4.T002
+  - P9.M5.E4.T003
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

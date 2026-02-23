@@ -1,0 +1,92 @@
+id: P54.M2.E1
+name: Companion MCP registry, wire protocol, and proxy executor
+status: done
+estimate_hours: 19.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-companionmcpregistry-genserver.todo
+  title: CompanionMCPRegistry GenServer + supervisor child
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-pendingcalls-add-mcp-scoped-re.todo
+  title: 'PendingCalls: add MCP-scoped register/resolve/reject functions'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-companionchannel-mcp-register.todo
+  title: 'CompanionChannel: mcp_register handler + send_mcp_tool_call'
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M2.E1.T001
+  - P54.M2.E1.T002
+- id: T004
+  file: T004-companionchannel-mcp-tool-resu.todo
+  title: 'CompanionChannel: mcp_tool_result + mcp_tool_error handlers'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M2.E1.T002
+  - P54.M2.E1.T003
+- id: T005
+  file: T005-companionmcpproxy-executor.todo
+  title: CompanionMCPProxy executor
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M2.E1.T001
+  - P54.M2.E1.T002
+- id: T006
+  file: T006-workspace-scoped-companion-mcp.todo
+  title: Workspace-scoped companion MCP tool schema injection
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M2.E1.T001
+- id: T007
+  file: T007-toolrunner-route-dotted-mcp-to.todo
+  title: 'ToolRunner: route dotted MCP tool names to CompanionMCPProxy'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M2.E1.T005
+  - P54.M2.E1.T006
+- id: T008
+  file: T008-tests-companionmcpregistry-cha.todo
+  title: 'Tests: CompanionMCPRegistry, channel MCP events, proxy, workspace scoping'
+  status: pending
+  estimate_hours: 5.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M2.E1.T003
+  - P54.M2.E1.T004
+  - P54.M2.E1.T005
+  - P54.M2.E1.T006
+  - P54.M2.E1.T007
+stats:
+  total: 8
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 8

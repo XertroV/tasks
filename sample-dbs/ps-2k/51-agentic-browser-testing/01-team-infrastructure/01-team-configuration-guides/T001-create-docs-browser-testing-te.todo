@@ -1,0 +1,28 @@
+---
+id: P51.M1.E1.T001
+title: Create docs/browser-testing/TEAM.md
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:50:25.821060+00:00'
+started_at: '2026-02-20T14:50:25.821060+00:00'
+completed_at: '2026-02-20T14:51:03.615531+00:00'
+duration_minutes: 0.6299076833333334
+---
+## Purpose
+Team CLAUDE.md for the browser-testing session. Loaded by all agents in the team.
+
+## Acceptance Criteria
+- [ ] Defines the three roles: Team Lead, Explorer, Fix Agent
+- [ ] Documents the browser handoff protocol (explicit 'You have the browser' message)
+- [ ] Includes the bug report format template (Problem / Repro / Expected / Actual / Feature Area / Severity / Playwright Scenario sections)
+- [ ] Feature coverage map table (area → key URLs → assigned explorer)
+- [ ] Env vars and prerequisites (PLAYWRIGHT_BASE_URL, Chrome port, pag-server running)
+- [ ] Quick-start: what the lead does on session start, what explorers do when idle
+
+## Notes
+Keep guidance directional, not scripted — explorers use judgment. The goal is enough structure for a fresh Claude session to pick up a role and contribute immediately.

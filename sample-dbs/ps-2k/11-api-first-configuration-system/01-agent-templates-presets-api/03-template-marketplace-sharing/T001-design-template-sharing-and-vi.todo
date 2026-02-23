@@ -1,0 +1,154 @@
+---
+id: P11.M1.E3.T001
+title: Design template sharing and visibility model
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P11.M1.E1.T004
+tags:
+- design
+- sharing
+- marketplace
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:37:10.241280+00:00'
+started_at: '2026-02-12T11:37:10.241280+00:00'
+completed_at: '2026-02-12T22:20:40.256769+00:00'
+duration_minutes: 643.5002578833333
+---
+
+# Design template sharing and visibility model
+
+Design and document the template sharing model, visibility levels, marketplace features, and sharing workflows.
+
+## Requirements
+
+- [ ] Create `docs/TEMPLATE_MARKETPLACE.md` with:
+  - [ ] Sharing model documentation (visibility levels, permissions)
+  - [ ] Marketplace architecture (discovery, filtering, ratings)
+  - [ ] Workflows (create, share, discover, install, rate)
+  - [ ] Permission matrix (who can do what)
+  - [ ] Use cases and examples
+  - [ ] API endpoint specifications for marketplace
+- [ ] Define visibility levels:
+  - [ ] Private (only creator)
+  - [ ] Shared (specific users/teams)
+  - [ ] Public (anyone, no auth required)
+  - [ ] Marketplace (public, discoverable, rated)
+- [ ] Design sharing mechanism:
+  - [ ] Share link generation (shareable URLs)
+  - [ ] Share tokens (temporary access)
+  - [ ] User/org sharing (persistent access)
+  - [ ] Revocation/expiry mechanism
+- [ ] Design marketplace discovery:
+  - [ ] Search (by name, category, tags)
+  - [ ] Filtering (category, rating, popularity)
+  - [ ] Sorting (relevance, rating, downloads, newest)
+  - [ ] Featured/trending templates
+  - [ ] User profile pages
+- [ ] Define data model extensions:
+  - [ ] Template sharing records (who has access)
+  - [ ] Template ratings/reviews
+  - [ ] Template usage stats
+  - [ ] Template versions/history
+- [ ] Create API design document:
+  - [ ] List public templates endpoint
+  - [ ] Share template endpoint
+  - [ ] Get shared templates endpoint
+  - [ ] Rate/review endpoint
+  - [ ] Download/usage tracking
+- [ ] Document edge cases:
+  - [ ] Sharing deleted templates
+  - [ ] Circular sharing (permission chains)
+  - [ ] Rate limiting
+  - [ ] Abuse/reporting mechanism
+
+## Acceptance Criteria
+
+- [ ] Design document clearly defines visibility levels
+- [ ] Sharing workflows documented with examples
+- [ ] Permission matrix covers all scenarios
+- [ ] API endpoints specified with request/response examples
+- [ ] Marketplace features clearly defined
+- [ ] Data model extensions identified
+- [ ] Edge cases and error handling documented
+- [ ] Document approved and reviewed
+
+## Context
+
+**Key Points**:
+- Marketplace enables community template sharing
+- Multiple visibility levels support different use cases
+- Rating system encourages quality templates
+- Usage tracking helps creators understand impact
+- Sharing mechanism must be flexible (temporary, persistent, group)
+
+## Notes
+
+### Visibility Level Matrix
+
+| Level | Creator Access | Specific Users | Public | Marketplace |
+|-------|---|---|---|---|
+| Private | RW | - | - | - |
+| Shared | RW | R (selected) | - | - |
+| Public | RW | R (anyone) | Yes | No |
+| Marketplace | RW (versioned) | R (anyone) | Yes | Yes |
+
+### Share Workflow
+
+```
+1. Creator creates template
+2. Creator decides to share
+   - Private (default)
+   - Shared with users/teams
+   - Public (discoverable)
+   - Marketplace (rated, reviewed)
+3. Shareable links generated
+4. Recipients search/discover
+5. Recipients can rate/review
+6. Creator sees usage stats
+7. Creator can revoke access
+8. Creator can deprecate old versions
+```
+
+### Marketplace Features
+
+- **Discovery**: Search + filter + sort + featured
+- **Social**: Ratings, reviews, creator profiles
+- **Versioning**: Semantic versioning, changelog
+- **Quality**: Community ratings, official badges
+- **Analytics**: Usage count, rating trends
+- **Discovery**: Tags, categories, trending
+
+### Template Versioning Strategy
+
+```
+Name + Version uniqueness:
+- v1.0.0 - Initial stable
+- v1.1.0 - Backward compatible update
+- v2.0.0 - Breaking change (new entry in marketplace)
+- v1.0.0-beta.1 - Pre-release (hidden from marketplace)
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 11:37 UTC
+**Primary task**: P11.M4.E2.T001 - Build platform configuration controller
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M1.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

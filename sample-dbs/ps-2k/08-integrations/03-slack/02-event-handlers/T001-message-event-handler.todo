@@ -1,0 +1,117 @@
+---
+id: P8.M3.E2.T001
+title: Implement message event handler
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P8.M3.E1.T003
+tags:
+- slack
+- events
+- messages
+claimed_by: cli-user
+claimed_at: '2026-02-08T12:26:49.500516+00:00'
+started_at: '2026-02-08T12:26:49.500516+00:00'
+completed_at: '2026-02-08T12:53:08.632735+00:00'
+duration_minutes: 26.318870166666667
+---
+
+# Implement message event handler
+
+Create event handler for processing incoming Slack messages and routing to agents.
+
+## Requirements
+
+- [x] Create `lib/pag_server_web/controllers/slack_events_controller.ex` (~120 LoC)
+- [x] Handle webhook verification challenge
+- [x] Validate request signatures using signing secret
+- [x] Parse message events (message, app_mention)
+- [x] Route to session/agent based on channel and user
+- [x] Stream agent responses back to Slack
+- [x] Handle message subtypes (edits, deletes, file uploads)
+
+## Acceptance Criteria
+
+- [x] URL verification challenge responds correctly
+- [x] Request signature validation rejects invalid requests
+- [x] Messages create or resume sessions per channel/user
+- [x] Agent responses post to correct channel/thread
+- [x] Bot ignores its own messages (no loops)
+- [x] Error messages sent as ephemeral (only user sees)
+- [x] Tests cover all message subtypes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 248-264 (Event handling)
+
+**Key Points**:
+- Events arrive via POST to `/slack/events`
+- Must respond to challenge within 3 seconds
+- Process messages asynchronously after acknowledgment
+- Session key: `{platform: :slack, team_id, channel_id, user_id}`
+- DM sessions are private, channel sessions can be shared
+
+## Notes
+
+Event payload structure:
+```json
+{
+  "type": "event_callback",
+  "team_id": "T123",
+  "event": {
+    "type": "message",
+    "user": "U456",
+    "text": "Hello agent",
+    "channel": "C789",
+    "ts": "1234567890.123456",
+    "thread_ts": "1234567890.000000"
+  }
+}
+```
+
+Session routing logic:
+```elixir
+def get_or_create_session(team_id, channel, user) do
+  session_key = "slack:#{team_id}:#{channel}:#{user}"
+  
+  case SessionRegistry.lookup(session_key) do
+    {:ok, session} -> {:ok, session}
+    {:error, :not_found} ->
+      {:ok, workspace} = get_workspace(team_id)
+      SessionManager.create_session(
+        platform: :slack,
+        workspace_id: workspace.id,
+        channel: channel,
+        user: user
+      )
+  end
+end
+```
+
+Ignore bot messages:
+```elixir
+def handle_event(%{"event" => %{"bot_id" => _}}), do: :ignore
+def handle_event(%{"event" => %{"subtype" => "bot_message"}}), do: :ignore
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-08 12:26 UTC
+**Sibling tasks**: P8.M3.E2.T002, P8.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M3.E2.T001 → P8.M3.E2.T002 → P8.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M3.E2.T001: .tasks/08-integrations/03-slack/02-event-handlers/T001-message-event-handler.todo
+- P8.M3.E2.T002: .tasks/08-integrations/03-slack/02-event-handlers/T002-thread-context.todo
+- P8.M3.E2.T003: .tasks/08-integrations/03-slack/02-event-handlers/T003-interactive-components.todo

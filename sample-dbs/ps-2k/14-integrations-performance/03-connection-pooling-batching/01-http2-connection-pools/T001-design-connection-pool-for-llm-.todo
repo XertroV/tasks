@@ -1,0 +1,49 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:32:18.654235+00:00'
+started_at: '2026-02-13T06:32:18.654235+00:00'
+completed_at: '2026-02-13T06:50:09.400250+00:00'
+duration_minutes: 17.845766283333333
+---
+# Design connection pool for LLM providers
+
+## Description
+Design the architecture for connection pooling to LLM providers, defining the pool behavior, connection lifecycle, error handling strategies, and provider-specific configurations.
+
+## Acceptance Criteria
+- [ ] `PagServer.LLM.Pool` behaviour defined with callbacks
+- [ ] `checkin/2`, `checkout/1`, `health_check/1` callbacks
+- [ ] Connection states: `:available`, `:in_use`, `:draining`, `:unhealthy`
+- [ ] Provider-specific pool config struct
+- [ ] Strategy patterns for: overflow, timeout, retry
+- [ ] Document connection lifecycle (create -> use -> return -> expire)
+- [ ] Error handling: rate limits, timeouts, connection drops
+- [ ] Design supports both HTTP/1.1 and HTTP/2
+- [ ] Architecture documented in module docs
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/`, existing provider adapters
+- Part of epic: P14.M3.E1 - HTTP/2 Connection Pools
+- Reference: Poolboy, Finch, NimblePool patterns
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P14.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 06:32 UTC
+**Sibling tasks**: P14.M3.E1.T002, P14.M3.E1.T003, P14.M3.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P14.M3.E1.T001 → P14.M3.E1.T002 → P14.M3.E1.T003 → P14.M3.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P14.M3.E1.T001: .tasks/14-integrations-performance/03-connection-pooling-batching/01-http2-connection-pools/T001-design-connection-pool-for-llm-.todo
+- P14.M3.E1.T002: .tasks/14-integrations-performance/03-connection-pooling-batching/01-http2-connection-pools/T002-implement-http2-pool-using-mintf.todo
+- P14.M3.E1.T003: .tasks/14-integrations-performance/03-connection-pooling-batching/01-http2-connection-pools/T003-add-pool-configuration-per-prov.todo
+- P14.M3.E1.T004: .tasks/14-integrations-performance/03-connection-pooling-batching/01-http2-connection-pools/T004-add-pool-metrics-and-telemetry.todo

@@ -1,0 +1,51 @@
+---
+id: P15.M2.E4.T004
+title: Build sessions and agents browser with filtering and grouping
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E4.T002
+tags:
+- sessions
+- agents
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-14T12:37:33.072499+00:00'
+started_at: '2026-02-14T12:37:33.072499+00:00'
+completed_at: '2026-02-14T12:45:48.473278+00:00'
+duration_minutes: 8.256679516666667
+---
+
+# Build sessions and agents browser with filtering and grouping
+
+
+
+## Requirements
+
+- Implement a browser panel listing sessions and agents with clear grouping and compact metadata.
+- Support filtering by status/name and sorting by recent activity for rapid debugging workflows.
+- Add selection behavior so choosing a session/agent updates the active chat context.
+- Handle empty and loading states cleanly when no sessions or agents exist yet.
+
+## Acceptance Criteria
+
+- Sessions and agents load from backend APIs and render with stable identifiers.
+- Filter/search interactions update the visible list without full page reloads.
+- Selecting a session/agent updates the active context and drives downstream chat behavior.
+- Empty, loading, and failed-fetch states are all represented with user-readable feedback.
+
+## Implementation Notes
+
+- Browser pane loads recent sessions and agents directly from schema-backed queries.
+- Filtering implemented as LiveView `phx-change` with:
+  - text query (`id/name/project`)
+  - status filter (`all/active/idle/paused/failed`)
+- Grouping implemented as:
+  - sessions grouped by `session.status`
+  - agents grouped by `agent.project` (`unscoped` fallback)
+- Selection wiring:
+  - selecting session sets active session+agent and reloads transcript
+  - selecting agent sets active agent and switches to first session for that agent if available
+- Empty states explicitly rendered when no sessions/agents are available.

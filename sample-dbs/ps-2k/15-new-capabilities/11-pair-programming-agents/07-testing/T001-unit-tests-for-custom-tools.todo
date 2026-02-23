@@ -1,0 +1,35 @@
+---
+id: P15.M11.E7.T001
+title: Unit tests for custom tools
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.231347+00:00'
+started_at: '2026-02-17T18:46:51.231347+00:00'
+completed_at: '2026-02-17T19:22:06.878969+00:00'
+duration_minutes: 35.26079346666667
+---
+## Description
+Test each pair programming tool in isolation with mocked Blackboard and context.
+
+## Files to Create
+- `test/pag_server/plugins/pair_programming/tools/pair_approve_test.exs`
+- `test/pag_server/plugins/pair_programming/tools/write_note_test.exs`
+- `test/pag_server/plugins/pair_programming/tools/interrupt_test.exs`
+- `test/pag_server/plugins/pair_programming/tools/request_swap_test.exs`
+- `test/pag_server/plugins/pair_programming/tools/pair_status_test.exs`
+
+## Acceptance Criteria
+- [ ] pair_approve: test approval flow, both-approved detection, revocation
+- [ ] pair_write_note: test note creation with various field combinations, required field validation
+- [ ] pair_interrupt: test message delivery to coder with [OBSERVER]/[URGENT OBSERVER] prefix
+- [ ] pair_request_swap: test swap request messaging to coordinator
+- [ ] pair_status: test phase/role/note/approval reading
+- [ ] All tests use mocked Blackboard (not real server)
+- [ ] async: true where possible
+- [ ] Tests pass
+- [ ] Lint passes

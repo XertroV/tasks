@@ -1,0 +1,16 @@
+---
+id: B207
+title: ACP websocket auth tests should cover all token carriers
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T15:54:47.533413+00:00'
+started_at: '2026-02-21T15:54:47.533413+00:00'
+completed_at: '2026-02-21T15:57:34.156163+00:00'
+duration_minutes: 2.7770456666666665
+---
+Add tests for Authorization Bearer, x-acp-token header, and query token param accepted by acp_websocket authorization path.

@@ -1,0 +1,42 @@
+id: P46.M3
+name: Web Session & Route Protection
+status: done
+estimate_hours: 16.0
+complexity: high
+depends_on:
+- P46.M2
+locked: false
+epics:
+- id: E1
+  name: Session Plugs & Router Pipelines
+  path: 01-session-plugs-router-pipelines
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: LiveView Auth Hook & Protected Routes
+  path: 02-liveview-auth-hook-protected-r
+  status: done
+  estimate_hours: 6.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Remember Me & Session Lifecycle
+  path: 03-remember-me-session-lifecycle
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

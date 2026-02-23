@@ -1,0 +1,665 @@
+project: pag-server
+description: Phoenix Agent Gateway Server - Local-first LLM agent orchestration backend
+created: 2026-02-05 00:00:00+00:00
+timeline_weeks: 24
+phases:
+- id: P1
+  name: Foundation
+  path: 01-foundation
+  status: pending
+  weeks: 3
+  estimate_hours: 84
+  priority: high
+  depends_on: []
+  description: Project setup, core schemas, agent system, event store
+- id: P2
+  name: LLM Integration
+  path: 02-llm-integration
+  status: pending
+  weeks: 3
+  estimate_hours: 62
+  priority: high
+  depends_on:
+  - P1
+  description: Provider abstraction, Anthropic/OpenAI/OpenRouter/Ollama, streaming,
+    cost tracking
+- id: P3
+  name: Streaming & Real-Time
+  path: 03-streaming-realtime
+  status: pending
+  weeks: 2
+  estimate_hours: 36
+  priority: high
+  depends_on:
+  - P2
+  description: Phoenix Channels, PubSub, REST API, OpenAI-compatible endpoint
+- id: P4
+  name: Tools System
+  path: 04-tools-system
+  status: pending
+  weeks: 3
+  estimate_hours: 56
+  priority: high
+  depends_on:
+  - P3
+  description: Tool registry, built-in tools, MCP host, sandboxing
+- id: P5
+  name: Session & Advanced Features
+  path: 05-session-advanced
+  status: pending
+  weeks: 3
+  estimate_hours: 50
+  priority: high
+  depends_on:
+  - P4
+  description: Message queue modes, session forking, parallel agents, context management
+- id: P6
+  name: Observability
+  path: 06-observability
+  status: pending
+  weeks: 2
+  estimate_hours: 36
+  priority: high
+  depends_on:
+  - P5
+  description: Stats tracking, OpenTelemetry, session replay, audit logging, Prometheus
+- id: P7
+  name: Production Hardening
+  path: 07-production
+  status: pending
+  weeks: 2
+  estimate_hours: 58
+  priority: high
+  depends_on:
+  - P6
+  description: Docker sandbox, rate limiting, capabilities, resource limits, error
+    handling, docs
+- id: P8
+  name: Platform Integrations
+  path: 08-integrations
+  status: pending
+  weeks: 4
+  estimate_hours: 54
+  priority: medium
+  depends_on:
+  - P7
+  description: Unified gateway, Telegram, Slack, Discord, WhatsApp, Matrix
+- id: P9
+  name: Advanced Integrations
+  path: 09-advanced
+  status: pending
+  weeks: 2
+  estimate_hours: 40
+  priority: low
+  depends_on:
+  - P8
+  description: Vector search, long-term memory/RAG, agent templates, cluster preparation,
+    plugin system
+- id: P10
+  name: DevOps & Developer Tool Integrations
+  path: 10-devops-developer-tool-integrat
+  status: pending
+  weeks: 5
+  estimate_hours: 96.0
+  priority: medium
+  depends_on:
+  - P9
+  description: GitHub, GitLab, Jira, Linear, CI/CD platforms, code hosting integrations
+    with webhooks and agent automation
+- id: P11
+  name: API-First Configuration System
+  path: 11-api-first-configuration-system
+  status: pending
+  weeks: 4
+  estimate_hours: 72.0
+  priority: medium
+  depends_on:
+  - P10
+  description: 'Make all system configuration manageable via REST API: agent templates,
+    integration settings, tools, plugins, and system config'
+- id: P12
+  name: Test Quality & Technical Debt
+  path: 12-test-quality-technical-debt
+  status: pending
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: Fix failing tests, improve test performance, resolve lint warnings,
+    and address technical debt
+- id: P13
+  name: Architecture Refactoring
+  path: 13-architecture-refactoring
+  status: pending
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: Decompose large modules, improve scalability patterns, and strengthen
+    error handling
+- id: P14
+  name: Integrations & Performance
+  path: 14-integrations-performance
+  status: pending
+  weeks: 4
+  estimate_hours: 72.0
+  priority: medium
+  depends_on: []
+  description: New platform integrations, PII detection, and connection pooling for
+    improved throughput
+- id: P15
+  name: New Capabilities
+  path: 15-new-capabilities
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: Agent memory, developer tooling, response caching, goal management,
+    and advanced multi-agent patterns
+  locked: true
+- id: P16
+  name: LLM Integration Tests
+  path: 16-llm-integration-tests
+  status: pending
+  weeks: 1
+  estimate_hours: 8.0
+  priority: medium
+  depends_on: []
+  description: Integration tests using free LLM providers (Groq, OpenRouter) with
+    multi-model and tool call coverage
+- id: P17
+  name: Extended Integration Test Coverage
+  path: 17-extended-integration-test-cove
+  status: pending
+  weeks: 2
+  estimate_hours: 10.0
+  priority: medium
+  depends_on: []
+  description: 'Comprehensive integration tests for features missing coverage: Anthropic
+    provider, session forking, multi-agent orchestration'
+- id: P18
+  name: Workspace Security & Multi-Tenancy Hardening
+  path: 18-workspace-security-multi-te
+  status: pending
+  weeks: 4
+  estimate_hours: 78.0
+  priority: high
+  depends_on: []
+  description: Fix cross-workspace data leaks, build workspace membership and RBAC,
+    enforce workspace boundaries on all endpoints, complete invitation system, and
+    harden architecture with soft-delete, path consolidation, and typed settings.
+- id: P19
+  name: Documentation Remediation
+  path: 19-documentation-remediation
+  status: pending
+  weeks: 2
+  estimate_hours: 40.0
+  priority: high
+  depends_on: []
+  description: 'Fix documentation issues from 2026-02-18 audit: critical errors, outdated
+    info, missing docs, and cleanup'
+  locked: false
+- id: P20
+  name: Plugin Database Schemas
+  path: 20-plugin-database-schemas
+  status: pending
+  weeks: 1
+  estimate_hours: 12.0
+  priority: medium
+  depends_on: []
+  description: Enable plugins to bring their own DB schemas with dynamic DDL, migration
+    tracking, enforced table prefixes, and a generic KV store.
+  locked: false
+- id: P21
+  name: Agent Containerization
+  path: 21-agent-containerization
+  status: pending
+  weeks: 4
+  estimate_hours: 60.0
+  priority: high
+  depends_on: []
+  description: Mandatory Docker containerization for all agents with workspace/private/shared
+    volume mounting. Every agent runs in a container with isolated filesystem access.
+  locked: false
+- id: P22
+  name: LLM Provider & Session Enhancements
+  path: 22-llm-provider-session-enhanceme
+  status: pending
+  weeks: 4
+  estimate_hours: 60.0
+  priority: medium
+  depends_on: []
+  description: Multi-credential auth with failover, live model discovery, and proactive
+    context compaction for production-grade LLM operations
+  locked: false
+- id: P23
+  name: Safety, Scheduling & Plugin Architecture
+  path: 23-safety-scheduling-plugin-archi
+  status: pending
+  weeks: 5
+  estimate_hours: 72.0
+  priority: high
+  depends_on: []
+  description: Exec approval safety system for dangerous commands, cron scheduling
+    plugin, and plugin file structure refactor to move plugins out of lib/
+  locked: false
+- id: P24
+  name: Communication, Canvas & Monitoring
+  path: 24-communication-canvas-monitorin
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: null
+  locked: true
+- id: P25
+  name: MCP Tool Interface Enhancement
+  path: 25-mcp-tool-interface-enhancement
+  status: done
+  weeks: 3
+  estimate_hours: 48.0
+  priority: medium
+  depends_on: []
+  description: Audit MCP tool interfaces from opencode, codex, crush and other coding
+    CLIs; synthesize best patterns; implement world-class bash/exec, file editing,
+    and agent spawning tool interfaces for pag-server's MCP server.
+  locked: true
+- id: P26
+  name: Agent Size Pool
+  path: 26-agent-size-pool
+  status: pending
+  weeks: 2
+  estimate_hours: 32.0
+  priority: medium
+  depends_on: []
+  description: Workspace-level model pool config (small/medium/large lists); agent
+    spawn requests accept a size field that resolves to the best available model from
+    the pool, with rate-limit-aware fallback.
+  locked: false
+- id: P27
+  name: Ephemeral Session Spawning
+  path: 27-ephemeral-session-spawning
+  status: pending
+  weeks: 2
+  estimate_hours: 24.0
+  priority: medium
+  depends_on: []
+  description: When agents are spawned (e.g. for cron jobs), target them at an existing
+    session or automatically create an ephemeral session scoped to the agent's lifetime,
+    with auto-cleanup after completion.
+  locked: false
+- id: P28
+  name: Plugin Hub UI
+  path: 28-plugin-hub-ui
+  status: pending
+  weeks: 3
+  estimate_hours: 32.0
+  priority: medium
+  depends_on: []
+  description: REST API foundation for a plugin hub UI - list plugins with metadata,
+    enable/disable per workspace, generic config GET/PATCH, and JSON Schema config
+    schema endpoint for self-describing plugin settings forms.
+  locked: false
+- id: P29
+  name: Crypto Identity & Remote Access
+  path: 29-crypto-identity-remote-access
+  status: pending
+  weeks: 2
+  estimate_hours: 30.0
+  priority: medium
+  depends_on: []
+  description: Crypto identity plugin for workspace signing, Tailscale secure remote
+    access, and plugin SDK infrastructure.
+  locked: false
+- id: P30
+  name: Plugin Marketplace & SDK
+  path: 30-plugin-marketplace-sdk
+  status: pending
+  weeks: 2
+  estimate_hours: 20.0
+  priority: medium
+  depends_on: []
+  description: Plugin marketplace browsing/search, install-from-URL REST API polish,
+    and a plugin development skill for creating plugins with Elixir.
+  locked: false
+- id: P31
+  name: Remote Agents & Voice Input
+  path: 31-remote-agents-voice-input
+  status: pending
+  weeks: 2
+  estimate_hours: 25.0
+  priority: medium
+  depends_on: []
+  description: SSH-based remote agent spawning and Telegram audio message handling
+    with local Whisper STT.
+  locked: false
+- id: P32
+  name: Collaborative Safety & Agent Consensus
+  path: 32-collaborative-safety-agent-con
+  status: pending
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: Multi-agent consensus mechanisms for safety-critical operations
+  locked: false
+- id: P33
+  name: UI/UX Enhancements
+  path: 33-ui-ux-enhancements
+  status: pending
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: User interface polish, mascot, animations, and overall UX improvements
+  locked: false
+- id: P34
+  name: External Skill Registry Integration
+  path: 34-external-skill-registry-integration
+  status: done
+  weeks: 2
+  estimate_hours: 28.0
+  priority: medium
+  depends_on:
+  - P28
+  description: Integrate with OpenClaw ClawHub skill registry and other popular skill
+    registries to display available skills in the webui. Skills use the AgentSkills-compatible
+    format (SKILL.md) and can be discovered, browsed, and optionally installed to
+    workspaces.
+  locked: true
+- id: P35
+  name: Review Earlier Phases
+  path: 35-review-earlier-phases
+  status: done
+  weeks: 4
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: 'Systematic review of all milestones from P20-P34. Each task covers
+    one milestone: code quality, feature completeness, integration with the rest of
+    the codebase, and pattern reuse / code duplication. All reviews must be performed
+    in a subagent that loads the review-and-fix skill.'
+  locked: true
+- id: P36
+  name: Agent Execution Modes
+  path: 36-agent-execution-modes
+  status: done
+  weeks: 1
+  estimate_hours: 14.0
+  priority: medium
+  depends_on: []
+  description: Continuous vs Discrete execution mode system for agent templates and
+    sessions, including auto-start on boot, lazy wake-up, and boot progress logging.
+  locked: true
+- id: P37
+  name: Threads Tool Implementation
+  path: 37-threads-tool-implementation
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: high
+  depends_on: []
+  description: Implement the stubbed action handlers in lib/pag_server/plugins/agent_tools/threads.ex.
+    All actions are scaffolded but return 'implementation pending' hints. This phase
+    wires them up to real functionality.
+  locked: true
+- id: P38
+  name: Connector Messaging Plugin
+  path: 38-connector-messaging-plugin
+  status: done
+  weeks: 1
+  estimate_hours: 12.0
+  priority: medium
+  depends_on: []
+  description: Plugin enabling agents to query available messaging connectors (Telegram,
+    Slack, Discord, WhatsApp, etc.) and send outbound messages over them, using the
+    existing BotConfig registry and per-platform integration clients.
+  locked: true
+- id: P39
+  name: pag-connect Companion Support
+  path: 39-pag-connect-companion-support
+  status: done
+  weeks: 2
+  estimate_hours: 15.0
+  priority: high
+  depends_on: []
+  description: All pag-server changes needed to support the pag-connect companion
+    daemon. Includes SSH plugin cleanup, core companion infrastructure (registry,
+    pending calls, supervisor), WebSocket authentication and channel protocol, companion
+    proxy tool execution, tool routing in ToolRunner, and REST API. Implements the
+    plan from docs/plans/2026-02-19-pag-server-companion-support-plan.md.
+  locked: true
+- id: P40
+  name: Team-Scoped Agent Collaboration
+  path: 40-team-scoped-agent-collaboratio
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: medium
+  depends_on: []
+  description: Infrastructure for multi-agent team collaboration including team-scoped
+    shared directories, team lifecycle management, and container volume mounting for
+    team workspaces.
+  locked: true
+- id: P41
+  name: 'Developer Experience: Test Aliases & CI Partitioning'
+  path: 41-developer-experience-test-alia
+  status: done
+  weeks: 1
+  estimate_hours: 10.0
+  priority: medium
+  depends_on: []
+  description: 'Improve test DX by adding mix test.* aliases for all 43 missing subdirectories,
+    grouped meta-aliases, a test.changed script, and CI parallel partitioning. Addresses
+    I032 pain: 15K tests in a single undiscoverable run.'
+  locked: true
+- id: P42
+  name: Mailman Cross-Workspace Plugin
+  path: 42-mailman-cross-workspace-plugin
+  status: done
+  weeks: 3
+  estimate_hours: 17.0
+  priority: medium
+  depends_on: []
+  description: External plugin providing workspace-level mailbox addressing, intelligent
+    routing via a transient LLM mailman agent, fork-and-question rule learning, and
+    remote pag-server extension points.
+  locked: true
+- id: P43
+  name: LLM Call Records & Observability Dashboard
+  path: 43-llm-call-records-observability
+  status: done
+  weeks: 2
+  estimate_hours: 20.0
+  priority: medium
+  depends_on: []
+  description: Persist LLM request metadata to DB, thread agent/session context through
+    the LLM registry, and build a live Phoenix LiveView dashboard with token counts,
+    cost estimates, timing, and status.
+  locked: true
+- id: P44
+  name: Slash Commands
+  path: 44-slash-commands
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: high
+  depends_on: []
+  description: Unified slash command system across all connectors (Telegram, Slack,
+    Discord, Web)
+  locked: true
+- id: P45
+  name: Credentials Vault Plugin
+  path: 45-credentials-vault-plugin
+  status: done
+  weeks: 2
+  estimate_hours: 28.0
+  priority: medium
+  depends_on: []
+  description: External plugin (plugins/credentials_vault/) providing a 1Password-style
+    secret store for agents and humans. AES-256-GCM encryption at rest, per-agent
+    token-bucket rate limiting to prevent exfil, version history with TTL, workspace/agent/user
+    scoping, and share-by-reference cross-workspace sharing. Agents interact via MCP
+    tool; humans via REST API with explicit reveal action.
+  locked: true
+- id: P46
+  name: User Authentication & Identity
+  path: 46-user-authentication-identity
+  status: done
+  weeks: 5
+  estimate_hours: 68.0
+  priority: high
+  depends_on: []
+  description: OAuth-only user authentication via Pow + PowAssent (GitHub, Google,
+    GitLab). Cookie-based web sessions, multi-provider identity linking, configurable
+    registration modes, admin role system replacing x-admin-key, and LiveView auth
+    protection.
+  locked: true
+- id: P47
+  name: Device Authorization Grant (RFC 8628)
+  path: 47-device-authorization-grant-rfc
+  status: done
+  weeks: 2
+  estimate_hours: 24.0
+  priority: high
+  depends_on:
+  - P46.M3
+  description: Implement RFC 8628 OAuth 2.0 Device Authorization Grant for pag-connect
+    frictionless onboarding. Adds oauth_clients registry, device_codes state machine,
+    polling endpoints, LiveView approval page, Oban cleanup worker, and RFC 8414 discovery.
+    Issued keys use companion:full user-scoped scope.
+  locked: true
+- id: P48
+  name: LSP Integration
+  path: 48-lsp-integration
+  status: done
+  weeks: 6
+  estimate_hours: 75.0
+  priority: high
+  depends_on: []
+  description: LSP (Language Server Protocol) integration for AI coding agents. Provides
+    diagnostic feedback, go-to-definition, find-references, hover, and symbol navigation.
+    Spans per-session working directory, coding agent mode, LSP plugin (pag-server),
+    LSP in pag-connect, and auto-download.
+  locked: true
+- id: P49
+  name: Plugin Platform Remediation
+  path: 49-plugin-platform-remediation
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: high
+  depends_on: []
+  description: 'Implementation plan: docs/plans/2026-02-20-plugin-platform-remediation-plan.md'
+  locked: true
+- id: P50
+  name: collab_teams Collaborative Agent Plugin
+  path: 50-collab-teams-collaborative-age
+  status: done
+  weeks: 2
+  estimate_hours: 40.0
+  priority: high
+  depends_on: []
+  description: Plugin at plugins/collab_teams/ implementing collaborative multi-agent
+    team runtime. Lead+worker model, task DAG, messaging, plugin events, ETS projections,
+    LiveView dashboard.
+  locked: true
+- id: P51
+  name: Agentic Browser Testing
+  path: 51-agentic-browser-testing
+  status: in_progress
+  weeks: 3
+  estimate_hours: 18.0
+  priority: medium
+  depends_on: []
+  description: 'Agent-driven exploratory testing of the PAG-Server web UI. Claude
+    Code teams of explorers and fix agents work iteratively: explorers navigate freely
+    using judgment, file bugs via ''bl bug'', and fix agents address high-priority
+    issues in parallel.'
+  locked: false
+- id: P52
+  name: PAG API MCP Server (stdio)
+  path: 52-pag-api-mcp-server-stdio
+  status: done
+  weeks: 1
+  estimate_hours: 12.0
+  priority: medium
+  depends_on: []
+  description: Build a standalone stdio MCP server (working name pac-mcp) that exposes
+    PAG API capabilities to MCP clients with secure auth, predictable schemas, and
+    regression coverage.
+  locked: true
+- id: P53
+  name: BrowserMCP Support via pag-connect
+  path: 53-browsermcp-support-via-pag-con
+  status: done
+  weeks: 2
+  estimate_hours: 26.0
+  priority: high
+  depends_on: []
+  description: Support browsermcp tool execution for agents by routing browser automation
+    through pag-connect companions, with optional headless fallback strategy and verification
+    coverage.
+  locked: true
+- id: P54
+  name: Companion MCP Proxy Generalization & BrowserMCP Plugin
+  path: 54-companion-mcp-proxy-generaliza
+  status: done
+  weeks: 3
+  estimate_hours: 50.0
+  priority: high
+  depends_on: []
+  description: Generalize the P53 BrowserMCP companion integration into a reusable
+    generic MCP proxy architecture. Extract CompanionToolAdapter behaviour, add mcp_register/mcp_tool_call
+    wire protocol for dynamic tool discovery, migrate BrowserMCP to a plugin, and
+    implement pag-connect MCP server infrastructure so agents can control real browsers
+    end-to-end.
+  locked: true
+- id: P55
+  name: Workspace Chat Interface
+  path: 55-workspace-chat-interface
+  status: done
+  weeks: 3
+  estimate_hours: 42.0
+  priority: medium
+  depends_on: []
+  description: "Production-grade chat UI as a first-class LiveView page \u2014 full-viewport,\
+    \ real-time streaming, thread management, tool call display, and approval workflows.\
+    \ Routes: /chat/:workspace_id and /chat/:workspace_id/:session_id"
+  locked: true
+critical_path:
+- P50.M1.E1.T001
+- P50.M1.E1.T002
+- P50.M1.E2.T001
+- P50.M1.E2.T002
+- P50.M1.E2.T004
+- P50.M2.E1.T001
+- P50.M2.E1.T003
+- P50.M2.E1.T004
+- P50.M2.E2.T004
+- P50.M2.E2.T006
+- P50.M3.E1.T001
+- P50.M3.E1.T002
+- P50.M3.E1.T003
+- P50.M3.E1.T004
+- P50.M3.E1.T005
+- P50.M3.E2.T005
+- P50.M3.E2.T006
+- P50.M4.E1.T001
+- P50.M4.E1.T002
+- P50.M4.E1.T003
+- P50.M4.E1.T005
+- P50.M4.E2.T002
+- P50.M4.E2.T003
+- P50.M4.E2.T004
+- P50.M4.E2.T005
+next_available: B219
+stats:
+  total_tasks: 1886
+  done: 1797
+  in_progress: 0
+  blocked: 4
+  pending: 85
+  total_estimate_hours: 2206.0

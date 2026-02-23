@@ -1,0 +1,49 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T04:28:25.183178+00:00'
+started_at: '2026-02-13T04:28:25.183178+00:00'
+completed_at: '2026-02-13T05:18:37.868803+00:00'
+duration_minutes: 50.2114269
+---
+# Implement PII regex detection (API keys, SSNs, emails)
+
+## Description
+Create a PII detection module using regex patterns to identify common sensitive data types like API keys, credit card numbers, SSNs, emails, and phone numbers in text content before it's sent to LLMs or external services.
+
+## Acceptance Criteria
+- [ ] `PagServer.Compliance.PIIDetector` module created
+- [ ] Regex patterns for: AWS keys, GitHub tokens, generic API keys
+- [ ] Regex patterns for: SSN, credit cards, phone numbers
+- [ ] Regex patterns for: emails, IP addresses
+- [ ] `scan/1` function returns list of detected PII with types and positions
+- [ ] `scan/2` with options for specific PII types
+- [ ] Configurable patterns via application env
+- [ ] Performance: < 10ms for typical messages
+- [ ] False positive rate < 5%
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/tools/`, `lib/pag_server/agents/`
+- Part of epic: P14.M2.E1 - PII Detection
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P14.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 04:28 UTC
+**Sibling tasks**: P14.M2.E1.T002, P14.M2.E1.T003, P14.M2.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P14.M2.E1.T001 → P14.M2.E1.T002 → P14.M2.E1.T003 → P14.M2.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P14.M2.E1.T001: .tasks/14-integrations-performance/02-compliance-security/01-pii-detection/T001-implement-pii-regex-detection-a.todo
+- P14.M2.E1.T002: .tasks/14-integrations-performance/02-compliance-security/01-pii-detection/T002-add-automatic-redactionhashing-.todo
+- P14.M2.E1.T003: .tasks/14-integrations-performance/02-compliance-security/01-pii-detection/T003-integrate-pii-check-into-tool-e.todo
+- P14.M2.E1.T004: .tasks/14-integrations-performance/02-compliance-security/01-pii-detection/T004-add-audit-log-integration.todo

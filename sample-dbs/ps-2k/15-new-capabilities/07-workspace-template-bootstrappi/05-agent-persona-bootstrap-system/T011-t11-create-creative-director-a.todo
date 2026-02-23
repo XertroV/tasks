@@ -1,0 +1,27 @@
+---
+id: P15.M7.E5.T011
+title: 'T11: Create Creative Director AI Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:28:11.324319+00:00'
+started_at: '2026-02-18T10:28:11.324319+00:00'
+completed_at: '2026-02-18T10:29:25.403947+00:00'
+duration_minutes: 1.2346602666666666
+---
+
+# T11: Create Creative Director AI Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

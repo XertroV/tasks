@@ -1,0 +1,67 @@
+---
+id: P51.M2.E1.T002
+title: 'Level 2: Auth flow & setup wizard'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:20:24.559089+00:00'
+started_at: '2026-02-21T05:20:24.559089+00:00'
+completed_at: '2026-02-21T05:20:42.517729+00:00'
+duration_minutes: 0.29931045
+---
+## Campaign: Can users onboard and authenticate?
+
+Test the entry points for new and returning users.
+
+## Acceptance Criteria
+- [x] Login flow tested (dev auto-redirect observed; provider redirects checked via profile controls)
+- [x] Setup wizard walkthrough attempted
+- [x] Profile settings verified
+- [x] Logout flow tested
+- [x] Bugs filed for all friction points, errors, or missing UI
+
+## Test Sequence (simple → complex)
+
+### Auth Basics
+1. Visit /login — verify provider buttons render (GitHub, Google, GitLab)
+2. Click a provider — verify redirect to OAuth (do NOT need to complete if no test creds)
+3. If already logged in: visit /logout — verify session cleared and redirect to /login
+4. POST /auth/refresh — does token refresh work via API?
+
+### Setup Wizard
+1. Navigate to /setup (or /dashboard/setup if already logged in)
+2. Walk through all 6 steps: workspace name, user context, template, integrations, plugins, bootstrap
+3. Note any step that's blank, broken, or crashes
+4. Try submitting with missing required fields — does validation work?
+5. Try submitting the full wizard — does it bootstrap the workspace?
+
+### Profile
+1. Navigate to /dashboard/settings/profile
+2. View OAuth identity linkages
+3. Try updating profile fields (display name, etc.)
+4. Attempt to unlink a provider (cancel if only one linked)
+
+### API Key (if exposed in UI)
+1. Look for API key management in settings
+2. Try creating an API key
+3. Verify it appears in the list
+
+## Expected Missing Features
+- Some OAuth providers may not be configured (expected)
+- Setup wizard steps may be stubs
+- File these as low-severity bugs
+
+## Execution Notes (2026-02-21)
+- Dev/permissive mode auto-login is active, so `/login` redirects to `/dashboard`; OAuth provider visibility/redirects were validated from `/dashboard/settings/profile` link controls.
+- OAuth redirect initiation confirmed for GitHub/Google/GitLab (provider-level config/callback completion not required for this task).
+- `/auth/logout` shows success but immediately re-authenticates due to dev auto-login behavior.
+- Setup wizard exercised on `/setup` and `/dashboard/setup`; step progression and workspace bootstrap flow observed.
+- Profile page update path validated (display name save success observed).
+- Filed `B162` for broken API Keys menu navigation target / missing dedicated route behavior (`.tasks/bugs/B162-user-menu-api-keys-link-points.todo`).
+
+## Evidence Artifacts
+- `.tasks/bugs/B162-user-menu-api-keys-link-points.todo`

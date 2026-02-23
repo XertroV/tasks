@@ -1,0 +1,38 @@
+id: P8.M2.E3
+name: Session Mapping
+status: pending
+estimate_hours: 2
+complexity: low
+depends_on:
+- E1
+description: Map chat IDs to sessions
+tasks:
+- id: T001
+  title: Create session mapper
+  file: T001-session-mapper.todo
+  estimate_hours: 1
+  complexity: low
+  priority: high
+  status: pending
+  depends_on: []
+  tags:
+  - session
+  - mapping
+- id: T002
+  title: Handle group chat context
+  file: T002-group-chat-context.todo
+  estimate_hours: 1
+  complexity: medium
+  priority: medium
+  status: pending
+  depends_on:
+  - T001
+  tags:
+  - telegram
+  - groups
+stats:
+  total_tasks: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

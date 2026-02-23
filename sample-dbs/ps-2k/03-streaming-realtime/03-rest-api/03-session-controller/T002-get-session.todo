@@ -1,0 +1,68 @@
+---
+title: GET /sessions/:id with full context
+epic: P3.M3.E3-e3
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimate_hours: 0.75
+depends_on:
+- P3.M3.E3.T001
+id: P3.M3.E3.T002
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:25:35.404222+00:00'
+started_at: '2026-02-08T04:25:35.404222+00:00'
+completed_at: '2026-02-08T04:33:47.512347+00:00'
+duration_minutes: 8.201801883333333
+---
+
+# Task: GET /sessions/:id with full context
+
+## Context
+GET /sessions/:id with full context for Phase 3 REST API functionality.
+
+## Goal
+Implement get /sessions/:id with full context.
+
+## Requirements
+- Follow Phoenix controller patterns
+- Include comprehensive tests
+- Add proper error handling
+- Document endpoints
+
+## Implementation
+
+### File: `lib/pag_server_web/controllers/...`
+
+```elixir
+defmodule PagServerWeb...Controller do
+  use PagServerWeb, :controller
+  
+  # Implementation here
+end
+```
+
+## Acceptance Criteria
+- [ ] Endpoint functional
+- [ ] Tests passing
+- [ ] Documentation updated
+- [ ] Error cases handled
+
+## Testing
+
+```elixir
+# test/pag_server_web/controllers/...
+defmodule PagServerWeb...ControllerTest do
+  use PagServerWeb.ConnCase, async: true
+  
+  # Tests here
+end
+```
+
+## References
+- Phoenix Controllers: https://hexdocs.pm/phoenix/controllers.html
+- Plug: https://hexdocs.pm/plug/readme.html
+
+## Notes
+- Follow RESTful conventions
+- Use proper HTTP status codes

@@ -1,0 +1,46 @@
+---
+id: P15.M2.E4.T008
+title: Add lightweight event timeline for messages and tool activity
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E4.T003
+- P15.M2.E4.T005
+tags:
+- observability
+- timeline
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-14T14:36:20.458927+00:00'
+started_at: '2026-02-14T14:36:20.458927+00:00'
+completed_at: '2026-02-14T14:42:45.691501+00:00'
+duration_minutes: 6.42054275
+---
+
+# Add lightweight event timeline for messages and tool activity
+
+
+
+## Requirements
+
+- Add a compact event timeline that logs message lifecycle markers and tool activity for the active session.
+- Include event timestamp, type, and short payload summary with newest-first ordering.
+- Support incremental updates while a run is active, reusing existing event sources where possible.
+- Provide filters to show/hide noisy event categories for faster debugging.
+
+## Acceptance Criteria
+
+- Timeline renders core event types (message sent, stream started/ended, tool started/ended, error).
+- New events appear in near real time without manual refresh.
+- Event filters work client-side and do not affect chat/session correctness.
+- Timeline remains readable under moderate event volume (no obvious duplicate flooding).
+
+## Implementation Notes (2026-02-15)
+
+- Added a lightweight **Event Timeline** panel to the validation console utility pane with newest-first ordering.
+- Implemented timeline event modeling via `PagServerWeb.Live.ValidationConsoleTimeline` for persisted message/tool events plus runtime stream/control/error events.
+- Added category filters (`message`, `stream`, `tool`, `control`, `error`) handled in LiveView without mutating session/chat state.
+- Added incremental runtime event insertion for stream start/end/stop and control outcomes so timeline updates immediately during active workflows.
+- Added compact event rendering with timestamp, event type badge, and payload summary for quick debugging scans.

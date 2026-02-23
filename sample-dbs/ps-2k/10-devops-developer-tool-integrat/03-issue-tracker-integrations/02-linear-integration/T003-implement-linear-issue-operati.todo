@@ -1,0 +1,143 @@
+---
+id: P10.M3.E2.T003
+title: Implement Linear issue operations and workflow updates
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T03:01:21.738679+00:00'
+started_at: '2026-02-12T03:01:21.738679+00:00'
+completed_at: '2026-02-12T03:15:23.370137+00:00'
+duration_minutes: 14.0271908
+---
+
+# Implement Linear issue operations and workflow updates
+
+Implement complete CRUD operations and workflow management for Linear issues via GraphQL.
+
+## Requirements
+
+### Create Issue (createIssue mutation)
+- [ ] Create `lib/pag_server/integrations/linear/operations.ex` module
+- [ ] Accept fields: teamId, title, description, priority, assigneeId, labelIds, estimate
+- [ ] Return created issue with id, identifier (PROJ-123), and all fields
+- [ ] Validate required fields (teamId, title)
+- [ ] Handle custom field creation via GraphQL
+
+### Read Issues (issues query)
+- [ ] Fetch issues with configurable filters: teamId, assigneeId, state, priority, label
+- [ ] Support pagination via cursor (first/after)
+- [ ] Return issue data: id, identifier, title, description, state, assignee, priority, labels
+- [ ] Include timestamps: createdAt, updatedAt
+- [ ] Support bulk fetch for known issue IDs
+
+### Update Issue (updateIssue mutation)
+- [ ] Support partial updates: title, description, priority, assignee, labels, estimate, state
+- [ ] Execute atomically (all-or-nothing)
+- [ ] Return updated issue object
+- [ ] Handle state transitions via state field (prefer dedicated transition mutation)
+- [ ] Support bulk field updates in single mutation
+
+### Delete/Archive Issue (archiveIssue mutation)
+- [ ] Archive issues (Linear uses soft delete via state)
+- [ ] Confirm state changed to archived/deleted
+- [ ] Return archived issue object
+
+### Workflow State Management
+- [ ] Fetch available workflow states: workflowStates query
+- [ ] Transition issues to new state via updateIssue (state field)
+- [ ] Validate target states are available before transition
+- [ ] Support transition comments via issue update
+
+### Comments
+- [ ] Add comments via issueAddComment mutation
+- [ ] Extract comment author from Linear user context
+- [ ] Return comment ID and content
+- [ ] Support comment creation during issue creation
+
+## Acceptance Criteria
+
+- [ ] Create returns new issue with id, identifier, and all provided fields
+- [ ] Read fetches paginated results with correct total count
+- [ ] Updates apply changes atomically
+- [ ] Bulk updates handle all fields correctly
+- [ ] Comments are added and visible immediately
+- [ ] Archive/delete transitions issue to deleted state
+- [ ] State transitions succeed only to valid next states
+- [ ] Error messages are clear (missing field, invalid state, etc)
+- [ ] Unit tests cover all operations, error cases, field handling
+- [ ] Integration test verifies operations with Linear sandbox
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**GraphQL Mutations**:
+```graphql
+mutation CreateIssue($input: IssueCreateInput!) {
+  issueCreate(input: $input) {
+    issue {
+      id
+      identifier
+      title
+      description
+      state { name }
+      priority
+      estimate
+    }
+  }
+}
+
+mutation UpdateIssue($id: String! $input: IssueUpdateInput!) {
+  issueUpdate(id: $id, input: $input) {
+    issue {
+      id
+      title
+      state { name }
+    }
+  }
+}
+
+mutation AddComment($id: String! $body: String!) {
+  issueAddComment(id: $id, body: $body) {
+    comment {
+      id
+      body
+      createdAt
+    }
+  }
+}
+```
+
+**Helper API** (example):
+```elixir
+Operations.create_issue(client, team_id: "team-123", title: "New issue")
+Operations.update_issue(client, "issue-123", title: "Updated title")
+Operations.transition_issue(client, "issue-123", "Done")
+Operations.add_comment(client, "issue-123", "This is fixed")
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/linear/operations_test.exs
+
+# Integration with Linear sandbox
+LINEAR_API_KEY=... mix test test/pag_server/integrations/linear/operations_test.exs --include integration
+```
+
+## Verification
+
+```bash
+# Test CRUD operations
+mix test test/pag_server/integrations/linear/operations_test.exs -k "crud"
+
+# Test workflow transitions
+mix test test/pag_server/integrations/linear/operations_test.exs -k "transition"
+
+# File size
+wc -l lib/pag_server/integrations/linear/operations.ex
+```

@@ -1,0 +1,40 @@
+---
+id: B027
+title: stabilize PagServer.Plugins.LifecycleTest full suite failures
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- plugins
+- tests
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:43:01.837801+00:00'
+started_at: '2026-02-15T17:43:01.837801+00:00'
+completed_at: '2026-02-15T17:48:30.292270+00:00'
+duration_minutes: 5.474240983333333
+---
+Full suite reports 8 failures in PagServer.Plugins.LifecycleTest. Resolve lifecycle cleanup/setup assumptions and ensure tests are isolated and deterministic under async execution.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:43 UTC
+**Primary task**: B026 - fix PagServer.FactoryTest regressions (13 failures)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

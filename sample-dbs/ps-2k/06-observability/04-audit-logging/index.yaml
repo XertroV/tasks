@@ -1,0 +1,21 @@
+id: P6.M4
+name: Audit Logging
+status: pending
+estimate_hours: 6
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Audit Logger
+  path: 01-audit-logger
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on: []
+  description: Security and compliance audit logging
+stats:
+  total_tasks: 4
+  done: 4
+  in_progress: 0
+  blocked: 0
+  pending: 0

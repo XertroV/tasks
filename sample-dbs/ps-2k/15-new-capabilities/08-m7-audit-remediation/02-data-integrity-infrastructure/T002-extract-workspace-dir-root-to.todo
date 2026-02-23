@@ -1,0 +1,28 @@
+---
+id: P15.M8.E2.T002
+title: Extract workspace_dir_root to shared config module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- refactor
+- dry
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:52:12.650382+00:00'
+started_at: '2026-02-17T14:52:12.650382+00:00'
+completed_at: '2026-02-17T15:23:43.322999+00:00'
+duration_minutes: 31.511210133333336
+---
+workspace_dir_root/0 is duplicated identically across 3 modules: workspace_files.ex:260, file_tracker.ex:280, workspaces.ex:236. Same logic (System.get_env or Application.get_env) copied three times.
+
+Create PagServer.WorkspaceConfig.root_dir/0 and replace all three copies.
+
+Source: E2 Audit I6
+
+## Acceptance Criteria
+- [ ] New PagServer.WorkspaceConfig module with root_dir/0
+- [ ] All three modules use the shared function
+- [ ] No duplicated workspace_dir_root logic remains
+- [ ] All tests pass

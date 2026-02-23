@@ -1,0 +1,38 @@
+id: P14
+name: Integrations & Performance
+status: pending
+weeks: 4
+estimate_hours: 72.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Missing Messaging Integrations
+  path: 01-missing-messaging-integrations
+  status: pending
+  estimate_hours: 24.0
+  complexity: medium
+  depends_on: []
+  description: MS Teams, Notion, Bluesky/AT Protocol, Email integrations
+- id: M2
+  name: Compliance & Security
+  path: 02-compliance-security
+  status: pending
+  estimate_hours: 16.0
+  complexity: medium
+  depends_on: []
+  description: PII detection, content moderation, compliance reporting
+- id: M3
+  name: Connection Pooling & Batching
+  path: 03-connection-pooling-batching
+  status: pending
+  estimate_hours: 16.0
+  complexity: medium
+  depends_on: []
+  description: HTTP/2 connection pools, request batching, prioritized queues
+stats:
+  total_tasks: 29
+  done: 29
+  in_progress: 0
+  blocked: 0
+  pending: 0

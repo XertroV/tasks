@@ -1,0 +1,16 @@
+id: P7.M3.E1
+name: Capability Structure
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on: []
+tasks:
+- T001-struct-definition.todo
+- T002-access-patterns.todo
+- T003-tests.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

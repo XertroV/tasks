@@ -1,0 +1,21 @@
+id: P16.M1
+name: Groq Provider Support
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Groq Provider Implementation
+  path: 01-groq-provider-implementation
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

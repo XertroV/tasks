@@ -1,0 +1,134 @@
+---
+id: P2.M4.E1.T003
+title: Add model routing and fallbacks
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M4.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-06T08:52:51.948533'
+started_at: '2026-02-06T08:52:51.948533'
+completed_at: '2026-02-06T08:58:22.202880'
+tags:
+- llm
+- openrouter
+- routing
+- fallback
+duration_minutes: 5.504238966666667
+---
+
+# Add model routing and fallbacks
+
+Implement OpenRouter's model routing and automatic fallback features for reliability and cost optimization.
+
+## Requirements
+
+- [x] Create `list_models/1` function to fetch available models
+- [ ] Implement model preference ordering:
+  - [x] Primary model (e.g., `anthropic/claude-3-5-sonnet`)
+  - [x] Fallback models (e.g., `openai/gpt-4-turbo`)
+  - [x] Cost-optimized alternatives
+- [ ] Add routing strategies:
+  - [x] `route: "fallback"` - Automatic fallback on failure
+  - [x] Default to first available model
+- [ ] Parse model metadata from responses:
+  - [x] Actual model used (may differ from requested)
+  - [x] Provider name
+  - [x] Cost per request
+- [ ] Handle routing errors:
+  - [x] All models unavailable
+  - [x] Rate limiting across models
+  - [x] Invalid model names
+- [x] Add configuration option for preferred models list
+- [x] Log actual model used for observability
+
+## Acceptance Criteria
+
+- [x] `list_models/1` fetches and caches available models
+- [x] Model fallback works when primary model unavailable
+- [x] Configuration supports multiple preferred models
+- [x] Response metadata includes actual model used
+- [x] Errors include which models were attempted
+- [x] Cost tracking accounts for actual model used
+- [x] Tests cover fallback scenarios
+
+## Context
+
+**Plan References**:
+- `.plan/task-breakdown.md` lines 1114-1115 (OpenRouter Provider)
+- OpenRouter Models API: https://openrouter.ai/docs#models
+- OpenRouter Routing: https://openrouter.ai/docs#model-routing
+
+**Key Points**:
+- OpenRouter can automatically fallback to alternative models
+- Reduces failures from model unavailability or rate limits
+- Cost optimization by preferring cheaper equivalent models
+- Transparent - responses indicate which model was actually used
+- Models have different capabilities, pricing, and rate limits
+
+**Model Categories**:
+- **Free**: Limited availability, rate limited
+- **Extended Thinking**: Claude-3-5-sonnet, GPT-4, etc.
+- **Fast**: Claude-3-haiku, GPT-3.5-turbo
+- **Cost-optimized**: Mixtral, Llama-3, etc.
+
+## Notes
+
+Example configuration and usage:
+```elixir
+# In config
+config = %OpenRouter{
+  api_key: "sk-or-...",
+  preferred_models: [
+    "anthropic/claude-3-5-sonnet",  # Primary
+    "openai/gpt-4-turbo",            # Fallback 1
+    "google/gemini-pro-1.5"          # Fallback 2
+  ]
+}
+
+# Request with fallback
+request = %{
+  model: "anthropic/claude-3-5-sonnet",
+  route: "fallback",
+  models: config.preferred_models,
+  messages: [...]
+}
+
+# Response shows actual model
+response = %{
+  content: "...",
+  model: "openai/gpt-4-turbo",  # Fallback was used!
+  metadata: %{
+    provider: "OpenAI",
+    requested_model: "anthropic/claude-3-5-sonnet",
+    cost: 0.0234
+  }
+}
+```
+
+Example model listing:
+```elixir
+def list_models(%OpenRouter{} = config) do
+  with {:ok, resp} <- HTTPoison.get(
+         "#{config.base_url}/models",
+         format_headers(config)
+       ),
+       {:ok, body} <- Jason.decode(resp.body) do
+    models = 
+      body["data"]
+      |> Enum.map(fn m ->
+        %{
+          id: m["id"],
+          name: m["name"],
+          context_length: m["context_length"],
+          pricing: m["pricing"],
+          capabilities: parse_capabilities(m)
+        }
+      end)
+    
+    {:ok, models}
+  end
+end
+```

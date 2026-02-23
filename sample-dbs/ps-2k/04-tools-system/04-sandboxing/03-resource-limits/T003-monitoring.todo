@@ -1,0 +1,56 @@
+---
+id: P4.M4.E3.T003
+title: Resource usage monitoring
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- sandboxing
+- monitoring
+- metrics
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:54:31.448890'
+started_at: '2026-02-06T00:44:51.920525'
+completed_at: '2026-02-06T01:44:51.920525'
+duration_minutes: 110.34119375
+---
+
+# Resource usage monitoring
+
+Monitor resource usage of sandboxed processes.
+
+## Requirements
+
+- [ ] Track CPU usage
+- [ ] Track memory usage
+- [ ] Track execution duration
+- [ ] Log resource metrics
+- [ ] Export metrics for monitoring
+
+## Acceptance Criteria
+
+- [ ] Captures CPU and memory usage
+- [ ] Tracks execution time
+- [ ] Metrics logged per execution
+- [ ] Test metrics collection
+- [ ] Metrics available via API
+
+## Context
+
+Metrics for cost tracking and optimization.
+
+## Notes
+
+Usage tracking:
+```elixir
+{:ok, result, stats} = Sandbox.execute(cmd, args)
+
+stats = %{
+  duration_ms: 1234,
+  cpu_ms: 890,
+  memory_mb: 128,
+  exit_code: 0
+}
+```

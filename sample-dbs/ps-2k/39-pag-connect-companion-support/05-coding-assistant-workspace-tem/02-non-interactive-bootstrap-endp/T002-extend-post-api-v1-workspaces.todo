@@ -1,0 +1,31 @@
+---
+id: P39.M5.E2.T002
+title: Extend POST /api/v1/workspaces/bootstrap to accept template param
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P39.M5.E2.T001
+tags:
+- bootstrap
+- api
+- rest
+- controller
+claimed_by: cli-user
+claimed_at: '2026-02-19T23:41:55.464206+00:00'
+started_at: '2026-02-19T23:41:55.464206+00:00'
+completed_at: '2026-02-19T23:46:38.962732+00:00'
+duration_minutes: 4.724975266666666
+---
+Wire the template param through the REST API layer so pag-connect can provision a coding-assistant workspace with a single HTTP call.
+
+Files: lib/pag_server_web/controllers/workspaces_controller.ex
+
+Acceptance criteria:
+- POST /api/v1/workspaces/bootstrap accepts optional 'template' field in JSON body
+- Valid template names are validated against WorkspaceBuiltins.list_names/0 (return 422 for unknown names)
+- The template name is forwarded to Workspaces.bootstrap_workspace/3
+- Response shape is identical to existing bootstrap response (workspace + main_agent)
+- OpenAPI operation spec is updated to document the template param
+- curl example: POST with {"name": "my-project", "template": "coding-assistant"} creates a ready-to-code workspace

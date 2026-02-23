@@ -1,0 +1,80 @@
+---
+id: P34.M1.E1
+title: ClawHub API Client
+status: pending
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- epic
+- backend
+- integration
+---
+
+# Epic: ClawHub API Client
+
+Implement HTTP client for ClawHub skill registry API (clawhub.ai).
+
+## Scope
+
+- REST API client for ClawHub endpoints
+- Authentication (optional, for install counts)
+- Caching layer for skill listings
+
+## Tasks
+
+### T1: ClawHub HTTP Client Module
+
+Create `PagServer.Skills.ClawHub.Client` module:
+
+- Base URL configuration (default: `https://clawhub.ai/api/v1`)
+- HTTP request wrapper with error handling
+- Rate limiting support
+
+Acceptance Criteria:
+- [ ] Client module compiles and handles HTTP errors gracefully
+- [ ] Configurable base URL via app env
+
+### T2: Search and List Endpoints
+
+Implement search/list API methods:
+
+- `search(query, opts)` - Search skills by query
+- `list(opts)` - List skills with pagination
+- `get(slug, opts)` - Get skill details by slug
+
+Acceptance Criteria:
+- [ ] Search returns skill metadata matching ClawHub API format
+- [ ] Pagination parameters work correctly
+- [ ] Error responses handled properly
+
+### T3: Download Endpoint
+
+Implement skill download:
+
+- `download(slug, version, opts)` - Download skill bundle as zip
+- Extract to temp directory
+- Return path to extracted skill folder
+
+Acceptance Criteria:
+- [ ] Downloads skill zip from ClawHub
+- [ ] Extracts to temp directory
+- [ ] Returns path to SKILL.md location
+
+### T4: Caching Layer
+
+Add Cachex-backed caching:
+
+- 5-minute TTL for list/search results
+- Cache bust option for fresh data
+- Per-query cache keys
+
+Acceptance Criteria:
+- [ ] Results cached with configurable TTL
+- [ ] Cache can be busted via option flag
+
+## Out of Scope
+
+- User authentication for publishing (read-only access)
+- Skill publishing/sync functionality

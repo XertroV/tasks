@@ -1,0 +1,46 @@
+---
+id: P18.M2.E3.T003
+title: Add workspace-nested session routes and controller delegation
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E3.T001
+tags:
+- security
+- workspace
+- sessions
+- routing
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:20:39.702293+00:00'
+started_at: '2026-02-17T20:20:39.702293+00:00'
+completed_at: '2026-02-17T20:47:49.674152+00:00'
+duration_minutes: 27.1661975
+---
+
+# Add workspace-nested session routes and controller delegation
+
+## Description
+
+Add routes under `/api/v1/workspaces/:workspace_id/sessions` that delegate to the existing SessionController with workspace_id scoped from conn.assigns.
+
+## Requirements
+
+- [ ] Add read routes: `GET /api/v1/workspaces/:workspace_id/sessions`, `GET /api/v1/workspaces/:workspace_id/sessions/:id`
+- [ ] Add write routes: `POST /api/v1/workspaces/:workspace_id/sessions`, `PATCH/DELETE`
+- [ ] Add fork route: `POST /api/v1/workspaces/:workspace_id/sessions/:id/fork`
+- [ ] Pipe through workspace membership plug (read: member, write: member for create, admin for delete)
+- [ ] Update SessionController to detect workspace-scoped mode from conn.assigns[:workspace_id]
+- [ ] Verify session belongs to workspace when accessing by ID (404 if not)
+
+## Acceptance Criteria
+
+- [ ] Workspace-nested session routes work for CRUD and fork
+- [ ] Session created via nested route gets correct workspace_id
+- [ ] Cannot access session from workspace B via workspace A's nested route
+- [ ] Flat and nested routes coexist
+
+## Context
+
+**Files affected**: `lib/pag_server_web/router.ex`, `lib/pag_server_web/controllers/session_controller.ex`

@@ -1,0 +1,16 @@
+---
+id: P35.M1.E2.T004
+title: 'Review P26.M1: Agent Size Pool Schema & Config'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:31:51.318255+00:00'
+started_at: '2026-02-19T01:31:51.318255+00:00'
+completed_at: '2026-02-19T01:41:44.366129+00:00'
+duration_minutes: 9.88413105
+---
+Load the review-and-fix skill. Review all epics and tasks under P26.M1 (Agent Size Pool - Schema & Config). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: size pool config fields added to workspace schema, size field on agent spawn requests, and migration correctness.

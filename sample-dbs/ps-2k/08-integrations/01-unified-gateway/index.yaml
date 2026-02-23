@@ -1,0 +1,39 @@
+id: P8.M1
+name: Unified Gateway
+status: pending
+estimate_hours: 10
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Common Format
+  path: 01-common-format
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: Message struct, platform converters, attachment handling
+- id: E2
+  name: Router
+  path: 02-router
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on:
+  - E1
+  description: Session key building, get/create sessions, route to agent
+- id: E3
+  name: Formatters
+  path: 03-formatters
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on:
+  - E1
+  description: Telegram/Slack/Discord/WhatsApp/Matrix formatters
+stats:
+  total_tasks: 11
+  done: 11
+  in_progress: 0
+  blocked: 0
+  pending: 0

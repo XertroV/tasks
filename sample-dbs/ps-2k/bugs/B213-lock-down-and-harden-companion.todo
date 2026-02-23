@@ -1,0 +1,16 @@
+---
+id: B213
+title: Lock down and harden companion execute_shell endpoint
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T19:16:14.926660+00:00'
+started_at: '2026-02-21T19:16:14.926660+00:00'
+completed_at: '2026-02-21T19:18:05.142098+00:00'
+duration_minutes: 1.8369237
+---
+Harden the new workspace companion execute_shell endpoint by enforcing execute-tools authorization and deterministic capability checks before dispatch.\n\nAcceptance criteria:\n- execute_shell route requires execute_tools permission in addition to workspace membership\n- Controller returns fast structured error when companion is connected but execute_shell is not registered\n- Controller tests cover forbidden access and unsupported-tool handling\n- Existing strict remote forwarding script remains functional with admin key

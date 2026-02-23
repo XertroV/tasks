@@ -1,0 +1,30 @@
+---
+id: P15.M11.E4.T002
+title: Create event formatting helpers
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.223984+00:00'
+started_at: '2026-02-17T18:46:51.223984+00:00'
+completed_at: '2026-02-17T19:21:58.811754+00:00'
+duration_minutes: 35.12646263333333
+---
+## Description
+Format raw PubSub events into concise, human/LLM-readable text for the observation subscriber and session reports.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/event_formatter.ex`
+
+## Acceptance Criteria
+- [ ] Formats `:tool_start` → `[tool_name] Starting with args: {concise args}`
+- [ ] Formats `:tool_complete` → `[tool_name] Result: {truncated result}`
+- [ ] Formats `:state_changed` → `Agent status: idle → processing`
+- [ ] Truncates large results (configurable max, default 2000 chars)
+- [ ] Handles file diffs with formatted unified diff (truncated)
+- [ ] Pure functions, no side effects
+- [ ] Tests pass
+- [ ] Lint passes

@@ -1,0 +1,43 @@
+---
+id: P8.M1.E2.T006
+title: Fix Telegram routing and concurrent session creation
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- P8.M1.E2.T001
+- P8.M1.E2.T002
+- P8.M1.E2.T003
+tags:
+- gateway
+- routing
+- concurrency
+- bug
+claimed_by: cli-user
+claimed_at: '2026-02-08T09:30:49.148842+00:00'
+started_at: '2026-02-08T09:30:49.148842+00:00'
+completed_at: null
+---
+
+# Fix Telegram routing and concurrent session creation
+
+
+
+## Requirements
+
+- [x] Fix Telegram routing to use chat_type metadata for private/group determination
+- [x] Update build_session_key for Telegram to check chat_type explicitly
+- [x] Add proper retry logic for concurrent session creation
+- [x] Handle unique constraint errors during concurrent creation
+- [x] Add tests for concurrent session creation scenarios
+
+## Acceptance Criteria
+
+- [x] Telegram private chats use user_id as session key
+- [x] Telegram group chats use chat_id as session key
+- [x] Telegram threads use chat_id + thread_id as session key
+- [x] Concurrent session creation with same session_key returns same session
+- [x] Unique constraint errors trigger retry to find existing session
+- [x] Tests verify Telegram routing for private/group scenarios
+- [x] Tests verify concurrent session creation behavior

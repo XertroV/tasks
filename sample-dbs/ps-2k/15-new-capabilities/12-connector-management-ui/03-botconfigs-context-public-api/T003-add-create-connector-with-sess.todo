@@ -1,0 +1,17 @@
+---
+id: P15.M12.E3.T003
+title: Add create_connector_with_session/3 to Workspaces context
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.289170+00:00'
+started_at: '2026-02-18T06:45:12.289170+00:00'
+completed_at: '2026-02-18T07:52:00.865497+00:00'
+duration_minutes: 66.80960520000001
+---
+lib/pag_server/workspaces.ex: add create_connector_with_session(workspace_id, platform, opts) that in a single transaction: (1) creates or fetches an appropriate session (opts can be :new_session with agent_id, :existing_session with session_id, or :main_agent which auto-creates a session on the workspace main agent); (2) creates a bot_config bound to that session. Return {:ok, %{bot_config: _, session: _}} | {:error, reason}. This is the 'Add connector' action from the UI. Emit an audit log event.

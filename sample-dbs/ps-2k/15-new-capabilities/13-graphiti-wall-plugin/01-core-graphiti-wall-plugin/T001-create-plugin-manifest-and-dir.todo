@@ -1,0 +1,51 @@
+---
+id: P15.M13.E1.T001
+title: Create plugin manifest and directory structure
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- plugin
+- scaffolding
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:11:05.444019+00:00'
+started_at: '2026-02-18T22:11:05.444019+00:00'
+completed_at: '2026-02-18T22:22:28.930758+00:00'
+duration_minutes: 11.391445449999999
+---
+
+# Create plugin manifest and directory structure
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M13.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 22:11 UTC
+**Sibling tasks**: P15.M13.E1.T002, P15.M13.E1.T003, P15.M13.E1.T004, P15.M13.E1.T005, P15.M13.E1.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M13.E1.T001 → P15.M13.E1.T002 → P15.M13.E1.T003 → P15.M13.E1.T004 → P15.M13.E1.T005 → P15.M13.E1.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M13.E1.T001: .tasks/15-new-capabilities/13-graphiti-wall-plugin/01-core-graphiti-wall-plugin/T001-create-plugin-manifest-and-dir.todo
+- P15.M13.E1.T002: .tasks/15-new-capabilities/13-graphiti-wall-plugin/01-core-graphiti-wall-plugin/T002-create-database-schema-for-wal.todo
+- P15.M13.E1.T003: .tasks/15-new-capabilities/13-graphiti-wall-plugin/01-core-graphiti-wall-plugin/T003-create-database-schema-for-wal.todo
+- P15.M13.E1.T004: .tasks/15-new-capabilities/13-graphiti-wall-plugin/01-core-graphiti-wall-plugin/T004-implement-wall-register-tool.todo
+- P15.M13.E1.T005: .tasks/15-new-capabilities/13-graphiti-wall-plugin/01-core-graphiti-wall-plugin/T005-implement-wall-send-message-to.todo
+- P15.M13.E1.T006: .tasks/15-new-capabilities/13-graphiti-wall-plugin/01-core-graphiti-wall-plugin/T006-implement-wall-check-messages.todo

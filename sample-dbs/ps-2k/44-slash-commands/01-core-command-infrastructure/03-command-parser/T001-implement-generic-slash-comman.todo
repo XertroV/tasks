@@ -1,0 +1,46 @@
+---
+id: P44.M1.E3.T001
+title: Implement generic slash command text parser
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:35:42.845355+00:00'
+started_at: '2026-02-19T18:35:42.845355+00:00'
+completed_at: '2026-02-19T18:43:27.858431+00:00'
+duration_minutes: 7.750217716666667
+---
+## Summary
+Implement `PagServer.Commands.Parser` to parse raw text input into command name + args.
+
+## Acceptance Criteria
+- [ ] `parse/1` accepts a string, returns `{:command, name, args}` or `:not_a_command`
+- [ ] Detects leading slash: "/model gpt-4o" -> {:command, "model", ["gpt-4o"]}
+- [ ] Text with no leading slash returns `:not_a_command`
+- [ ] Handles empty args: "/help" -> {:command, "help", []}
+- [ ] Trims whitespace, handles multiple spaces between args
+- [ ] First word after slash is the command name (lowercased)
+- [ ] Remaining words are individual args (not joined — let handlers decide)
+- [ ] "/" alone returns `:not_a_command`
+- [ ] Tests cover all above cases
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P44.M1.E3)
+**Agent**: cli-user
+**Date**: 2026-02-19 18:35 UTC
+**Sibling tasks**: P44.M1.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P44.M1.E3.T001 → P44.M1.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P44.M1.E3.T001: .tasks/44-slash-commands/01-core-command-infrastructure/03-command-parser/T001-implement-generic-slash-comman.todo
+- P44.M1.E3.T002: .tasks/44-slash-commands/01-core-command-infrastructure/03-command-parser/T002-write-parser-unit-tests.todo

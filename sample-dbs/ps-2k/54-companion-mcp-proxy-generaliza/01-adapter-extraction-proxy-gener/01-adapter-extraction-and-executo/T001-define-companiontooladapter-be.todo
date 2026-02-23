@@ -1,0 +1,25 @@
+---
+id: P54.M1.E1.T001
+title: Define CompanionToolAdapter behaviour
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:29:48.824652+00:00'
+started_at: '2026-02-21T10:29:48.824652+00:00'
+completed_at: '2026-02-21T10:31:04.008244+00:00'
+duration_minutes: 1.2530596833333334
+---
+## Context
+P53 hardcoded BrowserMCP-specific logic (auth, session hooks, error mapping, action validation, config checks) inside CompanionProxyExecutor. This task defines the behaviour that allows any companion-routed tool to provide these concerns as an adapter.
+
+## Acceptance Criteria
+- [ ] `PagServer.Companions.CompanionToolAdapter` behaviour defined in `lib/pag_server/companions/companion_tool_adapter.ex`
+- [ ] Callbacks: `authorize/2`, `pre_execute/2`, `post_execute/3`, `normalize_error/1`, `timeout_ms/0`, `enabled?/1`
+- [ ] `@spec` and `@doc` on every callback
+- [ ] `@optional_callbacks` for `pre_execute`, `post_execute`, `normalize_error` (not all adapters need lifecycle hooks)
+- [ ] Default implementations via `__using__` macro: `authorize` returns `:ok`, `pre_execute` returns payload unchanged, `post_execute` is no-op, `normalize_error` returns nil (caller uses generic error), `timeout_ms` returns `120_000`, `enabled?/1` returns `true`
+- [ ] Module compiles with no warnings, `mix lint` passes

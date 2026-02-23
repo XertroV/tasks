@@ -1,0 +1,41 @@
+---
+id: B121
+title: 'got this for a msg i sent a little while ago + the agnet is idle so it should
+  have processed it by now: Your message has been queued and will be processed shortly.
+  The response is taking longer than expected.'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T22:29:30.983150+00:00'
+started_at: '2026-02-17T22:29:30.983150+00:00'
+completed_at: '2026-02-17T22:40:41.959324+00:00'
+duration_minutes: 11.18293605
+---
+
+got this for a msg i sent a little while ago + the agnet is idle so it should have processed it by now: Your message has been queued and will be processed shortly. The response is taking longer than expected.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-17 22:29 UTC
+**Primary task**: B120 - bing search is bad and it should be removed from the list of search providers
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

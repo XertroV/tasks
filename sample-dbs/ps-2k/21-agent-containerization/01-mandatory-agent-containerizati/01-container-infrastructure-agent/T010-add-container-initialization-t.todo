@@ -1,0 +1,42 @@
+---
+id: P21.M1.E1.T010
+title: Add container initialization to AgentServer lifecycle
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on:
+- P21.M1.E1.T003
+- P21.M1.E1.T005
+- P21.M1.E1.T006
+tags:
+- integration
+- agent-server
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.559921+00:00'
+started_at: '2026-02-18T12:21:44.559921+00:00'
+completed_at: '2026-02-18T13:37:23.936903+00:00'
+duration_minutes: 75.65628276666666
+---
+
+# Add container initialization to AgentServer lifecycle
+
+Integrate container creation into AgentServer initialization process.
+
+## Requirements
+
+- Create container when agent starts (if feature flag enabled)
+- Pass agent_id, workspace_id, session_type to ContainerSupervisor
+- Store container reference in agent state
+- Handle container creation failures gracefully
+- Support fallback to non-containerized mode if Docker unavailable
+
+## Acceptance Criteria
+
+- [ ] AgentServer `init/1` calls `ContainerSupervisor.start_container/1`
+- [ ] Container reference stored in agent state metadata
+- [ ] Container creation failure logs warning, optionally falls back
+- [ ] Feature flag controls whether containerization is attempted
+- [ ] Container created with workspace, private, and shared volumes
+- [ ] Agent state includes `container_pid` and `container_id`
+- [ ] Unit tests for container initialization flow

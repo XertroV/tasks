@@ -1,0 +1,134 @@
+---
+id: P8.M6.E2.T001
+title: Implement Matrix room message handler
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M6.E1.T002
+tags:
+- matrix
+- messages
+- events
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:51:27.630722+00:00'
+started_at: '2026-02-08T10:51:27.630722+00:00'
+completed_at: '2026-02-08T11:17:19.660387+00:00'
+duration_minutes: 25.867160916666666
+---
+
+# Implement Matrix room message handler
+
+Process m.room.message events and route to agent system.
+
+## Requirements
+
+- [x] Create `lib/pag_server/integrations/matrix/event_handler.ex` (~80 LoC)
+- [x] Handle `m.room.message` events with msgtype `m.text`
+- [x] Filter out bot's own messages by sender comparison
+- [x] Create or retrieve session by room_id
+- [x] Route message to agent and send response
+- [x] Support message edits (m.room.message with m.replace)
+
+## Acceptance Criteria
+
+- [x] Bot responds to text messages in rooms it's joined
+- [x] Bot ignores its own messages (prevents loops)
+- [x] Sessions are per-room (one agent per room)
+- [x] Message edits trigger agent update, not new message
+- [x] Formatted messages (HTML) are converted to plain text
+- [x] Response latency under 3 seconds
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 436-449 (Matrix event handling)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 215-243 (session management)
+
+**Key Points**:
+- Matrix events are JSON with `type`, `content`, `sender`, `room_id`
+- Must track sender to avoid message loops
+- Rooms can have multiple bots (namespace by sender)
+- Message edits reference original event_id
+
+## Notes
+
+Event handler structure:
+```elixir
+defmodule PAGServer.Integrations.Matrix.EventHandler do
+  def handle(%{
+    "type" => "m.room.message",
+    "content" => %{"msgtype" => "m.text", "body" => text},
+    "sender" => sender,
+    "room_id" => room_id,
+    "event_id" => event_id
+  }) do
+    # Ignore own messages
+    if sender != bot_user_id() do
+      process_message(room_id, sender, text, event_id)
+    end
+  end
+  
+  defp process_message(room_id, sender, text, event_id) do
+    {:ok, session} = SessionManager.get_or_create(
+      platform: :matrix,
+      external_id: room_id,
+      metadata: %{sender: sender}
+    )
+    
+    {:ok, response} = Agent.send_message(session.agent_id, text)
+    
+    Polyjuice.Client.send_message(room_id, response.content)
+  end
+end
+```
+
+Message types to support:
+- `m.text` - Plain text (priority 1)
+- `m.emote` - /me actions (treat as text)
+- `m.notice` - Bot messages (read-only, ignore)
+- `m.image` / `m.file` - Media (phase 2)
+
+Message edits:
+```json
+{
+  "type": "m.room.message",
+  "content": {
+    "msgtype": "m.text",
+    "body": "* edited text",
+    "m.new_content": {
+      "msgtype": "m.text",
+      "body": "edited text"
+    },
+    "m.relates_to": {
+      "rel_type": "m.replace",
+      "event_id": "$original_event_id"
+    }
+  }
+}
+```
+
+Formatted message handling:
+- Matrix supports HTML in `formatted_body`
+- Strip HTML tags for agent processing
+- Use `body` field (plain text fallback) when available
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M6.E2)
+**Agent**: cli-user
+**Date**: 2026-02-08 10:51 UTC
+**Sibling tasks**: P8.M6.E2.T002, P8.M6.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M6.E2.T001 → P8.M6.E2.T002 → P8.M6.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M6.E2.T001: .tasks/08-integrations/06-matrix/02-event-handlers/T001-room-message-handler.todo
+- P8.M6.E2.T002: .tasks/08-integrations/06-matrix/02-event-handlers/T002-sync-loop.todo
+- P8.M6.E2.T003: .tasks/08-integrations/06-matrix/02-event-handlers/T003-federation-events.todo

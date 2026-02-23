@@ -1,0 +1,18 @@
+---
+id: P19.M1.E1.T002
+title: Fix AGENTS.md typo
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- docs
+- AGENTS.md
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:01:43.181513+00:00'
+started_at: '2026-02-18T01:01:43.181513+00:00'
+completed_at: '2026-02-18T01:02:29.437792+00:00'
+duration_minutes: 0.7709377666666666
+---
+Remove trailing ** from 'backlog grab'** on line 11

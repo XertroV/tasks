@@ -1,0 +1,49 @@
+---
+id: P43.M1.E2.T004
+title: 'Add stale record detection query: find pending/streaming rows older than 5
+  min'
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:02:04.858173+00:00'
+started_at: '2026-02-19T19:02:04.858173+00:00'
+completed_at: '2026-02-19T19:10:44.807320+00:00'
+duration_minutes: 8.665818483333334
+---
+
+# Add stale record detection query: find pending/streaming rows older than 5 min
+
+
+
+## Requirements
+
+- Add `stale_records/1` and `mark_stale/1` to `PagServer.LLM.CallRecorder`
+- These are synchronous query/update helpers — not background workers — intended for use from IEx, scheduled jobs, or a future reaper GenServer
+- Both functions operate directly on the repo (no async Task wrapping)
+
+## Acceptance Criteria
+
+- `stale_records/1` has signature `stale_records(older_than_seconds \\ 300)`:
+  - Queries `llm_call_records` where `status` is in `[:pending, :streaming]` AND `started_at < now() - older_than_seconds`
+  - Returns `{:ok, records}` where `records` is a list of `%LlmCallRecord{}` structs (may be empty list)
+  - Uses an Ecto query (not raw SQL); `DateTime.utc_now/0` or `NaiveDateTime.utc_now/0` is used to compute the cutoff timestamp
+  - Accepts any non-negative integer for `older_than_seconds`; `0` returns all pending/streaming records regardless of age
+  - Default argument of `300` reflects the 5-minute threshold described in the task title
+
+- `mark_stale/1` has signature `mark_stale(record_ids)` where `record_ids` is a list of binary UUIDs:
+  - Issues a single bulk `Repo.update_all` (not N individual updates) setting `status = :timed_out` for all matching IDs
+  - Returns `{:ok, count}` where `count` is the number of rows actually updated
+  - Calling `mark_stale([])` returns `{:ok, 0}` without issuing a query
+  - Only updates rows whose current `status` is in `[:pending, :streaming]` — does not overwrite already-terminal records
+
+- Unit tests in `test/pag_server/llm/call_recorder_test.exs` cover:
+  - `stale_records/1` with default threshold returns a record inserted with `started_at` older than 5 minutes
+  - `stale_records/1` does not return a record inserted with `started_at` within the threshold window
+  - `stale_records/1` does not return records with terminal statuses (`:completed`, `:failed`, etc.)
+  - `mark_stale/1` with a valid ID list updates those records to `:timed_out` and returns `{:ok, n}`
+  - `mark_stale/1` with an empty list returns `{:ok, 0}`
+  - `mark_stale/1` does not update records that are already `:completed` or `:failed`

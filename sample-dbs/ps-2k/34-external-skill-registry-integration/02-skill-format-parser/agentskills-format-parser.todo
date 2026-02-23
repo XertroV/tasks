@@ -1,0 +1,90 @@
+---
+id: P34.M2.E1
+title: AgentSkills Format Parser
+status: pending
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on:
+- P34.M1.E1
+tags:
+- epic
+- backend
+- parser
+---
+
+# Epic: AgentSkills Format Parser
+
+Implement parser for AgentSkills-compatible SKILL.md format with YAML frontmatter.
+
+## Scope
+
+- Parse SKILL.md files with YAML frontmatter
+- Extract metadata (name, description, requirements)
+- Validate required fields
+- Handle metadata.openclaw extensions
+
+## Reference
+
+Based on OpenClaw skill format:
+- Required: `name`, `description` in frontmatter
+- Optional: `homepage`, `user-invocable`, `metadata`
+- OpenClaw extensions: `metadata.openclaw.requires`, `metadata.openclaw.install`
+
+## Tasks
+
+### T1: Skill Parser Module
+
+Create `PagServer.Skills.Parser` module:
+
+- `parse_file/1` - Parse SKILL.md from file path
+- `parse_string/1` - Parse SKILL.md content string
+- Extract frontmatter and body separately
+
+Acceptance Criteria:
+- [ ] Parses YAML frontmatter correctly
+- [ ] Handles missing frontmatter gracefully
+- [ ] Returns structured `%Skill{}` struct
+
+### T2: Skill Schema and Validation
+
+Define `PagServer.Skills.Skill` struct:
+
+- Required fields: `name`, `description`
+- Optional fields: `homepage`, `user_invocable`, `metadata`
+- Computed fields: `requirements`, `install_instructions`
+
+Acceptance Criteria:
+- [ ] Validates required fields present
+- [ ] Returns `{:ok, skill}` or `{:error, validation_errors}`
+
+### T3: OpenClaw Metadata Extensions
+
+Parse OpenClaw-specific metadata:
+
+- `metadata.openclaw.requires.bins` - Required binaries
+- `metadata.openclaw.requires.env` - Required env vars
+- `metadata.openclaw.requires.config` - Required config keys
+- `metadata.openclaw.install` - Install instructions
+
+Acceptance Criteria:
+- [ ] Extracts requirements into structured format
+- [ ] Handles missing metadata gracefully
+
+### T4: Skill Requirements Checker
+
+Create `PagServer.Skills.Requirements` module:
+
+- `check/2` - Check if requirements are met for a skill
+- Check binary presence on PATH
+- Check environment variables
+- Check config keys
+
+Acceptance Criteria:
+- [ ] Returns `{:ok, :met}` or `{:error, missing_requirements}`
+- [ ] Lists all missing requirements, not just first
+
+## Out of Scope
+
+- Skill execution (skills are prompt-only)
+- Dynamic skill loading into agent context

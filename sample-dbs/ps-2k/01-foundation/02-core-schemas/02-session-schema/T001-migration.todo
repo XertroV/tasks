@@ -1,0 +1,102 @@
+---
+id: P1.M2.E2.T001
+title: Create sessions table migration
+status: done
+estimate_hours: 2
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- database
+- migration
+- session
+- core-schema
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:16:08.663533'
+started_at: '2026-02-05T08:16:08.663533'
+completed_at: '2026-02-05T08:17:39.229526'
+---
+
+# Create sessions table migration
+
+Create the database migration for the `sessions` table with proper foreign key relationships, indexes, and constraints.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_sessions`
+- [ ] Add `sessions` table with the following fields:
+  - [ ] `id` - binary_id, primary key
+  - [ ] `agent_id` - FK to agents table (binary_id, not null, on_delete: cascade)
+  - [ ] `parent_session_id` - FK to sessions table (binary_id, nullable, on_delete: nilify_all) for forking
+  - [ ] `fork_point_message_id` - FK to messages table (binary_id, nullable) 
+  - [ ] `name` - string, nullable
+  - [ ] `status` - string, default: "active", not null
+  - [ ] `model_override` - string, nullable (allows per-session model switching)
+  - [ ] `timestamps` - utc_datetime_usec
+- [ ] Create indexes:
+  - [ ] `[:agent_id]` - for querying sessions by agent
+  - [ ] `[:status]` - for filtering active/paused/completed/failed sessions
+- [ ] Add foreign key constraints with proper on_delete behavior
+- [ ] Run migration: `mix ecto.migrate`
+- [ ] Verify table structure in database
+
+## Acceptance Criteria
+
+- [ ] Migration file created in `priv/repo/migrations/`
+- [ ] `mix ecto.migrate` runs successfully with zero errors
+- [ ] Table `sessions` exists in database with all specified columns
+- [ ] Foreign key constraints enforce data integrity:
+  - [ ] Cannot create session with non-existent agent_id
+  - [ ] Deleting an agent cascades to delete its sessions
+  - [ ] Self-referential FK for parent_session_id works correctly
+- [ ] Indexes created for `agent_id` and `status`
+- [ ] Default value "active" applies to status column
+- [ ] Can create sessions with and without parent_session_id (forking structure)
+- [ ] `mix ecto.rollback` successfully reverts the migration
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 211-221 (sessions table schema)
+
+**Key Points**:
+- Sessions represent conversation threads within an agent
+- `parent_session_id` enables session forking for branching conversations
+- `fork_point_message_id` tracks where the fork occurred in the parent session
+- `status` values: "active", "paused", "completed", "failed"
+- `model_override` allows switching LLM models per session (overrides agent default)
+- Self-referential foreign key requires careful handling
+
+## Migration Template
+
+```elixir
+defmodule PagServer.Repo.Migrations.CreateSessions do
+  use Ecto.Migration
+
+  def change do
+    create table(:sessions, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+      add :agent_id, references(:agents, type: :binary_id, on_delete: :cascade), null: false
+      add :parent_session_id, references(:sessions, type: :binary_id, on_delete: :nilify_all)
+      add :fork_point_message_id, references(:messages, type: :binary_id)
+      add :name, :string
+      add :status, :string, default: "active", null: false
+      add :model_override, :string
+
+      timestamps(type: :utc_datetime_usec)
+    end
+
+    create index(:sessions, [:agent_id])
+    create index(:sessions, [:status])
+  end
+end
+```
+
+## Notes
+
+- The `fork_point_message_id` FK references the messages table, which will be created in Epic 3
+- Until messages table exists, this FK may need to be added in a later migration or the reference should be created without enforcement
+- The self-referential `parent_session_id` FK allows sessions to fork from other sessions
+- `on_delete: :nilify_all` for parent ensures child sessions aren't deleted when parent is deleted
+- `on_delete: :cascade` for agent ensures cleanup when an agent is removed
+- Binary IDs are used for all primary keys per Elixir/Phoenix best practices

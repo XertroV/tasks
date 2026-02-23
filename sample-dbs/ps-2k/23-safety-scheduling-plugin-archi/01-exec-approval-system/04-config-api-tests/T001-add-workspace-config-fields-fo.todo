@@ -1,0 +1,23 @@
+---
+id: P23.M1.E4.T001
+title: Add workspace config fields for exec approval
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:33:27.377785+00:00'
+started_at: '2026-02-18T15:33:27.377785+00:00'
+completed_at: '2026-02-18T15:48:52.573852+00:00'
+duration_minutes: 15.419934216666666
+---
+Add workspace-level configuration for the exec approval system.
+
+## Acceptance Criteria
+- [ ] Add fields to workspace schema (or workspace settings): `exec_approval_enabled` (boolean, default true), `exec_approval_timeout_ms` (integer, default 60_000), `exec_dangerous_patterns` (list of strings, defaults to built-in list)
+- [ ] Migration for any new DB columns
+- [ ] WorkspaceSettings context functions for reading/updating these fields
+- [ ] Validation: timeout must be 5_000..300_000ms; patterns list must be non-empty strings
+- [ ] Test: workspace config defaults and validation

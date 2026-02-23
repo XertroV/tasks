@@ -1,0 +1,45 @@
+---
+status: done
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:50:05.998392'
+started_at: '2026-02-05T16:50:05.998392'
+completed_at: '2026-02-05T16:56:04.161605'
+duration_minutes: 5.9693867166666665
+---
+id: P2.M5.E1.T001
+title: Create Ollama HTTP client module
+status: pending
+priority: high
+estimate_hours: 1.5
+complexity: medium
+
+description: |
+  Create a GenServer-based HTTP client for Ollama's local API at http://localhost:11434.
+  
+  Based on Ollama API research:
+  - Chat completion endpoint: POST /api/chat
+  - Model listing: GET /api/tags
+  - Model info: POST /api/show
+  - Streaming support with SSE
+  - Tool calling support
+  - Vision support (multimodal models)
+
+acceptance_criteria:
+  - [ ] Create lib/pag_server/llm/ollama.ex module
+  - [ ] Implement HTTP client using HTTPoison or Req
+  - [ ] Add connection configuration (base_url: "http://localhost:11434")
+  - [ ] Implement health check (/api/version)
+  - [ ] Add timeout and retry logic
+  - [ ] Handle connection errors gracefully
+
+files:
+  - lib/pag_server/llm/ollama.ex
+  - config/config.exs (add :ollama settings)
+
+references:
+  - Ollama API docs: https://github.com/ollama/ollama/blob/main/docs/api.md
+  - Similar: lib/pag_server/llm/anthropic.ex (if exists)
+
+notes: |
+  Ollama runs locally on port 11434 by default. No API key required.
+  Focus on chat completion endpoint first - other endpoints in later tasks.

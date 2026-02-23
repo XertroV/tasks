@@ -1,0 +1,35 @@
+# Epic: AgentMessage Schema
+# Phase 1, Milestone 2, Epic 7 (P1.M2.E7)
+
+id: P1.M2.E7
+name: AgentMessage Schema
+status: pending
+estimate_hours: 3
+complexity: low
+depends_on: [P1.M2.E1]
+
+tasks:
+  - id: T001
+    file: T001-migration.todo
+    title: Create agent_messages table migration
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-schema.todo
+    title: Create AgentMessage schema module
+    status: pending
+    estimate_hours: 1.5
+    complexity: low
+    priority: high
+    depends_on: [P1.M2.E7.T001]
+
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

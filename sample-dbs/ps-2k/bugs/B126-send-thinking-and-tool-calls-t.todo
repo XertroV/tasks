@@ -1,0 +1,17 @@
+---
+id: B126
+title: Send thinking and tool calls to telegram (configurable)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:15:21.282422+00:00'
+started_at: '2026-02-18T04:15:21.282422+00:00'
+completed_at: '2026-02-18T04:15:29.272727+00:00'
+duration_minutes: 0.13317158333333332
+---
+
+Send thinking and tool calls to telegram (configurable)

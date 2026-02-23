@@ -1,0 +1,36 @@
+---
+id: P15.M1.E2.T003
+title: Add preference injection into context
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:22:41.104888+00:00'
+started_at: '2026-02-13T23:22:41.104888+00:00'
+completed_at: '2026-02-13T23:37:43.607481+00:00'
+duration_minutes: 15.041709533333334
+---
+
+# Add preference injection into context
+
+## Description
+Integrate user preferences into the context building pipeline so agents automatically adapt their behavior based on stored preferences. Preferences should be injected as system prompt modifications or context metadata.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Preferences.Injector` module for context enhancement
+- [ ] Implement preference-to-prompt conversion (generate style instructions from preferences)
+- [ ] Add preference injection hook in context building pipeline
+- [ ] Support preference priority: explicit > high-confidence inferred > default
+- [ ] Add preference summary for debugging/logging
+- [ ] Implement preference override per-session
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/context/messages.ex`, `lib/pag_server/context/pruning.ex`, `lib/pag_server/agents/agent.ex`
+- Part of epic: User Preference Learning
+- Hook into existing context building at `lib/pag_server/context/`

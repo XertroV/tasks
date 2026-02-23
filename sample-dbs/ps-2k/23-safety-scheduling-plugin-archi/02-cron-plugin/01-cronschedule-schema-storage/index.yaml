@@ -1,0 +1,40 @@
+id: P23.M2.E1
+name: CronSchedule Schema & Storage
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-cronschedule-ecto-schem.todo
+  title: Create CronSchedule Ecto schema and migration
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-cronschedules-contex.todo
+  title: Implement CronSchedules context (CRUD functions)
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P23.M2.E1.T001
+- id: T003
+  file: T003-add-cron-expression-validation.todo
+  title: Add cron_expression validation helper
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P23.M2.E1.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

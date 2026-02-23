@@ -1,0 +1,32 @@
+id: P39.M1
+name: Prerequisite Cleanup
+status: done
+estimate_hours: 2.0
+complexity: low
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: SSH Plugin Cleanup
+  path: 01-ssh-plugin-cleanup
+  status: done
+  estimate_hours: 1.5
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Tailscale Plugin Fix
+  path: 02-tailscale-plugin-fix
+  status: done
+  estimate_hours: 0.5
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

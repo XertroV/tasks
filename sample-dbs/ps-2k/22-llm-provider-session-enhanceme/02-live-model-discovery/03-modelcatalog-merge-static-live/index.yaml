@@ -1,0 +1,33 @@
+id: P22.M2.E3
+name: 'ModelCatalog: merge static + live models'
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on:
+- P22.M2.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-update-modelcatalog-to-merge-s.todo
+  title: Update ModelCatalog to merge static models with live models from cache
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M2.E2.T001
+- id: T002
+  file: T002-extend-model-info-structs-to-i.todo
+  title: Extend model_info structs to include source field (:static | :live | :both)
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P22.M2.E3.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

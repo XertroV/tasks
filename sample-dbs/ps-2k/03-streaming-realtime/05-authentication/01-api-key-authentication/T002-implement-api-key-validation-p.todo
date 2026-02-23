@@ -1,0 +1,514 @@
+---
+id: P3.M5.E1.T002
+title: Implement API key validation plug
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P3.M5.E1.T001
+tags:
+- auth
+- plug
+- middleware
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:05:42.179397'
+started_at: '2026-02-06T14:05:42.179397'
+completed_at: '2026-02-06T14:12:03.286858'
+duration_minutes: 6.35179085
+---
+
+# Implement API key validation plug
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server_web/plugs/` directory
+- [ ] Implement `PagServerWeb.Plugs.ApiKeyAuth` plug module
+- [ ] Extract API key from `Authorization` header (Bearer token) or `x-api-key` header
+- [ ] Hash incoming key and lookup in database
+- [ ] Validate key is not revoked, not expired, and active
+- [ ] Update `last_used_at` timestamp asynchronously
+- [ ] Store authenticated API key in `conn.assigns.api_key`
+- [ ] Handle errors with proper HTTP status codes and JSON responses
+- [ ] Add configuration for optional vs required authentication
+- [ ] Emit telemetry events for auth success/failure
+- [ ] Add comprehensive tests for all validation scenarios
+- [ ] Document plug usage in module docs
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] Plug module created at `lib/pag_server_web/plugs/api_key_auth.ex`
+- [ ] Implements `Plug` behaviour with `init/1` and `call/2`
+- [ ] Extracts API key from headers in order of precedence:
+  - [ ] `Authorization: Bearer pag_sk_...` (preferred)
+  - [ ] `x-api-key: pag_sk_...` (alternative)
+- [ ] Key validation logic:
+  - [ ] Hashes incoming key with SHA-256
+  - [ ] Queries database for matching `key_hash`
+  - [ ] Checks `revoked_at IS NULL`
+  - [ ] Checks `expires_at` is either NULL or in the future
+  - [ ] Returns 401 Unauthorized if any check fails
+- [ ] Success path:
+  - [ ] Stores full `ApiKey` struct in `conn.assigns.api_key`
+  - [ ] Stores `project` in `conn.assigns.current_project` (if present)
+  - [ ] Updates `last_used_at` timestamp via async Task
+  - [ ] Emits telemetry: `[:pag_server, :auth, :success]`
+  - [ ] Continues plug pipeline
+- [ ] Error handling:
+  - [ ] Missing key: 401 with `{"error": "missing_api_key", "message": "Missing API key"}`
+  - [ ] Invalid format: 401 with `{"error": "invalid_api_key_format", "message": "Invalid API key format"}`
+  - [ ] Not found: 401 with `{"error": "invalid_api_key", "message": "Invalid API key"}`
+  - [ ] Revoked: 401 with `{"error": "api_key_revoked", "message": "API key has been revoked"}`
+  - [ ] Expired: 401 with `{"error": "api_key_expired", "message": "API key has expired"}`
+  - [ ] Insufficient scopes: 401 with `{"error": "insufficient_scopes", "message": "Insufficient permission scopes"}`
+  - [ ] Halts connection with `Plug.Conn.halt/1`
+  - [ ] Emits telemetry: `[:pag_server, :auth, :failure]`
+- [ ] Configuration options:
+  - [ ] `optional: true` - Skip auth if no key provided (for mixed public/private endpoints)
+  - [ ] `required_scopes: ["agents:write"]` - Verify key has required scopes
+- [ ] Async `last_used_at` update:
+  - [ ] Uses `Task.Supervisor.start_child/3` for non-blocking update
+  - [ ] Failures logged but don't affect request
+- [ ] Telemetry events include metadata:
+  - [ ] `key_prefix` (for logging without exposing key)
+  - [ ] `project` (if present)
+  - [ ] `reason` (on failure)
+- [ ] Tests cover all scenarios:
+  - [ ] Valid key in Authorization header
+  - [ ] Valid key in x-api-key header
+  - [ ] Missing key (required mode)
+  - [ ] Missing key (optional mode)
+  - [ ] Invalid key format
+  - [ ] Key not found
+  - [ ] Revoked key
+  - [ ] Expired key
+  - [ ] Scope validation (if configured)
+  - [ ] `last_used_at` update
+- [ ] Integration with router:
+  - [ ] Example pipeline added (commented out) in `router.ex`
+- [ ] No compilation warnings
+- [ ] Tests pass: `mix test test/pag_server_web/plugs/api_key_auth_test.exs`
+
+## Context
+
+**Purpose**: The API key authentication plug is the gatekeeper for all authenticated endpoints. It validates API keys, enforces expiration/revocation, and provides the foundation for scope-based authorization.
+
+**Design Decisions**:
+
+1. **Header Format**: Support both `Authorization: Bearer` (standard) and `x-api-key` (simpler for CLI tools)
+2. **Hash on Lookup**: Hash incoming key before database query (constant-time comparison via DB)
+3. **Async Updates**: `last_used_at` updated asynchronously to avoid slowing down requests
+4. **Fail Closed**: Any validation error returns 401, never allows through on uncertainty
+5. **Telemetry**: Emit events for monitoring auth success/failure rates
+6. **No Caching**: API keys are NOT cached - revocation must be immediate
+
+**Security Considerations**:
+- Never log full API keys, only prefix
+- Use constant-time comparison for key hashes (handled by DB query)
+- No timing attacks via error messages (all auth failures return same 401)
+- Validate key format before hashing to prevent DoS via expensive hash computation
+- Rate limiting should be added later at load balancer/plug level
+
+**Integration Points**:
+- Router pipelines: `:api_auth` pipeline uses this plug
+- Controller access: `conn.assigns.api_key` and `conn.assigns.current_project`
+- Authorization: Future scope validation will read `api_key.scopes`
+
+## Implementation Notes
+
+### Plug Module Template
+
+```elixir
+defmodule PagServerWeb.Plugs.ApiKeyAuth do
+  @moduledoc """
+  Plug for API key authentication.
+  
+  Extracts API key from Authorization or x-api-key header, validates it,
+  and stores the authenticated API key in conn.assigns.
+  
+  ## Usage
+  
+      # In router.ex
+      pipeline :api_auth do
+        plug :accepts, ["json"]
+        plug PagServerWeb.Plugs.ApiKeyAuth
+      end
+      
+      # With options
+      plug PagServerWeb.Plugs.ApiKeyAuth, optional: true
+      plug PagServerWeb.Plugs.ApiKeyAuth, required_scopes: ["agents:write"]
+  
+  ## Headers
+  
+  Supports two header formats (checked in order):
+  - `Authorization: Bearer pag_sk_...` (preferred)
+  - `x-api-key: pag_sk_...` (alternative)
+  
+  ## Assigns
+  
+  On successful authentication:
+  - `conn.assigns.api_key` - Full ApiKey struct
+  - `conn.assigns.current_project` - Project name (if scoped)
+  
+  ## Options
+  
+  - `optional: false` - If true, continues without auth if no key provided
+  - `required_scopes: []` - List of scopes required (e.g., ["agents:write"])
+  """
+
+  import Plug.Conn
+  import Ecto.Query
+  require Logger
+
+  alias PagServer.Repo
+  alias PagServer.Schema.ApiKey
+
+  @behaviour Plug
+
+  @impl true
+  def init(opts), do: opts
+
+  @impl true
+  def call(conn, opts) do
+    case extract_api_key(conn) do
+      {:ok, raw_key} ->
+        validate_and_authenticate(conn, raw_key, opts)
+
+      :error ->
+        if opts[:optional] do
+          conn
+        else
+          unauthorized(conn, "missing_api_key")
+        end
+    end
+  end
+
+  # Extract API key from headers
+  defp extract_api_key(conn) do
+    # Try Authorization: Bearer <key>
+    case get_req_header(conn, "authorization") do
+      ["Bearer " <> key] -> {:ok, key}
+      _ ->
+        # Try x-api-key: <key>
+        case get_req_header(conn, "x-api-key") do
+          [key] -> {:ok, key}
+          _ -> :error
+        end
+    end
+  end
+
+  # Validate key format and authenticate
+  defp validate_and_authenticate(conn, raw_key, opts) do
+    with :ok <- validate_key_format(raw_key),
+         key_hash <- hash_key(raw_key),
+         {:ok, api_key} <- lookup_api_key(key_hash),
+         :ok <- validate_not_revoked(api_key),
+         :ok <- validate_not_expired(api_key),
+         :ok <- validate_scopes(api_key, opts[:required_scopes]) do
+      
+      # Success - store in assigns and update last_used_at
+      conn
+      |> assign(:api_key, api_key)
+      |> assign(:current_project, api_key.project)
+      |> tap(fn _ -> update_last_used_async(api_key) end)
+      |> tap(fn _ -> emit_telemetry(:success, api_key) end)
+    else
+      {:error, reason} ->
+        emit_telemetry(:failure, %{reason: reason, key_prefix: extract_prefix(raw_key)})
+        unauthorized(conn, reason)
+    end
+  end
+
+  # Validate key format: pag_sk_<base62>
+  defp validate_key_format(key) when is_binary(key) do
+    if key =~ ~r/^pag_sk_[a-zA-Z0-9]{32,64}$/ do
+      :ok
+    else
+      {:error, "invalid_api_key_format"}
+    end
+  end
+
+  # Hash key with SHA-256
+  defp hash_key(key) do
+    :crypto.hash(:sha256, key)
+    |> Base.encode16(case: :lower)
+  end
+
+  # Lookup API key by hash
+  defp lookup_api_key(key_hash) do
+    case Repo.get_by(ApiKey, key_hash: key_hash) do
+      nil -> {:error, "invalid_api_key"}
+      api_key -> {:ok, api_key}
+    end
+  end
+
+  # Check if key is revoked
+  defp validate_not_revoked(%ApiKey{revoked_at: nil}), do: :ok
+  defp validate_not_revoked(_), do: {:error, "api_key_revoked"}
+
+  # Check if key is expired
+  defp validate_not_expired(%ApiKey{expires_at: nil}), do: :ok
+  defp validate_not_expired(%ApiKey{expires_at: expires_at}) do
+    if DateTime.compare(expires_at, DateTime.utc_now()) == :gt do
+      :ok
+    else
+      {:error, "api_key_expired"}
+    end
+  end
+
+  # Validate required scopes
+  defp validate_scopes(_api_key, nil), do: :ok
+  defp validate_scopes(_api_key, []), do: :ok
+  defp validate_scopes(%ApiKey{scopes: api_key_scopes}, required_scopes) do
+    if Enum.all?(required_scopes, &(&1 in api_key_scopes)) do
+      :ok
+    else
+      {:error, "insufficient_scopes"}
+    end
+  end
+
+  # Update last_used_at asynchronously
+  defp update_last_used_async(api_key) do
+    Task.Supervisor.start_child(PagServer.TaskSupervisor, fn ->
+      api_key
+      |> ApiKey.touch_last_used_changeset()
+      |> Repo.update()
+    end)
+  rescue
+    e ->
+      Logger.warning("Failed to update last_used_at: #{inspect(e)}")
+      :ok
+  end
+
+  # Extract prefix for logging (safe to log)
+  defp extract_prefix(key) when is_binary(key) do
+    String.slice(key, 0, 12)
+  end
+
+  # Emit telemetry
+  defp emit_telemetry(:success, api_key) do
+    :telemetry.execute(
+      [:pag_server, :auth, :success],
+      %{count: 1},
+      %{key_prefix: api_key.key_prefix, project: api_key.project}
+    )
+  end
+
+  defp emit_telemetry(:failure, metadata) do
+    :telemetry.execute(
+      [:pag_server, :auth, :failure],
+      %{count: 1},
+      metadata
+    )
+  end
+
+  # Return 401 Unauthorized with JSON error
+  defp unauthorized(conn, reason) do
+    message = case reason do
+      "missing_api_key" -> "Missing API key"
+      "invalid_api_key_format" -> "Invalid API key format"
+      "invalid_api_key" -> "Invalid API key"
+      "api_key_revoked" -> "API key has been revoked"
+      "api_key_expired" -> "API key has expired"
+      "insufficient_scopes" -> "Insufficient permission scopes"
+      _ -> "Unauthorized"
+    end
+    
+    conn
+    |> put_resp_content_type("application/json")
+    |> send_resp(401, Jason.encode!(%{error: reason, message: message}))
+    |> halt()
+  end
+end
+```
+
+### Router Integration Example
+
+Add to `lib/pag_server_web/router.ex`:
+
+```elixir
+pipeline :api_auth do
+  plug :accepts, ["json"]
+  plug PagServerWeb.Plugs.ApiKeyAuth
+end
+
+pipeline :api_optional_auth do
+  plug :accepts, ["json"]
+  plug PagServerWeb.Plugs.ApiKeyAuth, optional: true
+end
+
+# Example routes
+scope "/api/v1", PagServerWeb do
+  pipe_through :api_auth
+  
+  resources "/agents", AgentController
+  resources "/sessions", SessionController
+end
+```
+
+### Testing Template
+
+```elixir
+defmodule PagServerWeb.Plugs.ApiKeyAuthTest do
+  use PagServerWeb.ConnCase, async: true
+  
+  alias PagServer.Schema.ApiKey
+  alias PagServerWeb.Plugs.ApiKeyAuth
+
+  setup do
+    # Create valid API key
+    raw_key = "pag_sk_" <> random_string(32)
+    key_hash = hash_key(raw_key)
+    key_prefix = String.slice(raw_key, 0, 12)
+    
+    api_key = insert(:api_key, %{
+      key_hash: key_hash,
+      key_prefix: key_prefix,
+      name: "Test Key",
+      scopes: ["agents:read", "agents:write"]
+    })
+
+    %{api_key: api_key, raw_key: raw_key}
+  end
+
+  describe "call/2 with valid key" do
+    test "authenticates with Authorization Bearer header", %{conn: conn, raw_key: raw_key, api_key: api_key} do
+      conn =
+        conn
+        |> put_req_header("authorization", "Bearer #{raw_key}")
+        |> ApiKeyAuth.call([])
+
+      assert conn.assigns.api_key.id == api_key.id
+      refute conn.halted
+    end
+
+    test "authenticates with x-api-key header", %{conn: conn, raw_key: raw_key} do
+      conn =
+        conn
+        |> put_req_header("x-api-key", raw_key)
+        |> ApiKeyAuth.call([])
+
+      assert conn.assigns.api_key
+      refute conn.halted
+    end
+  end
+
+  describe "call/2 with missing key" do
+    test "returns 401 when required", %{conn: conn} do
+      conn = ApiKeyAuth.call(conn, [])
+
+      assert conn.status == 401
+      assert conn.halted
+      assert conn.resp_body =~ "missing_api_key"
+    end
+
+    test "continues when optional", %{conn: conn} do
+      conn = ApiKeyAuth.call(conn, optional: true)
+
+      refute conn.assigns[:api_key]
+      refute conn.halted
+    end
+  end
+
+  describe "call/2 with invalid key" do
+    test "returns 401 for invalid format", %{conn: conn} do
+      conn =
+        conn
+        |> put_req_header("x-api-key", "invalid_format")
+        |> ApiKeyAuth.call([])
+
+      assert conn.status == 401
+      assert conn.resp_body =~ "invalid_api_key_format"
+    end
+
+    test "returns 401 for unknown key", %{conn: conn} do
+      conn =
+        conn
+        |> put_req_header("x-api-key", "pag_sk_" <> random_string(32))
+        |> ApiKeyAuth.call([])
+
+      assert conn.status == 401
+      assert conn.resp_body =~ "invalid_api_key"
+    end
+  end
+
+  describe "call/2 with revoked key" do
+    test "returns 401", %{conn: conn, raw_key: raw_key, api_key: api_key} do
+      api_key
+      |> ApiKey.revoke_changeset()
+      |> Repo.update!()
+
+      conn =
+        conn
+        |> put_req_header("x-api-key", raw_key)
+        |> ApiKeyAuth.call([])
+
+      assert conn.status == 401
+      assert conn.resp_body =~ "api_key_revoked"
+    end
+  end
+
+  describe "call/2 with expired key" do
+    test "returns 401", %{conn: conn, raw_key: raw_key, api_key: api_key} do
+      api_key
+      |> Ecto.Changeset.change(expires_at: DateTime.add(DateTime.utc_now(), -3600, :second))
+      |> Repo.update!()
+
+      conn =
+        conn
+        |> put_req_header("x-api-key", raw_key)
+        |> ApiKeyAuth.call([])
+
+      assert conn.status == 401
+      assert conn.resp_body =~ "api_key_expired"
+    end
+  end
+
+  describe "call/2 with scope validation" do
+    test "allows key with required scopes", %{conn: conn, raw_key: raw_key} do
+      conn =
+        conn
+        |> put_req_header("x-api-key", raw_key)
+        |> ApiKeyAuth.call(required_scopes: ["agents:read"])
+
+      refute conn.halted
+    end
+
+    test "denies key without required scopes", %{conn: conn, raw_key: raw_key} do
+      conn =
+        conn
+        |> put_req_header("x-api-key", raw_key)
+        |> ApiKeyAuth.call(required_scopes: ["admin:delete"])
+
+      assert conn.status == 401
+      assert conn.resp_body =~ "insufficient_scopes"
+    end
+  end
+
+  defp hash_key(key) do
+    :crypto.hash(:sha256, key)
+    |> Base.encode16(case: :lower)
+  end
+
+  defp random_string(length) do
+    :crypto.strong_rand_bytes(length)
+    |> Base.encode62()
+    |> String.slice(0, length)
+  end
+end
+```
+
+## Dependencies
+
+- Requires T001 (API key schema) to be complete
+- Requires `Task.Supervisor` in application supervision tree (add if missing)
+
+## Notes
+
+- **Performance**: No caching - every request hits DB. Consider adding Cachex later if this becomes a bottleneck.
+- **Rate Limiting**: Not implemented here. Should be added as separate plug using key_prefix for tracking.
+- **Scope Enforcement**: Basic implementation. Future tasks may add more granular authorization logic.
+- **Task Supervisor**: Need to ensure `PagServer.TaskSupervisor` exists in application.ex supervision tree.

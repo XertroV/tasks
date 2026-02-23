@@ -1,0 +1,17 @@
+---
+id: P47.M4.E2.T002
+title: Add mix test.device_flow alias and update docs
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: low
+depends_on:
+- P47.M4.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:43:22.293584+00:00'
+started_at: '2026-02-20T06:43:22.293584+00:00'
+completed_at: '2026-02-20T06:48:40.954535+00:00'
+duration_minutes: 5.311015633333333
+---
+Add mix test.device_flow alias in mix.exs targeting test/pag_server_web/ device flow tests and test/pag_server/oauth/. Update AGENTS.md test aliases section to include test.device_flow. Update docs/plans/2026-02-19-pag-connect-auth.md status to 'Implemented' once all tasks are done.

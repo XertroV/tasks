@@ -1,0 +1,18 @@
+---
+id: B236
+title: LiveView workspace routes skip membership check in on_mount
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- security
+- liveview
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.682137+00:00'
+started_at: '2026-02-23T05:59:32.682137+00:00'
+completed_at: '2026-02-23T05:59:47.024784+00:00'
+duration_minutes: 0.23904383333333332
+---
+router.ex:1115-1125 - User can change workspace_id in URL; individual LiveViews may forget to check

@@ -1,0 +1,76 @@
+---
+id: P1.M1.E1.T001
+title: Initialize Phoenix project
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+claimed_by: test-agent
+claimed_at: '2026-02-05T05:29:53.488559'
+started_at: '2026-02-05T05:29:53.488559'
+completed_at: '2026-02-05T05:30:06.275256'
+tags:
+- setup
+- phoenix
+- initial
+- foundation
+---
+
+# Initialize Phoenix project
+
+Create the base Phoenix application structure without HTML/assets (API-only).
+
+## Requirements
+
+- [ ] Run `mix phx.new pag_server --no-html --no-assets --database postgres`
+- [ ] Verify directory structure matches plan
+- [ ] Run `mix deps.get` to fetch dependencies
+- [ ] Run `mix compile` to verify compilation
+- [ ] Create initial git commit with message "Initial Phoenix project setup"
+
+## Acceptance Criteria
+
+- [ ] `mix compile` passes with zero warnings
+- [ ] `mix test` runs successfully (even with no tests yet)
+- [ ] Directory structure includes:
+  - [ ] `lib/pag_server/` (core business logic)
+  - [ ] `lib/pag_server_web/` (web layer)
+  - [ ] `test/` (mirrors lib structure)
+  - [ ] `config/` (runtime config files)
+  - [ ] `priv/repo/migrations/` (database migrations)
+- [ ] Git repository initialized with .gitignore
+- [ ] No compilation errors or warnings
+- [ ] Default Phoenix tests pass
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 1.2 (OTP Application Structure)
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 2.1 (Top-Level Organization)
+
+**Key Points**:
+- Use PostgreSQL as default database (production target)
+- API-only: `--no-html --no-assets` creates Phoenix Channels + REST API project
+- This forms the foundation for all subsequent work
+
+## Notes
+
+The `mix phx.new` command creates:
+```
+pag_server/
+├── lib/
+│   ├── pag_server/         # Business logic goes here
+│   │   ├── application.ex  # OTP application supervisor
+│   │   └── repo.ex         # Database repository
+│   ├── pag_server_web/     # Web layer goes here
+│   │   ├── endpoint.ex     # HTTP/WebSocket endpoint
+│   │   └── router.ex       # Route definitions
+│   └── pag_server.ex       # Root module
+├── test/                   # Test files mirror lib/
+├── config/                 # Configuration files
+├── priv/repo/migrations/   # Database migrations
+└── mix.exs                 # Project definition
+```
+
+Take time to verify the structure is correct before committing.

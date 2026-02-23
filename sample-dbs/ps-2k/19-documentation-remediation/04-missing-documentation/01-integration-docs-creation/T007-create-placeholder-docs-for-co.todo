@@ -1,0 +1,19 @@
+---
+id: P19.M4.E1.T007
+title: Create placeholder docs for code host integrations
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- docs
+- integrations
+- git
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:16:53.875180+00:00'
+started_at: '2026-02-18T03:16:53.875180+00:00'
+completed_at: '2026-02-18T03:19:16.513525+00:00'
+duration_minutes: 2.3773054166666667
+---
+Add concise placeholder docs for github, gitlab, gitea, bitbucket with current implementation status and setup notes where available.

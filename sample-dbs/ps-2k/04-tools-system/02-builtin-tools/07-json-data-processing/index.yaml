@@ -1,0 +1,37 @@
+id: P4.M2.E7
+name: JSON & Data Processing
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-json-parse-tool.todo
+  title: Implement json_parse tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-json-query-tool-json.todo
+  title: Implement json_query tool (JSONPath)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-json-transform-tool.todo
+  title: Implement json_transform tool
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

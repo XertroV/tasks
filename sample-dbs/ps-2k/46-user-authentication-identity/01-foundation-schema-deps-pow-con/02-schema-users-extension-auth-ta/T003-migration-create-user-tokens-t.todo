@@ -1,0 +1,31 @@
+---
+id: P46.M1.E2.T003
+title: 'Migration: create user_tokens table'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P46.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:30:06.111939+00:00'
+started_at: '2026-02-19T20:30:06.111939+00:00'
+completed_at: '2026-02-19T20:33:35.868665+00:00'
+duration_minutes: 3.49594525
+---
+Create user_tokens table for Pow session token storage:
+- id: bigserial primary key
+- user_id: bigint not null, FK to users(id) on delete cascade
+- token: bytea not null (random bytes, not a JWT)
+- context: varchar(255) not null ("session", "remember_me")
+- sent_to: varchar(255) nullable (reserved for future confirmation email tokens)
+- inserted_at: timestamp(0) not null
+Index on user_id. Unique index on (context, token).
+Create lib/pag_server/accounts/user_token.ex Ecto schema with helpers:
+- build_session_token/1 — generates 32 random bytes, wraps in changeset
+- build_remember_me_token/1 — same but for remember_me context
+- verify_session_token_query/1 — query to find active session token
+- verify_remember_me_token_query/1 — includes expiry check (configurable TTL)
+- token_expired?/2 — boolean check against inserted_at + TTL
+Acceptance: mix ecto.migrate succeeds, schema and helpers compile.

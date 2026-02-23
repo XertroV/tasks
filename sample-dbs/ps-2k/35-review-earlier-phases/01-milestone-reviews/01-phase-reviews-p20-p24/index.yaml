@@ -1,0 +1,102 @@
+id: P35.M1.E1
+name: Phase Reviews P20-P24
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-review-p20-m1-plugin-schema-in.todo
+  title: 'Review P20.M1: Plugin Schema Infrastructure'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-review-p21-m1-mandatory-agent.todo
+  title: 'Review P21.M1: Mandatory Agent Containerization'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-review-p22-m1-multi-credential.todo
+  title: 'Review P22.M1: Multi-Credential Provider Auth'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-review-p22-m2-live-model-disco.todo
+  title: 'Review P22.M2: Live Model Discovery'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-review-p22-m3-auto-compaction.todo
+  title: 'Review P22.M3: Auto-Compaction'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-review-p23-m1-exec-approval-sy.todo
+  title: 'Review P23.M1: Exec Approval System'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T007
+  file: T007-review-p23-m2-cron-plugin.todo
+  title: 'Review P23.M2: Cron Plugin'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T008
+  file: T008-review-p23-m3-plugin-file-stru.todo
+  title: 'Review P23.M3: Plugin File Structure Refactor'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-review-p24-m1-cross-workspace.todo
+  title: 'Review P24.M1: Cross-Workspace Communication Plugin'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T010
+  file: T010-review-p24-m2-a2ui-canvas.todo
+  title: 'Review P24.M2: A2UI Canvas'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T011
+  file: T011-review-p24-m3-heartbeat-plugin.todo
+  title: 'Review P24.M3: Heartbeat Plugin'
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 11
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 11

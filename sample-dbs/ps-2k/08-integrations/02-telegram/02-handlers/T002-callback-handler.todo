@@ -1,0 +1,119 @@
+---
+id: P8.M2.E2.T002
+title: Implement callback query handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P8.M2.E2.T001
+tags:
+- integrations
+- telegram
+- handlers
+- callbacks
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:21:54.901429+00:00'
+started_at: '2026-02-11T02:21:54.901429+00:00'
+completed_at: '2026-02-11T02:24:19.684389+00:00'
+duration_minutes: 2.4130491833333334
+---
+
+# Implement callback query handler
+
+Handle Telegram callback queries from inline buttons and interactive elements.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/telegram/callback_handler.ex` (~100 LoC)
+- [ ] Implement `handle/1` function for callback query processing
+- [ ] Parse callback data and extract action/parameters
+- [ ] Route callback to appropriate agent session
+- [ ] Execute agent action based on callback data
+- [ ] Update original message with new content or status
+- [ ] Answer callback query to remove loading state
+- [ ] Add timeout handling for long-running actions
+
+## Acceptance Criteria
+
+- [ ] Callback queries processed and routed correctly
+- [ ] Loading state removed via `answer_callback_query/2`
+- [ ] Original messages updated with action results
+- [ ] Malformed callback data handled gracefully
+- [ ] Timeout after 30s with user notification
+- [ ] Unit tests cover different callback types
+- [ ] Integration test with mock button press
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 194-204 (Update handling)
+
+**Key Points**:
+- Callback queries triggered by inline keyboard buttons
+- Must answer within 30 seconds to remove loading state
+- Can update original message or send new message
+- Callback data limited to 64 bytes
+
+## Notes
+
+Handler structure:
+```elixir
+defmodule PAGServer.Integrations.Telegram.CallbackHandler do
+  alias PAGServer.Integrations.Telegram.SessionMapper
+  alias PAGServer.Agent
+
+  def handle(%{id: query_id, data: data, message: message, from: user}) do
+    # Always answer to remove loading state
+    Task.start(fn -> 
+      :timer.sleep(100)
+      Telegex.answer_callback_query(query_id)
+    end)
+
+    with {:ok, action, params} <- parse_callback_data(data),
+         {:ok, session} <- SessionMapper.get_or_create(message.chat.id, user),
+         {:ok, result} <- execute_action(session.agent_id, action, params) do
+      update_message(message, result)
+    else
+      {:error, reason} ->
+        Logger.error("Callback handling failed: #{inspect(reason)}")
+        notify_error(query_id, "Action failed")
+    end
+  end
+
+  defp parse_callback_data(data) do
+    # Format: "action:param1:param2"
+    case String.split(data, ":", parts: 2) do
+      [action, params] -> {:ok, action, params}
+      _ -> {:error, :invalid_format}
+    end
+  end
+end
+```
+
+Example callback data formats:
+- `"confirm:delete:msg_123"` - Confirm delete message 123
+- `"tool:calculator:2+2"` - Execute calculator tool
+- `"session:fork:abc123"` - Fork session abc123
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:21 UTC
+**Primary task**: P8.M4.E2.T002 - Add slash command support
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M2.E2 vs P8.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

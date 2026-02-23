@@ -1,0 +1,49 @@
+---
+id: B166
+title: OpenAI compatibility endpoint returns non-OpenAI error envelope
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- openai-compat
+- api
+- errors
+claimed_by: cli-user
+claimed_at: '2026-02-20T18:28:09.872849+00:00'
+started_at: '2026-02-20T18:28:09.872849+00:00'
+completed_at: '2026-02-20T18:33:21.016079+00:00'
+duration_minutes: 5.185720333333333
+---
+## Repro
+1. POST `/v1/chat/completions` without API key
+2. Observe 401 body
+3. POST `/v1/chat/completions` with valid PAG API key but provider credentials unavailable
+4. Observe 502 body
+
+## Expected
+Error payload should follow OpenAI-compatible shape (`error: {message, type, param, code}`) for auth, validation, and upstream failures.
+
+## Actual
+Endpoint returns PAG envelope shape (`{"error":"...","message":"..."}`) and sometimes embeds inspected Elixir maps in message text.
+
+## Evidence
+- 401 body: `{"error":"missing_api_key","message":"Missing API key"}`
+- 502 body: `{"error":"http_error","message":"Provider request failed: %{reason: :no_credentials, ...}"}`
+
+## Playwright Scenario Notes
+- Test name: `openai compatibility errors use nested error envelope`
+- Preconditions: API endpoint reachable; ability to make unauthenticated and authenticated requests.
+- Steps:
+  1. Send `POST /v1/chat/completions` without API key.
+  2. Send `POST /v1/chat/completions` with valid PAG key and provider unavailable path.
+  3. Parse JSON responses.
+- Assertions:
+  - Response body includes `error.message`, `error.type`, `error.param`, and `error.code` fields.
+  - Flat PAG-style envelope (`{"error":"...","message":"..."}`) is not returned.
+
+## Verification
+- Ran: `mix test test/pag_server_web/controllers/openai_chat_completions_controller_test.exs`.
+- Confirmed 401/validation/upstream error paths serialize nested OpenAI-compatible `error` objects.
+- Confirmed regression expectation blocks fallback to flat PAG envelope shape.

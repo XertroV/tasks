@@ -1,0 +1,61 @@
+---
+id: P3.M3.E2.T007
+title: Add SSE endpoint for agent token streaming
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- P3.M2.E1.T003
+- P3.M3.E2.T003
+tags:
+- rest
+- sse
+- streaming
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:17:09.621102+00:00'
+started_at: '2026-02-08T04:17:09.621102+00:00'
+completed_at: '2026-02-08T04:25:04.909459+00:00'
+duration_minutes: 7.921472433333333
+---
+
+# Add SSE endpoint for agent token streaming
+
+
+
+## Requirements
+
+- [ ] Add a new SSE route in the router for agent token streaming (PagServerWeb.Router -> PagServerWeb.AgentController).
+- [ ] Implement PagServerWeb.AgentController action that streams tokens over SSE using chunked responses.
+- [ ] Ensure AgentServer integration to start and subscribe to token stream events.
+- [ ] Use consistent event naming and payload shape with channel token streaming.
+- [ ] Expose cancellation and disconnect handling to stop streaming cleanly.
+
+## Context
+
+- [ ] SSE endpoint is the REST counterpart to channel token streaming.
+- [ ] Must align with existing agent lifecycle and message flow handled by AgentServer.
+- [ ] Route should live alongside other agent REST endpoints in PagServerWeb.Router.
+
+## Acceptance Criteria
+
+- [ ] GET endpoint returns `text/event-stream` with correct SSE headers.
+- [ ] Response streams incremental token chunks; no buffering that delays delivery.
+- [ ] Connection closes cleanly on completion, cancellation, or client disconnect.
+- [ ] Error cases return JSON error response before stream starts.
+- [ ] Channel and REST streaming share the same underlying AgentServer stream events.
+
+## Notes
+
+- [ ] SSE headers: `Content-Type: text/event-stream`, `Cache-Control: no-cache`, `Connection: keep-alive`, disable proxy buffering when applicable.
+- [ ] Chunking: emit SSE events as each token arrives, use `data:` lines, and flush after each event.
+- [ ] Cancellation flow: client disconnect or explicit cancel should stop AgentServer stream and provider stream.
+- [ ] Validation errors should respond with 400 and a structured JSON body.
+
+## Testing
+
+- [ ] Add controller tests in `test/pag_server_web/controllers/agent_controller_test.exs`.
+- [ ] Cover router wiring in `test/pag_server_web/router_test.exs` if present.
+- [ ] Add streaming integration tests that assert chunked SSE delivery and headers.
+- [ ] Add cancellation tests to ensure AgentServer stops on disconnect or cancel.

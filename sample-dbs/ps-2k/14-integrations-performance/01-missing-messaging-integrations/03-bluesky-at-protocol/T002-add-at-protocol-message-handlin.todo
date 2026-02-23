@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T09:17:06.904397+00:00'
+started_at: '2026-02-13T09:17:06.904397+00:00'
+completed_at: '2026-02-13T09:36:16.138047+00:00'
+duration_minutes: 19.1538939
+---
+# Add AT Protocol message handling
+
+## Description
+Implement message and event handling for Bluesky's AT Protocol. Support posting skeets, handling replies/mentions, and processing the firehose event stream for real-time updates.
+
+## Acceptance Criteria
+- [ ] `PagServer.Integrations.Bluesky.Messages` module created
+- [ ] `post_skeet/3` to create posts with optional facets (links, mentions)
+- [ ] `reply/3` to respond to posts with proper reply refs
+- [ ] `get_thread/2` to retrieve conversation context
+- [ ] `list_notifications/2` to get mentions/replies/likes
+- [ ] `PagServer.Integrations.Bluesky.Firehose` module for event streaming
+- [ ] Jetstream-based subscription for real-time events
+- [ ] Event filtering for relevant handles/topics
+- [ ] Session mapping using DID + conversation root
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/integrations/bluesky/client.ex`, `lib/pag_server/integrations/matrix/event_handler.ex`
+- Part of epic: P14.M1.E3 - Bluesky/AT Protocol Integration

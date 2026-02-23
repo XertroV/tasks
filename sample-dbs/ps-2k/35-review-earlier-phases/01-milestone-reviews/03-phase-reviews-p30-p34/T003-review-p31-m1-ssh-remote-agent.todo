@@ -1,0 +1,16 @@
+---
+id: P35.M1.E3.T003
+title: 'Review P31.M1: SSH Remote Agent'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:12:59.539868+00:00'
+started_at: '2026-02-19T01:12:59.539868+00:00'
+completed_at: '2026-02-19T01:31:23.763923+00:00'
+duration_minutes: 18.403734083333333
+---
+Load the review-and-fix skill. Review all epics and tasks under P31.M1 (SSH Remote Agent). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. Key areas: workspace SSH config schema, SshTunnel GenServer (tunnel establishment, failure/reconnect semantics, timeout handling), SshSupervisor, remote_agent_spawn MCP tool (spawns agent over SSH tunnel), SshPlugin module, REST API endpoints, and tests.

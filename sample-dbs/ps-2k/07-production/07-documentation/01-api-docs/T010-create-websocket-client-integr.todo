@@ -1,0 +1,251 @@
+---
+id: P7.M7.E1.T010
+title: Create WebSocket client integration guides
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P7.M7.E1.T008
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:48:38.505736+00:00'
+started_at: '2026-02-06T21:48:38.505736+00:00'
+completed_at: '2026-02-06T22:11:03.628914+00:00'
+tags:
+- documentation
+- websocket
+- guides
+- examples
+duration_minutes: 22.418719483333334
+---
+
+# Create WebSocket client integration guides
+
+Create client integration guides with working code examples in multiple languages.
+
+## Requirements
+
+- [ ] JavaScript/TypeScript guide
+  - [ ] Using phoenix.js client library
+  - [ ] Connection setup with authentication
+  - [ ] Channel join/leave
+  - [ ] Sending messages
+  - [ ] Handling streaming tokens
+  - [ ] Error handling
+  - [ ] React hook example
+
+- [ ] Python guide
+  - [ ] Using websockets library
+  - [ ] Custom Phoenix protocol implementation
+  - [ ] Async/await patterns
+  - [ ] Streaming token handling
+
+- [ ] Elixir guide
+  - [ ] Using Phoenix.Client
+  - [ ] GenServer wrapper pattern
+  - [ ] Supervision tree integration
+
+- [ ] Common patterns
+  - [ ] Connection management
+  - [ ] Reconnection handling
+  - [ ] Message buffering during disconnect
+  - [ ] Token streaming to UI
+
+- [ ] Testing examples
+  - [ ] Mock WebSocket for unit tests
+  - [ ] Integration test patterns
+
+## Acceptance Criteria
+
+- [ ] All code examples are tested and working
+- [ ] Guides cover connection to message handling
+- [ ] Error handling included in all examples
+- [ ] Streaming token handling demonstrated
+- [ ] Guides in `docs/guides/` directory
+
+## Context
+
+**Plan References**:
+- P7.M7 Documentation Milestone
+- Depends on T008 (Channel protocol spec)
+
+## Implementation Guide
+
+### JavaScript Guide
+
+```markdown
+# JavaScript Client Guide
+
+## Installation
+
+```bash
+npm install phoenix
+```
+
+## Basic Setup
+
+```javascript
+import { Socket, Channel } from 'phoenix';
+
+const socket = new Socket('ws://localhost:4000/socket', {
+  params: { token: 'your-auth-token' }
+});
+
+socket.connect();
+
+// Join agent channel
+const channel = socket.channel('agent:abc-123', {});
+
+channel.join()
+  .receive('ok', () => console.log('Joined agent channel'))
+  .receive('error', ({ reason }) => console.error('Join failed:', reason));
+```
+
+## Sending Messages
+
+```javascript
+channel.push('send_message', { content: 'Hello!' })
+  .receive('ok', (response) => console.log('Message sent:', response))
+  .receive('error', (error) => console.error('Send failed:', error))
+  .receive('timeout', () => console.error('Request timed out'));
+```
+
+## Handling Streaming Tokens
+
+```javascript
+channel.on('token', ({ content, index }) => {
+  // Append token to display
+  appendToken(content);
+});
+
+channel.on('message_complete', ({ content, message_id }) => {
+  // Full message received
+  displayMessage(content);
+});
+```
+
+## React Hook
+
+```typescript
+import { useEffect, useState, useCallback } from 'react';
+import { Socket, Channel } from 'phoenix';
+
+export function useAgent(agentId: string, token: string) {
+  const [channel, setChannel] = useState<Channel | null>(null);
+  const [tokens, setTokens] = useState<string[]>([]);
+  const [status, setStatus] = useState<'connecting' | 'connected' | 'error'>('connecting');
+
+  useEffect(() => {
+    const socket = new Socket('ws://localhost:4000/socket', {
+      params: { token }
+    });
+    
+    socket.connect();
+    
+    const ch = socket.channel(`agent:${agentId}`, {});
+    
+    ch.on('token', ({ content }) => {
+      setTokens(prev => [...prev, content]);
+    });
+    
+    ch.join()
+      .receive('ok', () => setStatus('connected'))
+      .receive('error', () => setStatus('error'));
+    
+    setChannel(ch);
+    
+    return () => {
+      ch.leave();
+      socket.disconnect();
+    };
+  }, [agentId, token]);
+
+  const sendMessage = useCallback((content: string) => {
+    if (channel) {
+      setTokens([]);
+      channel.push('send_message', { content });
+    }
+  }, [channel]);
+
+  return { status, tokens, sendMessage, message: tokens.join('') };
+}
+```
+```
+
+### Python Guide
+
+```markdown
+# Python Client Guide
+
+## Installation
+
+```bash
+pip install websockets
+```
+
+## Basic Setup
+
+```python
+import asyncio
+import json
+import websockets
+
+class PAGClient:
+    def __init__(self, url: str, token: str):
+        self.url = f"{url}?token={token}&vsn=2.0.0"
+        self.ws = None
+        self.ref = 0
+    
+    async def connect(self):
+        self.ws = await websockets.connect(self.url)
+        asyncio.create_task(self._heartbeat())
+    
+    async def _heartbeat(self):
+        while self.ws:
+            await asyncio.sleep(30)
+            await self._send('phoenix', 'heartbeat', {})
+    
+    async def _send(self, topic: str, event: str, payload: dict):
+        self.ref += 1
+        msg = json.dumps([None, str(self.ref), topic, event, payload])
+        await self.ws.send(msg)
+        return self.ref
+    
+    async def join(self, topic: str):
+        ref = await self._send(topic, 'phx_join', {})
+        # Wait for join response
+        async for msg in self.ws:
+            data = json.loads(msg)
+            if data[1] == str(ref):
+                return data[4]
+    
+    async def send_message(self, topic: str, content: str):
+        await self._send(topic, 'send_message', {'content': content})
+    
+    async def stream_tokens(self, topic: str):
+        async for msg in self.ws:
+            data = json.loads(msg)
+            if data[2] == topic and data[3] == 'token':
+                yield data[4]['content']
+            elif data[3] == 'message_complete':
+                break
+
+# Usage
+async def main():
+    client = PAGClient('ws://localhost:4000/socket/websocket', 'token')
+    await client.connect()
+    await client.join('agent:abc-123')
+    await client.send_message('agent:abc-123', 'Hello!')
+    
+    async for token in client.stream_tokens('agent:abc-123'):
+        print(token, end='', flush=True)
+
+asyncio.run(main())
+```
+```
+
+## Notes
+
+- Test all examples against running server
+- Include error handling in all examples
+- Show both simple and production patterns

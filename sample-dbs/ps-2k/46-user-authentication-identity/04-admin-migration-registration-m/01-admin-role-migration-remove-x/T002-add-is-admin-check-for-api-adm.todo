@@ -1,0 +1,25 @@
+---
+id: P46.M4.E1.T002
+title: Add is_admin check for API admin endpoints
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P46.M4.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T05:43:30.570369+00:00'
+started_at: '2026-02-20T05:43:30.570369+00:00'
+completed_at: '2026-02-20T05:45:51.611559+00:00'
+duration_minutes: 2.3506863166666667
+---
+API admin endpoints (e.g., admin workspace management, user quota management, system config) previously gated by x-admin-key header. After removal, they need a replacement.
+
+Strategy: API admin routes require an authenticated API key belonging to a user with is_admin: true.
+1. Create or update a :require_admin_api_key pipeline that:
+   - Runs existing RequireAuth plug (validates API key, loads user_id into capabilities)
+   - Then checks Accounts.is_admin?(user_id) → if false, return 403
+2. Wire all /api/v1/admin/* routes through this pipeline
+3. Add helper Accounts.is_admin?/1 that loads user by id and checks is_admin field
+Acceptance: API admin endpoint returns 403 when called with a non-admin user's API key. Returns 200 when called with admin user's API key.

@@ -1,0 +1,25 @@
+---
+id: P44.M2.E5.T001
+title: Implement /compact command handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:05:53.383159+00:00'
+started_at: '2026-02-19T19:05:53.383159+00:00'
+completed_at: '2026-02-19T19:06:08.077104+00:00'
+duration_minutes: 0.24489888333333332
+---
+## Summary
+Implement `PagServer.Commands.Handlers.Compact` — triggers context compaction on the session agent.
+
+## Acceptance Criteria
+- [ ] Implements Command behaviour (name: "compact")
+- [ ] Calls context compaction on the session's agent (via existing compaction infrastructure)
+- [ ] Returns: messages before/after, tokens saved (if available from compaction result)
+- [ ] Context with no agent_id: returns friendly error
+- [ ] Agent busy: returns friendly error asking to retry
+- [ ] Tests: happy path with mock compaction, no agent_id, agent busy

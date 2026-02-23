@@ -1,0 +1,35 @@
+id: P37
+name: Threads Tool Implementation
+status: done
+locked: true
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Core Thread Actions
+  path: 01-core-thread-actions
+  status: done
+  estimate_hours: 20.0
+  complexity: high
+  depends_on: []
+  description: "send, spawn, fork, await, status, interrupt \u2014 the core actions\
+    \ agents use to work with threads"
+  locked: false
+- id: M2
+  name: Advanced Thread Actions
+  path: 02-advanced-thread-actions
+  status: done
+  estimate_hours: 20.0
+  complexity: high
+  depends_on: []
+  description: "parallel_gather, parallel_reduce, parallel_synthesize, fork, read,\
+    \ export, switch_model \u2014 higher-level orchestration actions"
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

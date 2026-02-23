@@ -1,0 +1,31 @@
+---
+id: P49.M6.E1.T001
+title: Add signature verification failure diagnostics and regression tests
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T14:33:40.002557+00:00'
+started_at: '2026-02-20T14:33:40.002557+00:00'
+completed_at: '2026-02-20T14:46:46.686571+00:00'
+duration_minutes: 13.111399966666665
+---
+
+# Add signature verification failure diagnostics and regression tests
+
+
+
+## Requirements
+
+- Add detailed diagnostics for signature verification failures including reason classes and remediation hints.
+- Capture diagnostics in trust events and audit logs.
+- Add regression tests for invalid signature, unknown identity, and verification transport failures.
+
+## Acceptance Criteria
+
+- Signature verification failures are categorized and surfaced consistently.
+- Logs/events include enough data for root-cause triage without guesswork.
+- Tests verify deterministic diagnostics for major failure classes.

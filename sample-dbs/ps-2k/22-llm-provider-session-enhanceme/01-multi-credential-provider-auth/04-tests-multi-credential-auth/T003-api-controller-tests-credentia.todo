@@ -1,0 +1,17 @@
+---
+id: P22.M1.E4.T003
+title: 'API controller tests: credential CRUD and reset-cooldown endpoints'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:37:45.611243+00:00'
+started_at: '2026-02-18T17:37:45.611243+00:00'
+completed_at: '2026-02-18T17:45:25.524755+00:00'
+duration_minutes: 7.665225033333333
+---
+Write Phoenix controller tests for all credential API endpoints. Test: - POST creates credential (happy path + missing fields) - GET lists credentials without exposing api_key - PATCH updates label/priority - DELETE removes credential (and prevents deleting last one) - reset-cooldown sets status back to :active Acceptance criteria: - Uses ConnCase with authenticated requests - Covers 400/404/422 error cases - api_key field never present in response body

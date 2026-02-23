@@ -1,0 +1,57 @@
+---
+id: P9.M5.E3.T002
+title: Implement system prompt injection from plugins
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- prompts
+- context
+claimed_by: cli-user
+claimed_at: '2026-02-07T04:52:44.807426+00:00'
+started_at: '2026-02-07T04:52:44.807426+00:00'
+completed_at: '2026-02-07T04:59:28.003558+00:00'
+duration_minutes: 6.7199353833333335
+---
+
+# Implement system prompt injection from plugins
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/prompt_injector.ex` module
+- [x] Allow plugins to declare system prompt text in manifest:
+  - [x] Static text in `prompts.system_prompt` manifest field
+  - [x] Dynamic callback module implementing `system_prompt/1` (receives agent context)
+- [x] Implement `collect_prompts/1` - Gather prompts from all enabled plugins:
+  - [x] Accept optional agent_id for per-agent filtering
+  - [x] Sort prompts by plugin priority (from manifest)
+  - [x] Return formatted prompt sections with plugin attribution headers
+- [x] Format collected prompts as clearly delimited sections:
+  - [x] Each plugin's prompt wrapped with `[Plugin: <name>]` header
+  - [x] Configurable separator between plugin prompts
+- [x] Support per-agent prompt filtering:
+  - [x] Only include prompts from plugins the agent has access to (via capabilities)
+  - [x] Allow plugins to declare agent-type restrictions for their prompts
+- [x] Integrate with context building pipeline to inject prompts into system message
+
+## Acceptance Criteria
+
+- [x] Plugins can provide static system prompt text via manifest
+- [x] Plugins can provide dynamic system prompts via callback module
+- [x] `collect_prompts/1` returns combined text from all enabled plugins in priority order
+- [x] Plugin prompts are clearly attributed with plugin name headers
+- [x] Per-agent filtering only includes prompts from accessible plugins
+- [x] Unit tests cover: static prompts, dynamic prompts, priority ordering, per-agent filtering
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/prompt_injector.ex`
+- **Integrates with**: Context building in `lib/pag_server/context/` modules
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004) for listing enabled plugins
+- **Used by**: `PagServer.Plugins.ContextInjector` (E3.T004), context build hooks (E2.T005)
+- **Relates to**: `:context_build` hook event type for dynamic injection

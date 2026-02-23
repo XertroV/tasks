@@ -1,0 +1,346 @@
+---
+id: P4.M2.E8.T003
+title: Implement text_format tool (case, trim, etc)
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tools
+- text
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:25:15.428101'
+started_at: '2026-02-05T23:25:15.428101'
+completed_at: '2026-02-05T23:31:11.350939'
+duration_minutes: 5.9320471
+---
+
+# Implement text_format tool (case, trim, etc)
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/text_format.ex` (~250 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Support multiple formatting operations: case conversion, trim, line operations, whitespace normalization
+- [ ] Case operations: uppercase, lowercase, titlecase, capitalize, swap_case
+- [ ] Line operations: sort, unique, reverse, join, split, filter_empty
+- [ ] Trim operations: trim, trim_start, trim_end, trim_lines
+- [ ] Whitespace: normalize_whitespace, normalize_newlines (LF/CRLF)
+- [ ] Support operation chaining (apply multiple operations in sequence)
+- [ ] Truncate result at 10MB
+
+## Acceptance Criteria
+
+- [ ] Supports case operations: uppercase, lowercase, titlecase (Title Case Each Word), capitalize (first letter), swap_case
+- [ ] Supports trim operations: trim (both ends), trim_start, trim_end, trim_lines (each line)
+- [ ] Supports line operations: sort_lines, unique_lines, reverse_lines, join_lines (with separator), split_lines, filter_empty_lines
+- [ ] Supports whitespace normalization: normalize_whitespace (collapse multiple spaces), normalize_newlines (convert CRLF to LF or vice versa)
+- [ ] Supports operation parameter for specifying which operation to perform
+- [ ] Supports optional operation-specific parameters (e.g., separator for join_lines, newline_style for normalize_newlines)
+- [ ] Returns formatted text and operation summary
+- [ ] Handles empty input gracefully
+- [ ] Truncates result at 10MB to prevent memory issues
+- [ ] Test coverage: each case operation, each trim operation, each line operation, whitespace normalization, empty input, multi-MB input
+- [ ] Performance: efficiently handles large text inputs
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Simple, common text transformations for LLM agents
+- No regex complexity = no ReDoS risk
+- Composable operations for flexibility
+- Handle Unicode correctly (String module functions)
+- Useful for cleaning LLM-generated content
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.TextFormat do
+  @behaviour PAGServer.Tools.Tool
+  @max_result_bytes 10_000_000  # 10MB
+
+  @impl true
+  def name, do: "text_format"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "text_format",
+      description: "Format and transform text (case conversion, line operations, whitespace normalization)",
+      parameters: %{
+        type: "object",
+        properties: %{
+          text: %{
+            type: "string",
+            description: "Text to format"
+          },
+          operation: %{
+            type: "string",
+            enum: [
+              "uppercase", "lowercase", "titlecase", "capitalize", "swap_case",
+              "trim", "trim_start", "trim_end", "trim_lines",
+              "sort_lines", "unique_lines", "reverse_lines", "filter_empty_lines",
+              "normalize_whitespace", "normalize_newlines"
+            ],
+            description: "Formatting operation to perform"
+          },
+          separator: %{
+            type: "string",
+            description: "Line separator for join_lines (default: newline)"
+          },
+          newline_style: %{
+            type: "string",
+            enum: ["lf", "crlf"],
+            description: "Newline style for normalize_newlines (default: lf)"
+          },
+          case_sensitive: %{
+            type: "boolean",
+            description: "Case-sensitive for unique_lines/sort_lines (default: true)"
+          }
+        },
+        required: ["text", "operation"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"text" => text, "operation" => operation} = args, _context) do
+    case perform_operation(operation, text, args) do
+      {:ok, result} -> 
+        {:ok, %{
+          result: truncate_result(result),
+          operation: operation,
+          original_length: byte_size(text),
+          result_length: byte_size(result)
+        }}
+      {:error, reason} -> 
+        {:error, "Text format failed: #{inspect(reason)}"}
+    end
+  end
+
+  # Case operations
+  defp perform_operation("uppercase", text, _args), do: {:ok, String.upcase(text)}
+  defp perform_operation("lowercase", text, _args), do: {:ok, String.downcase(text)}
+  defp perform_operation("titlecase", text, _args), do: {:ok, titlecase(text)}
+  defp perform_operation("capitalize", text, _args), do: {:ok, String.capitalize(text)}
+  defp perform_operation("swap_case", text, _args), do: {:ok, swap_case(text)}
+
+  # Trim operations
+  defp perform_operation("trim", text, _args), do: {:ok, String.trim(text)}
+  defp perform_operation("trim_start", text, _args), do: {:ok, String.trim_leading(text)}
+  defp perform_operation("trim_end", text, _args), do: {:ok, String.trim_trailing(text)}
+  defp perform_operation("trim_lines", text, _args), do: {:ok, trim_lines(text)}
+
+  # Line operations
+  defp perform_operation("sort_lines", text, args), do: {:ok, sort_lines(text, args)}
+  defp perform_operation("unique_lines", text, args), do: {:ok, unique_lines(text, args)}
+  defp perform_operation("reverse_lines", text, _args), do: {:ok, reverse_lines(text)}
+  defp perform_operation("filter_empty_lines", text, _args), do: {:ok, filter_empty_lines(text)}
+
+  # Whitespace operations
+  defp perform_operation("normalize_whitespace", text, _args), do: {:ok, normalize_whitespace(text)}
+  defp perform_operation("normalize_newlines", text, args), do: {:ok, normalize_newlines(text, args)}
+
+  defp perform_operation(op, _text, _args), do: {:error, "Unknown operation: #{op}"}
+
+  # Helper functions
+  defp titlecase(text) do
+    text
+    |> String.split()
+    |> Enum.map(&String.capitalize/1)
+    |> Enum.join(" ")
+  end
+
+  defp swap_case(text) do
+    text
+    |> String.graphemes()
+    |> Enum.map(fn char ->
+      cond do
+        String.upcase(char) == char and String.downcase(char) != char -> 
+          String.downcase(char)
+        String.downcase(char) == char and String.upcase(char) != char -> 
+          String.upcase(char)
+        true -> 
+          char
+      end
+    end)
+    |> Enum.join()
+  end
+
+  defp trim_lines(text) do
+    text
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.join("\n")
+  end
+
+  defp sort_lines(text, args) do
+    case_sensitive = Map.get(args, "case_sensitive", true)
+    
+    text
+    |> String.split("\n")
+    |> then(fn lines ->
+      if case_sensitive do
+        Enum.sort(lines)
+      else
+        Enum.sort_by(lines, &String.downcase/1)
+      end
+    end)
+    |> Enum.join("\n")
+  end
+
+  defp unique_lines(text, args) do
+    case_sensitive = Map.get(args, "case_sensitive", true)
+    
+    text
+    |> String.split("\n")
+    |> then(fn lines ->
+      if case_sensitive do
+        Enum.uniq(lines)
+      else
+        # Preserve original case but dedupe case-insensitively
+        lines
+        |> Enum.reduce({[], MapSet.new()}, fn line, {acc, seen} ->
+          lower = String.downcase(line)
+          if MapSet.member?(seen, lower) do
+            {acc, seen}
+          else
+            {[line | acc], MapSet.put(seen, lower)}
+          end
+        end)
+        |> elem(0)
+        |> Enum.reverse()
+      end
+    end)
+    |> Enum.join("\n")
+  end
+
+  defp reverse_lines(text) do
+    text
+    |> String.split("\n")
+    |> Enum.reverse()
+    |> Enum.join("\n")
+  end
+
+  defp filter_empty_lines(text) do
+    text
+    |> String.split("\n")
+    |> Enum.reject(&(String.trim(&1) == ""))
+    |> Enum.join("\n")
+  end
+
+  defp normalize_whitespace(text) do
+    text
+    |> String.replace(~r/[ \t]+/, " ")
+    |> String.split("\n")
+    |> Enum.map(&String.trim/1)
+    |> Enum.join("\n")
+  end
+
+  defp normalize_newlines(text, args) do
+    style = Map.get(args, "newline_style", "lf")
+    
+    case style do
+      "lf" -> String.replace(text, "\r\n", "\n")
+      "crlf" -> String.replace(text, ~r/\r?\n/, "\r\n")
+      _ -> text
+    end
+  end
+
+  defp truncate_result(result) when byte_size(result) > @max_result_bytes do
+    binary_part(result, 0, @max_result_bytes) <>
+      "\n\n[Result truncated at 10MB]"
+  end
+  defp truncate_result(result), do: result
+end
+```
+
+Example usage (case conversion):
+```json
+{
+  "text": "hello world",
+  "operation": "titlecase"
+}
+```
+
+Response:
+```json
+{
+  "result": "Hello World",
+  "operation": "titlecase",
+  "original_length": 11,
+  "result_length": 11
+}
+```
+
+Example usage (line operations):
+```json
+{
+  "text": "banana\napple\ncherry\napple\n",
+  "operation": "unique_lines"
+}
+```
+
+Response:
+```json
+{
+  "result": "banana\napple\ncherry\n",
+  "operation": "unique_lines",
+  "original_length": 28,
+  "result_length": 21
+}
+```
+
+Example usage (whitespace normalization):
+```json
+{
+  "text": "  multiple   spaces   between\r\nwords  ",
+  "operation": "normalize_whitespace"
+}
+```
+
+Response:
+```json
+{
+  "result": "multiple spaces between\nwords",
+  "operation": "normalize_whitespace",
+  "original_length": 41,
+  "result_length": 29
+}
+```
+
+Security considerations:
+- No regex = no ReDoS risk
+- Truncate result to prevent memory exhaustion
+- Handle Unicode correctly (String module is UTF-8 aware)
+- Efficient algorithms for large inputs
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 10:24 UTC
+**Primary task**: P4.M2.E7.T003 - Implement json_transform tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M2.E8 vs P4.M2.E7)
+- No dependency chain: ✓ (verified at claim time)

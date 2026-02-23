@@ -1,0 +1,144 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:39:50.768037'
+started_at: '2026-02-05T08:39:50.768037'
+completed_at: '2026-02-05T08:41:54.634494'
+---
+# Task: Create Message Ecto schema
+# ID: P1.M2.E3.T002
+# Status: pending
+# Estimate: 1.5h
+# Complexity: medium
+# Priority: high
+
+## Description
+Create the Message Ecto schema module with proper associations, validations, and changesets for message chain management.
+
+## Context
+The Message schema represents individual messages in a session's conversation. Messages form a linked list via parent references and support session forking. Each message has a role (user/assistant/system/tool_result), content, and optional tool calls and thinking content.
+
+## Requirements
+
+### Module Location
+`lib/pag_server/schema/message.ex`
+
+### Schema Definition
+```elixir
+defmodule PAGServer.Schema.Message do
+  use Ecto.Schema
+  import Ecto.Changeset
+  alias PAGServer.Schema.{Session, Message}
+
+  @primary_key {:id, :binary_id, autogenerate: true}
+  @foreign_key_type :binary_id
+
+  @valid_roles ~w(user assistant system tool_result)
+
+  schema "messages" do
+    field :role, :string
+    field :content, :string
+    field :sequence_num, :integer
+    field :content_hash, :string
+    field :thinking_content, :string
+    field :tool_calls, :map
+    field :token_count, :integer
+    field :model_used, :string
+
+    belongs_to :session, Session
+    belongs_to :parent_message, Message
+    has_many :child_messages, Message, foreign_key: :parent_message_id
+
+    timestamps(type: :utc_datetime_usec)
+  end
+
+  @doc """
+  Changeset for creating a new message.
+  """
+  def changeset(message, attrs) do
+    message
+    |> cast(attrs, [
+      :session_id,
+      :role,
+      :content,
+      :parent_message_id,
+      :sequence_num,
+      :content_hash,
+      :thinking_content,
+      :tool_calls,
+      :token_count,
+      :model_used
+    ])
+    |> validate_required([:session_id, :role, :content, :sequence_num])
+    |> validate_inclusion(:role, @valid_roles)
+    |> validate_number(:sequence_num, greater_than_or_equal_to: 0)
+    |> foreign_key_constraint(:session_id)
+    |> foreign_key_constraint(:parent_message_id)
+  end
+end
+```
+
+### Associations
+- `belongs_to :session` - Each message belongs to exactly one session
+- `belongs_to :parent_message` - Self-referential for linked list structure
+- `has_many :child_messages` - Enables forking (multiple children can reference same parent)
+
+### Validations
+- **Required fields**: `session_id`, `role`, `content`, `sequence_num`
+- **Role validation**: Must be one of `user`, `assistant`, `system`, `tool_result`
+- **Sequence validation**: `sequence_num >= 0`
+- **Foreign key constraints**: session_id and parent_message_id must reference valid records
+
+### Field Types
+- `role`: String (validated enum)
+- `content`: String (text)
+- `sequence_num`: Integer
+- `content_hash`: String (SHA-256 hex)
+- `thinking_content`: String (text, optional)
+- `tool_calls`: Map (stores array of tool call structures)
+- `token_count`: Integer (optional)
+- `model_used`: String (optional)
+
+## Implementation Steps
+1. Create `lib/pag_server/schema/message.ex`
+2. Define schema with all fields and associations
+3. Implement `changeset/2` function with validations
+4. Add role validation using `@valid_roles` module attribute
+5. Add foreign key constraints for referential integrity
+6. Ensure self-referential association works correctly
+
+## Testing Plan
+Create `test/pag_server/schema/message_test.exs`:
+- Test valid message creation
+- Test role validation (valid and invalid roles)
+- Test required field validation
+- Test sequence_num validation (non-negative)
+- Test parent-child associations
+- Test that multiple messages can reference same parent (forking)
+- Test foreign key constraints
+
+## Acceptance Criteria
+- [ ] Schema file created at `lib/pag_server/schema/message.ex`
+- [ ] All fields defined with correct types
+- [ ] Session association works (belongs_to)
+- [ ] Parent/child message associations work (self-referential)
+- [ ] Role validation accepts only valid roles
+- [ ] Required fields are enforced
+- [ ] Changesets validate data correctly
+- [ ] Can create messages and build message chains
+- [ ] Multiple messages can reference same parent (forking support)
+- [ ] Tests pass
+
+## Dependencies
+- Requires T001 (migration) to be complete
+- Requires Session schema to exist (P1.M2.E2)
+
+## References
+- Architecture: `.plan/2026-02-05-velvet-cascade/index.md:224-238`
+- Message chain structure: `.plan/2026-02-05-velvet-cascade/index.md:331-361`
+
+## Notes
+- The self-referential association (`belongs_to :parent_message, Message`) enables the linked list structure
+- `has_many :child_messages` allows session forking where multiple new sessions can branch from the same message
+- `tool_calls` is stored as a map containing an array of tool call structures
+- `thinking_content` is separate from `content` to distinguish Claude's internal reasoning from user-visible output

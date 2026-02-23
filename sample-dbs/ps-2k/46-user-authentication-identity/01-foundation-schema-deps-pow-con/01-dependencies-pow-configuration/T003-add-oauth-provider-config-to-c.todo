@@ -1,0 +1,23 @@
+---
+id: P46.M1.E1.T003
+title: Add OAuth provider config to config files
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P46.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:33:57.800482+00:00'
+started_at: '2026-02-19T20:33:57.800482+00:00'
+completed_at: '2026-02-19T20:41:11.137114+00:00'
+duration_minutes: 7.222277016666666
+---
+Add OAuth provider configuration to config files:
+- config/config.exs: placeholder structure with Assent strategies for :github, :google, :gitlab
+- config/dev.exs: dev OAuth app credentials (or use env vars)
+- config/test.exs: mock/bypass OAuth config for tests
+- config/runtime.exs: read GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GITLAB_CLIENT_ID, GITLAB_CLIENT_SECRET from env. Warn if unset in prod.
+Also add PAG_REGISTRATION_MODE env var (default: invite_only in prod, open in dev).
+Acceptance: Application starts without crashing when env vars are missing (dev mode).

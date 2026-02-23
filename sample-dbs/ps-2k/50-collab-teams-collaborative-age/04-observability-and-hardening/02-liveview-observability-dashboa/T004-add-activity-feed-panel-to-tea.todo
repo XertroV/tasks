@@ -1,0 +1,25 @@
+---
+id: P50.M4.E2.T004
+title: Add activity feed panel to team dashboard
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P50.M4.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:43:28.019066+00:00'
+started_at: '2026-02-23T02:43:28.019066+00:00'
+completed_at: '2026-02-23T02:43:32.290008+00:00'
+duration_minutes: 0.0711818
+---
+## Description
+Selected team panel includes last 20 activity feed entries from Projection.get_activity_feed/2. New entries prepend to feed in real-time via PubSub without full re-render. Feed entries show: event type (human-readable), actor agent ID (truncated), timestamp relative (e.g. 3s ago). Feed updates automatically as task/worker events arrive.
+
+## Acceptance Criteria
+- Feed shows last 20 entries
+- new entries appear without page reload
+- timestamps are relative
+- event type labels are human-readable
+- feed capped at 20 without scrollback

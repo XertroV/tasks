@@ -1,0 +1,26 @@
+---
+id: P23.M1.E4.T002
+title: REST API endpoints for listing and resolving pending approvals
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P23.M1.E2.T001
+- P23.M1.E4.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:49:12.553958+00:00'
+started_at: '2026-02-18T15:49:12.553958+00:00'
+completed_at: '2026-02-18T16:01:01.677381+00:00'
+duration_minutes: 11.8187235
+---
+HTTP API so clients can manage approvals outside of the WebSocket channel.
+
+## Acceptance Criteria
+- [ ] `GET /api/workspaces/:workspace_id/approvals` — list pending approvals (JSON)
+- [ ] `POST /api/workspaces/:workspace_id/approvals/:approval_id/approve` — approve a pending command
+- [ ] `POST /api/workspaces/:workspace_id/approvals/:approval_id/deny` — deny a pending command with optional `reason`
+- [ ] `GET /api/workspaces/:workspace_id/approvals/history` — paginated audit log from `approval_records`
+- [ ] All endpoints require authenticated user with workspace access
+- [ ] Controller tests for each endpoint (happy path + unauthorized)

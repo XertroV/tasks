@@ -1,0 +1,40 @@
+---
+id: P13.M3.E3.T003
+title: Add recovery hint system
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P13.M3.E3.T001
+- P13.M3.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T12:00:10.159075+00:00'
+started_at: '2026-02-13T12:00:10.159075+00:00'
+completed_at: '2026-02-13T12:29:14.316780+00:00'
+duration_minutes: 29.069294916666667
+---
+
+# Add recovery hint system
+
+## Description
+
+Extend the structured error types with a recovery hint system that provides actionable suggestions for handling errors. This enables better user feedback and automated retry strategies.
+
+## Acceptance Criteria
+- [ ] Add `RecoveryHint` module in `lib/pag_server/errors/recovery_hint.ex`
+- [ ] Define hint types: `:retry_with_backoff`, `:reduce_context`, `:switch_model`, `:user_action`
+- [ ] Implement `suggest/1` function that generates hints from error type
+- [ ] Add provider-specific recovery hints (rate limit -> wait, context limit -> truncate)
+- [ ] Add tool-specific recovery hints (permission -> grant, timeout -> retry)
+- [ ] Integrate hints into error responses to clients
+- [ ] Add tests for each hint type
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/errors/llm_error.ex`
+- Related files: `lib/pag_server/errors/tool_error.ex`
+- Related files: `lib/pag_server/agents/agent_server.ex` (error handling)
+- Part of epic: P13.M3.E3 - Structured Error Types

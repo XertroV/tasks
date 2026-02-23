@@ -1,0 +1,152 @@
+---
+id: P4.M2.E4.T002
+title: Implement spawn_subagent tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P4.M0.E3.T004
+tags:
+- tools
+- builtin
+- agent-comms
+- multi-agent
+- orchestration
+- directives
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:51:52.814473'
+started_at: '2026-02-05T22:51:52.814473'
+completed_at: '2026-02-05T23:02:31.873861'
+duration_minutes: 10.650989633333333
+---
+
+# Implement spawn_subagent tool
+
+Create the `spawn_subagent` builtin tool for creating child agents.
+
+**NOTE**: This tool must return `Directive.SpawnAgent` directives (P4.M0 directive pattern), not call AgentSupervisor directly.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/spawn_subagent.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Spawn new agent via AgentSupervisor
+- [ ] Configure agent with system prompt and tools
+- [ ] Link parent-child relationship
+- [ ] Return new agent ID
+
+## Acceptance Criteria
+
+- [ ] Creates new agent under AgentSupervisor
+- [ ] Sets parent_id in child agent metadata
+- [ ] Configures child with specified system prompt
+- [ ] Inherits or overrides tool permissions
+- [ ] Returns child agent ID for communication
+- [ ] Test coverage for spawning, configuration, linking
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Enables hierarchical agent structures
+- Foundation for delegation and task splitting
+- Child agents can have different capabilities
+- Parent can monitor/control children
+
+## Notes
+
+Implementation:
+```elixir
+defmodule PAGServer.Tools.Builtin.SpawnSubagent do
+  @behaviour PAGServer.Tools.Tool
+  alias PAGServer.Agents.Supervisor, as: AgentSupervisor
+
+  @impl true
+  def name, do: "spawn_subagent"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "spawn_subagent",
+      description: "Spawn a new child agent for delegation",
+      parameters: %{
+        type: "object",
+        properties: %{
+          name: %{
+            type: "string",
+            description: "Name for the child agent"
+          },
+          system_prompt: %{
+            type: "string",
+            description: "System prompt for the child agent"
+          },
+          tools: %{
+            type: "array",
+            items: %{type: "string"},
+            description: "Tool names to grant (inherits parent's by default)"
+          }
+        },
+        required: ["name", "system_prompt"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(args, context) do
+    %{
+      "name" => name,
+      "system_prompt" => system_prompt
+    } = args
+    
+    tools = Map.get(args, "tools", :inherit)
+    
+    agent_config = %{
+      name: name,
+      system_prompt: system_prompt,
+      parent_id: context.agent_id,
+      workspace: context.workspace,
+      tools: tools,
+      llm_provider: context.llm_provider  # Inherit from parent
+    }
+    
+    case AgentSupervisor.start_agent(agent_config) do
+      {:ok, child_id} ->
+        {:ok, %{
+          agent_id: child_id,
+          name: name,
+          parent_id: context.agent_id
+        }}
+      {:error, reason} ->
+        {:error, "Failed to spawn agent: #{reason}"}
+    end
+  end
+end
+```
+
+Parent-child relationship tracking:
+```elixir
+# In Agent state
+%{
+  id: "agent-123",
+  parent_id: "agent-parent",
+  children: ["agent-child-1", "agent-child-2"],
+  ...
+}
+```
+
+Use cases:
+1. **Task delegation**: Spawn specialist agents for subtasks
+2. **Parallel processing**: Spawn multiple agents for concurrent work
+3. **Hierarchical reasoning**: Tree of agents for complex problems
+4. **Session forking**: Create variant agents for A/B exploration
+
+Future enhancements:
+- Auto-cleanup when parent exits
+- Resource limits per agent tree
+- Inter-agent message routing
+- Agent templates for common patterns
+
+Register in Registry startup.

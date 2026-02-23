@@ -1,0 +1,23 @@
+---
+id: P46.M1.E3.T003
+title: Update seeds.exs for dev auto-login and test users
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P46.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:50:07.232124+00:00'
+started_at: '2026-02-19T20:50:07.232124+00:00'
+completed_at: '2026-02-19T20:57:41.300361+00:00'
+duration_minutes: 7.567803766666667
+---
+Update priv/repo/seeds.exs to:
+1. Create a dev admin user (email: dev@pag.local, username: devadmin, is_admin: true, confirmed_at: now)
+2. Create 2-3 additional test users with workspaces
+3. Create a 'github' UserIdentity record for the dev admin user (uid: "dev-github-uid") so dev auto-login works
+4. Ensure idempotent (use upsert / get_or_insert patterns, no crash on re-run)
+Also update config/dev.exs: add config :pag_server, :dev_auto_login_user_id with the dev admin user's email for use by permissive auth mode.
+Acceptance: mix ecto.setup succeeds; mix run priv/repo/seeds.exs is idempotent.

@@ -1,0 +1,54 @@
+id: P2.M2.E2
+name: Streaming
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on:
+- P2.M2.E1
+tasks:
+- id: T001
+  file: T001-sse-parser.todo
+  title: Implement SSE event parser
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-stream-handler.todo
+  title: Create streaming response handler
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-iolist-accumulation.todo
+  title: Implement iolist accumulation for tokens
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+- id: T004
+  file: T004-stream-errors.todo
+  title: Handle streaming errors and reconnection
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+- id: T005
+  file: T005-add-stream-cancellation-suppor.todo
+  title: Add stream cancellation support to Anthropic streaming handler
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P2.M2.E2.T002
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

@@ -1,0 +1,123 @@
+---
+id: P2.M5.E3.T002
+title: Write tests for Ollama tool schema conversion
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P2.M5.E3.T001
+tags:
+- ollama
+- tool-schema
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:13:49.564353'
+started_at: '2026-02-06T13:13:49.564353'
+completed_at: '2026-02-06T13:21:23.754905'
+duration_minutes: 7.569842366666666
+---
+
+# Write tests for Ollama tool schema conversion
+
+Comprehensive tests for the Ollama ToolSchema converter, verifying it produces
+OpenAI-compatible output and handles all input formats correctly.
+
+## Requirements
+
+- [x] Create `test/pag_server/llm/ollama/tool_schema_test.exs`
+- [x] Test conversion from internal format maps (atom keys)
+- [x] Test conversion from internal format maps (string keys)
+- [x] Test conversion from `%PagServer.Tools.ToolSchema{}` structs
+- [x] Test conversion from tool modules implementing `schema/0`
+- [x] Test pass-through of already-formatted OpenAI tools
+- [x] Test `convert_all/1` with mixed input formats
+- [x] Test `validate/1` with valid and invalid schemas
+- [x] Test all parameter types: string, integer, number, boolean, object, array
+- [x] Test nested object properties
+- [x] Test array items schema
+- [x] Test enum constraints
+- [x] Test required vs optional field handling
+- [x] Test edge cases: empty parameters, no description, nil values
+- [x] Verify output format matches `PagServer.LLM.OpenAI.ToolSchema.convert/1` exactly
+
+## Acceptance Criteria
+
+- [x] All tests pass with `mix test test/pag_server/llm/ollama/tool_schema_test.exs`
+- [x] Output format parity with OpenAI ToolSchema is explicitly verified in tests
+- [x] Error cases (invalid tool format, missing name) raise appropriate errors
+- [x] At least 95% code coverage for the Ollama ToolSchema module
+- [x] Tests are async-safe (`use ExUnit.Case, async: true`)
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.LLM.Ollama.ToolSchemaTest do
+  use ExUnit.Case, async: true
+
+  alias PagServer.LLM.Ollama.ToolSchema
+  alias PagServer.LLM.OpenAI.ToolSchema, as: OpenAIToolSchema
+
+  describe "convert/1" do
+    test "converts internal format to OpenAI-compatible format" do
+      tool = %{
+        name: "get_weather",
+        description: "Get weather for a location",
+        parameters: [
+          %{name: "location", type: :string, required: true, description: "City name"},
+          %{name: "units", type: :string, enum: ["celsius", "fahrenheit"]}
+        ]
+      }
+
+      result = ToolSchema.convert(tool)
+
+      assert result["type"] == "function"
+      assert result["function"]["name"] == "get_weather"
+      assert result["function"]["parameters"]["properties"]["location"]["type"] == "string"
+      assert result["function"]["parameters"]["required"] == ["location"]
+    end
+
+    test "output matches OpenAI ToolSchema exactly" do
+      tool = %{
+        name: "test_tool",
+        description: "A test",
+        parameters: [
+          %{name: "arg1", type: :string, required: true}
+        ]
+      }
+
+      assert ToolSchema.convert(tool) == OpenAIToolSchema.convert(tool)
+    end
+
+    test "passes through already-formatted tools" do
+      formatted = %{"type" => "function", "function" => %{"name" => "test"}}
+      assert ToolSchema.convert(formatted) == formatted
+    end
+  end
+
+  describe "validate/1" do
+    test "validates well-formed tool" do
+      tool = %{"type" => "function", "function" => %{"name" => "test"}}
+      assert ToolSchema.validate(tool) == :ok
+    end
+
+    test "rejects missing name" do
+      tool = %{"type" => "function", "function" => %{}}
+      assert {:error, _} = ToolSchema.validate(tool)
+    end
+  end
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Reference Files**:
+- `test/pag_server/llm/providers/anthropic/tool_schema_test.exs` - Anthropic test patterns
+- `test/pag_server/tools/tool_schema_test.exs` - Internal ToolSchema test patterns
+
+## Notes
+
+- Key assertion: for any input, `Ollama.ToolSchema.convert(tool)` should equal `OpenAI.ToolSchema.convert(tool)`
+- This parity test is the most important test to catch format divergence

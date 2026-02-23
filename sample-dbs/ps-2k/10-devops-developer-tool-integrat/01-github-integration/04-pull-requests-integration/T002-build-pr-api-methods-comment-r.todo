@@ -1,0 +1,41 @@
+---
+id: P10.M1.E4.T002
+title: Build PR API methods (comment, review, approve, merge)
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on: []
+tags:
+- github
+- api
+- pull-requests
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:36:08.093791+00:00'
+started_at: '2026-02-12T00:36:08.093791+00:00'
+completed_at: '2026-02-12T01:16:27.734351+00:00'
+duration_minutes: 40.32734238333333
+---
+
+# Build PR API methods (comment, review, approve, merge)
+
+Extend the GitHub API client with PR management operations supporting comments, code reviews, and merge actions.
+
+## Requirements
+
+- [ ] Add `create_pr_comment(repo, number, body)` method for PR comments
+- [ ] Add `create_pr_review(repo, number, event, body, comments)` method for code reviews
+- [ ] Add `approve_pr(repo, number, body)` method (shorthand for APPROVE review)
+- [ ] Add `request_changes_pr(repo, number, body)` method for change requests
+- [ ] Add `merge_pr(repo, number, merge_method, title, message)` method
+- [ ] Add `get_pr_files(repo, number)` method to fetch changed files with patch info
+- [ ] Implement request/response handling with proper error messages
+- [ ] All methods return `{:ok, result}` or `{:error, reason}` tuples
+
+## Acceptance Criteria
+
+- [ ] All methods compile and have type specs
+- [ ] Rate limiting respected (API client uses rate limit headers)
+- [ ] GitHub API 200/201 responses return `:ok` with parsed result
+- [ ] API errors (4xx/5xx) return `:error` with message
+- [ ] Each method can be called with minimal required parameters

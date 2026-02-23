@@ -1,0 +1,374 @@
+---
+id: P1.M3.E1.T003
+title: Implement client API functions
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P1.M3.E1.T002
+claimed_by: cli-user
+claimed_at: '2026-02-05T08:52:49.658586'
+started_at: '2026-02-05T08:52:49.658586'
+completed_at: '2026-02-05T08:53:54.943744'
+tags:
+- agent
+- genserver
+- api
+- client
+- foundation
+---
+
+# Implement client API functions
+
+Create the public client API that other modules will use to interact with agent processes.
+
+## Requirements
+
+- [ ] Implement `start_link/1` function
+  - [ ] Accept keyword options with `:agent_id`
+  - [ ] Start GenServer with Registry name
+  - [ ] Return `{:ok, pid}` or `{:error, reason}`
+  
+- [ ] Implement `send_message/2` function (synchronous)
+  - [ ] Parameters: `agent_id`, `content`
+  - [ ] Call GenServer with timeout
+  - [ ] Return `{:ok, response}` or `{:error, reason}`
+  - [ ] Default timeout: 60 seconds
+  
+- [ ] Implement `queue_message/3` function (asynchronous)
+  - [ ] Parameters: `agent_id`, `content`, `mode`
+  - [ ] Modes: `:immediate`, `:after_thinking`, `:when_done`
+  - [ ] Cast to GenServer (non-blocking)
+  - [ ] Return `:ok`
+  
+- [ ] Implement `get_state/1` function (debugging)
+  - [ ] Parameter: `agent_id`
+  - [ ] Return current agent state
+  - [ ] Only for development/debugging
+  
+- [ ] Implement `stop/1` function
+  - [ ] Parameter: `agent_id`
+  - [ ] Gracefully stop agent process
+  - [ ] Return `:ok`
+  
+- [ ] Implement `switch_model/2` function
+  - [ ] Parameters: `agent_id`, `model_spec`
+  - [ ] Change LLM model mid-session
+  - [ ] Return `:ok` or `{:error, reason}`
+  
+- [ ] Add proper type specs for all functions
+- [ ] Add comprehensive `@doc` documentation
+- [ ] Handle process lookup failures gracefully
+
+## Acceptance Criteria
+
+- [ ] All 6 client API functions are implemented
+- [ ] Functions use Registry for process lookup
+- [ ] `send_message/2` waits for response (sync)
+- [ ] `queue_message/3` returns immediately (async)
+- [ ] Error handling for process not found
+- [ ] Type specs defined for all functions
+- [ ] Documentation includes usage examples
+- [ ] Code compiles without warnings
+- [ ] Dialyzer passes with no type errors
+- [ ] Module follows architecture.md guidelines
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1 (Agents Domain)
+- `.plan/2026-02-05-velvet-cascade/index.md` Section 3.1 (Agent Process)
+
+**Key Design Points**:
+- **Sync vs Async**: `send_message/2` waits for response, `queue_message/3` returns immediately
+- **Process Lookup**: Use Registry.via_tuple for reliable process resolution
+- **Error Handling**: Handle `:noproc` when agent not running
+- **Timeout**: Default 60s for LLM responses (configurable)
+
+## Implementation Guide
+
+### Client API Structure
+
+```elixir
+defmodule PagServer.Agents.Agent do
+  use GenServer
+  
+  alias PagServer.Agents.Registry
+  
+  # Client API
+  
+  @doc """
+  Start an agent process.
+  
+  ## Options
+  
+    - `:agent_id` - UUID of the agent (required)
+  
+  ## Examples
+  
+      {:ok, pid} = Agent.start_link(agent_id: "abc123")
+  """
+  @spec start_link(keyword()) :: GenServer.on_start()
+  def start_link(opts) do
+    agent_id = Keyword.fetch!(opts, :agent_id)
+    GenServer.start_link(__MODULE__, opts, name: Registry.via_tuple(agent_id))
+  end
+  
+  @doc """
+  Send a message to the agent and wait for response (synchronous).
+  
+  This blocks until the agent completes processing and returns a response.
+  Use `queue_message/3` for non-blocking operation.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `content` - Message content string
+  
+  ## Options
+  
+    - `:timeout` - Maximum wait time in milliseconds (default: 60_000)
+  
+  ## Examples
+  
+      {:ok, response} = Agent.send_message("abc123", "Hello!")
+      {:error, :timeout} = Agent.send_message("abc123", "Long task", timeout: 5_000)
+  """
+  @spec send_message(binary(), binary(), keyword()) ::
+          {:ok, map()} | {:error, atom()}
+  def send_message(agent_id, content, opts \\ []) do
+    timeout = Keyword.get(opts, :timeout, 60_000)
+    
+    case Registry.lookup(agent_id) do
+      {:ok, pid} ->
+        try do
+          GenServer.call(pid, {:send_message, content}, timeout)
+        catch
+          :exit, {:timeout, _} -> {:error, :timeout}
+          :exit, reason -> {:error, reason}
+        end
+      
+      {:error, :not_found} ->
+        {:error, :agent_not_found}
+    end
+  end
+  
+  @doc """
+  Queue a message to be sent to the agent (asynchronous).
+  
+  Returns immediately without waiting for response. The message is added
+  to the agent's queue and processed according to the specified mode.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `content` - Message content string
+    - `mode` - Queue mode (default: `:when_done`)
+  
+  ## Modes
+  
+    - `:immediate` - Interrupt at next safe point (after current tool call)
+    - `:after_thinking` - Wait for thinking to complete, then interrupt
+    - `:when_done` - Auto-send after agent completes current turn
+  
+  ## Examples
+  
+      :ok = Agent.queue_message("abc123", "Stop!", :immediate)
+      :ok = Agent.queue_message("abc123", "Next task", :when_done)
+  """
+  @spec queue_message(binary(), binary(), queue_mode()) :: :ok | {:error, atom()}
+  def queue_message(agent_id, content, mode \\ :when_done)
+      when mode in [:immediate, :after_thinking, :when_done] do
+    case Registry.lookup(agent_id) do
+      {:ok, pid} ->
+        GenServer.cast(pid, {:queue_message, content, mode})
+        :ok
+      
+      {:error, :not_found} ->
+        {:error, :agent_not_found}
+    end
+  end
+  
+  @doc """
+  Get the current state of an agent (for debugging).
+  
+  **Warning**: This is for development/debugging only. Do not rely on
+  state structure in production code.
+  
+  ## Examples
+  
+      state = Agent.get_state("abc123")
+      IO.inspect(state.status)
+  """
+  @spec get_state(binary()) :: map() | {:error, atom()}
+  def get_state(agent_id) do
+    case Registry.lookup(agent_id) do
+      {:ok, pid} ->
+        GenServer.call(pid, :get_state)
+      
+      {:error, :not_found} ->
+        {:error, :agent_not_found}
+    end
+  end
+  
+  @doc """
+  Switch the LLM model for an agent mid-session.
+  
+  ## Parameters
+  
+    - `agent_id` - The agent's UUID
+    - `model_spec` - Model specification string (e.g., "claude-3-5-sonnet-20241022")
+  
+  ## Examples
+  
+      :ok = Agent.switch_model("abc123", "gpt-4")
+      :ok = Agent.switch_model("abc123", "anthropic/claude-3-5-sonnet-20241022")
+  """
+  @spec switch_model(binary(), binary()) :: :ok | {:error, atom()}
+  def switch_model(agent_id, model_spec) do
+    case Registry.lookup(agent_id) do
+      {:ok, pid} ->
+        GenServer.call(pid, {:switch_model, model_spec})
+      
+      {:error, :not_found} ->
+        {:error, :agent_not_found}
+    end
+  end
+  
+  @doc """
+  Stop an agent process gracefully.
+  
+  The agent will:
+  1. Complete any in-flight LLM requests
+  2. Save final state to event store
+  3. Broadcast agent_stopped event
+  4. Terminate
+  
+  ## Examples
+  
+      :ok = Agent.stop("abc123")
+  """
+  @spec stop(binary()) :: :ok
+  def stop(agent_id) do
+    case Registry.lookup(agent_id) do
+      {:ok, pid} ->
+        GenServer.stop(pid, :normal)
+      
+      {:error, :not_found} ->
+        :ok  # Already stopped
+    end
+  end
+  
+  # Type definitions
+  @type queue_mode :: :immediate | :after_thinking | :when_done
+  
+  # Server Callbacks (from T002)
+  # ...
+end
+```
+
+### Error Handling Pattern
+
+```elixir
+# Wrapper for safe GenServer calls
+defp call_agent(agent_id, message, timeout \\ 5_000) do
+  case Registry.lookup(agent_id) do
+    {:ok, pid} ->
+      try do
+        GenServer.call(pid, message, timeout)
+      catch
+        :exit, {:timeout, _} -> {:error, :timeout}
+        :exit, {:noproc, _} -> {:error, :agent_not_found}
+        :exit, reason -> {:error, reason}
+      end
+    
+    {:error, :not_found} ->
+      {:error, :agent_not_found}
+  end
+end
+```
+
+### Usage Examples
+
+```elixir
+# Start an agent
+{:ok, pid} = PagServer.Agents.Agent.start_link(agent_id: "abc-123")
+
+# Send message synchronously (wait for response)
+{:ok, response} = Agent.send_message("abc-123", "What is 2+2?")
+IO.puts(response.content)
+# => "2 + 2 equals 4."
+
+# Queue message asynchronously (don't wait)
+:ok = Agent.queue_message("abc-123", "Write a poem", :when_done)
+
+# Interrupt immediately
+:ok = Agent.queue_message("abc-123", "Stop that!", :immediate)
+
+# Switch model
+:ok = Agent.switch_model("abc-123", "gpt-4")
+
+# Debug state
+state = Agent.get_state("abc-123")
+IO.inspect(state.status)
+# => :processing
+
+# Stop gracefully
+:ok = Agent.stop("abc-123")
+```
+
+## Notes
+
+### Sync vs Async Design
+
+| Function | Type | Use Case |
+|----------|------|----------|
+| `send_message/2` | Sync | CLI, API endpoints, wait for response |
+| `queue_message/3` | Async | UI interactions, background tasks |
+
+### Timeouts
+
+- **Default**: 60 seconds (typical LLM response time)
+- **Long tasks**: Increase timeout for complex reasoning
+- **Streaming**: Tokens arrive via PubSub, not return value
+
+### Registry Lookup
+
+```elixir
+# Registry.lookup returns:
+{:ok, pid}               # Agent running
+{:error, :not_found}     # Agent not started
+```
+
+### Future Enhancements
+
+- [ ] `fork_session/2` - Create session branch (Phase 2)
+- [ ] `parallel_query/3` - Send queries to multiple forked agents (Phase 2)
+- [ ] `get_stats/1` - Return token/cost statistics
+- [ ] `subscribe/1` - Subscribe to agent events via PubSub
+
+## Testing Strategy
+
+Tests (T005) will verify:
+- `start_link/1` registers process correctly
+- `send_message/2` waits for response
+- `queue_message/3` returns immediately
+- Error handling for non-existent agents
+- Timeout behavior
+- Multiple concurrent calls
+- Stop cleanup
+
+## Troubleshooting
+
+**Error**: `{:error, :agent_not_found}`
+- Agent process not started
+- Use `PagServer.Agents.Supervisor.start_agent/1` first
+
+**Error**: `{:error, :timeout}`
+- LLM response taking >60s
+- Increase timeout: `send_message(id, msg, timeout: 120_000)`
+
+**Error**: Process registry conflicts
+- Ensure agent_id is unique
+- Check Registry is started in application supervision tree

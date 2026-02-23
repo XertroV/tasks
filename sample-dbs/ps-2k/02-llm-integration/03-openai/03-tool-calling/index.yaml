@@ -1,0 +1,47 @@
+id: P2.M3.E3
+name: Tool Calling
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on:
+- P2.M3.E2
+tasks:
+- id: T001
+  file: T001-function-schema.todo
+  title: Implement function/tool schema conversion
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-tool-calls.todo
+  title: Handle tool_calls in responses
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - T001
+- id: T003
+  file: T003-parallel-tools.todo
+  title: Support parallel_tool_calls option
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+- id: T004
+  file: T004-implement-tool-result-submissi.todo
+  title: Implement tool result submission loop for OpenAI
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P2.M3.E3.T002
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

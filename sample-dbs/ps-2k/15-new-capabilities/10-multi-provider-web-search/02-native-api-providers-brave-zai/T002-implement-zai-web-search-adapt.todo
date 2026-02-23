@@ -1,0 +1,33 @@
+---
+id: P15.M10.E2.T002
+title: Implement ZAI web search adapter and key-based activation
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M10.E1.T001
+tags:
+- tools
+- web-search
+- zai
+claimed_by: cli-user
+claimed_at: '2026-02-17T15:19:35.783058+00:00'
+started_at: '2026-02-17T15:19:35.783058+00:00'
+completed_at: '2026-02-17T15:19:37.262133+00:00'
+duration_minutes: 0.024651
+---
+
+# Implement ZAI web search adapter and key-based activation
+
+
+
+## Requirements
+
+- Implement ZAI web search provider adapter following official tool API contract.
+- Enable provider only when `ZAI_API_KEY` and required endpoint config are present.
+
+## Acceptance Criteria
+
+- Adapter integrates with orchestrator and returns normalized result records.
+- Provider auto-disables when credentials/config are absent and this behavior is tested.

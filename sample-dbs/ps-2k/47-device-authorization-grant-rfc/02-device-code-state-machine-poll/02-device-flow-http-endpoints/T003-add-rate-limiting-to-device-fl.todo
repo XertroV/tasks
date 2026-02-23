@@ -1,0 +1,17 @@
+---
+id: P47.M2.E2.T003
+title: Add rate limiting to device flow endpoints
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P47.M2.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:16:49.080859+00:00'
+started_at: '2026-02-20T06:16:49.080859+00:00'
+completed_at: '2026-02-20T06:24:58.393968+00:00'
+duration_minutes: 8.155218216666666
+---
+Apply IP-based rate limiting to POST /oauth/device/code (prevent code flood: max 10 req/min per IP) and POST /oauth/device/token (back-stop on top of interval enforcement: max 60 req/min per IP). Use existing RateLimiter plug infrastructure. Document rate limit behaviour. This is separate from the per-device-code interval enforcement in DeviceCodes.check_poll_rate/1.

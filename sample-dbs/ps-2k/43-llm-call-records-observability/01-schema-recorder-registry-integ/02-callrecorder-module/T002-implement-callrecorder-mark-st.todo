@@ -1,0 +1,65 @@
+---
+id: P43.M1.E2.T002
+title: Implement CallRecorder.mark_streaming/1, complete/3, fail/3 with cost calculation
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:02:04.851562+00:00'
+started_at: '2026-02-19T19:02:04.851562+00:00'
+completed_at: '2026-02-19T19:10:36.406008+00:00'
+duration_minutes: 8.52590725
+---
+
+# Implement CallRecorder.mark_streaming/1, complete/3, fail/3 with cost calculation
+
+
+
+## Requirements
+
+- Add `mark_streaming/1`, `complete/3`, and `fail/3` to `PagServer.LLM.CallRecorder`
+- Each function updates the `llm_call_records` row identified by `record_id`
+- All DB updates are fire-and-forget via `Task.start` — callers are never blocked
+- `complete/3` must invoke cost calculation and persist cost fields
+- `fail/3` must support distinguishing `:failed`, `:timed_out`, and `:cancelled` terminal states
+
+## Acceptance Criteria
+
+- `mark_streaming/1` has signature `mark_streaming(record_id)`:
+  - Spawns a `Task.start` that fetches the record by ID and applies `LlmCallRecord.streaming_changeset/1`, then calls `Repo.update/1`
+  - Returns `:ok` immediately (before the Task runs)
+  - All errors inside the Task are rescued and logged with `Logger.error/2`
+
+- `complete/3` has signature `complete(record_id, response_or_accumulator, elapsed_ms)`:
+  - Spawns a `Task.start` that:
+    - Fetches the record by ID
+    - Extracts token counts from `response_or_accumulator` (handles both a plain response map and a `StreamAccumulator` struct — checks for known fields such as `:input_tokens`, `:output_tokens`, `:cache_read_tokens`, `:cache_creation_tokens`)
+    - Calls `PagServer.LLM.Pricing.calculate_cost/3` (or equivalent) with `provider`, `model`, and token counts to derive `input_cost_millicents`, `output_cost_millicents`, `total_cost_millicents`
+    - Sets `total_tokens` = `input_tokens + output_tokens` (plus cache tokens if applicable, matching Pricing logic)
+    - Sets `duration_ms` from `elapsed_ms`
+    - Sets `stop_reason` if present in the response
+    - Sets `completed_at` to `DateTime.utc_now/0` (or equivalent)
+    - Applies `LlmCallRecord.complete_changeset/2` and calls `Repo.update/1`
+  - Returns `:ok` immediately
+  - All errors inside the Task are rescued and logged
+
+- `fail/3` has signature `fail(record_id, reason, opts \\ [])`:
+  - `reason` is any term (string, atom, exception struct, etc.)
+  - `opts` may include `status:` with a value of `:failed` (default), `:timed_out`, or `:cancelled`
+  - Spawns a `Task.start` that:
+    - Fetches the record by ID
+    - Converts `reason` to a serialisable `error_details` map (e.g. `%{"reason" => inspect(reason)}`)
+    - Sets `completed_at` to `DateTime.utc_now/0`
+    - Applies `LlmCallRecord.fail_changeset/2` with the constructed map and calls `Repo.update/1`
+  - Returns `:ok` immediately
+  - All errors inside the Task are rescued and logged
+
+- Unit tests in `test/pag_server/llm/call_recorder_test.exs` cover:
+  - After `mark_streaming/1` + sleep, record's `status` is `:streaming`
+  - After `complete/3` + sleep, record's `status` is `:completed`, `duration_ms` equals the passed value, `completed_at` is non-nil, and at least one cost field is non-nil when a non-zero token count is provided
+  - After `fail/3` + sleep with no opts, record's `status` is `:failed` and `error_details` is a non-empty map
+  - After `fail/3` + sleep with `status: :timed_out`, record's `status` is `:timed_out`
+  - After `fail/3` + sleep with `status: :cancelled`, record's `status` is `:cancelled`

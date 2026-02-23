@@ -1,0 +1,16 @@
+---
+id: P48.M3.E2.T002
+title: 'LspRegistry GenServer: ETS-backed (workspace_id, language) -> LspClient pid'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:51:21.383029+00:00'
+started_at: '2026-02-20T08:51:21.383029+00:00'
+completed_at: '2026-02-20T09:06:09.179525+00:00'
+duration_minutes: 14.796608083333332
+---
+Pattern: CompanionRegistry / ContainerRegistry. Key: {workspace_id, language_id} -> {pid, root_path, server_id, started_at}. Process monitoring: auto-unregister when LspClient dies. API: register/4, lookup/2, unregister/2, list_by_workspace/1, list_all/0. O(1) ETS reads.

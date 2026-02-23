@@ -1,0 +1,70 @@
+id: P9.M5.E2
+name: Plugin Hook System
+status: pending
+estimate_hours: 10.0
+complexity: high
+depends_on:
+- E1
+tasks:
+- id: T001
+  file: T001-define-hook-event-types-and-ho.todo
+  title: Define hook event types and HookEvent struct
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-hookdispatcher-gense.todo
+  title: Implement HookDispatcher GenServer for event-driven hook dispatch
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E2.T001
+  - P9.M5.E1.T004
+- id: T003
+  file: T003-add-pre-post-tool-execution-ho.todo
+  title: Add pre/post tool execution hooks with interception support
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E2.T002
+- id: T004
+  file: T004-add-session-and-agent-lifecycl.todo
+  title: Add session and agent lifecycle hooks (start, end, spawn, error)
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E2.T002
+- id: T005
+  file: T005-add-message-and-context-hooks.todo
+  title: Add message and context hooks (message received, context build, pre-compact)
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P9.M5.E2.T002
+- id: T006
+  file: T006-integrate-hookdispatcher-with.todo
+  title: Integrate HookDispatcher with existing AgentServer and ToolExecutor
+  status: pending
+  estimate_hours: 1.5
+  complexity: high
+  priority: high
+  depends_on:
+  - P9.M5.E2.T003
+  - P9.M5.E2.T004
+  - P9.M5.E2.T005
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

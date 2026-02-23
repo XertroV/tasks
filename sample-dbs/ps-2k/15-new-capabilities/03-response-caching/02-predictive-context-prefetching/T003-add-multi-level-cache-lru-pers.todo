@@ -1,0 +1,37 @@
+---
+id: P15.M3.E2.T003
+title: Add multi-level cache (LRU + persistent)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M3.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T14:30:24.328644+00:00'
+started_at: '2026-02-13T14:30:24.328644+00:00'
+completed_at: '2026-02-13T14:44:07.616063+00:00'
+duration_minutes: 13.721456766666668
+---
+
+# Add multi-level cache (LRU + persistent)
+
+## Description
+Implement a multi-level caching strategy with L1 (in-memory LRU) and L2 (persistent/disk) caches. Frequently accessed context stays in memory while less active data moves to persistent storage.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Cache.MultiLevel` module
+- [ ] Implement L1 cache using Cachex with LRU eviction
+- [ ] Implement L2 cache using ETS or database-backed storage
+- [ ] Add promotion/demotion logic between cache levels
+- [ ] Implement transparent lookup (check L1, then L2, then fetch)
+- [ ] Add write-through policy for consistency
+- [ ] Track cache level hit rates separately
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/cache.ex`, `lib/pag_server/application.ex`, `lib/pag_server/vector_search/memory_index.ex`
+- Part of epic: Predictive Context Prefetching
+- Reference existing bounded cache patterns

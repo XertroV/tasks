@@ -1,0 +1,18 @@
+---
+id: B240
+title: Fallback model doesn't validate capability match
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- llm
+- failover
+claimed_by: cli-user
+claimed_at: '2026-02-23T07:29:02.100133+00:00'
+started_at: '2026-02-23T07:29:02.100133+00:00'
+completed_at: '2026-02-23T07:43:45.811371+00:00'
+duration_minutes: 14.7285205
+---
+registry.ex:1295-1311 - Fallback provider may not support same tools/streaming/vision

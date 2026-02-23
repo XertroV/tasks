@@ -1,0 +1,17 @@
+---
+id: P45.M7.E1.T002
+title: Implement Oban worker for TTL-based version pruning
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on:
+- P45.M1.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.209328+00:00'
+started_at: '2026-02-19T19:17:35.209328+00:00'
+completed_at: '2026-02-19T19:51:54.566367+00:00'
+duration_minutes: 34.32261713333333
+---
+Create CredentialsVault.Workers.PruneVersions Oban worker (queue: :default, max_attempts: 3). Deletes vault_secret_versions where expires_at < now(). Register as a cron job in plugin on_enable/1 (daily at 02:00 UTC). Emit telemetry with pruned_count on completion.

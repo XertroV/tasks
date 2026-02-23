@@ -1,0 +1,200 @@
+---
+id: P4.M2.E7.T001
+title: Implement json_parse tool
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- tools
+- json
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:07:18.614710'
+started_at: '2026-02-05T23:07:18.614710'
+completed_at: '2026-02-05T23:15:08.605342'
+duration_minutes: 7.833176916666667
+---
+
+# Implement json_parse tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/json_parse.ex` (~100 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Parse JSON strings into Elixir data structures
+- [ ] Use Jason library for parsing
+- [ ] Support both strict and relaxed parsing modes
+- [ ] Handle deeply nested structures with configurable depth limit
+- [ ] Return parsed data with original structure preserved
+
+## Acceptance Criteria
+
+- [ ] Parses valid JSON strings to Elixir maps/lists
+- [ ] Accepts optional `strict` parameter (default: true) for strict vs relaxed parsing
+- [ ] Accepts optional `max_depth` parameter (default: 100) to prevent stack overflow
+- [ ] Returns parsed data structure on success
+- [ ] Handles malformed JSON with clear error messages (syntax errors, unclosed brackets, invalid escapes)
+- [ ] Handles edge cases: empty string, whitespace-only, null values, Unicode characters
+- [ ] Validates input is a string (not already parsed)
+- [ ] Limits maximum input size to 10MB
+- [ ] Test coverage: valid JSON objects/arrays, nested structures, primitives, malformed JSON, empty input, Unicode, max depth exceeded, oversized input
+- [ ] Performance: handles 1MB JSON document in <100ms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Use Jason for JSON parsing (already a dependency)
+- No sandbox concerns (pure data transformation)
+- Depth limit prevents DoS attacks via deeply nested structures
+- Size limit prevents memory exhaustion
+- Return error with line/column information when available
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.JsonParse do
+  @behaviour PAGServer.Tools.Tool
+  @max_input_bytes 10_485_760  # 10MB
+  @default_max_depth 100
+
+  @impl true
+  def name, do: "json_parse"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "json_parse",
+      description: "Parse JSON string into structured data",
+      parameters: %{
+        type: "object",
+        properties: %{
+          json_string: %{
+            type: "string",
+            description: "JSON string to parse"
+          },
+          strict: %{
+            type: "boolean",
+            description: "Use strict parsing (default: true)"
+          },
+          max_depth: %{
+            type: "integer",
+            description: "Maximum nesting depth (default: 100)"
+          }
+        },
+        required: ["json_string"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"json_string" => json_str} = args, _context) do
+    with :ok <- validate_input(json_str),
+         {:ok, parsed} <- parse_json(json_str, args) do
+      {:ok, %{
+        data: parsed,
+        type: determine_type(parsed)
+      }}
+    else
+      {:error, %Jason.DecodeError{} = error} ->
+        {:error, "JSON parse failed at position #{error.position}: #{error.data}"}
+      {:error, reason} ->
+        {:error, "JSON parse failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp validate_input(json_str) when is_binary(json_str) do
+    cond do
+      byte_size(json_str) == 0 ->
+        {:error, "Input is empty"}
+      byte_size(json_str) > @max_input_bytes ->
+        {:error, "Input exceeds 10MB limit"}
+      true ->
+        :ok
+    end
+  end
+  defp validate_input(_), do: {:error, "Input must be a string"}
+
+  defp parse_json(json_str, args) do
+    strict = Map.get(args, "strict", true)
+    max_depth = Map.get(args, "max_depth", @default_max_depth)
+    
+    # Jason doesn't have built-in depth limiting, so we validate after parsing
+    with {:ok, parsed} <- Jason.decode(json_str),
+         :ok <- validate_depth(parsed, max_depth) do
+      {:ok, parsed}
+    end
+  end
+
+  defp validate_depth(data, max_depth, current_depth \\ 0)
+  defp validate_depth(_, max_depth, current_depth) when current_depth > max_depth do
+    {:error, "Maximum depth of #{max_depth} exceeded"}
+  end
+  defp validate_depth(map, max_depth, current_depth) when is_map(map) do
+    map
+    |> Map.values()
+    |> Enum.reduce_while(:ok, fn value, :ok ->
+      case validate_depth(value, max_depth, current_depth + 1) do
+        :ok -> {:cont, :ok}
+        error -> {:halt, error}
+      end
+    end)
+  end
+  defp validate_depth(list, max_depth, current_depth) when is_list(list) do
+    Enum.reduce_while(list, :ok, fn value, :ok ->
+      case validate_depth(value, max_depth, current_depth + 1) do
+        :ok -> {:cont, :ok}
+        error -> {:halt, error}
+      end
+    end)
+  end
+  defp validate_depth(_, _max_depth, _current_depth), do: :ok
+
+  defp determine_type(data) when is_map(data), do: "object"
+  defp determine_type(data) when is_list(data), do: "array"
+  defp determine_type(data) when is_binary(data), do: "string"
+  defp determine_type(data) when is_number(data), do: "number"
+  defp determine_type(data) when is_boolean(data), do: "boolean"
+  defp determine_type(nil), do: "null"
+end
+```
+
+Example usage:
+```json
+{
+  "json_string": "{\"user\": {\"name\": \"Alice\", \"age\": 30, \"active\": true}}",
+  "strict": true,
+  "max_depth": 50
+}
+```
+
+Example response:
+```json
+{
+  "data": {
+    "user": {
+      "name": "Alice",
+      "age": 30,
+      "active": true
+    }
+  },
+  "type": "object"
+}
+```
+
+Edge cases to consider:
+- Empty string: `""` → error
+- Whitespace only: `"   "` → error
+- Valid primitives: `"123"`, `"true"`, `"null"`, `"\"hello\""`
+- Unicode: `"{\"emoji\": \"🎉\"}"`
+- Deeply nested: `"[[[[[[...]]]]]]"` → check depth limit
+- Malformed: `"{unclosed"`, `"{\"key\": }"`, `"{\"key\": undefined}"`
+- Large arrays: `"[1,2,3,...]"` with 100k elements
+- Numbers: very large numbers, decimals, scientific notation

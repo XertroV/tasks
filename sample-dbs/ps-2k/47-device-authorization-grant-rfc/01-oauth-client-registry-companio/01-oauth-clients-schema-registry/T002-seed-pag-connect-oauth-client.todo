@@ -1,0 +1,17 @@
+---
+id: P47.M1.E1.T002
+title: Seed pag-connect OAuth client record
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P47.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:11:08.651291+00:00'
+started_at: '2026-02-19T21:11:08.651291+00:00'
+completed_at: '2026-02-19T21:15:20.468612+00:00'
+duration_minutes: 4.196955166666666
+---
+Add pag-connect client to priv/repo/seeds.exs: client_id='pag-connect', name='pag-connect companion daemon', allowed_grant_types=['device_code'], allowed_scopes=['companion:full'], is_active=true. Use Repo.insert with on_conflict: :nothing so re-running seeds is idempotent.

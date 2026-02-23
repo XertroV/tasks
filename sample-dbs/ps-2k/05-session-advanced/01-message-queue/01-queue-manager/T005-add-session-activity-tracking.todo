@@ -1,0 +1,54 @@
+---
+id: P5.M1.E1.T005
+title: Add session activity tracking and idle timeout config
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P1.M2.E2.T002
+tags:
+- session
+- lifecycle
+- timeout
+claimed_by: cli-user
+claimed_at: '2026-02-07T07:51:48.242662+00:00'
+started_at: '2026-02-07T07:51:48.242662+00:00'
+completed_at: '2026-02-07T08:00:31.071985+00:00'
+duration_minutes: 8.713821866666667
+---
+
+# Add session activity tracking and idle timeout config
+
+
+
+## Requirements
+
+- [ ] Track per-session last_activity_at and update it on inbound/outbound message handling.
+- [ ] Provide a configurable idle timeout (config/env) with a clear default and units documented in code.
+- [ ] Expose a session idle tracking API that SessionJanitor can query without forcing eager cleanup.
+- [ ] Ensure activity tracking is persisted or derived in a way that survives process restarts.
+- [ ] Avoid extra writes for no-op activity updates; only write when timestamp changes meaningfully.
+
+## Acceptance Criteria
+
+- [ ] Session idle tracking is recorded and updated for relevant message queue events.
+- [ ] Idle timeout value is configurable and used consistently across session lifecycle logic.
+- [ ] SessionJanitor can determine idle sessions using the tracked activity timestamp.
+- [ ] AgentSupervisor stop integration can rely on idle detection without additional lookups.
+- [ ] No non-ASCII characters added; YAML frontmatter unchanged.
+
+## Context
+
+- [ ] Session lifecycle now needs idle tracking and a configurable timeout to drive cleanup.
+- [ ] This work unblocks SessionJanitor closing idle sessions and stopping agents via AgentSupervisor.
+
+## Notes
+
+- [ ] Use a single source of truth for timeout config to avoid drift across components.
+- [ ] Document the idle tracking field and update points near session/queue code paths.
+
+## Testing
+
+- [ ] Add or update tests that confirm last_activity_at updates on message activity.
+- [ ] Use the sleep_fn pattern for any time-based logic in tests to keep them fast.

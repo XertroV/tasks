@@ -1,0 +1,67 @@
+---
+id: P2.M8.E3.T002
+title: Add summarization-based compression
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags:
+- context
+- pruning
+- summarization
+claimed_by: claude-1
+claimed_at: '2026-02-05T20:13:01.424526'
+started_at: '2026-02-06T06:23:15.000000'
+completed_at: '2026-02-06T07:23:15.000000'
+---
+
+# Add summarization-based compression
+
+Implemented a context pruning strategy that uses LLM summarization to compress older messages instead of dropping them entirely. This preserves more conversational context within token budgets.
+
+## Requirements
+
+- [x] Implement `PagServer.Context.Pruning.Summarization` module
+- [x] Follow the `PagServer.Context.Pruning` behavior interface
+- [x] Partition messages into system, old (to summarize), and recent (to keep)
+- [x] Group old messages into conversation chunks
+- [x] Use LLM to summarize each chunk with configurable model
+- [x] Create synthetic summary messages to replace chunks
+- [x] Handle summarization failures gracefully with fallback to sliding window
+- [x] Support configurable token allocation (recent_percent, summary_percent)
+- [x] Support configurable chunk size for summarization
+- [x] Extract summary text from various LLM response formats
+
+## Acceptance Criteria
+
+- [x] Module implements `PagServer.Context.Pruning` behavior
+- [x] Summarizes old messages while preserving recent context
+- [x] Handles summarization failures gracefully (falls back to sliding window)
+- [x] All tests pass (19 tests, 0 failures)
+- [x] `mix format` passes
+- [x] `mix lint` passes
+- [x] Comprehensive documentation with examples
+- [x] Task file updated with detailed requirements
+
+## Implementation Details
+
+### Strategy
+1. Partition messages into system, old (to summarize), and recent (to keep)
+2. Allocate token budget: 60% for recent messages, 40% for summaries (configurable)
+3. Group old messages into chunks (default 4 messages per chunk)
+4. Use LLM to summarize each chunk (default model: anthropic:claude-haiku-4)
+5. Create synthetic summary messages with estimated token counts
+6. Return: system messages + summary messages + recent messages
+
+### Fallback Behavior
+If summarization fails (LLM unavailable, timeout, etc.), the strategy falls back to sliding window truncation to ensure the system continues functioning.
+
+### Configuration Options
+- `:max_tokens` - Maximum tokens to keep
+- `:model_spec` - Model spec for context limit lookup
+- `:summary_model` - Model to use for summarization (default: anthropic:claude-haiku-4)
+- `:recent_percent` - Token budget percentage for recent messages (default: 0.6)
+- `:summary_percent` - Token budget percentage for summaries (default: 0.4)
+- `:chunk_size` - Messages per chunk to summarize (default: 4)
+- `:fallback_on_error` - Enable fallback to sliding window (default: true)

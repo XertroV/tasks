@@ -1,0 +1,25 @@
+---
+id: P44.M2.E2.T001
+title: Implement /help command handler
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:58:59.192851+00:00'
+started_at: '2026-02-19T18:58:59.192851+00:00'
+completed_at: '2026-02-19T19:05:43.595591+00:00'
+duration_minutes: 6.740045466666667
+---
+## Summary
+Implement `PagServer.Commands.Handlers.Help` — lists all registered commands.
+
+## Acceptance Criteria
+- [ ] Implements Command behaviour (name: "help", aliases: ["h", "?"])
+- [ ] Lists all commands from Registry: name, aliases, description, usage line
+- [ ] Groups: built-in commands first, then plugin commands (sorted by name within each group)
+- [ ] No args: full list; with arg (e.g. /help model): shows detailed help for that command
+- [ ] Response.rich_text uses markdown formatting; Response.text is plain fallback
+- [ ] Tests: full list renders, specific command help renders, unknown command shows error with suggestion

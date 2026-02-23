@@ -1,0 +1,18 @@
+---
+id: B129
+title: PlatformConfig settings should be exposed through the webui; we need a nice
+  comprehensive view
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T02:44:05.174049+00:00'
+started_at: '2026-02-18T02:44:05.174049+00:00'
+completed_at: '2026-02-18T02:58:22.310888+00:00'
+duration_minutes: 14.285613783333334
+---
+
+PlatformConfig settings should be exposed through the webui; we need a nice comprehensive view

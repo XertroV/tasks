@@ -1,0 +1,27 @@
+epic_id: P3.M1.E2
+name: Agent Channel
+description: Create AgentChannel module for real-time agent communication
+milestone: 01-phoenix-channels
+phase: 03-streaming-realtime
+
+estimated_hours: 4
+priority: high
+
+tasks:
+  - T001-agent-channel-module.todo
+  - T002-authentication.todo
+  - T003-presence-tracking.todo
+  - T004-channel-tests.todo
+
+dependencies:
+  - P3.M1.E1  # Channel setup must be complete
+
+acceptance_criteria:
+  - AgentChannel handles join/leave
+  - Agent ID authentication works
+  - Presence tracking shows connected clients
+  - Full test coverage
+
+deliverables:
+  - lib/pag_server_web/channels/agent_channel.ex
+  - test/pag_server_web/channels/agent_channel_test.exs

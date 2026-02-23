@@ -1,0 +1,54 @@
+id: P55.M2.E3
+name: Message Rendering Pipeline
+status: done
+estimate_hours: 7.5
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-message-list-container-with-au.todo
+  title: Message list container with AutoScrollTranscript hook
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-message-bubble-user-role-rende.todo
+  title: Message bubble - user role rendering
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-message-bubble-assistant-role.todo
+  title: Message bubble - assistant role with markdown and thinking blocks
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-message-bubble-system-and-tool.todo
+  title: Message bubble - system and tool_result roles
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-composer-and-toolbar-component.todo
+  title: Composer and toolbar components
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

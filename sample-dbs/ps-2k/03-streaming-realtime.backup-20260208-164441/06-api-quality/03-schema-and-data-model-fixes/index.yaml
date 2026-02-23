@@ -1,0 +1,29 @@
+id: P3.M6.E3
+name: Schema and Data Model Fixes
+status: pending
+estimate_hours: 3.5
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-fix-schema-field-issues.todo
+  title: Fix schema field issues
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-fix-content-hash-chain-and-add.todo
+  title: Fix content hash chain and add Agent-User association
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,88 @@
+---
+id: P11.M4.E2.T003
+title: Implement config validation per platform
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P11.M4.E2.T001
+- P11.M4.E2.T002
+tags:
+- validation
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:02:50.783845+00:00'
+started_at: '2026-02-12T23:02:50.783845+00:00'
+completed_at: '2026-02-12T23:23:33.831424+00:00'
+duration_minutes: 20.717459466666664
+---
+
+# Implement config validation per platform
+
+Add comprehensive validation for platform-specific config at schema and API level.
+
+## Requirements
+
+- [ ] Create `PlatformConfig.Validator` module
+- [ ] Implement validation pipeline for config field constraints
+- [ ] Add database-level constraints where applicable
+- [ ] Add API-level validation with clear error messages
+- [ ] Write comprehensive validation tests
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] `PlatformConfig.Validator` module:
+  - [ ] Function `validate(platform, config)` → `{:ok, config} | {:error, errors}`
+  - [ ] Function `validate_field(platform, field, value)` for single field
+  - [ ] Function `get_schema(platform)` returns field definitions
+  - [ ] Function `required_fields(platform)` returns required field list
+  - [ ] Function `optional_fields(platform)` returns optional field list
+- [ ] Telegram-specific validation:
+  - [ ] `bot_token` required, format: `^[0-9]+:[A-Za-z0-9_-]+$`
+  - [ ] `webhook_url` required, must be valid HTTPS URL
+  - [ ] `poll_timeout` optional, must be 1-300 (seconds)
+  - [ ] `allowed_commands` optional, list of strings, no duplicates
+  - [ ] `message_prefix` optional, max 50 chars
+- [ ] Slack-specific validation:
+  - [ ] `bot_token` required, format: `^xoxb-[A-Za-z0-9_-]+$`
+  - [ ] `signing_secret` required, at least 32 chars
+  - [ ] `app_id` optional, format: `^[A-Za-z0-9]+$`
+  - [ ] `allowed_channels` optional, list of channel IDs or names
+  - [ ] `thread_replies` optional, boolean
+  - [ ] `emoji_reactions` optional, boolean
+- [ ] Discord-specific validation:
+  - [ ] `bot_token` required, format bearer token validation
+  - [ ] `public_key` required, 64-char hex string
+  - [ ] `allowed_guilds` optional, list of snowflake IDs
+  - [ ] `intents` optional, list of Discord intent names
+  - [ ] `message_format` optional, enum: ["text", "embed"]
+- [ ] Custom platform validation:
+  - [ ] Allows any config structure
+  - [ ] Validates `token_type` if provided
+  - [ ] Validates `webhook_url` if provided (HTTPS)
+  - [ ] No restrictions beyond basic JSON schema
+- [ ] Changeset integration:
+  - [ ] `validate_changeset/2` function called in schema changeset
+  - [ ] Returns error tuple with field-level error messages
+  - [ ] Format: `[field: ["error message"], ...]`
+  - [ ] Example: `[bot_token: ["must match pattern ..."], ...]`
+- [ ] API error responses:
+  - [ ] 400 response with validation errors
+  - [ ] Response format: `{errors: [{field: "...", message: "..."}, ...]}`
+  - [ ] Example: `{errors: [{field: "bot_token", message: "Invalid format"}]}`
+- [ ] Error message localization (optional for MVP):
+  - [ ] Clear, user-friendly error messages
+  - [ ] Include field name and constraint
+  - [ ] Example: "bot_token must match pattern: ^[0-9]+:[A-Za-z0-9_-]+$"
+- [ ] Tests:
+  - [ ] Valid config per platform passes validation
+  - [ ] Invalid format per field returns specific error
+  - [ ] Missing required fields returns error
+  - [ ] Extra fields allowed (forward compatibility)
+  - [ ] Validation errors formatted correctly for API
+  - [ ] Changeset validation integration tested
+- [ ] Code quality:
+  - [ ] Validation logic under 40 lines per function
+  - [ ] `mix lint` passes without warnings

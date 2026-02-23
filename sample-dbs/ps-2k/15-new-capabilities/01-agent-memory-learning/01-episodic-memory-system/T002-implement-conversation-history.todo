@@ -1,0 +1,36 @@
+---
+id: P15.M1.E1.T002
+title: Implement conversation history with semantic indexing
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T19:34:48.016750+00:00'
+started_at: '2026-02-13T19:34:48.016750+00:00'
+completed_at: '2026-02-13T20:13:14.861898+00:00'
+duration_minutes: 38.44741893333333
+---
+
+# Implement conversation history with semantic indexing
+
+## Description
+Build a conversation history store that automatically indexes conversations using semantic embeddings for intelligent retrieval. Messages are grouped into episodes and indexed by meaning, not just keywords.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Memory.EpisodicStore` module for managing conversation episodes
+- [ ] Implement automatic episode detection (time-based or topic-based boundaries)
+- [ ] Integrate with existing embeddings client for semantic indexing
+- [ ] Add function to store messages with automatic embedding generation
+- [ ] Implement similarity-based episode retrieval
+- [ ] Add telemetry for indexing operations
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/embeddings/client.ex`, `lib/pag_server/memory/store.ex`, `lib/pag_server/schema/memory.ex`
+- Part of epic: Episodic Memory System
+- Use existing `PagServer.Cache` for caching embeddings

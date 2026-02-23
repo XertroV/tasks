@@ -1,0 +1,46 @@
+id: P31.M2.E2
+name: Telegram Voice Handler
+status: pending
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-voice-message-download-and.todo
+  title: Add voice message download and transcription to Telegram poller
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-voice-transcription-config.todo
+  title: Add voice transcription configuration
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-write-telegram-voice-handler-t.todo
+  title: Write Telegram voice handler tests
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-whisperplugin-for-workspac.todo
+  title: Add WhisperPlugin for workspace-level voice config
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

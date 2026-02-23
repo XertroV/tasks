@@ -1,0 +1,76 @@
+id: P5.M4.E4
+name: Session LLM Parameters
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-llm-params-migration.todo
+  title: Add llm_params migration
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-update-session-schema.todo
+  title: Update Session schema
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P5.M4.E4.T001
+- id: T003
+  file: T003-create-modelresolver-module.todo
+  title: Create ModelResolver module
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-add-model-aliases-config.todo
+  title: Add model aliases config
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-wire-session-params-to-agentse.todo
+  title: Wire session params to AgentServer
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P5.M4.E4.T002
+  - P5.M4.E4.T003
+  - P5.M4.E4.T004
+- id: T006
+  file: T006-add-api-endpoint-for-updating.todo
+  title: Add API endpoint for updating session params
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P5.M4.E4.T002
+- id: T007
+  file: T007-add-tests-for-parameter-merging.todo
+  title: Add tests for parameter merging
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P5.M4.E4.T003
+  - P5.M4.E4.T005
+stats:
+  total: 7
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 7

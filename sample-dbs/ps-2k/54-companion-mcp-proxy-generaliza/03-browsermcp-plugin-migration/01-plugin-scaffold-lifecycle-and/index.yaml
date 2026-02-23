@@ -1,0 +1,51 @@
+id: P54.M3.E1
+name: Plugin scaffold, lifecycle, and config migration
+status: done
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugins-browser-mcp-plu.todo
+  title: Create plugins/browser_mcp/ plugin scaffold and manifest
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-browsermcpplugin-on-enable-on.todo
+  title: BrowserMcpPlugin on_enable/on_disable with local MCP server support
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P54.M3.E1.T001
+  - P54.M1.E1.T002
+- id: T003
+  file: T003-migrate-pag-browsermcp-config.todo
+  title: Migrate PAG_BROWSERMCP_* config to plugin config with backward compat
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M3.E1.T002
+- id: T004
+  file: T004-tests-plugin-enable-disable-bu.todo
+  title: 'Tests: plugin enable/disable, bunx check, local MCP server lifecycle'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P54.M3.E1.T002
+  - P54.M3.E1.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

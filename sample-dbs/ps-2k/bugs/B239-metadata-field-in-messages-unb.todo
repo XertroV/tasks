@@ -1,0 +1,18 @@
+---
+id: B239
+title: Metadata field in messages unbounded - memory DoS
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- security
+- validation
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.686495+00:00'
+started_at: '2026-02-23T05:59:32.686495+00:00'
+completed_at: '2026-02-23T05:59:56.513290+00:00'
+duration_minutes: 0.39711271666666664
+---
+agent_message_payload.ex:86-90 - Metadata map contents unrestricted; arbitrarily deep nesting allowed

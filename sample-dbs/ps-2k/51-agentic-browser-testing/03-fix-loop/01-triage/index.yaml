@@ -1,0 +1,22 @@
+id: P51.M3.E1
+name: Triage
+status: done
+estimate_hours: 0.5
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-triage-m2-bugs-assign-severity.todo
+  title: 'Triage M2 bugs: assign severity & group by area'
+  status: done
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+stats:
+  total: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

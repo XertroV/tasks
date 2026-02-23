@@ -1,0 +1,123 @@
+---
+id: P8.M1.E2.T003
+title: Route message to agent
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P8.M1.E2.T002
+tags:
+- gateway
+- router
+- agent
+claimed_by: cli-user
+claimed_at: '2026-02-08T07:45:57.974240+00:00'
+started_at: '2026-02-08T07:45:57.974240+00:00'
+completed_at: '2026-02-08T08:07:25.829154+00:00'
+duration_minutes: 21.464248366666666
+---
+
+# Route message to agent
+
+Implement the main routing function that sends normalized messages to appropriate agents and returns formatted responses.
+
+## Requirements
+
+- [ ] Implement `route/1` function in Router (~40 LoC)
+- [ ] Build session key from message
+- [ ] Get or create session
+- [ ] Send message content to agent
+- [ ] Wait for agent response
+- [ ] Format response for platform
+- [ ] Add error handling for agent failures
+- [ ] Handle timeouts appropriately
+
+## Acceptance Criteria
+
+- [ ] Function accepts Gateway.Message and returns platform-specific response
+- [ ] Messages are routed to correct agent via session
+- [ ] Agent responses are properly formatted
+- [ ] Errors are handled gracefully
+- [ ] Timeouts return appropriate error messages
+- [ ] Streaming responses are supported (future)
+- [ ] Tests verify end-to-end routing
+- [ ] Performance is acceptable (<100ms routing overhead)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 502-517 (Router implementation)
+
+**Key Points**:
+- This is the main entry point for all platform messages
+- Routing should be fast (<100ms overhead)
+- Agent communication is async
+- Response formatting is platform-specific
+- Errors should be user-friendly
+
+## Notes
+
+Main routing implementation:
+```elixir
+def route(%Gateway.Message{} = msg) do
+  with {:ok, session_key} <- build_session_key(msg),
+       {:ok, session} <- get_or_create_session(session_key,
+         platform: msg.platform,
+         context: msg.context
+       ),
+       {:ok, response} <- send_to_agent(session.agent_id, msg),
+       {:ok, formatted} <- format_response(msg.platform, response) do
+    {:ok, formatted}
+  else
+    {:error, reason} -> handle_routing_error(msg, reason)
+  end
+end
+
+defp send_to_agent(agent_id, msg) do
+  # Send message to agent GenServer
+  case Agent.send_message(agent_id, msg.content,
+    sender: msg.sender,
+    attachments: msg.attachments,
+    timeout: 30_000  # 30 second timeout
+  ) do
+    {:ok, response} -> {:ok, response}
+    {:error, :timeout} -> {:error, :agent_timeout}
+    {:error, reason} -> {:error, {:agent_error, reason}}
+  end
+end
+
+defp handle_routing_error(msg, reason) do
+  Logger.error("Routing error for platform=#{msg.platform}: #{inspect(reason)}")
+  
+  # Return platform-specific error message
+  error_text = format_error_message(reason)
+  format_response(msg.platform, %{content: error_text, error: true})
+end
+```
+
+Error handling considerations:
+- Agent crashes: Return graceful error
+- Timeouts: Return "Processing taking longer than expected"
+- Invalid message: Return validation error
+- Session creation failure: Log and return error
+- Unknown platform: Return unsupported platform error
+
+Response structure:
+```elixir
+%{
+  content: "Agent response text",
+  attachments: [...],
+  metadata: %{
+    agent_id: "agent_123",
+    session_id: "sess_456",
+    tokens_used: 150
+  }
+}
+```
+
+Future considerations:
+- Streaming responses (use Phoenix.PubSub)
+- Message queuing for rate limiting
+- Response caching
+- Multi-turn context management

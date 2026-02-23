@@ -1,0 +1,53 @@
+id: P16.M1.E1
+name: Groq Provider Implementation
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-add-groq-provider-module.todo
+  title: Add Groq provider module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-groq-tests.todo
+  title: Add Groq tests
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-groq-to-llm-registry-known.todo
+  title: Add Groq to LLM Registry known providers
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-create-integrationcase-test-he.todo
+  title: Create IntegrationCase test helper
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-register-groq-provider-in-appl.todo
+  title: Register Groq provider in Application
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

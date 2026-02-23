@@ -1,0 +1,40 @@
+---
+id: P10.M1.E3.T003
+title: Implement issue labeling and assignment actions
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- github
+- issues
+- labeling
+claimed_by: cli-user
+claimed_at: '2026-02-12T00:21:22.380455+00:00'
+started_at: '2026-02-12T00:21:22.380455+00:00'
+completed_at: '2026-02-12T00:35:43.752344+00:00'
+duration_minutes: 14.356197966666667
+---
+
+# Implement issue labeling and assignment actions
+
+Add agent-accessible actions for issue triage operations (labels, assignees) as tool definitions and client methods.
+
+## Requirements
+
+- [ ] Add `add_labels(repo, issue_number, labels: [])` API method
+- [ ] Add `remove_labels(repo, issue_number, labels: [])` API method
+- [ ] Add `set_assignees(repo, issue_number, assignees: [])` API method
+- [ ] Create tool definitions for agents (follow `Tools` behavior pattern)
+- [ ] Tool definitions: `github.add_issue_label`, `github.remove_issue_label`, `github.assign_issue`
+- [ ] Each tool validates inputs (repo format, labels exist, users have permission)
+- [ ] Tool execute/3 returns appropriate `:ok`/`:error` responses
+
+## Acceptance Criteria
+
+- [ ] All API methods implemented and callable
+- [ ] Tool definitions are discoverable via `Tools.list/0`
+- [ ] Tool executor properly handles agent calls
+- [ ] Error handling for invalid labels or missing permissions
+- [ ] No compiler warnings or dialyzer issues

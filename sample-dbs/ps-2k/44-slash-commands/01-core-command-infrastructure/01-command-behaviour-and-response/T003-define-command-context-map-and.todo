@@ -1,0 +1,23 @@
+---
+id: P44.M1.E1.T003
+title: Define Command context map and typespecs
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:20:28.001335+00:00'
+started_at: '2026-02-19T18:20:28.001335+00:00'
+completed_at: '2026-02-19T18:29:40.097764+00:00'
+duration_minutes: 9.201606983333333
+---
+## Summary
+Define the context map shape passed to command handlers. Document all keys.
+
+## Acceptance Criteria
+- [ ] `@type context()` defined in Command behaviour module
+- [ ] Keys: agent_id, session_id, workspace_id, platform, sender, connector_instance_id, opts
+- [ ] All keys are optional (nil-safe handlers)
+- [ ] Typespecs reference `Gateway.Message` platform atom type for :platform

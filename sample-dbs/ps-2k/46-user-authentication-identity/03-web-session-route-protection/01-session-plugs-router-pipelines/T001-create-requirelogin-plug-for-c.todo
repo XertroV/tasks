@@ -1,0 +1,43 @@
+---
+id: P46.M3.E1.T001
+title: Create RequireLogin plug for cookie-session auth
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P46.M1.E1.T004
+- P46.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:33:00.986320+00:00'
+started_at: '2026-02-19T22:33:00.986320+00:00'
+completed_at: '2026-02-19T22:45:54.012695+00:00'
+duration_minutes: 12.883772766666668
+---
+Create lib/pag_server_web/plugs/require_login.ex:
+- Reads Pow session via Pow.Plug.current_user(conn) or directly from conn.assigns.current_user set by Pow.Plug.Session
+- If user found: assigns conn.assigns.current_user and continues pipeline
+- If not found: check for remember_me cookie → if valid, recreate session and continue; if not, redirect to /login with flash 'Please log in to continue'
+- Stores requested URL in session (return_to) for post-login redirect
+- Accepts option: role: :admin — additionally checks user.is_admin, returns 403 if false
+This plug is for regular web routes only. API key auth (ApiKeyAuth, RequireAuth) remains completely separate.
+Acceptance: Unit tests: unauthenticated → redirect; authenticated → passes; admin option enforced.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 22:33 UTC
+**Sibling tasks**: P46.M3.E1.T002, P46.M3.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M3.E1.T001 → P46.M3.E1.T002 → P46.M3.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M3.E1.T001: .tasks/46-user-authentication-identity/03-web-session-route-protection/01-session-plugs-router-pipelines/T001-create-requirelogin-plug-for-c.todo
+- P46.M3.E1.T002: .tasks/46-user-authentication-identity/03-web-session-route-protection/01-session-plugs-router-pipelines/T002-update-router-ex-with-web-auth.todo
+- P46.M3.E1.T003: .tasks/46-user-authentication-identity/03-web-session-route-protection/01-session-plugs-router-pipelines/T003-bridge-current-user-into-exist.todo

@@ -1,0 +1,17 @@
+---
+id: P45.M3.E1.T003
+title: Implement delete, rotate, history, help action handlers
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P45.M3.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.190390+00:00'
+started_at: '2026-02-19T19:17:35.190390+00:00'
+completed_at: '2026-02-19T19:50:52.671747+00:00'
+duration_minutes: 33.29135576666667
+---
+delete: call Vault.delete/2, log to access_log. rotate: call Vault.rotate/2 with new value, apply rate limiter (1 token). history: call Vault.history/2, return version list with version_number, inserted_at, expires_at — never the value itself. help: return a formatted help string listing all actions with brief descriptions and required/optional args. Failure responses must include action name for tracing.

@@ -1,0 +1,24 @@
+---
+id: P55.M1.E2.T001
+title: Thread list and workspace loading queries on mount
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- data
+- queries
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:21:36.470050+00:00'
+started_at: '2026-02-22T06:21:36.470050+00:00'
+completed_at: '2026-02-22T06:34:05.130766+00:00'
+duration_minutes: 12.4776784
+---
+Implement workspace and thread list loading in mount/3. Load workspace by ID from DB. Load threads via Session.list_sessions_for_workspace/2 (up to 50, sorted by last_activity_at desc). Preload :agent association for thread items. Handle workspace not found (redirect with flash error).
+
+## Acceptance Criteria
+- Workspace loaded and assigned on mount
+- Thread list loaded (up to 50, sorted by activity)
+- Agent association preloaded for each thread
+- Missing workspace handled gracefully

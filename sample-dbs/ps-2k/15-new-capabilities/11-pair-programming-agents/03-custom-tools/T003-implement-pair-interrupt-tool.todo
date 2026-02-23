@@ -1,0 +1,33 @@
+---
+id: P15.M11.E3.T003
+title: Implement pair_interrupt tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.219346+00:00'
+started_at: '2026-02-17T18:46:51.219346+00:00'
+completed_at: '2026-02-17T19:21:53.360123+00:00'
+duration_minutes: 35.03567941666667
+---
+## Description
+Observer uses this to send an immediate message to the coder, interrupting their current work.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/tools/interrupt.ex`
+
+## Acceptance Criteria
+- [ ] Implements `@behaviour PagServer.Tools.Tool`
+- [ ] Sends message to coder with [OBSERVER] or [URGENT OBSERVER] prefix
+- [ ] Uses `AgentServer.queue_message_by_id(coder_id, content, :immediate)` for true interrupt semantics (Gotcha #3)
+- [ ] Loads coder_agent_id from Blackboard config (Gotcha #1)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+- Do NOT use Api.send_message — it may not support :immediate interrupt mode
+- Directly call AgentServer.queue_message_by_id for true interrupt
+- See plan: .plan/pair-programming-agents.md, Epic 2, Task 2.3 + Gotcha #3

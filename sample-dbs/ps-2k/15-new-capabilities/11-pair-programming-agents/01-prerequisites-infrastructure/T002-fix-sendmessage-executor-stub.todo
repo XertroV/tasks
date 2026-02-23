@@ -1,0 +1,38 @@
+---
+id: P15.M11.E1.T002
+title: Fix SendMessage executor stub for string agent_id lookup
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.923031+00:00'
+started_at: '2026-02-17T18:30:42.923031+00:00'
+completed_at: '2026-02-17T18:47:48.878684+00:00'
+duration_minutes: 17.09926065
+---
+## Description
+Wire up the stub in `SendMessage` executor that returns `{:error, {:agent_registry_not_implemented, target}}` for string agent_id targets.
+
+## Files to Modify
+- `lib/pag_server/agents/directive/executor/send_message_impl.ex` (line ~72) — implement `resolve_target/1` for binary agent_id
+
+## Acceptance Criteria
+- [ ] `SendMessage` directive works with string agent_id targets
+- [ ] Uses `Registry.lookup(PagServer.Agents.Registry, agent_id)` for resolution
+- [ ] Returns `{:error, {:agent_not_found, agent_id}}` when agent not running
+- [ ] Test: agent A sends message to agent B by ID string
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+```elixir
+defp resolve_target(agent_id) when is_binary(agent_id) do
+  case Registry.lookup(PagServer.Agents.Registry, agent_id) do
+    [{pid, _}] -> {:ok, pid}
+    [] -> {:error, {:agent_not_found, agent_id}}
+  end
+end
+```

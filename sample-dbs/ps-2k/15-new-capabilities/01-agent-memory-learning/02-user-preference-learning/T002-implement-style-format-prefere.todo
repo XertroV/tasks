@@ -1,0 +1,36 @@
+---
+id: P15.M1.E2.T002
+title: Implement style/format preference tracking
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T23:22:41.103824+00:00'
+started_at: '2026-02-13T23:22:41.103824+00:00'
+completed_at: '2026-02-13T23:37:35.882572+00:00'
+duration_minutes: 14.912978983333334
+---
+
+# Implement style/format preference tracking
+
+## Description
+Implement automatic detection and tracking of user communication preferences from conversation patterns. Detect preferences for verbosity, code blocks, markdown formatting, technical depth, and response structure.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Preferences.Tracker` module for preference detection
+- [ ] Implement pattern detection for: verbosity preference, code formatting, explanation depth
+- [ ] Add explicit preference setting API (user can manually set preferences)
+- [ ] Implement preference confidence updates based on interaction patterns
+- [ ] Add preference decay over time for inferred preferences
+- [ ] Store detected preferences using UserPreference schema
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/schema/user.ex`, `lib/pag_server/agents/agent.ex`, `lib/pag_server/schema/message.ex`
+- Part of epic: User Preference Learning
+- Integrate with message processing pipeline

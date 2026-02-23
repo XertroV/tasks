@@ -1,0 +1,40 @@
+---
+id: P21.M1.E1.T016
+title: Write unit tests for ContainerManager and VolumeManager
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on:
+- P21.M1.E1.T005
+- P21.M1.E1.T006
+tags:
+- testing
+- unit-tests
+claimed_by: cli-user
+claimed_at: '2026-02-18T12:21:44.569465+00:00'
+started_at: '2026-02-18T12:21:44.569465+00:00'
+completed_at: '2026-02-18T13:57:54.440351+00:00'
+duration_minutes: 96.16451426666666
+---
+
+# Write unit tests for ContainerManager and VolumeManager
+
+Comprehensive unit tests for the container infrastructure.
+
+## Requirements
+
+- Mock Docker client for isolated testing
+- Test all public functions
+- Cover edge cases and error handling
+- Test volume path computation
+
+## Acceptance Criteria
+
+- [ ] `test/pag_server/containers/container_manager_test.exs` exists
+- [ ] `test/pag_server/containers/volume_manager_test.exs` exists
+- [ ] ContainerManager tests cover: start, stop, execute, health_check
+- [ ] VolumeManager tests cover: workspace, private, shared mounts
+- [ ] Error cases tested: Docker unavailable, invalid paths
+- [ ] Uses Mox for Docker client mocking
+- [ ] Tests run in < 5 seconds total

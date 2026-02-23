@@ -1,0 +1,47 @@
+id: P15.M8.E3
+name: Bootstrap Engine Reliability
+status: pending
+estimate_hours: 7.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-replace-sys-get-state-with-ses.todo
+  title: Replace :sys.get_state with Session.get_compile_context/1 single call
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: critical
+  depends_on: []
+- id: T002
+  file: T002-formalize-state-machine-transi.todo
+  title: Formalize state machine transitions and add terminal state cleanup
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-wrap-transition-agent-in-trans.todo
+  title: Wrap transition_agent in transaction and add DynamicSupervisor max_children
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-expose-advance-through-facade.todo
+  title: Expose advance through facade, add complete_bootstrap test, fix answer parser
+    edge cases
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

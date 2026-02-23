@@ -1,0 +1,24 @@
+---
+id: P44.M3.E2.T002
+title: Format unified command Response for Slack
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:33:54.173404+00:00'
+started_at: '2026-02-19T19:33:54.173404+00:00'
+completed_at: '2026-02-19T19:34:07.138158+00:00'
+duration_minutes: 0.21607905
+---
+## Summary
+Render unified Response struct into Slack-appropriate format (mrkdwn + Block Kit).
+
+## Acceptance Criteria
+- [ ] Text responses: use rich_text (mrkdwn) when available, fall back to plain text
+- [ ] Options responses: rendered as Block Kit static_select or buttons
+- [ ] Ephemeral responses: sent via response_url with response_type: ephemeral
+- [ ] Helper function added to SlackCommandsController or a new Slack.CommandFormatter module
+- [ ] Tests: text-only response formatted, options response produces Block Kit blocks

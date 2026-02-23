@@ -1,0 +1,127 @@
+---
+id: P11.M1.E2.T003
+title: Write template instantiation tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P11.M1.E2.T002
+tags:
+- tests
+- instantiation
+claimed_by: cli-user
+claimed_at: '2026-02-12T10:05:29.523739+00:00'
+started_at: '2026-02-12T10:05:29.523739+00:00'
+completed_at: '2026-02-12T10:27:58.319953+00:00'
+duration_minutes: 22.479936733333332
+---
+
+# Write template instantiation tests
+
+Write comprehensive test suite for template instantiation, variable substitution, and config merging.
+
+## Requirements
+
+- [ ] Create `test/pag_server/templates/instantiator_test.exs`
+  - [ ] Test creating agent from template
+  - [ ] Test config inheritance from template
+  - [ ] Test override merging
+  - [ ] Test permission checks
+  - [ ] Test error cases (missing template, forbidden, etc.)
+  - [ ] Test with multiple templates
+  - [ ] Test concurrent instantiation
+- [ ] Create `test/pag_server/templates/variables_test.exs`
+  - [ ] Test placeholder extraction
+  - [ ] Test substitution with string variables
+  - [ ] Test substitution with numeric/boolean variables
+  - [ ] Test nested map substitution
+  - [ ] Test array substitution
+  - [ ] Test missing required variables (error)
+  - [ ] Test optional variables with defaults
+  - [ ] Test enum validation
+  - [ ] Test numeric range validation
+  - [ ] Test type preservation
+  - [ ] Test escaped placeholders (if applicable)
+- [ ] Create `test/pag_server_web/controllers/agent_template_controller_test.exs`
+  - [ ] Test instantiation endpoint (if exists)
+  - [ ] Test variable validation errors
+  - [ ] Test permission checks in controller
+- [ ] Test coverage goals:
+  - [ ] Line coverage >= 85% for template modules
+  - [ ] All error paths tested
+  - [ ] All valid variable types tested
+  - [ ] Integration between instantiator and variables
+- [ ] Use DataCase for database tests, ExUnit for unit tests
+- [ ] Follow existing test patterns (sleep_fn for async, unique names, etc.)
+
+## Acceptance Criteria
+
+- [ ] All tests pass (async: true where applicable)
+- [ ] No test contamination or flaky tests
+- [ ] Coverage >= 85% for template modules
+- [ ] Permission tests prevent unauthorized instantiation
+- [ ] Variable validation tests cover all types
+- [ ] Substitution tests verify all scenarios
+- [ ] Error handling tests verify error messages
+- [ ] Integration tests verify end-to-end instantiation flow
+
+## Context
+
+**Key Points**:
+- Tests must be fast (use mocks for Process.sleep calls)
+- Permission tests critical for security
+- Variable validation thorough (edge cases for each type)
+- Error messages should be helpful
+- Follow existing test patterns in codebase
+
+## Notes
+
+### Test Structure Pattern
+
+```elixir
+defmodule PagServer.Templates.InstantiatorTest do
+  use PagServer.DataCase
+
+  setup do
+    template = insert(:agent_template, ...)
+    user = insert(:user, ...)
+    {:ok, template: template, user: user}
+  end
+
+  describe "create_agent_from_template/3" do
+    test "creates agent with template config" do
+      # test implementation
+    end
+
+    test "merges user overrides with template defaults" do
+      # test implementation
+    end
+
+    test "rejects if user lacks permission" do
+      # test implementation
+    end
+  end
+end
+```
+
+### Variable Substitution Test Example
+
+```elixir
+test "substitutes variables in nested config" do
+  config = %{
+    "model" => "${model}",
+    "tools" => %{
+      "search" => true,
+      "max_results" => ${max_results}
+    }
+  }
+
+  variables = %{"model" => "claude-3-sonnet", "max_results" => 10}
+
+  result = Variables.substitute(config, variables)
+
+  assert result["model"] == "claude-3-sonnet"
+  assert result["tools"]["max_results"] == 10
+end
+```

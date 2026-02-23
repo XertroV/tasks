@@ -1,0 +1,52 @@
+---
+id: P49.M2.E1.T001
+title: Reduce direct host-plugin coupling by routing through plugin API facade
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:17:26.495728+00:00'
+started_at: '2026-02-20T09:17:26.495728+00:00'
+completed_at: '2026-02-20T09:28:44.789618+00:00'
+duration_minutes: 11.304897966666665
+---
+
+# Reduce direct host-plugin coupling by routing through plugin API facade
+
+
+
+## Requirements
+
+- Audit direct host-to-plugin module calls outside plugin lifecycle/API boundaries.
+- Route eligible call sites through plugin API/lifecycle facades to reduce hidden coupling.
+- Preserve behavior while adding tests that guard boundary usage.
+
+## Acceptance Criteria
+
+- Identified coupling hotspots are documented and remediated or explicitly justified.
+- Setup/web paths no longer bypass lifecycle for remediated flows.
+- Tests verify behavior remains unchanged while boundary discipline improves.
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P49.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-20 09:17 UTC
+**Sibling tasks**: P49.M2.E1.T002, P49.M2.E1.T003, P49.M2.E1.T004, P49.M2.E1.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P49.M2.E1.T001 → P49.M2.E1.T002 → P49.M2.E1.T003 → P49.M2.E1.T004 → P49.M2.E1.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P49.M2.E1.T001: .tasks/49-plugin-platform-remediation/02-plugin-developer-ux-improvemen/01-unify-plugin-authoring-contrac/T001-reduce-direct-host-plugin-coup.todo
+- P49.M2.E1.T002: .tasks/49-plugin-platform-remediation/02-plugin-developer-ux-improvemen/01-unify-plugin-authoring-contrac/T002-decide-and-document-static-ver.todo
+- P49.M2.E1.T003: .tasks/49-plugin-platform-remediation/02-plugin-developer-ux-improvemen/01-unify-plugin-authoring-contrac/T003-publish-canonical-plugin-manif.todo
+- P49.M2.E1.T004: .tasks/49-plugin-platform-remediation/02-plugin-developer-ux-improvemen/01-unify-plugin-authoring-contrac/T004-build-plugin-doctor-validation.todo
+- P49.M2.E1.T005: .tasks/49-plugin-platform-remediation/02-plugin-developer-ux-improvemen/01-unify-plugin-authoring-contrac/T005-improve-plugin-load-failure-di.todo

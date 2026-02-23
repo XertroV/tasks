@@ -1,0 +1,18 @@
+---
+id: P44.M2.E3.T002
+title: Write /stats tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:05:53.379525+00:00'
+started_at: '2026-02-19T19:05:53.379525+00:00'
+completed_at: '2026-02-19T19:06:03.301351+00:00'
+duration_minutes: 0.16536356666666666
+---
+## Acceptance Criteria
+- [ ] Tests cover: stats with valid context, stats with no session_id, stats with no agent_id
+- [ ] Tests run async: true

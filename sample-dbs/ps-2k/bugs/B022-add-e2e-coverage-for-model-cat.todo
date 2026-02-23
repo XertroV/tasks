@@ -1,0 +1,40 @@
+---
+id: B022
+title: add e2e coverage for model catalog fetch failure and retry recovery
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- e2e
+- validation-console
+- ux
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:29:14.793243+00:00'
+started_at: '2026-02-15T17:29:14.793243+00:00'
+completed_at: '2026-02-15T17:32:54.902647+00:00'
+duration_minutes: 3.6684899
+---
+Add browser-level test coverage for model catalog fetch failure UX: warning visibility, retry button behavior, and successful provider/model option refresh after retry.
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-15 17:29 UTC
+**Primary task**: B020 - backend status chip should use readiness endpoint alongside liveview connectivity
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

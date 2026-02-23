@@ -1,0 +1,37 @@
+---
+id: P19.M4.E1.T005
+title: Create integration docs template and placeholder policy
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- docs
+- integrations
+claimed_by: cli-user
+claimed_at: '2026-02-18T03:16:53.871906+00:00'
+started_at: '2026-02-18T03:16:53.871906+00:00'
+completed_at: '2026-02-18T03:19:11.585567+00:00'
+duration_minutes: 2.295227383333333
+---
+Create docs/integrations/_template.md plus guidance for when to write full docs vs placeholders, and link from docs/integrations/README.md.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M4.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 03:16 UTC
+**Sibling tasks**: P19.M4.E1.T006, P19.M4.E1.T007, P19.M4.E1.T008
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M4.E1.T005 → P19.M4.E1.T006 → P19.M4.E1.T007 → P19.M4.E1.T008
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M4.E1.T005: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T005-create-integration-docs-templa.todo
+- P19.M4.E1.T006: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T006-create-placeholder-docs-for-ci.todo
+- P19.M4.E1.T007: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T007-create-placeholder-docs-for-co.todo
+- P19.M4.E1.T008: .tasks/19-documentation-remediation/04-missing-documentation/01-integration-docs-creation/T008-create-placeholder-docs-for-wo.todo

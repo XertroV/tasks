@@ -1,0 +1,38 @@
+id: P55.M1.E2
+name: Data Loading and Helpers
+status: done
+estimate_hours: 3.5
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-thread-list-and-workspace-load.todo
+  title: Thread list and workspace loading queries on mount
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-helpers-ex-with-role-cl.todo
+  title: Create helpers.ex with role_class, chat_entries merge, timestamps
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-message-pagination-with-load-e.todo
+  title: Message pagination with load-earlier by sequence_num
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

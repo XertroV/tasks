@@ -1,0 +1,16 @@
+---
+id: B210
+title: Run live remote pag-connect test against pag-server via x-pi-1.local
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T16:26:18.206520+00:00'
+started_at: '2026-02-21T16:26:18.206520+00:00'
+completed_at: '2026-02-21T16:52:14.442060+00:00'
+duration_minutes: 25.937258816666667
+---
+Execute live network validation with pag-server running locally and pag-connect on remote host x-pi-1.local over SSH. Use scripts/pag-connect-test-remote.sh with hostname argument, capture results, and document any follow-up fixes.

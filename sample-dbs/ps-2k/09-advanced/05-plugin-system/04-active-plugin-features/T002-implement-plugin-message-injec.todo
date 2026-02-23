@@ -1,0 +1,58 @@
+---
+id: P9.M5.E4.T002
+title: Implement plugin message injection into active sessions
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- messages
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:35:51.290386+00:00'
+started_at: '2026-02-11T02:35:51.290386+00:00'
+completed_at: '2026-02-11T02:42:14.389743+00:00'
+duration_minutes: 6.3849891166666675
+---
+
+# Implement plugin message injection into active sessions
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/message_injector.ex` module
+- [ ] Allow plugins to send messages into active agent sessions:
+  - [ ] `send_message/4` - (plugin_name, agent_id, session_id, message)
+  - [ ] Messages tagged with source metadata: `%{injected_by: plugin_name, injected_at: timestamp}`
+- [ ] Respect agent session state:
+  - [ ] Check if agent is in a state that accepts messages (idle, awaiting input)
+  - [ ] If agent is busy (LLM processing), queue the message for delivery after current turn
+  - [ ] Return `{:error, :agent_busy}` if queuing is disabled for the plugin
+- [ ] Implement message queue per agent:
+  - [ ] FIFO queue for pending plugin messages
+  - [ ] Configurable max queue size per plugin (default 10)
+  - [ ] Queue drains when agent becomes idle
+- [ ] Rate limiting per plugin:
+  - [ ] Configurable max messages per minute per plugin (default 30)
+  - [ ] Return `{:error, :rate_limited}` when exceeded
+- [ ] Validate message format before injection (role, content fields required)
+
+## Acceptance Criteria
+
+- [ ] Plugins can inject messages into active sessions
+- [ ] Injected messages are tagged with source plugin metadata
+- [ ] Messages are queued when agent is busy and delivered when idle
+- [ ] Rate limiting prevents message spam from plugins
+- [ ] Invalid message format is rejected with descriptive error
+- [ ] Unit tests cover: message injection, queuing, rate limiting, busy agent handling, validation
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/message_injector.ex`
+- **Integrates with**: `PagServer.Agents.AgentServer` for message delivery and state checking
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004)
+- **Used by**: `PagServer.Plugins.API` (E4.T006)
+- **Queue storage**: Per-agent queue in agent GenServer state or separate GenServer

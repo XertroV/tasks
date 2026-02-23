@@ -1,0 +1,55 @@
+---
+id: P15.M3.E2.T001
+title: Design context prediction model
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T14:30:24.326793+00:00'
+started_at: '2026-02-13T14:30:24.326793+00:00'
+completed_at: '2026-02-13T14:44:05.473714+00:00'
+duration_minutes: 13.685781833333333
+---
+
+# Design context prediction model
+
+## Description
+Design a prediction model that anticipates what context will be needed based on conversation patterns. Analyze historical data to predict likely follow-up queries and preload relevant context.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Context.Predictor` module
+- [ ] Define prediction input: current context, recent messages, agent config
+- [ ] Design prediction output: likely topics, needed context keys
+- [ ] Implement simple pattern-based prediction (rule-based)
+- [ ] Add hooks for ML-based prediction (future enhancement)
+- [ ] Track prediction accuracy metrics
+- [ ] Add configurable prediction confidence threshold
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/context/messages.ex`, `lib/pag_server/context/pruning.ex`, `lib/pag_server/schema/message.ex`
+- Part of epic: Predictive Context Prefetching
+- Start simple, design for extensibility
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 14:30 UTC
+**Sibling tasks**: P15.M3.E2.T002, P15.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M3.E2.T001 → P15.M3.E2.T002 → P15.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M3.E2.T001: .tasks/15-new-capabilities/03-response-caching/02-predictive-context-prefetching/T001-design-context-prediction-mode.todo
+- P15.M3.E2.T002: .tasks/15-new-capabilities/03-response-caching/02-predictive-context-prefetching/T002-implement-prefetch-queue.todo
+- P15.M3.E2.T003: .tasks/15-new-capabilities/03-response-caching/02-predictive-context-prefetching/T003-add-multi-level-cache-lru-pers.todo

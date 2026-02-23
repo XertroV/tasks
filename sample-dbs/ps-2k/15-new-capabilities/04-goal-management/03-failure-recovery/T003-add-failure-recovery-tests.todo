@@ -1,0 +1,38 @@
+---
+id: P15.M4.E3.T003
+title: Add failure recovery tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M4.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T15:40:16.599555+00:00'
+started_at: '2026-02-13T15:40:16.599555+00:00'
+completed_at: '2026-02-13T17:21:16.249724+00:00'
+duration_minutes: 100.99416921666666
+---
+
+# Add failure recovery tests
+
+## Description
+Create comprehensive tests for failure recovery scenarios. Test retry logic, alternative paths, escalation, and edge cases like cascading failures.
+
+## Acceptance Criteria
+- [ ] Test retry with backoff timing
+- [ ] Test alternative path selection
+- [ ] Test escalation triggers and notifications
+- [ ] Test recovery exhaustion handling
+- [ ] Test cascading failure scenarios
+- [ ] Test recovery from checkpoint
+- [ ] Test concurrent recovery scenarios
+- [ ] Add property-based tests for recovery invariants
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/goals/recovery_test.exs`, `lib/pag_server/goals/recovery.ex`
+- Part of epic: Failure Recovery
+- Follow existing test patterns with sleep_fn mocking

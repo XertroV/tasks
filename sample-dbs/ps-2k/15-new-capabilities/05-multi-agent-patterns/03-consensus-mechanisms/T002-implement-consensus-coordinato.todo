@@ -1,0 +1,37 @@
+---
+id: P15.M5.E3.T002
+title: Implement consensus coordinator
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M5.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T17:26:35.406079+00:00'
+started_at: '2026-02-13T17:26:35.406079+00:00'
+completed_at: '2026-02-13T18:25:48.467630+00:00'
+duration_minutes: 59.217692316666664
+---
+
+# Implement consensus coordinator
+
+## Description
+Implement the consensus coordinator that manages voting sessions. Handle proposal submission, vote collection, result determination, and notification.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Consensus.Coordinator` GenServer
+- [ ] Implement `propose(proposal, participants, consensus_type)` function
+- [ ] Add vote collection with timeout
+- [ ] Implement result determination based on consensus type
+- [ ] Add tie-breaking arbitration logic
+- [ ] Emit consensus events for audit trail
+- [ ] Support early termination when consensus reached
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/coordinator.ex`, `lib/pag_server/cluster/pub_sub.ex`, `lib/pag_server/events/event.ex`
+- Part of epic: Consensus Mechanisms
+- Use PubSub for vote collection

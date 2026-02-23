@@ -1,0 +1,31 @@
+---
+id: P34.M3.E1.T004
+title: Integration with Plugin Hub
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- frontend
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:46:04.402071+00:00'
+started_at: '2026-02-19T00:46:04.402071+00:00'
+completed_at: '2026-02-19T00:46:37.556505+00:00'
+duration_minutes: 0.5525737500000001
+---
+
+# Integration with Plugin Hub
+
+Add Skills tab to existing Plugin Hub:
+
+- Tab navigation between Plugins and Skills
+- Consistent styling with existing UI
+- Shared search/pagination patterns
+
+## Acceptance Criteria
+
+- [ ] Skills tab appears in Plugin Hub
+- [ ] Navigation works between tabs
+- [ ] Consistent UI patterns

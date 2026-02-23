@@ -1,0 +1,40 @@
+---
+id: P15.M11.E1.T003
+title: Build generic git_worktree tool
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.211690+00:00'
+started_at: '2026-02-17T18:46:51.211690+00:00'
+completed_at: '2026-02-17T19:21:46.388080+00:00'
+duration_minutes: 34.91960625
+---
+## Description
+Create a reusable `git_worktree` tool following the existing git tool pattern (`git_status.ex`, `git_commit.ex`, etc.). Supports add, list, and remove operations.
+
+## Files to Create
+- `lib/pag_server/tools/builtin/git_worktree.ex` — new tool module
+
+## Files to Modify
+- `lib/pag_server/tools/builtin.ex` — register the new tool alongside other git tools
+
+## Acceptance Criteria
+- [ ] Can create worktrees (`add` action with path + branch)
+- [ ] Can list worktrees (`list` action, parsed porcelain output)
+- [ ] Can remove worktrees (`remove` action with path validation)
+- [ ] Path security validation (no directory traversal)
+- [ ] Branch name validation (reuse existing `@valid_ref_regex`)
+- [ ] Permissions: `:git_read` for list, `:git_write` for add/remove
+- [ ] Uses `PortExecutor.execute/3` for shell commands
+- [ ] Tests for each action + error cases
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Follow patterns in `lib/pag_server/tools/builtin/git_status.ex`, `git_commit.ex`
+- Use `@behaviour PagServer.Tools.Tool` with `name/0`, `schema/0`, `execute/2` callbacks
+- Security: `@valid_ref_regex`, `@dangerous_ref_patterns`, workspace path containment

@@ -1,0 +1,16 @@
+---
+id: P31.M1.E2.T004
+title: Write SSH plugin and API tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:36.939141+00:00'
+started_at: '2026-02-18T19:46:36.939141+00:00'
+completed_at: '2026-02-18T19:46:43.117227+00:00'
+duration_minutes: 0.10296791666666666
+---
+Tests for plugin interface, MCP tool dispatch (mocked SSH), and REST endpoints.

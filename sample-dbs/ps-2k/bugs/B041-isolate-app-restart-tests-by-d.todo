@@ -1,0 +1,34 @@
+---
+id: B041
+title: isolate app-restart tests by disabling async in registry/tool integration suites
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tests
+- isolation
+- application
+claimed_by: cli-user
+claimed_at: '2026-02-15T18:25:10.982098+00:00'
+started_at: '2026-02-15T18:25:10.982098+00:00'
+completed_at: '2026-02-15T18:25:59.785295+00:00'
+duration_minutes: 0.81338645
+---
+
+# isolate app-restart tests by disabling async in registry/tool integration suites
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe cascaded failures where repo/registry/supervisor processes disappear mid-suite.
+3. Note several async test modules call `Application.stop(:pag_server)` and restart it.
+
+## Expected Behavior
+
+Tests that stop/restart the OTP application should run synchronously so they do not race with unrelated async modules.
+
+## Actual Behavior
+
+Async modules that restart `:pag_server` can interrupt concurrently running tests, causing broad follow-on failures unrelated to the original test logic.

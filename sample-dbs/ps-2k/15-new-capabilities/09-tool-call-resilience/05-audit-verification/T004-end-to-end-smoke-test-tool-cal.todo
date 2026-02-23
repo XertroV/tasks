@@ -1,0 +1,36 @@
+---
+id: P15.M9.E5.T004
+title: End-to-end smoke test of tool call failure and recovery paths
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P15.M9.E5.T003
+tags:
+- testing
+- e2e
+- smoke-test
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:17:23.711101+00:00'
+started_at: '2026-02-17T14:17:23.711101+00:00'
+completed_at: '2026-02-17T14:34:58.012757+00:00'
+duration_minutes: 17.57169405
+---
+Final verification: run through the complete tool call failure and recovery
+lifecycle in a test or manual scenario:
+
+1. Agent receives assistant message with tool_calls
+2. Tool execution crashes mid-flight
+3. Verify: synthetic error results are persisted with correct call_ids
+4. Verify: next LLM request succeeds (context is structurally valid)
+5. Verify: sanitizer reports no issues on the now-repaired context
+
+Also verify the existing poisoned Telegram session (d277f515-1c01-4208-bb9a-d9318083b1e6)
+can be repaired using SessionRepair if still available.
+
+## Acceptance Criteria
+- [ ] Full crash-recovery lifecycle works end-to-end
+- [ ] Agent can continue operating after tool execution crash
+- [ ] Context sent to LLM is structurally valid after recovery
+- [ ] All tests pass

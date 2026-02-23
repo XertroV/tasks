@@ -1,0 +1,24 @@
+---
+id: P50.M2.E1.T002
+title: Implement get_team and list_teams actions
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:21:32.740845+00:00'
+started_at: '2026-02-23T02:21:32.740845+00:00'
+completed_at: '2026-02-23T02:21:35.284835+00:00'
+duration_minutes: 0.04239961666666667
+---
+## Description
+Runtime.get_team/2 (team_id, workspace_id) returns full team map or {:error, :not_found} if team doesn't exist or belongs to different workspace. Runtime.list_teams/2 (workspace_id, opts) returns all non-closed teams for workspace; support optional status filter and limit/offset pagination. Wire both into Dispatcher replacing stubs.
+
+## Acceptance Criteria
+- get_team with wrong workspace_id returns :not_found
+- list_teams returns only teams for given workspace_id
+- response envelopes include action field
+- pagination options accepted

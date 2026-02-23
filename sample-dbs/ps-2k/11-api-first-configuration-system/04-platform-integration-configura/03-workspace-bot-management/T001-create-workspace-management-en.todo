@@ -1,0 +1,152 @@
+---
+id: P11.M4.E3.T001
+title: Create workspace management endpoints
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P11.M4.E1.T001
+- P11.M4.E2.T001
+tags:
+- api
+- workspace
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-12T22:44:53.783548+00:00'
+started_at: '2026-02-12T22:44:53.783548+00:00'
+completed_at: '2026-02-12T22:59:43.304697+00:00'
+duration_minutes: 14.825352233333332
+---
+
+# Create workspace management endpoints
+
+Create workspace schema and endpoints for managing multi-tenant workspace setup.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_workspaces`
+- [ ] Create `Workspace` Ecto schema
+- [ ] Create `WorkspaceController` with CRUD endpoints
+- [ ] Implement workspace membership and access control
+- [ ] Add workspace configuration options
+- [ ] Write tests for controller and schema
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] Migration creates `workspaces` table:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `owner_id` (binary_id, not null, FK to users) - Workspace owner
+  - [ ] `name` (string, not null) - Workspace name (e.g., "Acme Corp Agents")
+  - [ ] `slug` (string, not null) - URL-safe identifier (e.g., "acme-corp")
+  - [ ] `description` (text, nullable) - Workspace description
+  - [ ] `max_agents` (integer, default: 10) - Max agents in workspace
+  - [ ] `max_members` (integer, default: 5) - Max team members
+  - [ ] `plan_tier` (string, default: "free") - "free", "pro", "enterprise"
+  - [ ] `metadata` (map, default: %{}) - Custom metadata
+  - [ ] `inserted_at`, `updated_at` (utc_datetime_usec)
+- [ ] Creates `workspace_members` table:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `workspace_id` (binary_id, not null, FK to workspaces)
+  - [ ] `user_id` (binary_id, not null, FK to users)
+  - [ ] `role` (string, not null) - "owner", "admin", "member", "viewer"
+  - [ ] `joined_at` (utc_datetime_usec, not null)
+  - [ ] `metadata` (map, default: %{})
+- [ ] Indexes:
+  - [ ] Index on `owner_id` for user's workspaces
+  - [ ] Unique index on `slug` for workspace lookup
+  - [ ] Composite index on `[workspace_id, user_id]` for membership
+  - [ ] Unique constraint on `[workspace_id, user_id]` (one membership per user)
+  - [ ] Index on `plan_tier` for quota enforcement
+- [ ] `Workspace` schema:
+  - [ ] Uses `@primary_key {:id, :binary_id, autogenerate: true}`
+  - [ ] Uses `@foreign_key_type :binary_id`
+  - [ ] Has `@type t :: %__MODULE__{...}` typespec
+  - [ ] Belongs to User (owner)
+  - [ ] Has many members through workspace_members
+  - [ ] Uses `timestamps(type: :utc_datetime_usec)`
+- [ ] `WorkspaceMember` schema:
+  - [ ] Composite primary key or unique constraint on [workspace_id, user_id]
+  - [ ] Belongs to Workspace
+  - [ ] Belongs to User
+- [ ] `POST /api/workspaces` - Create workspace:
+  - [ ] Accepts: `name`, `slug`, `description` (optional), `plan_tier` (optional)
+  - [ ] Validates slug is unique and lowercase alphanumeric+hyphens
+  - [ ] Sets owner to authenticated user
+  - [ ] Sets default quotas based on plan_tier
+  - [ ] Returns created workspace with member role
+  - [ ] Returns 400 for validation errors
+  - [ ] Returns 401 if not authenticated
+- [ ] `GET /api/workspaces` - List user's workspaces:
+  - [ ] Lists workspaces where user is member
+  - [ ] Includes member role for each workspace
+  - [ ] Returns paginated results
+  - [ ] Supports filtering by `plan_tier`
+  - [ ] Supports filtering by `role`
+  - [ ] Returns 401 if not authenticated
+- [ ] `GET /api/workspaces/:id` - Get workspace:
+  - [ ] Returns workspace by id
+  - [ ] Validates user is workspace member
+  - [ ] Includes members list with roles
+  - [ ] Includes resource usage (agents, credentials, etc.)
+  - [ ] Returns 404 if not found
+  - [ ] Returns 403 if not a member
+- [ ] `PATCH /api/workspaces/:id` - Update workspace:
+  - [ ] Only owner can update
+  - [ ] Allows updating: `name`, `description`, `metadata`
+  - [ ] Does not allow changing `slug` (permanent identifier)
+  - [ ] Returns updated workspace
+  - [ ] Returns 404 if not found
+  - [ ] Returns 403 if not owner
+  - [ ] Returns 400 for validation errors
+- [ ] `DELETE /api/workspaces/:id` - Delete workspace:
+  - [ ] Only owner can delete
+  - [ ] Cascades delete to agents, configs, credentials in workspace
+  - [ ] Or prevents delete if has active agents (return 409)
+  - [ ] Returns 204 on success
+  - [ ] Returns 404 if not found
+  - [ ] Returns 403 if not owner
+- [ ] `GET /api/workspaces/:id/members` - List members:
+  - [ ] Lists all workspace members with roles
+  - [ ] Only accessible to workspace members
+  - [ ] Returns member details (id, email, name, role, joined_at)
+  - [ ] Returns 404 if workspace not found
+  - [ ] Returns 403 if not a member
+- [ ] Changesets:
+  - [ ] `create_changeset/2` - Validates all required fields
+  - [ ] `update_changeset/2` - Partial updates
+  - [ ] `member_changeset/1` - For member role updates
+- [ ] Validations:
+  - [ ] `name` required, 3-100 chars
+  - [ ] `slug` required, unique, pattern: `^[a-z0-9][a-z0-9-]*[a-z0-9]$`
+  - [ ] `plan_tier` must be one of: free, pro, enterprise
+  - [ ] `max_agents`, `max_members` must be positive integers
+- [ ] Tests:
+  - [ ] CRUD operations tested
+  - [ ] User isolation tested (can't access other workspaces)
+  - [ ] Owner/member role checks tested
+  - [ ] Slug uniqueness tested
+  - [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 22:44 UTC
+**Primary task**: P11.M4.E2.T002 - Add Telegram/Slack/Discord config endpoints
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M4.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

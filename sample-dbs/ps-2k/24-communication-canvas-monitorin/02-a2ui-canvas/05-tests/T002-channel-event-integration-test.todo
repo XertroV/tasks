@@ -1,0 +1,27 @@
+---
+id: P24.M2.E5.T002
+title: Channel event integration tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:04:44.519304+00:00'
+started_at: '2026-02-18T17:04:44.519304+00:00'
+completed_at: '2026-02-18T17:17:46.227864+00:00'
+duration_minutes: 13.028475833333333
+---
+
+# Channel event integration tests
+
+
+
+## Requirements
+
+- TODO: Add requirements
+
+## Acceptance Criteria
+
+- TODO: Add acceptance criteria

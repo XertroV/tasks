@@ -1,0 +1,45 @@
+---
+id: P25.M2.E1.T001
+title: Improve bash_tool/execute_shell MCP interface with richer args and descriptions
+status: done
+estimate_hours: 8.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- mcp
+- tools
+- bash
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:28.275650+00:00'
+started_at: '2026-02-18T18:34:28.275650+00:00'
+completed_at: '2026-02-18T18:44:37.678968+00:00'
+duration_minutes: 10.156721800000001
+---
+
+# Improve bash_tool/execute_shell MCP interface
+
+Using the design document from P25.M1.E1.T002, implement the improved shell/execute
+tool interface for pag-server's MCP server.
+
+## Requirements
+
+- Rename/restructure arguments to match the best-of-breed design from the audit
+- Add `working_directory` (or `workdir`) parameter with clear description
+- Add `timeout_ms` parameter with sensible default documented in description
+- Add `description` parameter (5-10 word summary of what the command does) as seen
+  in best CLIs - helps with audit logging and LLM reasoning
+- Ensure tool description clearly explains: output truncation behaviour, streaming
+  vs buffered, exit code in response, stderr handling
+- Update tool description to be precise and actionable for LLM consumers
+- Preserve backward compatibility or document migration path
+
+## Acceptance Criteria
+
+- [ ] Tool arguments match the recommended design from audit
+- [ ] `description` field (for logging/tracing) is a supported parameter
+- [ ] `working_directory` parameter supported and documented
+- [ ] `timeout_ms` parameter supported with default value in description
+- [ ] Tool description explains truncation, stderr, exit code behaviour
+- [ ] Existing tool call tests still pass
+- [ ] Tool registered correctly in MCP tool registry

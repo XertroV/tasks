@@ -1,0 +1,18 @@
+---
+id: B046
+title: in light mode, 'enter a validation prompt' text input cannot be easily seen
+  since it blends in with the bg
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T01:37:56.582203+00:00'
+started_at: '2026-02-16T01:37:56.582203+00:00'
+completed_at: '2026-02-16T01:59:26.277155+00:00'
+duration_minutes: 21.494915666666667
+---
+
+in light mode, 'enter a validation prompt' text input cannot be easily seen since it blends in with the bg

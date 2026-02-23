@@ -1,0 +1,29 @@
+id: P17.M2
+name: Session Orchestration Tests
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+epics:
+- id: E1
+  name: Session Fork Tests
+  path: 01-session-fork-tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E2
+  name: Multi-Agent Orchestration Tests
+  path: 02-multi-agent-orchestration-test
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

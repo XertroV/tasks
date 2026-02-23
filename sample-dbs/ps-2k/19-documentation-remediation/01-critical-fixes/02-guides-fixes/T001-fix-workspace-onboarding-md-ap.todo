@@ -1,0 +1,36 @@
+---
+id: P19.M1.E2.T001
+title: Fix workspace-onboarding.md API format
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: critical
+depends_on: []
+tags:
+- docs
+- guides
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:33:44.684018+00:00'
+started_at: '2026-02-18T01:33:44.684018+00:00'
+completed_at: '2026-02-18T01:35:34.082648+00:00'
+duration_minutes: 1.8233103166666667
+---
+Change config API from PUT /api/v1/config with body params to PUT /api/v1/config/:key with key in URL path. Lines 88-99.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P19.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-18 01:33 UTC
+**Sibling tasks**: P19.M1.E2.T002, P19.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P19.M1.E2.T001 → P19.M1.E2.T002 → P19.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P19.M1.E2.T001: .tasks/19-documentation-remediation/01-critical-fixes/02-guides-fixes/T001-fix-workspace-onboarding-md-ap.todo
+- P19.M1.E2.T002: .tasks/19-documentation-remediation/01-critical-fixes/02-guides-fixes/T002-fix-security-hardening-md-rate.todo
+- P19.M1.E2.T003: .tasks/19-documentation-remediation/01-critical-fixes/02-guides-fixes/T003-fix-production-setup-md-promet.todo

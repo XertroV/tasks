@@ -1,0 +1,16 @@
+id: P7.M1.E1
+name: Docker Client Integration
+status: pending
+estimate_hours: 5
+complexity: high
+depends_on: []
+tasks:
+- T001-docker-dep.todo
+- T002-sandbox-module.todo
+- T003-execute-docker.todo
+stats:
+  total_tasks: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

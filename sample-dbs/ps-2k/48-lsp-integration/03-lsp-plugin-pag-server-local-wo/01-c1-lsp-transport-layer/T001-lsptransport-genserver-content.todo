@@ -1,0 +1,16 @@
+---
+id: P48.M3.E1.T001
+title: 'LspTransport GenServer: Content-Length framed JSON-RPC over stdio'
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T08:37:21.644701+00:00'
+started_at: '2026-02-20T08:37:21.644701+00:00'
+completed_at: '2026-02-20T08:50:21.335292+00:00'
+duration_minutes: 12.994843033333332
+---
+Based on StdioTransport (tools/mcp/stdio_transport.ex) pattern. Key difference: LSP uses 'Content-Length: N\r\n\r\n{json}' framing (not newline-delimited). Must buffer partial reads across Port data events. Same Erlang Port infrastructure. Request correlation by ID with timeout refs. Server-initiated notification handler (publishDiagnostics, window/logMessage). Server-initiated request handler (workspace/configuration -> [init_opts], window/workDoneProgress/create -> null, client/registerCapability -> null). 100 max in-flight requests.

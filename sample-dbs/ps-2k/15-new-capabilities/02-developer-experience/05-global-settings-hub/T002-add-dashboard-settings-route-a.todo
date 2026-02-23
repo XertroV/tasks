@@ -1,0 +1,44 @@
+---
+id: P15.M2.E5.T002
+title: Add /dashboard/settings route and top-nav tab
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P15.M2.E5.T001
+tags:
+- routing
+- liveview
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:34:10.978694+00:00'
+started_at: '2026-02-16T10:34:10.978694+00:00'
+completed_at: '2026-02-16T10:34:44.602719+00:00'
+duration_minutes: 0.5603999333333333
+---
+
+# Add /dashboard/settings route and top-nav tab
+
+
+
+## Requirements
+
+- Add a dedicated `/dashboard/settings` LiveView route for consolidated configuration management.
+- Add a top-level dashboard navigation entry for the new settings page.
+- Reuse existing dashboard authentication and layout patterns.
+- Provide an initial page shell that clearly separates global/session/agent sections.
+
+## Acceptance Criteria
+
+- Visiting `/dashboard/settings` renders a settings page shell in the authenticated dashboard.
+- The dashboard navigation includes a working link/tab to the settings page.
+- Existing dashboard pages and navigation continue to function unchanged.
+- The new page structure exposes placeholders/containers for global, session, and agent settings sections.
+
+## Implementation Notes
+
+- Added new authenticated LiveView route: `/dashboard/settings` in `lib/pag_server_web/router.ex`.
+- Added `PagServerWeb.Live.SettingsDashboard` as the initial settings page shell.
+- Added top-nav `Settings` link in `lib/pag_server_web/layouts/app.html.heex`.
+- Added LiveView tests for route rendering and nav link presence in `test/pag_server_web/live/settings_dashboard_test.exs`.

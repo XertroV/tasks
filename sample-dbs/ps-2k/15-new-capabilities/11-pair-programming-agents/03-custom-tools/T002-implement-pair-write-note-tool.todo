@@ -1,0 +1,32 @@
+---
+id: P15.M11.E3.T002
+title: Implement pair_write_note tool
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.218270+00:00'
+started_at: '2026-02-17T18:46:51.218270+00:00'
+completed_at: '2026-02-17T19:21:51.939996+00:00'
+duration_minutes: 35.01202861666666
+---
+## Description
+Observer uses this to write structured observation notes to the Blackboard during the coding phase.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/tools/write_note.ex`
+
+## Acceptance Criteria
+- [ ] Implements `@behaviour PagServer.Tools.Tool`
+- [ ] Writes notes to Blackboard at `pair:<session_id>:note:<unique_id>`
+- [ ] Supports optional fields: category (bug/style/architecture/optimization/question/suggestion/security/other), severity (low/medium/high/critical), file path, line number
+- [ ] Description field is required
+- [ ] Uses `entry_type: "pair_note"` for Blackboard writes
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+See plan: .plan/pair-programming-agents.md, Epic 2, Task 2.2 for full code

@@ -1,0 +1,60 @@
+---
+id: P52.M2.E1.T002
+title: Implement tool-call dispatch to PAG API endpoints
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- implementation
+- mcp
+- api
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:31:37.461139+00:00'
+started_at: '2026-02-21T04:31:37.461139+00:00'
+completed_at: '2026-02-21T04:36:08.070337+00:00'
+duration_minutes: 4.5101531
+---
+
+# Implement tool-call dispatch to PAG API endpoints
+
+## Implementation Notes
+
+- Added PAG API dispatch module `lib/pag_server/mcp/api_bridge.ex`.
+  - Introduces MCP bridge tools:
+    - `session_create` -> `POST /api/v1/sessions` (or workspace-scoped variant)
+    - `session_send_message` -> `GET /api/v1/sessions/:id` then `POST /api/v1/agents/:agent_id/messages`
+    - `session_state` -> `GET /api/v1/sessions/:id`
+  - Validates required operation-specific arguments (`agent_id`, `session_id`, `content`, `mode`).
+  - Adds stable action traceability by returning payloads with `action` and `result`.
+- Updated MCP protocol handler `lib/pag_server/tools/mcp/protocol_handler.ex`.
+  - `tools/call` now routes supported bridge tools through `PagServer.MCP.ApiBridge`.
+  - Preserves structured MCP errors for invalid params, API failures, transport failures, and bridge config errors.
+  - `tools/list` now includes bridge tool schemas alongside registry tools.
+
+## Verification Notes
+
+- Added dispatch integration tests with API stubs in `test/pag_server/mcp/api_bridge_test.exs`.
+  - Verifies request translation and response mapping for session create/send/state.
+  - Verifies invalid-argument and non-2xx API error handling.
+- Extended protocol tests in `test/pag_server/tools/mcp/protocol_handler_test.exs`.
+  - Verifies bridge tool schemas are listed.
+  - Verifies bridge tool call path and invalid params error mapping.
+- Ran focused suite and appended to `recent-mix-tests.log`:
+  - `mix test test/pag_server/mcp/api_bridge_test.exs test/pag_server/tools/mcp/protocol_handler_test.exs test/pag_server/mcp/stdio_server_test.exs`
+  - Result: 47 tests, 0 failures.
+
+
+
+## Requirements
+
+- Implement `tools/call` dispatch layer that maps MCP tool invocations to PAG API requests.
+- Validate operation-specific arguments before issuing API requests.
+- Preserve traceability by including action/tool identifiers in responses and logs.
+
+## Acceptance Criteria
+
+- At least the initial core tool set (session creation/send message/read state) is callable through MCP.
+- Invalid arguments return structured MCP errors without crashing the stdio loop.
+- Dispatch integration tests verify request translation and response mapping against PAG API stubs.

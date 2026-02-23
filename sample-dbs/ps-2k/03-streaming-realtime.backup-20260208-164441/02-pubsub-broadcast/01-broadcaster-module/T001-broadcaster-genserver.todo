@@ -1,0 +1,352 @@
+---
+title: Create Agents.Broadcaster GenServer
+epic: P3.M2.E1-broadcaster-module
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimated_hours: 2
+depends_on:
+- P3.M1.E1.T001
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:09:13.839574'
+started_at: '2026-02-06T16:09:13.839574'
+completed_at: '2026-02-06T16:19:19.428365'
+duration_minutes: 10.093146216666666
+id: P3.M2.E1.T001
+---
+
+# Task: Create Agents.Broadcaster GenServer
+
+## Context
+Centralize PubSub broadcasting logic in a dedicated GenServer to ensure consistent event emission, provide a single point for broadcast monitoring, and simplify testing.
+
+## Goal
+Implement Agents.Broadcaster GenServer with functions for broadcasting agent events.
+
+## Requirements
+- GenServer under Agents.Supervisor
+- Non-blocking broadcasts (cast-based)
+- Telemetry integration for broadcast metrics
+- Topic validation
+- Broadcast batching support (future-ready)
+
+## Implementation
+
+### File: `lib/pag_server/agents/broadcaster.ex`
+
+```elixir
+defmodule PagServer.Agents.Broadcaster do
+  @moduledoc """
+  Centralized broadcaster for agent events via Phoenix.PubSub.
+  
+  All agent events (tokens, tool calls, errors, status changes) flow
+  through this module to ensure consistent broadcasting and enable
+  centralized monitoring/telemetry.
+  """
+  
+  use GenServer
+  
+  require Logger
+  
+  alias Phoenix.PubSub
+  alias PagServer.PubSub, as: PubSubAdapter
+  
+  @type topic :: String.t()
+  @type event :: map()
+  
+  # Client API
+  
+  def start_link(opts \\ []) do
+    GenServer.start_link(__MODULE__, opts, name: __MODULE__)
+  end
+  
+  @doc """
+  Broadcast event to agent-specific topic.
+  
+  Non-blocking (uses GenServer.cast).
+  """
+  @spec broadcast_agent_event(agent_id :: String.t(), event()) :: :ok
+  def broadcast_agent_event(agent_id, event) do
+    GenServer.cast(__MODULE__, {:broadcast, "agent:#{agent_id}", event})
+  end
+  
+  @doc """
+  Broadcast event to session-specific topic.
+  """
+  @spec broadcast_session_event(session_id :: String.t(), event()) :: :ok
+  def broadcast_session_event(session_id, event) do
+    GenServer.cast(__MODULE__, {:broadcast, "session:#{session_id}", event})
+  end
+  
+  @doc """
+  Broadcast event to global topic (all connected clients).
+  """
+  @spec broadcast_global_event(event()) :: :ok
+  def broadcast_global_event(event) do
+    GenServer.cast(__MODULE__, {:broadcast, "global", event})
+  end
+  
+  @doc """
+  Broadcast to arbitrary topic (use with caution).
+  """
+  @spec broadcast(topic(), event()) :: :ok
+  def broadcast(topic, event) when is_binary(topic) and is_map(event) do
+    GenServer.cast(__MODULE__, {:broadcast, topic, event})
+  end
+  
+  @doc """
+  Synchronous broadcast (blocks until published).
+  
+  Use only when ordering is critical.
+  """
+  @spec broadcast_sync(topic(), event()) :: :ok | {:error, term()}
+  def broadcast_sync(topic, event) do
+    GenServer.call(__MODULE__, {:broadcast_sync, topic, event})
+  end
+  
+  # Server Callbacks
+  
+  @impl true
+  def init(_opts) do
+    Logger.info("Agents.Broadcaster started")
+    
+    state = %{
+      broadcast_count: 0,
+      error_count: 0
+    }
+    
+    {:ok, state}
+  end
+  
+  @impl true
+  def handle_cast({:broadcast, topic, event}, state) do
+    case do_broadcast(topic, event) do
+      :ok ->
+        record_broadcast_metric(topic, event)
+        {:noreply, %{state | broadcast_count: state.broadcast_count + 1}}
+      
+      {:error, reason} ->
+        Logger.error("Broadcast failed: topic=#{topic}, reason=#{inspect(reason)}")
+        {:noreply, %{state | error_count: state.error_count + 1}}
+    end
+  end
+  
+  @impl true
+  def handle_call({:broadcast_sync, topic, event}, _from, state) do
+    result = do_broadcast(topic, event)
+    
+    case result do
+      :ok ->
+        record_broadcast_metric(topic, event)
+        {:reply, :ok, %{state | broadcast_count: state.broadcast_count + 1}}
+      
+      error ->
+        Logger.error("Sync broadcast failed: topic=#{topic}, reason=#{inspect(error)}")
+        {:reply, error, %{state | error_count: state.error_count + 1}}
+    end
+  end
+  
+  @impl true
+  def handle_info(:emit_stats, state) do
+    Logger.info("""
+    Broadcaster Stats:
+      Total broadcasts: #{state.broadcast_count}
+      Errors: #{state.error_count}
+    """)
+    
+    schedule_stats_emit()
+    {:noreply, state}
+  end
+  
+  # Private Functions
+  
+  defp do_broadcast(topic, event) do
+    # Validate topic format
+    unless valid_topic?(topic) do
+      Logger.warning("Invalid topic format: #{topic}")
+      return {:error, :invalid_topic}
+    end
+    
+    # Wrap event with metadata
+    wrapped_event = wrap_event(event)
+    
+    # Broadcast via PubSub
+    PubSub.broadcast(PubSubAdapter, topic, {:agent_event, wrapped_event})
+  end
+  
+  defp valid_topic?(topic) do
+    topic =~ ~r/^(agent|session|global):.+$/ or topic == "global"
+  end
+  
+  defp wrap_event(event) do
+    Map.merge(event, %{
+      broadcast_at: System.system_time(:millisecond),
+      broadcaster_version: "1.0"
+    })
+  end
+  
+  defp record_broadcast_metric(topic, event) do
+    :telemetry.execute(
+      [:pag_server, :broadcaster, :event],
+      %{count: 1},
+      %{
+        topic: topic,
+        event_type: event[:type],
+        agent_id: event[:agent_id]
+      }
+    )
+  end
+  
+  defp schedule_stats_emit do
+    Process.send_after(self(), :emit_stats, 60_000)  # Every minute
+  end
+end
+```
+
+### File: `lib/pag_server/agents/supervisor.ex`
+
+Add Broadcaster to supervision tree:
+
+```elixir
+defmodule PagServer.Agents.Supervisor do
+  use Supervisor
+  
+  def start_link(init_arg) do
+    Supervisor.start_link(__MODULE__, init_arg, name: __MODULE__)
+  end
+  
+  @impl true
+  def init(_init_arg) do
+    children = [
+      # Registry for agent lookups
+      {Registry, keys: :unique, name: PagServer.Agents.Registry},
+      
+      # Broadcaster for PubSub events
+      PagServer.Agents.Broadcaster,
+      
+      # Dynamic supervisor for agent processes
+      {DynamicSupervisor, name: PagServer.Agents.DynamicSupervisor, strategy: :one_for_one}
+    ]
+    
+    Supervisor.init(children, strategy: :one_for_one)
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] Broadcaster GenServer starts under Agents.Supervisor
+- [ ] broadcast_agent_event/2 sends to agent topic
+- [ ] broadcast_session_event/2 sends to session topic
+- [ ] broadcast_global_event/1 sends to global topic
+- [ ] Topic validation prevents invalid topics
+- [ ] Telemetry events emitted for broadcasts
+- [ ] Stats logged periodically
+
+## Testing
+
+```elixir
+# test/pag_server/agents/broadcaster_test.exs
+defmodule PagServer.Agents.BroadcasterTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.Agents.Broadcaster
+  alias PagServer.PubSub
+  
+  setup do
+    # Start broadcaster
+    start_supervised!(Broadcaster)
+    :ok
+  end
+  
+  test "broadcasts agent events to correct topic" do
+    agent_id = "test-agent-123"
+    
+    # Subscribe to topic
+    Phoenix.PubSub.subscribe(PubSub, "agent:#{agent_id}")
+    
+    # Broadcast event
+    event = %{type: :test, data: "test data"}
+    Broadcaster.broadcast_agent_event(agent_id, event)
+    
+    # Should receive event
+    assert_receive {:agent_event, received_event}
+    assert received_event.type == :test
+    assert received_event.data == "test data"
+    assert received_event.broadcast_at
+  end
+  
+  test "broadcasts session events" do
+    session_id = "sess-456"
+    
+    Phoenix.PubSub.subscribe(PubSub, "session:#{session_id}")
+    
+    event = %{type: :session_update}
+    Broadcaster.broadcast_session_event(session_id, event)
+    
+    assert_receive {:agent_event, %{type: :session_update}}
+  end
+  
+  test "broadcasts global events" do
+    Phoenix.PubSub.subscribe(PubSub, "global")
+    
+    event = %{type: :system_announcement, message: "Maintenance window"}
+    Broadcaster.broadcast_global_event(event)
+    
+    assert_receive {:agent_event, %{type: :system_announcement}}
+  end
+  
+  test "synchronous broadcast blocks until published" do
+    agent_id = "sync-agent"
+    Phoenix.PubSub.subscribe(PubSub, "agent:#{agent_id}")
+    
+    event = %{type: :critical}
+    assert :ok = Broadcaster.broadcast_sync("agent:#{agent_id}", event)
+    
+    # Event should be available immediately
+    assert_receive {:agent_event, %{type: :critical}}, 10
+  end
+  
+  test "emits telemetry on broadcast" do
+    # Attach telemetry handler
+    ref = :telemetry_test.attach_event_handlers(self(), [
+      [:pag_server, :broadcaster, :event]
+    ])
+    
+    Broadcaster.broadcast_agent_event("agent-123", %{type: :test})
+    
+    assert_receive {[:pag_server, :broadcaster, :event], ^ref, %{count: 1}, metadata}
+    assert metadata.topic == "agent:agent-123"
+    assert metadata.event_type == :test
+  end
+end
+```
+
+## References
+- GenServer: https://hexdocs.pm/elixir/GenServer.html
+- Phoenix.PubSub: https://hexdocs.pm/phoenix_pubsub/Phoenix.PubSub.html
+- Telemetry: https://hexdocs.pm/telemetry/readme.html
+
+## Notes
+- Consider batch broadcasting for high-frequency events
+- Monitor broadcast latency via telemetry
+- Future: Add broadcast queueing for rate limiting
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-07 03:09 UTC
+**Sibling tasks**: P3.M2.E1.T002, P3.M2.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M2.E1.T001 → P3.M2.E1.T002 → P3.M2.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M2.E1.T001: .tasks/03-streaming-realtime/02-pubsub-broadcast/01-broadcaster-module/T001-broadcaster-genserver.todo
+- P3.M2.E1.T002: .tasks/03-streaming-realtime/02-pubsub-broadcast/01-broadcaster-module/T002-pubsub-topics.todo
+- P3.M2.E1.T003: .tasks/03-streaming-realtime/02-pubsub-broadcast/01-broadcaster-module/T003-broadcast-helpers.todo

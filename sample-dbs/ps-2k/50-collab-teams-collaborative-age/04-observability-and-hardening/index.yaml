@@ -1,0 +1,42 @@
+id: P50.M4
+name: Observability and Hardening
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on:
+- P50.M3
+locked: false
+epics:
+- id: E1
+  name: ETS-backed Read Model Projections
+  path: 01-ets-backed-read-model-projecti
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: LiveView Observability Dashboard
+  path: 02-liveview-observability-dashboa
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Hardening -- Load Tests, Replay Verification, Lint, Docs
+  path: 03-hardening-load-tests-replay-ve
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 16
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 16

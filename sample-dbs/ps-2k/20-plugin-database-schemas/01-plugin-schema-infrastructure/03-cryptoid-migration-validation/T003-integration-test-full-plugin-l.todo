@@ -1,0 +1,21 @@
+---
+id: P20.M1.E3.T003
+title: 'Integration test: full plugin lifecycle with DB schemas'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P20.M1.E3.T001
+- P20.M1.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:30:55.412834+00:00'
+started_at: '2026-02-18T10:30:55.412834+00:00'
+completed_at: '2026-02-18T10:38:03.007162+00:00'
+duration_minutes: 7.126571983333333
+---
+## Acceptance Criteria
+- Test: install plugin -> enable (migrations run) -> use KV store -> disable -> re-enable (no re-migration) -> uninstall (tables preserved) -> uninstall with force_drop (tables dropped)
+- End-to-end with a test plugin that declares migrations
+- Verify plugin_schema_migrations tracking

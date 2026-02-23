@@ -1,0 +1,40 @@
+---
+id: P15.M9.E4.T001
+title: Add UUID fallback for nil tool_call_id in tool_executor format_results
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- tool-executor
+- defense-in-depth
+claimed_by: cli-user
+claimed_at: '2026-02-17T14:03:30.938461+00:00'
+started_at: '2026-02-17T14:03:30.938461+00:00'
+completed_at: '2026-02-17T14:07:55.366632+00:00'
+duration_minutes: 4.407136016666667
+---
+In `tool_executor.ex` format_results (~lines 131-157), when `call_id` is nil,
+the formatted message gets `tool_call_id: nil` which downstream code may not
+handle correctly.
+
+Fix: Generate a UUID fallback at format time:
+```elixir
+call_id = execution.tool_call.call_id || Ecto.UUID.generate()
+```
+
+This is defense in depth — with the E1 fixes, nil call_ids should no longer
+occur, but this ensures any remaining edge case doesn't propagate.
+
+Source: .plan/tool-call-resilience.md — Gap 7
+
+Files to modify:
+- lib/pag_server/tools/tool_executor.ex (format_results)
+- lib/pag_server/llm/openai/tool_result.ex (~lines 91-115, if nil safety needed there too)
+
+## Acceptance Criteria
+- [ ] format_results never produces a nil tool_call_id
+- [ ] UUID is generated when call_id is nil
+- [ ] Log a warning when UUID fallback is used (indicates upstream bug)
+- [ ] Existing format_results tests still pass

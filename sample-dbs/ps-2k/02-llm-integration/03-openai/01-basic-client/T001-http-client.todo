@@ -1,0 +1,78 @@
+---
+id: P2.M3.E1.T001
+title: Set up HTTP client with Req
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- http
+- openai
+- client
+- foundation
+claimed_by: claude-1
+claimed_at: '2026-02-05T15:23:52.485399'
+started_at: '2026-02-05T15:23:52.485399'
+completed_at: '2026-02-05T15:26:52.296697'
+duration_minutes: 2.9968548166666666
+---
+
+# Set up HTTP client with Req
+
+Create the basic HTTP client module for OpenAI API using Req library.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/llm/openai/client.ex` module
+- [ ] Set up Req-based HTTP client with base URL configuration
+- [ ] Configure default headers (User-Agent, Content-Type)
+- [ ] Add support for custom timeouts (`receive_timeout`, `stream_timeout`)
+- [ ] Support configurable base_url (for Azure OpenAI and proxies)
+- [ ] Add Finch pool configuration in application supervisor
+
+## Acceptance Criteria
+
+- [ ] Client module can be instantiated with configuration
+- [ ] HTTP requests can be made to OpenAI API endpoints
+- [ ] Timeouts are configurable per-request
+- [ ] Base URL can be overridden for Azure/local LLMs
+- [ ] Finch pool is properly supervised
+- [ ] Module follows Req best practices from ref-projects/openai_ex
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/task-breakdown.md` Line 1109-1113 (OpenAI Provider)
+- `ref-projects/openai_ex/lib/openai_ex.ex` (Client struct and configuration)
+- `ref-projects/openai_ex/lib/openai_ex/http_finch.ex` (Finch setup)
+
+**Key Points**:
+- Use Req library (already in dependencies) for HTTP client
+- Follow openai_ex patterns: configurable base_url, timeouts, Finch transport
+- Support Azure OpenAI and OpenAI-compatible proxies (Ollama, LM Studio, etc.)
+- Default base_url: `https://api.openai.com/v1`
+- Finch pool should be named `PagServer.LLM.OpenAI.Finch`
+
+## Implementation Notes
+
+Reference `openai_ex` client structure:
+```elixir
+defmodule PagServer.LLM.OpenAI.Client do
+  defstruct [
+    :api_key,
+    :organization,
+    :project,
+    base_url: "https://api.openai.com/v1",
+    receive_timeout: 15_000,
+    stream_timeout: :infinity,
+    finch_name: PagServer.LLM.OpenAI.Finch
+  ]
+  
+  def new(api_key, opts \\ []) do
+    # Build client struct with headers
+  end
+end
+```
+
+Add Finch supervisor to application tree (reference `openai_ex/application.ex`).

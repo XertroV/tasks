@@ -1,0 +1,59 @@
+---
+id: P25.M2.E2.T001
+title: Improve file editing MCP tools (edit, glob, read, write, list)
+status: done
+estimate_hours: 12.0
+complexity: high
+priority: high
+depends_on: []
+tags:
+- mcp
+- tools
+- files
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:28.276798+00:00'
+started_at: '2026-02-18T18:34:28.276798+00:00'
+completed_at: '2026-02-18T18:44:39.247734+00:00'
+duration_minutes: 10.182848766666666
+---
+
+# Improve file editing MCP tools (edit, glob, read, write, list)
+
+Using the design document from P25.M1.E1.T002, implement improved file tool interfaces
+for pag-server's MCP server covering: read, write, edit/str_replace, glob, and list.
+
+## Requirements
+
+### read
+- Support `offset` (start line, 1-indexed) and `limit` (max lines) parameters
+- Line-numbered output prefix (e.g. `N: content`) so edits can reference exact lines
+- Clear description of truncation and how to paginate
+
+### write
+- Require reading the file first (or document when safe to skip)
+- Include `content` and `file_path` parameters
+- Description warns about overwriting and recommends edit for targeted changes
+
+### edit (str_replace)
+- `old_string` / `new_string` semantics (not line-numbers) for robustness
+- `replace_all` boolean for global replace
+- Clear description: fails if old_string not found, fails if multiple matches without sufficient context
+
+### glob
+- `pattern` (glob string) and optional `path` (directory to search in)
+- Returns paths sorted by modification time
+- Description explains when to prefer grep vs glob
+
+### list
+- `path` parameter, returns directory entries with trailing `/` for subdirs
+- Clear description of output format
+
+## Acceptance Criteria
+
+- [ ] All five tools (read, write, edit, glob, list) updated with improved interfaces
+- [ ] read supports offset/limit pagination with line numbers
+- [ ] edit uses old_string/new_string semantics with replace_all option
+- [ ] glob returns results sorted by modification time
+- [ ] All tool descriptions are clear and precise for LLM consumers
+- [ ] Existing tests pass; new tests added for new parameters
+- [ ] Tools registered correctly in MCP tool registry

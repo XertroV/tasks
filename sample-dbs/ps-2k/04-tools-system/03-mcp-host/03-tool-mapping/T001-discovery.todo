@@ -1,0 +1,101 @@
+---
+id: P4.M3.E3.T001
+title: Discover tools from MCP servers
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- mcp
+- discovery
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:33:56.261498'
+started_at: '2026-02-05T22:33:56.261498'
+completed_at: '2026-02-05T22:45:24.155252'
+duration_minutes: 11.46489575
+---
+
+# Discover tools from MCP servers
+
+Discover and register tools from connected MCP servers.
+
+## Requirements
+
+- [x] Send `tools/list` request to MCP servers
+- [x] Parse tool definitions from response
+- [x] Convert MCP tool schema to ToolSchema
+- [x] Register discovered tools in Registry
+- [x] Handle discovery errors gracefully
+
+## Acceptance Criteria
+
+- [x] Discovers tools from all connected servers
+- [x] Converts MCP schemas to internal format
+- [x] Registers tools with unique names
+- [x] Handles servers with no tools
+- [x] Test with mock MCP server
+- [x] Logs discovered tools
+
+## Implementation Summary
+
+Created `lib/pag_server/tools/mcp/discovery.ex` with:
+
+1. **discover_tools/1** - Main discovery function that:
+   - Sends `tools/list` JSON-RPC request to MCP servers
+   - Parses tool definitions from response
+   - Converts each tool to ToolSchema
+   - Registers tools with server-prefixed names
+   - Handles errors gracefully with logging
+
+2. **mcp_tool_to_schema/2** - Converts MCP tool format to internal ToolSchema:
+   - Extracts name, description, and inputSchema
+   - Prefixes tool name with server name for uniqueness
+   - Converts string keys to atom keys for ToolSchema validation
+   - Validates all required fields
+
+3. **register_mcp_tool/2** - Registers tools in Registry:
+   - Creates dynamic modules implementing Tool behaviour
+   - Delegates execution to MCP server via execute_mcp_tool/3
+   - Handles registration failures gracefully
+
+4. **execute_mcp_tool/3** - Executes MCP tools:
+   - Sends `tools/call` JSON-RPC request
+   - Extracts original tool name from prefixed name
+   - Handles response content extraction
+
+**Tests**: Comprehensive test suite in `test/pag_server/tools/mcp/discovery_test.exs`
+- 10 tests for schema conversion (all passing)
+- 4 tests for server communication (skipped until P4.M3.E1 ServerRegistry is implemented)
+
+**Notes**:
+- Server communication functions return `:not_implemented` placeholders
+- Will be wired up when stdio communication is added to MCP.Server in later tasks
+- Tests properly skip functionality that depends on ServerRegistry (P4.M3.E1)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 351-354 (MCP tool mapping)
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:33 UTC
+**Primary task**: P4.M1.E3.T004 - Wire registry tool schemas into LLM request builders
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M3.E3 vs P4.M1.E3)
+- No dependency chain: ✓ (verified at claim time)

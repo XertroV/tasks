@@ -1,0 +1,41 @@
+id: P50.M1
+name: Plugin Foundation
+status: done
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Plugin Scaffold
+  path: 01-plugin-scaffold
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: DB Schema Migrations
+  path: 02-db-schema-migrations
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Action Dispatcher and Error Contract
+  path: 03-action-dispatcher-and-error-co
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 12
+  done: 0
+  in_progress: 0
+  blocked: 1
+  pending: 11

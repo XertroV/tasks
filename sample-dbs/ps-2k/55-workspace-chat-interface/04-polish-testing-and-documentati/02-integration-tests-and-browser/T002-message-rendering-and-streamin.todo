@@ -1,0 +1,25 @@
+---
+id: P55.M4.E2.T002
+title: Message rendering and streaming PubSub event tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tests
+- streaming
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.970387+00:00'
+started_at: '2026-02-22T12:15:57.970387+00:00'
+completed_at: '2026-02-22T12:33:16.955447+00:00'
+duration_minutes: 17.316417516666668
+---
+Test message rendering: user/assistant/system/tool_result messages render with correct CSS classes and content. Thinking blocks render in collapsible details. Test streaming: send PubSub events directly to view.pid (e.g., send(view.pid, {:agent_event, :llm_token, %{token: 'hello', agent_id: agent_id, index: 0}})). Verify streaming content appears after flush. State_changed to idle reloads transcript.
+
+## Acceptance Criteria
+- All 4 role types render correctly
+- Thinking blocks collapsible
+- PubSub token events produce streaming content
+- Idle transition reloads transcript
+- Tests use send() to view.pid for PubSub simulation

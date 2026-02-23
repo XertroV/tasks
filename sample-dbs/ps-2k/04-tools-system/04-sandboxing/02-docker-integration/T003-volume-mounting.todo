@@ -1,0 +1,121 @@
+---
+id: P4.M4.E2.T003
+title: Volume mounting for workspace
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P4.M4.E2.T002
+tags:
+- sandboxing
+- docker
+- volumes
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:15:31.685533'
+started_at: '2026-02-05T23:15:31.685533'
+completed_at: '2026-02-05T23:24:17.142744'
+duration_minutes: 8.757620033333334
+---
+
+# Volume mounting for workspace
+
+Mount workspace directories into containers.
+
+## Requirements
+
+- [ ] Mount workspace as read-write volume
+- [ ] Support read-only mounts
+- [ ] Handle permissions correctly
+- [ ] Prevent access to host filesystem
+- [ ] Support volume options (ro, rw, z)
+
+## Acceptance Criteria
+
+- [ ] Workspace accessible in container
+- [ ] Permissions preserved
+- [ ] Read-only enforcement works
+- [ ] No access outside workspace
+- [ ] Test on Linux and Docker Desktop
+
+## Context
+
+Volume mounting for file access:
+```bash
+docker run -v /host/workspace:/workspace:rw image cmd
+```
+
+## Notes
+
+Volume config:
+```elixir
+binds: [
+  "#{workspace}:/workspace:rw"
+]
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 09:51 UTC
+**Primary task**: P4.M2.E4.T002 - Implement spawn_subagent tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M4.E2 vs P4.M2.E4)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 10:07 UTC
+**Primary task**: P4.M2.E7.T001 - Implement json_parse tool
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M4.E2 vs P4.M2.E7)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-06 10:15 UTC
+**Primary task**: P4.M2.E7.T002 - Implement json_query tool (JSONPath)
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P4.M4.E2 vs P4.M2.E7)
+- No dependency chain: ✓ (verified at claim time)

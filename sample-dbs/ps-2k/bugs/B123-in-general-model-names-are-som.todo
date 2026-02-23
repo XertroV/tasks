@@ -1,0 +1,19 @@
+---
+id: B123
+title: In general model names are sometimes quite outdated (eg sonent 3-5, gtp-4o,
+  etc). We should go through and update all the old model names so they don't pollute
+  the codebase
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:03:18.977068+00:00'
+started_at: '2026-02-18T01:03:18.977068+00:00'
+completed_at: '2026-02-18T01:30:46.906358+00:00'
+duration_minutes: 27.46548795
+---
+
+In general model names are sometimes quite outdated (eg sonent 3-5, gtp-4o, etc). We should go through and update all the old model names so they don't pollute the codebase

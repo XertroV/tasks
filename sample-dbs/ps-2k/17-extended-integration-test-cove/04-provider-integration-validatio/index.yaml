@@ -1,0 +1,23 @@
+id: P17.M4
+name: Provider Integration Validation
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Groq Provider Integration Tests
+  path: 01-groq-provider-integration-test
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 1
+  done: 1
+  in_progress: 0
+  blocked: 0
+  pending: 0

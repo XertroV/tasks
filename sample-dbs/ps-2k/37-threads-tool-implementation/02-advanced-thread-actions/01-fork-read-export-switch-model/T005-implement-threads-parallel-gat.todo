@@ -1,0 +1,47 @@
+---
+id: P37.M2.E1.T005
+title: Implement threads parallel_gather, parallel_reduce, parallel_synthesize actions
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:21:05.883949+00:00'
+started_at: '2026-02-19T04:21:05.883949+00:00'
+completed_at: '2026-02-19T04:44:03.882194+00:00'
+duration_minutes: 22.966637133333332
+---
+Implement action_parallel/3 in lib/pag_server/plugins/agent_tools/threads.ex for all three parallel modes.
+
+Currently all three return: %{action: "parallel", hint: "Parallel implementation pending"}
+
+The parallel query infrastructure exists: lib/pag_server/sessions/parallel_query.ex — use it.
+
+### Common args (all three modes):
+- thread_id: base session to fork from
+- queries: list of strings (one per parallel sub-thread)
+- system_prompt or template_name: agent instructions for each fork (optional — inherits parent if omitted)
+- timeout_ms: max wait time (default 60000)
+- size: model size for sub-agents
+
+### parallel_gather (mode: :gather)
+Spawn N sub-agents (one per query), collect all outputs, return them as a list.
+Return: %{action: "parallel_gather", results: [%{query: ..., output: ..., thread_id: ...}], duration_ms: ...}
+
+### parallel_reduce (mode: :reduce)
+Like gather, but pass all outputs to a reducer agent that combines them into one.
+Optional args: reduce_prompt (instructions for the reducer agent)
+Return: %{action: "parallel_reduce", result: "...", sources: [...], duration_ms: ...}
+
+### parallel_synthesize (mode: :synthesize)  
+Like reduce but uses a synthesis prompt — agents debate/compare and synthesize a best answer.
+Optional args: synthesize_prompt
+Return: %{action: "parallel_synthesize", result: "...", sources: [...], duration_ms: ...}
+
+Check: lib/pag_server/sessions/parallel_query.ex — it already has fork-per-query logic. Wire it up here.
+The await_thread tool (lib/pag_server/tools/builtin/await_thread.ex) can be used internally to collect results.
+
+Tests: gather 2 queries, reduce 3 queries, synthesize 2 queries, timeout handling, single query edge case
+File: lib/pag_server/plugins/agent_tools/threads.ex

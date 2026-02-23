@@ -1,0 +1,31 @@
+---
+id: P34.M2.E1.T001
+title: Skill Parser Module
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- backend
+- parser
+claimed_by: cli-user
+claimed_at: '2026-02-19T00:42:53.802134+00:00'
+started_at: '2026-02-19T00:42:53.802134+00:00'
+completed_at: '2026-02-19T00:42:55.532958+00:00'
+duration_minutes: 0.028846883333333333
+---
+
+# Skill Parser Module
+
+Create `PagServer.Skills.Parser` module:
+
+- `parse_file/1` - Parse SKILL.md from file path
+- `parse_string/1` - Parse SKILL.md content string
+- Extract frontmatter and body separately
+
+## Acceptance Criteria
+
+- [ ] Parses YAML frontmatter correctly
+- [ ] Handles missing frontmatter gracefully
+- [ ] Returns structured `%Skill{}` struct

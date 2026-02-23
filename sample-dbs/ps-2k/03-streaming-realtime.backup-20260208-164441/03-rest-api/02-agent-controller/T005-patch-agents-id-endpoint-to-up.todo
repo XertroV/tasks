@@ -1,0 +1,124 @@
+---
+id: P3.M3.E2.T005
+title: PATCH /agents/:id endpoint to update agent
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- rest
+- crud
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:17:09.619632+00:00'
+started_at: '2026-02-08T04:17:09.619632+00:00'
+completed_at: '2026-02-08T04:25:03.269159+00:00'
+duration_minutes: 7.894158583333334
+---
+
+# PATCH /agents/:id endpoint to update agent
+
+
+
+## Requirements
+
+- [ ] Create `PATCH /agents/:id` endpoint in `lib/pag_server_web/controllers/agent_controller.ex`
+- [ ] Implement `update/2` action following Phoenix controller patterns
+- [ ] Accept partial JSON update (only modified fields required)
+- [ ] Allow updating: name, model, capabilities, system_prompt, metadata
+- [ ] Validate agent exists before updating
+- [ ] Update agent GenServer state if running
+- [ ] Return 200 OK with updated agent details
+- [ ] Return 404 Not Found if agent doesn't exist
+- [ ] Return 422 on validation errors
+
+## Acceptance Criteria
+
+- [ ] Accepts JSON body with any subset of: `name`, `model`, `capabilities`, `system_prompt`, `metadata`
+- [ ] Validates agent_id is valid UUID format
+- [ ] Returns 404 if agent doesn't exist in database
+- [ ] Updates only provided fields (partial update)
+- [ ] Validates updated fields (name non-empty, model format correct)
+- [ ] If agent process is running, updates its state via GenServer call
+- [ ] Returns 200 with full updated agent JSON
+- [ ] Returns 422 for validation errors (empty name, invalid model format)
+- [ ] Test coverage: update each field, partial updates, invalid ID, non-existent agent, validation errors
+- [ ] Handles race conditions (agent deleted during update)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 89-96 (REST controllers)
+
+**Key Points**:
+- Partial updates - only update provided fields
+- Update running GenServer state for immediate effect
+- Model changes might require process restart (future enhancement)
+- Follow PATCH semantics (partial update)
+
+## Notes
+
+Implementation pattern:
+```elixir
+def update(conn, %{"id" => id} = params) do
+  with {:ok, agent} <- get_agent(id),
+       {:ok, attrs} <- validate_update_params(params),
+       {:ok, updated_agent} <- update_agent_record(agent, attrs),
+       :ok <- maybe_update_process(id, attrs) do
+    conn
+    |> put_status(:ok)
+    |> json(agent_to_json(updated_agent))
+  else
+    {:error, :not_found} ->
+      conn |> put_status(:not_found) |> json(%{error: "Agent not found"})
+    
+    {:error, %Ecto.Changeset{} = changeset} ->
+      conn
+      |> put_status(:unprocessable_entity)
+      |> json(%{errors: translate_errors(changeset)})
+  end
+end
+
+defp maybe_update_process(agent_id, attrs) do
+  case PagServer.Agents.Registry.lookup(agent_id) do
+    {:ok, pid} ->
+      # Update running agent state
+      GenServer.call(pid, {:update_config, attrs})
+    
+    {:error, :not_found} ->
+      # Agent not running, no process update needed
+      :ok
+  end
+end
+```
+
+Request example:
+```json
+PATCH /api/agents/550e8400-e29b-41d4-a716-446655440000
+{
+  "name": "senior-code-reviewer",
+  "capabilities": ["code_review", "testing", "security_audit"]
+}
+```
+
+Response example (200 OK):
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "name": "senior-code-reviewer",
+  "model": "anthropic/claude-3-5-sonnet-20241022",
+  "status": "idle",
+  "created_at": "2026-02-06T10:30:00Z",
+  "updated_at": "2026-02-06T11:15:00Z",
+  "capabilities": ["code_review", "testing", "security_audit"],
+  "system_prompt": "You are a code reviewer...",
+  "metadata": {"team": "backend"}
+}
+```
+
+Edge cases:
+- Updating model while agent is processing - reject or queue?
+- Agent deleted between lookup and update
+- Invalid updates to read-only fields (id, created_at)
+- Concurrent updates to same agent

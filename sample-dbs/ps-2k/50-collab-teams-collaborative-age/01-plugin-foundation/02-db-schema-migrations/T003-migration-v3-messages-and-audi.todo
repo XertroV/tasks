@@ -1,0 +1,24 @@
+---
+id: P50.M1.E2.T003
+title: 'Migration V3: messages and audit_events tables'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:09:28.440980+00:00'
+started_at: '2026-02-23T02:09:28.440980+00:00'
+completed_at: '2026-02-23T02:09:31.198039+00:00'
+duration_minutes: 0.04595071666666666
+---
+## Description
+CollabTeams.Migrations.V3 creates plugin_collab_teams_messages (id uuid PK, team_id uuid FK runtime_teams ON DELETE CASCADE, from_agent_id uuid FK agents, to_agent_id uuid FK agents nullable broadcast=NULL, type text NOT NULL, content text NOT NULL, metadata jsonb DEFAULT {}, inserted_at only no updated_at) and plugin_collab_teams_audit_events (id uuid PK, team_id uuid FK runtime_teams nullable ON DELETE SET NULL, workspace_id uuid FK workspaces, event_type text NOT NULL, actor_agent_id uuid FK agents nullable, payload jsonb DEFAULT {}, causation_id uuid nullable, inserted_at only). Indexes: team_id+event_type+workspace_id on audit; team_id on messages. down/0 drops both.
+
+## Acceptance Criteria
+- Both tables exist after migration
+- audit_events.team_id allows NULL
+- messages.to_agent_id allows NULL for broadcasts
+- down/0 works cleanly

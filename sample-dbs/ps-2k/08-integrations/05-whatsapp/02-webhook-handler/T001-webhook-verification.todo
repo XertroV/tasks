@@ -1,0 +1,103 @@
+---
+id: P8.M5.E2.T001
+title: Implement webhook verification endpoint
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: critical
+depends_on:
+- P8.M5.E1.T002
+tags:
+- whatsapp
+- webhook
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:20:55.536122+00:00'
+started_at: '2026-02-08T10:20:55.536122+00:00'
+completed_at: '2026-02-08T21:31:00+00:00'
+---
+
+# Implement webhook verification endpoint
+
+Create Phoenix controller for WhatsApp webhook verification and signature validation.
+
+## Requirements
+
+- [x] Create `lib/pag_server_web/controllers/whatsapp_webhook_controller.ex` (~40 LoC)
+- [x] Implement GET endpoint for verification challenge
+- [x] Implement POST endpoint for incoming webhooks
+- [x] Validate X-Hub-Signature-256 header on all POST requests
+- [x] Add plug to parse raw body before signature check
+
+## Acceptance Criteria
+
+- [x] GET /webhooks/whatsapp returns challenge for valid verify_token
+- [x] GET /webhooks/whatsapp returns 403 for invalid verify_token
+- [x] POST requests with invalid signatures are rejected
+- [x] POST requests with valid signatures are queued for processing
+- [x] Webhook responds within 5 seconds (Meta requirement)
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 368-376 (webhook handler)
+- `.plan/2026-02-05-velvet-cascade/security.md` lines 89-102 (webhook security)
+
+**Key Points**:
+- Meta requires 200 OK response within 5 seconds
+- Signature uses HMAC-SHA256 with app secret
+- Verification must happen on subscription
+- Must handle raw request body for signature validation
+
+## Notes
+
+Controller structure:
+```elixir
+defmodule PAGServerWeb.WhatsAppWebhookController do
+  use PAGServerWeb, :controller
+  
+  plug :verify_signature when action in [:create]
+  
+  def verify(conn, %{"hub.mode" => "subscribe", 
+                      "hub.verify_token" => token,
+                      "hub.challenge" => challenge}) do
+    if token == verify_token() do
+      text(conn, challenge)
+    else
+      send_resp(conn, 403, "Forbidden")
+    end
+  end
+  
+  def create(conn, params) do
+    # Queue for async processing
+    PAGServer.Integrations.WhatsApp.queue_webhook(params)
+    send_resp(conn, 200, "OK")
+  end
+end
+```
+
+Signature verification plug:
+```elixir
+defp verify_signature(conn, _opts) do
+  [signature] = get_req_header(conn, "x-hub-signature-256")
+  {:ok, body, conn} = read_body(conn)
+  
+  if CloudAPI.verify_signature(body, signature) do
+    conn
+  else
+    conn
+    |> send_resp(401, "Invalid signature")
+    |> halt()
+  end
+end
+```
+
+Router addition:
+```elixir
+scope "/webhooks", PAGServerWeb do
+  pipe_through :api
+  
+  get "/whatsapp", WhatsAppWebhookController, :verify
+  post "/whatsapp", WhatsAppWebhookController, :create
+end
+```

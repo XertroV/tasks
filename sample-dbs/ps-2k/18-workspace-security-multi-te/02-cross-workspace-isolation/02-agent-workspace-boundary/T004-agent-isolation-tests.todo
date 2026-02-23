@@ -1,0 +1,53 @@
+---
+id: P18.M2.E2.T004
+title: Add tests for cross-workspace agent isolation
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P18.M2.E2.T003
+tags:
+- security
+- workspace
+- agents
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.639247+00:00'
+started_at: '2026-02-17T20:48:56.639247+00:00'
+completed_at: '2026-02-17T20:55:26.212549+00:00'
+duration_minutes: 6.492888016666667
+---
+
+# Add tests for cross-workspace agent isolation
+
+## Description
+
+Comprehensive tests verifying that agents are properly isolated between workspaces, covering both flat and nested routes.
+
+## Requirements
+
+- [ ] Test flat route scoping:
+  - User with memberships in workspace A and B sees agents from both
+  - User with membership in workspace A only does not see workspace B agents
+  - User with no memberships sees no agents
+- [ ] Test nested route scoping:
+  - `GET /workspaces/:ws_a/agents` returns only workspace A agents
+  - `GET /workspaces/:ws_a/agents/:agent_b_id` returns 404 for agent in workspace B
+  - `POST /workspaces/:ws_a/agents` creates agent with workspace_id = ws_a
+- [ ] Test role enforcement on nested routes:
+  - Member can GET agents
+  - Member cannot POST/PATCH/DELETE agents (403)
+  - Admin can perform all CRUD operations
+- [ ] Test backward compatibility:
+  - Agent-scoped API key still accesses specific agent regardless of workspace
+
+## Acceptance Criteria
+
+- [ ] All cross-workspace isolation tests pass
+- [ ] Tests use async: true with unique identifiers
+- [ ] Both flat and nested route isolation verified
+
+## Context
+
+**Files affected**: `test/pag_server_web/controllers/agent_controller_test.exs` (add new describe blocks)

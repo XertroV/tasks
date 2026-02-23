@@ -1,0 +1,39 @@
+id: P9.M1
+name: Vector Search
+status: pending
+estimate_hours: 12
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: pgvector Setup
+  path: 01-pgvector-setup
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+  description: Configure PostgreSQL pgvector extension for production vector storage
+- id: E2
+  name: HNSWLib Development Fallback
+  path: 02-hnswlib-dev
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+  description: In-memory HNSW index for development without Docker dependency
+- id: E3
+  name: Embedding Client Integration
+  path: 03-embedding-client
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on:
+  - E1
+  description: Integrate OpenAI/local embedding models for vector generation
+stats:
+  total_tasks: 10
+  done: 10
+  in_progress: 0
+  blocked: 0
+  pending: 0

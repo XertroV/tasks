@@ -1,0 +1,94 @@
+---
+id: P8.M2.E2.T001
+title: Implement message handler
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P8.M2.E1.T002
+- P8.M2.E3.T001
+tags:
+- integrations
+- telegram
+- handlers
+- messages
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:19:34.823824+00:00'
+started_at: '2026-02-11T02:19:34.823824+00:00'
+completed_at: '2026-02-11T02:19:39.494901+00:00'
+duration_minutes: 0.0778508
+---
+
+# Implement message handler
+
+Handle incoming text messages from Telegram users and route them to agent sessions.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/telegram/message_handler.ex` (~120 LoC)
+- [ ] Implement `handle/1` function for message processing
+- [ ] Extract chat ID, user ID, and message text from update
+- [ ] Get or create agent session via SessionMapper
+- [ ] Send message to agent using `Agent.send_message/2`
+- [ ] Stream agent response back to Telegram via `send_message/3`
+- [ ] Handle errors gracefully with user-friendly error messages
+- [ ] Add rate limiting per user (10 messages/minute default)
+
+## Acceptance Criteria
+
+- [ ] Text messages route to correct agent session
+- [ ] Agent responses sent back to Telegram chat
+- [ ] Error messages display to user without exposing internals
+- [ ] Rate limiting prevents abuse (429 response)
+- [ ] Markdown formatting preserved in responses
+- [ ] Long responses chunked to fit Telegram's 4096 char limit
+- [ ] Unit tests cover happy path and error cases
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 206-215 (Message handling)
+
+**Key Points**:
+- Each Telegram chat maps to an agent session
+- Support for both 1:1 chats and group chats
+- Responses use Markdown formatting
+- Rate limiting prevents spam
+
+## Notes
+
+Handler structure:
+```elixir
+defmodule PAGServer.Integrations.Telegram.MessageHandler do
+  alias PAGServer.Integrations.Telegram.SessionMapper
+  alias PAGServer.Agent
+
+  def handle(%{chat: %{id: chat_id}, text: text, from: user}) do
+    with :ok <- check_rate_limit(user.id),
+         {:ok, session} <- SessionMapper.get_or_create(chat_id, user),
+         {:ok, response} <- Agent.send_message(session.agent_id, text) do
+      send_response(chat_id, response)
+    else
+      {:error, :rate_limited} ->
+        send_error(chat_id, "Too many messages. Please wait a moment.")
+      
+      {:error, reason} ->
+        Logger.error("Message handling failed: #{inspect(reason)}")
+        send_error(chat_id, "Sorry, something went wrong.")
+    end
+  end
+
+  defp send_response(chat_id, response) do
+    # Chunk if needed (4096 char limit)
+    response.content
+    |> chunk_message()
+    |> Enum.each(&Telegex.send_message(chat_id, &1, parse_mode: "Markdown"))
+  end
+end
+```
+
+Rate limiting with Hammer:
+```elixir
+{:ok, 1} = Hammer.check_rate("telegram:#{user_id}", 60_000, 10)
+```

@@ -1,0 +1,31 @@
+---
+id: P49.M3.E1.T001
+title: Implement explicit reload operation for BEAM and external MCP plugins
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:50:32.423002+00:00'
+started_at: '2026-02-20T09:50:32.423002+00:00'
+completed_at: '2026-02-20T10:53:50.331288+00:00'
+duration_minutes: 63.29847123333333
+---
+
+# Implement explicit reload operation for BEAM and external MCP plugins
+
+
+
+## Requirements
+
+- Implement explicit plugin reload operation semantics for BEAM and external/MCP plugin classes.
+- Ensure reload runs through lifecycle controls with predictable state teardown/startup behavior.
+- Add tests for successful reload and reload failure handling per plugin class.
+
+## Acceptance Criteria
+
+- Reload operation is exposed via plugin lifecycle APIs with clear contracts.
+- Reload behavior is deterministic for both BEAM and external plugin types.
+- Tests validate successful reload and safe failure paths.

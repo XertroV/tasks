@@ -1,0 +1,64 @@
+---
+id: I024
+title: Auto-Compaction | MEDIUM-HIGH | Long-running sessions stay functional. Summarizes
+  context on overflow instead of failing.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:40:29.709714+00:00'
+started_at: '2026-02-18T14:40:29.709714+00:00'
+completed_at: '2026-02-18T14:40:31.663663+00:00'
+duration_minutes: 0.03256555
+---
+
+# Idea Intake: Auto-Compaction | MEDIUM-HIGH | Long-running sessions stay functional. Summarizes context on overflow instead of failing.
+
+## Original Idea
+
+Auto-Compaction | MEDIUM-HIGH | Long-running sessions stay functional. Summarizes context on overflow instead of failing.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Auto-Compaction | MEDIUM-HIGH | Long-running sessions stay functional. Summarizes context on overflow instead of failing."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+Phase: P22 - LLM Provider & Session Enhancements
+Milestone: P22.M3 - Auto-Compaction
+
+Epics:
+- P22.M3.E1 - CompactionMonitor GenServer
+- P22.M3.E2 - Session Compaction Config & Proactive Trigger
+- P22.M3.E3 - Compaction Status Tracking & API
+- P22.M3.E4 - Tests: Auto-Compaction
+
+Tasks:
+- P22.M3.E1.T001 - Create CompactionMonitor GenServer that tracks session token usage
+- P22.M3.E1.T002 - Integrate CompactionMonitor with existing AutoTruncation and Summarization modules
+- P22.M3.E1.T003 - Add CompactionMonitor to SessionSupervisor startup
+- P22.M3.E2.T001 - Add session-level compaction config fields to session schema
+- P22.M3.E2.T002 - Implement proactive compaction: replace old messages with summary when threshold exceeded
+- P22.M3.E3.T001 - Compaction status tracking: last_compaction_at, token_reduction_achieved, compaction_count
+- P22.M3.E3.T002 - API: GET /api/v1/sessions/:id/compaction - get compaction status
+- P22.M3.E3.T003 - API: POST /api/v1/sessions/:id/compaction/trigger - manual compaction
+- P22.M3.E4.T001 - Unit tests: CompactionMonitor threshold detection and debounce
+- P22.M3.E4.T002 - Integration tests: end-to-end compaction replaces messages with summary
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

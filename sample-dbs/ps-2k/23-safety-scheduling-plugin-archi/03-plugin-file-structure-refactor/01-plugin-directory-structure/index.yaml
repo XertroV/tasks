@@ -1,0 +1,40 @@
+id: P23.M3.E1
+name: Plugin Directory Structure
+status: pending
+estimate_hours: 5.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-audit-existing-plugins-under-l.todo
+  title: Audit existing plugins under lib/pag_server/plugins/
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-create-top-level-plugins-direc.todo
+  title: Create top-level plugins/ directory structure
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on:
+  - P23.M3.E1.T001
+- id: T003
+  file: T003-update-mix-exs-to-compile-file.todo
+  title: Update mix.exs to compile files from plugins/ directory
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P23.M3.E1.T002
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

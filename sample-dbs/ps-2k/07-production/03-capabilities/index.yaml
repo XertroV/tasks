@@ -1,0 +1,68 @@
+id: P7.M3
+name: Capabilities
+status: pending
+estimate_hours: 8
+complexity: high
+depends_on: []
+epics:
+- id: E1
+  name: Capability Structure
+  path: 01-capability-struct
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on: []
+- id: E2
+  name: Permission Checks
+  path: 02-permission-checks
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+- id: E3
+  name: Permission Wiring
+  path: 03-permission-wiring
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E4
+  name: Tool Permission Enforcement
+  path: 04-tool-permission-enforcement
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E5
+  name: Registration Authorization
+  path: 05-registration-authorization
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E6
+  name: MCP Security Hardening
+  path: 06-mcp-security-hardening
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E7
+  name: Argument Constraint Validation
+  path: 07-argument-constraint-validation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 14
+  done: 14
+  in_progress: 0
+  blocked: 0
+  pending: 0

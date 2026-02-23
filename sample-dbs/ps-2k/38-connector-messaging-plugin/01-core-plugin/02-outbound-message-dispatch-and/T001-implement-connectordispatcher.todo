@@ -1,0 +1,35 @@
+---
+id: P38.M1.E2.T001
+title: 'Implement ConnectorDispatcher: dispatch/3 with per-platform routing'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P38.M1.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T04:47:59.754795+00:00'
+started_at: '2026-02-19T04:47:59.754795+00:00'
+completed_at: '2026-02-19T04:53:38.297819+00:00'
+duration_minutes: 5.642383466666667
+---
+Module PagServer.ConnectorMessaging.ConnectorDispatcher. dispatch(workspace_id, connector_id, message_text) -> {:ok, result} | {:error, reason}. Fetches BotConfig via ConnectorRegistry, dispatches to the correct integration client based on platform: :telegram -> PagServer.Integrations.Telegram.Client.send_message/4 (using config['token'] and config['chat_id'] or a configurable default_chat_id), :slack -> PagServer.Integrations.Slack.Client, :discord -> PagServer.Integrations.Discord, :whatsapp -> PagServer.Integrations.Whatsapp.CloudApi. Each platform clause extracts required config keys, returns {:error, :missing_config} if required keys absent. Add @spec and @doc.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P38.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-19 04:47 UTC
+**Sibling tasks**: P38.M1.E2.T002, P38.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P38.M1.E2.T001 → P38.M1.E2.T002 → P38.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P38.M1.E2.T001: .tasks/38-connector-messaging-plugin/01-core-plugin/02-outbound-message-dispatch-and/T001-implement-connectordispatcher.todo
+- P38.M1.E2.T002: .tasks/38-connector-messaging-plugin/01-core-plugin/02-outbound-message-dispatch-and/T002-implement-send-connector-messa.todo
+- P38.M1.E2.T003: .tasks/38-connector-messaging-plugin/01-core-plugin/02-outbound-message-dispatch-and/T003-tests-for-connectorregistry-co.todo

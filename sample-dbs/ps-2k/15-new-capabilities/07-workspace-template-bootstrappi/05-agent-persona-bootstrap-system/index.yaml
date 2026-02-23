@@ -1,0 +1,238 @@
+id: P15.M7.E5
+name: Agent Persona Bootstrap System
+status: pending
+estimate_hours: 80.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-t1-persona-yaml-schema-loader.todo
+  title: 'T1: Persona YAML Schema & Loader'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-t2-persona-catalog-structure.todo
+  title: 'T2: Persona Catalog Structure'
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-t3-base-workspace-template.todo
+  title: 'T3: Base Workspace Template'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-t4-dynamic-template-generator.todo
+  title: 'T4: Dynamic Template Generator'
+  status: pending
+  estimate_hours: 5.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-t5-create-tech-lead-persona.todo
+  title: 'T5: Create Tech Lead Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-t6-create-executive-assistant.todo
+  title: 'T6: Create Executive Assistant Director Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T007
+  file: T007-t7-create-devops-commander-per.todo
+  title: 'T7: Create DevOps Commander Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T008
+  file: T008-t8-create-research-director-pe.todo
+  title: 'T8: Create Research Director Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-t9-create-pmo-lead-persona.todo
+  title: 'T9: Create PMO Lead Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T010
+  file: T010-t10-create-customer-success-co.todo
+  title: 'T10: Create Customer Success Commander Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T011
+  file: T011-t11-create-creative-director-a.todo
+  title: 'T11: Create Creative Director AI Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T012
+  file: T012-t12-create-knowledge-managemen.todo
+  title: 'T12: Create Knowledge Management Curator Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T013
+  file: T013-t13-create-crisis-response-coo.todo
+  title: 'T13: Create Crisis Response Coordinator Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T014
+  file: T014-t14-create-open-source-program.todo
+  title: 'T14: Create Open Source Program Manager Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T015
+  file: T015-t15-create-social-media-adviso.todo
+  title: 'T15: Create Social Media Advisor Persona'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T016
+  file: T016-t16-cli-persona-selection-wiza.todo
+  title: 'T16: CLI Persona Selection Wizard'
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T017
+  file: T017-t17-bootstrap-flow-integration.todo
+  title: 'T17: Bootstrap Flow Integration'
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T018
+  file: T018-t18-custom-persona-creation-cl.todo
+  title: 'T18: Custom Persona Creation CLI'
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T019
+  file: T019-t19-subordinate-agent-template.todo
+  title: 'T19: Subordinate Agent Templates'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T020
+  file: T020-t20-subordinate-spawning-logic.todo
+  title: 'T20: Subordinate Spawning Logic'
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T021
+  file: T021-t21-supervisor-subordinate-coo.todo
+  title: 'T21: Supervisor-Subordinate Coordination'
+  status: pending
+  estimate_hours: 6.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T022
+  file: T022-t22-runtime-orchestration.todo
+  title: 'T22: Runtime Orchestration'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T023
+  file: T023-t23-persona-file-templates.todo
+  title: 'T23: Persona File Templates'
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T024
+  file: T024-t24-persona-switching-feature.todo
+  title: 'T24: Persona Switching Feature'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T025
+  file: T025-t25-combine-personality-featur.todo
+  title: 'T25: Combine-Personality Feature'
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: low
+  depends_on: []
+- id: T026
+  file: T026-t26-database-schema-migration.todo
+  title: 'T26: Database Schema Migration'
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T027
+  file: T027-t27-documentation-testing.todo
+  title: 'T27: Documentation & Testing'
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T028
+  file: T028-t28-topic-based-persona-discov.todo
+  title: 'T28: Topic-Based Persona Discovery UI'
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 28
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 28

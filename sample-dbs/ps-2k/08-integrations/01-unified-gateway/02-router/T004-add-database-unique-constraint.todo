@@ -1,0 +1,59 @@
+---
+id: P8.M1.E2.T004
+title: Add database unique constraint for session keys
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: critical
+depends_on:
+- P8.M1.E2.T001
+- P8.M1.E2.T002
+- P8.M1.E2.T003
+tags:
+- database
+- sessions
+- bug
+claimed_by: cli-user
+claimed_at: '2026-02-08T09:30:49.146859+00:00'
+started_at: '2026-02-08T09:30:49.146859+00:00'
+completed_at: null
+---
+
+# Add database unique constraint for session keys
+
+
+
+## Requirements
+
+- [x] Add dedicated session_key column to sessions table
+- [x] Add unique index constraint on session_key
+- [x] Update Session schema to include session_key field
+- [x] Update Session changesets to handle session_key with validation
+- [x] Update Router to use dedicated session_key column instead of metadata
+
+## Acceptance Criteria
+
+- [x] Database migration adds session_key column with unique constraint
+- [x] Session schema includes session_key field
+- [x] Router queries sessions by session_key using direct column lookup
+- [x] Unique constraint prevents duplicate session_key values
+- [x] Tests verify unique constraint behavior
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P8.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-08 09:30 UTC
+**Sibling tasks**: P8.M1.E2.T005, P8.M1.E2.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P8.M1.E2.T004 → P8.M1.E2.T005 → P8.M1.E2.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P8.M1.E2.T004: .tasks/08-integrations/01-unified-gateway/02-router/T004-add-database-unique-constraint.todo
+- P8.M1.E2.T005: .tasks/08-integrations/01-unified-gateway/02-router/T005-fix-metadata-key-type-consiste.todo
+- P8.M1.E2.T006: .tasks/08-integrations/01-unified-gateway/02-router/T006-fix-telegram-routing-and-concu.todo

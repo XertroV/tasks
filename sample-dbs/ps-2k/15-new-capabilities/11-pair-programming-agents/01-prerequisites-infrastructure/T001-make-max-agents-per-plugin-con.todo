@@ -1,0 +1,42 @@
+---
+id: P15.M11.E1.T001
+title: Make max_agents_per_plugin configurable per-plugin
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:19:06.700400+00:00'
+started_at: '2026-02-17T18:19:06.700400+00:00'
+completed_at: '2026-02-17T18:29:12.411777+00:00'
+duration_minutes: 10.095189383333333
+---
+## Description
+Add per-plugin `max_agents` limit to the manifest `limits` schema, replacing the global-only `max_agents_per_plugin` config.
+
+## Files to Modify
+- `lib/pag_server/plugins/manifest.ex` — add `max_agents` to limits schema, update `parse_limits` and `validate_limits`
+- `lib/pag_server/plugins/agent_spawner.ex` — change `check_agent_limit/2` to read plugin manifest limit first, fall back to global
+
+## Acceptance Criteria
+- [ ] Plugin manifest can declare `limits.max_agents: N`
+- [ ] Falls back to global default (5) if not specified
+- [ ] Existing plugins unaffected (no breaking change)
+- [ ] Test: plugin with custom limit can spawn more agents than global default
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+```elixir
+# In AgentSpawner.check_agent_limit/2:
+defp check_agent_limit(parent_id, plugin) do
+  current_count = length(Coordinator.list_children(parent_id))
+  max = plugin_max_agents(plugin) || global_max_agents_per_plugin()
+  if current_count >= max, do: {:error, :max_agents_reached}, else: :ok
+end
+
+defp plugin_max_agents(%{manifest: %{limits: %{max_agents: n}}}) when is_integer(n), do: n
+defp plugin_max_agents(_), do: nil
+```

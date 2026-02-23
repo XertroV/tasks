@@ -1,0 +1,122 @@
+---
+id: P8.M2.E2.T003
+title: Add file and media handling
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P8.M2.E2.T001
+tags:
+- integrations
+- telegram
+- handlers
+- files
+- media
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:21:54.903043+00:00'
+started_at: '2026-02-11T02:21:54.903043+00:00'
+completed_at: '2026-02-11T02:24:28.867725+00:00'
+duration_minutes: 2.5660778833333335
+---
+
+# Add file and media handling
+
+Handle file uploads, images, and other media sent through Telegram.
+
+## Requirements
+
+- [ ] Extend MessageHandler to detect file attachments (~40 LoC)
+- [ ] Implement file download from Telegram servers (~30 LoC)
+- [ ] Store files temporarily in agent workspace
+- [ ] Include file path/URL in agent context
+- [ ] Support image analysis via vision-capable LLMs
+- [ ] Handle document, photo, video, and audio types
+- [ ] Clean up temporary files after processing
+- [ ] Add file size limits (20MB default)
+
+## Acceptance Criteria
+
+- [ ] Images downloaded and passed to agent for analysis
+- [ ] Documents extracted and content made available
+- [ ] File size limit enforced with user notification
+- [ ] Temporary files cleaned up after 1 hour
+- [ ] Supported types: photo, document, video, audio
+- [ ] Vision models receive image URLs correctly
+- [ ] Unit tests with mock file downloads
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 224 (File handling)
+
+**Key Points**:
+- Telegram files accessed via `get_file` and file_id
+- Large files require separate download endpoint
+- Vision models need image URLs or base64 data
+- Clean up prevents disk space leaks
+
+## Notes
+
+File handling flow:
+```elixir
+def handle(%{photo: [photo | _], caption: caption, chat: %{id: chat_id}, from: user}) do
+  with {:ok, file_path} <- download_file(photo.file_id),
+       {:ok, session} <- SessionMapper.get_or_create(chat_id, user),
+       message <- build_message(caption, file_path),
+       {:ok, response} <- Agent.send_message(session.agent_id, message) do
+    send_response(chat_id, response)
+    schedule_cleanup(file_path)
+  end
+end
+
+defp download_file(file_id) do
+  with {:ok, %{file_path: remote_path}} <- Telegex.get_file(file_id),
+       {:ok, content} <- download_from_telegram(remote_path) do
+    local_path = Path.join([System.tmp_dir!(), "telegram", file_id])
+    File.write!(local_path, content)
+    {:ok, local_path}
+  end
+end
+
+defp build_message(caption, file_path) do
+  """
+  #{caption || ""}
+  
+  [Attached file: #{file_path}]
+  """
+end
+```
+
+Supported MIME types:
+- `image/*` → Vision model analysis
+- `application/pdf` → Text extraction
+- `text/*` → Direct content reading
+- Others → File metadata only
+
+Cleanup with GenServer timer:
+```elixir
+Process.send_after(self(), {:cleanup, file_path}, :timer.hours(1))
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:21 UTC
+**Primary task**: P8.M4.E2.T002 - Add slash command support
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M2.E2 vs P8.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

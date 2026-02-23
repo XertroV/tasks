@@ -1,0 +1,25 @@
+---
+id: P50.M4.E1.T001
+title: Define ETS table layout and projection state struct for CollabTeams.Projection
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M1.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:42:03.313649+00:00'
+started_at: '2026-02-23T02:42:03.313649+00:00'
+completed_at: '2026-02-23T02:42:05.749170+00:00'
+duration_minutes: 0.04059168333333333
+---
+## Description
+Three ETS tables owned by CollabTeams.Projection GenServer (protected visibility): collab_teams_overview (team_id -> state/worker_count/task_summary map), collab_teams_task_board (team_id -> tasks grouped by state), collab_teams_activity_feed (team_id -> ordered list of recent events+messages). Module-level docs describe key/value shape for each table. No DB reads yet -- pure struct/ETS scaffolding.
+
+## Acceptance Criteria
+- Three ETS tables defined in module
+- protected visibility prevents cross-process writes
+- key/value shapes documented
+- no DB calls in this task
+- GenServer init creates all three tables

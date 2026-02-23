@@ -1,0 +1,43 @@
+---
+id: P18.M3.E1.T002
+title: Emit PubSub event on membership creation
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P18.M3.E1.T001
+tags:
+- workspace
+- pubsub
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:30:42.927582+00:00'
+started_at: '2026-02-17T18:30:42.927582+00:00'
+completed_at: '2026-02-17T21:50:35.617708+00:00'
+duration_minutes: 199.87816853333334
+---
+
+# Emit PubSub event on membership creation
+
+## Description
+
+Broadcast a PubSub event when a new workspace member is added (via invitation acceptance or direct addition).
+
+## Requirements
+
+- [ ] Broadcast on topic `"workspace:#{workspace_id}"` when a member is added
+- [ ] Event payload: `{:member_joined, %{user_id: user_id, role: role, workspace_id: workspace_id}}`
+- [ ] Also broadcast when a member is removed: `{:member_left, %{user_id: user_id, workspace_id: workspace_id}}`
+- [ ] Also broadcast when a member's role changes: `{:member_role_changed, %{user_id: user_id, old_role: old, new_role: new, workspace_id: workspace_id}}`
+- [ ] Add broadcasts in the `WorkspaceMembers` context module
+
+## Acceptance Criteria
+
+- [ ] PubSub events fire on member add, remove, and role change
+- [ ] Events contain correct payload data
+- [ ] Subscribers to the workspace topic receive the events
+
+## Context
+
+**Files affected**: `lib/pag_server/workspace_members.ex`
+**Pattern reference**: Existing PubSub broadcasts in `lib/pag_server/bootstrap.ex`

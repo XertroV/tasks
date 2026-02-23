@@ -1,0 +1,37 @@
+---
+id: P15.M7.E1.T001
+title: Define WorkspaceTemplate embedded schema and YAML format
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- schema
+- templates
+claimed_by: cli-user
+claimed_at: '2026-02-17T08:28:54.268515+00:00'
+started_at: '2026-02-17T08:28:54.268515+00:00'
+completed_at: '2026-02-17T08:46:19.229015+00:00'
+duration_minutes: 17.41600815
+---
+## Description
+Define a new PagServer.Templates.WorkspaceTemplate embedded schema (distinct from existing AgentTemplate). This represents a full workspace experience template, not just an agent config.
+
+## Fields
+- name, version, description, category, icon
+- agent_config (map: model_provider, model_name, base_system_prompt)
+- bootstrap_prompt (string: the system prompt used during onboarding conversation)
+- tracked_files (list of maps: file_path, description, required boolean)
+- default_files (map of filename -> template content with {{variable}} substitution)
+- questionnaire_sections (list: structured questionnaire definition - sections with questions, types, options, conditionals)
+- variables (map: variable definitions with types/defaults/required)
+- metadata (map)
+
+## Acceptance Criteria
+- [ ] WorkspaceTemplate embedded schema defined with all fields
+- [ ] YAML loader integration (extend existing Loader or create WorkspaceTemplateLoader)
+- [ ] Changeset validations for all fields
+- [ ] Builtins module for workspace templates (PagServer.Templates.WorkspaceBuiltins)
+- [ ] Unit tests for schema validation and YAML loading
+- [ ] Typespec for the struct

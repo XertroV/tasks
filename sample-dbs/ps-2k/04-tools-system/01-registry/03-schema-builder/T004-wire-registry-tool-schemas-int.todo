@@ -1,0 +1,54 @@
+---
+id: P4.M1.E3.T004
+title: Wire registry tool schemas into LLM request builders
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P4.M1.E3.T002
+- P4.M1.E3.T003
+- P4.M1.E2.T002
+tags:
+- tools
+- schema
+- llm
+claimed_by: cli-user
+claimed_at: '2026-02-06T02:54:31.187565'
+started_at: '2026-02-06T02:54:31.187565'
+completed_at: '2026-02-06T02:58:19.797881'
+duration_minutes: 3.810171766666667
+---
+
+# Wire registry tool schemas into LLM request builders
+
+
+
+## Requirements
+
+- [ ] Pull tool definitions and schemas from tool registry and include them in LLM request builders.
+- [ ] Map ToolCall schema fields into provider-specific tool schema format (name, description, input schema).
+- [ ] Ensure builder supports dynamic tool sets per agent/session and respects registry filtering.
+- [ ] Keep schema serialization stable and compatible with ToolExecutor expectations.
+
+## Context
+
+- [ ] Tool registry is the source of truth for tool schemas; schema builder should not duplicate definitions.
+- [ ] ToolCall schema defines the arguments that ToolExecutor will validate and execute.
+- [ ] Provider-specific schema formats must match tool result formatting counterparts for round trip behavior.
+
+## Notes
+
+- [ ] Include registry version or digest in request metadata if available for debugging.
+- [ ] Avoid mutating registry tool schema during request build.
+
+## Testing
+
+- [ ] Add builder tests in `test/pag_server/llm/request_builder_tools_test.exs`.
+- [ ] Add registry schema integration tests in `test/pag_server/tools/registry_schema_builder_test.exs`.
+
+## Acceptance Criteria
+
+- [ ] LLM request builders include tool schemas sourced from registry for configured tools.
+- [ ] Provider-specific schema shapes are correct for at least one provider adapter.
+- [ ] Tool schemas align with ToolCall schema used by ToolExecutor (no field mismatch).

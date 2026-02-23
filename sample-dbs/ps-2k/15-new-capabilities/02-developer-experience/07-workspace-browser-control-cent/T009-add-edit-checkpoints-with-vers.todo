@@ -1,0 +1,32 @@
+---
+id: P15.M2.E7.T009
+title: Add edit checkpoints with version labels and rollback anchors
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E7.T004
+- P15.M2.E7.T007
+tags:
+- checkpoint
+- audit
+- rollback
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:30:36.989007+00:00'
+started_at: '2026-02-18T04:30:36.989007+00:00'
+completed_at: '2026-02-18T04:44:13.459591+00:00'
+duration_minutes: 13.607842816666667
+---
+## Goal
+Support operator-defined checkpoints so a sequence of immediate edits can be grouped under a named version for easier debugging and recovery.
+
+## Acceptance Criteria
+- After the first unsnapshotted edit, the UI shows a checkpoint prompt widget with fade-in/down motion; once checkpointed it fades out/up.
+- Operators can create a checkpoint at any time with automatic sequential version numbers (`v1`, `v2`, `v3`, ...), plus required description (max 200 chars).
+- System stores checkpoint metadata: workspace, actor, timestamp, sequential version number, optional slugified label, and correlation group id.
+- Checkpoint appears in timeline and can be used as rollback target with dry-run preview before apply.
+- Duplicate labels are allowed but rendered with disambiguation suffix using version (for example `hardening pass (v34)`).
+- If the prompt is dismissed, it reappears after each subsequent edit until checkpointed.
+- Retention keeps checkpoint metadata beyond 30 days while snapshot payloads are pruned per retention policy.
+- Operator playbook documents checkpoint ergonomics and immediate-apply safety guidance.

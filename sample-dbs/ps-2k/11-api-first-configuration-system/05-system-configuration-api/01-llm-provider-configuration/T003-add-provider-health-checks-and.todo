@@ -1,0 +1,68 @@
+---
+id: P11.M5.E1.T003
+title: Add provider health checks and validation
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P11.M5.E1.T002
+tags:
+- health
+- validation
+- providers
+- monitoring
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:02:50.793134+00:00'
+started_at: '2026-02-12T23:02:50.793134+00:00'
+completed_at: '2026-02-12T23:23:35.794422+00:00'
+duration_minutes: 20.750021283333336
+---
+
+# Add provider health checks and validation
+
+## Requirements
+
+- [ ] Create `PagServer.LLM.ProviderHealthChecker` module for validation logic
+- [ ] Implement provider connectivity test (call models endpoint, no actual chat)
+- [ ] Support health check for all 4 providers (Anthropic, OpenAI, OpenRouter, Ollama)
+- [ ] Return structured health status: status, response_time_ms, error_details (if failed)
+- [ ] Add validation in ProviderConfigController POST/PUT to test API key validity
+- [ ] Add background job (via Oban) for periodic health checks of all active configs
+- [ ] Cache health check results (TTL 5 minutes) to avoid excessive API calls
+- [ ] Add telemetry events for health checks (success, failure, timeout)
+
+## Acceptance Criteria
+
+- [ ] `ProviderHealthChecker.check/2` takes provider_name and api_key, returns {:ok, status} or {:error, reason}
+- [ ] Health check returns map: %{status: :healthy|:unhealthy|:timeout, response_time_ms: integer, error: nil|string}
+- [ ] Health check timeout after 10 seconds
+- [ ] Validation on config creation rejects invalid API keys with clear error message
+- [ ] Oban job runs hourly and updates each active config's health status
+- [ ] Cache stores results in Cachex with 5-minute TTL
+- [ ] Telemetry events emitted: [:pag_server, :provider_health, :check_complete]
+- [ ] Health check doesn't create billable requests (uses list models, not chat)
+- [ ] Tests cover success, invalid keys, timeout, and all providers
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 23:02 UTC
+**Primary task**: P11.M4.E2.T003 - Implement config validation per platform
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M5.E1 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

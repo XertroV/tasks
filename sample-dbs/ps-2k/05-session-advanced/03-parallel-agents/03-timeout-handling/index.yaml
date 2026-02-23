@@ -1,0 +1,53 @@
+# Epic: Timeout Handling
+# Phase 5, Milestone 03, Epic 3 (P5.M03.E3)
+
+id: P5.M03.E3
+name: Timeout Handling
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-add-timeout-parameter.todo
+    title: Add timeout parameter
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-implement-task.await_many-time.todo
+    title: Implement Task.await_many timeout
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-handle-timeout-errors-graceful.todo
+    title: Handle timeout errors gracefully
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T002]
+    
+  - id: T004
+    file: T004-test-timeout-scenarios.todo
+    title: Test timeout scenarios
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T003]
+    
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

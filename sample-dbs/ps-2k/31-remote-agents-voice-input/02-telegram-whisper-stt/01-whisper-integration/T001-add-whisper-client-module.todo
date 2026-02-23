@@ -1,0 +1,16 @@
+---
+id: P31.M2.E1.T001
+title: Add Whisper client module
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:50.670691+00:00'
+started_at: '2026-02-18T19:46:50.670691+00:00'
+completed_at: '2026-02-18T19:46:52.223525+00:00'
+duration_minutes: 0.025880383333333333
+---
+PagServer.Whisper.Client module wrapping local whisper executable (whisper.cpp or openai-whisper). Functions: transcribe_file/2 (audio_path, opts) -> {:ok, text} | {:error, reason}. opts: model (tiny/base/small/medium/large), language. Uses System.cmd with timeout.

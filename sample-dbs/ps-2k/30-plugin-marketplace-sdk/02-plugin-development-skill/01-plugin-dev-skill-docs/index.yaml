@@ -1,0 +1,38 @@
+id: P30.M2.E1
+name: Plugin Dev Skill & Docs
+status: pending
+estimate_hours: 10.0
+complexity: low
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-write-plugin-development-skill.todo
+  title: Write plugin development skill
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-write-plugin-development-md-de.todo
+  title: Write PLUGIN_DEVELOPMENT.md developer guide
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-add-plugin-scaffolding-mix-tas.todo
+  title: Add plugin scaffolding Mix task
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: low
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,69 @@
+---
+id: P10.M5.E2.T001
+title: Create Gitea API client
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: low
+depends_on: []
+tags:
+- api-client
+- gitea
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:27:49.830560+00:00'
+started_at: '2026-02-12T05:27:49.830560+00:00'
+completed_at: '2026-02-12T05:36:54.088227+00:00'
+duration_minutes: 9.0709609
+---
+
+# Create Gitea API client
+
+Implement HTTP client module for Gitea API integration with authentication and repository operations.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/gitea/client.ex` module
+- [ ] Implement Gitea API authentication (token-based)
+- [ ] Define HTTP request builder functions:
+  - [ ] Create pull request
+  - [ ] Get PR status
+  - [ ] List issues
+  - [ ] Comment on PR/issue
+  - [ ] Get repository info
+- [ ] Implement error handling for API failures
+- [ ] Add request/response logging and telemetry
+- [ ] Write comprehensive module tests
+
+## Acceptance Criteria
+
+- [ ] Client module compiles with no warnings
+- [ ] Supports Gitea API endpoints
+- [ ] Implements retry logic for transient failures
+- [ ] All HTTP calls include telemetry tracking
+- [ ] Error responses wrapped in standardized tuples
+- [ ] Unit tests cover happy path and errors
+- [ ] `mix test` passes for all client tests
+- [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 05:27 UTC
+**Primary task**: P10.M5.E1.T001 - Create Bitbucket API client
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P10.M5.E2 vs P10.M5.E1)
+- No dependency chain: ✓ (verified at claim time)

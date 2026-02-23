@@ -1,0 +1,48 @@
+id: P18.M4.E3
+name: Settings JSONB to Embedded Schema
+status: pending
+estimate_hours: 4.5
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-create-settings-schema.todo
+  title: Create WorkspaceSettings embedded Ecto schema
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: low
+  depends_on: []
+- id: T002
+  file: T002-update-workspace-schema.todo
+  title: Update Workspace schema to use embeds_one settings
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: low
+  depends_on:
+  - P18.M4.E3.T001
+- id: T003
+  file: T003-settings-data-migration.todo
+  title: Write data migration for existing settings JSONB
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on:
+  - P18.M4.E3.T002
+- id: T004
+  file: T004-settings-validation-tests.todo
+  title: Add tests for settings validation
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on:
+  - P18.M4.E3.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

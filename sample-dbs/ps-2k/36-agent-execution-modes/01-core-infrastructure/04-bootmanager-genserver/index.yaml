@@ -1,0 +1,44 @@
+id: P36.M1.E4
+name: BootManager GenServer
+status: done
+estimate_hours: 3.25
+complexity: medium
+depends_on:
+- P36.M1.E2
+- P36.M1.E3
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-pagserver-agents-boo.todo
+  title: Implement PagServer.Agents.BootManager GenServer
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P36.M1.E2.T002
+  - P36.M1.E3.T001
+- id: T002
+  file: T002-add-bootmanager-to-application.todo
+  title: Add BootManager to application supervisor
+  status: pending
+  estimate_hours: 0.25
+  complexity: low
+  priority: high
+  depends_on:
+  - P36.M1.E4.T001
+- id: T003
+  file: T003-tests-for-bootmanager.todo
+  title: Tests for BootManager
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P36.M1.E4.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

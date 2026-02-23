@@ -1,0 +1,39 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-07T10:25:10.116746+00:00'
+started_at: '2026-02-07T10:25:10.116746+00:00'
+completed_at: '2026-02-07T10:26:31.564655+00:00'
+duration_minutes: 1.35746495
+---
+id: P2.M5.E2.T003
+title: Write model detection tests
+status: pending
+priority: high
+estimate_hours: 1.0
+complexity: low
+depends_on: [P2.M5.E2.T002]
+
+description: |
+  Write comprehensive tests for model listing and info retrieval.
+
+acceptance_criteria:
+  - [ ] Test list_models/0 with mock response
+  - [ ] Test show_model/1 with mock response
+  - [ ] Test parsing of model details
+  - [ ] Test capabilities detection
+  - [ ] Test context length extraction
+  - [ ] Test model not found errors
+  - [ ] Test empty model list
+  - [ ] Mock /api/tags and /api/show endpoints
+
+files:
+  - test/pag_server/llm/ollama_test.exs
+
+references:
+  - Bypass for HTTP mocking
+  - Example API responses from Ollama docs
+
+notes: |
+  Test both successful responses and error cases.
+  Include realistic model names like llama3.2:latest, mistral:7b, etc.

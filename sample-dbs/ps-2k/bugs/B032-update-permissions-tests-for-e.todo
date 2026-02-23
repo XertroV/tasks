@@ -1,0 +1,33 @@
+---
+id: B032
+title: update permissions tests for expanded system permissions
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- auth
+- tests
+- regression
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:56:03.432236+00:00'
+started_at: '2026-02-15T17:56:03.432236+00:00'
+completed_at: '2026-02-15T17:56:44.836654+00:00'
+duration_minutes: 0.6900735
+---
+
+# update permissions tests for expanded system permissions
+
+## Steps to Reproduce
+
+1. Run `mix test --exclude integration --exclude docker --exclude pgvector --exclude flaky`.
+2. Observe failures in `PagServer.Auth.PermissionsTest` for hardcoded permission count and system category list.
+
+## Expected Behavior
+
+`PagServer.Auth.PermissionsTest` should validate current permission definitions from `PagServer.Auth.Permissions` without stale hardcoded expectations.
+
+## Actual Behavior
+
+Tests expect 25 total permissions and an outdated system permission list, but `PagServer.Auth.Permissions` now exposes 31 permissions and additional system permissions.

@@ -1,0 +1,26 @@
+---
+id: P50.M2.E1.T005
+title: Wire team lifecycle actions into dispatcher and add tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P50.M2.E1.T001
+- P50.M2.E1.T002
+- P50.M2.E1.T003
+- P50.M2.E1.T004
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T02:21:55.832153+00:00'
+started_at: '2026-02-23T02:21:55.832153+00:00'
+completed_at: '2026-02-23T02:21:58.364856+00:00'
+duration_minutes: 0.042211483333333334
+---
+## Description
+Replace stubs in Dispatcher for create_team, get_team, list_teams, request_shutdown, cleanup_team with real Runtime calls. Add test/pag_server/plugins/collab_teams/team_lifecycle_test.exs covering: create team success, duplicate lead error, get_team workspace isolation, list_teams filter, full state machine (active->draining->closed), invalid transitions. All async: true, unique team IDs, no sleeps.
+
+## Acceptance Criteria
+- All dispatcher routes for 5 team actions call Runtime correctly
+- all tests pass; async: true; workspace isolation verified
+- unknown action still returns known_options

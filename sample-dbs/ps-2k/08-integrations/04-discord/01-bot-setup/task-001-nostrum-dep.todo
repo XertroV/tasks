@@ -1,0 +1,71 @@
+---
+id: P8.M4.E1.T001
+title: Add Nostrum dependency
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- dependencies
+- setup
+claimed_by: cli-user
+claimed_at: '2026-02-08T10:20:55.540942+00:00'
+started_at: '2026-02-08T10:20:55.540942+00:00'
+completed_at: '2026-02-08T21:31:00+00:00'
+---
+
+# Add Nostrum dependency
+
+Add Nostrum library to mix.exs for Discord bot integration.
+Nostrum is the Elixir Discord library that handles WebSocket connections,
+API requests, and event handling.
+
+## Acceptance Criteria
+
+- [x] Nostrum added to mix.exs dependencies
+- [x] Dependencies fetched with mix deps.get
+- [x] No version conflicts with existing dependencies
+- [x] Dependency compiles successfully
+
+## Notes
+
+Reference: .plan/2026-02-05-velvet-cascade/integrations.md:289-351
+
+Add to mix.exs:
+```elixir
+defp deps do
+  [
+    {:nostrum, "~> 0.10"}
+  ]
+end
+```
+
+Nostrum handles:
+- Discord Gateway WebSocket connection
+- Voice and text channel events
+- REST API wrapper
+- Rate limiting
+- Automatic reconnection
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-08 10:20 UTC
+**Primary task**: P8.M5.E2.T001 - Implement webhook verification endpoint
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M4.E1 vs P8.M5.E2)
+- No dependency chain: ✓ (verified at claim time)

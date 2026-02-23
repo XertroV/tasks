@@ -1,0 +1,47 @@
+---
+id: P41.M2.E1.T001
+title: Add parallel test partitioning to GitHub Actions CI
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T15:38:40.609281+00:00'
+started_at: '2026-02-19T15:38:40.609281+00:00'
+completed_at: '2026-02-19T15:41:11.831851+00:00'
+duration_minutes: 2.5203759166666666
+---
+## Context
+
+The full test suite has ~15,200 test cases. CI already enforces a 20s budget.
+The project already supports partitioning — `config/test.exs` appends `MIX_TEST_PARTITION` to the DB name.
+Currently CI runs a single sequential job. Splitting into 4 parallel jobs would reduce wall-clock time by ~75%.
+
+## What to do
+
+In `.github/workflows/test.yml`, modify the test job to use a matrix strategy with 4 partitions:
+
+```yaml
+strategy:
+  matrix:
+    partition: [1, 2, 3, 4]
+
+# In steps, change the test run to:
+env:
+  MIX_TEST_PARTITION: ${{ matrix.partition }}
+run: |
+  ./scripts/profile_tests.sh recent-mix-tests.log --cover --partitions 4
+  ./scripts/check_test_budget.sh recent-mix-tests.log
+```
+
+Also update the mix test alias to pass `--partitions 4` when the env var is set, or add a dedicated CI alias.
+
+## Acceptance Criteria
+
+- [x] `.github/workflows/test.yml` matrix runs 4 parallel test jobs
+- [x] Each partition gets a unique DB name via `MIX_TEST_PARTITION` (already supported in test.exs)
+- [x] Coverage reports (if any) are merged across partitions or noted as partial
+- [x] Check that `check_test_budget.sh` and `profile_tests.sh` work correctly with the `--partitions` flag
+- [x] CI still passes (all 4 partitions green) and total wall-clock time is reduced

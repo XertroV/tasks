@@ -1,0 +1,63 @@
+---
+id: P11.M2.E3.T002
+title: Add quota configuration endpoints
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T22:44:53.782009+00:00'
+started_at: '2026-02-12T22:44:53.782009+00:00'
+completed_at: '2026-02-12T22:59:41.422521+00:00'
+duration_minutes: 14.794008366666667
+---
+
+# Add quota configuration endpoints
+
+
+
+## Requirements
+
+- [ ] Create `GET /api/v1/quotas/:agent_id/:tool_id` to check quota status
+- [ ] Create `PUT /api/v1/quotas/:agent_id/:tool_id` to set/update quota limits
+- [ ] Create `POST /api/v1/quotas/reset` to reset quota for agent or tool
+- [ ] Support bulk quota updates: `PUT /api/v1/quotas/batch`
+- [ ] Include quota response: used, limit, remaining, window_type, reset_time
+- [ ] Support quota inheritance from tool defaults or agent profiles
+- [ ] Provide quota analytics: usage trends, peak times, top consumers
+
+## Acceptance Criteria
+
+- [ ] GET endpoint returns current quota state with time to reset
+- [ ] PUT creates or updates quota limits returning 200/201
+- [ ] Reset endpoint clears quota returning 204
+- [ ] Batch endpoint supports updating multiple agent-tool pairs atomically
+- [ ] Quota inheritance properly resolves: agent override > tool default > global
+- [ ] Analytics endpoint shows usage over time periods (24h, 7d, 30d)
+- [ ] Quota changes are audited with who changed it and when
+- [ ] All endpoints properly authenticated and rate-limited
+- [ ] Tests cover quota creation, updates, resets, and analytics
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 22:44 UTC
+**Primary task**: P11.M4.E2.T002 - Add Telegram/Slack/Discord config endpoints
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M2.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

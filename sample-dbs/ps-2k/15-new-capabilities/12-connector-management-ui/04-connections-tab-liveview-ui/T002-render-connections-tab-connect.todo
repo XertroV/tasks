@@ -1,0 +1,17 @@
+---
+id: P15.M12.E4.T002
+title: 'Render connections tab: connector table with all columns'
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M12.E4.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T07:31:33.178372+00:00'
+started_at: '2026-02-18T07:31:33.178372+00:00'
+completed_at: '2026-02-18T07:51:01.450773+00:00'
+duration_minutes: 19.471206366666667
+---
+In the embedded HEEx template of workspace_browser_live.ex, add the :connections tab content block (pattern: :if={@active_tab == :connections}). Table columns: (1) Platform — icon (fab fa-telegram / fa-slack / fa-discord) + platform name; (2) Name — bot_config.name, editable label; (3) Status — colored badge: active (emerald) / inactive (gray) / error (rose), with last_error tooltip on error; (4) Bound Session — session name + agent display_name, or 'Unbound' in amber if session_id is nil; (5) Created — relative timestamp; (6) Actions — 'Edit' button (phx-click='open_connector_drawer') and status toggle (activate/deactivate). Empty state: 'No connectors yet. Add one to connect a messaging platform.' with an Add button. Add button at top right of tab (phx-click='open_connector_drawer' phx-value-mode='create').

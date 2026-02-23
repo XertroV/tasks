@@ -1,0 +1,17 @@
+---
+id: P22.M3.E1.T003
+title: Add CompactionMonitor to SessionSupervisor startup
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:58:59.153655+00:00'
+started_at: '2026-02-18T14:58:59.153655+00:00'
+completed_at: '2026-02-18T15:07:14.170281+00:00'
+duration_minutes: 8.250276766666667
+---
+Update session supervision tree to start CompactionMonitor as part of session initialization. Start only if auto_compact_enabled flag is true (default: true). CompactionMonitor should terminate when session terminates. Acceptance criteria: - CompactionMonitor process exists in supervision tree for each active session - Terminating a session also terminates its CompactionMonitor - Setting auto_compact_enabled: false prevents CompactionMonitor from starting - No crash if CompactionMonitor crashes (supervisor restarts or session continues without it)

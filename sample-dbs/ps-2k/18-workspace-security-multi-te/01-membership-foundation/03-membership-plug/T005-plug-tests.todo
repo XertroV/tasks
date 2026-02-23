@@ -1,0 +1,53 @@
+---
+id: P18.M1.E3.T005
+title: Add tests for plug behavior and pipeline integration
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P18.M1.E3.T004
+tags:
+- security
+- workspace
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:40:43.892383+00:00'
+started_at: '2026-02-17T17:40:43.892383+00:00'
+completed_at: '2026-02-17T17:44:04.067738+00:00'
+duration_minutes: 3.3362556833333334
+---
+
+# Add tests for plug behavior and pipeline integration
+
+## Description
+
+Tests for RequireWorkspaceMembership and RequireWorkspaceRole plugs, both in isolation and integrated into the full pipeline.
+
+## Requirements
+
+- [ ] Unit tests for RequireWorkspaceMembership plug:
+  - Member access assigns correct values
+  - Non-member gets 403
+  - Missing workspace_id gets 400
+  - Missing user_id gets 401
+  - Custom param_name option works
+- [ ] Unit tests for RequireWorkspaceRole plug:
+  - Role meets minimum: passes
+  - Role below minimum: 403
+  - Each role against each minimum level
+- [ ] Integration tests through actual workspace API endpoints:
+  - Owner can access all endpoints
+  - Admin can manage but not delete
+  - Member can view and chat but not manage
+  - Non-member gets 403 on all workspace endpoints
+
+## Acceptance Criteria
+
+- [ ] All plug unit tests pass with async: true
+- [ ] Integration tests verify end-to-end auth pipeline
+- [ ] Tests cover the boundary between each role level
+
+## Context
+
+**Files affected**: `test/pag_server_web/plugs/require_workspace_membership_test.exs`, `test/pag_server_web/plugs/require_workspace_role_test.exs`

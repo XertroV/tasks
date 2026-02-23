@@ -1,0 +1,147 @@
+---
+id: P10.M3.E3.T002
+title: Implement common issue operations abstraction
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T07:08:23.136042+00:00'
+started_at: '2026-02-12T07:08:23.136042+00:00'
+completed_at: '2026-02-12T07:38:44.777437+00:00'
+duration_minutes: 30.36068975
+---
+
+# Implement common issue operations abstraction
+
+Build an abstraction layer that provides a unified API across different issue tracker providers.
+
+## Requirements
+
+### Router/Dispatcher
+- [ ] Create `lib/pag_server/integrations/issue_tracker_adapter.ex` module
+- [ ] Implement router to identify provider from configuration
+- [ ] Delegate CRUD operations to correct implementation (Jira, Linear)
+- [ ] Support configuration-based provider selection
+- [ ] Handle provider initialization and validation
+
+### Issue Normalization
+- [ ] Convert provider-specific issue formats to common Issue struct
+- [ ] Map Jira fields to normalized fields: key, title, description, status, assignee, priority
+- [ ] Map Linear fields to normalized fields (identifier → key, state → status)
+- [ ] Handle both singular and plural naming (assignee vs assignees)
+- [ ] Extract custom fields from provider responses based on configuration
+- [ ] Normalize timestamps to DateTime or ISO8601 strings
+- [ ] Normalize priority: numeric or atom to common scale
+
+### Error Translation
+- [ ] Translate provider-specific error types to common IssueTracker errors
+- [ ] Map HTTP status codes to error types (401→AuthError, 404→NotFoundError, 409→ConflictError)
+- [ ] Create user-friendly error messages from provider error details
+- [ ] Preserve original error for debugging/logging
+
+### Field Mapping Configuration
+- [ ] Define configuration for custom field mapping
+- [ ] Support field translation: Jira custom field ID → normalized field name
+- [ ] Support renaming fields: Linear.state → Issue.status
+- [ ] Configuration format: map of provider → field mappings
+- [ ] Store in config or database for multi-tenant scenarios
+
+### Caching Layer
+- [ ] Integrate Cachex for issue caching
+- [ ] Cache single issue fetches (GET hit rate optimization)
+- [ ] Cache TTL: 5 minutes for issues (configurable)
+- [ ] Invalidate cache on update/delete operations
+- [ ] Support cache warming for frequently accessed issues
+- [ ] Add cache hit metrics for monitoring
+
+### API Surface
+- [ ] Provide convenience functions: `get_issue/2`, `create_issue/3`, `update_issue/3`, etc.
+- [ ] Functions accept provider-agnostic config parameter
+- [ ] Return normalized Issue structs or errors
+- [ ] Support optional caching parameter
+
+## Acceptance Criteria
+
+- [ ] Router correctly dispatches to Jira and Linear adapters
+- [ ] Normalized issues have consistent field structure across providers
+- [ ] Custom field mapping correctly translates provider fields
+- [ ] Provider errors (401, 404, 409) map to correct error types
+- [ ] Jira custom field IDs translated to readable names
+- [ ] Linear state names translated to common status values
+- [ ] Issues cached for 5 minutes, invalidated on updates
+- [ ] Cache hits measured via telemetry
+- [ ] Concurrent requests to different providers work correctly
+- [ ] Unit tests cover normalization, routing, error translation, caching
+- [ ] Integration test confirms end-to-end operations (create/read/update)
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Field Mapping Configuration**:
+```elixir
+config :pag_server, :integrations,
+  issue_field_mapping: %{
+    jira: %{
+      "customfield_10000" => :epic_link,
+      "customfield_10001" => :story_points
+    },
+    linear: %{
+      "state" => :status,
+      "identifier" => :key
+    }
+  }
+```
+
+**Normalization Example**:
+```
+Jira Response: {"key": "PROJ-1", "fields": {"summary": "Bug", "status": {"name": "In Progress"}}}
+→ Issue struct: %Issue{key: "PROJ-1", title: "Bug", status: "In Progress"}
+
+Linear Response: {"id": "issue-123", "identifier": "PROJ-1", "title": "Bug", "state": {"name": "in_progress"}}
+→ Issue struct: %Issue{id: "issue-123", key: "PROJ-1", title: "Bug", status: "In Progress"}
+```
+
+**Error Translation Example**:
+```
+Jira HTTP 404 → {:error, {IssueTracker.NotFoundError, "Issue PROJ-1 not found"}}
+Linear HTTP 401 → {:error, {IssueTracker.AuthError, "Invalid API key"}}
+```
+
+**Caching Strategy**:
+- Single issue GET: 5 min TTL
+- List operations: not cached (potentially stale)
+- Cache key: "issue:{provider}:{issue_id}"
+- Invalidation: on update/delete
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/issue_tracker_adapter_test.exs
+
+# Integration tests (requires Jira + Linear config)
+JIRA_API_KEY=... LINEAR_API_KEY=... \
+mix test test/pag_server/integrations/issue_tracker_adapter_test.exs --include integration
+
+# Cache behavior tests
+mix test test/pag_server/integrations/issue_tracker_adapter_test.exs -k "cache"
+```
+
+## Verification
+
+```bash
+# Test normalization for both providers
+mix test test/pag_server/integrations/issue_tracker_adapter_test.exs -k "normaliz"
+
+# Test error translation
+mix test test/pag_server/integrations/issue_tracker_adapter_test.exs -k "error"
+
+# Test routing to correct adapter
+mix test test/pag_server/integrations/issue_tracker_adapter_test.exs -k "dispatch"
+
+# File size
+wc -l lib/pag_server/integrations/issue_tracker_adapter.ex
+```

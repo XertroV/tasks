@@ -1,0 +1,24 @@
+---
+id: P15.M15.E3.T001
+title: 'Rewrite agent-persona agent template system_prompt (Section 1: Existence)'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags:
+- persona
+- prompts
+- templates
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-19T13:57:14.150480+00:00'
+---
+Rewrite the system_prompt field in priv/templates/agent-persona.yml.
+
+New content establishes the agent as an entity with persistent self-concept. References core files, /home directory, birth_words.
+
+Acceptance criteria:
+- Agent template loads and validates
+- system_prompt matches planned content from .plan/2026-02-19-persona-prompt-rewrite/draft-prompt.md

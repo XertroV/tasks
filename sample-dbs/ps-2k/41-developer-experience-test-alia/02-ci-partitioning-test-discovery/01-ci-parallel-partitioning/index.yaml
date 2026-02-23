@@ -1,0 +1,22 @@
+id: P41.M2.E1
+name: CI Parallel Partitioning
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-parallel-test-partitioning.todo
+  title: Add parallel test partitioning to GitHub Actions CI
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

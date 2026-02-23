@@ -1,0 +1,56 @@
+---
+id: P7.M7.E1.T024
+title: Document missing composable query arities in Events.Queries
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- documentation
+- events
+- exdoc
+claimed_by: cli-user
+claimed_at: '2026-02-08T06:58:45.754519+00:00'
+started_at: '2026-02-08T06:58:45.754519+00:00'
+completed_at: '2026-02-08T07:01:42.804795+00:00'
+duration_minutes: 2.950837716666667
+---
+
+# Document missing composable query arities in Events.Queries
+
+Close remaining function-level documentation gaps for composable query builders
+introduced in `PagServer.Events.Queries`.
+
+
+## Requirements
+
+- [x] Add missing `@doc` entries for:
+  - [x] `PagServer.Events.Queries.by_session/3`
+  - [x] `PagServer.Events.Queries.by_agent/3`
+- [x] Ensure existing `@spec` and examples remain accurate after doc updates
+- [x] Run `mix docs` and confirm no new warnings from `events/queries.ex`
+
+## Acceptance Criteria
+
+- [x] `by_session/3` and `by_agent/3` have clear `@doc` coverage
+- [x] No ExDoc warnings are introduced by changes in `events/queries.ex`
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M7.E1)
+**Agent**: cli-user
+**Date**: 2026-02-08 06:58 UTC
+**Sibling tasks**: P7.M7.E1.T025, P7.M7.E1.T026
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M7.E1.T024 → P7.M7.E1.T025 → P7.M7.E1.T026
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M7.E1.T024: .tasks/07-production/07-documentation/01-api-docs/T024-document-missing-composable-qu.todo
+- P7.M7.E1.T025: .tasks/07-production/07-documentation/01-api-docs/T025-add-missing-ratelimiter-typedo.todo
+- P7.M7.E1.T026: .tasks/07-production/07-documentation/01-api-docs/T026-resolve-remaining-exdoc-warnin.todo

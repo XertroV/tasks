@@ -1,0 +1,26 @@
+# Epic: Shell Execution
+# Phase 4, Milestone 2, Epic 2 (P4.M2.E2)
+
+id: P4.M2.E2
+name: Shell Execution
+status: pending
+estimate_hours: 4
+complexity: high
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-execute-shell.todo
+    title: Implement execute_shell tool
+    status: pending
+    estimate_hours: 4.0
+    complexity: high
+    priority: high
+    depends_on: []
+
+stats:
+  total: 1
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 1

@@ -1,0 +1,50 @@
+id: P55.M2
+name: Thread UI and Message Display
+status: done
+estimate_hours: 12.0
+complexity: medium
+depends_on:
+- M1
+locked: false
+epics:
+- id: E1
+  name: Thread Sidebar
+  path: 01-thread-sidebar
+  status: done
+  estimate_hours: 3.5
+  complexity: medium
+  depends_on: []
+  description: 'Thread sidebar function component: list rendering with active highlight
+    and last-activity sorting, search filtering, new thread creation flow with agent
+    picker if workspace has multiple agents.'
+  locked: false
+- id: E2
+  name: Thread Overview
+  path: 02-thread-overview
+  status: done
+  estimate_hours: 2.0
+  complexity: low
+  depends_on: []
+  description: Thread overview cards/grid shown when no session_id in URL. Status
+    pill, agent badge, message preview, click-to-navigate. Workspace summary stats
+    and prominent New Thread CTA.
+  locked: false
+- id: E3
+  name: Message Rendering Pipeline
+  path: 03-message-rendering-pipeline
+  status: done
+  estimate_hours: 7.5
+  complexity: high
+  depends_on: []
+  description: 'Message list container with AutoScrollTranscript hook. Message bubble
+    with 4 role variants: user (right-aligned indigo), assistant (markdown + collapsible
+    thinking + model footer), system (centered muted), tool_result (cyan monospace
+    collapsible). Composer with ComposerTextarea hook + send via AgentServer. Toolbar
+    with agent status and model display.'
+  locked: false
+stats:
+  total_tasks: 9
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 9

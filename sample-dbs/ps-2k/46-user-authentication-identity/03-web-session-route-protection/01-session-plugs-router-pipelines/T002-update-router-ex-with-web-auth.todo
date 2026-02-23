@@ -1,0 +1,37 @@
+---
+id: P46.M3.E1.T002
+title: Update router.ex with :web_authenticated and :web_admin pipelines
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P46.M3.E1.T001
+- P46.M2.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T22:33:00.988156+00:00'
+started_at: '2026-02-19T22:33:00.988156+00:00'
+completed_at: '2026-02-19T22:45:57.900196+00:00'
+duration_minutes: 12.948533833333332
+---
+Update lib/pag_server_web/router.ex to add new pipelines and protect existing routes:
+
+New pipelines:
+  pipeline :web_authenticated do
+    plug :require_login  # RequireLogin plug
+  end
+
+  pipeline :web_admin do
+    plug :require_login, role: :admin
+  end
+
+Move existing LiveView routes under appropriate scope:
+- /dashboard, /workspaces/*, /agents/*, /sessions/* → :web_authenticated
+- /admin/* → :web_admin
+- /login, /auth/* (OAuth) → no auth (public)
+- API routes (/api/*) remain under existing :api, :require_auth pipelines — NO CHANGE
+
+Remove or deprecate AdminAuth plug from :api_admin pipeline — admin API access will be addressed in M4.
+Ensure DevAutoLogin plug is inserted before :require_login in the :browser pipeline (dev only).
+Acceptance: All existing web routes respond correctly. API routes are unaffected. mix test.web passes.

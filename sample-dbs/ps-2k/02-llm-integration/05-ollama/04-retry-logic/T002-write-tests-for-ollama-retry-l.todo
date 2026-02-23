@@ -1,0 +1,140 @@
+---
+id: P2.M5.E4.T002
+title: Write tests for Ollama retry logic
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P2.M5.E4.T001
+tags:
+- ollama
+- retry
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:22:30.169909'
+started_at: '2026-02-06T13:22:30.169909'
+completed_at: '2026-02-06T13:23:21.987235'
+duration_minutes: 0.8636219333333333
+---
+
+# Write tests for Ollama retry logic
+
+Comprehensive tests for the Ollama retry module covering retryable/non-retryable
+errors, backoff timing, and telemetry emissions.
+
+## Requirements
+
+- [x] Create `test/pag_server/llm/ollama/retry_test.exs`
+- [x] Test successful request on first attempt (no retry)
+- [x] Test retry on `:ollama_not_running` followed by success
+- [x] Test retry on `:timeout` followed by success
+- [x] Test retry on `{:http_error, 500, _}` followed by success
+- [x] Test retry on `{:http_error, 503, _}` followed by success
+- [x] Test no retry on `{:http_error, 400, _}` bad request
+- [x] Test no retry on `{:http_error, 404, _}` model not found
+- [x] Test max attempts exhaustion returns final error
+- [x] Test backoff delays: 500ms, 1000ms, 2000ms
+- [x] Test `on_retry` callback is invoked with correct arguments
+- [x] Test `sleep_fn` override works (use test-friendly no-op or accumulator)
+- [x] Test telemetry events emitted on retry with correct metadata
+- [x] Test custom `max_attempts` configuration
+
+## Acceptance Criteria
+
+- [x] All tests pass with `mix test test/pag_server/llm/ollama/retry_test.exs`
+- [x] Tests use `sleep_fn: fn _ -> :ok end` to avoid actual delays
+- [x] Telemetry events verified using `:telemetry.attach/4` test helpers
+- [x] Tests are async-safe (`use ExUnit.Case, async: true`)
+- [x] Both happy path and exhaustion paths covered
+- [x] At least 95% code coverage for the Retry module
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.LLM.Ollama.RetryTest do
+  use ExUnit.Case, async: true
+
+  alias PagServer.LLM.Ollama.Retry
+
+  @no_sleep fn _ms -> :ok end
+
+  describe "with_retry/2" do
+    test "returns immediately on success" do
+      result = Retry.with_retry(fn -> {:ok, :done} end, sleep_fn: @no_sleep)
+      assert result == {:ok, :done}
+    end
+
+    test "retries on :ollama_not_running then succeeds" do
+      counter = :counters.new(1, [:atomics])
+
+      result =
+        Retry.with_retry(
+          fn ->
+            count = :counters.get(counter, 1)
+            :counters.add(counter, 1, 1)
+            if count < 2, do: {:error, :ollama_not_running}, else: {:ok, :recovered}
+          end,
+          sleep_fn: @no_sleep
+        )
+
+      assert result == {:ok, :recovered}
+      assert :counters.get(counter, 1) == 3
+    end
+
+    test "does not retry on 400 errors" do
+      counter = :counters.new(1, [:atomics])
+
+      result =
+        Retry.with_retry(
+          fn ->
+            :counters.add(counter, 1, 1)
+            {:error, {:http_error, 400, "bad request"}}
+          end,
+          sleep_fn: @no_sleep
+        )
+
+      assert {:error, {:http_error, 400, _}} = result
+      assert :counters.get(counter, 1) == 1  # Only called once
+    end
+
+    test "exhausts max attempts and returns final error" do
+      result =
+        Retry.with_retry(
+          fn -> {:error, :ollama_not_running} end,
+          max_attempts: 3,
+          sleep_fn: @no_sleep
+        )
+
+      assert result == {:error, :ollama_not_running}
+    end
+
+    test "records backoff delays" do
+      delays = :ets.new(:delays, [:bag, :public])
+
+      Retry.with_retry(
+        fn -> {:error, :ollama_not_running} end,
+        max_attempts: 3,
+        sleep_fn: fn ms -> :ets.insert(delays, {ms}) end
+      )
+
+      recorded = :ets.tab2list(delays) |> Enum.map(fn {ms} -> ms end) |> Enum.sort()
+      assert recorded == [500, 1000]
+    end
+  end
+end
+```
+
+## Context
+
+**Source**: Architecture audit - LLM provider layer gap analysis (2026-02-06)
+
+**Reference Files**:
+- `test/pag_server/llm/providers/anthropic/retry_test.exs` - Anthropic retry test patterns (if exists)
+- `lib/pag_server/llm/ollama/retry.ex` - Module under test (from T001)
+
+## Notes
+
+- Use `sleep_fn: fn _ms -> :ok end` to avoid test slowness
+- Use `:counters` module for thread-safe call counting in async tests
+- Use `:telemetry.attach/4` + `self()` message passing pattern for telemetry verification

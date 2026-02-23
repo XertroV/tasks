@@ -1,0 +1,47 @@
+---
+id: I034
+title: Refactor how plugins work so we don't tneed plugin files under lib/, eg lib/pag_server/plugins/*
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:50:18.288427+00:00'
+started_at: '2026-02-18T14:50:18.288427+00:00'
+completed_at: '2026-02-18T14:50:19.903923+00:00'
+duration_minutes: 0.02692468333333333
+---
+
+# Idea Intake: Refactor how plugins work so we don't tneed plugin files under lib/, eg lib/pag_server/plugins/*
+
+## Original Idea
+
+Refactor how plugins work so we don't tneed plugin files under lib/, eg lib/pag_server/plugins/*
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Refactor how plugins work so we don't tneed plugin files under lib/, eg lib/pag_server/plugins/*"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P23.M3 (Plugin File Structure Refactor)
+- P23.M3.E1 (Plugin Directory Structure — tasks not yet created)
+- P23.M3.E2 (PluginLoader Update & Migration — tasks not yet created)
+- P23.M3.E3 (Verification & Documentation — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,113 @@
+---
+id: P1.M1.E4.T002
+title: Configure Mox for mocking
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on: []
+tags:
+- testing
+- mocking
+- isolation
+- foundation
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:56:11.130650'
+started_at: '2026-02-05T07:56:11.130650'
+completed_at: '2026-02-05T08:02:00.104342'
+---
+
+# Configure Mox for mocking
+
+Set up Mox for behavior-based mocking in tests, enabling isolated testing of LLM providers and HTTP clients.
+
+## Requirements
+
+- [ ] Create `test/support/mocks.ex` with mock behaviour definitions
+- [ ] Define mock behaviours for key interfaces:
+  - [ ] LLM providers (Anthropic, OpenAI, etc.)
+  - [ ] HTTP clients
+  - [ ] External service adapters
+- [ ] Configure Mox in `test/test_helper.exs`
+- [ ] Set Mox to verification mode for all tests
+- [ ] Add example mock usage in documentation
+
+## Acceptance Criteria
+
+- [ ] `test/support/mocks.ex` exists and defines all mocks
+- [ ] Mock behaviours defined:
+  - [ ] `PagServer.LLM.ProviderMock` - LLM provider interface
+  - [ ] `PagServer.HTTPClientMock` - HTTP client interface
+  - [ ] `PagServer.SandboxMock` - Sandbox execution interface
+- [ ] `test/test_helper.exs` configures Mox:
+  - [ ] `Mox.defmock/2` calls for all mocks
+  - [ ] Verification mode enabled
+- [ ] Configuration in `config/test.exs` uses mocks:
+  - [ ] `:llm_provider` points to mock
+  - [ ] `:http_client` points to mock
+- [ ] Can define mock expectations in tests
+- [ ] Tests are isolated from external services
+- [ ] Mox verification catches unused expectations
+- [ ] No compilation warnings
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md` Section 3.2 (Mocking Strategy)
+
+**Key Points**:
+- Mox enforces behaviour-based mocking (not ad-hoc stubs)
+- Each mock must implement a defined behaviour
+- Verification mode ensures all expectations are met
+- Mocks prevent accidental external API calls in tests
+- Use `expect/3` for one-time expectations, `stub/3` for defaults
+
+## Implementation Guide
+
+```elixir
+# test/support/mocks.ex
+# Define mocks for behaviours (behaviours defined in later epics)
+Mox.defmock(PagServer.LLM.ProviderMock, for: PagServer.LLM.Provider)
+Mox.defmock(PagServer.HTTPClientMock, for: PagServer.HTTPClient)
+Mox.defmock(PagServer.SandboxMock, for: PagServer.Sandbox)
+
+# Example usage (in test files):
+#
+# import Mox
+# 
+# setup :verify_on_exit!
+#
+# test "calls LLM provider" do
+#   expect(PagServer.LLM.ProviderMock, :chat, fn messages, model ->
+#     {:ok, %{content: "test response"}}
+#   end)
+#
+#   result = MyModule.process_message("Hello")
+#   assert result == "test response"
+# end
+```
+
+```elixir
+# test/test_helper.exs additions
+# Set Mox to verification mode
+Mox.defmock(PagServer.LLM.ProviderMock, for: PagServer.LLM.Provider)
+Mox.defmock(PagServer.HTTPClientMock, for: PagServer.HTTPClient)
+Mox.defmock(PagServer.SandboxMock, for: PagServer.Sandbox)
+```
+
+```elixir
+# config/test.exs additions
+config :pag_server,
+  llm_provider: PagServer.LLM.ProviderMock,
+  http_client: PagServer.HTTPClientMock,
+  sandbox: PagServer.SandboxMock
+```
+
+## Notes
+
+- Behaviours (`PagServer.LLM.Provider`, etc.) will be defined in later epics
+- For now, create placeholder behaviours if needed for compilation
+- Mox ensures tests never accidentally call real APIs
+- Use `setup :verify_on_exit!` in test modules to enable verification
+- `expect/3` is strict (called exactly N times), `stub/3` is lenient
+- Always prefer `expect/3` for test specificity

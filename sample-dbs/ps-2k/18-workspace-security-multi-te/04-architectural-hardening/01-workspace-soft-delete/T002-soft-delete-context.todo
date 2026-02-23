@@ -1,0 +1,44 @@
+---
+id: P18.M4.E1.T002
+title: Update Workspaces context for soft-delete behavior
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P18.M4.E1.T001
+tags:
+- workspace
+- soft-delete
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:48:56.647953+00:00'
+started_at: '2026-02-17T20:48:56.647953+00:00'
+completed_at: '2026-02-17T20:55:37.366547+00:00'
+duration_minutes: 6.678642999999999
+---
+
+# Update Workspaces context for soft-delete behavior
+
+## Description
+
+Replace hard delete with soft delete and add support for permanent deletion as a separate function.
+
+## Requirements
+
+- [ ] Rename current `delete_workspace/1` behavior to `hard_delete_workspace/1`
+- [ ] New `delete_workspace/2` sets `archived_at` to now and `archived_by` to the user_id parameter
+- [ ] Add `archive_workspace/2` as an explicit alias for soft-delete
+- [ ] `hard_delete_workspace/1` retains the existing `Repo.delete/1` behavior with cascade
+- [ ] Update Workspace schema to include `archived_at` and `archived_by` fields
+- [ ] Add `archived?/1` helper function to check if workspace is archived
+
+## Acceptance Criteria
+
+- [ ] `delete_workspace/2` soft-deletes (sets archived_at, does not remove from DB)
+- [ ] `hard_delete_workspace/1` permanently deletes with cascade
+- [ ] `archived?/1` returns correct boolean
+- [ ] Workspace schema includes new fields
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces.ex`, `lib/pag_server/schema/workspace.ex`

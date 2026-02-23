@@ -1,0 +1,69 @@
+id: P9.M5.E3
+name: Plugin Capabilities
+status: pending
+estimate_hours: 10.0
+complexity: medium
+depends_on:
+- E1
+tasks:
+- id: T001
+  file: T001-implement-plugin-mcp-tool-regi.todo
+  title: Implement plugin MCP tool registration into Tools.Registry
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T002
+  file: T002-implement-system-prompt-inject.todo
+  title: Implement system prompt injection from plugins
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T003
+  file: T003-implement-chat-history-read-ac.todo
+  title: Implement chat history read access API for plugins
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P9.M5.E1.T004
+- id: T004
+  file: T004-implement-plugin-context-injec.todo
+  title: Implement plugin context injection (dynamic context into agent conversations)
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P9.M5.E3.T002
+- id: T005
+  file: T005-implement-plugin-permission-au.todo
+  title: Implement plugin permission auto-approval via capability grants
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P9.M5.E1.T004
+  - P9.M5.E2.T003
+- id: T006
+  file: T006-add-plugin-event-subscription.todo
+  title: Add plugin event subscription via PubSub
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P9.M5.E1.T004
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

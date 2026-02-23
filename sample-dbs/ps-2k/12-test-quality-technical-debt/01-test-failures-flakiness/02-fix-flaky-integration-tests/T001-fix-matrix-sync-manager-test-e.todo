@@ -1,0 +1,55 @@
+---
+id: P12.M1.E2.T001
+title: Fix Matrix sync_manager_test.exs noisy logs
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T18:57:19.963875+00:00'
+started_at: '2026-02-13T18:57:19.963875+00:00'
+completed_at: '2026-02-13T19:01:17.875310+00:00'
+duration_minutes: 3.96519035
+---
+
+# Fix Matrix sync_manager_test.exs noisy logs
+
+## Description
+
+Address the noisy log output from `sync_manager_test.exs` that clutters test output and makes it harder to identify actual failures. Logs should be suppressed or captured appropriately during tests.
+
+## Acceptance Criteria
+
+- [ ] Identify which log statements cause the noise
+- [ ] Apply `ExUnit.CaptureLog` to suppress expected log output
+- [ ] Or set appropriate log level for test environment
+- [ ] Tests still pass with logs captured
+- [ ] Test output is clean without spurious log messages
+- [ ] Lint passes
+
+## Context
+
+- Related files: `test/pag_server/integrations/matrix/sync_manager_test.exs`
+- May involve: `lib/pag_server/integrations/matrix/sync_manager.ex`
+- Part of epic: Fix Flaky Integration Tests
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P12.M1.E2)
+**Agent**: cli-user
+**Date**: 2026-02-13 06:56 UTC
+**Sibling tasks**: P12.M1.E2.T002, P12.M1.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P12.M1.E2.T001 → P12.M1.E2.T002 → P12.M1.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P12.M1.E2.T001: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/02-fix-flaky-integration-tests/T001-fix-matrix-sync-manager-test-e.todo
+- P12.M1.E2.T002: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/02-fix-flaky-integration-tests/T002-stabilize-async-integration-te.todo
+- P12.M1.E2.T003: .tasks/12-test-quality-technical-debt/01-test-failures-flakiness/02-fix-flaky-integration-tests/T003-add-exunit-capturelog-where-ap.todo

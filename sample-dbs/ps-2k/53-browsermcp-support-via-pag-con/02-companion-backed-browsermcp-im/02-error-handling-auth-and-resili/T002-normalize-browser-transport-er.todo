@@ -1,0 +1,55 @@
+---
+id: P53.M2.E2.T002
+title: Normalize browser transport errors and retry guidance
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on:
+- P53.M2.E2.T001
+tags:
+- browsermcp
+- error-handling
+- resilience
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:52:22.161405+00:00'
+started_at: '2026-02-21T05:52:22.161405+00:00'
+completed_at: '2026-02-21T05:55:12.551495+00:00'
+duration_minutes: 2.83983455
+---
+
+# Normalize browser transport errors and retry guidance
+
+
+
+## Requirements
+
+- Map transport failures, timeouts, and companion-side errors into stable Browser MCP error responses.
+- Include retryability hints and operator-facing diagnostics in mapped errors.
+- Prevent raw transport internals from leaking to end users.
+
+## Acceptance Criteria
+
+- Error mapper covers timeout, disconnected companion, invalid action, and backend crash scenarios.
+- Retry guidance is present for transient failures and absent for terminal failures.
+- Tests verify normalized error payloads remain stable across all mapped scenarios.
+
+## Execution Notes (2026-02-21)
+
+- Added BrowserMCP error mapper with stable error codes and retryability
+  guidance for timeout, backend unavailable/disconnect, backend crash,
+  invalid action, auth denial, and generic execution errors.
+- Integrated normalized error payloads into companion proxy so BrowserMCP
+  failures return structured `{code, message, retryable, details}` responses
+  instead of raw transport strings.
+- Added validation for unsupported BrowserMCP actions and explicit normalized
+  errors for companion-not-connected paths.
+- Expanded tests to lock payload stability for invalid action, missing context,
+  cross-workspace denial, timeout cleanup, and disconnected companion mapping.
+
+## Evidence Artifacts
+
+- `lib/pag_server/companions/browser_error_mapper.ex`
+- `lib/pag_server/companions/companion_proxy_executor.ex`
+- `test/pag_server/companions/companion_proxy_executor_test.exs`
+- `recent-mix-tests.log`

@@ -1,0 +1,19 @@
+---
+id: B134
+title: The existing workspace dropdown is empty (setup wizard) even though I can't
+  create my workspace because that slug is already taken. Also the workspace doesn't
+  show up on the workspaces page.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T08:57:16.446992+00:00'
+started_at: '2026-02-18T08:57:16.446992+00:00'
+completed_at: '2026-02-18T09:08:50.432820+00:00'
+duration_minutes: 11.566430283333334
+---
+
+The existing workspace dropdown is empty (setup wizard) even though I can't create my workspace because that slug is already taken. Also the workspace doesn't show up on the workspaces page.

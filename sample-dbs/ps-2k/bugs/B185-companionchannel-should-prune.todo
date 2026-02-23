@@ -1,0 +1,16 @@
+---
+id: B185
+title: CompanionChannel should prune removed MCP servers on re-register
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T14:14:37.805741+00:00'
+started_at: '2026-02-21T14:14:37.805741+00:00'
+completed_at: '2026-02-21T14:17:01.098750+00:00'
+duration_minutes: 2.3882166333333337
+---
+Repeated mcp_register calls should replace server set for workspace/channel, removing servers omitted from latest payload to avoid stale registrations. Add regression tests.

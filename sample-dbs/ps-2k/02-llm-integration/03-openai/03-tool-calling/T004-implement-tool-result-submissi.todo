@@ -1,0 +1,58 @@
+---
+id: P2.M3.E3.T004
+title: Implement tool result submission loop for OpenAI
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M3.E3.T002
+tags:
+- llm
+- openai
+- tools
+- results
+claimed_by: cli-user
+claimed_at: '2026-02-05T21:38:18.320688'
+started_at: '2026-02-05T21:38:18.320688'
+completed_at: '2026-02-05T21:48:22.980272'
+duration_minutes: 10.077659566666666
+---
+
+# Implement tool result submission loop for OpenAI
+
+
+
+## Requirements
+
+- [x] Implement the OpenAI tool result submission loop that feeds tool outputs back into the conversation until completion.
+- [x] Use the OpenAI tool calling message format for tool results, including tool_call_id mapping to tool name and output.
+- [x] Preserve ordered tool result submission when multiple tool calls are returned in one assistant turn.
+- [x] Ensure the loop integrates with the LLM registry call path for OpenAI tool calling.
+- [x] Provide clear error handling when tool result submission fails (API error, invalid tool_call_id, or malformed tool output).
+
+## Acceptance Criteria
+
+- [x] When OpenAI returns tool calls, the system submits tool results and continues the conversation without manual intervention.
+- [x] Tool result messages use the correct OpenAI format and include the original tool_call_id values.
+- [x] Multiple tool results are submitted in the correct order and mapped to the corresponding tool calls.
+- [x] The loop exits when the assistant returns a final non-tool response.
+- [x] LLM registry metrics/logs reflect tool submission iterations for OpenAI.
+
+## Context
+
+- [x] OpenAI tool calling expects a sequence of assistant tool calls followed by tool result messages before the next assistant response.
+- [x] The OpenAI adapter should be the single source of truth for message format conversions used by the loop.
+- [x] The LLM registry is the entry point used by higher-level agents and must route tool-result loops correctly.
+
+## Notes
+
+- [x] Tool result message format should follow OpenAI conventions: role=tool, tool_call_id, name, content.
+- [x] Avoid merging tool results into a single message unless the OpenAI API explicitly supports that for the chosen model.
+- [x] Log tool call ids at debug level to support replay and deterministic event sourcing.
+
+## Testing
+
+- [x] Add/extend unit tests for OpenAI tool calling loop (e.g., `test/pag_server/llm/openai/tool_calling_test.exs`).
+- [x] Add adapter tests for tool result message formatting (e.g., `test/pag_server/llm/openai/tool_result_test.exs`).
+- [x] Add a registry-level integration test with mocked tool calls (tested via unit tests with executor pattern).

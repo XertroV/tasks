@@ -1,0 +1,16 @@
+---
+id: P35.M1.E3.T005
+title: 'Review P32.M1: Delete File Consensus'
+status: done
+estimate_hours: 4.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T01:42:07.042467+00:00'
+started_at: '2026-02-19T01:42:07.042467+00:00'
+completed_at: '2026-02-19T01:48:40.204131+00:00'
+duration_minutes: 6.5526942
+---
+Load the review-and-fix skill. Review all epics and tasks under P32.M1 (Delete File Consensus). Check: overall code quality, feature completeness, integration with the rest of the codebase, and pattern reuse / code duplication. This is a novel concurrency pattern — review with extra care. Key areas: ConsensusVote Ecto schema/migration, ConsensusManager GenServer (quorum tracking, timeout/expiry, vote collection), VoteForker (forks ephemeral agents via SessionForker, injects interruption message, parses VOTE YES/NO from response), file_delete tool integration, workspace quorum config, MCP tool for listing/responding to votes, cleanup of forked agents, and integration tests. Check for race conditions, quorum math correctness, and edge cases (all agents abstain, tie-breaking, timeout).

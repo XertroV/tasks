@@ -1,0 +1,16 @@
+---
+id: P39.M4.E2.T004
+title: Write pag-connect Phase 3 response document
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:52:19.949791+00:00'
+started_at: '2026-02-19T18:52:19.949791+00:00'
+completed_at: '2026-02-19T18:52:22.185859+00:00'
+duration_minutes: 0.0372675
+---
+Document what pag-server provides for pag-connect Phase 3 ACP bridge. Covers: exact connect params (?api_key=), required scopes (workspace:companion + agents:read + sessions:write), all three new CompanionChannel management event shapes (request/response JSON), the recommended 8-step ACP connection flow, and what is NOT changing. Saved to tmp.pag-connect-p3-response.md for handoff to the pag-connect agent.

@@ -1,0 +1,54 @@
+id: P51.M2.E1
+name: Core UI Exploration
+status: done
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-level-1-navigation-sanity-page.todo
+  title: 'Level 1: Navigation sanity & page load audit'
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-level-2-auth-flow-setup-wizard.todo
+  title: 'Level 2: Auth flow & setup wizard'
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-level-3-agent-crud-validation.todo
+  title: 'Level 3: Agent CRUD & validation console basic'
+  status: done
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-level-4-sessions-forking-event.todo
+  title: 'Level 4: Sessions, forking, event browser & LLM calls dashboard'
+  status: done
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T005
+  file: T005-level-5-settings-workspace-man.todo
+  title: 'Level 5: Settings, workspace management & streaming edge cases'
+  status: done
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+stats:
+  total: 5
+  done: 5
+  in_progress: 0
+  blocked: 0
+  pending: 0

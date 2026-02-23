@@ -1,0 +1,34 @@
+---
+id: P42.M3.E1.T001
+title: Implement workspace_mail MCP tool (all actions)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:30:13.885417+00:00'
+started_at: '2026-02-19T17:30:13.885417+00:00'
+completed_at: '2026-02-19T17:36:51.878337+00:00'
+duration_minutes: 6.633215116666666
+---
+## Context
+plugins/mailman/lib/tools.ex
+Domain tool with action dispatch. Follows agent_tools pattern.
+
+## Acceptance Criteria
+- [ ] Tool name: workspace_mail
+- [ ] Action dispatch with validation against @valid_actions
+- [ ] help: returns markdown usage doc with address format examples
+- [ ] send: validate address, resolve, enqueue message, trigger orchestrator
+- [ ] inbox: list messages for current workspace mailbox, filterable by status/limit/since
+- [ ] outbox: list sent messages for current workspace
+- [ ] read: get full message by id (validates message belongs to caller workspace)
+- [ ] reply: create reply message via Messages.reply/2
+- [ ] forward: create forward message via Messages.forward/3
+- [ ] rules: sub_action list/delete/clear against RuleStore
+- [ ] status: mailbox stats (pending/delivered/failed counts, last_active_at)
+- [ ] Every response includes action: field for tracing
+- [ ] Unknown actions return structured error with valid actions list
+- [ ] Address resolution errors return clear message with format examples

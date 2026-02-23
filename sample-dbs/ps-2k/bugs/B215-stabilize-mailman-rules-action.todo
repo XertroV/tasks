@@ -1,0 +1,16 @@
+---
+id: B215
+title: Stabilize mailman rules action error contract
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T22:42:38.631760+00:00'
+started_at: '2026-02-21T22:42:38.631760+00:00'
+completed_at: '2026-02-21T22:43:34.599445+00:00'
+duration_minutes: 0.9327945833333333
+---
+Fix workspace_mail rules action to consistently validate context and return structured error maps for missing workspace, missing mailbox, and delete failures.\n\nAcceptance criteria:\n- rules list/delete/clear all validate workspace_id presence like other actions\n- rules action never returns raw tuples from Mailbox lookups\n- tools tests cover missing workspace_id and mailbox-not-found for rules actions\n- existing mailman rules tests continue to pass

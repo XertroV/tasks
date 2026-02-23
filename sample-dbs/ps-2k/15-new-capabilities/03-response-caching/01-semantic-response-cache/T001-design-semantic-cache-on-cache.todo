@@ -1,0 +1,77 @@
+---
+id: P15.M3.E1.T001
+title: Design semantic cache on Cachex
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T21:21:45.252347+00:00'
+started_at: '2026-02-13T21:21:45.252347+00:00'
+completed_at: '2026-02-13T21:48:04.137315+00:00'
+duration_minutes: 26.3147492
+---
+
+# Design semantic cache on Cachex
+
+## Description
+Design a semantic response cache built on Cachex that stores LLM responses keyed by semantic meaning rather than exact text match. This enables cache hits for semantically similar queries.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Cache.SemanticCache` module wrapping Cachex
+- [ ] Define cache entry structure: query_embedding, response, metadata, created_at
+- [ ] Configure dedicated Cachex cache (`:semantic_response_cache`)
+- [ ] Add LRU eviction policy with configurable size limit
+- [ ] Implement cache key generation from normalized query
+- [ ] Add cache stats tracking (hits, misses, evictions)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/cache.ex`, `lib/pag_server/application.ex`, `lib/pag_server/embeddings/client.ex`
+- Part of epic: Semantic Response Cache
+- Reference existing Cachex configuration in Application.ex
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-13 10:51 UTC
+**Primary task**: P13.M1.E2.T001 - Create AgentServer.StreamProcessor module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P15.M3.E1 vs P13.M1.E2)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M3.E1)
+**Agent**: cli-user
+**Date**: 2026-02-13 21:21 UTC
+**Sibling tasks**: P15.M3.E1.T002, P15.M3.E1.T003, P15.M3.E1.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M3.E1.T001 → P15.M3.E1.T002 → P15.M3.E1.T003 → P15.M3.E1.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M3.E1.T001: .tasks/15-new-capabilities/03-response-caching/01-semantic-response-cache/T001-design-semantic-cache-on-cache.todo
+- P15.M3.E1.T002: .tasks/15-new-capabilities/03-response-caching/01-semantic-response-cache/T002-implement-embedding-similarity.todo
+- P15.M3.E1.T003: .tasks/15-new-capabilities/03-response-caching/01-semantic-response-cache/T003-add-cache-invalidation-strateg.todo
+- P15.M3.E1.T004: .tasks/15-new-capabilities/03-response-caching/01-semantic-response-cache/T004-integrate-into-llm-request-pip.todo

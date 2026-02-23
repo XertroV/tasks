@@ -1,0 +1,187 @@
+---
+id: P1.M1.E2.T002
+title: Configure PostgreSQL adapter
+status: done
+estimate_hours: 2
+complexity: medium
+priority: high
+depends_on:
+- P1.M1.E2.T001
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:51:08.255825'
+started_at: '2026-02-05T07:51:08.255825'
+completed_at: '2026-02-05T07:52:33.572072'
+tags:
+- postgresql
+- database
+- production
+- configuration
+---
+
+# Configure PostgreSQL adapter
+
+Set up production-ready PostgreSQL configuration with SSL support, connection pooling, and runtime configuration.
+
+## Requirements
+
+### Production Configuration
+- [ ] Configure PostgreSQL adapter in `config/prod.exs`
+- [ ] Set up runtime configuration in `config/runtime.exs`
+- [ ] Configure DATABASE_URL environment variable parsing
+- [ ] Enable SSL connection for production
+- [ ] Set production pool size (20 connections)
+- [ ] Configure connection timeout and queue target
+
+### Security & Performance
+- [ ] Enable SSL with `ssl: true`
+- [ ] Configure `ssl_opts` for certificate verification
+- [ ] Set `pool_size` based on expected load
+- [ ] Configure `queue_target` and `queue_interval` for backpressure
+- [ ] Set appropriate timeout values
+
+### Testing
+- [ ] Test connection to local PostgreSQL
+- [ ] Verify migrations run successfully
+- [ ] Test SSL connection (if available)
+- [ ] Verify connection pooling works under load
+
+## Acceptance Criteria
+
+- [ ] Application connects to PostgreSQL in production mode
+- [ ] `MIX_ENV=prod mix ecto.create` works with DATABASE_URL
+- [ ] `MIX_ENV=prod mix ecto.migrate` runs successfully
+- [ ] SSL connection works when configured
+- [ ] Connection pool handles concurrent queries
+- [ ] No connection timeouts under normal load
+- [ ] Environment variables properly override defaults
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 2.1 (Module Organization)
+- `.plan/2026-02-05-velvet-cascade/research.md` Section 8.1 (Database)
+
+**Key Points**:
+- PostgreSQL is the production database (event sourcing needs ACID)
+- Connection pooling critical for multi-agent concurrency
+- SSL required for production deployments
+- Runtime config allows 12-factor app principles
+
+## Notes
+
+### config/prod.exs
+
+```elixir
+import Config
+
+# Configure your database
+config :pag_server, PagServer.Repo,
+  adapter: Ecto.Adapters.Postgres,
+  pool_size: String.to_integer(System.get_env("POOL_SIZE") || "20"),
+  queue_target: 5000,
+  queue_interval: 1000,
+  timeout: 15_000,
+  connect_timeout: 15_000,
+  handshake_timeout: 15_000,
+  pool_timeout: 10_000
+```
+
+### config/runtime.exs
+
+```elixir
+import Config
+
+if config_env() == :prod do
+  database_url =
+    System.get_env("DATABASE_URL") ||
+      raise """
+      environment variable DATABASE_URL is missing.
+      For example: ecto://USER:PASS@HOST/DATABASE
+      """
+
+  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
+
+  config :pag_server, PagServer.Repo,
+    url: database_url,
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "20"),
+    socket_options: maybe_ipv6,
+    ssl: true,
+    ssl_opts: [
+      verify: :verify_peer,
+      cacertfile: System.get_env("DATABASE_CA_CERT_PATH"),
+      server_name_indication: String.to_charlist(URI.parse(database_url).host || "localhost"),
+      customize_hostname_check: [
+        match_fun: :public_key.pkix_verify_hostname_match_fun(:https)
+      ]
+    ]
+end
+```
+
+### DATABASE_URL Format
+
+Standard PostgreSQL connection string:
+```
+postgres://username:password@hostname:port/database?ssl=true
+```
+
+Example for local development:
+```bash
+export DATABASE_URL="postgres://postgres:postgres@localhost:5432/pag_server_prod"
+```
+
+Example for production (with SSL):
+```bash
+export DATABASE_URL="postgres://user:pass@db.example.com:5432/pag_server"
+export DATABASE_CA_CERT_PATH="/etc/ssl/certs/ca-certificates.crt"
+```
+
+### Connection Pool Sizing
+
+Rule of thumb for pool size:
+- **Dev**: 10 connections (low concurrency)
+- **Production**: 20-50 connections (depends on load)
+- **Formula**: `pool_size = (core_count * 2) + effective_spindle_count`
+
+For PAG-Server with multiple agents:
+- Each agent may run queries concurrently
+- Tool executions may need DB access
+- Event store writes happen frequently
+- **Recommended**: Start with 20, monitor, adjust based on `queue_interval` metrics
+
+### Backpressure Configuration
+
+- `queue_target: 5000` - Target time (ms) a query should wait in queue
+- `queue_interval: 1000` - Check interval (ms) for queue health
+- If queries wait longer than `queue_target`, pool grows (up to `pool_size`)
+
+### Troubleshooting
+
+**Connection refused**:
+```bash
+# Verify PostgreSQL is running
+sudo systemctl status postgresql
+
+# Check if it's listening
+sudo netstat -nltp | grep 5432
+
+# Test connection
+psql -h localhost -U postgres
+```
+
+**SSL errors**:
+```bash
+# Verify SSL is enabled in postgresql.conf
+ssl = on
+
+# Check certificate paths
+ls -la /etc/ssl/certs/
+
+# Test SSL connection
+psql "postgres://user:pass@host/db?sslmode=require"
+```
+
+**Pool exhaustion**:
+- Monitor with telemetry metrics
+- Check for long-running queries: `SELECT * FROM pg_stat_activity;`
+- Increase pool_size or optimize queries
+- Consider connection pooler (PgBouncer) for very high concurrency

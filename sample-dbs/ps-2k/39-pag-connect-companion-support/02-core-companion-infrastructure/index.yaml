@@ -1,0 +1,32 @@
+id: P39.M2
+name: Core Companion Infrastructure
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: In-Memory State Management
+  path: 01-in-memory-state-management
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: WebSocket Auth & Channel
+  path: 02-websocket-auth-channel
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 9
+  done: 9
+  in_progress: 0
+  blocked: 0
+  pending: 0

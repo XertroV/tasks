@@ -1,0 +1,41 @@
+id: P35.M1
+name: Milestone Reviews
+status: done
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Phase Reviews P20-P24
+  path: 01-phase-reviews-p20-p24
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Phase Reviews P25-P29
+  path: 02-phase-reviews-p25-p29
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+- id: E3
+  name: Phase Reviews P30-P34
+  path: 03-phase-reviews-p30-p34
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 34
+  done: 34
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,62 @@
+---
+id: B133
+title: Pair Programming plugin should be automatically added to workspaces (though
+  disabled) as a built in plugin.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:56:13.649361+00:00'
+started_at: '2026-02-18T06:56:13.649361+00:00'
+completed_at: '2026-02-18T07:25:22.323351+00:00'
+duration_minutes: 29.14456615
+---
+
+Pair Programming plugin should be automatically added to workspaces (though disabled) as a built in plugin.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-18 06:40 UTC
+**Primary task**: B132 - Plugin settings shows nothing in dropdown -- we should have default plugins though!
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-18 06:56 UTC
+**Primary task**: B132 - Plugin settings shows nothing in dropdown -- we should have default plugins though!
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

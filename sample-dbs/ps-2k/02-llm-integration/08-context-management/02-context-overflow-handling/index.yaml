@@ -1,0 +1,37 @@
+id: P2.M8.E2
+name: Context Overflow Handling
+status: pending
+estimate_hours: 4.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-detect-context-overflow-before.todo
+  title: Detect context overflow before LLM request
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-emit-overflow-warning-telemetr.todo
+  title: Emit overflow warning telemetry event
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-auto-truncation-fall.todo
+  title: Implement auto-truncation fallback
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

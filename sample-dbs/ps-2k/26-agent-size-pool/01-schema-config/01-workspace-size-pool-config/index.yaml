@@ -1,0 +1,31 @@
+id: P26.M1.E1
+name: Workspace Size Pool Config
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-size-pool-config-to-workspa.todo
+  title: Add size pool config to workspace schema (small/medium/large model lists)
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-add-size-field-to-agent-spawn-r.todo
+  title: Add size field to agent spawn requests
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P26.M1.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

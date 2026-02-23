@@ -1,0 +1,24 @@
+---
+id: P55.M1.E1.T005
+title: Implement handle_params thread switching with PubSub swap
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- liveview
+- pubsub
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:22:50.168930+00:00'
+started_at: '2026-02-22T06:22:50.168930+00:00'
+completed_at: '2026-02-22T06:34:00.733662+00:00'
+duration_minutes: 11.176078683333333
+---
+Implement handle_params/3 to handle URL changes between threads. When session_id changes: load session from DB, load messages (last 100 by sequence_num desc reversed), load tool_calls, merge into entries via helpers.chat_entries, unsubscribe from old agent PubSub topic, subscribe to new agent topic via Broadcaster.subscribe/1. When no session_id: show thread overview. Handle invalid session_id gracefully (redirect or error).
+
+## Acceptance Criteria
+- Navigating between threads loads correct messages
+- PubSub subscription swaps on thread change
+- Invalid session_id handled gracefully
+- Back to workspace view (no session) works

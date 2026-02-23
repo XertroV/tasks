@@ -1,0 +1,411 @@
+---
+title: Handle Client Disconnects and Cleanup Subscriptions
+epic: P3.M1.E4-error-handling
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: high
+estimated_hours: 0.75
+depends_on:
+- P3.M1.E2.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T16:05:00.128700'
+started_at: '2026-02-06T16:05:00.128700'
+completed_at: '2026-02-06T16:07:49.338438'
+duration_minutes: 2.8201621333333335
+id: P3.M1.E4.T002
+---
+
+# Task: Handle Client Disconnects and Cleanup Subscriptions
+
+## Context
+When clients disconnect (due to network issues, browser close, or intentional disconnect), the channel needs to clean up PubSub subscriptions, update presence, and ensure no memory leaks.
+
+## Goal
+Implement graceful disconnect handling with proper resource cleanup.
+
+## Requirements
+- Unsubscribe from PubSub topics on disconnect
+- Remove presence tracking
+- Log disconnect events with reason
+- Handle both graceful and abrupt disconnects
+- Prevent memory leaks from orphaned subscriptions
+- Track disconnect statistics
+
+## Implementation
+
+### File: `lib/pag_server_web/channels/agent_channel.ex`
+
+Add comprehensive disconnect handling:
+
+```elixir
+defmodule PagServerWeb.AgentChannel do
+  use PagServerWeb, :channel
+  
+  require Logger
+  
+  alias PagServer.Agents
+  alias PagServer.PubSub
+  alias PagServerWeb.Presence
+  
+  # ... existing code ...
+  
+  @impl true
+  def join("agent:" <> agent_id, _params, socket) do
+    case Agents.get_agent(agent_id) do
+      {:ok, agent} ->
+        socket = socket
+        |> assign(:agent_id, agent_id)
+        |> assign(:joined_at, System.system_time(:millisecond))
+        
+        send(self(), :after_join)
+        
+        {:ok, %{agent: agent}, socket}
+      
+      {:error, :not_found} ->
+        {:error, %{reason: "Agent not found"}}
+    end
+  end
+  
+  @impl true
+  def handle_info(:after_join, socket) do
+    agent_id = socket.assigns.agent_id
+    user_id = socket.assigns[:user_id]
+    
+    # Subscribe to agent events
+    Phoenix.PubSub.subscribe(PubSub, "agent:#{agent_id}")
+    
+    # Track presence
+    {:ok, _} = Presence.track(socket, user_id, %{
+      online_at: System.system_time(:millisecond),
+      agent_id: agent_id
+    })
+    
+    # Store subscription info for cleanup
+    socket = assign(socket, :subscribed_topics, ["agent:#{agent_id}"])
+    
+    Logger.info("Client joined agent channel: #{agent_id}, user: #{user_id}")
+    
+    {:noreply, socket}
+  end
+  
+  @impl true
+  def terminate(reason, socket) do
+    agent_id = socket.assigns[:agent_id]
+    user_id = socket.assigns[:user_id]
+    joined_at = socket.assigns[:joined_at]
+    subscribed_topics = socket.assigns[:subscribed_topics] || []
+    
+    # Calculate session duration
+    duration_ms = if joined_at do
+      System.system_time(:millisecond) - joined_at
+    else
+      0
+    end
+    
+    # Unsubscribe from all topics
+    Enum.each(subscribed_topics, fn topic ->
+      Phoenix.PubSub.unsubscribe(PubSub, topic)
+    end)
+    
+    # Log disconnect with reason and duration
+    Logger.info("""
+    Client disconnected from agent channel
+    Agent ID: #{agent_id}
+    User ID: #{user_id}
+    Reason: #{format_reason(reason)}
+    Duration: #{format_duration(duration_ms)}
+    """)
+    
+    # Record disconnect metrics
+    record_disconnect_metrics(agent_id, reason, duration_ms)
+    
+    :ok
+  end
+  
+  defp format_reason(:normal), do: "normal (client closed connection)"
+  defp format_reason(:shutdown), do: "shutdown (server restart)"
+  defp format_reason({:shutdown, :closed}), do: "closed (connection lost)"
+  defp format_reason({:shutdown, :timeout}), do: "timeout (no activity)"
+  defp format_reason(reason), do: inspect(reason)
+  
+  defp format_duration(ms) when ms < 1000, do: "#{ms}ms"
+  defp format_duration(ms) when ms < 60_000, do: "#{Float.round(ms / 1000, 1)}s"
+  defp format_duration(ms), do: "#{Float.round(ms / 60_000, 1)}min"
+  
+  defp record_disconnect_metrics(agent_id, reason, duration_ms) do
+    # Emit telemetry event for metrics
+    :telemetry.execute(
+      [:pag_server, :channel, :disconnect],
+      %{duration_ms: duration_ms, count: 1},
+      %{agent_id: agent_id, reason: format_reason(reason)}
+    )
+  end
+end
+```
+
+### File: `lib/pag_server_web/channels/user_socket.ex`
+
+Add socket-level disconnect tracking:
+
+```elixir
+defmodule PagServerWeb.UserSocket do
+  use Phoenix.Socket
+  
+  require Logger
+  
+  # ... existing code ...
+  
+  @impl true
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case verify_token(token) do
+      {:ok, user_id} ->
+        socket = socket
+        |> assign(:user_id, user_id)
+        |> assign(:connected_at, System.system_time(:millisecond))
+        
+        Logger.info("Socket connected: user_id=#{user_id}")
+        
+        {:ok, socket}
+      
+      {:error, reason} ->
+        Logger.warning("Socket connection rejected: #{inspect(reason)}")
+        :error
+    end
+  end
+  
+  @impl true
+  def id(socket) do
+    "user_socket:#{socket.assigns.user_id}"
+  end
+  
+  # Called when socket connection closes
+  @impl true
+  def terminate(reason, socket) do
+    user_id = socket.assigns[:user_id]
+    connected_at = socket.assigns[:connected_at]
+    
+    duration_ms = if connected_at do
+      System.system_time(:millisecond) - connected_at
+    else
+      0
+    end
+    
+    Logger.info("""
+    Socket terminated
+    User ID: #{user_id}
+    Reason: #{inspect(reason)}
+    Connection duration: #{format_duration(duration_ms)}
+    """)
+    
+    :ok
+  end
+  
+  defp format_duration(ms) when ms < 1000, do: "#{ms}ms"
+  defp format_duration(ms) when ms < 60_000, do: "#{Float.round(ms / 1000, 1)}s"
+  defp format_duration(ms), do: "#{Float.round(ms / 60_000, 1)}min"
+end
+```
+
+### File: `lib/pag_server/telemetry.ex`
+
+Track disconnect metrics:
+
+```elixir
+defmodule PagServer.Telemetry do
+  @moduledoc """
+  Telemetry setup for metrics and monitoring.
+  """
+  
+  def setup do
+    # Attach disconnect handlers
+    :telemetry.attach(
+      "channel-disconnect-handler",
+      [:pag_server, :channel, :disconnect],
+      &handle_disconnect/4,
+      nil
+    )
+  end
+  
+  defp handle_disconnect(_event, measurements, metadata, _config) do
+    %{duration_ms: duration_ms, count: count} = measurements
+    %{agent_id: agent_id, reason: reason} = metadata
+    
+    # Increment disconnect counter
+    :telemetry.execute(
+      [:pag_server, :metrics, :disconnects],
+      %{total: count},
+      %{agent_id: agent_id, reason: reason}
+    )
+    
+    # Track average session duration
+    :telemetry.execute(
+      [:pag_server, :metrics, :session_duration],
+      %{duration_ms: duration_ms},
+      %{agent_id: agent_id}
+    )
+  end
+end
+```
+
+## Acceptance Criteria
+- [ ] PubSub subscriptions cleaned up on disconnect
+- [ ] Presence removed when client leaves
+- [ ] Disconnect reason logged with context
+- [ ] Session duration tracked
+- [ ] No memory leaks from orphaned subscriptions
+- [ ] Graceful and abrupt disconnects handled
+- [ ] Telemetry events emitted for metrics
+
+## Testing
+
+```elixir
+# test/pag_server_web/channels/agent_channel_disconnect_test.exs
+defmodule PagServerWeb.AgentChannelDisconnectTest do
+  use PagServerWeb.ChannelCase
+  
+  import PagServer.Factories
+  
+  alias PagServer.Agents
+  alias PagServerWeb.Presence
+  
+  setup do
+    {:ok, agent} = Agents.create_agent(%{
+      model: "claude-sonnet-4",
+      system_prompt: "Test agent",
+      user_id: "test-user"
+    })
+    
+    {:ok, agent: agent}
+  end
+  
+  test "cleans up subscriptions on disconnect", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Verify subscription exists
+    assert Process.info(self(), :messages) |> elem(1) |> length() >= 0
+    
+    # Leave channel
+    leave(socket)
+    
+    # Verify subscription cleaned up by checking PubSub doesn't send messages
+    Phoenix.PubSub.broadcast(
+      PagServer.PubSub,
+      "agent:#{agent.id}",
+      {:agent_event, %{type: :test}}
+    )
+    
+    refute_receive {:agent_event, _}, 100
+  end
+  
+  test "removes presence on disconnect", %{agent: agent} do
+    user_id = "test-user"
+    
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory(user_id),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Verify presence
+    assert Presence.list(socket) |> Map.has_key?(user_id)
+    
+    # Disconnect
+    leave(socket)
+    
+    # Wait for presence cleanup
+    :timer.sleep(50)
+    
+    # Verify presence removed
+    # (Note: may need to create a new socket to check presence)
+    refute Presence.list(socket) |> Map.has_key?(user_id)
+  end
+  
+  test "logs disconnect with reason and duration", %{agent: agent} do
+    import ExUnit.CaptureLog
+    
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Wait a bit to ensure duration > 0
+    :timer.sleep(10)
+    
+    log = capture_log(fn ->
+      leave(socket)
+      :timer.sleep(10)  # Wait for async log
+    end)
+    
+    assert log =~ "Client disconnected from agent channel"
+    assert log =~ "Agent ID: #{agent.id}"
+    assert log =~ "User ID: test-user"
+    assert log =~ "Reason: normal"
+    assert log =~ "Duration:"
+  end
+  
+  test "emits telemetry on disconnect", %{agent: agent} do
+    # Attach test telemetry handler
+    :telemetry.attach(
+      "test-disconnect-handler",
+      [:pag_server, :channel, :disconnect],
+      fn event, measurements, metadata, _ ->
+        send(self(), {:telemetry, event, measurements, metadata})
+      end,
+      nil
+    )
+    
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    leave(socket)
+    
+    # Should receive telemetry event
+    assert_receive {:telemetry, [:pag_server, :channel, :disconnect], measurements, metadata}
+    
+    assert measurements.duration_ms >= 0
+    assert measurements.count == 1
+    assert metadata.agent_id == agent.id
+    
+    :telemetry.detach("test-disconnect-handler")
+  end
+  
+  test "handles abrupt disconnect (crash)", %{agent: agent} do
+    {:ok, _, socket} = subscribe_and_join(
+      socket_factory("test-user"),
+      "agent:#{agent.id}",
+      %{}
+    )
+    
+    # Simulate crash by sending exit signal
+    Process.exit(socket.channel_pid, :kill)
+    
+    # Wait for cleanup
+    :timer.sleep(50)
+    
+    # Presence should be cleaned up
+    # (Phoenix.Channel.Server handles this automatically)
+    # This test verifies no crashes occur during cleanup
+  end
+end
+```
+
+## References
+- Phoenix.Channel terminate/2: https://hexdocs.pm/phoenix/Phoenix.Channel.html#c:terminate/2
+- Phoenix.Socket lifecycle: https://hexdocs.pm/phoenix/Phoenix.Socket.html#module-lifecycle
+- Phoenix.PubSub.unsubscribe/2: https://hexdocs.pm/phoenix_pubsub/Phoenix.PubSub.html#unsubscribe/2
+- Telemetry: https://hexdocs.pm/telemetry/readme.html
+
+## Notes
+- Disconnect cleanup is critical for preventing memory leaks
+- Consider adding reconnection grace period before full cleanup
+- Track disconnect patterns for reliability analysis
+- Future: Add automatic reconnection with state restoration

@@ -1,0 +1,33 @@
+id: P46.M2.E2
+name: User Auto-Provisioning & Identity Linking
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-implement-userprovisioner-for.todo
+  title: Implement UserProvisioner for first-time OAuth login
+  status: pending
+  estimate_hours: 3.0
+  complexity: high
+  priority: high
+  depends_on:
+  - P46.M1.E3.T001
+  - P46.M1.E3.T002
+- id: T002
+  file: T002-implement-identity-linking-for.todo
+  title: Implement identity linking for authenticated users adding new provider
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P46.M2.E2.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

@@ -1,0 +1,55 @@
+id: P5
+name: Session & Advanced Features
+status: pending
+weeks: 3
+depends_on:
+- P4
+milestones:
+- id: M1
+  name: Message Queue
+  path: 01-message-queue
+  status: pending
+  estimate_hours: 12
+  complexity: medium
+  depends_on: []
+  description: Three-mode message queue (immediate, after_thinking, when_done)
+- id: M2
+  name: Session Forking
+  path: 02-session-forking
+  status: pending
+  estimate_hours: 10
+  complexity: high
+  depends_on: []
+  description: Fork sessions with shared context for parallel sub-agents
+- id: M3
+  name: Parallel Sub-Agents
+  path: 03-parallel-agents
+  status: pending
+  estimate_hours: 12
+  complexity: high
+  depends_on:
+  - M2
+  description: Fork, run parallel agents, aggregate results with timeout
+- id: M4
+  name: Context Management
+  path: 04-context-mgmt
+  status: pending
+  estimate_hours: 10
+  complexity: medium
+  depends_on: []
+  description: Message chain, truncation strategies, token limits
+- id: M5
+  name: Dynamic Model Switching
+  path: 05-model-switching
+  status: pending
+  estimate_hours: 6
+  complexity: low
+  depends_on:
+  - M1
+  description: Switch LLM models mid-session with proper transition
+stats:
+  total_tasks: 74
+  done: 74
+  in_progress: 0
+  blocked: 0
+  pending: 0

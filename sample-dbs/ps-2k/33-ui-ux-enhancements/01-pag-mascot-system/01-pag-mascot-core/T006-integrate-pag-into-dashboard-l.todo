@@ -1,0 +1,65 @@
+---
+id: P33.M1.E1.T006
+title: Integrate Pag into dashboard layout
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P33.M1.E1.T002
+- P33.M1.E1.T003
+- P33.M1.E1.T005
+tags:
+- integration
+- layout
+- mascot
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:42:13.533211+00:00'
+started_at: '2026-02-18T22:42:13.533211+00:00'
+completed_at: '2026-02-18T22:49:34.519378+00:00'
+duration_minutes: 7.34976925
+---
+
+# Integrate Pag into dashboard layout
+
+Add Pag mascot component to the main dashboard layout.
+
+## Integration Points
+
+### Main Layout
+- Add to `lib/pag_server_web/layouts/app.html.heex`
+- Fixed position at bottom of viewport
+- Walks horizontally across screen
+
+### State Awareness
+- React to agent events (agent started, stopped, error)
+- React to validation events
+- React to system status changes
+
+### Visibility Control
+- Can be hidden via settings
+- Remembers preference in localStorage
+- Mini-mode option (just face in corner)
+
+## Layout Changes
+
+```heex
+<!-- Add to app.html.heex before closing </body> -->
+<.live_component module={PagServerWeb.PagLiveComponent} id="pag-mascot" />
+```
+
+## Event Subscriptions
+
+- `agents:state` - Agent status changes
+- `validation:status` - Validation events
+- `system:health` - Backend status changes
+
+## Acceptance Criteria
+
+- [ ] PagLiveComponent added to main layout
+- [ ] Renders on all dashboard pages
+- [ ] Position fixed at bottom of viewport
+- [ ] Doesn't interfere with page content
+- [ ] Subscribes to relevant PubSub topics
+- [ ] Settings toggle to show/hide mascot
+- [ ] Mobile responsive (smaller on mobile)

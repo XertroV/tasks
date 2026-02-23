@@ -1,0 +1,29 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T06:32:18.655593+00:00'
+started_at: '2026-02-13T06:32:18.655593+00:00'
+completed_at: '2026-02-13T06:50:11.795344+00:00'
+duration_minutes: 17.885662149999998
+---
+# Add pool configuration per provider
+
+## Description
+Implement provider-specific pool configurations allowing different pool sizes, timeouts, and strategies for each LLM provider (Anthropic, OpenAI, etc.).
+
+## Acceptance Criteria
+- [ ] `PagServer.LLM.Pool.Config` module created
+- [ ] Pool config: size, max_overflow, checkout_timeout, reconnect_interval
+- [ ] Default configs per provider (Anthropic, OpenAI, Google, etc.)
+- [ ] `get_config/1` returns merged config (default + overrides)
+- [ ] Runtime configuration via application env
+- [ ] Per-workspace pool configuration support
+- [ ] Hot reload without restarting pools
+- [ ] Validation of config values
+- [ ] Config change triggers pool resize when needed
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/llm/pool/finch_pool.ex`, `lib/pag_server/llm/providers/`
+- Part of epic: P14.M3.E1 - HTTP/2 Connection Pools

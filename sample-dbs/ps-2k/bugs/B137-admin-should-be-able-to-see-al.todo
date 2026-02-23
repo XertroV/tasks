@@ -1,0 +1,18 @@
+---
+id: B137
+title: Admin should be able to see ALL workspaces in dahsboard. And currently we should
+  just enable admin by default for every user (its just me developing it)
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:46:44.708782+00:00'
+started_at: '2026-02-18T10:46:44.708782+00:00'
+completed_at: '2026-02-18T10:49:55.240422+00:00'
+duration_minutes: 3.1755270999999996
+---
+
+Admin should be able to see ALL workspaces in dahsboard. And currently we should just enable admin by default for every user (its just me developing it)

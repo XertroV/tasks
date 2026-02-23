@@ -1,0 +1,118 @@
+---
+id: P4.M3.E1.T003
+title: Protocol request/response handlers
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P4.M3.E1.T002
+tags:
+- tools
+- mcp
+- protocol
+- handlers
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:33:59.865129'
+started_at: '2026-02-05T11:33:59.865129'
+completed_at: '2026-02-05T11:37:45.615939'
+---
+
+# Protocol request/response handlers
+
+Implement handlers for MCP protocol messages.
+
+## Requirements
+
+- [ ] Create handler module for MCP requests
+- [ ] Implement `handle_initialize/1`
+- [ ] Implement `handle_tools_list/1`
+- [ ] Implement `handle_tools_call/2`
+- [ ] Route JSON-RPC messages to appropriate handlers
+
+## Acceptance Criteria
+
+- [ ] All MCP methods have handlers
+- [ ] Initialize returns server capabilities
+- [ ] Tools list returns registered tools in MCP format
+- [ ] Tools call executes tool and returns result
+- [ ] Error handling for invalid requests
+- [ ] Test coverage for all handlers
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 351-354 (MCP protocol helpers)
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 72-97 (MCP)
+
+**Key Points**:
+- Handlers bridge MCP protocol to internal tool system
+- Tools list converts ToolSchema to MCP format
+- Tools call routes to Tool.execute/2
+- Error codes follow JSON-RPC and MCP conventions
+
+## Notes
+
+Handler implementation:
+```elixir
+defmodule PAGServer.Tools.MCP.ProtocolHandler do
+  alias PAGServer.Tools.Registry
+
+  def handle_message({:request, "initialize", params, id}) do
+    handle_initialize(params, id)
+  end
+
+  def handle_message({:request, "tools/list", _params, id}) do
+    handle_tools_list(id)
+  end
+
+  def handle_message({:request, "tools/call", params, id}) do
+    handle_tools_call(params, id)
+  end
+
+  defp handle_initialize(_params, id) do
+    result = %{
+      protocolVersion: "0.1.0",
+      capabilities: %{
+        tools: %{},
+        resources: %{}
+      },
+      serverInfo: %{
+        name: "PAG-Server",
+        version: "0.1.0"
+      }
+    }
+    JsonRPC.encode_response(result, id)
+  end
+
+  defp handle_tools_list(id) do
+    tools = Registry.list()
+    |> Enum.map(&Registry.get/1)
+    |> Enum.map(fn {:ok, {_module, schema}} -> schema end)
+    |> Enum.map(&to_mcp_tool/1)
+
+    result = %{tools: tools}
+    JsonRPC.encode_response(result, id)
+  end
+
+  defp handle_tools_call(%{"name" => name, "arguments" => args}, id) do
+    case Registry.get(name) do
+      {:ok, {module, _schema}} ->
+        case module.execute(args, %{}) do
+          {:ok, result} -> JsonRPC.encode_response(%{content: [%{type: "text", text: Jason.encode!(result)}]}, id)
+          {:error, reason} -> JsonRPC.encode_error(-32000, reason, id)
+        end
+      {:error, :not_found} ->
+        JsonRPC.encode_error(-32601, "Tool not found: #{name}", id)
+    end
+  end
+
+  defp to_mcp_tool(schema) do
+    %{
+      name: schema.name,
+      description: schema.description,
+      inputSchema: schema.parameters
+    }
+  end
+end
+```

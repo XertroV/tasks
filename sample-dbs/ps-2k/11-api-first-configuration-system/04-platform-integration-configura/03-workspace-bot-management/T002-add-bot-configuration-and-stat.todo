@@ -1,0 +1,151 @@
+---
+id: P11.M4.E3.T002
+title: Add bot configuration and status monitoring
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P11.M4.E3.T001
+- P11.M4.E2.T001
+tags:
+- api
+- bot
+- monitoring
+- status
+claimed_by: cli-user
+claimed_at: '2026-02-12T23:02:50.794049+00:00'
+started_at: '2026-02-12T23:02:50.794049+00:00'
+completed_at: '2026-02-12T23:23:36.788422+00:00'
+duration_minutes: 20.766572633333332
+---
+
+# Add bot configuration and status monitoring
+
+Implement bot-specific configuration and real-time status monitoring.
+
+## Requirements
+
+- [ ] Generate migration: `mix ecto.gen.migration create_bots`
+- [ ] Create `Bot` Ecto schema linking workspace to agents/configs
+- [ ] Create endpoints for bot configuration
+- [ ] Implement bot status and health checking
+- [ ] Add telemetry for bot health and errors
+- [ ] Write tests for bot operations
+- [ ] Commit changes
+
+## Acceptance Criteria
+
+- [ ] Migration creates `bots` table:
+  - [ ] `id` (binary_id, primary key)
+  - [ ] `workspace_id` (binary_id, not null, FK to workspaces)
+  - [ ] `agent_id` (binary_id, not null, FK to agents)
+  - [ ] `platform` (string, not null) - "telegram", "slack", "discord", "custom"
+  - [ ] `name` (string, not null) - User-friendly bot name
+  - [ ] `enabled` (boolean, default: true)
+  - [ ] `status` (string, default: "offline") - "online", "offline", "error"
+  - [ ] `last_activity_at` (utc_datetime_usec, nullable)
+  - [ ] `error_message` (text, nullable) - Latest error if in error status
+  - [ ] `metadata` (map, default: %{}) - Platform-specific bot info
+  - [ ] `inserted_at`, `updated_at` (utc_datetime_usec)
+- [ ] Indexes:
+  - [ ] Composite index on `[workspace_id, platform]` for workspace's bots
+  - [ ] Index on `agent_id` for agent's bots
+  - [ ] Index on `status` for status queries
+  - [ ] Index on `last_activity_at` for activity tracking
+  - [ ] Unique constraint on `[workspace_id, agent_id, platform]`
+- [ ] `Bot` schema:
+  - [ ] Uses `@primary_key {:id, :binary_id, autogenerate: true}`
+  - [ ] Belongs to Workspace
+  - [ ] Belongs to Agent
+  - [ ] Uses `timestamps(type: :utc_datetime_usec)`
+- [ ] `POST /api/workspaces/:workspace_id/bots` - Create bot:
+  - [ ] Accepts: `agent_id`, `platform`, `name`
+  - [ ] Validates agent belongs to workspace
+  - [ ] Validates platform is supported
+  - [ ] Returns created bot with status
+  - [ ] Returns 400 for validation errors
+  - [ ] Returns 403 if user not workspace member
+  - [ ] Returns 404 if workspace/agent not found
+- [ ] `GET /api/workspaces/:workspace_id/bots` - List bots:
+  - [ ] Lists all bots in workspace
+  - [ ] Includes status and last activity
+  - [ ] Supports filtering by `platform`
+  - [ ] Supports filtering by `status`
+  - [ ] Only accessible to workspace members
+  - [ ] Returns 403 if not a member
+- [ ] `GET /api/workspaces/:workspace_id/bots/:bot_id` - Get bot:
+  - [ ] Returns bot details including configuration
+  - [ ] Returns platform-specific metadata
+  - [ ] Returns current status and health info
+  - [ ] Only accessible to workspace members
+  - [ ] Returns 403 if not a member
+  - [ ] Returns 404 if bot not found
+- [ ] `PATCH /api/workspaces/:workspace_id/bots/:bot_id` - Update bot:
+  - [ ] Allows updating: `name`, `enabled`, `metadata`
+  - [ ] Does not allow changing `platform` or `agent_id`
+  - [ ] Returns updated bot
+  - [ ] Only accessible to workspace admins/owner
+  - [ ] Returns 403 if not authorized
+- [ ] `DELETE /api/workspaces/:workspace_id/bots/:bot_id` - Delete bot:
+  - [ ] Removes bot configuration
+  - [ ] Returns 204 on success
+  - [ ] Only accessible to workspace admins/owner
+  - [ ] Returns 403 if not authorized
+- [ ] `GET /api/workspaces/:workspace_id/bots/:bot_id/status` - Bot status:
+  - [ ] Returns real-time status (online/offline/error)
+  - [ ] Returns last activity timestamp
+  - [ ] Returns platform-specific status info
+  - [ ] Returns message/error if in error state
+  - [ ] Does not use cached status (fresh check)
+- [ ] `POST /api/workspaces/:workspace_id/bots/:bot_id/health-check` - Health check:
+  - [ ] Performs connection test to platform
+  - [ ] Updates bot status based on result
+  - [ ] Returns `{healthy: true/false, message: "..."}`
+  - [ ] Async operation, returns immediately
+  - [ ] Logs detailed health check results
+- [ ] Status monitoring:
+  - [ ] `PagServer.Bots.StatusMonitor` GenServer
+  - [ ] Monitors all enabled bots every 5 minutes
+  - [ ] Updates status field on changes
+  - [ ] Updates last_activity_at on successful check
+  - [ ] Sets error_message if health check fails
+  - [ ] Emits telemetry events on status changes
+- [ ] Bot lifecycle events:
+  - [ ] Emit telemetry on bot creation: `[:bot, :created]`
+  - [ ] Emit telemetry on status change: `[:bot, :status_changed]`
+  - [ ] Emit telemetry on errors: `[:bot, :error]`
+  - [ ] Track measurements: response_time, error_count, uptime
+- [ ] Changesets:
+  - [ ] `create_changeset/2` - Create with name, agent_id, platform
+  - [ ] `update_changeset/2` - Update name and metadata
+  - [ ] `status_changeset/3` - Update status and error_message
+  - [ ] `activity_changeset/1` - Update last_activity_at
+- [ ] Tests:
+  - [ ] Bot CRUD operations
+  - [ ] Status monitoring and updates
+  - [ ] Health check functionality
+  - [ ] Workspace/member access control
+  - [ ] `mix lint` passes without warnings
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 23:02 UTC
+**Primary task**: P11.M4.E2.T003 - Implement config validation per platform
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M4.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

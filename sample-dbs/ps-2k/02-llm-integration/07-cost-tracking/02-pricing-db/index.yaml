@@ -1,0 +1,43 @@
+# Epic: Pricing Database
+# Phase 2, Milestone 7, Epic 2 (P2.M7.E2)
+
+id: P2.M7.E2
+name: Pricing Database
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-pricing-module.todo
+    title: Create Pricing module
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-provider-pricing.todo
+    title: Add provider pricing data
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-pricing-tests.todo
+    title: Write pricing tests
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

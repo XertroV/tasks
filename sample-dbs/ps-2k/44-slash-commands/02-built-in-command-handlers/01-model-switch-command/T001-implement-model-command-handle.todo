@@ -1,0 +1,46 @@
+---
+id: P44.M2.E1.T001
+title: Implement /model command handler
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T18:47:00.615503+00:00'
+started_at: '2026-02-19T18:47:00.615503+00:00'
+completed_at: '2026-02-19T18:58:44.996115+00:00'
+duration_minutes: 11.739676683333332
+---
+## Summary
+Implement `PagServer.Commands.Handlers.Model` — switches the agent's LLM model.
+
+## Acceptance Criteria
+- [ ] Implements Command behaviour (name: "model", aliases: ["m"])
+- [ ] No args: returns current model + list of available models as Response options (one per provider:model)
+- [ ] With args (e.g. "anthropic:claude-sonnet-4"): calls AgentServer.switch_model_by_id/2, returns confirmation text
+- [ ] Invalid model spec: returns error text with format hint
+- [ ] Agent busy (switch returns {:error, :agent_busy}): returns friendly error
+- [ ] Context with no agent_id: returns error "No active agent found"
+- [ ] Response includes model name in metadata for platform formatters
+- [ ] Uses PagServer.LLM.Providers to enumerate available models for the options list
+- [ ] Tests: no-args response has options, valid switch succeeds, invalid model returns error, no agent_id returns error
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P44.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-19 18:47 UTC
+**Sibling tasks**: P44.M2.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P44.M2.E1.T001 → P44.M2.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P44.M2.E1.T001: .tasks/44-slash-commands/02-built-in-command-handlers/01-model-switch-command/T001-implement-model-command-handle.todo
+- P44.M2.E1.T002: .tasks/44-slash-commands/02-built-in-command-handlers/01-model-switch-command/T002-platform-rendering-of-model-in.todo

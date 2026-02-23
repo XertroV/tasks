@@ -1,0 +1,25 @@
+id: P25.M1
+name: Research & Audit
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Audit MCP Tool Interfaces
+  path: 01-audit-mcp-interfaces
+  status: pending
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: Research MCP tool interfaces from opencode, codex, crush, and similar
+    CLIs. Document best patterns for argument shapes, descriptions, and UX across
+    all core tool types.
+  locked: false
+stats:
+  total_tasks: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

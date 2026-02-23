@@ -1,0 +1,32 @@
+---
+id: P15.M11.E5.T001
+title: Design coordinator and role system prompts
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.225144+00:00'
+started_at: '2026-02-17T18:46:51.225144+00:00'
+completed_at: '2026-02-17T19:22:00.150228+00:00'
+duration_minutes: 35.148751233333336
+---
+## Description
+Craft system prompts for the coordinator, coder, and observer agents. These define the pair programming protocol and each agent's behavior.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/prompts.ex`
+
+## Acceptance Criteria
+- [ ] `coordinator_prompt/1` — instructs on phase management, swap handling, agreement detection, report generation
+- [ ] `coder_prompt/2` — includes task description, worktree path, pair protocol (observer messages, review phase, pair_approve)
+- [ ] `observer_prompt/1` — includes task description, available tools, guidelines (when to interrupt vs note, be constructive)
+- [ ] All prompts are parameterized from Config struct
+- [ ] Coordinator understands PAIR_SESSION_BOTH_APPROVED and PAIR_SWAP_REQUEST commands
+- [ ] Tests pass (prompt generation doesn't crash, includes expected sections)
+- [ ] Lint passes
+
+## Implementation Notes
+See plan: .plan/pair-programming-agents.md, Epic 4, Task 4.1 for full prompt templates

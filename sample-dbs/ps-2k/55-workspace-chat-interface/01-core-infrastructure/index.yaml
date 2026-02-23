@@ -1,0 +1,37 @@
+id: P55.M1
+name: Core Infrastructure
+status: done
+estimate_hours: 9.5
+complexity: medium
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Routes and LiveView Shell
+  path: 01-routes-and-liveview-shell
+  status: done
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: Add /chat scope and routes to router.ex, create root WorkspaceChat
+    LiveView with full assign struct (workspace, threads, transcript, streaming_state,
+    pending_approvals, etc.), create full-viewport HTML template, add Chat nav link,
+    implement handle_params for thread switching with PubSub swap.
+  locked: false
+- id: E2
+  name: Data Loading and Helpers
+  path: 02-data-loading-and-helpers
+  status: done
+  estimate_hours: 3.5
+  complexity: medium
+  depends_on: []
+  description: Thread list and workspace loading queries on mount, helpers module
+    (role_class, chat_entries merge ported from ValidationConsole, timestamp formatting),
+    message pagination by sequence_num.
+  locked: false
+stats:
+  total_tasks: 8
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 8

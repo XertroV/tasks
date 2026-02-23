@@ -1,0 +1,52 @@
+id: P34
+name: External Skill Registry Integration
+status: done
+locked: true
+weeks: 2
+estimate_hours: 28.0
+complexity: medium
+depends_on:
+- P28
+description: Integrate with OpenClaw ClawHub skill registry and other popular skill
+  registries to display available skills in the webui. Skills use the AgentSkills-compatible
+  format (SKILL.md) and can be discovered, browsed, and optionally installed to workspaces.
+milestones:
+- id: M1
+  name: ClawHub Registry Integration
+  path: 01-clawhub-registry-integration
+  status: done
+  estimate_hours: 12.0
+  complexity: medium
+  depends_on: []
+  description: API client and backend integration with ClawHub (clawhub.ai) skill
+    registry. Implements search, list, and download functionality following the ClawHub
+    API specification.
+  locked: false
+- id: M2
+  name: Skill Format Parser
+  path: 02-skill-format-parser
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P34.M1
+  description: Parse AgentSkills-compatible SKILL.md format with YAML frontmatter.
+    Extract metadata (name, description, requirements) and validate skill structure.
+  locked: false
+- id: M3
+  name: WebUI Skill Browser
+  path: 03-webui-skill-browser
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on:
+  - P34.M2
+  description: WebUI component to browse, search, and view external skills from integrated
+    registries. Display skill metadata, requirements, and installation options.
+  locked: false
+stats:
+  total_tasks: 17
+  done: 17
+  in_progress: 0
+  blocked: 0
+  pending: 0

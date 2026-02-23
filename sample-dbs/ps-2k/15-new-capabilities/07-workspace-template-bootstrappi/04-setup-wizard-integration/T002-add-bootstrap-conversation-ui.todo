@@ -1,0 +1,54 @@
+---
+id: P15.M7.E4.T002
+title: Add bootstrap conversation UI in LiveView
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M7.E4.T001
+tags:
+- liveview
+- chat
+- bootstrap
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:40:07.719452+00:00'
+started_at: '2026-02-17T09:40:07.719452+00:00'
+completed_at: '2026-02-17T10:03:53.000261+00:00'
+duration_minutes: 23.75468
+---
+## Description
+Add UI in the setup wizard for monitoring and optionally conducting the bootstrap conversation directly in the browser.
+
+## UI Components
+
+### Bootstrap Progress Panel
+- Shows in wizard step 7 when bootstrap is active
+- Displays: current section name, completed sections / total sections, progress bar
+- Real-time updates via PubSub from BootstrapSession
+
+### Embedded Chat (optional)
+- Simple chat interface for conducting bootstrap directly in LiveView
+- Input box, message history, send button
+- Messages routed through the workspace main agent with bootstrap prompt
+- Shows agent questions and user responses
+
+### Post-Bootstrap File Viewer
+- After bootstrap completes, show generated files
+- Read-only markdown preview of each file
+- Edit button to modify files (creates new revision)
+- Regenerate option to re-run bootstrap
+
+### Continue Elsewhere Prompt
+- If user has Telegram connected, show Continue on Telegram button
+- Shows QR code or deep link to Telegram chat
+- Progress still visible in LiveView via PubSub
+
+## Acceptance Criteria
+- [ ] Progress panel shows real-time bootstrap progress
+- [ ] Embedded chat works for conducting bootstrap in browser
+- [ ] Generated files viewable after completion
+- [ ] Continue on Telegram option when Telegram connected
+- [ ] PubSub-driven real-time updates
+- [ ] Graceful handling of bootstrap timeout/failure
+- [ ] LiveView tests for progress display

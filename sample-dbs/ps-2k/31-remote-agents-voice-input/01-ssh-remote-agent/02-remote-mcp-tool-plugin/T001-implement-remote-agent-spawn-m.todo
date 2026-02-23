@@ -1,0 +1,16 @@
+---
+id: P31.M1.E2.T001
+title: Implement remote_agent_spawn MCP tool
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T19:46:36.934097+00:00'
+started_at: '2026-02-18T19:46:36.934097+00:00'
+completed_at: '2026-02-18T19:46:38.497283+00:00'
+duration_minutes: 0.02605293333333333
+---
+MCP tool: remote_agent_spawn(host, username, private_key, command). Establishes SSH tunnel, connects to remote PAG agent over stdio MCP transport, returns session_id/agent_id of the remote agent. The local agent can then call tools on the remote.

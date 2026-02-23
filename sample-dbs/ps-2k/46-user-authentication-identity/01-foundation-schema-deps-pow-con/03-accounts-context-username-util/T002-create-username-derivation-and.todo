@@ -1,0 +1,21 @@
+---
+id: P46.M1.E3.T002
+title: Create Username derivation and validation utility
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P46.M1.E2.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T20:50:07.231207+00:00'
+started_at: '2026-02-19T20:50:07.231207+00:00'
+completed_at: '2026-02-19T20:57:37.248158+00:00'
+duration_minutes: 7.500282333333333
+---
+Create lib/pag_server/accounts/username.ex with:
+- derive_from_oauth/2 — takes provider name and raw OAuth data map, extracts login/username field. Falls back to email local part. Sanitizes to GitHub-style rules (lowercase, replace non-[a-z0-9] with '-', collapse consecutive hyphens, strip leading/trailing hyphens, truncate to 39 chars). Appends numeric suffix if username is already taken (check DB).
+- validate_format/1 — returns :ok | {:error, reason}. Rules: 3-39 chars, pattern ~r/^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]{1,2}$/, no consecutive hyphens.
+- reserved_usernames/0 — list of reserved usernames ("admin", "api", "www", "support", "help", "pag", "root", etc.)
+Acceptance: Property-based or unit tests covering derivation from GitHub/Google/GitLab data; all edge cases (already taken, reserved, too short/long, invalid chars).

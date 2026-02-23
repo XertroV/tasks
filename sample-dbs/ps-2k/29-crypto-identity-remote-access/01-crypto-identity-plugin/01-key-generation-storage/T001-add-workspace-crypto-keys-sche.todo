@@ -1,0 +1,34 @@
+---
+id: P29.M1.E1.T001
+title: Add workspace_crypto_keys schema and migration
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:59:29.560943+00:00'
+started_at: '2026-02-18T18:59:29.560943+00:00'
+completed_at: '2026-02-18T19:03:05.868330+00:00'
+duration_minutes: 3.60512295
+---
+Create Ecto schema and migration for workspace_crypto_keys table storing ed25519 key pairs (encrypted private key, public key, workspace_id FK). Fields: id (UUID), workspace_id, public_key (base64), encrypted_private_key (binary), inserted_at, updated_at.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P29.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-18 18:59 UTC
+**Sibling tasks**: P29.M1.E1.T002, P29.M1.E1.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P29.M1.E1.T001 → P29.M1.E1.T002 → P29.M1.E1.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P29.M1.E1.T001: .tasks/29-crypto-identity-remote-access/01-crypto-identity-plugin/01-key-generation-storage/T001-add-workspace-crypto-keys-sche.todo
+- P29.M1.E1.T002: .tasks/29-crypto-identity-remote-access/01-crypto-identity-plugin/01-key-generation-storage/T002-implement-cryptokeymanager-gen.todo
+- P29.M1.E1.T003: .tasks/29-crypto-identity-remote-access/01-crypto-identity-plugin/01-key-generation-storage/T003-add-key-encryption-decryption.todo

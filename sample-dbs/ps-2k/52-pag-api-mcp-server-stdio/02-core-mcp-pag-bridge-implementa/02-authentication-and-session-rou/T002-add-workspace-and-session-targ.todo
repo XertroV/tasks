@@ -1,0 +1,60 @@
+---
+id: P52.M2.E2.T002
+title: Add workspace and session target resolution
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- implementation
+- routing
+- sessions
+claimed_by: cli-user
+claimed_at: '2026-02-21T04:37:39.637531+00:00'
+started_at: '2026-02-21T04:37:39.637531+00:00'
+completed_at: '2026-02-21T04:39:45.179653+00:00'
+duration_minutes: 2.0923685333333335
+---
+
+# Add workspace and session target resolution
+
+## Implementation Notes
+
+- Added `lib/pag_server/mcp/target_resolver.ex` to centralize target resolution.
+  - Deterministic precedence: per-call args -> runtime defaults -> nil (where allowed).
+  - Validates `workspace_id` and `session_id` as UUIDs.
+  - Returns structured `{:invalid_params, ...}` errors for missing/malformed identifiers.
+- Integrated resolver into `lib/pag_server/mcp/api_bridge.ex`.
+  - `session_state` and `session_send_message` now require valid resolved `session_id`.
+  - `session_create` now resolves optional workspace target and routes to:
+    - `/api/v1/sessions` (no target)
+    - `/api/v1/workspaces/:workspace_id/sessions` (resolved target)
+
+## Verification Notes
+
+- Added resolver unit tests in `test/pag_server/mcp/target_resolver_test.exs`.
+- Expanded bridge dispatch tests in `test/pag_server/mcp/api_bridge_test.exs` for:
+  - default workspace routing
+  - per-call workspace override routing
+  - default session fallback
+  - malformed target validation errors
+  - inaccessible session mapping (`404`)
+- Extended protocol handler tests in `test/pag_server/tools/mcp/protocol_handler_test.exs` to verify structured MCP error mapping for inaccessible upstream targets.
+- Ran focused suite (appended to `recent-mix-tests.log`):
+  - `mix test test/pag_server/mcp/target_resolver_test.exs test/pag_server/mcp/api_bridge_test.exs test/pag_server/tools/mcp/protocol_handler_test.exs test/pag_server/mcp/stdio_server_test.exs`
+  - Result: 55 tests, 0 failures.
+
+
+
+## Requirements
+
+- Add resolver for default workspace/session targeting with per-call overrides.
+- Validate workspace/session identifiers before dispatching tool calls.
+- Define deterministic fallback behavior when no target is provided.
+
+## Acceptance Criteria
+
+- Tool calls route to the correct workspace/session in tests for default and override cases.
+- Unknown or inaccessible workspace/session values return structured MCP errors.
+- Resolver behavior is documented so client-side configuration is unambiguous.

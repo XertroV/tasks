@@ -1,0 +1,31 @@
+id: P15.M11.E6
+name: LiveView UI
+status: done
+estimate_hours: 6.0
+complexity: medium
+depends_on:
+- E5
+locked: false
+tasks:
+- id: T001
+  file: T001-build-pair-session-notepad-pan.todo
+  title: Build pair session notepad panel LiveView
+  status: done
+  estimate_hours: 4.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-human-message-injection-ui.todo
+  title: Add human message injection UI
+  status: done
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 2
+  done: 2
+  in_progress: 0
+  blocked: 0
+  pending: 0

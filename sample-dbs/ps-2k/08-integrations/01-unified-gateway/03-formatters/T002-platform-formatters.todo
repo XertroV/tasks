@@ -1,0 +1,269 @@
+---
+id: P8.M1.E3.T002
+title: Implement platform formatters
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M1.E3.T001
+tags:
+- gateway
+- formatters
+- platforms
+claimed_by: cli-user
+claimed_at: '2026-02-08T09:49:24.775070+00:00'
+started_at: '2026-02-08T09:49:24.775070+00:00'
+completed_at: '2026-02-08T11:00:00.000000+00:00'
+---
+
+# Implement platform formatters
+
+Create formatter implementations for all supported platforms (Telegram, Slack, Discord, WhatsApp, Matrix).
+
+## Requirements
+
+- [x] Create `lib/pag_server/gateway/formatters/telegram.ex` (~80 LoC)
+- [x] Create `lib/pag_server/gateway/formatters/slack.ex` (~80 LoC)
+- [x] Create `lib/pag_server/gateway/formatters/discord.ex` (~80 LoC)
+- [x] Create `lib/pag_server/gateway/formatters/whatsapp.ex` (~60 LoC)
+- [x] Create `lib/pag_server/gateway/formatters/matrix.ex` (~80 LoC)
+- [x] Implement Markdown conversion for each platform
+- [x] Handle message length limits with splitting
+- [x] Format attachments appropriately
+- [x] Add error message formatting
+- [x] Document platform-specific quirks
+
+## Acceptance Criteria
+
+- [x] All formatter modules compile without warnings
+- [x] Each implements the Formatter behaviour correctly
+- [x] Markdown conversion is accurate for each platform
+- [x] Long messages are split appropriately
+- [x] Attachments are formatted correctly
+- [x] Error messages are user-friendly
+- [x] Tests verify formatting for all platforms
+- [x] Documentation includes platform limitations
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 461-530 (Gateway and formatters)
+
+**Key Points**:
+- Each platform has unique formatting syntax
+- Message length limits must be respected
+- Some platforms support rich formatting (embeds, blocks)
+- Error messages should be consistent but platform-appropriate
+- Code blocks and lists need special handling
+
+## Notes
+
+### Telegram Formatter
+
+```elixir
+defmodule PAGServer.Gateway.Formatters.Telegram do
+  @behaviour PAGServer.Gateway.Formatter
+
+  @max_length 4096
+
+  @impl true
+  def format_response(%{content: content, attachments: attachments}, _opts) do
+    # Convert Markdown to Telegram HTML
+    html = content
+      |> convert_bold()      # **text** -> <b>text</b>
+      |> convert_italic()    # *text* -> <i>text</i>
+      |> convert_code()      # `code` -> <code>code</code>
+      |> convert_code_block() # ```code``` -> <pre>code</pre>
+      |> convert_links()     # [text](url) -> <a href="url">text</a>
+    
+    # Split if too long
+    messages = split_message(html, @max_length)
+    
+    # Format with attachments
+    {:ok, %{
+      text: hd(messages),
+      parse_mode: "HTML",
+      # Additional messages if split
+      split_messages: tl(messages)
+    }}
+  end
+
+  @impl true
+  def supports_markdown?, do: true
+
+  @impl true
+  def supports_attachments?, do: true
+
+  @impl true
+  def max_message_length, do: @max_length
+
+  defp split_message(text, max_length) do
+    if String.length(text) <= max_length do
+      [text]
+    else
+      # Split at newlines or spaces, preserving formatting
+      do_split(text, max_length, [])
+    end
+  end
+end
+```
+
+### Slack Formatter
+
+```elixir
+defmodule PAGServer.Gateway.Formatters.Slack do
+  @behaviour PAGServer.Gateway.Formatter
+
+  @max_length 40_000
+
+  @impl true
+  def format_response(%{content: content, metadata: meta}, _opts) do
+    # Convert to Slack's mrkdwn format
+    mrkdwn = content
+      |> convert_to_mrkdwn()
+    
+    # Use Block Kit for rich formatting
+    blocks = [
+      %{
+        type: "section",
+        text: %{
+          type: "mrkdwn",
+          text: mrkdwn
+        }
+      }
+    ]
+    
+    # Add metadata context if present
+    blocks = maybe_add_context(blocks, meta)
+    
+    {:ok, %{
+      blocks: blocks,
+      text: content  # Fallback for notifications
+    }}
+  end
+
+  @impl true
+  def supports_markdown?, do: true
+
+  @impl true
+  def supports_attachments?, do: true
+
+  @impl true
+  def max_message_length, do: @max_length
+end
+```
+
+### Discord Formatter
+
+```elixir
+defmodule PAGServer.Gateway.Formatters.Discord do
+  @behaviour PAGServer.Gateway.Formatter
+
+  @max_length 2000
+  @max_embed_length 4096
+
+  @impl true
+  def format_response(%{content: content, attachments: attachments}, opts) do
+    # Discord uses standard Markdown
+    # Split if needed
+    messages = split_message(content, @max_length)
+    
+    # Use embeds for long content
+    response = if length(messages) == 1 do
+      %{content: hd(messages)}
+    else
+      %{
+        content: "Response (split into multiple parts):",
+        embeds: Enum.map(messages, fn msg ->
+          %{description: msg, color: 0x5865F2}
+        end)
+      }
+    end
+    
+    {:ok, response}
+  end
+
+  @impl true
+  def supports_markdown?, do: true
+
+  @impl true
+  def supports_attachments?, do: true
+
+  @impl true
+  def max_message_length, do: @max_length
+end
+```
+
+### WhatsApp Formatter
+
+```elixir
+defmodule PAGServer.Gateway.Formatters.WhatsApp do
+  @behaviour PAGServer.Gateway.Formatter
+
+  @max_length 4096
+
+  @impl true
+  def format_response(%{content: content}, _opts) do
+    # WhatsApp supports limited formatting
+    formatted = content
+      |> convert_bold()      # **text** -> *text*
+      |> convert_italic()    # *text* -> _text_
+      |> convert_code()      # `code` -> ```code```
+    
+    messages = split_message(formatted, @max_length)
+    
+    {:ok, %{
+      body: hd(messages),
+      # Additional messages if needed
+      follow_ups: tl(messages)
+    }}
+  end
+
+  @impl true
+  def supports_markdown?, do: false  # Limited support
+
+  @impl true
+  def supports_attachments?, do: true
+
+  @impl true
+  def max_message_length, do: @max_length
+end
+```
+
+### Matrix Formatter
+
+```elixir
+defmodule PAGServer.Gateway.Formatters.Matrix do
+  @behaviour PAGServer.Gateway.Formatter
+
+  @impl true
+  def format_response(%{content: content}, _opts) do
+    # Matrix supports HTML
+    html = Earmark.as_html!(content)
+    
+    {:ok, %{
+      msgtype: "m.text",
+      body: content,           # Plain text fallback
+      format: "org.matrix.custom.html",
+      formatted_body: html
+    }}
+  end
+
+  @impl true
+  def supports_markdown?, do: true
+
+  @impl true
+  def supports_attachments?, do: true
+
+  @impl true
+  def max_message_length, do: 65_536  # Essentially unlimited
+end
+```
+
+Testing considerations:
+- Test Markdown conversion accuracy
+- Test message splitting at boundaries
+- Test error message formatting
+- Test empty content handling
+- Test special characters escaping

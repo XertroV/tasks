@@ -1,0 +1,62 @@
+id: P48.M2.E1
+name: 'Epic B: Coding Agent Mode and Worktree Flow'
+status: done
+estimate_hours: 12.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-schema-migration-add-coding-mo.todo
+  title: 'Schema migration: add coding_mode enum to agents'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-session-startup-auto-create-gi.todo
+  title: 'Session startup: auto-create git worktree for coding_mode=worktree agents'
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-session-cleanup-remove-worktre.todo
+  title: 'Session cleanup: remove worktree on session end'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-system-prompt-injection-workin.todo
+  title: 'System prompt injection: working environment section for coding agents'
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-git-worktree-tool-add-set-as-w.todo
+  title: 'git_worktree tool: add set_as_working_directory option'
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-tests-for-epic-b-coding-agent.todo
+  title: 'Tests for Epic B: coding agent mode and worktree flow'
+  status: pending
+  estimate_hours: 2.5
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 6
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 6

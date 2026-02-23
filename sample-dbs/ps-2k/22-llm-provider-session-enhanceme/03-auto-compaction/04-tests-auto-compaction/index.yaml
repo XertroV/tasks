@@ -1,0 +1,33 @@
+id: P22.M3.E4
+name: 'Tests: Auto-Compaction'
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on:
+- P22.M3.E2
+locked: false
+tasks:
+- id: T001
+  file: T001-unit-tests-compactionmonitor-t.todo
+  title: 'Unit tests: CompactionMonitor threshold detection and debounce'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M3.E1.T001
+- id: T002
+  file: T002-integration-tests-end-to-end-c.todo
+  title: 'Integration tests: end-to-end compaction replaces messages with summary'
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P22.M3.E2.T002
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

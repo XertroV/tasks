@@ -1,0 +1,28 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T08:26:55.021343+00:00'
+started_at: '2026-02-13T08:26:55.021343+00:00'
+completed_at: '2026-02-13T08:56:27.910367+00:00'
+duration_minutes: 29.548150233333335
+---
+# Add Teams webhook handler
+
+## Description
+Create the webhook endpoint and event parser for MS Teams Bot Framework events. Handles verification of requests from Microsoft and routes events to appropriate handlers.
+
+## Acceptance Criteria
+- [ ] `PagServer.Integrations.Teams.Webhook` module created
+- [ ] `handle_event/2` function receives and dispatches events
+- [ ] JWT validation for requests from Microsoft Bot Framework
+- [ ] Service URL extraction from incoming requests for reply addressing
+- [ ] Event types: message, conversationUpdate, invoke handled
+- [ ] `PagServer.Integrations.Teams.EventParser` for normalizing events
+- [ ] Phoenix controller endpoint at `/api/webhooks/teams`
+- [ ] Request logging with redacted sensitive data
+- [ ] Unit tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/integrations/github/event_parser.ex`, `lib/pag_server/integrations/gitlab/pipeline_webhook_handler.ex`, `lib/pag_server/integrations/telegram.ex`
+- Part of epic: P14.M1.E1 - MS Teams Integration

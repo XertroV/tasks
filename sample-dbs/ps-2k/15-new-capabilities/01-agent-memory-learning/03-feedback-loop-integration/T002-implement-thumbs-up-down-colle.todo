@@ -1,0 +1,36 @@
+---
+id: P15.M1.E3.T002
+title: Implement thumbs up/down collection
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T12:37:24.238707+00:00'
+started_at: '2026-02-13T12:37:24.238707+00:00'
+completed_at: '2026-02-13T13:53:48.587186+00:00'
+duration_minutes: 76.40580766666668
+---
+
+# Implement thumbs up/down collection
+
+## Description
+Build the API endpoints and internal mechanisms for collecting simple thumbs up/down feedback on agent responses. Support both REST API and WebSocket channels for real-time feedback.
+
+## Acceptance Criteria
+- [ ] Add POST `/api/sessions/:id/messages/:message_id/feedback` endpoint
+- [ ] Add WebSocket channel handler for `feedback:submit` event
+- [ ] Implement `PagServer.Feedback.Collector` module for processing feedback
+- [ ] Add feedback validation (one feedback per message, valid types)
+- [ ] Emit telemetry events for feedback metrics
+- [ ] Add feedback aggregation queries (per agent, per session, per time period)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server_web/controllers/session_controller.ex`, `lib/pag_server_web/channels/agent_channel.ex`
+- Part of epic: Feedback Loop Integration
+- Follow existing controller patterns in `lib/pag_server_web/controllers/`

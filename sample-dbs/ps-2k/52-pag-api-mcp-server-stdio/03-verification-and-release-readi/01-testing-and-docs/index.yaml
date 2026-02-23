@@ -1,0 +1,44 @@
+id: P52.M3.E1
+name: Testing and docs
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-unit-integration-tests-for.todo
+  title: Add unit/integration tests for MCP stdio flows
+  status: done
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P52.M2.E1.T001
+  - P52.M2.E1.T002
+  - P52.M2.E2.T001
+- id: T002
+  file: T002-document-setup-auth-and-exampl.todo
+  title: Document setup, auth, and example client wiring
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on:
+  - P52.M2.E2.T001
+- id: T003
+  file: T003-run-lint-targeted-tests-and-ca.todo
+  title: Run lint/targeted tests and capture launch checklist
+  status: done
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on:
+  - P52.M3.E1.T001
+  - P52.M3.E1.T002
+stats:
+  total: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

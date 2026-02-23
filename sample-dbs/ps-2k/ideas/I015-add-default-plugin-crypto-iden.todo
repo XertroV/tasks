@@ -1,0 +1,47 @@
+---
+id: I015
+title: 'Add default plugin: crypto identity (autogenerates ed25519 key)'
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T22:13:27.729045+00:00'
+started_at: '2026-02-18T22:13:27.729045+00:00'
+completed_at: '2026-02-18T22:13:29.640480+00:00'
+duration_minutes: 0.03185693333333333
+---
+
+# Idea Intake: Add default plugin: crypto identity (autogenerates ed25519 key)
+
+## Original Idea
+
+Add default plugin: crypto identity (autogenerates ed25519 key)
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Add default plugin: crypto identity (autogenerates ed25519 key)"` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P29.M1 (Crypto Identity Plugin)
+- P29.M1.E1 (Key Generation & Storage — tasks not yet created)
+- P29.M1.E2 (Identity MCP Tools — tasks not yet created)
+- P29.M1.E3 (Crypto Identity Plugin Wiring — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

@@ -1,0 +1,32 @@
+---
+id: P15.M10.E4.T003
+title: Emit telemetry and structured logs for provider attempts and cooldowns
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M10.E1.T004
+tags:
+- observability
+- web-search
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:14:14.549436+00:00'
+started_at: '2026-02-17T16:14:14.549436+00:00'
+completed_at: '2026-02-17T16:26:20.518046+00:00'
+duration_minutes: 12.099476650000001
+---
+
+# Emit telemetry and structured logs for provider attempts and cooldowns
+
+
+
+## Requirements
+
+- Emit telemetry events and structured logs for provider attempts, failures, selection outcomes, and cooldown transitions.
+- Include provider identifier and error classification tags for observability dashboards.
+
+## Acceptance Criteria
+
+- Telemetry events are emitted on success/failure/cooldown with stable event names and metadata.
+- Logging/telemetry assertions are added in tests or verified through existing observability test patterns.

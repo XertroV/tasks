@@ -1,0 +1,53 @@
+id: P10.M1.E4
+name: Pull Requests Integration
+status: pending
+estimate_hours: 6.0
+complexity: high
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-pr-webhook-event-han.todo
+  title: Implement PR webhook event handlers
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-build-pr-api-methods-comment-r.todo
+  title: Build PR API methods (comment, review, approve, merge)
+  status: pending
+  estimate_hours: 2.5
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-implement-pr-diff-fetching-and.todo
+  title: Implement PR diff fetching and parsing
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: high
+  depends_on: []
+- id: T004
+  file: T004-add-pr-review-submission-and-i.todo
+  title: Add PR review submission and inline comments
+  status: pending
+  estimate_hours: 2.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-write-tests-for-pr-webhook-int.todo
+  title: Write tests for PR webhook integration
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 5
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 5

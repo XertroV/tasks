@@ -1,0 +1,33 @@
+id: P47.M4
+name: RFC 8414 Discovery & Integration Tests
+status: done
+estimate_hours: 4.0
+complexity: low
+depends_on:
+- P47.M3
+locked: false
+epics:
+- id: E1
+  name: RFC 8414 Discovery Endpoint
+  path: 01-rfc-8414-discovery-endpoint
+  status: done
+  estimate_hours: 1.0
+  complexity: low
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: Integration Tests for Device Flow
+  path: 02-integration-tests-for-device-f
+  status: done
+  estimate_hours: 3.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 3
+  done: 3
+  in_progress: 0
+  blocked: 0
+  pending: 0

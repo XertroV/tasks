@@ -1,0 +1,53 @@
+id: P44
+name: Slash Commands
+status: done
+locked: true
+weeks: 2
+estimate_hours: 40.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Core Command Infrastructure
+  path: 01-core-command-infrastructure
+  status: done
+  estimate_hours: 12.0
+  complexity: high
+  depends_on: []
+  description: Command behaviour, registry, parser, dispatcher, and structured response
+    types
+  locked: false
+- id: M2
+  name: Built-in Command Handlers
+  path: 02-built-in-command-handlers
+  status: done
+  estimate_hours: 10.0
+  complexity: medium
+  depends_on: []
+  description: Implementations of /model, /help, /stats, /status, /compact
+  locked: false
+- id: M3
+  name: Connector Integration
+  path: 03-connector-integration
+  status: done
+  estimate_hours: 14.0
+  complexity: high
+  depends_on: []
+  description: Wire command dispatch into Telegram, Slack, Discord, and Web connectors.
+    Migrate existing platform-specific commands.
+  locked: false
+- id: M4
+  name: Plugin Command Extensibility
+  path: 04-plugin-command-extensibility
+  status: done
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: Allow plugins to register custom slash commands via the Plugin API
+  locked: false
+stats:
+  total_tasks: 29
+  done: 29
+  in_progress: 0
+  blocked: 0
+  pending: 0

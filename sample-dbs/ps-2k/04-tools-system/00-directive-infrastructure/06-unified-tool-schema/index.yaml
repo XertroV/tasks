@@ -1,0 +1,37 @@
+id: P4.M0.E6
+name: Unified Tool Schema
+status: pending
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-define-provider-agnostic-tool.todo
+  title: Define provider-agnostic tool schema struct
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-schema-converters-fo.todo
+  title: Implement schema converters for each provider
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-add-json-schema-validation-for.todo
+  title: Add JSON Schema validation for tool definitions
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

@@ -1,0 +1,24 @@
+---
+id: P23.M1.E1.T001
+title: Implement CommandClassifier module with dangerous pattern matching
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:57:13.003328+00:00'
+started_at: '2026-02-18T14:57:13.003328+00:00'
+completed_at: '2026-02-18T15:02:44.775417+00:00'
+duration_minutes: 5.5295344
+---
+Implement `PagServer.Tools.CommandClassifier` module.
+
+## Acceptance Criteria
+- [ ] Pattern-match shell commands against a configurable list of dangerous patterns (e.g. `rm -rf`, `sudo`, `dd`, `mkfs`, `chmod 777`, `> /dev/`)
+- [ ] Default dangerous patterns list covers common destructive commands
+- [ ] `classify/2` function returns `{:dangerous, reason}` or `:safe`
+- [ ] Patterns are configurable per-workspace (see workspace config task)
+- [ ] Module is pure (no side effects) for easy testing
+- [ ] Unit tests cover default patterns, custom patterns, edge cases

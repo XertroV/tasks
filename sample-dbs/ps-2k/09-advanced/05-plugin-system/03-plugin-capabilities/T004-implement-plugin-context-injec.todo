@@ -1,0 +1,58 @@
+---
+id: P9.M5.E3.T004
+title: Implement plugin context injection (dynamic context into agent conversations)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P9.M5.E3.T002
+tags:
+- context
+- injection
+claimed_by: cli-user
+claimed_at: '2026-02-07T05:03:02.614676+00:00'
+started_at: '2026-02-07T05:03:02.614676+00:00'
+completed_at: '2026-02-07T05:09:53.969219+00:00'
+duration_minutes: 6.8559088
+---
+
+# Implement plugin context injection (dynamic context into agent conversations)
+
+
+
+## Requirements
+
+- [x] Create `lib/pag_server/plugins/context_injector.ex` module
+- [x] Allow plugins to inject dynamic context into agent conversations:
+  - [x] Via `:context_build` hook handler (reactive, fires during context assembly)
+  - [x] Via explicit API: `inject_context/3` (plugin_name, agent_id, context_text)
+- [x] Manage injected context storage:
+  - [x] Store pending injections per agent_id keyed by plugin_name
+  - [x] Deduplicate identical context from the same plugin
+  - [x] Support context expiry (TTL-based, optional)
+- [x] Respect token budget:
+  - [x] Accept max_tokens parameter for plugin context allocation
+  - [x] Truncate or drop lowest-priority plugin context when budget exceeded
+  - [x] Default budget: configurable percentage of total context window (e.g., 10%)
+- [x] Mark injected context with source metadata:
+  - [x] `[injected_by: plugin_name, injected_at: timestamp]`
+  - [x] Allow downstream processing to identify and handle injected context
+- [x] Clear injected context on plugin disable or session end
+
+## Acceptance Criteria
+
+- [x] Plugins can inject context via hook or explicit API
+- [x] Injected context appears in agent's context window with source attribution
+- [x] Duplicate context from the same plugin is deduplicated
+- [x] Token budget enforcement truncates excess context (lowest priority first)
+- [x] Injected context is cleared when plugin is disabled
+- [x] Unit tests cover: injection, deduplication, token budget, expiry, plugin disable cleanup
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/context_injector.ex`
+- **Depends on**: `PagServer.Plugins.PromptInjector` (E3.T002) for prompt-level injection
+- **Integrates with**: Context building pipeline in `lib/pag_server/context/`
+- **Uses**: `:context_build` hook from `PagServer.Plugins.HookDispatcher` (E2.T002)
+- **Storage**: GenServer or ETS for pending context injections per agent

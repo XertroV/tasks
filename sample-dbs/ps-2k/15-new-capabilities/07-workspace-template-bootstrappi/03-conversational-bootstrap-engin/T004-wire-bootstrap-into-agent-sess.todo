@@ -1,0 +1,54 @@
+---
+id: P15.M7.E3.T004
+title: Wire bootstrap into agent session lifecycle
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M7.E3.T003
+- P15.M7.E1.T001
+tags:
+- bootstrap
+- integration
+claimed_by: cli-user
+claimed_at: '2026-02-17T09:29:58.225591+00:00'
+started_at: '2026-02-17T09:29:58.225591+00:00'
+completed_at: '2026-02-17T09:39:56.602793+00:00'
+duration_minutes: 9.972953200000001
+---
+## Description
+Connect the bootstrap system to the agent session lifecycle so that workspace agents automatically use the bootstrap prompt during onboarding and switch to their normal prompt after completion.
+
+## Integration Points
+
+### System Prompt Override
+- When a workspace has an active bootstrap session (bootstrap_status in workspace settings is in_progress), the main agents system prompt should be the compiled bootstrap prompt instead of its configured system_prompt
+- This affects all channels (Telegram, LiveView, API) - bootstrap can happen from any channel
+- Store bootstrap_status in workspace.settings: {bootstrap_status: in_progress|complete|null, bootstrap_template_id: ...}
+
+### Session Lifecycle Hooks
+- On agent session start: check if workspace has active bootstrap, if so use bootstrap prompt
+- On bootstrap completion: trigger file generation, switch prompt, update workspace settings
+- On bootstrap cancellation: revert to default agent prompt
+
+### Channel Integration
+- Bootstrap conversation works through any connected channel
+- Agent responses during bootstrap are parsed for structured answer data
+- BootstrapSession.record_answers/3 called when answers detected
+- Progress updates published via PubSub for LiveView updates
+
+### Setup Wizard Trigger
+- Add setup.workspace_template_id to PlatformConfig when template selected
+- Add setup.bootstrap_status to track bootstrap progress
+- Initiate bootstrap session when user selects template and starts conversation
+
+## Acceptance Criteria
+- [ ] Agent uses bootstrap prompt when workspace has active bootstrap
+- [ ] Prompt switches correctly on bootstrap completion
+- [ ] Bootstrap works through Telegram, LiveView, and API
+- [ ] Answer extraction from agent responses works
+- [ ] PubSub events published for progress updates
+- [ ] Workspace settings updated correctly through lifecycle
+- [ ] Tests for prompt switching behavior
+- [ ] Test for multi-channel bootstrap scenario

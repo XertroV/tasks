@@ -1,0 +1,46 @@
+---
+id: P15.M2.E5.T004
+title: Add settings UX guardrails (dirty state/reset/error recovery)
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E5.T003
+tags:
+- ux
+- frontend
+- validation
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:38:30.025137+00:00'
+started_at: '2026-02-16T10:38:30.025137+00:00'
+completed_at: '2026-02-16T10:39:43.606389+00:00'
+duration_minutes: 1.2263539166666668
+---
+
+# Add settings UX guardrails (dirty state/reset/error recovery)
+
+
+
+## Requirements
+
+- Add dirty-state tracking to prevent accidental no-op saves and to signal unsaved changes.
+- Provide reset/reload actions that restore last persisted values.
+- Add consistent inline validation and error rendering patterns across settings forms.
+- Ensure retry/recovery behavior is explicit for transient transport failures.
+
+## Acceptance Criteria
+
+- Save actions are disabled when the form is unchanged or invalid.
+- Users can reset unsaved edits back to last persisted settings values.
+- Validation issues are shown inline next to affected inputs.
+- Transport/API failures show recoverable feedback with retry guidance while preserving inputs.
+
+## Implementation Notes
+
+- Added dirty-state tracking (`global_settings_dirty?`) to `SettingsDashboard`.
+- Save button now disables when no changes are present or validation errors exist.
+- Added reset flow that restores persisted values and clears dirty state.
+- Added inline field-level validation messages for provider/model and form-level save failure messaging.
+- Added retry guidance text for save failures while preserving edited values.
+- Added test coverage for dirty-state + reload behavior in `test/pag_server_web/live/settings_dashboard_test.exs`.

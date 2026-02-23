@@ -1,0 +1,27 @@
+---
+id: P15.M7.E5.T012
+title: 'T12: Create Knowledge Management Curator Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:28:11.329503+00:00'
+started_at: '2026-02-18T10:28:11.329503+00:00'
+completed_at: '2026-02-18T10:29:27.234020+00:00'
+duration_minutes: 1.2650751
+---
+
+# T12: Create Knowledge Management Curator Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

@@ -1,0 +1,47 @@
+---
+id: P43.M1.E2.T001
+title: Implement CallRecorder.insert_pending/4 with fire-and-forget Task.start
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:02:04.846400+00:00'
+started_at: '2026-02-19T19:02:04.846400+00:00'
+completed_at: '2026-02-19T19:10:28.948589+00:00'
+duration_minutes: 8.401702933333333
+---
+
+# Implement CallRecorder.insert_pending/4 with fire-and-forget Task.start
+
+
+
+## Requirements
+
+- Create `lib/pag_server/llm/call_recorder.ex` with `PagServer.LLM.CallRecorder` module
+- `insert_pending/4` is the entry point for recording a new LLM call before it is dispatched to a provider
+- The function must never block the caller — all DB work happens in a detached `Task.start` process
+- A UUID is generated synchronously so the caller can reference the record in subsequent update calls
+
+## Acceptance Criteria
+
+- File exists at `lib/pag_server/llm/call_recorder.ex` and defines `defmodule PagServer.LLM.CallRecorder`
+- `insert_pending/4` has the signature `insert_pending(operation, model_spec, messages, context)` where:
+  - `operation` is an atom (`:chat` or `:stream_chat`)
+  - `model_spec` is a string in `"provider/model"` format (e.g. `"anthropic/claude-sonnet-4-5"`)
+  - `messages` is a list of message maps
+  - `context` is a keyword list that may contain `:agent_id`, `:session_id`, `:workspace_id`, `:message_id`, `:caller_context`
+- The function parses `provider` and `model` from `model_spec` by splitting on `"/"` (first segment = provider, remainder = model)
+- A UUID is generated via `Ecto.UUID.generate/0` (or equivalent) before `Task.start` is called, so the ID is available in the return value before the async work begins
+- `Task.start/1` is used (not `Task.async`, not `Task.start_link`) so the task is fully detached and its crash does not affect the caller
+- Inside the Task: calls `estimate_tokens/1` (private or delegated helper) on the messages list to produce `estimated_input_tokens`; builds an `LlmCallRecord.create_changeset/1` map; inserts via `PagServer.Repo.insert/1`
+- The function returns `{:ok, record_id}` where `record_id` is the pre-generated UUID string — it returns this immediately, before the Task completes
+- All exceptions inside the Task body are caught with `rescue` (or `try/rescue`); on error, `Logger.error/2` is called with the reason and the exception is not re-raised
+- `mix compile` produces no errors or warnings for this module
+- Unit tests in `test/pag_server/llm/call_recorder_test.exs` verify:
+  - `insert_pending/4` returns `{:ok, <<_::binary>>}` immediately
+  - The returned ID is a valid UUID string
+  - After a brief `Process.sleep` to allow the async task to complete, a record with the returned ID exists in the test database with `status: :pending`
+  - Calling `insert_pending/4` with a malformed `model_spec` (no `"/"`) does not raise — the Task handles the error and logs it

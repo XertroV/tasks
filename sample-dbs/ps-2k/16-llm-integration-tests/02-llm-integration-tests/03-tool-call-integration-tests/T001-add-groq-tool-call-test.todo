@@ -1,0 +1,63 @@
+---
+id: P16.M2.E3.T001
+title: Add Groq tool call test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T001
+- P16.M1.E1.T004
+tags:
+- integration
+- groq
+- tool-call
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:55:46.773426+00:00'
+started_at: '2026-02-14T02:55:46.773426+00:00'
+completed_at: '2026-02-14T02:59:03.463118+00:00'
+duration_minutes: 3.2781614
+---
+
+# Add Groq tool call test
+
+Add integration test for tool calling with Groq.
+
+## Requirements
+
+- Create test file `test/integration/llm/groq_tool_call_test.exs`
+- Test requires `GROQ_API_KEY` environment variable
+- Define a simple tool (e.g., `get_weather`)
+- Test that model generates tool call when appropriate
+- Use `@tag :integration` to allow filtering
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists
+- [ ] Test defines a simple tool schema
+- [ ] Test sends message that triggers tool call
+- [ ] Test validates tool call response structure
+- [ ] Test verifies tool name and arguments
+- [ ] Test skips gracefully if `GROQ_API_KEY` not set
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-14 02:55 UTC
+**Primary task**: P16.M2.E2.T001 - Add Groq streaming test
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P16.M2.E3 vs P16.M2.E2)
+- No dependency chain: ✓ (verified at claim time)

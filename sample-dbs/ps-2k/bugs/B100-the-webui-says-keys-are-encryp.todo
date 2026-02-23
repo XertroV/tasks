@@ -1,0 +1,20 @@
+---
+id: B100
+title: The webui says 'Keys are encrypted at rest' for api keys -- are they? also,
+  thhat LLM Provider API Keys section should be more concise, I am thinking a table
+  with 2 cols, where top row is a dropdown on left for provider and text entry (password
+  dots) on right for api key
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T13:31:55.662868+00:00'
+started_at: '2026-02-17T13:31:55.662868+00:00'
+completed_at: '2026-02-17T13:33:51.791031+00:00'
+duration_minutes: 1.9354692
+---
+
+The webui says 'Keys are encrypted at rest' for api keys -- are they? also, thhat LLM Provider API Keys section should be more concise, I am thinking a table with 2 cols, where top row is a dropdown on left for provider and text entry (password dots) on right for api key

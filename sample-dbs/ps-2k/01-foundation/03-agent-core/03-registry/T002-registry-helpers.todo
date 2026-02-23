@@ -1,0 +1,150 @@
+---
+id: P1.M3.E3.T002
+title: Add registration and lookup helpers
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: high
+depends_on:
+- P1.M3.E3.T001
+claimed_by: claude
+claimed_at: '2026-02-05T09:15:18.363541'
+started_at: '2026-02-05T09:15:18.363541'
+completed_at: '2026-02-05T09:16:00.067507'
+tags:
+- agent
+- registry
+- api
+- foundation
+---
+
+# Add registration and lookup helpers
+
+Implement helper functions for registering agents, looking them up, and listing all active agents.
+
+## Requirements
+
+- [ ] Implement `lookup/1` function
+  - [ ] Takes agent_id binary
+  - [ ] Returns `{:ok, pid}` if found
+  - [ ] Returns `{:error, :not_found}` if not found
+  - [ ] Add `@spec` type annotation
+  
+- [ ] Implement `register/2` function
+  - [ ] Takes agent_id and pid
+  - [ ] Registers pid under agent_id in registry
+  - [ ] Returns `:ok` on success
+  - [ ] Returns `{:error, {:already_registered, pid}}` if duplicate
+  - [ ] Add `@spec` type annotation
+  
+- [ ] Implement `list_all/0` function
+  - [ ] Returns list of all registered agent_ids
+  - [ ] Should be efficient (uses Registry.select/2)
+  - [ ] Add `@spec` type annotation
+  
+- [ ] Implement `via_tuple/1` helper
+  - [ ] Returns `{:via, Registry, {name, key}}` tuple
+  - [ ] Used for GenServer.start_link/3 name registration
+  - [ ] Add `@spec` type annotation
+  
+- [ ] Add function documentation with examples
+
+## Acceptance Criteria
+
+- [ ] All 4 functions implemented with type specs
+- [ ] Functions use Registry API correctly
+- [ ] Each function has `@doc` with usage examples
+- [ ] Error cases handled properly
+- [ ] Code compiles without warnings
+- [ ] Functions return consistent error tuples
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.1
+  - Registry provides lookup/1, register/2, list_all/0 (~100 LoC)
+
+**Key Points**:
+- Registry.lookup/2 returns list of {pid, value} tuples
+- Registry.register/3 is called automatically via :via tuple
+- via_tuple/1 enables automatic registration on GenServer.start_link
+- list_all/0 should use Registry.select/2 for efficiency
+
+## Notes
+
+Example implementation:
+```elixir
+defmodule PagServer.Agents.Registry do
+  @moduledoc """
+  Registry for agent process lookup by agent ID.
+  """
+  
+  @registry_name PagServer.AgentRegistry
+  
+  @doc """
+  Lookup an agent process by ID.
+  
+  ## Examples
+  
+      iex> Registry.lookup("agent-123")
+      {:ok, #PID<0.123.0>}
+      
+      iex> Registry.lookup("nonexistent")
+      {:error, :not_found}
+  """
+  @spec lookup(binary()) :: {:ok, pid()} | {:error, :not_found}
+  def lookup(agent_id) do
+    case Registry.lookup(@registry_name, agent_id) do
+      [{pid, _value}] -> {:ok, pid}
+      [] -> {:error, :not_found}
+    end
+  end
+  
+  @doc """
+  List all registered agent IDs.
+  
+  ## Examples
+  
+      iex> Registry.list_all()
+      ["agent-1", "agent-2", "agent-3"]
+  """
+  @spec list_all() :: [binary()]
+  def list_all do
+    @registry_name
+    |> Registry.select([{{:"$1", :_, :_}, [], [:"$1"]}])
+  end
+  
+  @doc """
+  Create a via tuple for GenServer registration.
+  
+  ## Examples
+  
+      iex> GenServer.start_link(Agent, state, name: Registry.via_tuple(agent_id))
+      {:ok, #PID<0.123.0>}
+  """
+  @spec via_tuple(binary()) :: {:via, Registry, {atom(), binary()}}
+  def via_tuple(agent_id) do
+    {:via, Registry, {@registry_name, agent_id}}
+  end
+  
+  @doc """
+  Check if an agent is registered.
+  
+  ## Examples
+  
+      iex> Registry.registered?("agent-123")
+      true
+  """
+  @spec registered?(binary()) :: boolean()
+  def registered?(agent_id) do
+    case lookup(agent_id) do
+      {:ok, _pid} -> true
+      {:error, :not_found} -> false
+    end
+  end
+end
+```
+
+Note: `register/2` is not typically needed because registration happens
+automatically via the `:via` tuple when starting a GenServer. The main
+API is `via_tuple/1` for starting processes and `lookup/1` for finding them.

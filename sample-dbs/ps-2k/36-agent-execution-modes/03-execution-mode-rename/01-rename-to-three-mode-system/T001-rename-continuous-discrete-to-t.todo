@@ -1,0 +1,57 @@
+---
+id: P36.M3.E1.T001
+title: Rename continuous/discrete execution modes to persistent/transient/amnesiac
+  three-mode system
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P36.M1
+- P36.M2
+tags:
+- refactoring
+- execution-modes
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-19T13:10:22.462455+00:00'
+started_at: '2026-02-19T13:10:22.462455+00:00'
+completed_at: '2026-02-19T13:38:58.469840+00:00'
+duration_minutes: 28.6
+---
+
+## Description
+
+Rename agent execution modes from the two-mode `continuous`/`discrete` system to a
+clearer three-mode system:
+
+- `:persistent` — Long-running, continuous history, private workspace, compacted context
+- `:transient` — Durable memory/files but fresh sessions each run (default)
+- `:amnesiac` — No memory, no persistence, cleaned up after job
+
+## Acceptance Criteria
+
+- [x] ExecutionMode module updated with three modes: `:persistent`, `:transient`, `:amnesiac`
+- [x] Agent schema updated to use new enum values
+- [x] Session schema updated to use new enum values
+- [x] BootPolicy module updated for three-mode logic
+- [x] BootManager updated to handle new mode semantics
+- [x] Web UI updated to reflect new mode names
+- [x] DB migration to rename existing `continuous` → `persistent` and `discrete` → `transient` values
+- [x] All existing tests updated and passing
+
+## Files Touched
+
+- `lib/pag_server/agents/execution_mode.ex`
+- `lib/pag_server/schema/agent.ex`
+- `lib/pag_server/schema/session.ex`
+- `lib/pag_server/agents/boot_policy.ex`
+- `lib/pag_server/agents/boot_manager.ex`
+- Web UI LiveView components
+- DB migration for enum value rename
+
+## Notes
+
+- Originated from B159 (rethink execution mode naming)
+- Default mode changed from `:discrete` to `:transient`
+- `:amnesiac` is a new mode not present in the original two-mode system

@@ -1,0 +1,85 @@
+---
+id: P6.M3.E2.T001
+title: Implement event handlers
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- observability
+- event-sourcing
+- handlers
+claimed_by: cli-user
+claimed_at: '2026-02-06T20:11:42.745721+00:00'
+started_at: '2026-02-06T20:11:42.745721+00:00'
+completed_at: '2026-02-06T20:22:06.154631+00:00'
+duration_minutes: 10.390148333333334
+---
+
+# Implement event handlers
+
+Create event handler functions for each event type to apply state changes.
+
+## Requirements
+
+- [ ] Create handler protocol/behaviour
+- [ ] Implement handlers for each event type:
+  - [ ] MessageAdded
+  - [ ] ContextUpdated
+  - [ ] LLMResponse
+  - [ ] ToolInvoked
+  - [ ] SessionForked
+- [ ] Pure functions (no side effects)
+- [ ] Idempotent handlers
+- [ ] Error handling for invalid events
+
+## Acceptance Criteria
+
+- [ ] All event types have handlers
+- [ ] Handlers are pure functions
+- [ ] Idempotent (can apply same event twice)
+- [ ] Invalid events handled gracefully
+
+## Notes
+
+**Handler Protocol**:
+```elixir
+defprotocol PagServer.Events.EventHandler do
+  @doc "Apply event to state, returning new state"
+  def apply(event, state)
+end
+
+defimpl EventHandler, for: MessageAddedEvent do
+  def apply(%{data: %{message: msg}}, state) do
+    %{state | messages: state.messages ++ [msg]}
+  end
+end
+
+defimpl EventHandler, for: LLMResponseEvent do
+  def apply(%{data: %{response: resp, tokens: t}}, state) do
+    state
+    |> add_message(resp)
+    |> update_stats(t)
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P6.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-06 20:11 UTC
+**Sibling tasks**: P6.M3.E2.T002, P6.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P6.M3.E2.T001 → P6.M3.E2.T002 → P6.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P6.M3.E2.T001: .tasks/06-observability/03-session-replay/02-event-application/T001-event-handlers.todo
+- P6.M3.E2.T002: .tasks/06-observability/03-session-replay/02-event-application/T002-determinism.todo
+- P6.M3.E2.T003: .tasks/06-observability/03-session-replay/02-event-application/T003-tests.todo

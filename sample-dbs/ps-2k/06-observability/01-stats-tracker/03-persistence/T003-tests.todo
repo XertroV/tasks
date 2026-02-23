@@ -1,0 +1,98 @@
+---
+id: P6.M1.E3.T003
+title: Write persistence tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P6.M1.E3.T001
+- P6.M1.E3.T002
+tags:
+- observability
+- stats
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-06T19:33:20.165219+00:00'
+started_at: '2026-02-06T19:33:20.165219+00:00'
+completed_at: '2026-02-06T19:52:59.350969+00:00'
+duration_minutes: 19.653095666666665
+---
+
+# Write persistence tests
+
+Create comprehensive tests for stats persistence and rollup logic.
+
+## Requirements
+
+- [ ] Create `test/pag_server/stats/stat_record_test.exs`
+  - [ ] Test schema validation
+  - [ ] Test changeset with valid/invalid data
+  - [ ] Test unique constraint on period
+- [ ] Create `test/pag_server/stats/persister_test.exs`
+  - [ ] Test save_stats inserts new records
+  - [ ] Test save_stats upserts existing records
+  - [ ] Test load_stats with filters
+  - [ ] Test batch insert performance
+- [ ] Create `test/pag_server/stats/rollup_test.exs`
+  - [ ] Test hourly rollup aggregation
+  - [ ] Test daily rollup aggregation
+  - [ ] Test source data deletion after rollup
+  - [ ] Test rollup with empty data
+- [ ] Use `DataCase` for database tests
+- [ ] Use fixtures/factories for test data
+
+## Acceptance Criteria
+
+- [ ] All tests pass
+- [ ] Test coverage >90%
+- [ ] Tests run in <2 seconds
+- [ ] Tests use database transactions (rollback after test)
+- [ ] Edge cases covered (empty data, duplicates, etc.)
+
+## Context
+
+**Key Points**:
+- Use ExUnit with async: true where possible
+- Test database constraints (unique, not null, etc.)
+- Mock time for rollup tests (use Timex or DateTime mocking)
+
+## Notes
+
+**Example Test**:
+```elixir
+defmodule PagServer.Stats.PersisterTest do
+  use PagServer.DataCase, async: true
+  alias PagServer.Stats.{Persister, StatRecord}
+
+  describe "save_stats/1" do
+    test "inserts new stat record" do
+      stats = %{
+        agent_id: "agent-1",
+        session_id: "session-1",
+        model: "claude-3-5-sonnet",
+        period_start: ~U[2026-02-05 10:00:00Z],
+        period_end: ~U[2026-02-05 10:05:00Z],
+        tokens_in: 1200,
+        tokens_out: 450,
+        total_cost: Decimal.new("0.015"),
+        request_count: 1
+      }
+
+      assert {:ok, record} = Persister.save_stats(stats)
+      assert record.tokens_in == 1200
+    end
+
+    test "upserts existing record for same period" do
+      # Insert initial record
+      Persister.save_stats(%{agent_id: "a1", period_start: ~U[2026-02-05 10:00:00Z], ...})
+
+      # Update with new totals
+      updated = Persister.save_stats(%{agent_id: "a1", period_start: ~U[2026-02-05 10:00:00Z], tokens_in: 2000, ...})
+
+      assert updated.tokens_in == 2000
+      assert Repo.aggregate(StatRecord, :count) == 1
+    end
+  end
+end
+```

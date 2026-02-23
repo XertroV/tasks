@@ -1,0 +1,26 @@
+epic_id: P3.M2.E2
+name: Event Handlers
+description: Subscribe channels to PubSub topics and route events to clients
+milestone: 02-pubsub-broadcast
+phase: 03-streaming-realtime
+
+estimated_hours: 2
+priority: medium
+
+tasks:
+  - T001-channel-subscription.todo
+  - T002-event-routing.todo
+
+dependencies:
+  - P3.M2.E1  # Broadcaster must exist
+
+acceptance_criteria:
+  - AgentChannel subscribes on join
+  - Events routed to correct push messages
+  - Unsubscribe on channel termination
+  - Multiple clients can subscribe to same agent
+
+deliverables:
+  - Updated AgentChannel with subscriptions
+  - Event routing logic
+  - Tests for multi-client scenarios

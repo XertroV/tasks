@@ -1,0 +1,50 @@
+id: P50.M1.E1
+name: Plugin Scaffold
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-plugin-json-manifest-an.todo
+  title: Create plugin.json manifest and collab_teams directory scaffold
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-collabteams-main-mod.todo
+  title: Implement CollabTeams main module skeleton
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E1.T001
+- id: T003
+  file: T003-add-collabteams-projection-gen.todo
+  title: Add CollabTeams.Projection GenServer skeleton
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E1.T002
+- id: T004
+  file: T004-add-smoke-tests-and-mix-test-c.todo
+  title: Add smoke tests and mix test.collab_teams alias
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P50.M1.E1.T002
+  - P50.M1.E1.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

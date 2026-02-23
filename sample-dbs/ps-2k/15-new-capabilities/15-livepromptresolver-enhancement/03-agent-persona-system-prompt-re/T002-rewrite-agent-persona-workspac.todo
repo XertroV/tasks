@@ -1,0 +1,30 @@
+---
+id: P15.M15.E3.T002
+title: Rewrite agent-persona workspace template prompt_template (Sections 2-12)
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- persona
+- prompts
+- templates
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-19T13:57:15.986943+00:00'
+---
+Rewrite prompt_template in priv/workspace_templates/agent-persona.yml.
+
+12 sections: Existence, Cognitive Architecture, Core Files & Self, Capabilities, Sovereignty & Rationality, Memory & Continuity, Self-Modification, Team & Orchestration, Communication, Heartbeat, Core File Context, Runtime.
+
+Uses new placeholder syntax: {{file:X?framed}}, {{tools:summaries}}, {{runtime:*}}, {{var:birth_words}}.
+
+Update default_files.EGO.md to use placeholder comments format.
+Remove BIRTH.md from system_prompt_files (conditional via ?framed).
+
+Acceptance criteria:
+- Workspace template loads and validates
+- All sections present
+- Placeholder syntax correct

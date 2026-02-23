@@ -1,0 +1,133 @@
+---
+id: P8.M3.E3.T002
+title: Implement PAG command handlers
+status: done
+estimate_hours: 2
+complexity: medium
+priority: high
+depends_on:
+- P8.M3.E3.T001
+tags:
+- slack
+- commands
+- handlers
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:19:34.826636+00:00'
+started_at: '2026-02-11T02:19:34.826636+00:00'
+completed_at: '2026-02-11T02:19:40.301512+00:00'
+duration_minutes: 0.09124775
+---
+
+# Implement PAG command handlers
+
+Implement handlers for all `/pag` subcommands (ask, fork, stats, help).
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/slack/commands/` directory
+- [ ] Implement `ask.ex` - Send message to agent (~60 LoC)
+- [ ] Implement `fork.ex` - Fork current session (~50 LoC)
+- [ ] Implement `stats.ex` - Show session statistics (~70 LoC)
+- [ ] Implement `help.ex` - Show command help (~40 LoC)
+- [ ] Add command behavior module (~30 LoC)
+
+## Acceptance Criteria
+
+- [ ] `/pag ask <question>` sends to agent and streams response
+- [ ] `/pag fork` creates new session from current context
+- [ ] `/pag stats` shows token usage and cost breakdown
+- [ ] `/pag help` displays all available commands
+- [ ] All commands handle errors gracefully
+- [ ] Responses formatted with Block Kit for readability
+- [ ] Tests cover all commands and error paths
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` line 283 (Slash commands)
+
+**Key Points**:
+- Commands operate on user's active session in channel
+- `ask` creates session if none exists
+- `fork` requires existing session
+- `stats` aggregates across all user sessions or specific session
+- Commands respect user permissions and workspace limits
+
+## Notes
+
+Command behavior:
+```elixir
+defmodule PAGServer.Integrations.Slack.Command do
+  @callback execute(args :: [String.t()], context :: map()) ::
+    {:ok, map()} | {:error, term()}
+end
+```
+
+Ask command:
+```elixir
+defmodule PAGServer.Integrations.Slack.Commands.Ask do
+  @behaviour PAGServer.Integrations.Slack.Command
+  
+  def execute([question], context) do
+    {:ok, session} = get_or_create_session(context)
+    {:ok, response} = Agent.send_message(session.agent_id, question)
+    
+    {:ok, %{
+      response_type: "in_channel",
+      blocks: format_response(response)
+    }}
+  end
+end
+```
+
+Stats command output:
+```elixir
+def execute([], context) do
+  {:ok, session} = get_current_session(context)
+  stats = SessionStats.aggregate(session.id)
+  
+  {:ok, %{
+    response_type: "ephemeral",
+    blocks: [
+      %{type: "section", text: %{type: "mrkdwn", text: "*Session Stats*"}},
+      %{type: "section", fields: [
+        %{type: "mrkdwn", text: "*Messages:*\n#{stats.message_count}"},
+        %{type: "mrkdwn", text: "*Tokens:*\n#{stats.total_tokens}"},
+        %{type: "mrkdwn", text: "*Cost:*\n$#{stats.total_cost}"},
+        %{type: "mrkdwn", text: "*Duration:*\n#{format_duration(stats)}"}
+      ]}
+    ]
+  }}
+end
+```
+
+Help text:
+```
+Available commands:
+• `/pag ask <question>` - Ask the agent a question
+• `/pag fork [session_id]` - Create a fork of current session
+• `/pag stats [session_id]` - View session statistics
+• `/pag help` - Show this help message
+```
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:19 UTC
+**Primary task**: P8.M2.E2.T001 - Implement message handler
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M3.E3 vs P8.M2.E2)
+- No dependency chain: ✓ (verified at claim time)

@@ -1,0 +1,23 @@
+---
+id: P42.M2.E2.T002
+title: Define RoutingDecision struct and validation
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:19:28.860252+00:00'
+started_at: '2026-02-19T17:19:28.860252+00:00'
+completed_at: '2026-02-19T17:29:58.332018+00:00'
+duration_minutes: 10.491195783333334
+---
+## Context
+plugins/mailman/lib/routing_decision.ex
+
+## Acceptance Criteria
+- [ ] %RoutingDecision{} struct with fields: action (:deliver | :reject | :defer), target ({:agent, name} | {:workspace, slug} | :me | {:team, name}), one_off (bool), persist_rule (bool), rule (map | nil), reply_body (string | nil)
+- [ ] from_map/1 - parse LLM JSON response into struct with validation
+- [ ] to_instructions/0 - returns schema description string for injection into mailman system prompt
+- [ ] Valid action values enforced

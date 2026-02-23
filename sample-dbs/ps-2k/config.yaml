@@ -1,0 +1,45 @@
+# PAG-Server Task Management Configuration
+
+# Agent defaults
+agent:
+  default_agent: cli-user       # Default agent ID when --agent not specified
+  auto_claim_after_done: false  # Automatically grab next task after completing one
+
+# Session management
+session:
+  heartbeat_timeout_minutes: 15  # Mark session as stale after this many minutes
+
+# Stale claim detection
+stale_claim:
+  warn_after_minutes: 60      # Warn at 1 hour
+  error_after_minutes: 120    # Non-fatal error at 2 hours
+
+# Complexity multipliers for estimates (CCPM buffers)
+complexity_multipliers:
+  low: 1.0       # 1x estimate (no buffer)
+  medium: 1.25   # 1.25x estimate (25% buffer)
+  high: 1.5      # 1.5x estimate (50% buffer)
+  critical: 2.0  # 2x estimate (100% buffer)
+
+# CCPM settings
+ccpm:
+  enable: true
+  project_buffer_percent: 25  # Add 25% buffer to total project timeline
+
+# Display settings
+display:
+  max_list_depth: 3           # How deep to expand in list view
+  show_estimates: true        # Show time estimates in list output
+  compact_mode: false         # Use minimal output format
+  progress_bar_style: unicode # unicode, ascii, or simple
+
+# Timeline settings
+timeline:
+  default_weeks: 8            # Default timeline display width
+  hours_per_week: 40          # Assumed hours per week for calculations
+
+# Priority settings
+priority:
+  high: 1
+  medium: 2
+  low: 3

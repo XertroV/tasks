@@ -1,0 +1,127 @@
+---
+id: P4.M2.E1.T002
+title: Implement write_file tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tools
+- builtin
+- filesystem
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:23:54.350927'
+started_at: '2026-02-05T22:23:54.350927'
+completed_at: '2026-02-05T22:23:55.043270'
+duration_minutes: 0.0115388
+---
+
+# Implement write_file tool
+
+Create the `write_file` builtin tool for writing file contents.
+
+## Requirements
+
+- [x] Create `lib/pag_server/tools/builtin/write_file.ex` (~100 LoC)
+- [x] Implement Tool behaviour (name, schema, execute)
+- [x] Support create/overwrite modes
+- [x] Create parent directories if missing
+- [x] Validate path is within workspace
+
+## Acceptance Criteria
+
+- [x] Writes text content to files
+- [x] Creates parent directories automatically
+- [x] Blocks path traversal attacks
+- [x] Returns confirmation with path and bytes written
+- [x] Handles write permissions errors gracefully
+- [x] Test coverage for valid/invalid paths, permissions, errors
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-349 (Builtin tools)
+
+**Key Points**:
+- Sandbox to workspace (same validation as read_file)
+- Create directories as needed for UX
+- Consider disk space limits (future enhancement)
+- Atomic writes to prevent corruption
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.WriteFile do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "write_file"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "write_file",
+      description: "Write contents to a file in the workspace",
+      parameters: %{
+        type: "object",
+        properties: %{
+          path: %{
+            type: "string",
+            description: "Path to file relative to workspace"
+          },
+          content: %{
+            type: "string",
+            description: "Content to write to the file"
+          }
+        },
+        required: ["path", "content"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"path" => path, "content" => content}, %{workspace: workspace}) do
+    full_path = Path.join(workspace, path)
+    
+    case validate_path(full_path, workspace) do
+      :ok ->
+        # Create parent directories
+        full_path |> Path.dirname() |> File.mkdir_p()
+        
+        case File.write(full_path, content) do
+          :ok ->
+            {:ok, %{
+              path: path,
+              bytes_written: byte_size(content)
+            }}
+          {:error, reason} ->
+            {:error, "Failed to write file: #{reason}"}
+        end
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp validate_path(full_path, workspace) do
+    # Same validation as read_file
+    real_path = Path.expand(full_path)
+    real_workspace = Path.expand(workspace)
+    
+    if String.starts_with?(real_path, real_workspace) do
+      :ok
+    else
+      {:error, "Path outside workspace"}
+    end
+  end
+end
+```
+
+Future enhancements:
+- Atomic writes using temp file + rename
+- Backup existing file before overwrite
+- Disk space checks before writing
+- File locking for concurrent access
+
+Register in Registry startup.

@@ -1,0 +1,39 @@
+id: P49.M5.E3
+name: Trust observability incident tooling and docs sync
+status: done
+estimate_hours: 6.0
+complexity: high
+depends_on:
+- P49.M5.E1
+locked: false
+tasks:
+- id: T001
+  file: T001-emit-structured-trust-events-a.todo
+  title: Emit structured trust events and wire telemetry handlers
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-update-trust-docs-and-add-adve.todo
+  title: Update trust docs and add adversarial regression tests for Option B
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T003
+  file: T003-build-plugin-trust-report-comm.todo
+  title: Build plugin trust report command or API for incident reconstruction
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: high
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

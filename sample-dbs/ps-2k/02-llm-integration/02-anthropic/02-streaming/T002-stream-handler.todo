@@ -1,0 +1,118 @@
+---
+id: P2.M2.E2.T002
+title: Create streaming response handler
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P2.M2.E2.T001
+tags:
+- llm
+- anthropic
+- streaming
+- handler
+claimed_by: claude-1
+claimed_at: '2026-02-05T12:20:10.649411'
+started_at: '2026-02-05T12:20:10.649411'
+completed_at: '2026-02-05T12:27:23.514707'
+duration_minutes: 7.214421433333333
+---
+
+# Create streaming response handler
+
+Implement streaming request handler that processes SSE events into usable chunks.
+
+## Requirements
+
+- [ ] Add `stream: true` option to chat/2 function
+- [ ] Return lazy Stream (Enumerable) for processing
+- [ ] Parse SSE events using SSE parser module
+- [ ] Aggregate content_block_delta events into text chunks
+- [ ] Include metadata (id, model, usage) in final event
+- [ ] Add tests with mocked streaming responses
+
+## Acceptance Criteria
+
+- [ ] `chat(client, stream: true)` returns {:ok, stream}
+- [ ] Stream yields parsed events as they arrive
+- [ ] Text deltas are properly aggregated
+- [ ] Stream completes on message_stop
+- [ ] Errors in stream are handled gracefully
+- [ ] Tests use StreamCatcher pattern from anthropix
+- [ ] >85% test coverage
+- [ ] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 (LLM Domain)
+- `ref-projects/anthropix/lib/anthropix.ex` lines 84-95 (streaming usage)
+- `ref-projects/anthropix/test/support/stream_catcher.ex` - Test helper
+
+**Key Points**:
+- Use Stream.resource/3 for lazy streaming
+- Buffer SSE lines until complete event
+- Emit parsed events to consumer
+
+## Notes
+
+Streaming request:
+```elixir
+def chat(client, opts) do
+  if Keyword.get(opts, :stream) do
+    stream_chat(client, opts)
+  else
+    sync_chat(client, opts)
+  end
+end
+
+defp stream_chat(client, opts) do
+  body = build_request(opts)
+  
+  stream = Stream.resource(
+    fn -> start_stream(client, body) end,
+    &process_chunk/1,
+    &cleanup_stream/1
+  )
+  
+  {:ok, stream}
+end
+```
+
+Event processing:
+```elixir
+defp process_chunk({conn, buffer}) do
+  case read_chunk(conn) do
+    {:ok, chunk} ->
+      {buffer <> chunk}
+      |> parse_complete_events()
+      |> case do
+        {events, remaining} ->
+          {events, {conn, remaining}}
+      end
+    
+    :done ->
+      {:halt, {conn, buffer}}
+    
+    {:error, error} ->
+      {:halt, {conn, buffer}}
+  end
+end
+```
+
+Stream usage:
+```elixir
+{:ok, stream} = Anthropic.chat(client, stream: true, ...)
+
+stream
+|> Stream.each(fn event ->
+  case event do
+    {:content_block_delta, %{"delta" => %{"text" => text}}} ->
+      IO.write(text)
+    _ ->
+      :ok
+  end
+end)
+|> Stream.run()
+```

@@ -1,0 +1,24 @@
+---
+id: P55.M4.E1.T002
+title: Responsive layout with mobile sidebar toggle
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- polish
+- responsive
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.967794+00:00'
+started_at: '2026-02-22T12:15:57.967794+00:00'
+completed_at: '2026-02-22T12:33:10.092739+00:00'
+duration_minutes: 17.202082283333333
+---
+Make layout responsive: on small screens (<768px), sidebar collapses to a hamburger/toggle button. Sidebar overlays as a drawer when toggled open. Main chat area takes full width on mobile. Composer remains fixed at bottom. Ensure touch-friendly tap targets.
+
+## Acceptance Criteria
+- Sidebar collapses on small screens
+- Toggle button shows/hides sidebar as drawer
+- Chat area full-width on mobile
+- Touch-friendly interactions

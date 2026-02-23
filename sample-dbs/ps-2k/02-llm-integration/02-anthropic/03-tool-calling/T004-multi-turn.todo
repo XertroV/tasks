@@ -1,0 +1,145 @@
+---
+id: P2.M2.E3.T004
+title: Implement multi-turn tool execution
+status: done
+estimate_hours: 1.0
+complexity: high
+priority: high
+depends_on:
+- P2.M2.E3.T003
+tags:
+- llm
+- anthropic
+- tools
+- multi-turn
+claimed_by: claude-1
+claimed_at: '2026-02-05T14:54:32.407668'
+started_at: '2026-02-05T14:54:32.407668'
+completed_at: '2026-02-05T15:04:11.400608'
+duration_minutes: 9.649882183333334
+---
+
+# Implement multi-turn tool execution
+
+Implement the full request-tool-result-response cycle for tool calling.
+
+## Requirements
+
+- [x] Send request with tools parameter
+- [x] Detect stop_reason="tool_use"
+- [x] Parse tool calls from response
+- [x] Execute tools (delegate to Tools.Executor from P2.M1)
+- [x] Format results as new user message
+- [x] Send continuation request with results
+- [x] Handle multi-turn until stop_reason="end_turn"
+- [x] Add integration tests with mock tools
+
+## Acceptance Criteria
+
+- [x] Full tool calling cycle works end-to-end
+- [x] Multiple tool rounds are supported
+- [x] stop_reason detection works correctly
+- [x] Tools are executed via registry (via callback pattern for future integration)
+- [x] Conversation state is maintained correctly
+- [x] Integration tests with realistic scenarios
+- [x] >85% test coverage (93.75% achieved)
+- [x] `mix credo --strict` passes
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 4.4 & 4.5
+
+**Key Points**:
+- Tool calling is multi-turn conversation
+- Each tool result becomes new user message
+- Continue until no more tools needed
+
+## Notes
+
+Multi-turn flow:
+```
+1. User: "What's the weather in SF?"
+2. Claude: [tool_use: get_weather(location: "SF")]
+3. Tool result: "72°F, sunny"
+4. User message with tool_result
+5. Claude: "The weather in SF is 72°F and sunny"
+```
+
+Implementation pattern:
+```elixir
+defmodule PagServer.LLM.Providers.Anthropic do
+  def chat_with_tools(client, messages, tools, opts \\ []) do
+    tool_schemas = Enum.map(tools, &ToolSchema.convert/1)
+    
+    execute_turn(client, messages, tool_schemas, opts)
+  end
+  
+  defp execute_turn(client, messages, tools, opts) do
+    body = build_request(Keyword.merge(opts, [
+      messages: messages,
+      tools: tools
+    ]))
+    
+    case chat(client, body) do
+      {:ok, response} ->
+        case response["stop_reason"] do
+          "tool_use" ->
+            # Parse tool calls
+            tool_calls = ToolParser.parse_tool_calls(response["content"])
+            
+            # Execute tools
+            results = Enum.map(tool_calls, fn call ->
+              case Tools.Executor.execute(call.name, call.arguments) do
+                {:ok, output} -> 
+                  ToolResult.format_result(call.id, {:ok, output})
+                {:error, error} ->
+                  ToolResult.format_result(call.id, {:error, error})
+              end
+            end)
+            
+            # Build next message
+            next_message = %{
+              role: "user",
+              content: results
+            }
+            
+            # Continue conversation
+            execute_turn(client, messages ++ [next_message], tools, opts)
+          
+          "end_turn" ->
+            {:ok, response}
+          
+          _ ->
+            {:ok, response}
+        end
+      
+      error ->
+        error
+    end
+  end
+end
+```
+
+Test pattern:
+```elixir
+defmodule AnthropicToolTest do
+  use ExUnit.Case
+  
+  setup do
+    # Register mock tool
+    Tools.Registry.register(MockWeatherTool)
+    :ok
+  end
+  
+  test "executes tool and returns final response" do
+    messages = [%{role: "user", content: "Weather in SF?"}]
+    tools = [MockWeatherTool]
+    
+    {:ok, response} = Anthropic.chat_with_tools(client, messages, tools)
+    
+    assert response["stop_reason"] == "end_turn"
+    assert response["content"] |> hd() |> Map.get("text") =~ "72°F"
+  end
+end
+```

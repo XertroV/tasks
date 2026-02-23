@@ -1,0 +1,142 @@
+---
+id: P7.M2.E1.T005
+title: Track provider rate limit response headers for dynamic limit adjustment
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P7.M2.E1.T003
+tags:
+- rate-limiting
+- providers
+- dynamic
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:19:25.799770+00:00'
+started_at: '2026-02-07T06:19:25.799770+00:00'
+completed_at: '2026-02-07T06:22:09.844971+00:00'
+duration_minutes: 2.7340864666666667
+---
+
+# Track provider rate limit response headers for dynamic limit adjustment
+
+The existing rate limiter (T001-T003) uses statically configured per-provider limits.
+However, providers return rate limit information in response headers that can be used to
+dynamically adjust the local rate limiter, avoiding unnecessary rejections when limits
+change or differ from configured defaults.
+
+## Requirements
+
+- [x] Parse rate limit headers from LLM provider HTTP responses:
+  - Anthropic: `anthropic-ratelimit-requests-limit`, `anthropic-ratelimit-requests-remaining`,
+    `anthropic-ratelimit-requests-reset`, `anthropic-ratelimit-tokens-limit`,
+    `anthropic-ratelimit-tokens-remaining`, `anthropic-ratelimit-tokens-reset`
+  - OpenAI: `x-ratelimit-limit-requests`, `x-ratelimit-remaining-requests`,
+    `x-ratelimit-reset-requests`, `x-ratelimit-limit-tokens`,
+    `x-ratelimit-remaining-tokens`, `x-ratelimit-reset-tokens`
+  - OpenRouter: `x-ratelimit-limit`, `x-ratelimit-remaining`, `x-ratelimit-reset`
+- [x] Create `PagServer.RateLimiter.HeaderParser` module to normalize headers across providers
+- [x] After each successful LLM response, feed rate limit header data to the RateLimiter GenServer
+- [x] Dynamically adjust bucket capacity and current tokens based on provider-reported limits:
+  - Update capacity if provider limit differs from configured default
+  - Sync remaining tokens if provider reports fewer remaining than local count
+  - Use reset timestamps to schedule refill events accurately
+- [x] Add a `RateLimiter.update_from_headers/2` function
+- [x] Emit telemetry when local limits are adjusted: `[:pag_server, :rate_limiter, :limit_adjusted]`
+- [x] Log warnings when provider-reported limits differ significantly from configured defaults
+
+## Acceptance Criteria
+
+- [x] Rate limit response headers are parsed from Anthropic, OpenAI, and OpenRouter responses
+- [x] Local rate limiter dynamically adjusts to provider-reported limits
+- [x] Local token count syncs with provider-reported remaining count when lower
+- [x] Telemetry emitted when limits are dynamically adjusted
+- [x] Static configuration serves as initial defaults; dynamic updates override at runtime
+- [x] System degrades gracefully if headers are missing or malformed (falls back to static config)
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps (proactive rate limiting gap).
+
+The existing rate limiter tasks (T001-T004) implement a solid proactive rate limiting
+foundation with per-provider token buckets and pre-flight checks. However, the static
+configuration means the system cannot adapt to:
+- Tier upgrades that increase limits
+- Shared rate limits across multiple API keys
+- Provider-side limit changes
+- Actual remaining quota (which may differ from local tracking due to other clients)
+
+**Key Files**:
+- `lib/pag_server/rate_limiter.ex` - RateLimiter GenServer (from T002)
+- `lib/pag_server/rate_limiter/token_bucket.ex` - Token bucket algorithm (from T001)
+- `lib/pag_server/llm/providers/anthropic.ex` - HTTP response handling
+- `lib/pag_server/llm/providers/openai.ex` - HTTP response handling
+- `lib/pag_server/llm/registry.ex` - LLM request routing
+
+## Notes
+
+Header parser example:
+```elixir
+defmodule PagServer.RateLimiter.HeaderParser do
+  @moduledoc """
+  Parses rate limit headers from LLM provider HTTP responses.
+  Normalizes across different provider header formats.
+  """
+
+  @type rate_limit_info :: %{
+    requests_limit: non_neg_integer() | nil,
+    requests_remaining: non_neg_integer() | nil,
+    requests_reset: DateTime.t() | nil,
+    tokens_limit: non_neg_integer() | nil,
+    tokens_remaining: non_neg_integer() | nil,
+    tokens_reset: DateTime.t() | nil
+  }
+
+  @spec parse(:anthropic | :openai | :openrouter, [{String.t(), String.t()}]) ::
+    rate_limit_info()
+  def parse(:anthropic, headers) do
+    %{
+      requests_limit: get_int(headers, "anthropic-ratelimit-requests-limit"),
+      requests_remaining: get_int(headers, "anthropic-ratelimit-requests-remaining"),
+      requests_reset: get_datetime(headers, "anthropic-ratelimit-requests-reset"),
+      tokens_limit: get_int(headers, "anthropic-ratelimit-tokens-limit"),
+      tokens_remaining: get_int(headers, "anthropic-ratelimit-tokens-remaining"),
+      tokens_reset: get_datetime(headers, "anthropic-ratelimit-tokens-reset")
+    }
+  end
+
+  def parse(:openai, headers) do
+    %{
+      requests_limit: get_int(headers, "x-ratelimit-limit-requests"),
+      requests_remaining: get_int(headers, "x-ratelimit-remaining-requests"),
+      requests_reset: parse_openai_reset(headers, "x-ratelimit-reset-requests"),
+      tokens_limit: get_int(headers, "x-ratelimit-limit-tokens"),
+      tokens_remaining: get_int(headers, "x-ratelimit-remaining-tokens"),
+      tokens_reset: parse_openai_reset(headers, "x-ratelimit-reset-tokens")
+    }
+  end
+
+  defp get_int(headers, key) do
+    case List.keyfind(headers, key, 0) do
+      {_, value} -> String.to_integer(value)
+      nil -> nil
+    end
+  rescue
+    _ -> nil
+  end
+end
+```
+
+Integration in LLM provider response handling:
+```elixir
+# In provider modules, after receiving HTTP response:
+case Finch.request(req, finch_name) do
+  {:ok, %{status: 200, headers: headers, body: body}} ->
+    # Feed rate limit info to rate limiter
+    rate_info = RateLimiter.HeaderParser.parse(:anthropic, headers)
+    RateLimiter.update_from_headers(:anthropic, rate_info)
+
+    # Continue with normal response processing...
+    {:ok, parse_response(body)}
+end
+```

@@ -1,0 +1,307 @@
+---
+id: P4.M2.E7.T003
+title: Implement json_transform tool
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tools
+- json
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:24:29.625305'
+started_at: '2026-02-05T23:24:29.625305'
+completed_at: '2026-02-05T23:31:10.023800'
+duration_minutes: 6.673308083333334
+---
+
+# Implement json_transform tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/json_transform.ex` (~250 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Transform JSON using template-based transformations
+- [ ] Support JSONPath for extracting source values
+- [ ] Support template maps defining output structure
+- [ ] Support basic transformations: extract, rename, compute, filter
+- [ ] Use Jason for JSON encoding/decoding, Warpath for JSONPath
+- [ ] Handle missing fields gracefully with default values
+
+## Acceptance Criteria
+
+- [ ] Transforms JSON data using template specifications
+- [ ] Accepts `data` parameter (JSON structure or string)
+- [ ] Accepts `template` parameter (transformation specification)
+- [ ] Supports field mapping: `{"new_field": "$.old_field"}`
+- [ ] Supports literal values: `{"constant": "fixed_value"}`
+- [ ] Supports nested templates: `{"user": {"name": "$.user.full_name"}}`
+- [ ] Supports array transformations: map over arrays with sub-templates
+- [ ] Supports conditional inclusion: include field only if source exists
+- [ ] Supports default values: `{"field": {"path": "$.missing", "default": "N/A"}}`
+- [ ] Supports basic functions: `upper`, `lower`, `trim`, `concat`, `split`
+- [ ] Returns transformed JSON structure
+- [ ] Handles missing paths (return null or default value)
+- [ ] Test coverage: simple mapping, nested transforms, array mapping, defaults, functions, missing fields, complex templates
+- [ ] Performance: transforms 1MB document in <100ms
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Template-based transformation (not JQ language - simpler)
+- No sandbox concerns (pure data transformation)
+- Use Warpath for JSONPath queries within templates
+- Support common data reshaping needs
+- Graceful handling of missing data
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.JsonTransform do
+  @behaviour PAGServer.Tools.Tool
+
+  @impl true
+  def name, do: "json_transform"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "json_transform",
+      description: "Transform JSON data using template-based transformations",
+      parameters: %{
+        type: "object",
+        properties: %{
+          data: %{
+            description: "Source JSON data (object/array) or JSON string"
+          },
+          template: %{
+            type: "object",
+            description: "Transformation template defining output structure"
+          },
+          strict: %{
+            type: "boolean",
+            description: "Fail on missing paths (default: false, uses null)"
+          }
+        },
+        required: ["data", "template"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"data" => data, "template" => template} = args, _context) do
+    with {:ok, parsed_data} <- ensure_parsed(data),
+         {:ok, result} <- apply_template(parsed_data, template, args) do
+      {:ok, %{result: result}}
+    else
+      {:error, reason} -> {:error, "JSON transform failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp ensure_parsed(data) when is_binary(data), do: Jason.decode(data)
+  defp ensure_parsed(data) when is_map(data) or is_list(data), do: {:ok, data}
+  defp ensure_parsed(_), do: {:error, "Data must be JSON string, object, or array"}
+
+  defp apply_template(data, template, opts) when is_map(template) do
+    result = 
+      template
+      |> Enum.map(fn {key, value} -> {key, transform_value(data, value, opts)} end)
+      |> Enum.into(%{})
+    
+    {:ok, result}
+  end
+  defp apply_template(data, template, opts) when is_list(template) do
+    result = Enum.map(template, &transform_value(data, &1, opts))
+    {:ok, result}
+  end
+
+  # Transform a single value based on its type
+  defp transform_value(data, value, opts)
+
+  # String value: treat as JSONPath
+  defp transform_value(data, path, opts) when is_binary(path) do
+    if String.starts_with?(path, "$") do
+      query_path(data, path, opts)
+    else
+      path  # Literal string value
+    end
+  end
+
+  # Map with special keys for advanced transforms
+  defp transform_value(data, %{"path" => path} = spec, opts) do
+    result = query_path(data, path, opts)
+    
+    cond do
+      result != nil -> apply_spec_transforms(result, spec)
+      Map.has_key?(spec, "default") -> spec["default"]
+      true -> nil
+    end
+  end
+
+  # Map with "function" key for applying transformations
+  defp transform_value(data, %{"function" => func, "args" => args}, opts) do
+    resolved_args = Enum.map(args, &transform_value(data, &1, opts))
+    apply_function(func, resolved_args)
+  end
+
+  # Nested template (recursive)
+  defp transform_value(data, nested, opts) when is_map(nested) do
+    {:ok, result} = apply_template(data, nested, opts)
+    result
+  end
+
+  # Array of templates
+  defp transform_value(data, nested, opts) when is_list(nested) do
+    Enum.map(nested, &transform_value(data, &1, opts))
+  end
+
+  # Literal value
+  defp transform_value(_data, value, _opts), do: value
+
+  defp query_path(data, path, opts) do
+    strict = Map.get(opts, "strict", false)
+    
+    case Warpath.query(data, path) do
+      {:ok, [result | _]} -> result
+      {:ok, []} -> if strict, do: raise("Path not found: #{path}"), else: nil
+      {:error, _} -> if strict, do: raise("Invalid path: #{path}"), else: nil
+    end
+  rescue
+    _ -> nil
+  end
+
+  defp apply_spec_transforms(value, spec) do
+    value
+    |> maybe_apply(spec, "upper", &String.upcase/1)
+    |> maybe_apply(spec, "lower", &String.downcase/1)
+    |> maybe_apply(spec, "trim", &String.trim/1)
+  end
+
+  defp maybe_apply(value, spec, key, func) do
+    if Map.get(spec, key) == true and is_binary(value) do
+      func.(value)
+    else
+      value
+    end
+  end
+
+  defp apply_function("concat", args) when is_list(args) do
+    args |> Enum.map(&to_string/1) |> Enum.join("")
+  end
+  defp apply_function("upper", [str]) when is_binary(str), do: String.upcase(str)
+  defp apply_function("lower", [str]) when is_binary(str), do: String.downcase(str)
+  defp apply_function("trim", [str]) when is_binary(str), do: String.trim(str)
+  defp apply_function("split", [str, sep]) when is_binary(str) and is_binary(sep) do
+    String.split(str, sep)
+  end
+  defp apply_function(func, _args), do: {:error, "Unknown function: #{func}"}
+end
+```
+
+Example usage - Simple field mapping:
+```json
+{
+  "data": {
+    "user": {
+      "first_name": "Alice",
+      "last_name": "Smith",
+      "contact": {"email": "alice@example.com"}
+    }
+  },
+  "template": {
+    "name": "$.user.first_name",
+    "email": "$.user.contact.email",
+    "type": "customer"
+  }
+}
+```
+
+Response:
+```json
+{
+  "result": {
+    "name": "Alice",
+    "email": "alice@example.com",
+    "type": "customer"
+  }
+}
+```
+
+Example usage - Advanced transformations:
+```json
+{
+  "data": {
+    "user": {"name": "  alice  ", "age": 30},
+    "status": "active"
+  },
+  "template": {
+    "username": {
+      "path": "$.user.name",
+      "trim": true,
+      "upper": true
+    },
+    "display": {
+      "function": "concat",
+      "args": ["$.user.name", " (", "$.status", ")"]
+    },
+    "age_group": {
+      "path": "$.user.age_group",
+      "default": "unknown"
+    }
+  }
+}
+```
+
+Response:
+```json
+{
+  "result": {
+    "username": "ALICE",
+    "display": "  alice   (active)",
+    "age_group": "unknown"
+  }
+}
+```
+
+Example usage - Array transformation:
+```json
+{
+  "data": {
+    "users": [
+      {"id": 1, "name": "Alice"},
+      {"id": 2, "name": "Bob"}
+    ]
+  },
+  "template": {
+    "user_names": "$.users[*].name"
+  }
+}
+```
+
+Response:
+```json
+{
+  "result": {
+    "user_names": ["Alice", "Bob"]
+  }
+}
+```
+
+Edge cases to consider:
+- Missing paths with defaults
+- Null values in source data
+- Type mismatches (trying to uppercase a number)
+- Circular template references (detect and error)
+- Empty arrays/objects
+- Deeply nested templates
+- Invalid function names
+- Invalid JSONPath in template
+- Template referencing non-existent paths

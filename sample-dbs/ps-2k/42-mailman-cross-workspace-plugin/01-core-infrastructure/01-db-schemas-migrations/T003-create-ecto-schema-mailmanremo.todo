@@ -1,0 +1,16 @@
+---
+id: P42.M1.E1.T003
+title: 'Create Ecto schema: MailmanRemoteServer'
+status: done
+estimate_hours: 0.3
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T17:13:36.044728+00:00'
+started_at: '2026-02-19T17:13:36.044728+00:00'
+completed_at: '2026-02-19T17:15:47.950735+00:00'
+duration_minutes: 2.1984333
+---
+## Context\nFuture-proofing schema for remote pag-server TOFU identity store.\n\n## Acceptance Criteria\n- [ ] Schema at plugins/mailman/lib/schema/remote_server.ex\n- [ ] Fields: id, host (unique), public_key_fingerprint, public_key, trust_status (trusted/untrusted/revoked), first_seen_at, last_verified_at, metadata, timestamps\n- [ ] Changeset with host format validation

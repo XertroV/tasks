@@ -1,0 +1,44 @@
+# Epic: Common Format
+# Phase 8, Milestone 1, Epic 1 (P8.M1.E1)
+
+id: P8.M1.E1
+name: Common Format
+status: pending
+estimate_hours: 3
+complexity: medium
+depends_on: []
+
+tasks:
+  - id: T001
+    file: T001-message-struct.todo
+    title: Create Gateway.Message struct
+    status: pending
+    estimate_hours: 1.0
+    complexity: low
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-platform-converters.todo
+    title: Implement platform converters
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-attachment-handling.todo
+    title: Add attachment handling
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+    depends_on: [T001]
+
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

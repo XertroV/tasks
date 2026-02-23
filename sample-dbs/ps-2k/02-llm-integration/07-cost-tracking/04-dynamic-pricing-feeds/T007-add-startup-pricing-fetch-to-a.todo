@@ -1,0 +1,260 @@
+---
+id: P2.M7.E4.T007
+title: Add startup pricing fetch to Application supervision
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on:
+- P2.M7.E4.T006
+tags:
+- startup
+- application
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:13:35.617230'
+started_at: '2026-02-06T15:13:35.617230'
+completed_at: '2026-02-06T15:20:05.156015'
+duration_minutes: 6.4923129
+---
+
+# Add startup pricing fetch to Application supervision
+
+
+
+## Requirements
+
+- [ ] Add pricing initialization task to `Application.start/2` after supervisor starts
+- [ ] Create `PagServer.LLM.PricingInit` module with `initialize/0` function
+- [ ] Initialize PricingFetcher registry with `PricingFetcher.init/0`
+- [ ] Trigger one-time pricing fetch from all registered fetchers on startup
+- [ ] Store fetched pricing in database via `Pricing.create_pricing/1`
+- [ ] Set `source` field to indicate startup initialization (e.g., "startup_fetch")
+- [ ] Set `effective_at` to current timestamp
+- [ ] Log successful initialization with count of pricing records created
+- [ ] Handle initialization failures gracefully (log error, don't crash application)
+- [ ] Make initialization idempotent (safe to run multiple times)
+- [ ] Add `Application.get_env(:pag_server, :skip_pricing_init, false)` config option for tests
+
+## Acceptance Criteria
+
+- [ ] Module created at `lib/pag_server/llm/pricing_init.ex`
+- [ ] `PricingInit.initialize/0` called in `Application.start/2` after `register_llm_providers/0`
+- [ ] PricingFetcher registry initialized before fetching
+- [ ] All registered fetchers are queried for their supported models
+- [ ] Pricing data stored in database with correct `source` value
+- [ ] `effective_at` timestamp set to startup time
+- [ ] Initialization logged with info level: "Pricing initialization complete: X records created"
+- [ ] Initialization errors logged with warning level, application continues starting
+- [ ] Database already containing pricing does not cause failures (upsert or skip)
+- [ ] Can disable initialization in test environment with config
+- [ ] Application starts successfully even if pricing fetch fails
+- [ ] No compiler warnings
+- [ ] `@spec` declaration for `initialize/0`
+
+## Implementation Notes
+
+### PricingInit Module
+
+```elixir
+defmodule PagServer.LLM.PricingInit do
+  @moduledoc """
+  Initializes pricing data on application startup.
+  
+  Fetches pricing from all registered PricingFetcher implementations
+  and populates the database with initial pricing records.
+  """
+
+  require Logger
+
+  alias PagServer.LLM.PricingFetcher
+  alias PagServer.Pricing
+
+  @doc """
+  Initialize pricing data from registered fetchers.
+  
+  Called during application startup to populate initial pricing.
+  Safe to call multiple times (idempotent).
+  """
+  @spec initialize() :: :ok
+  def initialize do
+    if Application.get_env(:pag_server, :skip_pricing_init, false) do
+      Logger.info("Pricing initialization skipped (config: skip_pricing_init=true)")
+      :ok
+    else
+      do_initialize()
+    end
+  end
+
+  defp do_initialize do
+    Logger.info("Initializing pricing data from registered fetchers...")
+    
+    # Ensure registry is initialized
+    PricingFetcher.init()
+    
+    # Get all registered fetchers
+    fetchers = PricingFetcher.list_fetchers()
+    
+    # Fetch pricing from each fetcher
+    count = 
+      fetchers
+      |> Enum.map(fn {provider, module} -> 
+        fetch_and_store(provider, module)
+      end)
+      |> Enum.sum()
+    
+    Logger.info("Pricing initialization complete: #{count} records created")
+    :ok
+  rescue
+    error ->
+      Logger.warning("Pricing initialization failed: #{inspect(error)}")
+      :ok
+  end
+
+  defp fetch_and_store(provider, module) do
+    # Get list of models to fetch pricing for
+    models = models_for_provider(provider)
+    
+    now = DateTime.utc_now()
+    
+    models
+    |> Enum.map(fn model ->
+      case module.fetch_pricing(model) do
+        {:ok, pricing} ->
+          attrs = %{
+            provider: to_string(provider),
+            model: model,
+            prompt_per_million: Decimal.new(to_string(pricing.prompt_per_million)),
+            completion_per_million: Decimal.new(to_string(pricing.completion_per_million)),
+            cached_per_million: Decimal.new(to_string(pricing.cached_per_million)),
+            effective_at: now,
+            source: "startup_fetch",
+            currency: "usd"
+          }
+          
+          case Pricing.create_pricing(attrs) do
+            {:ok, _} -> 1
+            {:error, changeset} ->
+              Logger.debug("Skipping duplicate pricing: #{provider}/#{model}")
+              0
+          end
+          
+        {:error, reason} ->
+          Logger.warning("Failed to fetch pricing for #{provider}/#{model}: #{inspect(reason)}")
+          0
+      end
+    end)
+    |> Enum.sum()
+  end
+
+  # Define known models for each provider
+  defp models_for_provider(:anthropic) do
+    [
+      "claude-opus-4.6",
+      "claude-sonnet-4.5",
+      "claude-haiku-4.5",
+      "claude-opus-4.5",
+      "claude-haiku-3"
+    ]
+  end
+
+  defp models_for_provider(:openai) do
+    [
+      "gpt-5.2",
+      "gpt-5.2-pro",
+      "gpt-5-mini",
+      "gpt-4.1",
+      "gpt-4.1-mini",
+      "gpt-4.1-nano",
+      "o4-mini",
+      "gpt-realtime",
+      "gpt-realtime-mini"
+    ]
+  end
+
+  defp models_for_provider(:openrouter) do
+    # OpenRouter has hundreds of models - fetch dynamically
+    # This would call the OpenRouter fetcher's model list endpoint
+    []
+  end
+
+  defp models_for_provider(_), do: []
+end
+```
+
+### Application Startup Integration
+
+Update `lib/pag_server/application.ex`:
+
+```elixir
+def start(_type, _args) do
+  children = [
+    # ... existing children ...
+  ]
+
+  opts = [strategy: :one_for_one, name: PagServer.Supervisor]
+
+  with {:ok, pid} <- Supervisor.start_link(children, opts) do
+    # Register LLM providers after supervisor starts
+    register_llm_providers()
+    
+    # Initialize pricing data
+    PagServer.LLM.PricingInit.initialize()
+    
+    {:ok, pid}
+  end
+end
+```
+
+### Test Configuration
+
+Add to `config/test.exs`:
+
+```elixir
+config :pag_server,
+  skip_pricing_init: true
+```
+
+## Context
+
+**Dependencies:**
+- T006 (pending): Pricing cache layer - cache will be populated by this initialization
+
+**Purpose:**
+This task ensures that pricing data is available immediately when the application starts, without requiring manual database seeding or waiting for the first Oban job to run. It's particularly important for:
+- Development environments (fresh database starts)
+- Test environments (can be disabled)
+- Production deployments (ensures pricing available immediately)
+
+**Reference Files:**
+- `lib/pag_server/application.ex` - Application startup sequence
+- `lib/pag_server/llm/pricing_fetcher.ex` - Fetcher registry
+- `lib/pag_server/pricing.ex` - Database context
+
+## Notes
+
+- Initialization is idempotent - safe to call multiple times
+- Failures don't crash the application (logged as warnings)
+- Can be disabled in tests to speed up test suite
+- Future enhancement: fetch model lists dynamically from provider APIs
+- Consider adding telemetry events for initialization metrics
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P2.M7.E4)
+**Agent**: cli-user
+**Date**: 2026-02-07 02:13 UTC
+**Sibling tasks**: P2.M7.E4.T008, P2.M7.E4.T009, P2.M7.E4.T010
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P2.M7.E4.T007 → P2.M7.E4.T008 → P2.M7.E4.T009 → P2.M7.E4.T010
+Mark each done individually after completion.
+
+**Task files**:
+- P2.M7.E4.T007: .tasks/02-llm-integration/07-cost-tracking/04-dynamic-pricing-feeds/T007-add-startup-pricing-fetch-to-a.todo
+- P2.M7.E4.T008: .tasks/02-llm-integration/07-cost-tracking/04-dynamic-pricing-feeds/T008-create-oban-worker-for-schedul.todo
+- P2.M7.E4.T009: .tasks/02-llm-integration/07-cost-tracking/04-dynamic-pricing-feeds/T009-add-admin-api-endpoint-for-man.todo
+- P2.M7.E4.T010: .tasks/02-llm-integration/07-cost-tracking/04-dynamic-pricing-feeds/T010-add-pricing-telemetry-events.todo

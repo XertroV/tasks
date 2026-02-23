@@ -1,0 +1,32 @@
+---
+id: P15.M11.E5.T003
+title: Build session report generator
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-17T18:46:51.227700+00:00'
+started_at: '2026-02-17T18:46:51.227700+00:00'
+completed_at: '2026-02-17T19:22:02.837638+00:00'
+duration_minutes: 35.1934988
+---
+## Description
+Generate a markdown session report when both agents approve. Includes task summary, git changes, observer notes, review outcome, and session metadata.
+
+## Files to Create
+- `lib/pag_server/plugins/pair_programming/report_generator.ex`
+
+## Acceptance Criteria
+- [ ] `generate/1` produces a markdown report from session state
+- [ ] Includes: task description, agent models, git changes summary, all observer notes (formatted), approval comments, duration, review round count, interrupt count
+- [ ] Fetches notes from Blackboard via prefix query
+- [ ] Fetches git summary from worktree (if applicable)
+- [ ] Output is valid markdown
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Implementation Notes
+See plan: .plan/pair-programming-agents.md, Epic 4, Task 4.3 for full code

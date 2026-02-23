@@ -1,0 +1,51 @@
+id: P32.M1.E2
+name: File Delete Integration
+status: pending
+estimate_hours: 8.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-consensus-check-to-file-de.todo
+  title: Add consensus check to file_delete tool
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P32.M1.E1.T003
+- id: T002
+  file: T002-add-consensus-configuration-to.todo
+  title: Add consensus configuration to workspace settings
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+- id: T003
+  file: T003-add-mcp-tool-for-listing-and-r.todo
+  title: Add MCP tool for listing and responding to pending votes
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P32.M1.E1.T002
+- id: T004
+  file: T004-write-file-delete-consensus-in.todo
+  title: Write file delete consensus integration tests
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P32.M1.E2.T001
+  - P32.M1.E2.T002
+  - P32.M1.E2.T003
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

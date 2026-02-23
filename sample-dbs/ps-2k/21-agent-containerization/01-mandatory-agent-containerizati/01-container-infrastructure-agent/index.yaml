@@ -1,0 +1,158 @@
+id: P21.M1.E1
+name: Container Infrastructure & Agent Integration
+status: pending
+estimate_hours: 60.0
+complexity: high
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-define-containerconfig-struct.todo
+  title: Define ContainerConfig struct and types
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-define-isolationprofile-module.todo
+  title: Define IsolationProfile module with preset profiles
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-containersupervisor.todo
+  title: Implement ContainerSupervisor (DynamicSupervisor)
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-implement-containerregistry-fo.todo
+  title: Implement ContainerRegistry for container lookup
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T005
+  file: T005-implement-containermanager-gen.todo
+  title: Implement ContainerManager GenServer for lifecycle
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T006
+  file: T006-implement-volumemanager-for-mo.todo
+  title: Implement VolumeManager for mount path computation
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T007
+  file: T007-implement-workspace-volume-mou.todo
+  title: Implement workspace volume mounting logic
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T008
+  file: T008-implement-private-volume-mount.todo
+  title: Implement private volume mounting with agent isolation
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T009
+  file: T009-implement-shared-volume-for-si.todo
+  title: Implement shared volume for sibling agent coordination
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T010
+  file: T010-add-container-initialization-t.todo
+  title: Add container initialization to AgentServer lifecycle
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T011
+  file: T011-add-container-cleanup-to-agent.todo
+  title: Add container cleanup to AgentServer terminate
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T012
+  file: T012-implement-containertoolexecuto.todo
+  title: Implement ContainerToolExecutor for routing tool calls
+  status: pending
+  estimate_hours: 4.0
+  complexity: high
+  priority: medium
+  depends_on: []
+- id: T013
+  file: T013-add-feature-flag-for-container.todo
+  title: Add feature flag for containerization rollout
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T014
+  file: T014-add-per-workspace-containeriza.todo
+  title: Add per-workspace containerization settings
+  status: pending
+  estimate_hours: 3.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T015
+  file: T015-implement-session-type-based-s.todo
+  title: Implement session-type-based sibling sharing defaults
+  status: pending
+  estimate_hours: 2.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T016
+  file: T016-write-unit-tests-for-container.todo
+  title: Write unit tests for ContainerManager and VolumeManager
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T017
+  file: T017-write-integration-tests-for-ag.todo
+  title: Write integration tests for agent container lifecycle
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T018
+  file: T018-update-documentation-for-conta.todo
+  title: Update documentation for container infrastructure
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 18
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 18

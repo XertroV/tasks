@@ -1,0 +1,52 @@
+# Epic: Streaming
+# Phase 2, Milestone 3, Epic 2 (P2.M3.E2)
+
+id: P2.M3.E2
+name: Streaming
+status: pending
+estimate_hours: 4
+complexity: medium
+depends_on:
+- P2.M3.E1
+
+tasks:
+  - id: T001
+    file: T001-sse-stream.todo
+    title: Implement SSE streaming with Finch
+    status: pending
+    estimate_hours: 1.5
+    complexity: medium
+    priority: high
+    depends_on: []
+    
+  - id: T002
+    file: T002-event-parser.todo
+    title: Parse SSE events and accumulate tokens
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    depends_on: [T001]
+    
+  - id: T003
+    file: T003-stream-cancellation.todo
+    title: Add stream cancellation support
+    status: pending
+    estimate_hours: 1.0
+    complexity: medium
+    priority: high
+    
+  - id: T004
+    file: T004-timeout-handling.todo
+    title: Implement stream timeout handling
+    status: pending
+    estimate_hours: 0.5
+    complexity: low
+    priority: medium
+
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

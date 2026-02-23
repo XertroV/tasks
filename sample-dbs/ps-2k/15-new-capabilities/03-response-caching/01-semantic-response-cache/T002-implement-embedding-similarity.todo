@@ -1,0 +1,37 @@
+---
+id: P15.M3.E1.T002
+title: Implement embedding similarity lookup
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M3.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T21:21:45.254345+00:00'
+started_at: '2026-02-13T21:21:45.254345+00:00'
+completed_at: '2026-02-13T21:48:05.364214+00:00'
+duration_minutes: 26.33516428333333
+---
+
+# Implement embedding similarity lookup
+
+## Description
+Implement the core similarity search for finding cached responses to semantically similar queries. Use cosine similarity with configurable threshold for cache hit determination.
+
+## Acceptance Criteria
+- [ ] Create `PagServer.Cache.SimilaritySearch` module
+- [ ] Implement cosine similarity calculation for embeddings
+- [ ] Add configurable similarity threshold (default 0.95)
+- [ ] Implement approximate nearest neighbor search for performance
+- [ ] Support top-k retrieval for multiple candidates
+- [ ] Add similarity score logging for threshold tuning
+- [ ] Handle edge cases: empty cache, no similar results
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/vector_search/provider.ex`, `lib/pag_server/embeddings/client.ex`, `lib/pag_server/cache.ex`
+- Part of epic: Semantic Response Cache
+- Use existing VectorSearch.Provider patterns

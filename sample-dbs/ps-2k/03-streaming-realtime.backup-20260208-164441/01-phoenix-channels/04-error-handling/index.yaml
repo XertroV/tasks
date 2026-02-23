@@ -1,0 +1,27 @@
+epic_id: P3.M1.E4
+name: Error Handling
+description: Broadcast errors via channels and handle disconnects gracefully
+milestone: 01-phoenix-channels
+phase: 03-streaming-realtime
+
+estimated_hours: 2
+priority: high
+
+tasks:
+  - T001-error-broadcasting.todo
+  - T002-graceful-disconnect.todo
+  - T003-reconnection-strategy.todo
+
+dependencies:
+  - P3.M1.E3  # Token streaming must exist
+
+acceptance_criteria:
+  - LLM errors broadcast to connected clients
+  - Tool execution errors forwarded
+  - Client disconnects cleanup subscriptions
+  - Reconnection strategy documented
+
+deliverables:
+  - Error broadcasting in AgentChannel
+  - Disconnect cleanup logic
+  - Reconnection docs

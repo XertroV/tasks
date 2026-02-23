@@ -1,0 +1,73 @@
+---
+id: P51.M2.E1.T004
+title: 'Level 4: Sessions, forking, event browser & LLM calls dashboard'
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T16:40:04.584571+00:00'
+started_at: '2026-02-20T16:40:04.584571+00:00'
+completed_at: '2026-02-21T05:20:50.710139+00:00'
+duration_minutes: 760.7687592999999
+---
+## Campaign: Multi-session lifecycle, event replay, call monitoring
+
+Intermediate complexity. Tests state management and observability surfaces.
+
+## Acceptance Criteria
+- [x] Session fork creates a diverging conversation branch
+- [x] Event browser shows events with working filters
+- [x] LLM calls dashboard shows real-time and historical calls
+- [x] Timeline view renders session events correctly
+
+## Test Sequence (simple → complex)
+
+### Session Lifecycle
+1. In validation console: send 3-5 messages to build up a session
+2. Note the session ID
+3. Via API (or UI if available): fork the session → verify new session ID created
+4. Navigate to the fork — verify messages up to fork point are preserved
+5. Send a message in the fork — verify it doesn't affect the original
+
+### Event Browser
+1. Navigate to /dashboard/events
+2. Verify event list loads with most recent events
+3. Filter by event type (e.g., 'message_created') — verify filter works
+4. Filter by session ID — verify only events from that session show
+5. Filter by time range — verify narrowing works
+6. Click an event — verify detail view / expandable payload
+7. Paginate through multiple pages
+
+### Session Timeline
+1. Navigate to /dashboard/sessions/:session_id/timeline (use a session with messages)
+2. Verify visual timeline renders events in order
+3. Click on a timeline event — verify detail panel opens
+4. Check that fork events appear on the timeline
+
+### LLM Calls Dashboard
+1. Navigate to /dashboard/llm-calls
+2. Verify in-flight and recent calls appear
+3. Change time window (1h / 6h / 24h) — verify filter updates
+4. Filter by provider — verify narrows correctly
+5. Filter by model — verify narrows correctly
+6. Auto-refresh toggle — verify live updates arrive (send a message in validation console, watch it appear)
+7. Click a call record — verify detail view (prompt, tokens, cost, timing)
+
+## Expected Missing Features
+- Fork UI may not exist in the LiveView (only via API)
+- Cost fields may show 0 if pricing data not configured
+- File issues with realistic severity ratings
+
+## Execution Notes (2026-02-21)
+- Initial session-lifecycle run hit then-open browser-automation clickability issue (`B163`); API fallback was used in that pass to seed a parent session and fork.
+- Verified fork isolation via API: fork-only message present in fork and absent in parent.
+- Event Browser verified with real data (`session_forked`), including session-id filter apply flow and payload row rendering.
+- Timeline route verified for forked session; fork event appears in timeline.
+- LLM Calls dashboard verified with seeded records: one completed call (historical) and one pending call (in-flight), including provider/model/time-window filters.
+
+## Evidence Artifacts
+- `.tasks/bugs/B163-validation-console-run-control.todo`
+- `test/pag_server_web/live/validation_console_test.exs:403`

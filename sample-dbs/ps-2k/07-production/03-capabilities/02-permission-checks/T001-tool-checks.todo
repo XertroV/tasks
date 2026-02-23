@@ -1,0 +1,96 @@
+---
+id: P7.M3.E2.T001
+title: Tool permission checks
+status: done
+estimate_hours: 1
+complexity: medium
+priority: high
+depends_on:
+- P7.M3.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T14:55:18.677347'
+started_at: '2026-02-06T14:55:18.677347'
+completed_at: '2026-02-06T14:59:54.521206'
+tags:
+- security
+- permissions
+- tools
+duration_minutes: 4.597397466666666
+---
+
+# Tool permission checks
+
+Implement permission checking functions for tool execution.
+
+## Requirements
+
+- [ ] Implement `can_use_tool?/2` function
+- [ ] Handle :all, :none, {:allow, list}, {:deny, list}
+- [ ] Add `check_tool_permission!/2` (raises on deny)
+- [ ] Return descriptive errors for denials
+- [ ] Add logging for permission denials
+- [ ] Add telemetry for security events
+
+## Acceptance Criteria
+
+- [ ] can_use_tool?/2 returns boolean correctly
+- [ ] All access patterns handled properly
+- [ ] Error messages explain what was denied
+- [ ] Security events logged and tracked
+- [ ] Performance: O(1) for :all/:none, O(n) for lists
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/index.md` lines 1423-1431 (can_use_tool?)
+- Task breakdown P7.M3.E2 (Permission Checks)
+
+**Key Points**:
+- Check before tool execution
+- Fail closed (deny if uncertain)
+- Log all denials for security audit
+- Fast path for :all and :none
+
+## Notes
+
+From architecture:
+```elixir
+def can_use_tool?(%__MODULE__{} = caps, tool_name) do
+  case caps.allowed_tools do
+    :all -> true
+    :none -> false
+    {:allow, list} -> tool_name in list
+    {:deny, list} -> tool_name not in list
+  end
+end
+
+def check_tool_permission!(caps, tool_name) do
+  if can_use_tool?(caps, tool_name) do
+    :ok
+  else
+    :telemetry.execute([:pag, :security, :tool_denied], %{}, %{tool: tool_name})
+    Logger.warning("Tool execution denied", tool: tool_name, caps: caps.allowed_tools)
+    raise PagServer.Security.PermissionDeniedError, 
+      "Tool '#{tool_name}' not in allowed tools"
+  end
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M3.E2)
+**Agent**: cli-user
+**Date**: 2026-02-07 01:55 UTC
+**Sibling tasks**: P7.M3.E2.T002, P7.M3.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M3.E2.T001 → P7.M3.E2.T002 → P7.M3.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M3.E2.T001: .tasks/07-production/03-capabilities/02-permission-checks/T001-tool-checks.todo
+- P7.M3.E2.T002: .tasks/07-production/03-capabilities/02-permission-checks/T002-file-checks.todo
+- P7.M3.E2.T003: .tasks/07-production/03-capabilities/02-permission-checks/T003-resource-checks.todo

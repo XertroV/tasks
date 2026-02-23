@@ -1,0 +1,48 @@
+---
+id: P10.M4.E4.T002
+title: Implement common CI/CD operations abstraction
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on:
+- P10.M4.E4.T001
+tags:
+- implementation
+- ci-cd
+- abstraction
+claimed_by: cli-user
+claimed_at: '2026-02-12T05:07:57.257644+00:00'
+started_at: '2026-02-12T05:07:57.257644+00:00'
+completed_at: '2026-02-12T05:27:32.190698+00:00'
+duration_minutes: 19.58221735
+---
+
+# Implement common CI/CD operations abstraction
+
+Implement unified interface for common CI/CD operations across all platforms.
+
+## Requirements
+
+- [ ] Create `PagServer.Integrations.CiCd.Orchestrator` behaviour
+- [ ] Define common operations:
+  - [ ] Trigger build/pipeline
+  - [ ] Get build status
+  - [ ] Retrieve logs
+  - [ ] Cancel running build
+- [ ] Implement platform detection and routing
+- [ ] Create adapter implementations for CircleCI, Jenkins, Drone
+- [ ] Add retry logic and error handling
+- [ ] Document API with examples
+- [ ] Write integration tests for each adapter
+
+## Acceptance Criteria
+
+- [ ] Behaviour module defined with common operations
+- [ ] Platform routing works for all supported platforms
+- [ ] Each adapter correctly implements callback functions
+- [ ] Retry logic handles transient failures
+- [ ] Error types standardized across adapters
+- [ ] Integration tests verify all adapter paths
+- [ ] `mix test` passes for all tests
+- [ ] `mix lint` passes without warnings

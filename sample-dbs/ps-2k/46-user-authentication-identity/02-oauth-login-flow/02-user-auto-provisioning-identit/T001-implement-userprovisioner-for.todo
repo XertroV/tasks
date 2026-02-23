@@ -1,0 +1,47 @@
+---
+id: P46.M2.E2.T001
+title: Implement UserProvisioner for first-time OAuth login
+status: done
+estimate_hours: 3.0
+complexity: high
+priority: high
+depends_on:
+- P46.M1.E3.T001
+- P46.M1.E3.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T21:49:29.468490+00:00'
+started_at: '2026-02-19T21:49:29.468490+00:00'
+completed_at: '2026-02-19T21:57:19.303642+00:00'
+duration_minutes: 7.830585650000001
+---
+Create lib/pag_server/accounts/user_provisioner.ex with:
+
+provision_from_oauth/2 (provider_name, oauth_attrs):
+1. Check registration mode (:open vs :invite_only) — if invite_only and no pending workspace invitation matches email, return {:error, :registration_closed}
+2. Look up UserIdentity by (provider, uid)
+3. If found: return {:ok, :existing, user}
+4. If not found: look up User by email
+   a. If user found: create UserIdentity linking this provider to existing user. Return {:ok, :linked, user}
+   b. If not found: create User (email, name from OAuth, auto-derive username via Username.derive_from_oauth/2, confirmed_at: DateTime.utc_now()). Create UserIdentity. Create personal Workspace (name: "<username>'s workspace"). Return {:ok, :created, user}
+5. If workspace invitation matched (invite_only flow): auto-accept pending WorkspaceInvitation, create WorkspaceMember.
+
+All DB operations in a single Ecto.Multi transaction.
+Acceptance: Integration test covers all 4 paths (existing identity, link to existing user, new user creation, invite-only rejection). Uses Bypass for mock OAuth responses.
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P46.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-19 21:49 UTC
+**Sibling tasks**: P46.M2.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P46.M2.E2.T001 → P46.M2.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P46.M2.E2.T001: .tasks/46-user-authentication-identity/02-oauth-login-flow/02-user-auto-provisioning-identit/T001-implement-userprovisioner-for.todo
+- P46.M2.E2.T002: .tasks/46-user-authentication-identity/02-oauth-login-flow/02-user-auto-provisioning-identit/T002-implement-identity-linking-for.todo

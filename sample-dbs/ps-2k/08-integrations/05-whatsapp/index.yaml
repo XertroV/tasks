@@ -1,0 +1,31 @@
+id: P8.M5
+name: WhatsApp Integration
+status: pending
+estimate_hours: 10
+complexity: high
+depends_on:
+- M1
+epics:
+- id: E1
+  name: Cloud API Setup
+  path: 01-cloud-api
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on: []
+  description: Business API client, authentication, templates
+- id: E2
+  name: Webhook Handler
+  path: 02-webhook-handler
+  status: pending
+  estimate_hours: 6
+  complexity: high
+  depends_on:
+  - E1
+  description: Webhook verification, message handling, media
+stats:
+  total_tasks: 6
+  done: 6
+  in_progress: 0
+  blocked: 0
+  pending: 0

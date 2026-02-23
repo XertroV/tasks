@@ -1,0 +1,49 @@
+---
+id: I025
+title: Exec Approval System | HIGH | Production safety. Dangerous commands require
+  explicit approval via WebSocket. Critical for enterprise trust.
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+claimed_by: cli-user
+claimed_at: '2026-02-18T14:50:11.534296+00:00'
+started_at: '2026-02-18T14:50:11.534296+00:00'
+completed_at: '2026-02-18T14:50:13.243906+00:00'
+duration_minutes: 0.028493333333333332
+---
+
+# Idea Intake: Exec Approval System | HIGH | Production safety. Dangerous commands require explicit approval via WebSocket. Critical for enterprise trust.
+
+## Original Idea
+
+Exec Approval System | HIGH | Production safety. Dangerous commands require explicit approval via WebSocket. Critical for enterprise trust.
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Exec Approval System | HIGH | Production safety. Dangerous commands require explicit approval via WebSocket. Critical for enterprise trust."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Created Work Items
+
+- P23.M1 (Exec Approval System)
+- P23.M1.E1 (Command Classifier — tasks not yet created)
+- P23.M1.E2 (Approval Manager — tasks not yet created)
+- P23.M1.E3 (Phoenix Channel Integration — tasks not yet created)
+- P23.M1.E4 (Config, API & Tests — tasks not yet created)
+
+## Completion Criteria
+
+- Idea has been decomposed into concrete `.tasks` work items.
+- New items include clear acceptance criteria and dependencies.
+- This idea intake is updated with created IDs and marked done.

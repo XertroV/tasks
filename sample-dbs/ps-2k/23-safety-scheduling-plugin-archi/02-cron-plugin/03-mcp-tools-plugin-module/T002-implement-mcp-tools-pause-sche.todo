@@ -1,0 +1,23 @@
+---
+id: P23.M2.E3.T002
+title: 'Implement MCP tools: pause_schedule, resume_schedule'
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P23.M2.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T17:03:35.794653+00:00'
+started_at: '2026-02-18T17:03:35.794653+00:00'
+completed_at: '2026-02-18T17:03:44.728757+00:00'
+duration_minutes: 0.14890156666666668
+---
+Remaining MCP tool definitions for schedule state management.
+
+## Acceptance Criteria
+- [ ] `pause_schedule` tool: sets schedule enabled=false; returns confirmation
+- [ ] `resume_schedule` tool: sets schedule enabled=true and triggers scheduler reload; returns next_fire_at
+- [ ] Both tools validate workspace ownership before mutating
+- [ ] Tool tests

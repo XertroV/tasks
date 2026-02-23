@@ -1,0 +1,18 @@
+---
+id: B138
+title: 'Searching workspaces: pressing a key in the search box focuses other things
+  ont he screen, impossible to search'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T11:58:57.681043+00:00'
+started_at: '2026-02-18T11:58:57.681043+00:00'
+completed_at: '2026-02-18T11:59:04.772378+00:00'
+duration_minutes: 0.11818873333333334
+---
+
+Searching workspaces: pressing a key in the search box focuses other things ont he screen, impossible to search

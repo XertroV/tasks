@@ -1,0 +1,25 @@
+fixes:
+- id: F001
+  file: 2026-02/F001-skill-system-persistent-manife.todo
+- id: F002
+  file: 2026-02/F002-reorganize-url-structure-and-n.todo
+- id: F003
+  file: 2026-02/F003-h1-pass-workspace-id-to-adapte.todo
+- id: F004
+  file: 2026-02/F004-h2-wrap-post-execute-in-try-re.todo
+- id: F005
+  file: 2026-02/F005-h3-update-auth-result-type-to.todo
+- id: F006
+  file: 2026-02/F006-m2-add-cancel-mcp-on-success-p.todo
+- id: F007
+  file: 2026-02/F007-m3-add-recursive-receive-with.todo
+- id: F008
+  file: 2026-02/F008-m4-m5-document-toctou-safe-ord.todo
+- id: F009
+  file: 2026-02/F009-m6-add-periodic-sweep-of-orpha.todo
+- id: F010
+  file: 2026-02/F010-l1-replace-absolute-dev-path-i.todo
+- id: F011
+  file: 2026-02/F011-l2-add-random-suffix-to-local.todo
+- id: F012
+  file: 2026-02/F012-l3-use-mapset-for-o-1-tool-sch.todo

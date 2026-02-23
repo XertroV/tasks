@@ -1,0 +1,41 @@
+---
+id: P24.M3.E3.T001
+title: Create HeartbeatPlugin module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T14:08:24.240493+00:00'
+started_at: '2026-02-19T14:08:24.240493+00:00'
+completed_at: '2026-02-19T14:16:12.681257+00:00'
+duration_minutes: 7.8073457
+---
+## Description
+Implement plugin module for heartbeat functionality.
+
+## Acceptance Criteria
+- [ ] Module at lib/pag_server/plugins/heartbeat_plugin.ex implementing Plugin behaviour
+- [ ] enable/disable hooks start/stop the scheduler
+- [ ] Plugin enabled by default for personal_assistant workspace type
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P24.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-19 14:08 UTC
+**Sibling tasks**: P24.M3.E3.T002, P24.M3.E3.T003, P24.M3.E3.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P24.M3.E3.T001 → P24.M3.E3.T002 → P24.M3.E3.T003 → P24.M3.E3.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P24.M3.E3.T001: .tasks/24-communication-canvas-monitorin/03-heartbeat-plugin/03-plugin-and-mcp-tools/T001-create-heartbeatplugin-module.todo
+- P24.M3.E3.T002: .tasks/24-communication-canvas-monitorin/03-heartbeat-plugin/03-plugin-and-mcp-tools/T002-implement-heartbeat-status-mcp.todo
+- P24.M3.E3.T003: .tasks/24-communication-canvas-monitorin/03-heartbeat-plugin/03-plugin-and-mcp-tools/T003-implement-heartbeat-snooze-mcp.todo
+- P24.M3.E3.T004: .tasks/24-communication-canvas-monitorin/03-heartbeat-plugin/03-plugin-and-mcp-tools/T004-tests-for-heartbeatplugin.todo

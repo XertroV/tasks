@@ -1,0 +1,57 @@
+---
+id: P16.M2.E1.T001
+title: Add Groq chat completion test
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P16.M1.E1.T001
+- P16.M1.E1.T004
+tags:
+- integration
+- groq
+- chat
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:51:31.603824+00:00'
+started_at: '2026-02-14T02:51:31.603824+00:00'
+completed_at: '2026-02-14T02:54:56.709320+00:00'
+duration_minutes: 3.4184246666666667
+---
+
+# Add Groq chat completion test
+
+Add integration test for basic chat completion with Groq.
+
+## Requirements
+
+- Create test file `test/integration/llm/groq_chat_test.exs`
+- Test requires `GROQ_API_KEY` environment variable
+- Use `@tag :integration` to allow filtering
+- Test simple "Hello" response from Groq
+
+## Acceptance Criteria
+
+- [ ] Integration test file exists
+- [ ] Test sends simple message and receives response
+- [ ] Test validates response structure (content, usage, model)
+- [ ] Test skips gracefully if `GROQ_API_KEY` not set
+- [ ] Test can be run with `mix test --only integration`
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P16.M2.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 02:51 UTC
+**Sibling tasks**: P16.M2.E1.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P16.M2.E1.T001 → P16.M2.E1.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P16.M2.E1.T001: .tasks/16-llm-integration-tests/02-llm-integration-tests/01-basic-chat-integration-tests/T001-add-groq-chat-completion-test.todo
+- P16.M2.E1.T002: .tasks/16-llm-integration-tests/02-llm-integration-tests/01-basic-chat-integration-tests/T002-add-openrouter-chat-completion.todo

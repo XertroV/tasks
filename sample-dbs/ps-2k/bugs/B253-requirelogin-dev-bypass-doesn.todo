@@ -1,0 +1,18 @@
+---
+id: B253
+title: RequireLogin dev_bypass doesn't populate capabilities
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: low
+depends_on: []
+tags:
+- web
+- auth
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:59:32.690579+00:00'
+started_at: '2026-02-23T05:59:32.690579+00:00'
+completed_at: '2026-02-23T06:00:05.447345+00:00'
+duration_minutes: 0.5459453666666667
+---
+require_login.ex:45-56 - Dev bypass skips capabilities map; downstream plugs may crash

@@ -1,0 +1,92 @@
+---
+id: P4.M3.E1.T002
+title: MCP message types and schemas
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P4.M3.E1.T001
+tags:
+- tools
+- mcp
+- protocol
+- schema
+claimed_by: cli-user
+claimed_at: '2026-02-05T11:33:59.253229'
+started_at: '2026-02-05T11:33:59.253229'
+completed_at: '2026-02-05T11:37:57.478263'
+---
+
+# MCP message types and schemas
+
+Define MCP-specific message types and schemas on top of JSON-RPC.
+
+## Requirements
+
+- [ ] Define MCP message structs (Initialize, ToolsList, ToolsCall, etc.)
+- [ ] Create schema validators for each message type
+- [ ] Implement message encoding/decoding
+- [ ] Handle MCP capabilities negotiation
+- [ ] Document all supported MCP methods
+
+## Acceptance Criteria
+
+- [ ] All MCP message types defined as structs
+- [ ] Validates MCP-specific fields (capabilities, protocolVersion)
+- [ ] Encodes/decodes to/from JSON-RPC format
+- [ ] Test coverage for all message types
+- [ ] Documentation includes MCP spec version
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 72-97 (MCP Protocol)
+
+**Key Points**:
+- MCP adds protocol layer on top of JSON-RPC
+- Key methods: initialize, tools/list, tools/call, resources/list
+- Capabilities determine what features are available
+- Version negotiation in initialize message
+
+## Notes
+
+MCP message types:
+```elixir
+defmodule PAGServer.Tools.MCP.Messages do
+  defmodule Initialize do
+    defstruct [:protocolVersion, :capabilities, :clientInfo]
+  end
+
+  defmodule ToolsList do
+    defstruct [:cursor]  # For pagination
+  end
+
+  defmodule ToolsCall do
+    defstruct [:name, :arguments]
+  end
+
+  def encode_tools_list_response(tools) do
+    %{
+      tools: Enum.map(tools, &encode_tool/1)
+    }
+  end
+
+  defp encode_tool(tool_schema) do
+    %{
+      name: tool_schema.name,
+      description: tool_schema.description,
+      inputSchema: tool_schema.parameters
+    }
+  end
+end
+```
+
+MCP methods:
+- `initialize` - Handshake and capability negotiation
+- `tools/list` - List available tools
+- `tools/call` - Execute a tool
+- `resources/list` - List available resources (files, data)
+- `prompts/list` - List available prompts
+
+Reference: https://modelcontextprotocol.io/docs/specification

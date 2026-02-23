@@ -1,0 +1,27 @@
+---
+id: B087
+title: Dead code - unused tracked_paths MapSet in workspace_template.ex
+status: done
+estimate_hours: 0.25
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- code-quality
+- templates
+claimed_by: cli-user
+claimed_at: '2026-02-17T11:45:40.371116+00:00'
+started_at: '2026-02-17T11:45:40.371116+00:00'
+completed_at: '2026-02-17T12:04:00.220375+00:00'
+duration_minutes: 18.330820783333333
+---
+In workspace_template.ex:412-427, tracked_paths is computed as MapSet then discarded with '_ = tracked_paths'. Either dead code (wasted computation) or incomplete feature.
+
+## Fix
+Remove the MapSet creation if dead code, or implement the intended validation.
+
+## Acceptance Criteria
+- [ ] Dead code removed or incomplete feature implemented
+- [ ] No unused variable warnings
+
+Source: E1 Audit C2

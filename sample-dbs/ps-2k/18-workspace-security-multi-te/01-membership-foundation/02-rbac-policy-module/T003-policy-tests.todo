@@ -1,0 +1,45 @@
+---
+id: P18.M1.E2.T003
+title: Add tests for WorkspacePolicy role-action combinations
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P18.M1.E2.T002
+tags:
+- security
+- workspace
+- testing
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:08:19.834050+00:00'
+started_at: '2026-02-17T17:08:19.834050+00:00'
+completed_at: '2026-02-17T17:09:48.438383+00:00'
+duration_minutes: 1.4767386500000002
+---
+
+# Add tests for WorkspacePolicy role-action combinations
+
+## Description
+
+Exhaustive tests for `PagServer.Workspaces.Policy` covering all role × action combinations and edge cases.
+
+## Requirements
+
+- [ ] Test authorize/3 for each role (owner, admin, member) against each action
+- [ ] Test non-member returns {:error, :not_member}
+- [ ] Test nil workspace_id and nil user_id edge cases
+- [ ] Test authorize!/3 raises on forbidden
+- [ ] Test can?/3 boolean wrapper
+- [ ] Test Roles.has_permission?/2 directly
+- [ ] Test Roles.role_at_least?/2 comparisons
+
+## Acceptance Criteria
+
+- [ ] All 3 roles × 12 actions = 36 combinations tested
+- [ ] Edge cases covered: nil inputs, deleted workspace, deleted user
+- [ ] Tests pass with `async: true`
+
+## Context
+
+**Files affected**: `test/pag_server/workspaces/policy_test.exs`, `test/pag_server/workspaces/roles_test.exs`

@@ -1,0 +1,164 @@
+---
+id: P10.M3.E3.T001
+title: Design generic issue tracker adapter interface
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T07:08:23.134856+00:00'
+started_at: '2026-02-12T07:08:23.134856+00:00'
+completed_at: '2026-02-12T07:38:43.724854+00:00'
+duration_minutes: 30.343166450000002
+---
+
+# Design generic issue tracker adapter interface
+
+Define a behaviour/interface for issue tracker adapters enabling multi-provider support.
+
+## Requirements
+
+### IssueTracker Behaviour
+- [ ] Create `lib/pag_server/integrations/issue_tracker.ex` behaviour module
+- [ ] Define @callback specs for CRUD operations with proper typespecs
+- [ ] Define @callback specs for webhook handling
+- [ ] Document each callback with clear semantics
+
+### CRUD Callbacks
+- [ ] `create_issue(config, fields)` - Create new issue, return Issue struct
+- [ ] `get_issue(config, issue_id)` - Fetch single issue
+- [ ] `list_issues(config, filters, options)` - List issues with pagination
+- [ ] `update_issue(config, issue_id, updates)` - Update issue fields
+- [ ] `delete_issue(config, issue_id)` - Delete/archive issue
+
+### Workflow Callbacks
+- [ ] `get_transitions(config, issue_id)` - Return available next states
+- [ ] `transition_issue(config, issue_id, target_state)` - Change issue state
+- [ ] `add_comment(config, issue_id, comment_text)` - Add comment to issue
+
+### Webhook Callbacks
+- [ ] `verify_webhook_signature(config, body, signature)` - Verify webhook authenticity
+- [ ] `parse_webhook_event(config, body)` - Parse webhook payload to event struct
+
+### Common Structs
+- [ ] Define `PagServer.Integrations.Issue` struct:
+  - id (provider-specific issue ID)
+  - key (human-readable key: PROJ-123)
+  - title, description, status, assignee, priority, labels
+  - created_at, updated_at, resolved_at (timestamps)
+  - provider (atom: :jira, :linear)
+  - custom_fields (map of provider-specific fields)
+
+- [ ] Define `PagServer.Integrations.WebhookEvent` struct:
+  - id (webhook event ID for deduplication)
+  - action (:created, :updated, :deleted, :transitioned)
+  - timestamp (ISO8601)
+  - issue (Issue struct or partial)
+  - actor (user who made change)
+  - changes (list of field changes)
+
+- [ ] Define `PagServer.Integrations.Transition` struct:
+  - id, name, description (state metadata)
+
+### Error Handling
+- [ ] Define exception types:
+  - IssueTracker.ConfigError (invalid configuration)
+  - IssueTracker.AuthError (authentication failed)
+  - IssueTracker.ValidationError (invalid input)
+  - IssueTracker.NotFoundError (issue not found)
+  - IssueTracker.ConflictError (state conflict, e.g., invalid transition)
+  - IssueTracker.NetworkError (connection issue)
+- [ ] Document return patterns: {:ok, data} | {:error, {exception_type, message}}
+
+### Documentation
+- [ ] Add comprehensive @moduledoc explaining:
+  - Purpose of the behaviour
+  - How to implement new adapters
+  - Field normalization expectations
+  - Error handling patterns
+- [ ] Add @doc for each callback with examples
+
+## Acceptance Criteria
+
+- [ ] Behaviour compiles without errors
+- [ ] All callbacks have proper typespecs with detailed documentation
+- [ ] Issue struct has fields for all common operations
+- [ ] WebhookEvent struct supports deduplication and audit trail
+- [ ] Error types are well-defined and distinct
+- [ ] Jira and Linear adapters conform to behaviour (tested via @impl)
+- [ ] Documentation includes implementation examples
+- [ ] Unit tests verify structure definitions and conform checks
+- [ ] `mix lint` passes without warnings
+
+## Context
+
+**Behaviour Overview**:
+The behaviour defines a unified interface for:
+1. Issue CRUD across different providers
+2. Workflow state management
+3. Webhook event handling and verification
+
+**Field Normalization**:
+- All date/time fields: ISO8601 strings or DateTime structs
+- Status: Common names (Backlog, Todo, In Progress, In Review, Done, Archived)
+- Priority: Integer 1-5 or atom (:lowest, :low, :medium, :high, :highest)
+- Assignee: User struct with id, name, email
+- Comments: Stored separately via add_comment callback
+
+**Implementation Pattern**:
+```elixir
+defmodule PagServer.Integrations.Jira do
+  @behaviour PagServer.Integrations.IssueTracker
+
+  @impl PagServer.Integrations.IssueTracker
+  def create_issue(config, fields) do
+    # Implementation
+  end
+
+  # ... other callbacks
+end
+```
+
+## Testing Strategy
+
+```bash
+# Unit tests
+mix test test/pag_server/integrations/issue_tracker_test.exs
+
+# Verify Jira/Linear conform to behaviour
+mix test test/pag_server/integrations/jira/conformance_test.exs
+mix test test/pag_server/integrations/linear/conformance_test.exs
+```
+
+## Verification
+
+```bash
+# Compile with warnings as errors
+mix compile --warnings-as-errors
+
+# Check documentation
+mix docs
+
+# Verify file size (should be <250 LoC)
+wc -l lib/pag_server/integrations/issue_tracker.ex
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P10.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-12 07:08 UTC
+**Sibling tasks**: P10.M3.E3.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P10.M3.E3.T001 → P10.M3.E3.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P10.M3.E3.T001: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/03-generic-issue-tracker-adapter/T001-design-generic-issue-tracker-a.todo
+- P10.M3.E3.T002: .tasks/10-devops-developer-tool-integrat/03-issue-tracker-integrations/03-generic-issue-tracker-adapter/T002-implement-common-issue-operati.todo

@@ -1,0 +1,51 @@
+---
+status: done
+claimed_by: claude-1
+claimed_at: '2026-02-05T16:56:04.520607'
+started_at: '2026-02-05T16:56:04.520607'
+completed_at: '2026-02-05T17:00:38.574676'
+duration_minutes: 4.56756765
+---
+id: P2.M5.E2.T001
+title: Implement model listing via /api/tags
+status: pending
+priority: high
+estimate_hours: 1.5
+complexity: medium
+
+description: |
+  Implement Ollama's /api/tags endpoint to list all locally available models.
+  
+  Response includes:
+  - model name (e.g., "llama3.2:latest")
+  - size in bytes
+  - digest (SHA256)
+  - modified_at timestamp
+  - details: format, family, parameter_size, quantization_level
+
+acceptance_criteria:
+  - [ ] Implement list_models/0 function
+  - [ ] Parse /api/tags JSON response
+  - [ ] Return list of model structs with:
+    - name
+    - size
+    - modified_at
+    - family (llama, qwen2, etc.)
+    - parameter_size (e.g., "3.2B")
+    - quantization_level (e.g., "Q4_K_M")
+  - [ ] Handle empty model list
+  - [ ] Handle connection errors
+
+files:
+  - lib/pag_server/llm/ollama.ex
+  - lib/pag_server/llm/ollama/model.ex (optional struct)
+
+references:
+  - GET /api/tags endpoint
+  - Example response in API docs
+
+notes: |
+  This is useful for:
+  - Auto-detecting available models on startup
+  - Model selection UI
+  - Validating model names before requests

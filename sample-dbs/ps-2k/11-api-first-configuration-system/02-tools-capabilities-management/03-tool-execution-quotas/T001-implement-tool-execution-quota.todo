@@ -1,0 +1,64 @@
+---
+id: P11.M2.E3.T001
+title: Implement tool execution quota tracking
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-12T11:37:10.242384+00:00'
+started_at: '2026-02-12T11:37:10.242384+00:00'
+completed_at: '2026-02-12T22:20:41.203537+00:00'
+duration_minutes: 643.5160190166666
+---
+
+# Implement tool execution quota tracking
+
+
+
+## Requirements
+
+- [ ] Implement quota tracking for tool executions per agent, per window
+- [ ] Support time window types: per_minute, per_hour, per_day, per_month
+- [ ] Track quota metrics: calls_used, calls_remaining, reset_time
+- [ ] Store quota state in Redis with automatic expiration
+- [ ] Implement quota enforcement: block execution if quota exceeded
+- [ ] Support different quota limits for different agents
+- [ ] Include burst allowance: temporary exceeding with penalty
+- [ ] Log quota violations with reason and remaining time
+
+## Acceptance Criteria
+
+- [ ] Quota tracking works for all window types (minute/hour/day/month)
+- [ ] Tool execution blocked when quota exceeded returns 429 status
+- [ ] Quota state includes: used, limit, remaining, reset_time
+- [ ] Redis keys auto-expire at window boundaries
+- [ ] Burst mode allows temporary overage with documented penalty
+- [ ] Quota violations logged with agent_id, tool_id, timestamp
+- [ ] Tests verify quota counting, limits, and window boundaries
+- [ ] Performance: quota check completes in <5ms
+- [ ] Quota metrics exposed for monitoring and alerting
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-12 11:37 UTC
+**Primary task**: P11.M4.E2.T001 - Build platform configuration controller
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P11.M2.E3 vs P11.M4.E2)
+- No dependency chain: ✓ (verified at claim time)

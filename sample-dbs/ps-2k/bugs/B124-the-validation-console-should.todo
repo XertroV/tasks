@@ -1,0 +1,39 @@
+---
+id: B124
+title: The validation console should show thinking data.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:03:18.996804+00:00'
+started_at: '2026-02-18T01:03:18.996804+00:00'
+completed_at: '2026-02-18T01:30:48.373576+00:00'
+duration_minutes: 27.489612599999997
+---
+
+The validation console should show thinking data.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-18 01:03 UTC
+**Primary task**: B123 - In general model names are sometimes quite outdated (eg sonent 3-5, gtp-4o, etc). We should go through and update all the old model names so they don't pollute the codebase
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (None vs None)
+- No dependency chain: ✓ (verified at claim time)

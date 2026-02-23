@@ -1,0 +1,27 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-13T08:26:55.021657+00:00'
+started_at: '2026-02-13T08:26:55.021657+00:00'
+completed_at: '2026-02-13T08:56:29.011364+00:00'
+duration_minutes: 29.566494933333335
+---
+# Add Teams integration tests
+
+## Description
+Create comprehensive test coverage for the Teams integration modules covering client authentication, message handling, webhook processing, and session management.
+
+## Acceptance Criteria
+- [ ] `test/pag_server/integrations/teams/client_test.exs` with auth/token tests
+- [ ] `test/pag_server/integrations/teams/message_handler_test.exs` with session tests
+- [ ] `test/pag_server/integrations/teams/webhook_test.exs` with event routing tests
+- [ ] `test/pag_server/integrations/teams/event_parser_test.exs` with normalization tests
+- [ ] Mock HTTP responses for Microsoft Graph API
+- [ ] Tests cover error scenarios (auth failure, rate limits, timeouts)
+- [ ] All tests pass under 1 second each
+- [ ] `mix test` passes
+- [ ] Lint passes
+
+## Context
+- Related files: `test/pag_server/integrations/slack/`, `test/pag_server/integrations/telegram/`, `test/pag_server/integrations/discord_test.exs`
+- Part of epic: P14.M1.E1 - MS Teams Integration

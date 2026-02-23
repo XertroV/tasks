@@ -1,0 +1,19 @@
+---
+id: B066
+title: 'Validation console wide layout still underuses viewport: timeline should be
+  in a dedicated right-side panel and page should fully use available width on ultra-wide
+  screens'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-16T14:34:43.327516+00:00'
+started_at: '2026-02-16T14:34:43.327516+00:00'
+completed_at: '2026-02-16T14:35:20.908763+00:00'
+duration_minutes: 0.6263539833333333
+---
+
+Validation console wide layout still underuses viewport: timeline should be in a dedicated right-side panel and page should fully use available width on ultra-wide screens

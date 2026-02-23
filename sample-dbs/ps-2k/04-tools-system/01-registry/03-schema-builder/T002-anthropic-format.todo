@@ -1,0 +1,98 @@
+---
+id: P4.M1.E3.T002
+title: Format for Anthropic tools
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on:
+- P4.M1.E3.T001
+tags:
+- tools
+- schema
+- anthropic
+claimed_by: cli-user
+claimed_at: '2026-02-05T22:23:52.951984'
+started_at: '2026-02-05T22:23:52.951984'
+completed_at: '2026-02-05T22:23:53.630698'
+duration_minutes: 0.011311733333333332
+---
+
+# Format for Anthropic tools
+
+Add converter to format tools for Anthropic Claude API.
+
+## Requirements
+
+- [ ] Add `to_anthropic_format(tool_schema)` function to SchemaBuilder
+- [ ] Use `input_schema` field for parameters (Anthropic-specific)
+- [ ] Include `cache_control` support for prompt caching
+- [ ] Return list of tool definitions in Anthropic format
+- [ ] Handle all JSON Schema types properly
+
+## Acceptance Criteria
+
+- [ ] Output matches Anthropic API tool definition format
+- [ ] Compatible with Claude SDK expectations
+- [ ] Supports prompt caching markers
+- [ ] Test validates against Anthropic API schema
+- [ ] Integration test with mock Anthropic client
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` Anthropic API section
+
+**Key Points**:
+- Anthropic uses `input_schema` instead of `parameters`
+- Supports beta features like prompt caching
+- Tool definitions sent in messages API request
+- Schema validation happens client-side
+
+## Notes
+
+Anthropic format:
+```elixir
+def to_anthropic_format(%ToolSchema{} = schema) do
+  %{
+    name: schema.name,
+    description: schema.description,
+    input_schema: schema.parameters
+  }
+end
+
+def to_anthropic_tools(tool_schemas) do
+  Enum.map(tool_schemas, &to_anthropic_format/1)
+end
+```
+
+With caching (for large tool sets):
+```elixir
+def to_anthropic_format_cached(schemas) do
+  tools = Enum.map(schemas, &to_anthropic_format/1)
+  
+  # Mark last tool for caching
+  List.update_at(tools, -1, fn tool ->
+    Map.put(tool, :cache_control, %{type: "ephemeral"})
+  end)
+end
+```
+
+Example output:
+```json
+[
+  {
+    "name": "read_file",
+    "description": "Read file contents",
+    "input_schema": {
+      "type": "object",
+      "properties": {
+        "path": {"type": "string"}
+      },
+      "required": ["path"]
+    }
+  }
+]
+```
+
+Reference: https://docs.anthropic.com/en/docs/tool-use

@@ -1,0 +1,25 @@
+---
+id: P17.M3.E2.T002
+title: Add context truncation test
+status: done
+estimate_hours: 0.5
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T06:47:19.932330+00:00'
+started_at: '2026-02-14T06:47:19.932330+00:00'
+completed_at: '2026-02-14T07:10:05.507339+00:00'
+duration_minutes: 22.7595833
+---
+
+# Add context truncation test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria

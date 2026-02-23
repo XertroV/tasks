@@ -1,0 +1,24 @@
+---
+id: P23.M3.E2.T003
+title: Remove lib/pag_server/plugins/ backward-compat shim and cleanup
+status: done
+estimate_hours: 2.0
+complexity: low
+priority: medium
+depends_on:
+- P23.M3.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:54:02.100479+00:00'
+started_at: '2026-02-18T15:54:02.100479+00:00'
+completed_at: '2026-02-18T16:04:29.988052+00:00'
+duration_minutes: 10.464792583333333
+---
+Final cleanup after migration is verified working.
+
+## Acceptance Criteria
+- [ ] Remove backward-compat discovery of `lib/pag_server/plugins/` from PluginLoader (added in T001)
+- [ ] Remove the now-empty `lib/pag_server/plugins/` directory (or any remaining stubs)
+- [ ] `mix compile` produces no warnings about removed paths
+- [ ] `mix test` still passes
+- [ ] No stale references to `lib/pag_server/plugins/` remain in the codebase (check with grep)

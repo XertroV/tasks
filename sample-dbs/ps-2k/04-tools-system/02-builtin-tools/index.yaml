@@ -1,0 +1,118 @@
+id: P4.M2
+name: Built-in Tools
+status: pending
+estimate_hours: 20
+complexity: high
+depends_on:
+- M1
+epics:
+- id: E1
+  name: File Operations
+  path: 01-file-ops
+  status: pending
+  estimate_hours: 6
+  complexity: medium
+  depends_on: []
+  description: Read file, write file, list directory tools
+- id: E2
+  name: Shell Execution
+  path: 02-shell
+  status: pending
+  estimate_hours: 4
+  complexity: high
+  depends_on: []
+  description: Execute shell commands with output capture
+- id: E3
+  name: Web Search
+  path: 03-web-search
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: Web search tool integration
+- id: E4
+  name: Agent Communications
+  path: 04-agent-comms
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on: []
+  description: Send message to agent, spawn sub-agent
+- id: E5
+  name: Browser Integration
+  path: 05-browser
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: agent-browser setup, browser tool, snapshot parsing
+- id: E6
+  name: HTTP Client
+  path: 06-http-client
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E7
+  name: JSON & Data Processing
+  path: 07-json-data-processing
+  status: pending
+  estimate_hours: 5.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E8
+  name: Text Processing
+  path: 08-text-processing
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E9
+  name: Git Operations
+  path: 09-git-operations
+  status: pending
+  estimate_hours: 8.0
+  complexity: high
+  depends_on: []
+  description: ''
+- id: E10
+  name: Image Operations
+  path: 10-image-operations
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+- id: E11
+  name: Archive Operations
+  path: 11-archive-operations
+  status: pending
+  estimate_hours: 4.0
+  complexity: low
+  depends_on: []
+  description: ''
+- id: E12
+  name: Time & Date
+  path: 12-time-date
+  status: pending
+  estimate_hours: 3.0
+  complexity: low
+  depends_on: []
+  description: ''
+- id: E13
+  name: Network Utilities
+  path: 13-network-utilities
+  status: pending
+  estimate_hours: 4.0
+  complexity: medium
+  depends_on: []
+  description: ''
+stats:
+  total_tasks: 35
+  done: 35
+  in_progress: 0
+  blocked: 0
+  pending: 0

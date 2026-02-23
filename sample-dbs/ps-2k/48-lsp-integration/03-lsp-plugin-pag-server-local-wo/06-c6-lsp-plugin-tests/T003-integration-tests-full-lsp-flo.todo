@@ -1,0 +1,16 @@
+---
+id: P48.M3.E6.T003
+title: 'Integration tests: full LSP flow, auto-diagnostics, workspace config'
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:06:33.173572+00:00'
+started_at: '2026-02-20T09:06:33.173572+00:00'
+completed_at: '2026-02-20T09:43:27.430425+00:00'
+duration_minutes: 36.904280699999994
+---
+Full flow: spawn FakeLspServer -> touch file -> get diagnostics -> shut down. Auto-diagnostics hook: write_file -> diagnostics injected into tool result. Workspace config: enable/disable/override servers. Working directory: LSP server uses session.working_directory as rootUri. Broken server: fails to start -> excluded -> does not block other operations.

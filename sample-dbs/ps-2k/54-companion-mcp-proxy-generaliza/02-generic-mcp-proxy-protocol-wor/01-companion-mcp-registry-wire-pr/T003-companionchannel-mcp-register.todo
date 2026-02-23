@@ -1,0 +1,35 @@
+---
+id: P54.M2.E1.T003
+title: 'CompanionChannel: mcp_register handler + send_mcp_tool_call'
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: high
+depends_on:
+- P54.M2.E1.T001
+- P54.M2.E1.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T10:18:57.314048+00:00'
+started_at: '2026-02-21T10:18:57.314048+00:00'
+completed_at: '2026-02-21T10:29:05.745490+00:00'
+duration_minutes: 10.14052385
+---
+## Context
+Companions (pag-connect) send mcp_register after joining to declare locally-running MCP servers and their tool schemas. The channel must validate, convert tool maps to %ToolSchema{}, register in CompanionMCPRegistry, and push mcp_tool_call to the companion when requested by an executor.
+
+## Wire format
+mcp_register (companion->server):
+  {"servers": [{"name": "browsermcp", "tools": [{"name": "navigate", "description": "...", "inputSchema": {...}}]}]}
+
+mcp_tool_call (server->companion):
+  {call_id, server_name, tool_name, arguments}
+
+## Acceptance Criteria
+- [ ] join/3 adds :registered_mcp_servers (list) and :pending_mcp_call_ids (MapSet) to socket assigns in both auth branches
+- [ ] handle_in("mcp_register", %{"servers" => servers}, socket): validate servers is list; each entry has string "name" and list "tools"; each tool has at least "name"; convert inputSchema -> :parameters, build %ToolSchema{}; call CompanionMCPRegistry.register/4; track server names in :registered_mcp_servers; reply {:ok, %{registered: [names]}}
+- [ ] handle_in("mcp_register", _, socket): returns {:error, %{reason: "servers must be a list"}} for malformed payloads
+- [ ] Missing/empty tool description is treated leniently (substitutes "(no description)") with a log warning — not a validation error
+- [ ] handle_info({:send_mcp_tool_call, call_id, server_name, tool_name, arguments}, socket): pushes "mcp_tool_call" event; adds call_id to :pending_mcp_call_ids
+- [ ] terminate/2: calls CompanionMCPRegistry.unregister_workspace/1; calls PendingCalls.reject_mcp/2 for all :pending_mcp_call_ids
+- [ ] `mix lint` passes

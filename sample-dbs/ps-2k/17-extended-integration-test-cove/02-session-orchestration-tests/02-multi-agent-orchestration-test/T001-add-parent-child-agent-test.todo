@@ -1,0 +1,43 @@
+---
+id: P17.M2.E2.T001
+title: Add parent-child agent test
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T05:48:28.375837+00:00'
+started_at: '2026-02-14T05:48:28.375837+00:00'
+completed_at: '2026-02-14T06:10:13.145947+00:00'
+duration_minutes: 21.746168333333333
+---
+
+# Add parent-child agent test
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P17.M2.E2)
+**Agent**: cli-user
+**Date**: 2026-02-14 05:48 UTC
+**Sibling tasks**: P17.M2.E2.T002
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P17.M2.E2.T001 → P17.M2.E2.T002
+Mark each done individually after completion.
+
+**Task files**:
+- P17.M2.E2.T001: .tasks/17-extended-integration-test-cove/02-session-orchestration-tests/02-multi-agent-orchestration-test/T001-add-parent-child-agent-test.todo
+- P17.M2.E2.T002: .tasks/17-extended-integration-test-cove/02-session-orchestration-tests/02-multi-agent-orchestration-test/T002-add-agent-coordination-test.todo

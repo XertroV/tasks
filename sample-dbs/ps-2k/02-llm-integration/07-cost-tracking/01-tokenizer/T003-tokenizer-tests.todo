@@ -1,0 +1,147 @@
+---
+id: P2.M7.E1.T003
+title: Write tokenizer tests
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- testing
+- tokenizer
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:32:02.594272'
+started_at: '2026-02-06T13:32:02.594272'
+completed_at: '2026-02-06T13:32:46.203030'
+duration_minutes: 0.7268124
+---
+
+# Write tokenizer tests
+
+Create comprehensive tests for the Tokenizer module covering all edge cases.
+
+## Requirements
+
+- [x] Create `test/pag_server/context/tokenizer_test.exs`
+- [x] Test `count_tokens/2` with various inputs
+- [x] Test `estimate_tokens/1` function
+- [x] Test `count_tool_call_tokens/2` function
+- [x] Test edge cases (empty, nil, Unicode, very long text)
+- [x] Test model-specific behavior
+- [x] Verify token counts are reasonable (not 0, not excessive)
+
+## Acceptance Criteria
+
+- [x] All tests pass with `mix test test/pag_server/context/tokenizer_test.exs`
+- [x] 100% code coverage for Tokenizer module
+- [x] Tests document expected behavior clearly
+- [x] Edge cases are explicitly tested
+
+## Implementation Details
+
+```elixir
+defmodule PagServer.Context.TokenizerTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.Context.Tokenizer
+
+  describe "count_tokens/2" do
+    test "counts tokens accurately for claude model" do
+      text = "Hello world"
+      assert Tokenizer.count_tokens(text, "claude-sonnet-4") == 3
+    end
+
+    test "handles empty string" do
+      assert Tokenizer.count_tokens("", "claude-sonnet-4") == 0
+    end
+
+    test "handles nil input" do
+      assert Tokenizer.count_tokens(nil, "claude-sonnet-4") == 0
+    end
+
+    test "returns at least 1 token for non-empty text" do
+      tokens = Tokenizer.count_tokens("hi", "claude-sonnet-4")
+      assert tokens >= 1
+    end
+
+    test "different models return different counts" do
+      text = "The quick brown fox"
+      claude_tokens = Tokenizer.count_tokens(text, "claude-sonnet-4")
+      gpt_tokens = Tokenizer.count_tokens(text, "gpt-4")
+      
+      # Claude is typically more efficient
+      assert claude_tokens <= gpt_tokens
+    end
+
+    test "handles Unicode properly" do
+      text = "Hello 世界 🌍"
+      tokens = Tokenizer.count_tokens(text, "claude-sonnet-4")
+      assert tokens > 0
+    end
+  end
+
+  describe "estimate_tokens/1" do
+    test "provides rough estimate" do
+      text = "This is a test message"
+      estimate = Tokenizer.estimate_tokens(text)
+      assert estimate > 0
+      assert estimate < 100
+    end
+  end
+
+  describe "count_tool_call_tokens/2" do
+    test "counts tool call with overhead" do
+      tool_call = %{
+        "name" => "read_file",
+        "arguments" => %{"path" => "/tmp/test.txt"}
+      }
+      
+      tokens = Tokenizer.count_tool_call_tokens(tool_call, "claude-sonnet-4")
+      assert tokens > 10  # Should include overhead
+    end
+
+    test "handles empty tool call" do
+      tool_call = %{"name" => "test", "arguments" => %{}}
+      tokens = Tokenizer.count_tool_call_tokens(tool_call, "claude-sonnet-4")
+      assert tokens > 0
+    end
+  end
+end
+```
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/testing.md:65-77` (Tokenizer test examples)
+
+**Key Points**:
+- Use `async: true` for parallel test execution
+- Test all public functions
+- Document expected behavior in test descriptions
+- Cover Unicode and edge cases
+
+## Notes
+
+These tests will need to be updated when native tokenizers are integrated. For now, they verify the heuristic approximations work correctly.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-07 00:32 UTC
+**Primary task**: P3.M1.E1.T001 - Create UserSocket module
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P2.M7.E1 vs P3.M1.E1)
+- No dependency chain: ✓ (verified at claim time)

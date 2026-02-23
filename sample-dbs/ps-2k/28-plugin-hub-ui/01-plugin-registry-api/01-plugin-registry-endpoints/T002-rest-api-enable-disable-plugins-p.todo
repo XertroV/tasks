@@ -1,0 +1,48 @@
+---
+id: P28.M1.E1.T002
+title: REST API to enable/disable plugins per workspace
+status: done
+estimate_hours: 6.0
+complexity: medium
+priority: high
+depends_on:
+- P28.M1.E1.T001
+tags:
+- plugin
+- api
+- workspace
+- enable
+- disable
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:17:26.620579+00:00'
+started_at: '2026-02-18T18:17:26.620579+00:00'
+completed_at: '2026-02-18T18:17:45.511132+00:00'
+duration_minutes: 0.31484235
+---
+
+# REST API: Enable/disable plugins per workspace
+
+Implement `PUT /api/v1/workspaces/:workspace_id/plugins/:plugin_id` to toggle a
+plugin on or off for a specific workspace. This gives workspace admins control over
+which plugins are active without requiring server restarts.
+
+## Requirements
+
+- Route: `PUT /api/v1/workspaces/:workspace_id/plugins/:plugin_id`
+- Request body: `{"enabled": true}` or `{"enabled": false}`
+- Response: updated plugin descriptor (same shape as GET list item)
+- Persist the workspace-level enabled override in workspace settings/config
+- Trigger plugin start/stop lifecycle callbacks if the plugin supports them
+- Return 404 if plugin_id not found in the registry, 422 for invalid body
+- Require workspace admin role or equivalent permission
+
+## Acceptance Criteria
+
+- [ ] `PUT /api/v1/workspaces/:id/plugins/:plugin_id` with `{"enabled": true/false}` persists the change
+- [ ] Response returns the updated plugin descriptor reflecting new enabled state
+- [ ] Workspace setting is persisted and survives server restart
+- [ ] If plugin has a start/stop callback, it is invoked on state change
+- [ ] Returns 404 for unknown plugin_id
+- [ ] Returns 422 for missing or invalid request body
+- [ ] Authorization check: only workspace admins can toggle plugins
+- [ ] Controller test covers enable, disable, unknown plugin, and auth error cases

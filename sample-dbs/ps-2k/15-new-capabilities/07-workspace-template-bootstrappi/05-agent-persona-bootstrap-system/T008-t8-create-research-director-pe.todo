@@ -1,0 +1,49 @@
+---
+id: P15.M7.E5.T008
+title: 'T8: Create Research Director Persona'
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P15.M7.E5.T001
+- P15.M7.E5.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T10:28:11.313940+00:00'
+started_at: '2026-02-18T10:28:11.313940+00:00'
+completed_at: '2026-02-18T10:29:20.011776+00:00'
+duration_minutes: 1.1449637499999998
+---
+
+# T8: Create Research Director Persona
+
+
+
+## Requirements
+
+
+
+## Acceptance Criteria
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M7.E5)
+**Agent**: cli-user
+**Date**: 2026-02-18 10:28 UTC
+**Sibling tasks**: P15.M7.E5.T009, P15.M7.E5.T010, P15.M7.E5.T011, P15.M7.E5.T012, P15.M7.E5.T013
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M7.E5.T008 → P15.M7.E5.T009 → P15.M7.E5.T010 → P15.M7.E5.T011 → P15.M7.E5.T012 → P15.M7.E5.T013
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M7.E5.T008: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T008-t8-create-research-director-pe.todo
+- P15.M7.E5.T009: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T009-t9-create-pmo-lead-persona.todo
+- P15.M7.E5.T010: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T010-t10-create-customer-success-co.todo
+- P15.M7.E5.T011: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T011-t11-create-creative-director-a.todo
+- P15.M7.E5.T012: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T012-t12-create-knowledge-managemen.todo
+- P15.M7.E5.T013: .tasks/15-new-capabilities/07-workspace-template-bootstrappi/05-agent-persona-bootstrap-system/T013-t13-create-crisis-response-coo.todo

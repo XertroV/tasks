@@ -1,0 +1,67 @@
+id: P1.M2
+name: Core Schemas
+status: pending
+estimate_hours: 24
+complexity: medium
+depends_on:
+- P1.M1
+epics:
+- id: E1
+  name: Agent Schema
+  path: 01-agent-schema
+  status: pending
+  estimate_hours: 3
+  complexity: low
+- id: E2
+  name: Session Schema
+  path: 02-session-schema
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E1
+- id: E3
+  name: Message Schema
+  path: 03-message-schema
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E2
+- id: E4
+  name: Event Schema
+  path: 04-event-schema
+  status: pending
+  estimate_hours: 3
+  complexity: low
+- id: E5
+  name: ToolCall Schema
+  path: 05-tool-call-schema
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E2
+  - E3
+- id: E6
+  name: Stats Schema
+  path: 06-stats-schema
+  status: pending
+  estimate_hours: 4
+  complexity: medium
+  depends_on:
+  - E2
+- id: E7
+  name: AgentMessage Schema
+  path: 07-agent-msg-schema
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on:
+  - E1
+stats:
+  total_tasks: 16
+  done: 16
+  in_progress: 0
+  blocked: 0
+  pending: 0

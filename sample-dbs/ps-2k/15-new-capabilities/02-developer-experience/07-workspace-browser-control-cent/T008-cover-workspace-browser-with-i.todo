@@ -1,0 +1,29 @@
+---
+id: P15.M2.E7.T008
+title: Cover workspace browser with integration tests and operator playbook
+status: done
+estimate_hours: 2.5
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E7.T005
+- P15.M2.E7.T007
+tags:
+- tests
+- docs
+- webui
+claimed_by: cli-user
+claimed_at: '2026-02-18T04:30:36.987314+00:00'
+started_at: '2026-02-18T04:30:36.987314+00:00'
+completed_at: '2026-02-18T04:44:11.770493+00:00'
+duration_minutes: 13.579719433333334
+---
+## Goal
+Ensure the workspace browser is reliable and easy to adopt.
+
+## Acceptance Criteria
+- Integration tests cover browse, edit config, toggle plugin/skill, and permission denial flows.
+- Tests include multi-workspace boundary checks to prevent cross-tenant leaks.
+- Add operator playbook for rollout, known caveats, and recovery workflows.
+- Add a docs-sync check that reports plan/docs drift status and supports configurable policy targets (including plugin-provided stricter workflows).
+- Include a short smoke-test checklist for future regressions.

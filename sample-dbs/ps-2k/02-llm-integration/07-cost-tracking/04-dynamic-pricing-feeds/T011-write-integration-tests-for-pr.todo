@@ -1,0 +1,401 @@
+---
+id: P2.M7.E4.T011
+title: Write integration tests for pricing lifecycle
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: medium
+depends_on:
+- P2.M7.E4.T001
+- P2.M7.E4.T002
+- P2.M7.E4.T003
+- P2.M7.E4.T004
+- P2.M7.E4.T005
+- P2.M7.E4.T006
+- P2.M7.E4.T007
+- P2.M7.E4.T008
+- P2.M7.E4.T009
+- P2.M7.E4.T010
+tags:
+- testing
+- integration
+- pricing
+claimed_by: cli-user
+claimed_at: '2026-02-06T15:20:22.444004'
+started_at: '2026-02-06T15:20:22.444004'
+completed_at: '2026-02-06T15:23:11.999135'
+duration_minutes: 2.8259186833333336
+---
+
+# Write integration tests for pricing lifecycle
+
+
+
+## Requirements
+
+- [ ] Create `test/pag_server/pricing_lifecycle_test.exs` integration test suite
+- [ ] Test complete pricing lifecycle: fetch → store → cache → refresh
+- [ ] Test startup initialization flow (T007)
+- [ ] Test scheduled refresh worker (T008)
+- [ ] Test admin API endpoints (T009)
+- [ ] Test fetcher registration and discovery
+- [ ] Test pricing fallback behavior (fetcher fails → static pricing)
+- [ ] Test time-versioned pricing queries (historical lookups)
+- [ ] Test telemetry events are emitted correctly
+- [ ] Test cache hit/miss/stale scenarios
+- [ ] Test concurrent pricing fetches don't cause conflicts
+- [ ] Use `DataCase` for database setup/cleanup
+- [ ] Mock external API calls (no real network requests in tests)
+- [ ] Test error handling and edge cases
+
+## Acceptance Criteria
+
+- [ ] Test file created at `test/pag_server/pricing_lifecycle_test.exs`
+- [ ] Tests cover full end-to-end pricing lifecycle
+- [ ] **Startup Initialization (T007):**
+  - [ ] Test `PricingInit.initialize/0` populates database
+  - [ ] Test initialization is idempotent (safe to run multiple times)
+  - [ ] Test `skip_pricing_init` config disables initialization
+  - [ ] Test initialization failures don't crash application
+- [ ] **Pricing Fetchers (T004, T005):**
+  - [ ] Test Anthropic fetcher returns correct pricing
+  - [ ] Test OpenAI fetcher returns correct pricing
+  - [ ] Test `supports_model?/1` correctly identifies models
+  - [ ] Test fetcher registration in registry
+- [ ] **Scheduled Refresh (T008):**
+  - [ ] Test `PricingRefresh.perform/1` updates database
+  - [ ] Test worker retries on failure
+  - [ ] Test worker emits telemetry events
+  - [ ] Test partial failures (some fetchers succeed, some fail)
+- [ ] **Admin API (T009):**
+  - [ ] Test `POST /api/admin/pricing/refresh` enqueues job
+  - [ ] Test `GET /api/admin/pricing` returns pricing list
+  - [ ] Test `GET /api/admin/pricing/:provider/:model` returns specific pricing
+  - [ ] Test authentication (valid/invalid API keys)
+  - [ ] Test pagination works correctly
+- [ ] **Cache Layer (T006):**
+  - [ ] Test cache hit returns cached pricing
+  - [ ] Test cache miss fetches from fetcher
+  - [ ] Test stale data is served while refreshing
+  - [ ] Test cache invalidation works
+- [ ] **Time-Versioned Queries:**
+  - [ ] Test `get_latest_pricing/2` returns most recent effective pricing
+  - [ ] Test historical pricing lookups (effective_at in past)
+  - [ ] Test future pricing schedules (effective_at in future)
+- [ ] **Error Handling:**
+  - [ ] Test fallback to static pricing when fetchers fail
+  - [ ] Test unknown models return default pricing
+  - [ ] Test database errors are handled gracefully
+- [ ] **Telemetry (T010):**
+  - [ ] Test fetch events are emitted
+  - [ ] Test cache events are emitted
+  - [ ] Test update events are emitted
+- [ ] All tests pass with `mix test`
+- [ ] Tests use mocks/stubs for external dependencies
+- [ ] No database pollution between tests
+- [ ] Tests run in reasonable time (<5 seconds total)
+
+## Implementation Notes
+
+### Test Structure
+
+```elixir
+defmodule PagServer.PricingLifecycleTest do
+  use PagServer.DataCase, async: false
+
+  alias PagServer.Pricing
+  alias PagServer.LLM.{PricingFetcher, PricingInit}
+  alias PagServer.Workers.PricingRefresh
+
+  describe "pricing fetchers" do
+    setup do
+      # Register test fetchers
+      PricingFetcher.init()
+      PricingFetcher.register(:anthropic, PagServer.LLM.PricingFetchers.Anthropic)
+      PricingFetcher.register(:openai, PagServer.LLM.PricingFetchers.OpenAI)
+      
+      on_exit(fn ->
+        PricingFetcher.unregister(:anthropic)
+        PricingFetcher.unregister(:openai)
+      end)
+      
+      :ok
+    end
+
+    test "Anthropic fetcher returns correct pricing" do
+      {:ok, pricing} = 
+        PagServer.LLM.PricingFetchers.Anthropic.fetch_pricing("claude-sonnet-4.5")
+      
+      assert pricing.prompt_per_million == 3.0
+      assert pricing.completion_per_million == 15.0
+      assert pricing.cached_per_million == 0.3
+    end
+
+    test "fetcher registration works" do
+      fetchers = PricingFetcher.list_fetchers()
+      
+      assert {:anthropic, PagServer.LLM.PricingFetchers.Anthropic} in fetchers
+      assert {:openai, PagServer.LLM.PricingFetchers.OpenAI} in fetchers
+    end
+
+    test "get_pricing uses registered fetchers" do
+      pricing = PricingFetcher.get_pricing("claude-sonnet-4.5")
+      
+      assert pricing.prompt_per_million == 3.0
+      assert pricing.completion_per_million == 15.0
+    end
+
+    test "unknown models fall back to static pricing" do
+      pricing = PricingFetcher.get_pricing("unknown-model")
+      
+      # Should return default pricing
+      assert pricing.prompt_per_million == 3.0
+    end
+  end
+
+  describe "startup initialization" do
+    test "PricingInit.initialize/0 populates database" do
+      # Clear any existing pricing
+      Repo.delete_all(PagServer.Schema.Pricing)
+      
+      # Initialize
+      assert :ok = PricingInit.initialize()
+      
+      # Verify pricing was created
+      pricing_count = Repo.aggregate(PagServer.Schema.Pricing, :count)
+      assert pricing_count > 0
+    end
+
+    test "initialization is idempotent" do
+      PricingInit.initialize()
+      count1 = Repo.aggregate(PagServer.Schema.Pricing, :count)
+      
+      PricingInit.initialize()
+      count2 = Repo.aggregate(PagServer.Schema.Pricing, :count)
+      
+      # Count should be the same
+      assert count1 == count2
+    end
+
+    test "initialization respects skip_pricing_init config" do
+      # Set config to skip
+      Application.put_env(:pag_server, :skip_pricing_init, true)
+      
+      Repo.delete_all(PagServer.Schema.Pricing)
+      PricingInit.initialize()
+      
+      count = Repo.aggregate(PagServer.Schema.Pricing, :count)
+      assert count == 0
+      
+      # Cleanup
+      Application.delete_env(:pag_server, :skip_pricing_init)
+    end
+  end
+
+  describe "scheduled refresh worker" do
+    test "PricingRefresh worker updates pricing" do
+      Repo.delete_all(PagServer.Schema.Pricing)
+      
+      job = PricingRefresh.new(%{})
+      assert :ok = PricingRefresh.perform(job)
+      
+      count = Repo.aggregate(PagServer.Schema.Pricing, :count)
+      assert count > 0
+    end
+
+    test "worker sets correct source field" do
+      Repo.delete_all(PagServer.Schema.Pricing)
+      
+      job = PricingRefresh.new(%{})
+      PricingRefresh.perform(job)
+      
+      pricing = Repo.one(PagServer.Schema.Pricing)
+      assert pricing.source == "scheduled_refresh"
+    end
+  end
+
+  describe "time-versioned pricing" do
+    test "get_latest_pricing returns most recent effective pricing" do
+      now = DateTime.utc_now()
+      past = DateTime.add(now, -3600, :second)
+      
+      # Insert old pricing
+      {:ok, _old} = Pricing.create_pricing(%{
+        provider: "anthropic",
+        model: "claude-sonnet-4.5",
+        prompt_per_million: Decimal.new("2.0"),
+        completion_per_million: Decimal.new("10.0"),
+        cached_per_million: Decimal.new("0.2"),
+        effective_at: past,
+        source: "test",
+        currency: "usd"
+      })
+      
+      # Insert new pricing
+      {:ok, new} = Pricing.create_pricing(%{
+        provider: "anthropic",
+        model: "claude-sonnet-4.5",
+        prompt_per_million: Decimal.new("3.0"),
+        completion_per_million: Decimal.new("15.0"),
+        cached_per_million: Decimal.new("0.3"),
+        effective_at: now,
+        source: "test",
+        currency: "usd"
+      })
+      
+      # Should return newest pricing
+      latest = Pricing.get_latest_pricing("anthropic", "claude-sonnet-4.5")
+      assert latest.id == new.id
+    end
+  end
+
+  describe "telemetry events" do
+    setup do
+      # Attach telemetry handler
+      events = [
+        [:pag_server, :pricing, :fetch, :start],
+        [:pag_server, :pricing, :fetch, :stop],
+        [:pag_server, :pricing, :update, :success]
+      ]
+      
+      :telemetry.attach_many(
+        "test-pricing-handler",
+        events,
+        fn event, measurements, metadata, _config ->
+          send(self(), {:telemetry_event, event, measurements, metadata})
+        end,
+        nil
+      )
+      
+      on_exit(fn ->
+        :telemetry.detach("test-pricing-handler")
+      end)
+      
+      :ok
+    end
+
+    test "fetch emits start and stop events" do
+      PricingFetcher.get_pricing("claude-sonnet-4.5")
+      
+      assert_received {:telemetry_event, [:pag_server, :pricing, :fetch, :start], _, _}
+      assert_received {:telemetry_event, [:pag_server, :pricing, :fetch, :stop], _, _}
+    end
+  end
+end
+```
+
+### Admin API Tests
+
+Create `test/pag_server_web/controllers/admin/pricing_controller_test.exs`:
+
+```elixir
+defmodule PagServerWeb.Admin.PricingControllerTest do
+  use PagServerWeb.ConnCase, async: false
+
+  alias PagServer.Pricing
+
+  @admin_key "test-admin-key"
+
+  setup do
+    # Set test admin key
+    Application.put_env(:pag_server, :admin_api_key, @admin_key)
+    
+    # Create test pricing data
+    {:ok, pricing} = Pricing.create_pricing(%{
+      provider: "anthropic",
+      model: "claude-sonnet-4.5",
+      prompt_per_million: Decimal.new("3.0"),
+      completion_per_million: Decimal.new("15.0"),
+      cached_per_million: Decimal.new("0.3"),
+      effective_at: DateTime.utc_now(),
+      source: "test",
+      currency: "usd"
+    })
+    
+    %{pricing: pricing}
+  end
+
+  describe "POST /api/admin/pricing/refresh" do
+    test "triggers refresh with valid auth", %{conn: conn} do
+      conn = 
+        conn
+        |> put_req_header("x-admin-key", @admin_key)
+        |> post("/api/admin/pricing/refresh")
+      
+      assert %{"status" => "queued", "job_id" => _} = json_response(conn, 200)
+    end
+
+    test "returns 401 with invalid auth", %{conn: conn} do
+      conn = post(conn, "/api/admin/pricing/refresh")
+      
+      assert %{"status" => "error"} = json_response(conn, 401)
+    end
+  end
+
+  describe "GET /api/admin/pricing" do
+    test "returns pricing list", %{conn: conn, pricing: pricing} do
+      conn = 
+        conn
+        |> put_req_header("x-admin-key", @admin_key)
+        |> get("/api/admin/pricing")
+      
+      response = json_response(conn, 200)
+      assert %{"data" => data, "count" => count} = response
+      assert count > 0
+      assert Enum.any?(data, fn p -> p["id"] == pricing.id end)
+    end
+  end
+
+  describe "GET /api/admin/pricing/:provider/:model" do
+    test "returns specific pricing", %{conn: conn, pricing: pricing} do
+      conn = 
+        conn
+        |> put_req_header("x-admin-key", @admin_key)
+        |> get("/api/admin/pricing/anthropic/claude-sonnet-4.5")
+      
+      response = json_response(conn, 200)
+      assert %{"data" => data} = response
+      assert data["id"] == pricing.id
+    end
+
+    test "returns 404 for unknown model", %{conn: conn} do
+      conn = 
+        conn
+        |> put_req_header("x-admin-key", @admin_key)
+        |> get("/api/admin/pricing/unknown/unknown")
+      
+      assert %{"status" => "error"} = json_response(conn, 404)
+    end
+  end
+end
+```
+
+## Context
+
+**Dependencies:**
+- All tasks T001-T010 should be complete before running integration tests
+
+**Purpose:**
+Integration tests verify that all pricing components work correctly together:
+- Fetchers retrieve pricing
+- Database stores pricing correctly
+- Cache improves performance
+- Workers refresh pricing on schedule
+- API allows manual management
+- Telemetry provides observability
+
+**Testing Strategy:**
+- **Unit tests**: Individual modules (already in T001-T010)
+- **Integration tests**: End-to-end workflows (this task)
+- **Mocking**: External APIs to avoid network dependencies
+- **Fixtures**: Consistent test data for predictable results
+
+## Notes
+
+- Use `async: false` for tests that share state (ETS registry, database)
+- Clean up test data in `setup` and `on_exit` callbacks
+- Mock external API calls to avoid network flakiness
+- Test both happy path and error scenarios
+- Verify telemetry events with `:telemetry.attach_many/4`
+- Consider using ExVCR for recording/replaying HTTP interactions
+- Integration tests should complete quickly (<5 seconds total)

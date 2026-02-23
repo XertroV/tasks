@@ -1,0 +1,43 @@
+---
+id: P18.M4.E1.T004
+title: Filter archived workspaces from default queries
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on:
+- P18.M4.E1.T002
+tags:
+- workspace
+- soft-delete
+claimed_by: cli-user
+claimed_at: '2026-02-17T20:56:19.991461+00:00'
+started_at: '2026-02-17T20:56:19.991461+00:00'
+completed_at: '2026-02-17T21:15:16.547165+00:00'
+duration_minutes: 18.942594866666663
+---
+
+# Filter archived workspaces from default queries
+
+## Description
+
+Update all workspace listing and fetching queries to exclude archived workspaces by default, with an opt-in to include them.
+
+## Requirements
+
+- [ ] Update `list_workspaces/1` to filter `where is_nil(archived_at)` by default
+- [ ] Add `include_archived: true` option to include archived workspaces
+- [ ] Update `get_workspace/1` and `fetch_workspace/1` to exclude archived by default
+- [ ] Add `include_archived:` option to get/fetch as well
+- [ ] Update `get_workspace_by_slug/1` similarly
+- [ ] Workspace membership checks should still work for archived workspaces (to allow restore)
+
+## Acceptance Criteria
+
+- [ ] Archived workspaces are hidden from default list/get queries
+- [ ] `include_archived: true` reveals archived workspaces
+- [ ] API endpoints return only active workspaces by default
+
+## Context
+
+**Files affected**: `lib/pag_server/workspaces.ex`

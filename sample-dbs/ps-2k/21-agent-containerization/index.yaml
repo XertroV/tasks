@@ -1,0 +1,26 @@
+id: P21
+name: Agent Containerization
+status: pending
+locked: false
+weeks: 4
+estimate_hours: 60.0
+complexity: medium
+depends_on: []
+milestones:
+- id: M1
+  name: Mandatory Agent Containerization
+  path: 01-mandatory-agent-containerizati
+  status: pending
+  estimate_hours: 60.0
+  complexity: high
+  depends_on: []
+  description: Implement mandatory Docker containerization for all agents with volume
+    mounting strategy (workspace, private, shared). Long-lived containers per agent
+    session, network-enabled by default.
+  locked: false
+stats:
+  total_tasks: 18
+  done: 18
+  in_progress: 0
+  blocked: 0
+  pending: 0

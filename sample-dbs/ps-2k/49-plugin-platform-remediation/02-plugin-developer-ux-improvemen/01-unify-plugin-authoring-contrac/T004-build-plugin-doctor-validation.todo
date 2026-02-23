@@ -1,0 +1,31 @@
+---
+id: P49.M2.E1.T004
+title: Build plugin doctor validation command and API diagnostics
+status: done
+estimate_hours: 4.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:17:26.499401+00:00'
+started_at: '2026-02-20T09:17:26.499401+00:00'
+completed_at: '2026-02-20T09:28:57.802913+00:00'
+duration_minutes: 11.521725033333333
+---
+
+# Build plugin doctor validation command and API diagnostics
+
+
+
+## Requirements
+
+- Implement a `plugin doctor` workflow (CLI and/or API) for manifest, compatibility, and lifecycle preflight checks.
+- Return structured diagnostics suitable for CLI output and future editor/CI integrations.
+- Cover common plugin authoring mistakes with explicit remediation hints.
+
+## Acceptance Criteria
+
+- Plugin doctor reports deterministic pass/fail results with machine-readable diagnostics.
+- Core checks include manifest validation, compatibility checks, and lifecycle preflight.
+- Tests cover successful validation and representative failure scenarios.

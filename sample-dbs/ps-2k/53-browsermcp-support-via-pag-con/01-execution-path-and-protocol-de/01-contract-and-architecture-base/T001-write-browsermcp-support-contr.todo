@@ -1,0 +1,44 @@
+---
+id: P53.M1.E1.T001
+title: Write BrowserMCP support contract and capability matrix
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- browsermcp
+- pag-connect
+- mcp
+claimed_by: cli-user
+claimed_at: '2026-02-21T05:28:24.008918+00:00'
+started_at: '2026-02-21T05:28:24.008918+00:00'
+completed_at: '2026-02-21T05:29:09.290033+00:00'
+duration_minutes: 0.7546850666666667
+---
+
+# Write BrowserMCP support contract and capability matrix
+
+
+
+## Requirements
+
+- Define supported Browser MCP operations and transport boundaries between pag-server and pag-connect.
+- Describe required request/response shapes, correlation IDs, and timeout semantics.
+- Capture capability matrix for local/headless/companion-backed execution modes.
+
+## Acceptance Criteria
+
+- A contract document exists with operation schemas and expected status/error mapping.
+- Capability matrix lists supported/unsupported operations per execution mode.
+- Contract includes at least 3 worked examples (navigate, click, snapshot) with expected responses.
+
+## Execution Notes (2026-02-21)
+
+- Added initial BrowserMCP companion contract covering transport envelopes,
+  timeout/correlation semantics, normalized errors, and mode capability matrix.
+- Included worked examples for `navigate`, `click`, and `snapshot` timeout flows.
+
+## Evidence Artifacts
+
+- `docs/guides/browsermcp-companion-contract.md`

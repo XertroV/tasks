@@ -1,0 +1,31 @@
+---
+id: P49.M5.E2.T004
+title: Apply capability-aware trust gates across lifecycle and tool execution
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T09:57:42.829983+00:00'
+started_at: '2026-02-20T09:57:42.829983+00:00'
+completed_at: '2026-02-20T10:54:36.381084+00:00'
+duration_minutes: 56.892518116666665
+---
+
+# Apply capability-aware trust gates across lifecycle and tool execution
+
+
+
+## Requirements
+
+- Apply risk-tier and capability-aware trust gates across plugin lifecycle and tool execution paths.
+- Require stricter trust posture for high-risk capabilities and plugin classes.
+- Ensure deny outcomes include deterministic reason codes and remediation hints.
+
+## Acceptance Criteria
+
+- High-risk capabilities are blocked when trust requirements are not met.
+- Lifecycle and execution paths share the same policy engine behavior.
+- Tests verify gating for BEAM and external/MCP plugin scenarios.

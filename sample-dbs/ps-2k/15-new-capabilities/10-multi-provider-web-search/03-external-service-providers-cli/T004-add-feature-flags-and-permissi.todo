@@ -1,0 +1,34 @@
+---
+id: P15.M10.E3.T004
+title: Add feature flags and permission gates for external providers
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M10.E3.T002
+- P15.M10.E3.T003
+tags:
+- plugin
+- web-search
+- security
+claimed_by: cli-user
+claimed_at: '2026-02-17T16:05:39.053718+00:00'
+started_at: '2026-02-17T16:05:39.053718+00:00'
+completed_at: '2026-02-17T16:05:46.187910+00:00'
+duration_minutes: 0.11890296666666668
+---
+
+# Add feature flags and permission gates for external providers
+
+
+
+## Requirements
+
+- Add feature flags for external providers and enforce permission checks before invoking CLI/MCP providers.
+- Ensure external providers can be disabled globally and per-provider via config.
+
+## Acceptance Criteria
+
+- External provider execution is blocked when flags/permissions are absent.
+- Flag and permission behavior is validated in unit/integration tests.

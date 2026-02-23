@@ -1,0 +1,17 @@
+---
+id: P47.M2.E1.T002
+title: Implement DeviceCodes context module with state machine logic
+status: done
+estimate_hours: 1.5
+complexity: high
+priority: high
+depends_on:
+- P47.M2.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T06:15:23.973293+00:00'
+started_at: '2026-02-20T06:15:23.973293+00:00'
+completed_at: '2026-02-20T06:16:27.721145+00:00'
+duration_minutes: 1.0624639999999999
+---
+Create lib/pag_server/oauth/device_codes.ex context module. Functions: create/2 (client_id, scope) — generates 40-char hex device_code, XXXX-XXXX user_code from base-20 consonant charset (BCDFGHJKLMNPQRSTVWXZ), stores both (user_code stored as uppercase, dash-stripped canonical form); get_by_user_code/1 — case-insensitive, strip dashes; get_by_device_code/1; mark_authorized/3 (device_code, user_id, api_key_id) — atomic transition pending→authorized; mark_used/1 — atomic authorized→used; check_poll_rate/1 — returns :ok | :slow_down by comparing now vs last_polled_at + interval_seconds; increment_fail_count/1 — returns {:ok, count} | {:error, :max_fails_exceeded} (expire on >= 5 fails); expire_stale/0 — transition overdue pending rows to expired. Note: normalize user_code input before lookup (uppercase, strip dashes and spaces, map O→0 if numeric ambiguity).

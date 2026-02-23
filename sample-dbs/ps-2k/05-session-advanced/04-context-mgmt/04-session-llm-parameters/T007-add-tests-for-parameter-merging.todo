@@ -1,0 +1,291 @@
+---
+id: P5.M4.E4.T007
+title: Add tests for parameter merging
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P5.M4.E4.T003
+- P5.M4.E4.T005
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-07T14:41:42.085486+00:00'
+started_at: '2026-02-07T14:41:42.085486+00:00'
+completed_at: '2026-02-07T14:43:50.031564+00:00'
+duration_minutes: 2.1324344833333333
+---
+
+# Add tests for parameter merging
+
+Create test/pag_server/llm/model_resolver_test.exs with tests for alias resolution, thinking level resolution (named and native), parameter merging precedence, model defaults
+
+## Requirements
+
+- [ ] Create `test/pag_server/llm/model_resolver_test.exs`
+- [ ] Test alias resolution with known aliases
+- [ ] Test alias resolution with unknown aliases (pass-through)
+- [ ] Test alias resolution with full model specs (pass-through)
+- [ ] Test thinking level resolution for all named levels
+- [ ] Test thinking level resolution with native format
+- [ ] Test thinking level resolution with invalid inputs
+- [ ] Test model defaults retrieval for configured models
+- [ ] Test model defaults for unconfigured models (empty map)
+- [ ] Test three-tier parameter merging precedence
+- [ ] Test merging with partial parameter sets
+- [ ] Test merging with thinking parameter resolution
+- [ ] Test merging filters out nil values
+- [ ] Add integration test in AgentServer tests
+- [ ] Aim for >90% test coverage
+
+## Acceptance Criteria
+
+- [ ] Test file created at `test/pag_server/llm/model_resolver_test.exs`
+- [ ] Test module uses `ExUnit.Case`
+- [ ] Alias resolution tests:
+  - [ ] Resolves "sonnet" to "anthropic:claude-sonnet-4"
+  - [ ] Resolves "opus" to "anthropic:claude-opus-4"
+  - [ ] Unknown alias returns original string unchanged
+  - [ ] Full spec like "anthropic:claude-sonnet-4" passes through
+  - [ ] Empty string handled gracefully
+- [ ] Thinking level resolution tests:
+  - [ ] "off" resolves to `%{"type" => "disabled"}`
+  - [ ] "low" resolves to `%{"type" => "enabled", "budget" => 3000}`
+  - [ ] "medium" resolves to `%{"type" => "enabled", "budget" => 10000}`
+  - [ ] "high" resolves to `%{"type" => "enabled", "budget" => 30000}`
+  - [ ] "xhigh" resolves to `%{"type" => "enabled", "budget" => 100000}`
+  - [ ] Native format `%{"type" => "enabled", "budget" => 5000}` passes through
+  - [ ] Invalid string returns error tuple
+  - [ ] Invalid map format returns error tuple
+  - [ ] Nil handled gracefully
+- [ ] Model defaults tests:
+  - [ ] Returns defaults for "claude-sonnet-4"
+  - [ ] Returns defaults for "gpt-4o"
+  - [ ] Returns empty map for unconfigured model
+  - [ ] Handles ModelSpec struct input
+  - [ ] Handles string input
+- [ ] Parameter merging tests:
+  - [ ] Session params override agent params
+  - [ ] Agent params override model defaults
+  - [ ] Session params override model defaults (transitive)
+  - [ ] Merging with empty maps works correctly
+  - [ ] All three tiers present: session value wins
+  - [ ] Only model defaults: returns model defaults
+  - [ ] Only agent params: returns agent params
+  - [ ] Nil values filtered from result
+- [ ] Thinking parameter merging tests:
+  - [ ] Named thinking level in session params gets resolved
+  - [ ] Named thinking level in agent params gets resolved
+  - [ ] Native format passes through unchanged
+  - [ ] Session thinking overrides agent thinking
+  - [ ] Invalid thinking level logged but doesn't crash
+- [ ] Edge case tests:
+  - [ ] Empty maps for all three tiers returns empty map
+  - [ ] Unknown parameter keys pass through (forward compatibility)
+  - [ ] Numeric string values handled appropriately
+  - [ ] Very large numbers within valid ranges accepted
+- [ ] Integration test in `test/pag_server/agents/agent_server_test.exs`:
+  - [ ] AgentServer uses session params when building LLM options
+  - [ ] AgentServer merges params correctly from all sources
+  - [ ] Session param update triggers option rebuild
+  - [ ] Final LLM request includes merged parameters
+- [ ] All tests pass
+- [ ] Test coverage >90% for ModelResolver module
+- [ ] No compilation warnings
+
+## Context
+
+Comprehensive testing ensures the parameter merging system works correctly
+across all scenarios. The three-tier precedence must be maintained, and
+thinking level resolution must handle all edge cases.
+
+**Critical Test Scenarios**:
+1. Precedence order (session > agent > model)
+2. Thinking level resolution (named → native format)
+3. Nil value filtering (don't send nil params to LLM)
+4. Forward compatibility (unknown keys allowed)
+
+**Integration Testing**:
+The AgentServer integration test verifies the entire flow from session params
+through ModelResolver to final LLM options.
+
+## Implementation Notes
+
+Example test structure:
+
+```elixir
+defmodule PagServer.LLM.ModelResolverTest do
+  use ExUnit.Case, async: true
+  
+  alias PagServer.LLM.ModelResolver
+  alias PagServer.LLM.ModelSpec
+  
+  describe "resolve_alias/1" do
+    test "resolves known aliases" do
+      assert {:ok, "anthropic:claude-sonnet-4"} = 
+        ModelResolver.resolve_alias("sonnet")
+      
+      assert {:ok, "anthropic:claude-opus-4"} = 
+        ModelResolver.resolve_alias("opus")
+    end
+    
+    test "returns original string for unknown aliases" do
+      assert {:ok, "unknown-model"} = 
+        ModelResolver.resolve_alias("unknown-model")
+    end
+    
+    test "passes through full model specs" do
+      assert {:ok, "anthropic:claude-sonnet-4"} = 
+        ModelResolver.resolve_alias("anthropic:claude-sonnet-4")
+    end
+  end
+  
+  describe "resolve_thinking/1" do
+    test "resolves named levels" do
+      assert {:ok, %{"type" => "disabled"}} = 
+        ModelResolver.resolve_thinking("off")
+      
+      assert {:ok, %{"type" => "enabled", "budget" => 3000}} = 
+        ModelResolver.resolve_thinking("low")
+      
+      assert {:ok, %{"type" => "enabled", "budget" => 10000}} = 
+        ModelResolver.resolve_thinking("medium")
+    end
+    
+    test "passes through native format" do
+      native = %{"type" => "enabled", "budget" => 5000}
+      assert {:ok, ^native} = ModelResolver.resolve_thinking(native)
+    end
+    
+    test "returns error for invalid inputs" do
+      assert {:error, _} = ModelResolver.resolve_thinking("invalid")
+      assert {:error, _} = ModelResolver.resolve_thinking(%{"wrong" => "format"})
+    end
+  end
+  
+  describe "merge_params/3" do
+    test "session params override agent params" do
+      model_defaults = %{"temperature" => 1.0}
+      agent_params = %{"temperature" => 0.8}
+      session_params = %{"temperature" => 0.5}
+      
+      result = ModelResolver.merge_params(
+        model_defaults,
+        agent_params,
+        session_params
+      )
+      
+      assert result["temperature"] == 0.5
+    end
+    
+    test "agent params override model defaults" do
+      model_defaults = %{"max_tokens" => 1000}
+      agent_params = %{"max_tokens" => 2000}
+      session_params = %{}
+      
+      result = ModelResolver.merge_params(
+        model_defaults,
+        agent_params,
+        session_params
+      )
+      
+      assert result["max_tokens"] == 2000
+    end
+    
+    test "merges params from all three sources" do
+      model_defaults = %{"temperature" => 1.0, "top_p" => 0.9}
+      agent_params = %{"max_tokens" => 4000}
+      session_params = %{"temperature" => 0.7}
+      
+      result = ModelResolver.merge_params(
+        model_defaults,
+        agent_params,
+        session_params
+      )
+      
+      assert result == %{
+        "temperature" => 0.7,    # Session override
+        "max_tokens" => 4000,    # Agent param
+        "top_p" => 0.9           # Model default
+      }
+    end
+    
+    test "resolves thinking levels during merge" do
+      model_defaults = %{}
+      agent_params = %{}
+      session_params = %{"thinking" => "high"}
+      
+      result = ModelResolver.merge_params(
+        model_defaults,
+        agent_params,
+        session_params
+      )
+      
+      assert result["thinking"] == %{
+        "type" => "enabled",
+        "budget" => 30000
+      }
+    end
+    
+    test "filters nil values from result" do
+      model_defaults = %{"temperature" => nil}
+      agent_params = %{"max_tokens" => 4000, "top_p" => nil}
+      session_params = %{}
+      
+      result = ModelResolver.merge_params(
+        model_defaults,
+        agent_params,
+        session_params
+      )
+      
+      assert result == %{"max_tokens" => 4000}
+      refute Map.has_key?(result, "temperature")
+      refute Map.has_key?(result, "top_p")
+    end
+  end
+end
+```
+
+Integration test example:
+
+```elixir
+# In test/pag_server/agents/agent_server_test.exs
+
+describe "session LLM parameter merging" do
+  test "uses session params when building LLM options", %{agent: agent} do
+    # Create session with LLM params
+    {:ok, session} = 
+      %Session{}
+      |> Session.create_changeset(%{
+        agent_id: agent.id,
+        llm_params: %{
+          "temperature" => 0.7,
+          "thinking" => "high"
+        }
+      })
+      |> Repo.insert()
+    
+    # Start agent with session
+    {:ok, pid} = AgentServer.start_link(
+      agent_id: agent.id,
+      session_id: session.id
+    )
+    
+    # Get state and verify merged params
+    state = AgentServer.get_state(pid)
+    
+    # Verify session loaded
+    assert state.session.id == session.id
+    
+    # Send message and capture LLM request
+    # (requires mocking or test mode)
+    # Verify that LLM options include merged params
+  end
+end
+```
+
+Test coverage goals:
+- 100% of public functions
+- All error paths
+- All edge cases (empty maps, nil values, invalid inputs)
+- Integration with AgentServer

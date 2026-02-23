@@ -1,0 +1,28 @@
+---
+id: P36.M1.E4.T001
+title: Implement PagServer.Agents.BootManager GenServer
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P36.M1.E2.T002
+- P36.M1.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T03:08:39.679421+00:00'
+started_at: '2026-02-19T03:08:39.679421+00:00'
+completed_at: '2026-02-19T03:08:41.740206+00:00'
+duration_minutes: 0.0343462
+---
+## Acceptance Criteria
+- GenServer at lib/pag_server/agents/boot_manager.ex
+- 4-phase boot sequence on init:
+  Phase 1 QUERY: SessionStore.query_auto_start_candidates/0, log count
+  Phase 2 CLASSIFY+SORT: filter with BootPolicy.should_auto_start?/1, sort with BootPolicy.start_order/1, log counts by mode
+  Phase 3 START: Task.async_stream with max_concurrency: 5, timeout: 30_000 per session; record duration; call SessionStore.update_startup_duration/2; emit [:pag_server, :boot, :agent_started] telemetry; log each success
+  Phase 4 REPORT: log summary (ok/total/failed/elapsed_ms); emit [:pag_server, :boot, :complete] telemetry
+- Progress logging every 10 sessions OR 10% of total OR 10 seconds (whichever first)
+- Errors per session are logged and counted; do not halt other starts
+- GenServer stays alive after boot for monitoring (can implement handle_info for :get_status)
+- sleep_fn option for testing timing-sensitive code

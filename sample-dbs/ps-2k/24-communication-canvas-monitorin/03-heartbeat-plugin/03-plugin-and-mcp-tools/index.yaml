@@ -1,0 +1,46 @@
+id: P24.M3.E3
+name: Plugin and MCP Tools
+status: done
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-create-heartbeatplugin-module.todo
+  title: Create HeartbeatPlugin module
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-implement-heartbeat-status-mcp.todo
+  title: Implement heartbeat_status MCP tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-implement-heartbeat-snooze-mcp.todo
+  title: Implement heartbeat_snooze MCP tool
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-tests-for-heartbeatplugin.todo
+  title: Tests for HeartbeatPlugin
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

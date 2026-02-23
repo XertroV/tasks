@@ -1,0 +1,24 @@
+---
+id: P55.M3.E1.T002
+title: Streaming token batching with 100ms flush
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- streaming
+- performance
+claimed_by: cli-user
+claimed_at: '2026-02-22T11:04:32.695697+00:00'
+started_at: '2026-02-22T11:04:32.695697+00:00'
+completed_at: '2026-02-22T11:07:31.397906+00:00'
+duration_minutes: 2.978369966666667
+---
+Implement server-side token batching to reduce render churn. On :llm_token event: append token to token_buffer assign (do NOT trigger render). Schedule :flush_token_buffer via Process.send_after(self(), :flush_token_buffer, 100) if not already pending (check flush_pending assign). On :flush_token_buffer: move token_buffer content into streaming_state.content, clear buffer, set flush_pending=false. This batches ~50 tokens/sec into ~10 renders/sec.
+
+## Acceptance Criteria
+- Tokens accumulated in buffer without immediate render
+- Buffer flushed every ~100ms into streaming_state
+- No duplicate flush scheduling (flush_pending guard)
+- Streaming content visible in UI after flush

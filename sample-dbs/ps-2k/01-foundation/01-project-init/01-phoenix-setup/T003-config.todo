@@ -1,0 +1,177 @@
+---
+id: P1.M1.E1.T003
+title: Configure environment
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: high
+depends_on: []
+claimed_by: claude-1
+claimed_at: '2026-02-05T07:44:24.188792'
+started_at: '2026-02-05T07:44:24.188792'
+completed_at: '2026-02-05T07:47:25.724057'
+tags:
+- configuration
+- environment
+- setup
+---
+
+# Configure environment
+
+Set up runtime configuration, environment variables, and environment-specific configs.
+
+## Requirements
+
+### Runtime Configuration
+- [ ] Create/update `config/runtime.exs` with:
+  - [ ] Database configuration (PostgreSQL for prod, SQLite for dev/test)
+  - [ ] HTTP endpoint configuration
+  - [ ] Environment variable loading
+  - [ ] Secret key base configuration
+
+### Environment Files
+- [ ] Create `.env.example` with required environment variables:
+  - [ ] `DATABASE_URL` (optional, defaults to config)
+  - [ ] `SECRET_KEY_BASE` (for production)
+  - [ ] `PHX_HOST` (for production)
+  - [ ] `PORT` (optional, defaults to 4000)
+  - [ ] `ANTHROPIC_API_KEY` (placeholder)
+  - [ ] `OPENAI_API_KEY` (placeholder)
+
+### Environment-Specific Configs
+- [ ] Update `config/dev.exs`:
+  - [ ] SQLite database path
+  - [ ] Debug logging level
+  - [ ] Code reloader enabled
+  - [ ] Live dashboard enabled
+  
+- [ ] Update `config/test.exs`:
+  - [ ] SQLite test database (in-memory or separate file)
+  - [ ] Sandbox mode for Ecto
+  - [ ] Minimal logging (warn level)
+  
+- [ ] Update `config/prod.exs`:
+  - [ ] PostgreSQL configuration from environment
+  - [ ] SSL configuration
+  - [ ] Release configuration
+
+### Documentation
+- [ ] Create `README.md` section on environment setup
+- [ ] Document all required environment variables
+- [ ] Add `.env.example` to git, ensure `.env` is gitignored
+
+### Commit
+- [ ] Commit changes with message "Configure environments and runtime config"
+
+## Acceptance Criteria
+
+- [ ] Application starts successfully in dev: `mix phx.server`
+- [ ] Tests run successfully: `mix test`
+- [ ] All environment variables documented in `.env.example`
+- [ ] `.env` is in `.gitignore`
+- [ ] No hardcoded secrets in configuration files
+- [ ] Configuration loads from environment in production
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` Section 2.1 (Project Structure)
+
+**Configuration Philosophy**:
+- **Development**: Defaults that "just work" (SQLite, no API keys required initially)
+- **Test**: Isolated, fast (in-memory SQLite, sandbox mode)
+- **Production**: Explicit configuration via environment (12-factor app principles)
+
+## Notes
+
+### Example `config/runtime.exs`
+
+```elixir
+import Config
+
+if config_env() == :prod do
+  database_url =
+    System.get_env("DATABASE_URL") ||
+      raise """
+      environment variable DATABASE_URL is missing.
+      For example: ecto://USER:PASS@HOST/DATABASE
+      """
+
+  config :pag_server, PagServer.Repo,
+    url: database_url,
+    pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
+    ssl: true
+
+  secret_key_base =
+    System.get_env("SECRET_KEY_BASE") ||
+      raise """
+      environment variable SECRET_KEY_BASE is missing.
+      You can generate one by calling: mix phx.gen.secret
+      """
+
+  host = System.get_env("PHX_HOST") || "example.com"
+  port = String.to_integer(System.get_env("PORT") || "4000")
+
+  config :pag_server, PagServerWeb.Endpoint,
+    url: [host: host, port: 443, scheme: "https"],
+    http: [
+      ip: {0, 0, 0, 0, 0, 0, 0, 0},
+      port: port
+    ],
+    secret_key_base: secret_key_base
+end
+```
+
+### Example `config/dev.exs` Updates
+
+```elixir
+config :pag_server, PagServer.Repo,
+  database: Path.expand("../pag_server_dev.db", __DIR__),
+  pool_size: 5,
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true
+
+config :pag_server, PagServerWeb.Endpoint,
+  http: [ip: {127, 0, 0, 1}, port: 4000],
+  debug_errors: true,
+  code_reloader: true,
+  check_origin: false,
+  watchers: []
+
+config :logger, :console, format: "[$level] $message\n"
+```
+
+### Example `.env.example`
+
+```bash
+# Database (optional, defaults to SQLite in dev)
+# DATABASE_URL=ecto://postgres:postgres@localhost/pag_server_dev
+
+# Phoenix (optional in dev)
+# SECRET_KEY_BASE=generate_with_mix_phx_gen_secret
+# PHX_HOST=localhost
+# PORT=4000
+
+# LLM API Keys (required for LLM features)
+ANTHROPIC_API_KEY=your_anthropic_key_here
+OPENAI_API_KEY=your_openai_key_here
+
+# Optional: OpenRouter, Ollama
+# OPENROUTER_API_KEY=your_openrouter_key_here
+# OLLAMA_BASE_URL=http://localhost:11434
+```
+
+### Verification Commands
+
+```bash
+# Test dev environment
+mix phx.server
+# Visit http://localhost:4000
+
+# Test compilation
+mix compile --warnings-as-errors
+
+# Test configuration loading
+iex -S mix
+> Application.get_env(:pag_server, PagServer.Repo)
+```

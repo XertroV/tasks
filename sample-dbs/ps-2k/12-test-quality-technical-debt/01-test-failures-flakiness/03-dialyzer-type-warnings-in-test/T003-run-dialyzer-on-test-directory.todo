@@ -1,0 +1,29 @@
+---
+id: P12.M1.E3.T003
+title: Run dialyzer on test directory and fix remaining
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T22:33:52.717111+00:00'
+started_at: '2026-02-13T22:33:52.717111+00:00'
+completed_at: '2026-02-13T22:46:09.394881+00:00'
+duration_minutes: 12.277962666666667
+---
+
+# Run dialyzer on test directory and fix remaining
+
+## Description
+Run dialyzer across the entire test directory to identify and fix any remaining type warnings not covered in T001 and T002.
+
+## Acceptance Criteria
+- [ ] Full dialyzer run on test directory completed
+- [ ] All type warnings resolved or documented with @dialyzer annotations
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `test/` directory

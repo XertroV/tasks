@@ -1,0 +1,17 @@
+---
+id: P45.M6.E1.T002
+title: Implement CRUD controller actions (no reveal)
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: medium
+depends_on:
+- P45.M6.E1.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.204900+00:00'
+started_at: '2026-02-19T19:17:35.204900+00:00'
+completed_at: '2026-02-19T19:51:37.405687+00:00'
+duration_minutes: 34.03667956666666
+---
+Implement index/2, show/2 (metadata only), create/2, update/2, delete/2 in CredentialsVaultController. All actions derive workspace_id and user_id from conn assigns (set by auth plug). Return metadata — never the plaintext value. Errors: 404 for not found, 403 for access denied, 422 for validation errors.

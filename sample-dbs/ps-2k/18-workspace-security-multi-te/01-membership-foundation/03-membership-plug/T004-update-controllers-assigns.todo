@@ -1,0 +1,47 @@
+---
+id: P18.M1.E3.T004
+title: Update workspace controllers to use conn.assigns
+status: done
+estimate_hours: 3.0
+complexity: medium
+priority: critical
+depends_on:
+- P18.M1.E3.T003
+tags:
+- security
+- workspace
+- refactor
+claimed_by: cli-user
+claimed_at: '2026-02-17T17:21:09.821639+00:00'
+started_at: '2026-02-17T17:21:09.821639+00:00'
+completed_at: '2026-02-17T17:40:37.456995+00:00'
+duration_minutes: 19.460588949999998
+---
+
+# Update workspace controllers to use conn.assigns
+
+## Description
+
+Migrate all workspace controllers from manual `authorize_view/authorize_edit` checks to using `conn.assigns.workspace_id` and `conn.assigns.workspace_role` set by the membership plug.
+
+## Requirements
+
+- [ ] Remove `authorize_view/2` and `authorize_edit/2` from WorkspacesController
+- [ ] Remove equivalent auth functions from WorkspaceInvitationsController
+- [ ] Remove equivalent auth functions from WorkspaceFilesController
+- [ ] Remove equivalent auth functions from BootstrapController
+- [ ] Remove equivalent auth functions from BotConfigsController
+- [ ] Update all controller actions to read workspace_id from conn.assigns instead of fetching and authorizing manually
+- [ ] For actions that need the full workspace struct, fetch by conn.assigns.workspace_id
+- [ ] For role-specific checks within actions (beyond what the plug enforces), use `conn.assigns.workspace_role`
+
+## Acceptance Criteria
+
+- [ ] No manual `owner_id == user_id` authorization checks remain in workspace controllers
+- [ ] All workspace endpoints still enforce correct access levels
+- [ ] Existing tests continue to pass (update test setup to provide memberships)
+- [ ] Controllers are simpler — authorization is handled by the pipeline
+
+## Context
+
+**Files affected**: `lib/pag_server_web/controllers/workspaces_controller.ex`, `lib/pag_server_web/controllers/workspace_invitations_controller.ex`, `lib/pag_server_web/controllers/workspace_files_controller.ex`, `lib/pag_server_web/controllers/bootstrap_controller.ex`, `lib/pag_server_web/controllers/bot_configs_controller.ex`

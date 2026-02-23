@@ -1,0 +1,21 @@
+---
+id: B073
+title: 'Setup wizard: ''Use selected user'' on step 2 navigates back to step 1 instead
+  of staying/advancing'
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- bug
+- webui
+- setup-wizard
+- ux
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-17T11:25:26.865981+00:00'
+---
+
+Setup wizard: 'Use selected user' on step 2 navigates back to step 1 instead of staying/advancing

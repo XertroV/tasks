@@ -1,0 +1,103 @@
+---
+status: done
+claimed_by: cli-user
+claimed_at: '2026-02-06T13:32:02.589912'
+started_at: '2026-02-06T13:32:02.589912'
+completed_at: '2026-02-06T13:34:16.549988'
+duration_minutes: 2.232667683333333
+---
+# Task: Create UserSocket module
+# Epic: P3.M1.E1 - Channel Setup
+# Phase 3 - Streaming & Real-Time
+
+id: P3.M1.E1.T001
+title: Create UserSocket module
+status: pending
+complexity: low
+priority: high
+estimate_hours: 0.5
+depends_on: []
+
+---
+
+## Context
+
+Phoenix Channels require a socket module to handle WebSocket connections. This is the entry point for all channel-based communication.
+
+## Goal
+
+Create `PagServerWeb.UserSocket` module with basic configuration for handling agent channel connections.
+
+## Requirements
+
+1. **Socket Module**:
+   - Create `lib/pag_server_web/channels/user_socket.ex`
+   - Implement `Phoenix.Socket` behaviour
+   - Configure channel routing
+
+2. **Socket Configuration**:
+   - Transport: WebSocket
+   - Serializer: JSON V2
+   - Connection timeout: 60 seconds
+   - Heartbeat interval: 30 seconds
+
+3. **Channel Routing**:
+   ```elixir
+   channel "agent:*", PagServerWeb.AgentChannel
+   ```
+
+## Implementation
+
+```elixir
+defmodule PagServerWeb.UserSocket do
+  use Phoenix.Socket
+
+  # Channels
+  channel "agent:*", PagServerWeb.AgentChannel
+
+  @impl true
+  def connect(_params, socket, _connect_info) do
+    # Authentication will be added in E2
+    {:ok, socket}
+  end
+
+  @impl true
+  def id(_socket), do: nil
+end
+```
+
+## File Locations
+
+- `lib/pag_server_web/channels/user_socket.ex`
+
+## Acceptance Criteria
+
+- [x] UserSocket module created with Phoenix.Socket behaviour
+- [x] Channel routing configured for "agent:*" pattern
+- [x] Socket returns {:ok, socket} from connect/3
+- [x] Socket compiles without warnings
+
+## Testing
+
+Create `test/pag_server_web/channels/user_socket_test.exs`:
+
+```elixir
+defmodule PagServerWeb.UserSocketTest do
+  use PagServerWeb.ChannelCase
+
+  test "socket connects successfully" do
+    assert {:ok, socket} = connect(PagServerWeb.UserSocket, %{})
+    assert socket.id == nil
+  end
+end
+```
+
+## References
+
+- Phoenix Channels Guide: https://hexdocs.pm/phoenix/channels.html
+- Phoenix.Socket: https://hexdocs.pm/phoenix/Phoenix.Socket.html
+
+## Notes
+
+- Authentication will be implemented in Epic 2 (Agent Channel)
+- Socket ID will be set when user auth is added

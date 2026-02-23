@@ -1,0 +1,36 @@
+---
+id: P43.M2.E3.T004
+title: 'LiveView tests for LlmCallsDashboardLive: renders in-flight, history, filters'
+status: done
+estimate_hours: 0.75
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T00:12:49.243736+00:00'
+started_at: '2026-02-20T00:12:49.243736+00:00'
+completed_at: '2026-02-20T00:17:28.283223+00:00'
+duration_minutes: 4.650657949999999
+---
+
+# LiveView tests for LlmCallsDashboardLive: renders in-flight, history, filters
+
+
+
+## Requirements
+
+- The `LlmCallsDashboardLive` LiveView must be covered by Phoenix LiveView tests that exercise empty state, in-flight display, history rendering, filter interactions, and authentication enforcement.
+
+## Acceptance Criteria
+
+- Test file `test/pag_server_web/live/llm_calls_dashboard_live_test.exs` exists and uses `use PagServerWeb.ConnCase, async: true`.
+- A test mounts the LiveView with an authenticated user (via `conn |> log_in_user(user)` or the equivalent helper used elsewhere in the test suite) and asserts a `200` status and that the HTML contains the string `"LLM Calls"` (the page heading).
+- A test mounts the LiveView with an empty database and asserts the page renders without error and contains a graceful empty-state message for both the in-flight section and the recent history section (e.g. text matching `"No in-flight"` or similar).
+- A test inserts a `:pending` `LlmCallRecord` into the DB before mounting, then mounts the LiveView and asserts the in-flight section's HTML contains the record's `agent_id` (or a truncated form of it).
+- A test inserts a `:completed` `LlmCallRecord` into the DB, mounts the LiveView, and asserts the recent-history table HTML contains the record's `model` string.
+- A test uses `render_click` (or `render_hook`) to fire the `"set_window"` event with `%{"window" => "6h"}` and asserts the socket's `:time_window` assign becomes `"6h"` and the view re-renders without error.
+- A test asserts the provider filter `<select>` element is present in the rendered HTML.
+- A test asserts the model filter `<select>` element is present in the rendered HTML.
+- A test attempts to mount the LiveView with an unauthenticated `conn` (no logged-in user) and asserts a redirect response to the login path (3xx) or that the LiveView emits a redirect.
+- All tests pass with `mix test test/pag_server_web/live/llm_calls_dashboard_live_test.exs`.

@@ -1,0 +1,53 @@
+---
+id: P10.M1.E1.T011
+title: Add webhook subscription test endpoint
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: low
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-11T20:10:15.052906+00:00'
+started_at: '2026-02-11T20:10:15.052906+00:00'
+completed_at: '2026-02-11T20:32:10.775402+00:00'
+duration_minutes: 21.928708083333333
+---
+
+# Add webhook subscription test endpoint
+
+
+
+## Requirements
+
+Create a test endpoint that allows users to validate their webhook subscriptions by sending a test payload and receiving immediate feedback on filter matching and routing behavior.
+
+## Description
+
+A diagnostic endpoint enables users to verify that their webhook subscriptions are correctly configured. The endpoint accepts a test GitHub event payload, runs it through the filter matcher and event router, and returns which subscriptions would be triggered. This helps with debugging filter expressions and validating setup before real events arrive.
+
+## Acceptance Criteria
+
+- [ ] Endpoint `POST /api/v1/integrations/:integration_id/subscriptions/:id/test` - Send test event
+- [ ] Accept JSON body with `event_type` (required, e.g., "push") and `payload` (optional, default sample payload)
+- [ ] If payload not provided, generate sample GitHub payload for the event_type
+- [ ] Run payload through FilterMatcher.matches? to determine if subscription would trigger
+- [ ] Return 200 with JSON: `{matched: boolean, matched_filters: [filter_names], payload_used: {actual_payload}}`
+- [ ] Return 404 if integration or subscription not found
+- [ ] Return 422 if event_type invalid or payload malformed JSON
+- [ ] Validate permission via existing `:manage_webhooks` scope
+- [ ] Sample payloads for push, pull_request, issues, release events (see GitHub webhook docs)
+
+## Implementation Notes
+
+- Location: Add route to WebhookSubscriptionController as additional action: `post :test`
+- Function: `test(conn, %{"integration_id" => int_id, "id" => sub_id} = params)`
+- Sample payloads: store in `lib/pag_server/webhooks/sample_payloads.ex` or inline
+- Default samples should include:
+  - `push` with branch "refs/heads/main" and modified files
+  - `pull_request` with branch "feature/test"
+  - `issues` with action "opened"
+- Call `FilterMatcher.matches?(subscription, payload)` directly
+- Log test calls at `:info` level (useful for debugging user issues)
+- Response format: `{matched: true, filters: ["branches: main"], payload: {...}}`
+- Use permission plug same as show/update (implicit via controller auth)

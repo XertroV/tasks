@@ -1,0 +1,62 @@
+---
+id: P16.M1.E1.T001
+title: Add Groq provider module
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- llm
+- provider
+- groq
+claimed_by: cli-user
+claimed_at: '2026-02-14T02:38:51.934927+00:00'
+started_at: '2026-02-14T02:38:51.934927+00:00'
+completed_at: '2026-02-14T02:50:18.230624+00:00'
+duration_minutes: 11.43826145
+---
+
+# Add Groq provider module
+
+Add Groq LLM provider module using OpenAI-compatible API for fast inference.
+
+## Requirements
+
+- Create `PagServer.LLM.Providers.Groq` module implementing `PagServer.LLM.Provider` behaviour
+- Groq uses OpenAI-compatible API at `https://api.groq.com/openai/v1`
+- Support environment variable `GROQ_API_KEY` for authentication
+- Support models: `llama-3.3-70b-versatile`, `llama-3.1-8b-instant`, `mixtral-8x7b-32768`
+- Reuse OpenAI client infrastructure with Groq-specific base URL
+
+## Acceptance Criteria
+
+- [ ] `PagServer.LLM.Providers.Groq` module exists and implements Provider behaviour
+- [ ] `chat/3` works with model specs like `groq:llama-3.3-70b-versatile`
+- [ ] `stream_chat/3` returns proper stream events
+- [ ] `count_tokens/2` delegates to tokenizer
+- [ ] `get_pricing/1` returns Groq pricing (all models are free tier with rate limits)
+- [ ] `supports_streaming?/1` returns true
+- [ ] `supports_tools?/1` returns true for supported models
+- [ ] Configuration via `GROQ_API_KEY` environment variable works
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P16.M1.E1)
+**Agent**: cli-user
+**Date**: 2026-02-14 02:38 UTC
+**Sibling tasks**: P16.M1.E1.T002, P16.M1.E1.T003, P16.M1.E1.T004, P16.M1.E1.T005
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P16.M1.E1.T001 → P16.M1.E1.T002 → P16.M1.E1.T003 → P16.M1.E1.T004 → P16.M1.E1.T005
+Mark each done individually after completion.
+
+**Task files**:
+- P16.M1.E1.T001: .tasks/16-llm-integration-tests/01-groq-provider-support/01-groq-provider-implementation/T001-add-groq-provider-module.todo
+- P16.M1.E1.T002: .tasks/16-llm-integration-tests/01-groq-provider-support/01-groq-provider-implementation/T002-add-groq-tests.todo
+- P16.M1.E1.T003: .tasks/16-llm-integration-tests/01-groq-provider-support/01-groq-provider-implementation/T003-add-groq-to-llm-registry-known.todo
+- P16.M1.E1.T004: .tasks/16-llm-integration-tests/01-groq-provider-support/01-groq-provider-implementation/T004-create-integrationcase-test-he.todo
+- P16.M1.E1.T005: .tasks/16-llm-integration-tests/01-groq-provider-support/01-groq-provider-implementation/T005-register-groq-provider-in-appl.todo

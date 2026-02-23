@@ -1,0 +1,36 @@
+---
+id: P2.M8.E4.T003
+title: Add provider health check integration
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: medium
+depends_on: []
+tags:
+- providers
+- health
+- monitoring
+claimed_by: cli-user
+claimed_at: '2026-02-06T08:25:36.789035'
+started_at: '2026-02-06T08:25:36.789035'
+completed_at: '2026-02-06T08:27:12.274643'
+duration_minutes: 1.5914266333333333
+---
+
+# Add provider health check integration
+
+
+
+## Requirements
+
+- [x] Add provider health-check integration to failover routing in `PagServer.LLM.Registry`
+- [x] Skip unhealthy providers during failover attempts
+- [x] Expose provider health status API for observability/integration
+- [x] Add tests for health-based failover and status reporting
+
+## Acceptance Criteria
+
+- [x] Providers implementing `health_check/0` are evaluated before routing requests
+- [x] Unhealthy primary provider falls back to next healthy provider when available
+- [x] `Registry.provider_health/1` reports healthy/unhealthy status per registered provider
+- [x] Registry health/failover tests pass

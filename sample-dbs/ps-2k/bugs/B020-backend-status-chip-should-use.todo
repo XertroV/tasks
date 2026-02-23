@@ -1,0 +1,19 @@
+---
+id: B020
+title: backend status chip should use readiness endpoint alongside liveview connectivity
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- dashboard
+- ux
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:29:14.787784+00:00'
+started_at: '2026-02-15T17:29:14.787784+00:00'
+completed_at: '2026-02-15T17:32:52.656762+00:00'
+duration_minutes: 3.631149483333333
+---
+Current status chip can show Ready based on /health even when system readiness fails. Update status probing to include /ready semantics and display degraded state when liveness is up but readiness is down, while still accounting for LiveView socket connectivity.

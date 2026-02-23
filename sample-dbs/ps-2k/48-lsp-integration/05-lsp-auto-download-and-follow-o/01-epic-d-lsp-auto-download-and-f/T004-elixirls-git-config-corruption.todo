@@ -1,0 +1,16 @@
+---
+id: P48.M5.E1.T004
+title: ElixirLS git/config corruption workaround
+status: done
+estimate_hours: 2.5
+complexity: high
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T13:54:15.084529+00:00'
+started_at: '2026-02-20T13:54:15.084529+00:00'
+completed_at: '2026-02-20T13:54:31.927225+00:00'
+duration_minutes: 0.2807113
+---
+ElixirLS has unfixed bug (GitHub issue #1175, closed 'not planned', still present in v0.30.0 Nov 2025): writes core.worktree = /path/to/elixir_ls_cache into .git/config, corrupting git worktree tracking. Currently we guard: raise error at spawn time when .git is a FILE (worktree checkout). Research and implement fix: (a) GIT_DIR+GIT_WORK_TREE env var isolation, (b) backup/restore .git/config [core] section around startup, or (c) sanitize .git/config post-startup. Remove error guard and TODO comment once fixed.

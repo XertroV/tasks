@@ -1,0 +1,37 @@
+id: P11.M5.E2
+name: System Settings API
+status: pending
+estimate_hours: 4.0
+complexity: low
+depends_on: []
+tasks:
+- id: T001
+  file: T001-implement-system-config-endpoi.todo
+  title: Implement system config endpoints
+  status: pending
+  estimate_hours: 2.0
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-add-rate-limits-and-cors-confi.todo
+  title: Add rate limits and CORS configuration
+  status: pending
+  estimate_hours: 1.5
+  complexity: low
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-build-observability-settings-a.todo
+  title: Build observability settings API
+  status: pending
+  estimate_hours: 1.0
+  complexity: low
+  priority: low
+  depends_on: []
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

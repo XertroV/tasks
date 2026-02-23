@@ -1,0 +1,42 @@
+id: P38.M1.E3
+name: Security, auth, and integration
+status: done
+estimate_hours: 3.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-enforce-workspace-scoped-conne.todo
+  title: Enforce workspace-scoped connector access (security guard in dispatcher)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P38.M1.E2.T001
+- id: T002
+  file: T002-add-rate-limiting-for-outbound.todo
+  title: Add rate limiting for outbound connector messages (per workspace)
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on:
+  - P38.M1.E2.T001
+- id: T003
+  file: T003-documentation-plugin-developme.todo
+  title: 'Documentation: PLUGIN_DEVELOPMENT.md update and connector_messaging/README.md'
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: low
+  depends_on:
+  - P38.M1.E2.T002
+  - P38.M1.E3.T001
+stats:
+  total: 3
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 3

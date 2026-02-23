@@ -1,0 +1,16 @@
+---
+id: F008
+type: fixed
+title: 'M4+M5: Document TOCTOU-safe ordering in CompanionMCPRegistry.register (insert
+  before demonitor check) and cache invalidation eventual consistency'
+description: 'M4+M5: Document TOCTOU-safe ordering in CompanionMCPRegistry.register
+  (insert before demonitor check) and cache invalidation eventual consistency'
+status: done
+estimate_hours: 0.0
+complexity: low
+priority: low
+depends_on: []
+tags: []
+created_at: '2026-02-22T13:00:02.431471+00:00'
+completed_at: '2026-02-22T13:00:02.431471+00:00'
+---

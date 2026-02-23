@@ -1,0 +1,49 @@
+id: P2.M7
+name: Cost Tracking
+status: pending
+estimate_hours: 8
+complexity: medium
+depends_on:
+- M1
+epics:
+- id: E1
+  name: Tokenizer
+  path: 01-tokenizer
+  status: pending
+  estimate_hours: 3
+  complexity: low
+  depends_on: []
+  description: Token counting for accurate cost estimation per model
+- id: E2
+  name: Pricing Database
+  path: 02-pricing-db
+  status: pending
+  estimate_hours: 3
+  complexity: medium
+  depends_on: []
+  description: Provider pricing data with per-model rates and cost calculation
+- id: E3
+  name: Cost Calculator
+  path: 03-calculator
+  status: pending
+  estimate_hours: 2
+  complexity: low
+  depends_on:
+  - E1
+  - E2
+  description: Integrate tokenizer and pricing to calculate request/session costs
+- id: E4
+  name: Dynamic Pricing Feeds
+  path: 04-dynamic-pricing-feeds
+  status: pending
+  estimate_hours: 16.5
+  complexity: medium
+  depends_on:
+  - E2
+  description: ''
+stats:
+  total_tasks: 20
+  done: 20
+  in_progress: 0
+  blocked: 0
+  pending: 0

@@ -1,0 +1,17 @@
+---
+id: P22.M2.E3.T002
+title: Extend model_info structs to include source field (:static | :live | :both)
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P22.M2.E3.T001
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T15:20:31.739705+00:00'
+started_at: '2026-02-18T15:20:31.739705+00:00'
+completed_at: '2026-02-18T17:37:24.342863+00:00'
+duration_minutes: 136.87671915
+---
+Add source field to model_info structs in ModelCatalog. Values: :static (only in static list), :live (only from discovery), :both (in both). This allows UI to show which models are verified live vs statically defined. Acceptance criteria: - source field present on all models returned by list_models/1 - Static-only models have source: :static - Live-only models have source: :live - Models in both have source: :both

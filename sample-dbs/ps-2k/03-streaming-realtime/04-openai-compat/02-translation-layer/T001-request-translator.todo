@@ -1,0 +1,87 @@
+---
+title: Translate OpenAI messages to PAG context
+epic: P3.M4.E2-e2
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimate_hours: 1.5
+depends_on:
+- P3.M4.E1.T001
+id: P3.M4.E2.T001
+claimed_by: cli-user
+claimed_at: '2026-02-08T05:44:54.315924+00:00'
+started_at: '2026-02-08T05:44:54.315924+00:00'
+completed_at: '2026-02-08T05:50:56.138845+00:00'
+duration_minutes: 6.0303818
+---
+
+# Task: Translate OpenAI messages to PAG context
+
+## Context
+Translate OpenAI messages to PAG context for Phase 3 REST API functionality.
+
+## Goal
+Implement translate openai messages to pag context.
+
+## Requirements
+- Follow Phoenix controller patterns
+- Include comprehensive tests
+- Add proper error handling
+- Document endpoints
+
+## Implementation
+
+### File: `lib/pag_server_web/controllers/...`
+
+```elixir
+defmodule PagServerWeb...Controller do
+  use PagServerWeb, :controller
+  
+  # Implementation here
+end
+```
+
+## Acceptance Criteria
+- [ ] Endpoint functional
+- [ ] Tests passing
+- [ ] Documentation updated
+- [ ] Error cases handled
+
+## Testing
+
+```elixir
+# test/pag_server_web/controllers/...
+defmodule PagServerWeb...ControllerTest do
+  use PagServerWeb.ConnCase, async: true
+  
+  # Tests here
+end
+```
+
+## References
+- Phoenix Controllers: https://hexdocs.pm/phoenix/controllers.html
+- Plug: https://hexdocs.pm/plug/readme.html
+
+## Notes
+- Follow RESTful conventions
+- Use proper HTTP status codes
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M4.E2)
+**Agent**: cli-user
+**Date**: 2026-02-08 05:44 UTC
+**Sibling tasks**: P3.M4.E2.T002, P3.M4.E2.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M4.E2.T001 → P3.M4.E2.T002 → P3.M4.E2.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M4.E2.T001: .tasks/03-streaming-realtime/04-openai-compat/02-translation-layer/T001-request-translator.todo
+- P3.M4.E2.T002: .tasks/03-streaming-realtime/04-openai-compat/02-translation-layer/T002-response-translator.todo
+- P3.M4.E2.T003: .tasks/03-streaming-realtime/04-openai-compat/02-translation-layer/T003-streaming-sse.todo

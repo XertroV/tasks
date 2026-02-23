@@ -1,0 +1,37 @@
+---
+id: P15.M2.E2.T003
+title: Add event replay visualization
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P15.M2.E2.T002
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-14T00:24:19.367813+00:00'
+started_at: '2026-02-14T00:24:19.367813+00:00'
+completed_at: '2026-02-14T00:59:55.569353+00:00'
+duration_minutes: 35.60335883333333
+---
+
+# Add event replay visualization
+
+## Description
+Create visual timeline showing event sequence with flow visualization. Display message exchanges, tool calls, and state transitions in an intuitive visual format.
+
+## Acceptance Criteria
+- [ ] Create timeline component with event nodes
+- [ ] Visualize user/assistant message exchange flow
+- [ ] Show tool call execution with duration
+- [ ] Display LLM request/response timing
+- [ ] Add event grouping by conversation turn
+- [ ] Implement zoom in/out for timeline
+- [ ] Add event detail popup on hover/click
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/events/replay.ex`, `lib/pag_server/schema/event.ex`, `lib/pag_server/schema/tool_call.ex`
+- Part of epic: Conversation Replay Debugger
+- Use LiveView for interactive visualization

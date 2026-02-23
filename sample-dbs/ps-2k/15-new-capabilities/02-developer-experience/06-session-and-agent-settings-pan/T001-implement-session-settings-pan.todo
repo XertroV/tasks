@@ -1,0 +1,50 @@
+---
+id: P15.M2.E6.T001
+title: Implement session settings panel (select + edit + persist)
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E5.T002
+- P15.M2.E4.T004
+tags:
+- sessions
+- llm-params
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:46:00.922357+00:00'
+started_at: '2026-02-16T10:46:00.922357+00:00'
+completed_at: '2026-02-16T10:49:33.037594+00:00'
+duration_minutes: 3.53525315
+---
+
+# Implement session settings panel (select + edit + persist)
+
+
+
+## Requirements
+
+- Build a session settings panel that supports selecting a session and editing session-scoped runtime settings.
+- Wire persistence to existing session update endpoints/context logic.
+- Reuse validation constraints for session-level parameters (including LLM param shapes/ranges).
+- Reflect updated settings immediately in the page after save.
+
+## Acceptance Criteria
+
+- A user can select a session and view current editable session settings.
+- Valid updates persist and are visible after reload.
+- Invalid updates are rejected with field-level validation feedback.
+- Session updates do not regress existing Validation Console session behavior.
+
+## Implementation Notes
+
+- Added session selector and editable session settings form to `SettingsDashboard`.
+- Session form supports editing `name`, `status`, `model_override`, `temperature`, and `max_tokens`.
+- Persisted updates through existing schema/update pathways via `Session.update_changeset/2` and `Repo.update/1`.
+- Added field-level validation for status, temperature, and max token ranges with dirty/reset UX parity.
+- Added running-agent sync for edited session LLM params when selected session is active on a running agent.
+- Added LiveView tests in `test/pag_server_web/live/settings_dashboard_test.exs` for:
+  - successful session edit/persist flow
+  - validation failure preserving edited values
+- Regression-checked `ValidationConsole` LiveView tests to ensure session behavior remains stable.

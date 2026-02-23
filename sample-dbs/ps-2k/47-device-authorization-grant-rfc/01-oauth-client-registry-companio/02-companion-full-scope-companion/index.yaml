@@ -1,0 +1,31 @@
+id: P47.M1.E2
+name: companion:full Scope & CompanionSocket Update
+status: done
+estimate_hours: 2.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-add-companion-full-to-valid-ap.todo
+  title: Add companion:full to valid ApiKey scopes and document
+  status: pending
+  estimate_hours: 0.5
+  complexity: low
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-update-companionsocket-to-acce.todo
+  title: Update CompanionSocket to accept companion:full scope (user-scoped)
+  status: pending
+  estimate_hours: 1.5
+  complexity: medium
+  priority: high
+  depends_on:
+  - P47.M1.E2.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

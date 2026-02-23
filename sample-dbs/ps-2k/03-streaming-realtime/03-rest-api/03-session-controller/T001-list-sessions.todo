@@ -1,0 +1,90 @@
+---
+title: GET /sessions to list all sessions
+epic: P3.M3.E3-e3
+phase: P3-streaming-realtime
+created: 2026-02-05
+status: done
+priority: medium
+estimate_hours: 0.75
+depends_on:
+- P3.M3.E2.T001
+id: P3.M3.E3.T001
+claimed_by: cli-user
+claimed_at: '2026-02-08T04:25:35.403034+00:00'
+started_at: '2026-02-08T04:25:35.403034+00:00'
+completed_at: '2026-02-08T04:33:46.623577+00:00'
+duration_minutes: 8.187008866666666
+---
+
+# Task: GET /sessions to list all sessions
+
+## Context
+GET /sessions to list all sessions for Phase 3 REST API functionality.
+
+## Goal
+Implement get /sessions to list all sessions.
+
+## Requirements
+- Follow Phoenix controller patterns
+- Include comprehensive tests
+- Add proper error handling
+- Document endpoints
+
+## Implementation
+
+### File: `lib/pag_server_web/controllers/...`
+
+```elixir
+defmodule PagServerWeb...Controller do
+  use PagServerWeb, :controller
+  
+  # Implementation here
+end
+```
+
+## Acceptance Criteria
+- [ ] Endpoint functional
+- [ ] Tests passing
+- [ ] Documentation updated
+- [ ] Error cases handled
+
+## Testing
+
+```elixir
+# test/pag_server_web/controllers/...
+defmodule PagServerWeb...ControllerTest do
+  use PagServerWeb.ConnCase, async: true
+  
+  # Tests here
+end
+```
+
+## References
+- Phoenix Controllers: https://hexdocs.pm/phoenix/controllers.html
+- Plug: https://hexdocs.pm/plug/readme.html
+
+## Notes
+- Follow RESTful conventions
+- Use proper HTTP status codes
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P3.M3.E3)
+**Agent**: cli-user
+**Date**: 2026-02-08 04:25 UTC
+**Sibling tasks**: P3.M3.E3.T002, P3.M3.E3.T003, P3.M3.E3.T004, P3.M3.E3.T005, P3.M3.E3.T006
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P3.M3.E3.T001 → P3.M3.E3.T002 → P3.M3.E3.T003 → P3.M3.E3.T004 → P3.M3.E3.T005 → P3.M3.E3.T006
+Mark each done individually after completion.
+
+**Task files**:
+- P3.M3.E3.T001: .tasks/03-streaming-realtime/03-rest-api/03-session-controller/T001-list-sessions.todo
+- P3.M3.E3.T002: .tasks/03-streaming-realtime/03-rest-api/03-session-controller/T002-get-session.todo
+- P3.M3.E3.T003: .tasks/03-streaming-realtime/03-rest-api/03-session-controller/T003-fork-session.todo
+- P3.M3.E3.T004: .tasks/03-streaming-realtime/03-rest-api/03-session-controller/T004-post-sessions-endpoint-to-crea.todo
+- P3.M3.E3.T005: .tasks/03-streaming-realtime/03-rest-api/03-session-controller/T005-patch-sessions-id-endpoint-to.todo
+- P3.M3.E3.T006: .tasks/03-streaming-realtime/03-rest-api/03-session-controller/T006-delete-sessions-id-endpoint-to.todo

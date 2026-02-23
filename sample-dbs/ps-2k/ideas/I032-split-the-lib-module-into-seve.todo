@@ -1,0 +1,72 @@
+---
+id: I032
+title: Split the lib module into several small modules so it's easier to work on +
+  fewer tests at once, etc. There are 12k tests...
+status: done
+estimate_hours: 10.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- idea
+- planning
+- blocked
+blocked_reason: null
+claimed_by: null
+claimed_at: null
+started_at: null
+completed_at: '2026-02-19T15:24:42.154038+00:00'
+---
+
+# Idea Intake: Split the lib module into several small modules so it's easier to work on + fewer tests at once, etc. There are 12k tests...
+
+## Original Idea
+
+Split the lib module into several small modules so it's easier to work on + fewer tests at once, etc. There are 12k tests...
+
+## Planning Task (Equivalent of /plan-task)
+
+- Run `/plan-task "Split the lib module into several small modules so it's easier to work on + fewer tests at once, etc. There are 12k tests..."` to decompose this idea into actionable work.
+- Confirm placement in the current `.tasks` hierarchy before creating work items.
+
+## Ingest Plan Into .tasks
+
+- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.
+- Create follow-up defects with `tasks bug` when bug-style work is identified.
+- Record all created IDs below and wire dependencies.
+
+## Research Findings (2026-02-20)
+
+Investigated feasibility of splitting the lib module. Key facts:
+- 897 `.ex` files, ~245K LoC, 58 subdirectories under `lib/pag_server/`
+- 778 test files, ~15,200 test cases, 239K LoC of tests
+- Monolith (not umbrella): single Repo (176 files reference it), single PubSub, single `Application.get_env(:pag_server, ...)`
+- Bidirectional coupling between agents/sessions/tools/plugins makes true service extraction impractical at this stage
+
+**Practicality verdict: Structural lib splitting is NOT practical at this stage.**
+
+A true umbrella/service split is blocked by:
+1. **Database coupling** — 176 files share a single `PagServer.Repo`, 69 Ecto schemas all in one DB. Any split would require either a shared-DB library (awkward) or full schema decomposition per service (massive effort).
+2. **PubSub coupling** — 30+ files across all subsystems share `PagServer.PubSub` for real-time events. Splitting breaks all cross-subsystem broadcasts.
+3. **Config coupling** — 278+ `Application.get_env(:pag_server, ...)` calls; no per-subsystem config namespacing.
+4. **Bidirectional dependencies** — `agents` <-> `sessions`, `agents` <-> `tools`, `tools` <-> `plugins`. These circular references make clean boundary enforcement impossible without significant refactoring.
+5. **Plugin system is already compile-time** — plugins have no own `mix.exs`, are compiled directly into the host app, and inject routes at compile time. They are not truly isolated.
+
+Even the most well-isolated modules (`events`, `auth`, `blackboard`) still depend on the shared Repo and Schema, so they can't be cleanly extracted without a shared core library.
+
+**Decision**: Pursue Option B (test DX improvements) rather than structural splitting.
+Better test aliases address the immediate pain with near-zero risk and zero architectural changes.
+
+## Created Work Items
+
+- P41 (phase): Developer Experience: Test Aliases & CI Partitioning
+  - P41.M1.E1.T001: Add test aliases for the 43 subdirectories currently without one
+  - P41.M1.E1.T002: Add grouped meta-aliases for common developer workflows (test.core, test.provider, test.infra, test.fast)
+  - P41.M2.E1.T001: Add parallel test partitioning to GitHub Actions CI (4 partitions)
+  - P41.M2.E2.T001: Add mix test.changed alias / script for targeted local runs
+
+## Completion Criteria
+
+- [x] Idea has been decomposed into concrete `.tasks` work items.
+- [x] New items include clear acceptance criteria and dependencies.
+- [x] This idea intake is updated with created IDs and marked done.

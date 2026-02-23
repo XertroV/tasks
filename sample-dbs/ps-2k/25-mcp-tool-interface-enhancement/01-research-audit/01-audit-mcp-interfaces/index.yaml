@@ -1,0 +1,31 @@
+id: P25.M1.E1
+name: Audit MCP Tool Interfaces
+status: pending
+estimate_hours: 12.0
+complexity: medium
+depends_on: []
+locked: false
+tasks:
+- id: T001
+  file: T001-audit-opencode-codex-crush-mcp.todo
+  title: Audit opencode/codex/crush MCP tool interfaces from ref-projects/
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on: []
+- id: T002
+  file: T002-document-best-patterns-from-cli.todo
+  title: Document best patterns from each CLI tool interface audit
+  status: pending
+  estimate_hours: 6.0
+  complexity: medium
+  priority: high
+  depends_on:
+  - P25.M1.E1.T001
+stats:
+  total: 2
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 2

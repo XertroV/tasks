@@ -1,0 +1,18 @@
+---
+id: B125
+title: The validation console has msgs w/ tokens which seems like a useless or incorrect
+  measurement. Also stored tokens is unclear.
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T01:31:10.200129+00:00'
+started_at: '2026-02-18T01:31:10.200129+00:00'
+completed_at: '2026-02-18T01:33:39.427605+00:00'
+duration_minutes: 2.48712445
+---
+
+The validation console has msgs w/ tokens which seems like a useless or incorrect measurement. Also stored tokens is unclear.

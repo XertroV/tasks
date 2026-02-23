@@ -1,0 +1,28 @@
+---
+id: P55.M4.E2.T003
+title: Composer, approval workflow, and fork tests
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on: []
+tags:
+- tests
+- composer
+- approvals
+- fork
+claimed_by: cli-user
+claimed_at: '2026-02-22T12:15:57.972151+00:00'
+started_at: '2026-02-22T12:15:57.972151+00:00'
+completed_at: '2026-02-22T12:33:19.297430+00:00'
+duration_minutes: 17.355421166666666
+---
+Test composer: submit calls AgentServer.queue_message_by_id (mock or verify side effect), disabled while processing, empty submit rejected. Test approvals: PubSub approval event shows banner, approve button calls ApprovalManager.approve, deny button calls ApprovalManager.deny. Test fork: fork creates new session and navigates to it.
+
+## Acceptance Criteria
+- Composer submit tested (with mock AgentServer)
+- Disabled state tested
+- Empty submit rejected
+- Approval banner appears on event
+- Approve/deny buttons work
+- Fork creates and navigates

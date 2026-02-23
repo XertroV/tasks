@@ -1,0 +1,46 @@
+---
+id: P39.M2.E2.T003
+title: Implement CompanionChannel
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: high
+depends_on:
+- P39.M2.E1.T001
+- P39.M2.E1.T002
+- P39.M2.E2.T001
+tags:
+- companion
+- channel
+- protocol
+claimed_by: cli-user
+claimed_at: '2026-02-19T11:32:11.145751+00:00'
+started_at: '2026-02-19T11:32:11.145751+00:00'
+completed_at: '2026-02-19T11:40:22.044959+00:00'
+duration_minutes: 8.18165335
+---
+Create the Phoenix Channel handling the bidirectional companion protocol.
+
+## New file
+lib/pag_server_web/channels/companion_channel.ex
+
+## Design (from companion-support plan §6)
+- Topic: 'companion:<workspace_id>'
+- Join: verify socket.assigns.workspace_id matches topic, init assigns (pending_call_ids MapSet, registered_tools list)
+- Client -> Server events:
+  - 'register' %{tools: [...]} — filter against routable_tools allowlist, call CompanionRegistry.register/3
+  - 'tool_result' %{call_id, output, exit_code, stderr} — call PendingCalls.resolve/2
+  - 'tool_error' %{call_id, error} — call PendingCalls.reject/2
+  - 'pong' — no-op keepalive response
+- Server -> Client (via handle_info):
+  - {:send_tool_call, call_id, tool_name, arguments} — push 'tool_call' to client
+- terminate/2: unregister from registry, reject all pending calls with 'companion disconnected'
+- Routable tools allowlist: execute_shell, read_file, write_file, list_directory, glob, regex_search
+
+## Acceptance criteria
+- [ ] Join with mismatched workspace_id is rejected
+- [ ] 'register' event filters tools to allowlist and stores in registry
+- [ ] 'tool_result' event resolves pending calls
+- [ ] 'tool_error' event rejects pending calls
+- [ ] {:send_tool_call, ...} handle_info pushes 'tool_call' to client
+- [ ] terminate/2 unregisters and rejects all pending calls

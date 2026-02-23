@@ -1,0 +1,130 @@
+---
+id: P8.M2.E3.T001
+title: Create session mapper
+status: done
+estimate_hours: 1
+complexity: low
+priority: high
+depends_on:
+- P8.M2.E1.T002
+tags:
+- integrations
+- telegram
+- sessions
+- mapping
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:19:21.584675+00:00'
+started_at: '2026-02-11T02:19:21.584675+00:00'
+completed_at: '2026-02-11T02:19:24.921725+00:00'
+duration_minutes: 0.0556173
+---
+
+# Create session mapper
+
+Map Telegram chats to agent sessions with persistent storage.
+
+## Requirements
+
+- [ ] Create `lib/pag_server/integrations/telegram/session_mapper.ex` (~80 LoC)
+- [ ] Implement `get_or_create/2` to fetch or create session for chat
+- [ ] Add Ecto schema for `telegram_sessions` table (~30 LoC)
+- [ ] Store chat_id, user_id, agent_id, session_id mapping
+- [ ] Create database migration for telegram_sessions table
+- [ ] Handle session creation with default agent config
+- [ ] Add `get_session/1` and `update_session/2` functions
+- [ ] Cache active sessions in ETS for fast lookup
+
+## Acceptance Criteria
+
+- [ ] Chat IDs consistently map to same agent session
+- [ ] New chats create agent with default configuration
+- [ ] Database persists mappings across restarts
+- [ ] ETS cache reduces database queries for active chats
+- [ ] `get_or_create/2` is idempotent (safe for concurrent calls)
+- [ ] Unit tests cover creation and retrieval
+- [ ] Migration runs cleanly on fresh database
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/integrations.md` lines 208-209 (Session mapping)
+
+**Key Points**:
+- Each Telegram chat has one agent session
+- Session persists across bot restarts
+- Both 1:1 and group chats supported
+- Default agent config from application config
+
+## Notes
+
+Schema structure:
+```elixir
+defmodule PAGServer.Integrations.Telegram.TelegramSession do
+  use Ecto.Schema
+
+  schema "telegram_sessions" do
+    field :chat_id, :integer
+    field :user_id, :integer
+    field :chat_type, :string  # "private" | "group" | "supergroup"
+    field :agent_id, :string
+    field :session_id, :string
+    field :metadata, :map
+
+    timestamps()
+  end
+end
+```
+
+Mapper implementation:
+```elixir
+defmodule PAGServer.Integrations.Telegram.SessionMapper do
+  alias PAGServer.Integrations.Telegram.TelegramSession
+  alias PAGServer.{Agent, Session}
+
+  def get_or_create(chat_id, user) do
+    case Repo.get_by(TelegramSession, chat_id: chat_id) do
+      nil -> create_session(chat_id, user)
+      session -> {:ok, session}
+    end
+  end
+
+  defp create_session(chat_id, user) do
+    {:ok, agent_id} = Agent.create(default_config())
+    {:ok, session} = Session.create(agent_id)
+
+    %TelegramSession{}
+    |> TelegramSession.changeset(%{
+      chat_id: chat_id,
+      user_id: user.id,
+      chat_type: determine_chat_type(user),
+      agent_id: agent_id,
+      session_id: session.id
+    })
+    |> Repo.insert()
+  end
+
+  defp default_config do
+    Application.get_env(:pag_server, :telegram_default_agent, %{
+      llm_provider: :anthropic,
+      model: "claude-3-5-sonnet-20241022"
+    })
+  end
+end
+```
+
+Migration:
+```elixir
+create table(:telegram_sessions) do
+  add :chat_id, :bigint, null: false
+  add :user_id, :bigint, null: false
+  add :chat_type, :string, null: false
+  add :agent_id, :string, null: false
+  add :session_id, :string, null: false
+  add :metadata, :map, default: %{}
+
+  timestamps()
+end
+
+create unique_index(:telegram_sessions, [:chat_id])
+create index(:telegram_sessions, [:agent_id])
+```

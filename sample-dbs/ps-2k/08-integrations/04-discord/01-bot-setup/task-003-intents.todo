@@ -1,0 +1,81 @@
+---
+id: P8.M4.E1.T003
+title: Set up message intents
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on:
+- P8.M4.E1.T002
+tags:
+- intents
+- permissions
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:19:34.827717+00:00'
+started_at: '2026-02-11T02:19:34.827717+00:00'
+completed_at: '2026-02-11T02:19:41.119195+00:00'
+duration_minutes: 0.10485781666666667
+---
+
+# Set up message intents
+
+Configure Discord Gateway intents to receive message events.
+Enable GUILD_MESSAGES, DIRECT_MESSAGES, and MESSAGE_CONTENT intents
+for bot to read and respond to messages.
+
+## Acceptance Criteria
+
+- [ ] Gateway intents configured in config
+- [ ] MESSAGE_CREATE events received
+- [ ] Guild messages accessible
+- [ ] Direct messages accessible
+- [ ] Message content readable (requires privileged intent)
+
+## Notes
+
+Reference: .plan/2026-02-05-velvet-cascade/integrations.md:298-315
+
+config/runtime.exs:
+```elixir
+config :nostrum,
+  token: System.get_env("DISCORD_BOT_TOKEN"),
+  num_shards: :auto,
+  gateway_intents: [
+    :guilds,
+    :guild_messages,
+    :direct_messages,
+    :message_content  # Privileged intent
+  ]
+```
+
+Important: MESSAGE_CONTENT is a privileged intent that must be enabled
+in Discord Developer Portal > Bot settings > Privileged Gateway Intents
+
+The bot needs these permissions to:
+- Detect mentions (@bot)
+- Read DM channel messages
+- Parse message content for commands
+
+Update handle_event to log received events for verification.
+
+
+## Delegation Instructions
+
+**Delegated to subagent by**: cli-user (primary agent)
+**Delegation date**: 2026-02-11 02:19 UTC
+**Primary task**: P8.M2.E2.T001 - Implement message handler
+
+**Instructions**:
+This task was claimed as part of a multi-task batch. The primary agent (cli-user)
+should spawn a subagent to complete this task in parallel.
+
+**Recommended approach**:
+1. Use the Task tool with subagent_type to create a dedicated agent
+2. Provide context from this task file as the prompt
+3. Grant necessary tools for task completion
+4. Monitor subagent progress
+5. Aggregate results upon completion
+
+**Independence verification**:
+- Different epic: ✓ (P8.M4.E1 vs P8.M2.E2)
+- No dependency chain: ✓ (verified at claim time)

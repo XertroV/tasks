@@ -1,0 +1,338 @@
+---
+id: P4.M2.E8.T004
+title: Implement text_diff tool
+status: done
+estimate_hours: 1.5
+complexity: medium
+priority: low
+depends_on: []
+tags:
+- tools
+- text
+- builtin
+claimed_by: cli-user
+claimed_at: '2026-02-05T23:34:10.989902'
+started_at: '2026-02-05T23:34:10.989902'
+completed_at: '2026-02-05T23:41:33.286769'
+duration_minutes: 7.371614283333333
+---
+
+# Implement text_diff tool
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/tools/builtin/text_diff.ex` (~200 LoC)
+- [ ] Implement Tool behaviour (name, schema, execute)
+- [ ] Generate unified diff format (like `diff -u`)
+- [ ] Support line-by-line comparison
+- [ ] Support context lines (lines around changes)
+- [ ] Return structured diff with hunks, additions, deletions
+- [ ] Support character-level diff mode for small texts
+- [ ] Use Myers diff algorithm (via external library or custom implementation)
+- [ ] Truncate output at 5MB
+
+## Acceptance Criteria
+
+- [ ] Compares two texts and returns differences
+- [ ] Returns unified diff format (human-readable)
+- [ ] Returns structured diff with hunks: line ranges, added lines, removed lines, context lines
+- [ ] Supports configurable context lines (default 3)
+- [ ] Supports ignore_whitespace option (ignore leading/trailing whitespace)
+- [ ] Supports ignore_case option (case-insensitive comparison)
+- [ ] Returns statistics: lines added, lines removed, lines changed, lines unchanged
+- [ ] Handles empty inputs gracefully (empty string, one empty one not)
+- [ ] Truncates diff output at 5MB
+- [ ] Test coverage: identical texts, completely different, partial differences, empty inputs, ignore_whitespace, ignore_case, large texts
+- [ ] Performance: efficiently handles multi-MB texts
+
+## Context
+
+**Plan References**:
+- `.plan/2026-02-05-velvet-cascade/architecture.md` lines 343-355 (Builtin tools)
+
+**Key Points**:
+- Unified diff format is standard and LLM-friendly
+- Useful for comparing LLM outputs, file versions, etc.
+- Myers algorithm is efficient O(ND) for most cases
+- Consider using `:diffy` or `:diff` library if available
+- Structured output enables programmatic analysis
+
+## Notes
+
+Implementation pattern:
+```elixir
+defmodule PAGServer.Tools.Builtin.TextDiff do
+  @behaviour PAGServer.Tools.Tool
+  @max_diff_bytes 5_000_000  # 5MB
+  @default_context_lines 3
+
+  @impl true
+  def name, do: "text_diff"
+
+  @impl true
+  def schema do
+    %ToolSchema{
+      name: "text_diff",
+      description: "Compare two texts and return differences in unified diff format",
+      parameters: %{
+        type: "object",
+        properties: %{
+          text1: %{
+            type: "string",
+            description: "Original text (left side)"
+          },
+          text2: %{
+            type: "string",
+            description: "Modified text (right side)"
+          },
+          context_lines: %{
+            type: "integer",
+            description: "Number of context lines around changes (default: 3)"
+          },
+          ignore_whitespace: %{
+            type: "boolean",
+            description: "Ignore leading/trailing whitespace on lines (default: false)"
+          },
+          ignore_case: %{
+            type: "boolean",
+            description: "Case-insensitive comparison (default: false)"
+          }
+        },
+        required: ["text1", "text2"]
+      }
+    }
+  end
+
+  @impl true
+  def execute(%{"text1" => text1, "text2" => text2} = args, _context) do
+    lines1 = prepare_lines(text1, args)
+    lines2 = prepare_lines(text2, args)
+    
+    diff = compute_diff(lines1, lines2, args)
+    unified = generate_unified_diff(diff, text1, text2, args)
+    stats = compute_statistics(diff)
+    
+    {:ok, %{
+      unified_diff: truncate_diff(unified),
+      statistics: stats,
+      identical: stats.added == 0 and stats.removed == 0
+    }}
+  end
+
+  defp prepare_lines(text, args) do
+    lines = String.split(text, "\n", trim: false)
+    
+    lines
+    |> maybe_trim_whitespace(Map.get(args, "ignore_whitespace", false))
+    |> maybe_downcase(Map.get(args, "ignore_case", false))
+  end
+
+  defp maybe_trim_whitespace(lines, true), do: Enum.map(lines, &String.trim/1)
+  defp maybe_trim_whitespace(lines, false), do: lines
+
+  defp maybe_downcase(lines, true), do: Enum.map(lines, &String.downcase/1)
+  defp maybe_downcase(lines, false), do: lines
+
+  defp compute_diff(lines1, lines2, _args) do
+    # Use Myers diff algorithm via List diff (simplified)
+    # For production, consider using :diffy library
+    myers_diff(lines1, lines2)
+  end
+
+  defp myers_diff(list1, list2) do
+    # Simplified Myers diff - for production use a library
+    # This implementation uses List comprehension for basic diff
+    
+    # Build edit script
+    build_edit_script(list1, list2, 0, 0, [])
+  end
+
+  defp build_edit_script([], [], _i, _j, acc), do: Enum.reverse(acc)
+  
+  defp build_edit_script([h | t1], [h | t2], i, j, acc) do
+    # Equal lines
+    build_edit_script(t1, t2, i + 1, j + 1, [{:equal, i, j, h} | acc])
+  end
+  
+  defp build_edit_script([h1 | t1], [h2 | t2], i, j, acc) do
+    # Different lines - mark as delete + insert
+    acc = [{:delete, i, h1} | acc]
+    acc = [{:insert, j, h2} | acc]
+    build_edit_script(t1, t2, i + 1, j + 1, acc)
+  end
+  
+  defp build_edit_script([], [h | t2], i, j, acc) do
+    # Insert remaining
+    build_edit_script([], t2, i, j + 1, [{:insert, j, h} | acc])
+  end
+  
+  defp build_edit_script([h | t1], [], i, j, acc) do
+    # Delete remaining
+    build_edit_script(t1, [], i + 1, j, [{:delete, i, h} | acc])
+  end
+
+  defp generate_unified_diff(diff, text1, text2, args) do
+    context_lines = Map.get(args, "context_lines", @default_context_lines)
+    
+    # Group diff into hunks
+    hunks = group_into_hunks(diff, context_lines)
+    
+    # Generate unified diff format
+    header = "--- text1\n+++ text2\n"
+    
+    hunks_text = 
+      hunks
+      |> Enum.map(&format_hunk/1)
+      |> Enum.join("\n")
+    
+    header <> hunks_text
+  end
+
+  defp group_into_hunks(diff, context_lines) do
+    # Group consecutive changes with context
+    # This is simplified - production version would be more sophisticated
+    
+    diff
+    |> Enum.chunk_while(
+      {[], 0},
+      fn item, {current_hunk, context_count} ->
+        case item do
+          {:equal, _, _, _} when context_count < context_lines ->
+            {:cont, {[item | current_hunk], context_count + 1}}
+          {:equal, _, _, _} ->
+            if current_hunk == [] do
+              {:cont, {[], 0}}
+            else
+              {:cont, Enum.reverse(current_hunk), {[item], 1}}
+            end
+          {:delete, _, _} ->
+            {:cont, {[item | current_hunk], 0}}
+          {:insert, _, _} ->
+            {:cont, {[item | current_hunk], 0}}
+        end
+      end,
+      fn {current_hunk, _} ->
+        if current_hunk == [] do
+          {:cont, []}
+        else
+          {:cont, Enum.reverse(current_hunk), []}
+        end
+      end
+    )
+  end
+
+  defp format_hunk(hunk) do
+    {start1, count1, start2, count2} = calculate_hunk_range(hunk)
+    
+    header = "@@ -#{start1},#{count1} +#{start2},#{count2} @@\n"
+    
+    lines = 
+      hunk
+      |> Enum.map(fn
+        {:equal, _, _, line} -> " #{line}"
+        {:delete, _, line} -> "-#{line}"
+        {:insert, _, line} -> "+#{line}"
+      end)
+      |> Enum.join("\n")
+    
+    header <> lines
+  end
+
+  defp calculate_hunk_range(hunk) do
+    deletes = Enum.count(hunk, fn {op, _, _} -> op == :delete end)
+    inserts = Enum.count(hunk, fn {op, _, _} -> op == :insert end)
+    equals = Enum.count(hunk, fn {op, _, _, _} -> op == :equal end)
+    
+    start1 = 
+      hunk
+      |> Enum.find_value(fn
+        {:delete, i, _} -> i + 1
+        {:equal, i, _, _} -> i + 1
+        _ -> nil
+      end) || 1
+    
+    start2 = 
+      hunk
+      |> Enum.find_value(fn
+        {:insert, j, _} -> j + 1
+        {:equal, _, j, _} -> j + 1
+        _ -> nil
+      end) || 1
+    
+    {start1, deletes + equals, start2, inserts + equals}
+  end
+
+  defp compute_statistics(diff) do
+    added = Enum.count(diff, fn {op, _, _} -> op == :insert end)
+    removed = Enum.count(diff, fn {op, _, _} -> op == :delete end)
+    unchanged = Enum.count(diff, fn {op, _, _, _} -> op == :equal end)
+    
+    %{
+      added: added,
+      removed: removed,
+      unchanged: unchanged,
+      total_changes: added + removed
+    }
+  end
+
+  defp truncate_diff(diff) when byte_size(diff) > @max_diff_bytes do
+    binary_part(diff, 0, @max_diff_bytes) <>
+      "\n\n[Diff truncated at 5MB]"
+  end
+  defp truncate_diff(diff), do: diff
+end
+```
+
+Example usage:
+```json
+{
+  "text1": "line 1\nline 2\nline 3\nline 4",
+  "text2": "line 1\nline 2 modified\nline 3\nline 5",
+  "context_lines": 1
+}
+```
+
+Example response:
+```json
+{
+  "unified_diff": "--- text1\n+++ text2\n@@ -1,4 +1,4 @@\n line 1\n-line 2\n+line 2 modified\n line 3\n-line 4\n+line 5",
+  "statistics": {
+    "added": 2,
+    "removed": 2,
+    "unchanged": 2,
+    "total_changes": 4
+  },
+  "identical": false
+}
+```
+
+Example with identical texts:
+```json
+{
+  "text1": "same content",
+  "text2": "same content"
+}
+```
+
+Response:
+```json
+{
+  "unified_diff": "--- text1\n+++ text2\n",
+  "statistics": {
+    "added": 0,
+    "removed": 0,
+    "unchanged": 1,
+    "total_changes": 0
+  },
+  "identical": true
+}
+```
+
+Security considerations:
+- No regex = no ReDoS risk
+- Truncate output to prevent memory exhaustion
+- Myers algorithm is O(ND) where D = edit distance
+- Handle very large inputs gracefully
+- Consider using battle-tested diff library (`:diffy`)

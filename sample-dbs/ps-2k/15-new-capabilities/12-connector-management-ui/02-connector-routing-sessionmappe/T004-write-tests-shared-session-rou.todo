@@ -1,0 +1,17 @@
+---
+id: P15.M12.E2.T004
+title: 'Write tests: shared-session routing and per-chat fallback'
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: high
+depends_on:
+- P15.M12.E2.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-18T06:45:12.285561+00:00'
+started_at: '2026-02-18T06:45:12.285561+00:00'
+completed_at: '2026-02-18T07:25:26.759880+00:00'
+duration_minutes: 40.24123848333333
+---
+test/pag_server/integrations/telegram/session_mapper_test.exs: Add tests for (1) connector with session_id routes multiple different chat_ids into the SAME session; (2) TelegramChatMapping records are created per chat_id all pointing at the same session_id; (3) reply metadata contains telegram_reply_chat_id; (4) connector without session_id (nil) still creates a per-chat session (regression test for old behavior); (5) connector re-bound to a new session routes new messages to new session while old TelegramChatMappings remain valid. Mock Telegram API calls. Keep async: true, unique connector names.

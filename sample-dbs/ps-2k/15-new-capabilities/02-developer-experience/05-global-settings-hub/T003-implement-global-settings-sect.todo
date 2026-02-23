@@ -1,0 +1,51 @@
+---
+id: P15.M2.E5.T003
+title: Implement global settings section with save/reload states
+status: done
+estimate_hours: 2.0
+complexity: medium
+priority: high
+depends_on:
+- P15.M2.E5.T002
+- P11.M5.E2.T001
+tags:
+- system-config
+- platform-config
+- frontend
+claimed_by: cli-user
+claimed_at: '2026-02-16T10:35:56.340207+00:00'
+started_at: '2026-02-16T10:35:56.340207+00:00'
+completed_at: '2026-02-16T10:37:56.365951+00:00'
+duration_minutes: 2.00042855
+---
+
+# Implement global settings section with save/reload states
+
+
+
+## Requirements
+
+- Implement the global settings section UI with data loading from existing platform/system configuration sources.
+- Support editing and persisting a focused set of global runtime controls (for example default provider/model and runtime defaults).
+- Add save/reload feedback states and deterministic fallback defaults for missing values.
+- Ensure failed saves surface actionable errors without losing unsaved form state.
+
+## Acceptance Criteria
+
+- Global settings load with current persisted values and sensible defaults when unset.
+- Users can update and save supported global settings from the new settings page.
+- Successful saves refresh the effective values shown in the UI.
+- Failed saves keep the edited form state and show clear validation/transport error feedback.
+
+## Implementation Notes
+
+- Implemented editable global settings form in `lib/pag_server_web/live/settings_dashboard.ex`.
+- Added load/save/reset flow with persisted-state refresh and inline notice/error messaging.
+- Wired platform persistence through `PagServer.PlatformConfig` for keys:
+  - `llm.default_provider`
+  - `llm.default_model`
+  - `features.streaming_enabled`
+  - `features.tools_enabled`
+  - `features.mcp_enabled`
+- Added validation for required provider/model and retained invalid form state on error.
+- Added/expanded coverage in `test/pag_server_web/live/settings_dashboard_test.exs` for save success and validation failure.

@@ -1,0 +1,19 @@
+---
+id: B023
+title: slack events processing should not crash on option shape or malformed user
+  maps
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: critical
+depends_on: []
+tags:
+- slack
+- reliability
+claimed_by: cli-user
+claimed_at: '2026-02-15T17:33:25.814042+00:00'
+started_at: '2026-02-15T17:33:25.814042+00:00'
+completed_at: '2026-02-15T17:40:18.977808+00:00'
+duration_minutes: 6.886062616666666
+---
+Fix Slack event processing crashes from argument shape mismatches (e.g., Keyword.get on non-keyword and map assumptions in Slack event handlers). Ensure events are handled robustly and sessions can still be created. Add focused controller/integration regression tests.

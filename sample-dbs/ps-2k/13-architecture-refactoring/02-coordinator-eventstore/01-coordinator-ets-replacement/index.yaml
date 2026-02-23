@@ -1,0 +1,45 @@
+id: P13.M2.E1
+name: Coordinator ETS Replacement
+status: pending
+estimate_hours: 4.0
+complexity: medium
+depends_on: []
+tasks:
+- id: T001
+  file: T001-design-partitioned-registry-fo.todo
+  title: Design partitioned Registry for parent-child hierarchy
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T002
+  file: T002-implement-new-coordinator-with.todo
+  title: Implement new Coordinator with Registry backend
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T003
+  file: T003-migrate-existing-coordinator-c.todo
+  title: Migrate existing Coordinator callers
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+- id: T004
+  file: T004-add-performance-benchmarks.todo
+  title: Add performance benchmarks
+  status: pending
+  estimate_hours: 1.0
+  complexity: medium
+  priority: medium
+  depends_on: []
+stats:
+  total: 4
+  done: 0
+  in_progress: 0
+  blocked: 0
+  pending: 4

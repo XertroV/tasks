@@ -1,0 +1,59 @@
+---
+id: P9.M5.E4.T001
+title: Implement plugin agent spawning via Coordinator integration
+status: done
+estimate_hours: 2.0
+complexity: high
+priority: medium
+depends_on:
+- P9.M5.E1.T004
+tags:
+- agents
+- spawn
+claimed_by: cli-user
+claimed_at: '2026-02-11T02:25:00.968438+00:00'
+started_at: '2026-02-11T02:25:00.968438+00:00'
+completed_at: '2026-02-11T02:35:12.722507+00:00'
+duration_minutes: 10.195900983333333
+---
+
+# Implement plugin agent spawning via Coordinator integration
+
+
+
+## Requirements
+
+- [ ] Create `lib/pag_server/plugins/agent_spawner.ex` module
+- [ ] Allow plugins to spawn agents via existing `Agents.Coordinator`:
+  - [ ] `spawn_agent/3` - (plugin_name, agent_config, opts)
+  - [ ] Spawned agents are children of a plugin-managed parent agent
+  - [ ] Plugin parent agent created lazily on first spawn per plugin
+- [ ] Enforce capability limits per plugin:
+  - [ ] Configurable max concurrent agents per plugin (default 5)
+  - [ ] Return `{:error, :agent_limit_exceeded}` when limit reached
+  - [ ] Config key: `:pag_server, :plugins, :max_agents_per_plugin`
+- [ ] Plugin-spawned agents inherit plugin-scoped capabilities:
+  - [ ] Only access tools provided by the spawning plugin
+  - [ ] Inherit plugin's capability grants and permissions
+  - [ ] Cannot escalate beyond plugin's declared capabilities
+- [ ] Track agent lineage:
+  - [ ] Record plugin_name, parent_agent_id, spawn_timestamp in agent metadata
+  - [ ] Provide `list_agents/1` to list all agents spawned by a plugin
+- [ ] Clean up plugin-spawned agents on plugin disable
+
+## Acceptance Criteria
+
+- [ ] Plugins can spawn child agents via Coordinator with correct parent relationship
+- [ ] Agent limit per plugin is enforced (excess spawns rejected)
+- [ ] Spawned agents only have access to the plugin's own tools and capabilities
+- [ ] Agent lineage is tracked and queryable by plugin name
+- [ ] Disabling a plugin terminates all its spawned agents
+- [ ] Unit tests cover: agent spawning, limit enforcement, capability scoping, cleanup on disable
+
+## Context
+
+- **New module**: `lib/pag_server/plugins/agent_spawner.ex`
+- **Integrates with**: `PagServer.Agents.Coordinator` for agent hierarchy, `PagServer.Agents.Supervisor` for process management
+- **Depends on**: `PagServer.Plugins.Registry` (E1.T004), `PagServer.Security.Capabilities`
+- **Used by**: `PagServer.Plugins.API` (E4.T006)
+- **Capability model**: Spawned agents get a restricted subset of capabilities (plugin-scoped)

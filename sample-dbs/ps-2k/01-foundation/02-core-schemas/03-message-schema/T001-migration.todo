@@ -1,0 +1,96 @@
+---
+status: done
+claimed_by: claude-1
+claimed_at: '2026-02-05T08:17:52.617964'
+started_at: '2026-02-05T08:17:52.617964'
+completed_at: '2026-02-05T08:19:26.082955'
+---
+# Task: Create messages table migration
+# ID: P1.M2.E3.T001
+# Status: pending
+# Estimate: 1.5h
+# Complexity: medium
+# Priority: high
+
+## Description
+Create Ecto migration for the messages table with linked list structure for message chains and content hashing for integrity verification.
+
+## Context
+Messages form an immutable linked list structure where each message references its parent via `parent_message_id`. This enables session forking and deterministic replay. See `.plan/2026-02-05-velvet-cascade/index.md` lines 224-238 and 331-361 for the complete message chain architecture.
+
+## Requirements
+
+### Migration File
+Create `priv/repo/migrations/YYYYMMDDHHMMSS_create_messages.exs`
+
+### Schema Fields
+```elixir
+create table(:messages, primary_key: false) do
+  add :id, :binary_id, primary_key: true
+  add :session_id, references(:sessions, type: :binary_id, on_delete: :cascade), null: false
+  add :role, :string, null: false  # user, assistant, system, tool_result
+  add :content, :text, null: false
+  add :parent_message_id, references(:messages, type: :binary_id, on_delete: :nilify_all)
+  add :sequence_num, :integer, null: false
+  add :content_hash, :string  # SHA-256 for integrity verification
+  add :thinking_content, :text  # Claude's <think> content
+  add :tool_calls, :map  # Array of tool calls in this message
+  add :token_count, :integer
+  add :model_used, :string  # Which model generated this response
+
+  timestamps(type: :utc_datetime_usec)
+end
+```
+
+### Indexes
+```elixir
+create index(:messages, [:session_id, :sequence_num])
+create index(:messages, [:parent_message_id])
+```
+
+### Constraints
+- Self-referential foreign key for `parent_message_id` enables linked list structure
+- `session_id` cascade delete - when session is deleted, all messages are deleted
+- `parent_message_id` nilify on delete - if parent is deleted, maintain integrity
+
+### Role Values
+Valid role values: `"user"`, `"assistant"`, `"system"`, `"tool_result"`
+
+## Implementation Steps
+1. Generate migration: `mix ecto.gen.migration create_messages`
+2. Implement the `change/0` function with table creation
+3. Add composite index on `[:session_id, :sequence_num]` for efficient sequential access
+4. Add index on `[:parent_message_id]` for chain traversal
+5. Ensure timestamps use `:utc_datetime_usec` for microsecond precision
+
+## Testing Plan
+- Run migration up: `mix ecto.migrate`
+- Verify table structure in database
+- Test migration rollback: `mix ecto.rollback`
+- Verify clean rollback
+
+## Acceptance Criteria
+- [ ] Migration file created in `priv/repo/migrations/`
+- [ ] Messages table created with all required fields
+- [ ] Self-referential foreign key for `parent_message_id` works correctly
+- [ ] Indexes created on `[:session_id, :sequence_num]` and `[:parent_message_id]`
+- [ ] Messages can form linked list structure (parent references)
+- [ ] Session forking works (multiple messages can reference same parent)
+- [ ] Hash chain verification is possible via `content_hash` field
+- [ ] Migration can be rolled back cleanly
+- [ ] Foreign key constraints work as expected (cascade/nilify)
+
+## Dependencies
+- Requires sessions table to exist (P1.M2.E2)
+
+## References
+- Architecture: `.plan/2026-02-05-velvet-cascade/index.md:224-238` (schema)
+- Message chain diagram: `.plan/2026-02-05-velvet-cascade/index.md:331-361`
+- AGENTS.md for memory efficiency requirements
+
+## Notes
+- The `parent_message_id` creates a linked list where each message points to its predecessor
+- When a session forks, new messages in the forked session will reference messages from the parent session
+- The `content_hash` field enables verification that message content hasn't been tampered with
+- `tool_calls` map stores the array of tool invocations for this message
+- `thinking_content` stores Claude's extended thinking content separately from user-visible content

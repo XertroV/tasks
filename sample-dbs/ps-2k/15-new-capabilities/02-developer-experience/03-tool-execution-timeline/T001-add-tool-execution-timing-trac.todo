@@ -1,0 +1,54 @@
+---
+id: P15.M2.E3.T001
+title: Add tool execution timing tracking
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-13T13:54:55.248664+00:00'
+started_at: '2026-02-13T13:54:55.248664+00:00'
+completed_at: '2026-02-13T14:25:35.199045+00:00'
+duration_minutes: 30.6658395
+---
+
+# Add tool execution timing tracking
+
+## Description
+Implement comprehensive timing tracking for tool executions. Track start time, end time, duration, and resource usage for each tool call to enable performance analysis.
+
+## Acceptance Criteria
+- [ ] Add timing fields to tool execution events
+- [ ] Track: started_at, completed_at, duration_ms
+- [ ] Record tool-specific metrics (e.g., bytes read for file tools)
+- [ ] Emit telemetry events for tool timing
+- [ ] Store timing data in tool_calls table
+- [ ] Add timing aggregation queries (avg, p95, p99 per tool)
+- [ ] Tests pass
+- [ ] Lint passes
+
+## Context
+- Related files: `lib/pag_server/agents/tool_runner.ex`, `lib/pag_server/schema/tool_call.ex`, `lib/pag_server/events/event.ex`
+- Part of epic: Tool Execution Timeline
+- Hook into existing tool execution pipeline
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P15.M2.E3)
+**Agent**: cli-user
+**Date**: 2026-02-13 13:54 UTC
+**Sibling tasks**: P15.M2.E3.T002, P15.M2.E3.T003
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P15.M2.E3.T001 → P15.M2.E3.T002 → P15.M2.E3.T003
+Mark each done individually after completion.
+
+**Task files**:
+- P15.M2.E3.T001: .tasks/15-new-capabilities/02-developer-experience/03-tool-execution-timeline/T001-add-tool-execution-timing-trac.todo
+- P15.M2.E3.T002: .tasks/15-new-capabilities/02-developer-experience/03-tool-execution-timeline/T002-create-cost-breakdown-visualiz.todo
+- P15.M2.E3.T003: .tasks/15-new-capabilities/02-developer-experience/03-tool-execution-timeline/T003-add-timeline-component-to-dash.todo

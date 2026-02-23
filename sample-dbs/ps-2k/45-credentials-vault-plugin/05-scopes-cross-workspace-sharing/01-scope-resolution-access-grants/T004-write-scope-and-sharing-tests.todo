@@ -1,0 +1,17 @@
+---
+id: P45.M5.E1.T004
+title: Write scope and sharing tests
+status: done
+estimate_hours: 1.0
+complexity: medium
+priority: medium
+depends_on:
+- P45.M5.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.202386+00:00'
+started_at: '2026-02-19T19:17:35.202386+00:00'
+completed_at: '2026-02-19T19:51:27.570198+00:00'
+duration_minutes: 33.8727967
+---
+Cover: workspace-scoped secret not accessible from different workspace, agent-scoped secret not accessible from sibling agent, user-scoped secret accessible only to that user, share grants cross-workspace read, revoke removes access, grantee cannot re-share, grantee reads owner's original value (not a copy).

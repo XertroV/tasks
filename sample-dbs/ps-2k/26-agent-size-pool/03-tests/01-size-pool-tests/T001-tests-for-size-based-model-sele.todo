@@ -1,0 +1,44 @@
+---
+id: P26.M3.E1.T001
+title: Tests for size-based model selection (end-to-end)
+status: done
+estimate_hours: 8.0
+complexity: medium
+priority: medium
+depends_on: []
+tags:
+- tests
+- size-pool
+- models
+- agents
+claimed_by: cli-user
+claimed_at: '2026-02-18T18:34:28.272013+00:00'
+started_at: '2026-02-18T18:34:28.272013+00:00'
+completed_at: '2026-02-18T18:44:45.974935+00:00'
+duration_minutes: 10.295048516666666
+---
+
+# Tests for size-based model selection (end-to-end)
+
+Write a comprehensive test suite covering the full size pool feature from workspace
+config through model resolution and agent creation.
+
+## Requirements
+
+- Test workspace schema changeset with valid and invalid pool configs
+- Test `SizePoolResolver` with all resolution paths (normal, skip rate-limited, exhausted, fallback)
+- Test agent creation with `size` field (small/medium/large)
+- Test agent creation with `model` field (existing path unchanged)
+- Test agent creation with both `size` and `model` (should fail validation)
+- Test API endpoints: GET/PUT/PATCH model pools, unauthorized access
+- All tests async: true, use unique workspace names, cleanup in on_exit
+- Tests must run in under 20s (no real LLM calls; mock provider if needed)
+
+## Acceptance Criteria
+
+- [ ] Workspace schema tests: valid pools, missing size key, empty list, unknown model
+- [ ] SizePoolResolver tests: happy path, rate-limited skip, all exhausted, no config fallback
+- [ ] Agent creation tests: size only, model only, both (error), neither (default)
+- [ ] API controller tests: all CRUD operations + auth
+- [ ] All tests pass with `mix test`
+- [ ] No sleeps or delays; test suite stays under 20s

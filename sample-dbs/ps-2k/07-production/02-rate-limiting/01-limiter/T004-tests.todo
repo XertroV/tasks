@@ -1,0 +1,96 @@
+---
+id: P7.M2.E1.T004
+title: Rate limiter tests
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M2.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-07T06:19:24.879545+00:00'
+started_at: '2026-02-07T06:19:24.879545+00:00'
+completed_at: '2026-02-07T06:22:03.773451+00:00'
+tags:
+- rate-limiting
+- testing
+- property-tests
+duration_minutes: 2.6482316166666666
+---
+
+# Rate limiter tests
+
+Create comprehensive tests for rate limiting functionality.
+
+## Requirements
+
+- [x] Unit tests for TokenBucket algorithm
+- [x] Property-based tests for token refill
+- [x] GenServer tests for concurrent access
+- [x] Integration tests with LLM provider
+- [x] Test rate limit recovery
+- [x] Test burst handling
+- [x] Test configuration loading
+
+## Acceptance Criteria
+
+- [x] All tests pass consistently
+- [x] Property tests verify correctness
+- [x] Concurrent tests use async: false
+- [x] Coverage >85% for rate limiter modules
+- [x] Tests document expected behavior
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M2 (Rate Limiting)
+
+**Key Points**:
+- Use StreamData for property tests
+- Test bucket doesn't exceed capacity
+- Test tokens refill at correct rate
+- Test concurrent consume doesn't race
+
+## Notes
+
+Test examples:
+```elixir
+defmodule PagServer.RateLimiter.TokenBucketTest do
+  use ExUnit.Case, async: true
+  use ExUnitProperties
+  
+  property "tokens never exceed capacity" do
+    check all capacity <- positive_integer(),
+              refill_rate <- positive_integer(),
+              operations <- list_of(one_of([
+                constant(:refill),
+                tuple({constant(:take), positive_integer()})
+              ])) do
+      bucket = TokenBucket.new(capacity, refill_rate)
+      
+      final_bucket = Enum.reduce(operations, bucket, fn
+        :refill, b -> TokenBucket.refill(b)
+        {:take, n}, b -> 
+          case TokenBucket.take(b, n) do
+            {:ok, new_b} -> new_b
+            {:error, _, b} -> b
+          end
+      end)
+      
+      assert final_bucket.tokens <= capacity
+    end
+  end
+  
+  test "consume blocks when rate limited" do
+    # Start with empty bucket
+    bucket = %TokenBucket{
+      capacity: 10,
+      tokens: 0,
+      refill_rate: 1,
+      last_refill: System.monotonic_time(:millisecond)
+    }
+    
+    assert {:error, :rate_limited, _} = TokenBucket.take(bucket, 5)
+  end
+end
+```

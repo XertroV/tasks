@@ -1,0 +1,90 @@
+---
+id: P7.M4.E1.T004
+title: Resource limit tests
+status: done
+estimate_hours: 1
+complexity: medium
+priority: medium
+depends_on:
+- P7.M4.E1.T003
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:02:24.575134+00:00'
+started_at: '2026-02-06T21:02:24.575134+00:00'
+completed_at: '2026-02-06T21:18:18.006395+00:00'
+tags:
+- resources
+- testing
+duration_minutes: 15.890520733333334
+---
+
+# Resource limit tests
+
+Create comprehensive tests for resource limit enforcement.
+
+## Requirements
+
+- [ ] Test token limit enforcement
+- [ ] Test cost limit enforcement
+- [ ] Test tool call limit enforcement
+- [ ] Test execution time limit enforcement
+- [ ] Test warning at 80% threshold
+- [ ] Test graceful shutdown on limit
+- [ ] Test limit persistence across restarts
+
+## Acceptance Criteria
+
+- [ ] All limit types tested
+- [ ] Warnings verified at correct thresholds
+- [ ] Agent stops cleanly on limit hit
+- [ ] Usage persists correctly
+- [ ] Tests use realistic scenarios
+- [ ] Coverage >85% for limit code
+
+## Context
+
+**Plan References**:
+- Task breakdown P7.M4 (Resource Limits)
+
+## Notes
+
+Test examples:
+```elixir
+defmodule PagServer.Agents.ResourceLimitsTest do
+  use ExUnit.Case, async: false
+  
+  describe "token limit enforcement" do
+    test "agent stops when token limit exceeded" do
+      caps = %Capabilities{
+        resource_limits: %{max_tokens: 1000}
+      }
+      
+      {:ok, agent} = Agent.start_link(capabilities: caps)
+      
+      # Simulate using 1001 tokens
+      state = Agent.get_state(agent)
+      state = State.update_usage(state, :tokens_consumed, 1001)
+      
+      # Next message should fail
+      assert {:error, :limit_exceeded} = 
+        Agent.send_message(agent, "Hello")
+    end
+    
+    test "warning sent at 80% threshold" do
+      caps = %Capabilities{
+        resource_limits: %{max_tokens: 1000}
+      }
+      
+      {:ok, agent} = Agent.start_link(capabilities: caps)
+      
+      # Subscribe to agent events
+      Agent.subscribe(agent)
+      
+      # Use 801 tokens (80.1%)
+      state = State.update_usage(state, :tokens_consumed, 801)
+      
+      # Should receive warning
+      assert_receive {:agent_warning, :approaching_limit, %{resource: :max_tokens}}
+    end
+  end
+end
+```

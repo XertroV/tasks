@@ -1,0 +1,158 @@
+---
+id: P7.M5.E3.T001
+title: Add Fuse dependency and config
+status: done
+estimate_hours: 0.5
+complexity: low
+priority: high
+depends_on: []
+tags:
+- circuit-breaker
+- deps
+- config
+claimed_by: cli-user
+claimed_at: '2026-02-06T21:22:22.880480+00:00'
+started_at: '2026-02-06T21:22:22.880480+00:00'
+completed_at: '2026-02-06T21:48:26.577172+00:00'
+duration_minutes: 26.0616113
+---
+
+# Add Fuse dependency and config
+
+Add the `fuse` Erlang library for circuit breaker state management and configure per-provider
+circuit breaker defaults. The `fuse` library provides a battle-tested circuit breaker
+implementation with closed/open/half-open state transitions, which avoids re-inventing this
+complex stateful pattern.
+
+## Requirements
+
+- [ ] Add `{:fuse, "~> 2.5"}` to `mix.exs` dependencies
+- [ ] Run `mix deps.get` and verify compilation
+- [ ] Create `lib/pag_server/llm/circuit_breaker.ex` module that wraps `fuse` with a PAG-specific API
+- [ ] Define per-provider fuse configuration in `config/config.exs`:
+  - Anthropic: 5 failures in 60 seconds triggers open state, 30 second reset timeout
+  - OpenAI: 5 failures in 60 seconds triggers open state, 30 second reset timeout
+  - OpenRouter: 3 failures in 30 seconds triggers open state, 20 second reset timeout
+  - Ollama: 3 failures in 30 seconds triggers open state, 15 second reset timeout
+- [ ] Install fuses on application startup in `PagServer.Application`
+- [ ] Support dynamic fuse installation for newly registered providers
+- [ ] Document configuration options in module doc
+
+## Acceptance Criteria
+
+- [ ] `fuse` dependency compiles and is available at runtime
+- [ ] Per-provider circuit breaker configuration is loaded from application config
+- [ ] `PagServer.LLM.CircuitBreaker.install/2` creates a fuse for a given provider
+- [ ] Default configurations are applied for known providers on startup
+- [ ] Configuration is overridable via environment variables in `runtime.exs`
+- [ ] Existing tests continue to pass with the new dependency
+
+## Context
+
+**Source**: Architecture audit - error handling and resilience gaps.
+
+Extended provider outages can cause cascading failures when the system continues sending
+requests to a failing provider. Circuit breakers prevent this by fast-failing once a
+failure threshold is reached, giving the provider time to recover.
+
+**Key Files**:
+- `mix.exs` - Add dependency
+- `config/config.exs` - Add circuit breaker config (Oban config is at line 61)
+- `lib/pag_server/application.ex` - Install fuses on startup (line 11-57)
+- `lib/pag_server/llm/registry.ex` - Will be wrapped in T002
+
+## Notes
+
+Configuration example for `config/config.exs`:
+```elixir
+config :pag_server, PagServer.LLM.CircuitBreaker,
+  providers: %{
+    anthropic: %{
+      max_failures: 5,
+      window_ms: 60_000,
+      reset_timeout_ms: 30_000
+    },
+    openai: %{
+      max_failures: 5,
+      window_ms: 60_000,
+      reset_timeout_ms: 30_000
+    },
+    openrouter: %{
+      max_failures: 3,
+      window_ms: 30_000,
+      reset_timeout_ms: 20_000
+    },
+    ollama: %{
+      max_failures: 3,
+      window_ms: 30_000,
+      reset_timeout_ms: 15_000
+    }
+  }
+```
+
+Module skeleton:
+```elixir
+defmodule PagServer.LLM.CircuitBreaker do
+  @moduledoc """
+  Circuit breaker wrapper around the `fuse` library for LLM providers.
+
+  Tracks failure rates per provider and opens the circuit when a threshold
+  is exceeded, preventing cascading failures during provider outages.
+  """
+
+  require Logger
+
+  @doc "Install a circuit breaker fuse for a provider."
+  def install(provider, opts \\ []) do
+    fuse_name = fuse_name(provider)
+    max_failures = Keyword.get(opts, :max_failures, 5)
+    window_ms = Keyword.get(opts, :window_ms, 60_000)
+    reset_timeout_ms = Keyword.get(opts, :reset_timeout_ms, 30_000)
+
+    :fuse.install(fuse_name, {
+      {:standard, max_failures, window_ms},
+      {:reset, reset_timeout_ms}
+    })
+  end
+
+  @doc "Check if a provider's circuit is available (closed or half-open)."
+  def available?(provider) do
+    case :fuse.ask(fuse_name(provider), :sync) do
+      :ok -> true
+      :blown -> false
+    end
+  end
+
+  @doc "Record a failure for a provider (melts the fuse)."
+  def record_failure(provider) do
+    :fuse.melt(fuse_name(provider))
+  end
+
+  @doc "Reset the fuse for a provider (force closed)."
+  def reset(provider) do
+    :fuse.reset(fuse_name(provider))
+  end
+
+  defp fuse_name(provider), do: :"pag_circuit_#{provider}"
+end
+```
+
+
+## Sibling Batch Instructions
+
+**Batch mode**: siblings (same epic: P7.M5.E3)
+**Agent**: cli-user
+**Date**: 2026-02-06 21:22 UTC
+**Sibling tasks**: P7.M5.E3.T002, P7.M5.E3.T003, P7.M5.E3.T004
+
+**Instructions**:
+This task is part of a sibling batch from the same epic.
+Spawn ONE subagent to implement ALL sibling tasks sequentially.
+Work through tasks in order: P7.M5.E3.T001 → P7.M5.E3.T002 → P7.M5.E3.T003 → P7.M5.E3.T004
+Mark each done individually after completion.
+
+**Task files**:
+- P7.M5.E3.T001: .tasks/07-production/05-error-handling/03-circuit-breaker-pattern/T001-add-fuse-dependency-and-config.todo
+- P7.M5.E3.T002: .tasks/07-production/05-error-handling/03-circuit-breaker-pattern/T002-wrap-provider-calls-with-circu.todo
+- P7.M5.E3.T003: .tasks/07-production/05-error-handling/03-circuit-breaker-pattern/T003-implement-half-open-state-with.todo
+- P7.M5.E3.T004: .tasks/07-production/05-error-handling/03-circuit-breaker-pattern/T004-add-circuit-breaker-telemetry.todo

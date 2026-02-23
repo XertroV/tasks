@@ -1,0 +1,17 @@
+---
+id: P45.M3.E1.T004
+title: Write tool call integration tests
+status: done
+estimate_hours: 1.0
+complexity: low
+priority: medium
+depends_on:
+- P45.M3.E1.T003
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-19T19:17:35.192013+00:00'
+started_at: '2026-02-19T19:17:35.192013+00:00'
+completed_at: '2026-02-19T19:50:56.362528+00:00'
+duration_minutes: 33.35284171666667
+---
+Integration tests calling handle_tool_call/3 directly with a fake context map. Cover: valid store+fetch round trip, fetch after rate limit exhaustion returns :rate_limited error, unknown action returns error with valid actions list, fetch non-existent returns not_found, delete then fetch returns not_found.

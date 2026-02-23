@@ -1,0 +1,32 @@
+id: P32.M1
+name: Delete File Consensus
+status: pending
+estimate_hours: 20.0
+complexity: high
+depends_on: []
+locked: false
+epics:
+- id: E1
+  name: Consensus Infrastructure
+  path: 01-consensus-infrastructure
+  status: pending
+  estimate_hours: 10.0
+  complexity: high
+  depends_on: []
+  description: ''
+  locked: false
+- id: E2
+  name: File Delete Integration
+  path: 02-file-delete-integration
+  status: pending
+  estimate_hours: 8.0
+  complexity: medium
+  depends_on: []
+  description: ''
+  locked: false
+stats:
+  total_tasks: 8
+  done: 8
+  in_progress: 0
+  blocked: 0
+  pending: 0

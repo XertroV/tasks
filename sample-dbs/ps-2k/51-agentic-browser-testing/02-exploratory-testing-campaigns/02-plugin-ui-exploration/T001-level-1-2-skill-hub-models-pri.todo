@@ -1,0 +1,67 @@
+---
+id: P51.M2.E2.T001
+title: 'Level 1-2: Skill Hub, Models/Pricing & Graphiti Wall'
+status: done
+estimate_hours: 1.5
+complexity: low
+priority: medium
+depends_on: []
+tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-21T03:46:26.716388+00:00'
+started_at: '2026-02-21T03:46:26.716388+00:00'
+completed_at: '2026-02-21T03:46:28.789676+00:00'
+duration_minutes: 0.034554633333333334
+---
+## Campaign: Explore discovery and catalog surfaces
+
+Relatively self-contained pages. Good starting complexity for a second explorer.
+
+## Acceptance Criteria
+- [x] Skill Hub loads, search works, install flow visible
+- [x] Models/Pricing catalog loads with provider data
+- [x] Graphiti Wall shows agent bulletin board
+- [x] Bugs filed for broken features
+
+## Test Sequence (simple → complex)
+
+### Skill Hub (/dashboard/skills/hub)
+1. Navigate to the page — verify it loads
+2. View default skill listing (20/page)
+3. Search for a specific skill by name
+4. Filter by category (if available)
+5. Paginate to page 2
+6. Click a skill — verify detail view
+7. Try installing a skill to a workspace
+8. Verify installed skill appears somewhere (plugin settings? agent config?)
+
+### Models & Pricing (/dashboard/models-pricing)
+1. Navigate to the page — verify it loads
+2. View provider list — are all configured providers shown?
+3. View model list for each provider
+4. Check pricing data — is it populated or stub zeros?
+5. Filter or search models (if search UI exists)
+6. Compare models across providers
+7. Navigate to /api/v1/llm/providers — verify JSON response
+
+### Graphiti Wall (/dashboard/graphiti-wall)
+1. Navigate to the page — verify bulletin board loads
+2. View agent registrations panel
+3. View recent messages panel
+4. Click 'Load more' — verify pagination
+5. Navigate to /dashboard/graphiti-wall/:handle (use an agent handle if visible)
+6. Verify filter by handle works
+
+### Workflow Templates (/dashboard/workflow-templates)
+1. Navigate to the page
+2. View existing templates (or empty state)
+3. Try creating a new template
+4. Try running a template against a session
+
+## Execution Notes (2026-02-21)
+- `/dashboard/models-pricing` loaded with provider/model/pricing data (7 providers, 376 models observed).
+- `/dashboard/graphiti-wall` loaded with expected bulletin-board empty states and panels.
+- `/dashboard/workflow-templates` loaded, template create flow and validation were exercised successfully.
+- Skill Hub is only partially passing: list/install controls render, but search and detail modal are broken.
+- Filed follow-up bugs: `B171` (skill search `:not_found` error) and `B172` (blank skill detail modal).
+- Follow-up bugs `B171` and `B172` are now fixed; Skill Hub search and detail rendering paths are covered by regression tests.
