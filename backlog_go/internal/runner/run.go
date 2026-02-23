@@ -2822,12 +2822,12 @@ func mapTreePayload(phases []models.Phase, criticalPath []string, nextAvailable 
 	}
 
 	for _, phase := range phases {
-		filteredMilestones := []models.Milestone{}
+		filteredMilestones := []treeMilestonePayload{}
 		for _, milestone := range phase.Milestones {
 			if unfinished && !hasUnfinishedEpics(milestone) {
 				continue
 			}
-			filteredEpics := []models.Epic{}
+			filteredEpics := []treeEpicPayload{}
 			for _, epic := range milestone.Epics {
 				if unfinished && !hasUnfinishedTasks(epic.Tasks) {
 					continue
@@ -2855,11 +2855,11 @@ func mapTreePayload(phases []models.Phase, criticalPath []string, nextAvailable 
 	return output
 }
 
-func treePhasePayloadFromPhase(phase models.Phase, milestones []models.Milestone) *treePhasePayload {
+func treePhasePayloadFromPhase(phase models.Phase, milestones []treeMilestonePayload) *treePhasePayload {
 	stats := getTaskStatsForPhase(phase)
 	phaseMilestones := []treeMilestonePayload{}
 	for _, milestone := range milestones {
-		phaseMilestones = append(phaseMilestones, treeMilestonePayloadFromMilestone(milestone, []models.Epic{}))
+		phaseMilestones = append(phaseMilestones, milestone)
 	}
 	return &treePhasePayload{
 		ID:         phase.ID,
@@ -2870,11 +2870,11 @@ func treePhasePayloadFromPhase(phase models.Phase, milestones []models.Milestone
 	}
 }
 
-func treeMilestonePayloadFromMilestone(milestone models.Milestone, epics []models.Epic) *treeMilestonePayload {
+func treeMilestonePayloadFromMilestone(milestone models.Milestone, epics []treeEpicPayload) *treeMilestonePayload {
 	stats := getTaskStatsForMilestone(milestone)
 	milestoneEpics := []treeEpicPayload{}
 	for _, epic := range epics {
-		milestoneEpics = append(milestoneEpics, *treeEpicPayloadFromEpic(epic, epic.Tasks, nil))
+		milestoneEpics = append(milestoneEpics, epic)
 	}
 	return &treeMilestonePayload{
 		ID:       milestone.ID,
@@ -2886,17 +2886,15 @@ func treeMilestonePayloadFromMilestone(milestone models.Milestone, epics []model
 }
 
 func treeEpicPayloadFromEpic(epic models.Epic, tasks []models.Task, _ []string) *treeEpicPayload {
-	stats := getTaskStatsForEpic(epic)
 	items := []treeTask{}
 	for _, task := range tasks {
 		items = append(items, treeTaskFromTask(task, nil))
 	}
 	return &treeEpicPayload{
-		ID:    epic.ID,
-		Name:  epic.Name,
+		ID:     epic.ID,
+		Name:   epic.Name,
 		Status: string(epic.Status),
 		Tasks:  items,
-		_ = stats
 	}
 }
 
@@ -2969,7 +2967,7 @@ func renderTreePhase(phase models.Phase, isLast bool, prefix string, criticalPat
 
 	for i, milestone := range milestones {
 		milestoneIsLast := i == len(milestones)-1
-		lines = append(lines, renderTreeMilestone(milestone, milestoneIsLast, prefix+continuation, criticalPath, unfinished, showDetails, maxDepth, currentDepth+1)...
+		lines = append(lines, renderTreeMilestone(milestone, milestoneIsLast, prefix+continuation, criticalPath, unfinished, showDetails, maxDepth, currentDepth+1)...)
 	}
 	return lines
 }
@@ -2998,7 +2996,7 @@ func renderTreeMilestone(milestone models.Milestone, isLast bool, prefix string,
 	}
 	for i, epic := range epics {
 		isLastEpic := i == len(epics)-1
-		lines = append(lines, renderTreeEpic(epic, isLastEpic, prefix+continuation, criticalPath, unfinished, showDetails, maxDepth, currentDepth+1)...
+		lines = append(lines, renderTreeEpic(epic, isLastEpic, prefix+continuation, criticalPath, unfinished, showDetails, maxDepth, currentDepth+1)...)
 	}
 	return lines
 }
@@ -3558,6 +3556,10 @@ func boolToInt(v bool) int {
 		return 0
 	}
 	return 1
+}
+
+func containsString(items []string, value string) bool {
+	return containsTaskID(items, value)
 }
 
 func containsTaskID(items []string, value string) bool {
@@ -5197,7 +5199,7 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 	}
 
 	if notice.PhaseCompleted {
-		phase := findPhase(tree, task.PhaseID)
+		phase := tree.FindPhase(task.PhaseID)
 		if phase != nil {
 			fmt.Printf("════════════════════════════════════════════════════════════════════\n")
 			fmt.Printf("PHASE COMPLETE: %s (%s)\n", phase.Name, phase.ID)
@@ -5366,7 +5368,7 @@ func runMove(args []string) error {
 			return err
 		}
 
-		nextTask := nextIndexID(dstEpicIndex["tasks"], "T")
+		nextTask := nextIndexID(extractTaskLeafIDs(dstEpicIndex["tasks"]), "T")
 		newTaskShort := fmt.Sprintf("T%03d", nextTask)
 		newTaskID := fmt.Sprintf("%s.%s", destEpic.ID, newTaskShort)
 		newFilename := fmt.Sprintf("%s-%s.todo", newTaskShort, models.Slugify(task.Title, models.DirectoryNameWidth*15))
@@ -5440,7 +5442,7 @@ func runMove(args []string) error {
 		if err != nil {
 			return err
 		}
-		nextEpic := nextIndexID(dstMilestoneIndex["epics"], "E")
+		nextEpic := nextIndexID(extractEpicOrMilestoneLeafIDs(dstMilestoneIndex["epics"], "E"), "E")
 		newEpicShort := fmt.Sprintf("E%d", nextEpic)
 		newEpicID := fmt.Sprintf("%s.%s", dstMilestone.ID, newEpicShort)
 		newEpicDirName := fmt.Sprintf("%02d-%s", nextEpic, models.Slugify(srcEpic.Name, models.DirectoryNameWidth*15))
@@ -5514,7 +5516,7 @@ func runMove(args []string) error {
 		if err != nil {
 			return err
 		}
-		nextMilestone := nextIndexID(dstPhaseIndex["milestones"], "M")
+		nextMilestone := nextIndexID(extractEpicOrMilestoneLeafIDs(dstPhaseIndex["milestones"], "M"), "M")
 		newMilestoneShort := fmt.Sprintf("M%d", nextMilestone)
 		newMilestoneID := fmt.Sprintf("%s.%s", dstPhase.ID, newMilestoneShort)
 		newMsDirName := fmt.Sprintf("%02d-%s", nextMilestone, models.Slugify(srcMilestone.Name, models.DirectoryNameWidth*15))

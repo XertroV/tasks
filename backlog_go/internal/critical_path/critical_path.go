@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	idErrorRegex = regexp.MustCompile(`^(?:[BEI]\d+|P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?|M\d+|E\d+|T\d+)$`)
+	idErrorRegex = regexp.MustCompile(`^(?:[BEI]\d+|P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?)?|M\d+|E\d+|T\d+)$`)
 	bugIDRegex   = regexp.MustCompile(`^B\d+$`)
 	ideaIDRegex  = regexp.MustCompile(`^I\d+$`)
 )
@@ -780,7 +780,11 @@ func (c *CriticalPathCalculator) resolveDependencyTargets(dependencyID string, m
 	if task := c.tree.FindTask(dependencyID); task != nil {
 		return []*models.Task{task}, nil
 	}
-	if epicID := c.resolveEpicDependency(dependencyID, milestoneID); epicID != nil {
+	epicID, err := c.resolveEpicDependency(dependencyID, milestoneID)
+	if err != nil {
+		return nil, err
+	}
+	if epicID != nil {
 		tasks := make([]*models.Task, 0, len(epicID.Tasks))
 		for i := range epicID.Tasks {
 			tasks = append(tasks, &epicID.Tasks[i])
@@ -1086,10 +1090,10 @@ func (c *CriticalPathCalculator) hasDependencyChain(task *models.Task, targetID 
 	if task == nil {
 		return false
 	}
-	if seen[task.ID] {
+	if _, ok := seen[task.ID]; ok {
 		return false
 	}
-	seen[task.ID] = true
+	seen[task.ID] = struct{}{}
 
 	for _, depID := range task.DependsOn {
 		if depID == targetID {

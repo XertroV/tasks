@@ -966,15 +966,25 @@ func expandDependsOn(dependsOn []string, epic models.TaskPath) []string {
 			out = append(out, dep)
 			continue
 		}
-		if strings.HasPrefix(dep, "T") {
-			if epic.IsTask() {
-				out = append(out, epic.WithTask(dep).FullID())
-				continue
-			}
-			if epic.IsEpic() {
-				out = append(out, epic.WithTask(dep).FullID())
-				continue
-			}
+			if strings.HasPrefix(dep, "T") {
+				if epic.IsTask() {
+					path, err := epic.WithTask(dep)
+					if err != nil {
+						out = append(out, dep)
+						continue
+					}
+					out = append(out, path.FullID())
+					continue
+				}
+				if epic.IsEpic() {
+					path, err := epic.WithTask(dep)
+					if err != nil {
+						out = append(out, dep)
+						continue
+					}
+					out = append(out, path.FullID())
+					continue
+				}
 			out = append(out, dep)
 			continue
 		}
