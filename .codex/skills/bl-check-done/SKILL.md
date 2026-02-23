@@ -7,10 +7,13 @@ Checklist for job completion:
 
 - [ ] python impl complete
 - [ ] typescript impl complete
+- [ ] go impl complete
 - [ ] python impl tested
 - [ ] typescript impl tested
+- [ ] go impl tested
 - [ ] python tests pass
 - [ ] typescript tests pass
+- [ ] go tests pass
 - [ ] work committed to git
 
 Instructions:

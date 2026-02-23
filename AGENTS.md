@@ -1,5 +1,10 @@
 # `backlog` -- a utility for managing project backlogs via files
 
+3 clients are maintained to parity:
+- python: `backlog`
+- typescript: `backlog_ts`
+- go: `backlog_go`
+
 ## Expectations
 
 - Keep files under 1000 LoC ideally; hard limit at 2000.
@@ -19,9 +24,10 @@
 - Prefer explicit task claiming when task IDs are provided:
   - `backlog claim <TASK_ID> [TASK_ID ...]`
 - Use `backlog grab` for automatic selection, not for passing explicit task IDs.
-- Keep Python and TypeScript implementations behaviorally in sync:
+- Keep Python, Go, and TypeScript implementations behaviorally in sync:
   - Python: `backlog/`
   - TypeScript: `backlog_ts/`
+  - Go: `backlog_go/`
 
 # Work Loop & Task Backlog
 

@@ -20,9 +20,9 @@ const (
 )
 
 var (
-	rePhaseID    = regexp.MustCompile(`^P[0-9]+$`)
+	rePhaseID     = regexp.MustCompile(`^P[0-9]+$`)
 	reMilestoneID = regexp.MustCompile(`^M[0-9]+$`)
-	reEpicID     = regexp.MustCompile(`^E[0-9]+$`)
+	reEpicID      = regexp.MustCompile(`^E[0-9]+$`)
 )
 
 type Loader struct {
@@ -30,17 +30,18 @@ type Loader struct {
 }
 
 type Benchmark struct {
-	OverallMs            float64          `json:"overall_ms"`
-	IndexParseMs         float64          `json:"index_parse_ms"`
-	TaskFrontmatterParse float64          `json:"task_frontmatter_parse_ms"`
-	TaskBodyParse        float64          `json:"task_body_parse_ms"`
-	Files                map[string]int   `json:"files"`
-	Counts               map[string]int   `json:"counts"`
-	MissingTaskFiles     int              `json:"missing_task_files"`
-	PhaseTimings         []map[string]any `json:"phase_timings"`
-	MilestoneTimings     []map[string]any `json:"milestone_timings"`
-	EpicTimings          []map[string]any `json:"epic_timings"`
-	TaskTimings          []map[string]any `json:"task_timings"`
+	OverallMs            float64            `json:"overall_ms"`
+	IndexParseMs         float64            `json:"index_parse_ms"`
+	TaskFrontmatterParse float64            `json:"task_frontmatter_parse_ms"`
+	TaskBodyParse        float64            `json:"task_body_parse_ms"`
+	Files                map[string]int     `json:"files"`
+	FilesByTypeMs        map[string]float64 `json:"files_by_type_ms"`
+	Counts               map[string]int     `json:"counts"`
+	MissingTaskFiles     int                `json:"missing_task_files"`
+	PhaseTimings         []map[string]any   `json:"phase_timings"`
+	MilestoneTimings     []map[string]any   `json:"milestone_timings"`
+	EpicTimings          []map[string]any   `json:"epic_timings"`
+	TaskTimings          []map[string]any   `json:"task_timings"`
 }
 
 func New(tasksDir ...string) *Loader {
@@ -751,6 +752,17 @@ func newBenchmark() Benchmark {
 			"bug_file":        0,
 			"idea_file":       0,
 		},
+		FilesByTypeMs: map[string]float64{
+			"root_index":      0,
+			"phase_index":     0,
+			"milestone_index": 0,
+			"epic_index":      0,
+			"todo_file":       0,
+			"bug_index":       0,
+			"idea_index":      0,
+			"bug_file":        0,
+			"idea_file":       0,
+		},
 		Counts: map[string]int{
 			"phases":     0,
 			"milestones": 0,
@@ -786,6 +798,7 @@ func recordFile(bench *Benchmark, fileType string, elapsedMs float64) {
 		return
 	}
 	bench.Files[fileType]++
+	bench.FilesByTypeMs[fileType] += elapsedMs
 	if strings.HasSuffix(fileType, "_index") || strings.HasSuffix(fileType, "_file") {
 		bench.IndexParseMs += elapsedMs
 	}
@@ -911,7 +924,6 @@ func normalizeTaskID(raw string, epPath models.TaskPath) (string, error) {
 	return fullPath.FullID(), nil
 }
 
-
 func asSlice(v interface{}) []interface{} {
 	slice, ok := v.([]interface{})
 	if !ok {
@@ -966,25 +978,25 @@ func expandDependsOn(dependsOn []string, epic models.TaskPath) []string {
 			out = append(out, dep)
 			continue
 		}
-			if strings.HasPrefix(dep, "T") {
-				if epic.IsTask() {
-					path, err := epic.WithTask(dep)
-					if err != nil {
-						out = append(out, dep)
-						continue
-					}
-					out = append(out, path.FullID())
+		if strings.HasPrefix(dep, "T") {
+			if epic.IsTask() {
+				path, err := epic.WithTask(dep)
+				if err != nil {
+					out = append(out, dep)
 					continue
 				}
-				if epic.IsEpic() {
-					path, err := epic.WithTask(dep)
-					if err != nil {
-						out = append(out, dep)
-						continue
-					}
-					out = append(out, path.FullID())
+				out = append(out, path.FullID())
+				continue
+			}
+			if epic.IsEpic() {
+				path, err := epic.WithTask(dep)
+				if err != nil {
+					out = append(out, dep)
 					continue
 				}
+				out = append(out, path.FullID())
+				continue
+			}
 			out = append(out, dep)
 			continue
 		}
