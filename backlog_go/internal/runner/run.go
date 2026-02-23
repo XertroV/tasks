@@ -20,6 +20,7 @@ import (
 	"github.com/XertroV/tasks/backlog_go/internal/critical_path"
 	"github.com/XertroV/tasks/backlog_go/internal/loader"
 	"github.com/XertroV/tasks/backlog_go/internal/models"
+	"github.com/XertroV/tasks/backlog_go/internal/skills"
 	"gopkg.in/yaml.v3"
 )
 
@@ -69,21 +70,21 @@ type logEvent struct {
 }
 
 type treeTask struct {
-	ID          string    `json:"id"`
-	Title       string    `json:"title"`
-	Status      string    `json:"status"`
-	File        string    `json:"file"`
-	FileExists  bool      `json:"file_exists"`
-	Estimate    float64   `json:"estimate_hours"`
-	Complexity  string    `json:"complexity"`
-	Priority    string    `json:"priority"`
-	DependsOn   []string  `json:"depends_on"`
-	ClaimedBy   *string   `json:"claimed_by"`
-	ClaimedAt   *time.Time`json:"claimed_at"`
-	StartedAt   *time.Time`json:"started_at"`
-	CompletedAt *time.Time`json:"completed_at"`
-	OnCritical  bool      `json:"on_critical_path"`
-	Path        string    `json:"path,omitempty"`
+	ID          string     `json:"id"`
+	Title       string     `json:"title"`
+	Status      string     `json:"status"`
+	File        string     `json:"file"`
+	FileExists  bool       `json:"file_exists"`
+	Estimate    float64    `json:"estimate_hours"`
+	Complexity  string     `json:"complexity"`
+	Priority    string     `json:"priority"`
+	DependsOn   []string   `json:"depends_on"`
+	ClaimedBy   *string    `json:"claimed_by"`
+	ClaimedAt   *time.Time `json:"claimed_at"`
+	StartedAt   *time.Time `json:"started_at"`
+	CompletedAt *time.Time `json:"completed_at"`
+	OnCritical  bool       `json:"on_critical_path"`
+	Path        string     `json:"path,omitempty"`
 }
 
 type treeEpicPayload struct {
@@ -94,42 +95,42 @@ type treeEpicPayload struct {
 }
 
 type treeMilestonePayload struct {
-	ID       string              `json:"id"`
-	Name     string              `json:"name"`
-	Status   string              `json:"status"`
-	Stats    map[string]int      `json:"stats"`
-	Epics    []treeEpicPayload   `json:"epics"`
+	ID     string            `json:"id"`
+	Name   string            `json:"name"`
+	Status string            `json:"status"`
+	Stats  map[string]int    `json:"stats"`
+	Epics  []treeEpicPayload `json:"epics"`
 }
 
 type treePhasePayload struct {
-	ID         string                  `json:"id"`
-	Name       string                  `json:"name"`
-	Status     string                  `json:"status"`
-	Stats      map[string]int          `json:"stats"`
-	Milestones []treeMilestonePayload  `json:"milestones"`
+	ID         string                 `json:"id"`
+	Name       string                 `json:"name"`
+	Status     string                 `json:"status"`
+	Stats      map[string]int         `json:"stats"`
+	Milestones []treeMilestonePayload `json:"milestones"`
 }
 
 type treePayload struct {
-	CriticalPath     []string               `json:"critical_path"`
-	NextAvailable    string                 `json:"next_available"`
-	MaxDepth         int                    `json:"max_depth"`
-	ShowDetails      bool                   `json:"show_details"`
-	UnfinishedOnly   bool                   `json:"unfinished_only"`
-	ShowCompletedAux bool                   `json:"show_completed_aux"`
-	Phases           []treePhasePayload     `json:"phases"`
-	Bugs             []treeTask             `json:"bugs"`
-	Ideas            []treeTask             `json:"ideas"`
+	CriticalPath     []string           `json:"critical_path"`
+	NextAvailable    string             `json:"next_available"`
+	MaxDepth         int                `json:"max_depth"`
+	ShowDetails      bool               `json:"show_details"`
+	UnfinishedOnly   bool               `json:"unfinished_only"`
+	ShowCompletedAux bool               `json:"show_completed_aux"`
+	Phases           []treePhasePayload `json:"phases"`
+	Bugs             []treeTask         `json:"bugs"`
+	Ideas            []treeTask         `json:"ideas"`
 }
 
 type reportProgressJSON struct {
 	Overall struct {
-		Total            int     `json:"total"`
-		Done             int     `json:"done"`
-		InProgress       int     `json:"in_progress"`
-		Pending          int     `json:"pending"`
-		Blocked          int     `json:"blocked"`
-		PercentComplete  float64 `json:"percent_complete"`
-		RemainingHours   float64 `json:"remaining_hours"`
+		Total           int     `json:"total"`
+		Done            int     `json:"done"`
+		InProgress      int     `json:"in_progress"`
+		Pending         int     `json:"pending"`
+		Blocked         int     `json:"blocked"`
+		PercentComplete float64 `json:"percent_complete"`
+		RemainingHours  float64 `json:"remaining_hours"`
 	} `json:"overall"`
 	Auxiliary struct {
 		Bugs struct {
@@ -149,38 +150,38 @@ type reportProgressJSON struct {
 			RemainingHours float64 `json:"remaining_hours"`
 		} `json:"ideas"`
 	} `json:"auxiliary"`
-	Bugs  []treeTask `json:"bugs"`
-	Ideas []treeTask `json:"ideas"`
+	Bugs   []treeTask `json:"bugs"`
+	Ideas  []treeTask `json:"ideas"`
 	Phases []struct {
-		ID          string `json:"id"`
-		Name        string `json:"name"`
-		Total       int    `json:"total"`
-		Done        int    `json:"done"`
-		InProgress  int    `json:"in_progress"`
-		Pending     int    `json:"pending"`
-		Blocked     int    `json:"blocked"`
-		PercentDone float64`json:"percent_complete"`
-		Remaining   float64`json:"remaining_hours"`
+		ID          string  `json:"id"`
+		Name        string  `json:"name"`
+		Total       int     `json:"total"`
+		Done        int     `json:"done"`
+		InProgress  int     `json:"in_progress"`
+		Pending     int     `json:"pending"`
+		Blocked     int     `json:"blocked"`
+		PercentDone float64 `json:"percent_complete"`
+		Remaining   float64 `json:"remaining_hours"`
 		Milestones  []struct {
-			ID         string `json:"id"`
-			Name       string `json:"name"`
-			Total      int    `json:"total"`
-			Done       int    `json:"done"`
-			InProgress int    `json:"in_progress"`
-			Pending    int    `json:"pending"`
-			Blocked    int    `json:"blocked"`
-			Percent    float64`json:"percent_complete"`
-			Remaining  float64`json:"remaining_hours"`
+			ID         string  `json:"id"`
+			Name       string  `json:"name"`
+			Total      int     `json:"total"`
+			Done       int     `json:"done"`
+			InProgress int     `json:"in_progress"`
+			Pending    int     `json:"pending"`
+			Blocked    int     `json:"blocked"`
+			Percent    float64 `json:"percent_complete"`
+			Remaining  float64 `json:"remaining_hours"`
 			Epics      []struct {
-				ID         string `json:"id"`
-				Name       string `json:"name"`
-				Total      int    `json:"total"`
-				Done       int    `json:"done"`
-				InProgress int    `json:"in_progress"`
-				Pending    int    `json:"pending"`
-				Blocked    int    `json:"blocked"`
-				Percent    float64`json:"percent_complete"`
-				Remaining  float64`json:"remaining_hours"`
+				ID         string  `json:"id"`
+				Name       string  `json:"name"`
+				Total      int     `json:"total"`
+				Done       int     `json:"done"`
+				InProgress int     `json:"in_progress"`
+				Pending    int     `json:"pending"`
+				Blocked    int     `json:"blocked"`
+				Percent    float64 `json:"percent_complete"`
+				Remaining  float64 `json:"remaining_hours"`
 			} `json:"epics"`
 		} `json:"milestones"`
 	} `json:"phases"`
@@ -216,11 +217,11 @@ type dashCriticalPathPayload struct {
 }
 
 type dashOverallPayload struct {
-	Done           int     `json:"done"`
-	Total          int     `json:"total"`
-	InProgress     int     `json:"in_progress"`
-	Blocked        int     `json:"blocked"`
-	Percent        float64 `json:"percent_complete"`
+	Done       int     `json:"done"`
+	Total      int     `json:"total"`
+	InProgress int     `json:"in_progress"`
+	Blocked    int     `json:"blocked"`
+	Percent    float64 `json:"percent_complete"`
 }
 
 type dashStatusPayload struct {
@@ -231,13 +232,13 @@ type dashStatusPayload struct {
 }
 
 type dashJSON struct {
-	Agent           string                 `json:"agent"`
-	CurrentTask     *dashCurrentTaskPayload `json:"current_task"`
-	Overall         dashOverallPayload      `json:"overall"`
+	Agent           string                     `json:"agent"`
+	CurrentTask     *dashCurrentTaskPayload    `json:"current_task"`
+	Overall         dashOverallPayload         `json:"overall"`
 	Phases          []dashPhaseProgressPayload `json:"phases"`
-	CompletedPhases []string               `json:"completed_phases"`
-	CriticalPath    dashCriticalPathPayload `json:"critical_path"`
-	Status          dashStatusPayload      `json:"status"`
+	CompletedPhases []string                   `json:"completed_phases"`
+	CriticalPath    dashCriticalPathPayload    `json:"critical_path"`
+	Status          dashStatusPayload          `json:"status"`
 }
 
 type adminJSONPayload struct {
@@ -300,6 +301,8 @@ func Run(rawArgs ...string) error {
 		return runNext(payload)
 	case commands.CmdPreview:
 		return runPreview(payload)
+	case commands.CmdSkills:
+		return runSkills(payload)
 	case commands.CmdAdmin:
 		return runAdmin(payload)
 	case commands.CmdClaim:
@@ -318,6 +321,8 @@ func Run(rawArgs ...string) error {
 		return runUpdate(payload)
 	case commands.CmdUndone:
 		return runUndone(payload)
+	case commands.CmdBenchmark:
+		return runBenchmark(payload)
 	case commands.CmdSync:
 		return runSync()
 	case commands.CmdMove:
@@ -389,6 +394,225 @@ phases: []
 	}
 	fmt.Printf("Initialized project %q in %s/\n", opts.project, filepath.Dir(indexPath))
 	return nil
+}
+
+func runBenchmark(args []string) error {
+	if err := validateAllowedFlags(
+		args,
+		map[string]bool{
+			"--json":          true,
+			"--top":           true,
+			"--mode":          true,
+			"--parse-body":    true,
+			"--no-parse-body": true,
+		},
+	); err != nil {
+		return err
+	}
+
+	rawMode := strings.TrimSpace(parseOption(args, "--mode"))
+	mode := "full"
+	if rawMode != "" {
+		mode = rawMode
+	}
+	if mode != "full" && mode != "metadata" && mode != "index" {
+		return fmt.Errorf("--mode must be one of: full, metadata, index")
+	}
+
+	parseTaskBody := true
+	if parseFlag(args, "--no-parse-body") {
+		parseTaskBody = false
+	}
+	if parseFlag(args, "--parse-body") {
+		parseTaskBody = true
+	}
+	effectiveParseTaskBody := parseTaskBody && mode == "full"
+
+	top, err := parseIntOptionWithDefault(args, 10, "--top")
+	if err != nil {
+		return err
+	}
+	if top <= 0 {
+		return fmt.Errorf("--top must be a positive integer")
+	}
+
+	_, benchmark, err := loader.New().LoadWithBenchmark(mode, effectiveParseTaskBody, true, true)
+	if err != nil {
+		return err
+	}
+
+	taskTotal := benchmark.Counts["tasks"]
+	missingTaskFiles := benchmark.MissingTaskFiles
+	foundTaskFiles := taskTotal - missingTaskFiles
+	indexParseMs := benchmark.IndexParseMs
+	taskFrontmatterParseMs := benchmark.TaskFrontmatterParse
+	taskBodyParseMs := benchmark.TaskBodyParse
+	otherParseMs := benchmark.OverallMs - indexParseMs - taskFrontmatterParseMs - taskBodyParseMs
+	if otherParseMs < 0 {
+		otherParseMs = 0
+	}
+
+	slowestPhases := sortedTimings(benchmark.PhaseTimings, top)
+	slowestMilestones := sortedTimings(benchmark.MilestoneTimings, top)
+	slowestEpics := sortedTimings(benchmark.EpicTimings, top)
+
+	totalFilesParsed := 0
+	for _, count := range benchmark.Files {
+		totalFilesParsed += count
+	}
+
+	if parseFlag(args, "--json") {
+		output := map[string]interface{}{
+			"overall_ms":                benchmark.OverallMs,
+			"index_parse_ms":            indexParseMs,
+			"task_frontmatter_parse_ms": taskFrontmatterParseMs,
+			"task_body_parse_ms":        taskBodyParseMs,
+			"files": map[string]interface{}{
+				"total":      totalFilesParsed,
+				"by_type":    benchmark.Files,
+				"by_type_ms": benchmark.FilesByTypeMs,
+			},
+			"counts": map[string]int{
+				"phases":     benchmark.Counts["phases"],
+				"milestones": benchmark.Counts["milestones"],
+				"epics":      benchmark.Counts["epics"],
+				"tasks":      taskTotal,
+			},
+			"missing_task_files": benchmark.MissingTaskFiles,
+			"phase_timings":      benchmark.PhaseTimings,
+			"milestone_timings":  benchmark.MilestoneTimings,
+			"epic_timings":       benchmark.EpicTimings,
+			"task_timings":       benchmark.TaskTimings,
+			"parse_mode":         mode,
+			"parse_task_body":    effectiveParseTaskBody,
+			"summary": map[string]interface{}{
+				"overall_ms":                benchmark.OverallMs,
+				"files_parsed":              totalFilesParsed,
+				"task_files_total":          taskTotal,
+				"task_files_found":          foundTaskFiles,
+				"task_files_missing":        missingTaskFiles,
+				"index_parse_ms":            indexParseMs,
+				"task_frontmatter_parse_ms": taskFrontmatterParseMs,
+				"task_body_parse_ms":        taskBodyParseMs,
+				"task_parse_other_ms":       otherParseMs,
+				"parse_mode":                mode,
+				"parse_task_body":           effectiveParseTaskBody,
+				"node_counts": map[string]int{
+					"phases":     benchmark.Counts["phases"],
+					"milestones": benchmark.Counts["milestones"],
+					"epics":      benchmark.Counts["epics"],
+				},
+			},
+			"slowest": map[string]interface{}{
+				"phases":     slowestPhases,
+				"milestones": slowestMilestones,
+				"epics":      slowestEpics,
+			},
+		}
+		raw, err := json.MarshalIndent(output, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(raw))
+		return nil
+	}
+
+	fmt.Println("\nTask Tree Benchmark")
+	fmt.Printf("Overall parse time: %s\n", formatMs(benchmark.OverallMs))
+	fmt.Printf("Parse mode: %s\n", mode)
+	fmt.Printf("Task body parsing: %s\n", boolLabel(effectiveParseTaskBody, "enabled", "disabled"))
+	fmt.Printf("Index parse time: %s\n", formatMs(indexParseMs))
+	fmt.Printf("Task frontmatter parse time: %s\n", formatMs(taskFrontmatterParseMs))
+	fmt.Printf("Task body parse time: %s\n", formatMs(taskBodyParseMs))
+	fmt.Printf("Other parse time: %s\n", formatMs(otherParseMs))
+	fmt.Printf("Total files parsed: %d\n", totalFilesParsed)
+	fmt.Printf("Task files (leaves): %d (%d found, %d missing)\n", taskTotal, foundTaskFiles, missingTaskFiles)
+	fmt.Printf("Phases parsed: %d\n", benchmark.Counts["phases"])
+	fmt.Printf("Milestones parsed: %d\n", benchmark.Counts["milestones"])
+	fmt.Printf("Epics parsed: %d\n", benchmark.Counts["epics"])
+	fmt.Println("")
+
+	fileTypes := make([]string, 0, len(benchmark.Files))
+	for fileType := range benchmark.Files {
+		fileTypes = append(fileTypes, fileType)
+	}
+	sort.Strings(fileTypes)
+	if len(fileTypes) > 0 {
+		fmt.Println("Files by type:")
+		for _, fileType := range fileTypes {
+			count := benchmark.Files[fileType]
+			if count == 0 {
+				continue
+			}
+			fileTypeMs := benchmark.FilesByTypeMs[fileType]
+			fmt.Printf("  %s: %d files (%s)\n", fileType, count, formatMs(fileTypeMs))
+		}
+	}
+
+	if len(slowestPhases) > 0 {
+		fmt.Println("\nSlowest phases:")
+		for _, item := range slowestPhases {
+			fmt.Printf("  %s (%s): %s\n", asString(item["id"]), asString(item["path"]), formatMs(timingMS(item)))
+		}
+	}
+
+	if len(slowestMilestones) > 0 {
+		fmt.Println("\nSlowest milestones:")
+		for _, item := range slowestMilestones {
+			fmt.Printf("  %s (%s): %s\n", asString(item["id"]), asString(item["path"]), formatMs(timingMS(item)))
+		}
+	}
+
+	if len(slowestEpics) > 0 {
+		fmt.Println("\nSlowest epics:")
+		for _, item := range slowestEpics {
+			fmt.Printf("  %s (%s): %s\n", asString(item["id"]), asString(item["path"]), formatMs(timingMS(item)))
+		}
+	}
+
+	return nil
+}
+
+func formatMs(ms float64) string {
+	return fmt.Sprintf("%.2fms", ms)
+}
+
+func boolLabel(value bool, whenTrue, whenFalse string) string {
+	if value {
+		return whenTrue
+	}
+	return whenFalse
+}
+
+func timingMS(record map[string]any) float64 {
+	raw, ok := record["ms"]
+	if !ok {
+		return 0
+	}
+	switch value := raw.(type) {
+	case float64:
+		return value
+	case float32:
+		return float64(value)
+	case int:
+		return float64(value)
+	case int64:
+		return float64(value)
+	default:
+		return 0
+	}
+}
+
+func sortedTimings(items []map[string]any, top int) []map[string]any {
+	out := make([]map[string]any, len(items))
+	copy(out, items)
+	sort.Slice(out, func(i, j int) bool {
+		return timingMS(out[i]) > timingMS(out[j])
+	})
+	if top >= len(out) {
+		return out
+	}
+	return out[:top]
 }
 
 func parseInit(args []string) (initOptions, error) {
@@ -557,7 +781,7 @@ func runAdd(args []string) error {
 	}
 
 	epicIndexPath := filepath.Join(epicDir, "index.yaml")
-	epicIndex, err := readYAMLMap(epicIndexPath)
+	epicIndex, err := readYAMLMapFile(epicIndexPath)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -576,7 +800,7 @@ func runAdd(args []string) error {
 		"priority":       priority,
 		"depends_on":     dependsOn,
 	})
-	if err := writeYAMLMap(epicIndexPath, epicIndex); err != nil {
+	if err := writeYAMLMapFile(epicIndexPath, epicIndex); err != nil {
 		return err
 	}
 
@@ -679,12 +903,12 @@ func runAddEpic(args []string) error {
 		"depends_on":     dependsOn,
 		"tasks":          []any{},
 	}
-	if err := writeYAMLMap(epicIndexPath, epicData); err != nil {
+	if err := writeYAMLMapFile(epicIndexPath, epicData); err != nil {
 		return err
 	}
 
 	milestoneIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
-	milestoneIndex, err := readYAMLMap(milestoneIndexPath)
+	milestoneIndex, err := readYAMLMapFile(milestoneIndexPath)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -702,7 +926,7 @@ func runAddEpic(args []string) error {
 		"depends_on":     dependsOn,
 		"description":    description,
 	})
-	if err := writeYAMLMap(milestoneIndexPath, milestoneIndex); err != nil {
+	if err := writeYAMLMapFile(milestoneIndexPath, milestoneIndex); err != nil {
 		return err
 	}
 
@@ -788,12 +1012,12 @@ func runAddMilestone(args []string) error {
 		"depends_on":     dependsOn,
 		"epics":          []any{},
 	}
-	if err := writeYAMLMap(msIndexPath, msIndex); err != nil {
+	if err := writeYAMLMapFile(msIndexPath, msIndex); err != nil {
 		return err
 	}
 
 	phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
-	phaseIndex, err := readYAMLMap(phaseIndexPath)
+	phaseIndex, err := readYAMLMapFile(phaseIndexPath)
 	if err != nil && !os.IsNotExist(err) {
 		return err
 	}
@@ -811,7 +1035,7 @@ func runAddMilestone(args []string) error {
 		"depends_on":     dependsOn,
 		"description":    description,
 	})
-	if err := writeYAMLMap(phaseIndexPath, phaseIndex); err != nil {
+	if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
 		return err
 	}
 
@@ -847,7 +1071,7 @@ func runAddPhase(args []string) error {
 		return err
 	}
 	rootIndexPath := filepath.Join(dataDir, "index.yaml")
-	rootIndex, err := readYAMLMap(rootIndexPath)
+	rootIndex, err := readYAMLMapFile(rootIndexPath)
 	if err != nil {
 		return err
 	}
@@ -885,7 +1109,7 @@ func runAddPhase(args []string) error {
 		"depends_on":     dependsOn,
 		"milestones":     []any{},
 	}
-	if err := writeYAMLMap(phaseIndexPath, phaseIndexData); err != nil {
+	if err := writeYAMLMapFile(phaseIndexPath, phaseIndexData); err != nil {
 		return err
 	}
 
@@ -901,7 +1125,7 @@ func runAddPhase(args []string) error {
 		"description":    description,
 		"locked":         false,
 	})
-	if err := writeYAMLMap(rootIndexPath, rootIndex); err != nil {
+	if err := writeYAMLMapFile(rootIndexPath, rootIndex); err != nil {
 		return err
 	}
 	fmt.Printf("Created phase: %s\n", nextPhaseID)
@@ -1103,7 +1327,7 @@ func setPhaseNotDone(path models.TaskPath, tree models.TaskTree) error {
 	}
 
 	rootPath := filepath.Join(dataDir, "index.yaml")
-	rootIndex, err := readYAMLMap(rootPath)
+	rootIndex, err := readYAMLMapFile(rootPath)
 	if err != nil {
 		return err
 	}
@@ -1121,12 +1345,12 @@ func setPhaseNotDone(path models.TaskPath, tree models.TaskTree) error {
 			}
 		}
 	}
-	if err := writeYAMLMap(rootPath, rootIndex); err != nil {
+	if err := writeYAMLMapFile(rootPath, rootIndex); err != nil {
 		return err
 	}
 
 	phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
-	phaseIndex, err := readYAMLMap(phaseIndexPath)
+	phaseIndex, err := readYAMLMapFile(phaseIndexPath)
 	if err != nil {
 		return err
 	}
@@ -1140,19 +1364,19 @@ func setPhaseNotDone(path models.TaskPath, tree models.TaskTree) error {
 			msEntry["status"] = string(models.StatusPending)
 		}
 	}
-	if err := writeYAMLMap(phaseIndexPath, phaseIndex); err != nil {
+	if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
 		return err
 	}
 
 	resetCount := 0
 	for _, milestone := range phase.Milestones {
 		milestoneIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
-		milestoneIndex, err := readYAMLMap(milestoneIndexPath)
+		milestoneIndex, err := readYAMLMapFile(milestoneIndexPath)
 		if err != nil {
 			return err
 		}
 		milestoneIndex["status"] = string(models.StatusPending)
-		if err := writeYAMLMap(milestoneIndexPath, milestoneIndex); err != nil {
+		if err := writeYAMLMapFile(milestoneIndexPath, milestoneIndex); err != nil {
 			return err
 		}
 		milestoneEntry, ok := milestoneIndex["epics"].([]interface{})
@@ -1167,12 +1391,12 @@ func setPhaseNotDone(path models.TaskPath, tree models.TaskTree) error {
 		}
 		epicIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path)
 		for _, epic := range milestone.Epics {
-			epicIndex, err := readYAMLMap(filepath.Join(epicIndexPath, epic.Path, "index.yaml"))
+			epicIndex, err := readYAMLMapFile(filepath.Join(epicIndexPath, epic.Path, "index.yaml"))
 			if err != nil {
 				return err
 			}
 			epicIndex["status"] = string(models.StatusPending)
-			if err := writeYAMLMap(filepath.Join(epicIndexPath, epic.Path, "index.yaml"), epicIndex); err != nil {
+			if err := writeYAMLMapFile(filepath.Join(epicIndexPath, epic.Path, "index.yaml"), epicIndex); err != nil {
 				return err
 			}
 			for i := range epic.Tasks {
@@ -1204,7 +1428,7 @@ func setMilestoneNotDone(path models.TaskPath, tree models.TaskTree) error {
 		return err
 	}
 	phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
-	phaseIndex, err := readYAMLMap(phaseIndexPath)
+	phaseIndex, err := readYAMLMapFile(phaseIndexPath)
 	if err != nil {
 		return err
 	}
@@ -1220,12 +1444,12 @@ func setMilestoneNotDone(path models.TaskPath, tree models.TaskTree) error {
 			}
 		}
 	}
-	if err := writeYAMLMap(phaseIndexPath, phaseIndex); err != nil {
+	if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
 		return err
 	}
 
 	milestoneIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
-	milestoneIndex, err := readYAMLMap(milestoneIndexPath)
+	milestoneIndex, err := readYAMLMapFile(milestoneIndexPath)
 	if err != nil {
 		return err
 	}
@@ -1238,19 +1462,19 @@ func setMilestoneNotDone(path models.TaskPath, tree models.TaskTree) error {
 			}
 		}
 	}
-	if err := writeYAMLMap(milestoneIndexPath, milestoneIndex); err != nil {
+	if err := writeYAMLMapFile(milestoneIndexPath, milestoneIndex); err != nil {
 		return err
 	}
 
 	resetCount := 0
 	for _, epic := range milestone.Epics {
 		epicIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, epic.Path, "index.yaml")
-		epicIndex, err := readYAMLMap(epicIndexPath)
+		epicIndex, err := readYAMLMapFile(epicIndexPath)
 		if err != nil {
 			return err
 		}
 		epicIndex["status"] = string(models.StatusPending)
-		if err := writeYAMLMap(epicIndexPath, epicIndex); err != nil {
+		if err := writeYAMLMapFile(epicIndexPath, epicIndex); err != nil {
 			return err
 		}
 		for i := range epic.Tasks {
@@ -1286,7 +1510,7 @@ func setEpicNotDone(path models.TaskPath, tree models.TaskTree) error {
 		return err
 	}
 	milestoneIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
-	milestoneIndex, err := readYAMLMap(milestoneIndexPath)
+	milestoneIndex, err := readYAMLMapFile(milestoneIndexPath)
 	if err != nil {
 		return err
 	}
@@ -1302,17 +1526,17 @@ func setEpicNotDone(path models.TaskPath, tree models.TaskTree) error {
 			}
 		}
 	}
-	if err := writeYAMLMap(milestoneIndexPath, milestoneIndex); err != nil {
+	if err := writeYAMLMapFile(milestoneIndexPath, milestoneIndex); err != nil {
 		return err
 	}
 
 	epicIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, epic.Path, "index.yaml")
-	epicIndex, err := readYAMLMap(epicIndexPath)
+	epicIndex, err := readYAMLMapFile(epicIndexPath)
 	if err != nil {
 		return err
 	}
 	epicIndex["status"] = string(models.StatusPending)
-	if err := writeYAMLMap(epicIndexPath, epicIndex); err != nil {
+	if err := writeYAMLMapFile(epicIndexPath, epicIndex); err != nil {
 		return err
 	}
 
@@ -1456,21 +1680,21 @@ func writeTaskIndex(task models.Task, tree models.TaskTree) error {
 
 	if strings.HasPrefix(task.File, "bugs/") {
 		path := filepath.Join(dataDir, "bugs/index.yaml")
-		index, err := readYAMLMap(path)
+		index, err := readYAMLMapFile(path)
 		if err != nil {
 			return err
 		}
 		updateTaskIndexEntry(index["bugs"], shortID, task)
-		return writeYAMLMap(path, index)
+		return writeYAMLMapFile(path, index)
 	}
 	if strings.HasPrefix(task.File, "ideas/") {
 		path := filepath.Join(dataDir, "ideas/index.yaml")
-		index, err := readYAMLMap(path)
+		index, err := readYAMLMapFile(path)
 		if err != nil {
 			return err
 		}
 		updateTaskIndexEntry(index["ideas"], shortID, task)
-		return writeYAMLMap(path, index)
+		return writeYAMLMapFile(path, index)
 	}
 
 	phase := tree.FindPhase(task.PhaseID)
@@ -1490,12 +1714,12 @@ func writeTaskIndex(task models.Task, tree models.TaskTree) error {
 		return err
 	}
 	epicIndexPath := filepath.Join(phaseDir, milestone.Path, epic.Path, "index.yaml")
-	index, err := readYAMLMap(epicIndexPath)
+	index, err := readYAMLMapFile(epicIndexPath)
 	if err != nil {
 		return err
 	}
 	updateTaskIndexEntry(index["tasks"], shortID, task)
-	return writeYAMLMap(epicIndexPath, index)
+	return writeYAMLMapFile(epicIndexPath, index)
 }
 
 func updateTaskIndexEntry(raw any, taskShortID string, task models.Task) {
@@ -2082,14 +2306,14 @@ func runNext(args []string) error {
 
 	if parseFlag(args, "--json") {
 		payload := map[string]interface{}{
-			"id":              task.ID,
-			"title":           task.Title,
-			"file":            task.File,
-			"file_exists":     taskFileExists(task.File),
+			"id":               task.ID,
+			"title":            task.Title,
+			"file":             task.File,
+			"file_exists":      taskFileExists(task.File),
 			"estimate_hours":   task.EstimateHours,
-			"complexity":      string(task.Complexity),
-			"status":          string(task.Status),
-			"priority":        string(task.Priority),
+			"complexity":       string(task.Complexity),
+			"status":           string(task.Status),
+			"priority":         string(task.Priority),
 			"on_critical_path": false,
 			"grab_additional":  []string{},
 		}
@@ -2575,10 +2799,10 @@ func runDash(args []string) error {
 	currentTaskPayload := (*dashCurrentTaskPayload)(nil)
 	if strings.TrimSpace(currentTaskID) != "" {
 		currentTaskPayload = &dashCurrentTaskPayload{
-			ID:         currentTaskID,
-			Agent:      currentAgent,
+			ID:          currentTaskID,
+			Agent:       currentAgent,
 			WorkingTask: true,
-			Found:      currentTask != nil,
+			Found:       currentTask != nil,
 		}
 		if currentTask != nil {
 			currentTaskPayload.Title = currentTask.Title
@@ -2599,7 +2823,7 @@ func runDash(args []string) error {
 				InProgress:    totalInProgress,
 				Blocked:       totalBlocked,
 				StaleClaims:   staleClaimsCount,
-				ActiveSession:  activeSessions,
+				ActiveSession: activeSessions,
 			},
 		}
 		raw, err := json.MarshalIndent(payload, "", "  ")
@@ -2877,11 +3101,11 @@ func treeMilestonePayloadFromMilestone(milestone models.Milestone, epics []treeE
 		milestoneEpics = append(milestoneEpics, epic)
 	}
 	return &treeMilestonePayload{
-		ID:       milestone.ID,
-		Name:     milestone.Name,
-		Status:   string(milestone.Status),
-		Stats:    map[string]int{"done": stats.done, "total": stats.total, "in_progress": stats.inProgress, "blocked": stats.blocked},
-		Epics:    milestoneEpics,
+		ID:     milestone.ID,
+		Name:   milestone.Name,
+		Status: string(milestone.Status),
+		Stats:  map[string]int{"done": stats.done, "total": stats.total, "in_progress": stats.inProgress, "blocked": stats.blocked},
+		Epics:  milestoneEpics,
 	}
 }
 
@@ -3473,12 +3697,12 @@ func prioritizeTaskIDs(tree models.TaskTree, criticalPath []string, taskIDs []st
 
 	maxPos := int(^uint(0) >> 1)
 	type rankedTask struct {
-		id          string
-		originalPos int
-		typeRank    int
+		id           string
+		originalPos  int
+		typeRank     int
 		priorityRank int
-		onCritical  int
-		cpPos       int
+		onCritical   int
+		cpPos        int
 	}
 
 	ranked := make([]rankedTask, 0, len(taskIDs))
@@ -5075,9 +5299,9 @@ func setItemDone(task models.Task, tree models.TaskTree) (completionNotice, erro
 	}
 
 	completion := completionNotice{
-		EpicCompleted:     epicCompleted,
+		EpicCompleted:      epicCompleted,
 		MilestoneCompleted: milestoneCompleted,
-		PhaseCompleted:    phaseCompleted,
+		PhaseCompleted:     phaseCompleted,
 	}
 
 	dataDir, err := ensureDataDir()
@@ -5086,7 +5310,7 @@ func setItemDone(task models.Task, tree models.TaskTree) (completionNotice, erro
 	}
 
 	rootPath := filepath.Join(dataDir, "index.yaml")
-	rootIndex, err := readYAMLMap(rootPath)
+	rootIndex, err := readYAMLMapFile(rootPath)
 	if err != nil {
 		return completionNotice{}, err
 	}
@@ -5105,12 +5329,12 @@ func setItemDone(task models.Task, tree models.TaskTree) (completionNotice, erro
 		}
 		break
 	}
-	if err := writeYAMLMap(rootPath, rootIndex); err != nil {
+	if err := writeYAMLMapFile(rootPath, rootIndex); err != nil {
 		return completionNotice{}, err
 	}
 
 	phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
-	phaseIndex, err := readYAMLMap(phaseIndexPath)
+	phaseIndex, err := readYAMLMapFile(phaseIndexPath)
 	if err != nil {
 		return completionNotice{}, err
 	}
@@ -5130,12 +5354,12 @@ func setItemDone(task models.Task, tree models.TaskTree) (completionNotice, erro
 			}
 		}
 	}
-	if err := writeYAMLMap(phaseIndexPath, phaseIndex); err != nil {
+	if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
 		return completionNotice{}, err
 	}
 
 	milestoneIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
-	milestoneIndex, err := readYAMLMap(milestoneIndexPath)
+	milestoneIndex, err := readYAMLMapFile(milestoneIndexPath)
 	if err != nil {
 		return completionNotice{}, err
 	}
@@ -5154,19 +5378,19 @@ func setItemDone(task models.Task, tree models.TaskTree) (completionNotice, erro
 			}
 		}
 	}
-	if err := writeYAMLMap(milestoneIndexPath, milestoneIndex); err != nil {
+	if err := writeYAMLMapFile(milestoneIndexPath, milestoneIndex); err != nil {
 		return completionNotice{}, err
 	}
 
 	epicIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, epic.Path, "index.yaml")
-	epicIndex, err := readYAMLMap(epicIndexPath)
+	epicIndex, err := readYAMLMapFile(epicIndexPath)
 	if err != nil {
 		return completionNotice{}, err
 	}
 	if epicCompleted {
 		epicIndex["status"] = string(models.StatusDone)
 	}
-	if err := writeYAMLMap(epicIndexPath, epicIndex); err != nil {
+	if err := writeYAMLMapFile(epicIndexPath, epicIndex); err != nil {
 		return completionNotice{}, err
 	}
 
@@ -5359,11 +5583,11 @@ func runMove(args []string) error {
 		srcEpicIndexPath := filepath.Join(srcEpicDir, "index.yaml")
 		dstEpicIndexPath := filepath.Join(dstEpicDir, "index.yaml")
 
-		srcEpicIndex, err := readYAMLMap(srcEpicIndexPath)
+		srcEpicIndex, err := readYAMLMapFile(srcEpicIndexPath)
 		if err != nil {
 			return err
 		}
-		dstEpicIndex, err := readYAMLMap(dstEpicIndexPath)
+		dstEpicIndex, err := readYAMLMapFile(dstEpicIndexPath)
 		if err != nil {
 			return err
 		}
@@ -5394,7 +5618,7 @@ func runMove(args []string) error {
 			filteredTasks = append(filteredTasks, entry)
 		}
 		srcEpicIndex["tasks"] = filteredTasks
-		if err := writeYAMLMap(srcEpicIndexPath, srcEpicIndex); err != nil {
+		if err := writeYAMLMapFile(srcEpicIndexPath, srcEpicIndex); err != nil {
 			return err
 		}
 
@@ -5410,7 +5634,7 @@ func runMove(args []string) error {
 			"depends_on":     task.DependsOn,
 		})
 		dstEpicIndex["tasks"] = dstTasks
-		if err := writeYAMLMap(dstEpicIndexPath, dstEpicIndex); err != nil {
+		if err := writeYAMLMapFile(dstEpicIndexPath, dstEpicIndex); err != nil {
 			return err
 		}
 
@@ -5438,7 +5662,7 @@ func runMove(args []string) error {
 		dstMsDir := filepath.Join(dataDir, dstPhase.Path, dstMilestone.Path)
 		dstMsIndexPath := filepath.Join(dstMsDir, "index.yaml")
 
-		dstMilestoneIndex, err := readYAMLMap(dstMsIndexPath)
+		dstMilestoneIndex, err := readYAMLMapFile(dstMsIndexPath)
 		if err != nil {
 			return err
 		}
@@ -5450,7 +5674,7 @@ func runMove(args []string) error {
 			return err
 		}
 
-		srcMsIndex, err := readYAMLMap(srcMsIndexPath)
+		srcMsIndex, err := readYAMLMapFile(srcMsIndexPath)
 		if err != nil {
 			return err
 		}
@@ -5467,7 +5691,7 @@ func runMove(args []string) error {
 			filteredEpics = append(filteredEpics, entry)
 		}
 		srcMsIndex["epics"] = filteredEpics
-		if err := writeYAMLMap(srcMsIndexPath, srcMsIndex); err != nil {
+		if err := writeYAMLMapFile(srcMsIndexPath, srcMsIndex); err != nil {
 			return err
 		}
 
@@ -5483,7 +5707,7 @@ func runMove(args []string) error {
 			"description":    srcEpic.Description,
 		})
 		dstMilestoneIndex["epics"] = dstMilestones
-		if err := writeYAMLMap(dstMsIndexPath, dstMilestoneIndex); err != nil {
+		if err := writeYAMLMapFile(dstMsIndexPath, dstMilestoneIndex); err != nil {
 			return err
 		}
 
@@ -5512,7 +5736,7 @@ func runMove(args []string) error {
 		dstPhaseDir := filepath.Join(dataDir, dstPhase.Path)
 		dstPhaseIndexPath := filepath.Join(dstPhaseDir, "index.yaml")
 
-		dstPhaseIndex, err := readYAMLMap(dstPhaseIndexPath)
+		dstPhaseIndex, err := readYAMLMapFile(dstPhaseIndexPath)
 		if err != nil {
 			return err
 		}
@@ -5524,7 +5748,7 @@ func runMove(args []string) error {
 			return err
 		}
 
-		srcPhaseIndex, err := readYAMLMap(srcPhaseIndexPath)
+		srcPhaseIndex, err := readYAMLMapFile(srcPhaseIndexPath)
 		if err != nil {
 			return err
 		}
@@ -5541,7 +5765,7 @@ func runMove(args []string) error {
 			filteredMilestones = append(filteredMilestones, entry)
 		}
 		srcPhaseIndex["milestones"] = filteredMilestones
-		if err := writeYAMLMap(srcPhaseIndexPath, srcPhaseIndex); err != nil {
+		if err := writeYAMLMapFile(srcPhaseIndexPath, srcPhaseIndex); err != nil {
 			return err
 		}
 
@@ -5557,7 +5781,7 @@ func runMove(args []string) error {
 			"description":    srcMilestone.Description,
 		})
 		dstPhaseIndex["milestones"] = dstMilestones
-		if err := writeYAMLMap(dstPhaseIndexPath, dstPhaseIndex); err != nil {
+		if err := writeYAMLMapFile(dstPhaseIndexPath, dstPhaseIndex); err != nil {
 			return err
 		}
 
@@ -5622,7 +5846,7 @@ func runSync() error {
 	}
 
 	rootPath := filepath.Join(dataDir, "index.yaml")
-	root, err := readYAMLMap(rootPath)
+	root, err := readYAMLMapFile(rootPath)
 	if err != nil {
 		return err
 	}
@@ -5639,7 +5863,7 @@ func runSync() error {
 		"blocked":     blockedTasks,
 		"pending":     pendingTasks,
 	}
-	if err := writeYAMLMap(rootPath, root); err != nil {
+	if err := writeYAMLMapFile(rootPath, root); err != nil {
 		return err
 	}
 	fmt.Println("Synced")
@@ -6206,7 +6430,7 @@ func appendToList(data map[string]interface{}, key string, item map[string]inter
 	data[key] = out
 }
 
-func readYAMLMap(path string) (map[string]interface{}, error) {
+func readYAMLMapFile(path string) (map[string]interface{}, error) {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
@@ -6218,7 +6442,7 @@ func readYAMLMap(path string) (map[string]interface{}, error) {
 	return out, nil
 }
 
-func writeYAMLMap(path string, value map[string]interface{}) error {
+func writeYAMLMapFile(path string, value map[string]interface{}) error {
 	payload, err := yaml.Marshal(value)
 	if err != nil {
 		return fmt.Errorf("failed to serialize %s: %w", path, err)
@@ -6236,4 +6460,320 @@ func idSuffixNumber(id string, prefix string) int {
 		return 1
 	}
 	return result
+}
+
+type skillInstallOperation struct {
+	Client   string
+	Artifact string
+	Path     string
+	Skill    string
+}
+
+func runSkills(args []string) error {
+	if len(args) == 0 || parseFlag(args, "--help", "-h") {
+		fmt.Println("Usage: backlog skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]")
+		return nil
+	}
+
+	sub := strings.TrimSpace(args[0])
+	if sub != "install" {
+		return fmt.Errorf("Unknown skills subcommand: %s", sub)
+	}
+
+	rest := args[1:]
+	if parseFlag(rest, "--help", "-h") {
+		fmt.Println("Usage: backlog skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]")
+		return nil
+	}
+	if err := validateAllowedFlags(rest, map[string]bool{
+		"--scope":   true,
+		"--client":  true,
+		"--artifact": true,
+		"--dir":     true,
+		"--force":   true,
+		"--dry-run": true,
+		"--json":    true,
+		"--help":    true,
+		"-h":        true,
+	}); err != nil {
+		return err
+	}
+
+	skillNames := positionalArgs(rest, map[string]bool{
+		"--scope":   true,
+		"--client":  true,
+		"--artifact": true,
+		"--dir":     true,
+	})
+	selectedSkills, err := resolveSkillNames(skillNames)
+	if err != nil {
+		return err
+	}
+
+	scope := strings.TrimSpace(parseOption(rest, "--scope"))
+	if scope == "" {
+		scope = "local"
+	}
+	if scope != "local" && scope != "global" {
+		return fmt.Errorf("Invalid scope: %s", scope)
+	}
+
+	clientName := strings.TrimSpace(parseOption(rest, "--client"))
+	if clientName == "" {
+		clientName = "common"
+	}
+	clients, err := resolveSkillClients(clientName)
+	if err != nil {
+		return err
+	}
+
+	artifact := strings.TrimSpace(parseOption(rest, "--artifact"))
+	if artifact == "" {
+		artifact = "skills"
+	}
+	artifacts, err := resolveSkillArtifacts(artifact)
+	if err != nil {
+		return err
+	}
+
+	outputDir := strings.TrimSpace(parseOption(rest, "--dir"))
+	force := parseFlag(rest, "--force")
+	dryRun := parseFlag(rest, "--dry-run")
+	outputJSON := parseFlag(rest, "--json")
+
+	warnings := []string{}
+	ops := make([]skillInstallOperation, 0)
+	for _, client := range clients {
+		for _, selectedArtifact := range artifacts {
+			if client == "codex" && selectedArtifact == "commands" {
+				warnings = append(warnings, "codex does not support 'commands' artifacts; skipping.")
+				continue
+			}
+
+			root, err := resolveSkillTargetRoot(client, scope, selectedArtifact, outputDir)
+			if err != nil {
+				return err
+			}
+			for _, skill := range selectedSkills {
+				target := ""
+				if selectedArtifact == "skills" {
+					target = filepath.Join(root, skill, "SKILL.md")
+				} else {
+					target = filepath.Join(root, skill+".md")
+				}
+				ops = append(ops, skillInstallOperation{
+					Client:   client,
+					Artifact: selectedArtifact,
+					Path:     target,
+					Skill:    skill,
+				})
+			}
+		}
+	}
+
+	sort.Slice(ops, func(i, j int) bool {
+		return ops[i].Path < ops[j].Path
+	})
+
+	if !dryRun && !force {
+		conflicts := make([]string, 0)
+		for _, op := range ops {
+			if _, err := os.Stat(op.Path); err == nil {
+				conflicts = append(conflicts, op.Path)
+			}
+		}
+		if len(conflicts) > 0 {
+			return fmt.Errorf(
+				"Refusing to overwrite existing files (use --force):\n%s",
+				strings.Join(conflicts, "\n"),
+			)
+		}
+	}
+
+	writtenCount := 0
+	if !dryRun {
+		for _, op := range ops {
+			if err := os.MkdirAll(filepath.Dir(op.Path), 0o755); err != nil {
+				return fmt.Errorf("failed to create directory %s: %w", filepath.Dir(op.Path), err)
+			}
+			content := ""
+			if op.Artifact == "skills" {
+				content = skillTemplate(op.Skill)
+			} else {
+				content = commandTemplate(op.Skill)
+			}
+			if err := os.WriteFile(op.Path, []byte(content), 0o644); err != nil {
+				return fmt.Errorf("failed to write %s: %w", op.Path, err)
+			}
+			writtenCount++
+		}
+	}
+
+	operationPayload := make([]map[string]any, 0, len(ops))
+	for _, op := range ops {
+		action := "written"
+		if dryRun {
+			action = "planned"
+		}
+		operationPayload = append(operationPayload, map[string]any{
+			"client":   op.Client,
+			"artifact": op.Artifact,
+			"path":     op.Path,
+			"action":   action,
+		})
+	}
+	outputDirValue := any(nil)
+	if outputDir != "" {
+		outputDirValue = outputDir
+	}
+	result := map[string]any{
+		"skills":       selectedSkills,
+		"scope":        scope,
+		"client":       clientName,
+		"artifact":     artifact,
+		"output_dir":   outputDirValue,
+		"dry_run":      dryRun,
+		"force":        force,
+		"warnings":     warnings,
+		"operations":   operationPayload,
+		"written_count": func() int {
+			if dryRun {
+				return 0
+			}
+			return writtenCount
+		}(),
+	}
+
+	if outputJSON {
+		raw, err := json.MarshalIndent(result, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(raw))
+		return nil
+	}
+
+	if dryRun {
+		fmt.Println("Dry run: no files written.")
+	} else {
+		fmt.Printf("Installed %d file(s).\n", writtenCount)
+	}
+	for _, warning := range warnings {
+		fmt.Printf("Warning: %s\n", warning)
+	}
+	return nil
+}
+
+func resolveSkillNames(names []string) ([]string, error) {
+	valid := []string{"plan-task", "plan-ingest", "start-tasks", "backlog-howto"}
+	normalized := make([]string, 0, len(names))
+	for _, name := range names {
+		trimmed := strings.TrimSpace(strings.ToLower(name))
+		if trimmed == "" {
+			continue
+		}
+		normalized = append(normalized, trimmed)
+	}
+	if len(normalized) == 0 || containsString(normalized, "all") {
+		return append([]string{}, valid...), nil
+	}
+	out := make([]string, 0, len(normalized))
+	seen := map[string]bool{}
+	for _, name := range normalized {
+		if !containsString(valid, name) {
+			return nil, fmt.Errorf("Invalid skill name: %s", name)
+		}
+		if seen[name] {
+			continue
+		}
+		seen[name] = true
+		out = append(out, name)
+	}
+	return out, nil
+}
+
+func resolveSkillClients(clientName string) ([]string, error) {
+	switch clientName {
+	case "common":
+		return []string{"codex", "claude", "opencode"}, nil
+	case "codex", "claude", "opencode":
+		return []string{clientName}, nil
+	default:
+		return nil, fmt.Errorf("Invalid client: %s", clientName)
+	}
+}
+
+func resolveSkillArtifacts(artifact string) ([]string, error) {
+	switch artifact {
+	case "both":
+		return []string{"skills", "commands"}, nil
+	case "skills", "commands":
+		return []string{artifact}, nil
+	default:
+		return nil, fmt.Errorf("Invalid artifact: %s", artifact)
+	}
+}
+
+func resolveSkillTargetRoot(client string, scope string, artifact string, outputDir string) (string, error) {
+	if outputDir != "" {
+		return filepath.Join(outputDir, artifact, client), nil
+	}
+	home := os.Getenv("HOME")
+	if strings.TrimSpace(home) == "" {
+		derived, err := os.UserHomeDir()
+		if err != nil {
+			return "", err
+		}
+		home = derived
+	}
+
+	switch client {
+	case "codex":
+		if artifact != "skills" {
+			return "", fmt.Errorf("codex does not support commands artifacts")
+		}
+		if scope == "local" {
+			return filepath.Join(".agents", "skills"), nil
+		}
+		codexHome := strings.TrimSpace(os.Getenv("CODEX_HOME"))
+		if codexHome != "" {
+			return filepath.Join(codexHome, "skills"), nil
+		}
+		return filepath.Join(home, ".agents", "skills"), nil
+	case "claude":
+		if scope == "local" {
+			return filepath.Join(".claude", artifact), nil
+		}
+		return filepath.Join(home, ".claude", artifact), nil
+	case "opencode":
+		if scope == "local" {
+			return filepath.Join(".opencode", artifact), nil
+		}
+		return filepath.Join(home, ".config", "opencode", artifact), nil
+	default:
+		return "", fmt.Errorf("Unknown client: %s", client)
+	}
+}
+
+func skillTemplate(name string) string {
+	if name == "plan-task" {
+		return "---\nname: plan-task\ndescription: plan task\n---\n# plan-task\n"
+	}
+	if name == "plan-ingest" {
+		return "---\nname: plan-ingest\ndescription: plan ingest\n---\n# plan-ingest\n"
+	}
+	if name == "backlog-howto" {
+		return skills.BacklogHowtoSkillMD
+	}
+	return "---\nname: start-tasks\ndescription: tasks grab and cycle\n---\n# start-tasks\n"
+}
+
+func commandTemplate(name string) string {
+	if name == "backlog-howto" {
+		return fmt.Sprintf(
+			"---\ndescription: Backlog overview/manual skill with common workflows and command usage.\n---\n\nLoad the installed `backlog-howto` skill instructions.\n\nSource of truth: `bl_skills/backlog-howto/SKILL.md`\nSkill-Version: %s\n",
+			skills.BacklogHowtoSkillVersion,
+		)
+	}
+	return fmt.Sprintf("---\ndescription: %s\n---\n%s\n", name, name)
 }

@@ -36,6 +36,7 @@ var parityVectors = [][]string{
 	{"update", "P1.M1.E1.T002", "blocked", "--reason", "waiting"},
 	{"unclaim", "P1.M1.E1.T001"},
 	{"dash", "--json"},
+	{"skills", "install", "plan-task", "--client=codex", "--artifact=skills", "--dry-run", "--json"},
 	{"log"},
 	{"tree"},
 	{"ls", "--json"},

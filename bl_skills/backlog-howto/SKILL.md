@@ -1,0 +1,85 @@
+---
+name: backlog-howto
+description: Backlog manual and overview for idea intake, task workflows, common command usage, and argument patterns. Use when an agent needs practical, end-to-end guidance for operating backlog effectively.
+---
+
+# Backlog How-To
+
+Skill-Version: 2026-02-23T09:36:08Z
+
+Use this skill as an overview/manual for daily backlog operation.
+
+## When To Use
+
+- Use when you need command-level guidance for backlog workflows.
+- Use when converting a rough idea into actionable backlog work.
+- Use when coordinating claims, blockers, handoffs, and completion loops.
+
+## Core Work Loop
+
+1. Claim work:
+   backlog grab
+2. Read details:
+   backlog show
+3. Set active context when needed:
+   backlog work TASK_ID
+4. Implement work.
+5. Complete:
+   backlog done TASK_ID
+6. Continue:
+   backlog cycle
+
+## Idea Workflow
+
+1. Capture intake:
+   backlog idea "idea title"
+2. Decompose using plan-task flow:
+   run /plan-task with the idea title
+3. Ingest plan into hierarchy:
+   backlog add, backlog add-epic, backlog add-milestone, backlog add-phase
+4. Verify placement:
+   backlog show PATH_ID
+   backlog list --milestone M#
+
+## Common Operations
+
+- Explicit claim by known IDs:
+  backlog claim TASK_ID TASK_ID
+- Auto selection:
+  backlog grab
+- Mark blocked:
+  backlog blocked --reason "message"
+- Hand off:
+  backlog handoff TASK_ID --to AGENT --notes "context"
+- Analyze blockers:
+  backlog blockers --suggest
+  backlog why TASK_ID
+- Preview queue:
+  backlog preview
+- Progress checks:
+  backlog dash
+  backlog report progress
+  backlog report velocity --days 14
+
+## Useful Arguments
+
+- backlog grab:
+  --single, --multi, --count N, --scope SCOPE, --agent AGENT
+- backlog claim:
+  --agent AGENT, --force
+- backlog done:
+  --verify, --force
+- backlog cycle:
+  optional TASK_ID, --agent AGENT
+- backlog blocked:
+  --reason is required, --no-grab optional
+
+## Guardrails
+
+- Do not assume positional arguments are valid for all commands.
+- If a backlog command fails with argument/usage parsing, run exactly one recovery command:
+  backlog cycle
+- Prefer explicit claim for specific IDs:
+  backlog claim TASK_ID TASK_ID
+- Use backlog grab for automatic selection, not for explicit IDs.
+- Keep Python, TypeScript, and Go behavior aligned when changing command semantics.

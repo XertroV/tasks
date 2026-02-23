@@ -992,6 +992,32 @@ tags: []
     expect(readFileSync(join(root, ".agents", "skills", "plan-task", "SKILL.md"), "utf8")).toContain("plan-task");
   });
 
+  test("skills install default includes backlog-howto", () => {
+    root = setupFixture();
+    const p = run(
+      ["skills", "install", "--client=codex", "--artifact=skills", "--dry-run", "--json"],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+    const dry = JSON.parse(p.stdout.toString());
+    expect(dry.skills).toContain("backlog-howto");
+    expect(
+      dry.operations.some((op: { path: string }) => op.path.includes(".agents/skills/backlog-howto/SKILL.md")),
+    ).toBeTrue();
+  });
+
+  test("skills install backlog-howto command artifact references source+version", () => {
+    root = setupFixture();
+    const p = run(
+      ["skills", "install", "backlog-howto", "--client=opencode", "--artifact=commands"],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+    const command = readFileSync(join(root, ".opencode", "commands", "backlog-howto.md"), "utf8");
+    expect(command).toContain("bl_skills/backlog-howto/SKILL.md");
+    expect(command).toContain("Skill-Version:");
+  });
+
   test("agents profile output", () => {
     root = setupFixture();
     let p = run(["agents", "--profile", "short"], root);

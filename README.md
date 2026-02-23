@@ -200,10 +200,17 @@ The `skills install` command exports planning workflows for AI coding agents:
 ```bash
 backlog skills install plan-ingest    # install for codex + claude + opencode
 backlog skills install start-tasks    # execution-loop skill
+backlog skills install backlog-howto  # backlog manual/overview skill
 backlog skills install all --artifact both   # everything
 ```
 
 Skills land in the standard locations (`.agents/skills/`, `.claude/skills/`, `.config/opencode/skills/`). Use `--scope global` for user-wide install, `--dir ./path` for portable export.
+
+Canonical source for `backlog-howto` is `bl_skills/backlog-howto/SKILL.md`. Refresh generated client constants with:
+
+```bash
+python bl_skills/sync_backlog_howto.py
+```
 
 ## TypeScript implementation
 

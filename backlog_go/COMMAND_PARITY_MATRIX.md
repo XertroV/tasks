@@ -47,7 +47,7 @@ implementations for milestone release planning.
 | `schema` | ❌ | Not implemented |
 | `session` | ❌ | Not implemented |
 | `agents` | ❌ | Not implemented |
-| `skills` | ❌ | Not implemented |
+| `skills` | ✅ | `install` implemented for codex/claude/opencode artifacts |
 | `idea` | ❌ | Not implemented |
 | `bug` | ❌ | Not implemented |
 | `handoff` | ❌ | Not implemented |

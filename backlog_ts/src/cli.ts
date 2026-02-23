@@ -48,6 +48,10 @@ import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
 import { runChecks } from "./check";
 import { BACKLOG_DIR, getDataDirName } from "./data_dir";
+import {
+  BACKLOG_HOWTO_SKILL_MD,
+  BACKLOG_HOWTO_SKILL_VERSION,
+} from "./generated/backlogHowtoSkill";
 
 const AGENTS_SNIPPETS: Record<string, string> = {
   short: `# AGENTS.md (Short)
@@ -2747,10 +2751,10 @@ async function cmdUnlock(args: string[]): Promise<void> {
   console.log(`Unlocked: ${canonicalId}`);
 }
 
-type InstallOp = { client: string; artifact: string; path: string; action?: string };
+type InstallOp = { client: string; artifact: string; path: string; skill: string; action?: string };
 
 function resolveSkills(names: string[]): string[] {
-  const valid = ["plan-task", "plan-ingest", "start-tasks"];
+  const valid = ["plan-task", "plan-ingest", "start-tasks", "backlog-howto"];
   const normalized = names.map((n) => n.trim().toLowerCase()).filter(Boolean);
   if (!normalized.length || normalized.includes("all")) return valid;
   for (const n of normalized) {
@@ -2783,10 +2787,14 @@ function defaultRoot(client: string, scope: string, artifact: string): string {
 function skillTemplate(name: string): string {
   if (name === "plan-task") return "---\nname: plan-task\ndescription: plan task\n---\n# plan-task\n";
   if (name === "plan-ingest") return "---\nname: plan-ingest\ndescription: plan ingest\n---\n# plan-ingest\n";
+  if (name === "backlog-howto") return BACKLOG_HOWTO_SKILL_MD;
   return "---\nname: start-tasks\ndescription: tasks grab and cycle\n---\n# start-tasks\n";
 }
 
 function commandTemplate(name: string): string {
+  if (name === "backlog-howto") {
+    return `---\ndescription: Backlog overview/manual skill with common workflows and command usage.\n---\n\nLoad the installed \`backlog-howto\` skill instructions.\n\nSource of truth: \`bl_skills/backlog-howto/SKILL.md\`\nSkill-Version: ${BACKLOG_HOWTO_SKILL_VERSION}\n`;
+  }
   return `---\ndescription: ${name}\n---\n${name}\n`;
 }
 
@@ -2848,7 +2856,7 @@ async function cmdSkills(args: string[]): Promise<void> {
       const root = outputDir ? join(outputDir, a, c) : defaultRoot(c, scope, a);
       for (const skill of selectedSkills) {
         const path = a === "skills" ? join(root, skill, "SKILL.md") : join(root, `${skill}.md`);
-        ops.push({ client: c, artifact: a, path });
+        ops.push({ client: c, artifact: a, path, skill });
       }
     }
   }
@@ -2862,8 +2870,8 @@ async function cmdSkills(args: string[]): Promise<void> {
     for (const op of ops) {
       await mkdir(dirname(op.path), { recursive: true });
       const content = op.artifact === "skills"
-        ? skillTemplate(op.path.includes("plan-task") ? "plan-task" : op.path.includes("plan-ingest") ? "plan-ingest" : "start-tasks")
-        : commandTemplate(op.path.includes("plan-task") ? "plan-task" : op.path.includes("plan-ingest") ? "plan-ingest" : "start-tasks");
+        ? skillTemplate(op.skill)
+        : commandTemplate(op.skill);
       await Bun.write(op.path, content);
     }
   }

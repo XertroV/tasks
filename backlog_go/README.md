@@ -64,9 +64,9 @@ Use `COMMAND_PARITY_MATRIX.md` for the authoritative matrix.
 - Implemented and parity-targeted: `init`, `list`, `ls`, `tree`, `show`, `add`,
   `add-epic`, `add-milestone`, `add-phase`, `set`, `update`, `claim`, `done`,
   `unclaim`, `grab`, `cycle`, `work`, `next`, `preview`, `sync`, `move`,
-  `log`, `dash`, `admin` (compatibility stub), `--help`, and `--version`.
+  `log`, `dash`, `skills`, `admin` (compatibility stub), `--help`, and `--version`.
 - Limited / planned for this milestone: `search`, `check`, `blockers`, `timeline`,
-  `report*`, `data*`, `schema`, `session`, `agents`, `skills`, `idea`,
+  `report*`, `data*`, `schema`, `session`, `agents`, `idea`,
   `bug`, `handoff`, `why`, and alias/legacy command surfaces.
 
 ## Related implementation folders

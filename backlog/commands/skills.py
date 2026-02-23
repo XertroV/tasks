@@ -11,10 +11,15 @@ from textwrap import dedent
 import click
 from rich.console import Console
 
+from .generated_backlog_howto import (
+    BACKLOG_HOWTO_SKILL_MD,
+    BACKLOG_HOWTO_SKILL_VERSION,
+)
+
 
 console = Console()
 
-VALID_SKILLS = ("plan-task", "plan-ingest", "start-tasks")
+VALID_SKILLS = ("plan-task", "plan-ingest", "start-tasks", "backlog-howto")
 VALID_CLIENTS = ("codex", "claude", "opencode", "common")
 VALID_ARTIFACTS = ("skills", "commands", "both")
 CLIENT_CAPABILITIES = {
@@ -92,7 +97,7 @@ def install_skills(
     dry_run: bool,
     output_json: bool,
 ):
-    """Install built-in skills (`plan-task`, `plan-ingest`, `start-tasks`) for supported clients."""
+    """Install built-in skills (`plan-task`, `plan-ingest`, `start-tasks`, `backlog-howto`) for supported clients."""
     try:
         if _should_prompt_for_client(ctx):
             client_name = _prompt_for_client()
@@ -401,6 +406,9 @@ def _render_skill_files(
             "references/tasks-cli-quick-reference.md": _tasks_cli_quick_reference(),
         }
 
+    if skill_name == "backlog-howto":
+        return {"SKILL.md": BACKLOG_HOWTO_SKILL_MD}
+
     raise ValueError(f"Unknown skill template: {skill_name}")
 
 
@@ -412,6 +420,8 @@ def _render_command_file(skill_name: str, *, client: str, max_subagents: int) ->
         return _plan_ingest_command(client=client, max_subagents=max_subagents)
     if skill_name == "start-tasks":
         return _start_tasks_command(client=client)
+    if skill_name == "backlog-howto":
+        return _backlog_howto_command(client=client)
     raise ValueError(f"Unknown command template: {skill_name}")
 
 
@@ -847,6 +857,37 @@ def _start_tasks_command(*, client: str) -> str:
         4. Continue repeating the cycle until the user stops or no work remains.
 
         Efficiency rule: use known command signatures directly and avoid repetitive `--help` calls.
+        """
+    )
+
+
+def _backlog_howto_command(*, client: str) -> str:
+    """Command markdown: backlog-howto."""
+    if client == "opencode":
+        return dedent(
+            f"""\
+            ---
+            description: Backlog overview/manual skill with common workflows and command usage.
+            ---
+
+            Load the installed `backlog-howto` skill instructions.
+
+            Source of truth: `bl_skills/backlog-howto/SKILL.md`
+            Skill-Version: {BACKLOG_HOWTO_SKILL_VERSION}
+            """
+        )
+
+    return dedent(
+        f"""\
+        ---
+        description: Backlog overview/manual skill with common workflows and command usage.
+        argument-hint: "[optional workflow focus]"
+        ---
+
+        Load the installed `backlog-howto` skill instructions.
+
+        Source of truth: `bl_skills/backlog-howto/SKILL.md`
+        Skill-Version: {BACKLOG_HOWTO_SKILL_VERSION}
         """
     )
 

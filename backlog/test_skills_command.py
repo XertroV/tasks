@@ -20,10 +20,11 @@ def test_install_default_local_common_skills(runner, tmp_path, monkeypatch):
     """Default install should write skills for codex, claude, and opencode."""
     monkeypatch.chdir(tmp_path)
 
-    result = runner.invoke(cli, ["skills", "install", "plan-ingest"])
+    result = runner.invoke(cli, ["skills", "install"])
 
     assert result.exit_code == 0
     assert (tmp_path / ".agents/skills/plan-ingest/SKILL.md").exists()
+    assert (tmp_path / ".agents/skills/backlog-howto/SKILL.md").exists()
     assert (tmp_path / ".claude/skills/plan-ingest/SKILL.md").exists()
     assert (tmp_path / ".opencode/skills/plan-ingest/SKILL.md").exists()
 
@@ -91,7 +92,7 @@ def test_start_tasks_frontmatter_is_valid_yaml(runner, tmp_path, monkeypatch):
 
 
 def test_all_includes_start_tasks_skill(runner, tmp_path, monkeypatch):
-    """Installing 'all' should include the start-tasks skill."""
+    """Installing 'all' should include start-tasks and backlog-howto skills."""
     monkeypatch.chdir(tmp_path)
 
     result = runner.invoke(cli, ["skills", "install", "all", "--client=codex"])
@@ -100,6 +101,19 @@ def test_all_includes_start_tasks_skill(runner, tmp_path, monkeypatch):
     assert (tmp_path / ".agents/skills/plan-task/SKILL.md").exists()
     assert (tmp_path / ".agents/skills/plan-ingest/SKILL.md").exists()
     assert (tmp_path / ".agents/skills/start-tasks/SKILL.md").exists()
+    assert (tmp_path / ".agents/skills/backlog-howto/SKILL.md").exists()
+
+
+def test_backlog_howto_skill_contains_version(runner, tmp_path, monkeypatch):
+    """Generated backlog-howto skill should include a skill version marker."""
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(cli, ["skills", "install", "backlog-howto", "--client=codex"])
+
+    assert result.exit_code == 0
+    content = (tmp_path / ".agents/skills/backlog-howto/SKILL.md").read_text()
+    assert "name: backlog-howto" in content
+    assert "Skill-Version:" in content
 
 
 def test_commands_artifact_skips_codex_with_warning(runner, tmp_path, monkeypatch):
@@ -319,3 +333,24 @@ def test_start_tasks_opencode_command_uses_expected_frontmatter(
     assert "argument-hint:" not in command
     assert "tasks grab" in command
     assert "tasks cycle" in command
+
+
+def test_backlog_howto_command_references_canonical_source(runner, tmp_path, monkeypatch):
+    """backlog-howto command artifact should include source and version references."""
+    monkeypatch.chdir(tmp_path)
+
+    result = runner.invoke(
+        cli,
+        [
+            "skills",
+            "install",
+            "backlog-howto",
+            "--client=opencode",
+            "--artifact=commands",
+        ],
+    )
+
+    assert result.exit_code == 0
+    command = (tmp_path / ".opencode/commands/backlog-howto.md").read_text()
+    assert "bl_skills/backlog-howto/SKILL.md" in command
+    assert "Skill-Version:" in command
