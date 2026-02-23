@@ -1,6 +1,6 @@
 id: P1.M3
 name: CLI Command Parity
-status: pending
+status: done
 estimate_hours: 110.0
 complexity: high
 depends_on: []
@@ -9,7 +9,7 @@ epics:
 - id: E1
   name: Core workflow command parity
   path: 01-core-workflow-command-parity
-  status: pending
+  status: done
   estimate_hours: 24.0
   complexity: high
   depends_on: []
@@ -19,7 +19,7 @@ epics:
 - id: E2
   name: Edit and modeling command parity
   path: 02-edit-and-modeling-command-pari
-  status: pending
+  status: done
   estimate_hours: 20.0
   complexity: high
   depends_on: []
@@ -29,7 +29,7 @@ epics:
 - id: E3
   name: Operational command parity
   path: 03-operational-command-parity
-  status: pending
+  status: done
   estimate_hours: 32.0
   complexity: high
   depends_on: []
@@ -39,7 +39,7 @@ epics:
 - id: E4
   name: Output contract and formatting parity
   path: 04-output-contract-and-formatting
-  status: pending
+  status: done
   estimate_hours: 20.0
   complexity: high
   depends_on: []

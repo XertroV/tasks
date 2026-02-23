@@ -1,6 +1,6 @@
 id: P1.M4.E4
 name: Versioning and migration handoff
-status: pending
+status: done
 estimate_hours: 5.0
 complexity: high
 depends_on: []

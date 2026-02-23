@@ -1,6 +1,6 @@
 id: P1.M2
 name: Domain Model and Loader Parity
-status: pending
+status: done
 estimate_hours: 55.0
 complexity: high
 depends_on: []
@@ -9,7 +9,7 @@ epics:
 - id: E1
   name: Models parity
   path: 01-models-parity
-  status: pending
+  status: done
   estimate_hours: 16.0
   complexity: high
   depends_on: []
@@ -19,7 +19,7 @@ epics:
 - id: E2
   name: Loader and YAML parsing parity
   path: 02-loader-and-yaml-parsing-parity
-  status: pending
+  status: done
   estimate_hours: 20.0
   complexity: high
   depends_on: []
@@ -29,7 +29,7 @@ epics:
 - id: E3
   name: Dependency graph and critical path parity
   path: 03-dependency-graph-and-critical
-  status: pending
+  status: done
   estimate_hours: 18.0
   complexity: high
   depends_on: []

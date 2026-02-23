@@ -1,0 +1,30 @@
+# Go module versioning and tag strategy
+
+This module follows semantic versioning for public releases.
+
+## Version policy
+
+- `vX.Y.Z` follows semantic versioning for Go-facing changes.
+- Patch releases (`PATCH`) are preferred for regressions, CLI bug fixes, and
+  compatibility bugfixes.
+- Minor releases (`MINOR`) include command additions or non-breaking behavior
+  expansion.
+- Major releases (`MAJOR`) are reserved for breaking command, output, or data
+  migration decisions.
+
+## Release tagging
+
+- Tag from this repository history using Git tags that map to release artifacts.
+- Tag naming uses the `v<major>.<minor>.<patch>` convention.
+- The CI/CD workflow should gate release candidates with:
+  - formatting (`make fmt-check`)
+  - unit tests (`go test ./...`)
+  - coverage threshold (`95%` minimum)
+  - parity/fixture checks for supported commands.
+
+## Module compatibility
+
+- `cmd/root.go` reports version metadata; keep command output synchronized with
+  release notes when bumping tag intent.
+- Release notes should call out command gaps clearly to avoid accidental support
+  expectations.

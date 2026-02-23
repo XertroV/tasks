@@ -1,12 +1,17 @@
 ---
 id: P1.M4.E1.T002
 title: Add install/run/build docs and examples
-status: pending
+status: done
 estimate_hours: 4.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T09:12:56.684045+00:00'
+started_at: '2026-02-23T09:12:56.684045+00:00'
+completed_at: '2026-02-23T09:15:10.014492+00:00'
+duration_minutes: 2.2221738666666666
 ---
 
 # Add install/run/build docs and examples

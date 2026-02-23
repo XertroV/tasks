@@ -1,12 +1,17 @@
 ---
 id: P1.M1.E2.T003
 title: Add shared configuration and context helpers
-status: pending
+status: done
 estimate_hours: 4.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:29:51.628482+00:00'
+started_at: '2026-02-22T06:29:51.628482+00:00'
+completed_at: '2026-02-22T06:30:36.685724+00:00'
+duration_minutes: 0.75095385
 ---
 
 # Add shared configuration and context helpers

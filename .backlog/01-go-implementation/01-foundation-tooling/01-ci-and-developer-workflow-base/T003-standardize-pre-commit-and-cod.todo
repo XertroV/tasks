@@ -1,12 +1,17 @@
 ---
 id: P1.M1.E1.T003
 title: Standardize pre-commit and code style checks
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:24:37.928403+00:00'
+started_at: '2026-02-22T06:24:37.928403+00:00'
+completed_at: '2026-02-22T06:32:40.630990+00:00'
+duration_minutes: 8.045042983333333
 ---
 
 # Standardize pre-commit and code style checks

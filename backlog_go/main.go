@@ -1,7 +1,15 @@
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/XertroV/tasks/backlog_go/internal/runner"
+)
 
 func main() {
-	fmt.Println("backlog_go implementation scaffold. Work is defined in / .backlog/01-go-implementation.")
+	if err := runner.Run(os.Args[1:]...); err != nil {
+		os.Stderr.WriteString(err.Error())
+		os.Stderr.WriteString("\n")
+		os.Exit(1)
+	}
 }

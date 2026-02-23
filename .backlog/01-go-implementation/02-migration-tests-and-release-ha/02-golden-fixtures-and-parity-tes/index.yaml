@@ -1,6 +1,6 @@
 id: P1.M4.E2
 name: Golden fixtures and parity test harness
-status: pending
+status: done
 estimate_hours: 12.0
 complexity: high
 depends_on: []

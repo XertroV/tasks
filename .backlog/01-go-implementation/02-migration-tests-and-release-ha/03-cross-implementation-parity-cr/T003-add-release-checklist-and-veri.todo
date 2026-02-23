@@ -1,12 +1,17 @@
 ---
 id: P1.M4.E3.T003
 title: Add release checklist and verification steps
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: medium
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T09:15:14.365984+00:00'
+started_at: '2026-02-23T09:15:14.365984+00:00'
+completed_at: '2026-02-23T09:15:34.688834+00:00'
+duration_minutes: 0.33871403333333333
 ---
 
 # Add release checklist and verification steps

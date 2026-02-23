@@ -1,12 +1,17 @@
 ---
 id: P1.M4.E3.T001
 title: Draft explicit parity acceptance checklist
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T09:15:14.364060+00:00'
+started_at: '2026-02-23T09:15:14.364060+00:00'
+completed_at: '2026-02-23T09:15:34.101887+00:00'
+duration_minutes: 0.32896363333333334
 ---
 
 # Draft explicit parity acceptance checklist

@@ -1,6 +1,6 @@
 id: P1.M2.E1
 name: Models parity
-status: pending
+status: done
 estimate_hours: 16.0
 complexity: high
 depends_on: []

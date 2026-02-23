@@ -3,14 +3,14 @@ phases:
 - id: P1
   name: Go implementation
   path: 01-go-implementation
-  status: pending
+  status: done
   weeks: 6
   estimate_hours: 240.0
   priority: high
   depends_on: []
   description: Implement a standalone Go implementation of the backlog CLI with parity
     and migration parity to Python/TypeScript.
-  locked: false
+  locked: true
 project: The Backlogs
 timeline_weeks: 0
 stats:

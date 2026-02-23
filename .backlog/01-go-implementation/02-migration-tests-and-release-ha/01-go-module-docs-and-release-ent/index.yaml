@@ -1,6 +1,6 @@
 id: P1.M4.E1
 name: Go module docs and release entrypoints
-status: pending
+status: done
 estimate_hours: 10.0
 complexity: high
 depends_on: []

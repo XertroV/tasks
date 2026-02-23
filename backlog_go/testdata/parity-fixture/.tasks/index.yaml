@@ -1,0 +1,5 @@
+project: Parity
+phases:
+  - id: P1
+    name: Phase
+    path: 01-phase

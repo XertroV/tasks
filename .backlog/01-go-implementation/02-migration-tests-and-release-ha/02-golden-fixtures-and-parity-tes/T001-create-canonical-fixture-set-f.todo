@@ -1,12 +1,17 @@
 ---
 id: P1.M4.E2.T001
 title: Create canonical fixture set for go loader parity
-status: pending
+status: done
 estimate_hours: 5.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T09:15:54.549889+00:00'
+started_at: '2026-02-23T09:15:54.549889+00:00'
+completed_at: '2026-02-23T09:17:29.206758+00:00'
+duration_minutes: 1.5776143166666665
 ---
 
 # Create canonical fixture set for go loader parity

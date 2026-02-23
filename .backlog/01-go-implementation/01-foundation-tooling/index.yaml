@@ -1,6 +1,6 @@
 id: P1.M1
 name: Foundation & Tooling
-status: pending
+status: done
 estimate_hours: 40.0
 complexity: high
 depends_on: []
@@ -9,7 +9,7 @@ epics:
 - id: E1
   name: CI and developer workflow baseline
   path: 01-ci-and-developer-workflow-base
-  status: pending
+  status: done
   estimate_hours: 12.0
   complexity: high
   depends_on: []
@@ -18,7 +18,7 @@ epics:
 - id: E2
   name: Project bootstrap and module layout
   path: 02-project-bootstrap-and-module-l
-  status: pending
+  status: done
   estimate_hours: 16.0
   complexity: high
   depends_on: []
@@ -28,7 +28,7 @@ epics:
 - id: E3
   name: Backlog data layout and path conventions
   path: 03-backlog-data-layout-and-path-c
-  status: pending
+  status: done
   estimate_hours: 12.0
   complexity: high
   depends_on: []

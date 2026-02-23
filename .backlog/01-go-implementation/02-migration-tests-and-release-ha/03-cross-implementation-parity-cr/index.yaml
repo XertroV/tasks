@@ -1,6 +1,6 @@
 id: P1.M4.E3
 name: Cross-implementation parity criteria and release gating
-status: pending
+status: done
 estimate_hours: 8.0
 complexity: high
 depends_on: []

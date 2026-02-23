@@ -1,12 +1,17 @@
 ---
 id: P1.M4.E3.T002
 title: Set CI gating thresholds and fail conditions
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T09:15:14.365223+00:00'
+started_at: '2026-02-23T09:15:14.365223+00:00'
+completed_at: '2026-02-23T09:15:34.397433+00:00'
+duration_minutes: 0.3338699666666667
 ---
 
 # Set CI gating thresholds and fail conditions

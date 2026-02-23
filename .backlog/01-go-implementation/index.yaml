@@ -1,7 +1,7 @@
 id: P1
 name: Go implementation
-status: pending
-locked: false
+status: done
+locked: true
 weeks: 6
 estimate_hours: 240.0
 complexity: medium
@@ -10,7 +10,7 @@ milestones:
 - id: M1
   name: Foundation & Tooling
   path: 01-foundation-tooling
-  status: pending
+  status: done
   estimate_hours: 40.0
   complexity: high
   depends_on: []
@@ -20,7 +20,7 @@ milestones:
 - id: M2
   name: Domain Model and Loader Parity
   path: 01-domain-model-and-loader-parity
-  status: pending
+  status: done
   estimate_hours: 55.0
   complexity: high
   depends_on:
@@ -31,7 +31,7 @@ milestones:
 - id: M3
   name: CLI Command Parity
   path: 01-cli-command-parity
-  status: pending
+  status: done
   estimate_hours: 110.0
   complexity: high
   depends_on:
@@ -42,7 +42,7 @@ milestones:
 - id: M4
   name: Migration, Tests, and Release Hardening
   path: 02-migration-tests-and-release-ha
-  status: pending
+  status: done
   estimate_hours: 35.0
   complexity: high
   depends_on:

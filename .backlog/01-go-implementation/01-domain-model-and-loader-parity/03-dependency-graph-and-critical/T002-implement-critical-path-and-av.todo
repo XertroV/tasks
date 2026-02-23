@@ -1,12 +1,17 @@
 ---
 id: P1.M2.E3.T002
 title: Implement critical path and availability filtering
-status: pending
+status: done
 estimate_hours: 6.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:32:44.989882+00:00'
+started_at: '2026-02-22T06:32:44.989882+00:00'
+completed_at: '2026-02-22T06:44:41.318735+00:00'
+duration_minutes: 11.938814033333333
 ---
 
 # Implement critical path and availability filtering

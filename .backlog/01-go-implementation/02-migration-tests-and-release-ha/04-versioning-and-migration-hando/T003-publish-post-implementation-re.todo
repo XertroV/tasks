@@ -1,12 +1,17 @@
 ---
 id: P1.M4.E4.T003
 title: Publish post-implementation review summary
-status: pending
+status: done
 estimate_hours: 1.0
 complexity: medium
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T09:15:38.416115+00:00'
+started_at: '2026-02-23T09:15:38.416115+00:00'
+completed_at: '2026-02-23T09:15:52.596488+00:00'
+duration_minutes: 0.23633933333333335
 ---
 
 # Publish post-implementation review summary

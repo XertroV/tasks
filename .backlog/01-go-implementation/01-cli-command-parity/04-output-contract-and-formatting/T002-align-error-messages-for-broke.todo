@@ -1,12 +1,17 @@
 ---
 id: P1.M3.E4.T002
 title: Align error messages for broken parse/deps/locking
-status: pending
+status: done
 estimate_hours: 6.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-23T05:58:40.039316+00:00'
+started_at: '2026-02-23T05:58:40.039316+00:00'
+completed_at: '2026-02-23T06:31:25.150882+00:00'
+duration_minutes: 32.75185925
 ---
 
 # Align error messages for broken parse/deps/locking

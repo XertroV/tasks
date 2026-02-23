@@ -1,12 +1,17 @@
 ---
 id: P1.M1.E1.T001
 title: Create baseline Go module tooling
-status: pending
+status: done
 estimate_hours: 2.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-20T15:32:28.531138+00:00'
+started_at: '2026-02-20T15:32:28.531138+00:00'
+completed_at: '2026-02-20T15:33:10.781485+00:00'
+duration_minutes: 0.7041722499999999
 ---
 
 # Create baseline Go module tooling

@@ -1,12 +1,17 @@
 ---
 id: P1.M2.E2.T003
 title: Handle missing files and legacy key compatibility
-status: pending
+status: done
 estimate_hours: 4.0
 complexity: medium
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:38:04.442656+00:00'
+started_at: '2026-02-22T06:38:04.442656+00:00'
+completed_at: '2026-02-22T06:44:38.401442+00:00'
+duration_minutes: 6.565979483333334
 ---
 
 # Handle missing files and legacy key compatibility

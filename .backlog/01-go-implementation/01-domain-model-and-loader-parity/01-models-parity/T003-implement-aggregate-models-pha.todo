@@ -1,12 +1,17 @@
 ---
 id: P1.M2.E1.T003
 title: Implement aggregate models (Phase, Milestone, Epic, TaskTree)
-status: pending
+status: done
 estimate_hours: 7.0
 complexity: high
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:35:01.912114+00:00'
+started_at: '2026-02-22T06:35:01.912114+00:00'
+completed_at: '2026-02-22T06:38:01.118371+00:00'
+duration_minutes: 2.986770816666667
 ---
 
 # Implement aggregate models (Phase, Milestone, Epic, TaskTree)

@@ -1,6 +1,6 @@
 id: P1.M1.E3
 name: Backlog data layout and path conventions
-status: pending
+status: done
 estimate_hours: 12.0
 complexity: high
 depends_on: []

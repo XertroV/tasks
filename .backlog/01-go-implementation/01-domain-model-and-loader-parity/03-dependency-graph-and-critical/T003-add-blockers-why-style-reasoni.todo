@@ -1,12 +1,17 @@
 ---
 id: P1.M2.E3.T003
 title: Add blockers/why style reasoning helpers
-status: pending
+status: done
 estimate_hours: 3.0
 complexity: medium
 priority: medium
 depends_on: []
 tags: []
+claimed_by: cli-user
+claimed_at: '2026-02-22T06:32:44.990544+00:00'
+started_at: '2026-02-22T06:32:44.990544+00:00'
+completed_at: '2026-02-22T06:44:42.942446+00:00'
+duration_minutes: 11.9658648
 ---
 
 # Add blockers/why style reasoning helpers
