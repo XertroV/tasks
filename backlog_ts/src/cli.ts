@@ -1433,6 +1433,7 @@ async function cmdTree(args: string[]): Promise<void> {
       textError((error as Error).message);
     }
   }
+  const isScopedPathQuery = pathQuery !== undefined;
 
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
@@ -1479,8 +1480,12 @@ async function cmdTree(args: string[]): Promise<void> {
   if (unfinished) {
     phasesToShow = phasesToShow.filter((p) => hasUnfinishedMilestones(p));
   }
-  const bugsToShow = (tree.bugs ?? []).filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
-  const ideasToShow = (tree.ideas ?? []).filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
+  let bugsToShow: Task[] = [];
+  let ideasToShow: Task[] = [];
+  if (!isScopedPathQuery) {
+    bugsToShow = (tree.bugs ?? []).filter((b) => includeAuxItem(b.status, unfinished, showCompletedAux));
+    ideasToShow = (tree.ideas ?? []).filter((i) => includeAuxItem(i.status, unfinished, showCompletedAux));
+  }
   const hasBugs = bugsToShow.length > 0;
   const hasIdeas = ideasToShow.length > 0;
   const hasAux = hasBugs || hasIdeas;
@@ -1518,7 +1523,7 @@ async function cmdTree(args: string[]): Promise<void> {
     }
   }
 
-  if (pathQuery && phasesToShow.length === 0 && !hasAux) {
+  if (pathQuery && phasesToShow.length === 0) {
     console.log(
       pc.yellow(`No tree nodes found for path query: ${pathQueryText ?? ""}`),
     );

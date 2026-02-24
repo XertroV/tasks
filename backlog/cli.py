@@ -1884,6 +1884,7 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
         loader = TaskLoader()
         tree_data = loader.load("metadata", include_bugs=True, include_ideas=True)
         parsed_query = PathQuery.parse(path_query) if path_query else None
+        is_scoped_query = parsed_query is not None
         config = load_config()
 
         calc = CriticalPathCalculator(tree_data, config["complexity_multipliers"])
@@ -1965,16 +1966,19 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
                 p for p in phases_to_show if _has_unfinished_milestones(p)
             ]
 
-        bugs_to_show = [
-            b
-            for b in getattr(tree_data, "bugs", [])
-            if _include_aux_item(b.status, unfinished, show_completed_aux)
-        ]
-        ideas_to_show = [
-            i
-            for i in getattr(tree_data, "ideas", [])
-            if _include_aux_item(i.status, unfinished, show_completed_aux)
-        ]
+        bugs_to_show = []
+        ideas_to_show = []
+        if not is_scoped_query:
+            bugs_to_show = [
+                b
+                for b in getattr(tree_data, "bugs", [])
+                if _include_aux_item(b.status, unfinished, show_completed_aux)
+            ]
+            ideas_to_show = [
+                i
+                for i in getattr(tree_data, "ideas", [])
+                if _include_aux_item(i.status, unfinished, show_completed_aux)
+            ]
         has_bugs = len(bugs_to_show) > 0
         has_ideas = len(ideas_to_show) > 0
         has_aux = has_bugs or has_ideas
@@ -1987,7 +1991,7 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
             for line in lines:
                 console.print(line)
 
-        if path_query and not phases_to_show and not has_aux:
+        if path_query and not phases_to_show:
             console.print(f"No tree nodes found for path query: {path_query}")
 
         # Render auxiliary sections

@@ -1684,6 +1684,21 @@ tags: []
     expect(out).not.toContain("P1.M1.E1.T002");
   });
 
+  test("tree scoped path query hides bug and idea sections", () => {
+    root = setupFixture(true);
+    let p = run(["idea", "Root idea"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["tree", "P1.M1.E1"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).not.toContain("Bugs");
+    expect(out).not.toContain("Ideas");
+    expect(out).not.toContain("Root idea");
+    expect(out).not.toContain("Critical Bug");
+    expect(out).toContain("P1.M1.E1.T001");
+  });
+
   test("tree path query wildcard keeps descendants", () => {
     root = setupFixture();
     let p = run(["tree", "P1.*"], root);
@@ -1704,6 +1719,13 @@ tags: []
 
   test("tree path query with no match prints helpful message", () => {
     root = setupFixture();
+    let p = run(["tree", "P9"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("No tree nodes found for path query: P9");
+  });
+
+  test("tree path query no match prints helpful message with aux items", () => {
+    root = setupFixture(true);
     let p = run(["tree", "P9"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("No tree nodes found for path query: P9");

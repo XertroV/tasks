@@ -3617,6 +3617,7 @@ func runTree(args []string) error {
 		return err
 	}
 	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
+	isScopedPathQuery := pathQuery != nil
 
 	filteredPhases := tree.Phases
 	if pathQuery != nil {
@@ -3628,14 +3629,16 @@ func runTree(args []string) error {
 			filteredPhases = filterUnfinishedPhases(filteredPhases)
 		}
 		output := mapTreePayload(filteredPhases, criticalPath, nextAvailable, depth, showDetails, unfinished, showCompletedAux)
-		for _, bug := range tree.Bugs {
-			if includeCompletionAux(bug.Status, unfinished, showCompletedAux) {
-				output.Bugs = append(output.Bugs, treeTaskFromTask(bug, criticalPath))
+		if !isScopedPathQuery {
+			for _, bug := range tree.Bugs {
+				if includeCompletionAux(bug.Status, unfinished, showCompletedAux) {
+					output.Bugs = append(output.Bugs, treeTaskFromTask(bug, criticalPath))
+				}
 			}
-		}
-		for _, idea := range tree.Ideas {
-			if includeCompletionAux(idea.Status, unfinished, showCompletedAux) {
-				output.Ideas = append(output.Ideas, treeTaskFromTask(idea, criticalPath))
+			for _, idea := range tree.Ideas {
+				if includeCompletionAux(idea.Status, unfinished, showCompletedAux) {
+					output.Ideas = append(output.Ideas, treeTaskFromTask(idea, criticalPath))
+				}
 			}
 		}
 		raw, err := json.MarshalIndent(output, "", "  ")
@@ -3651,15 +3654,17 @@ func runTree(args []string) error {
 	}
 
 	bugsToShow := []models.Task{}
-	for _, bug := range tree.Bugs {
-		if includeCompletionAux(bug.Status, unfinished, showCompletedAux) {
-			bugsToShow = append(bugsToShow, bug)
-		}
-	}
 	ideasToShow := []models.Task{}
-	for _, idea := range tree.Ideas {
-		if includeCompletionAux(idea.Status, unfinished, showCompletedAux) {
-			ideasToShow = append(ideasToShow, idea)
+	if !isScopedPathQuery {
+		for _, bug := range tree.Bugs {
+			if includeCompletionAux(bug.Status, unfinished, showCompletedAux) {
+				bugsToShow = append(bugsToShow, bug)
+			}
+		}
+		for _, idea := range tree.Ideas {
+			if includeCompletionAux(idea.Status, unfinished, showCompletedAux) {
+				ideasToShow = append(ideasToShow, idea)
+			}
 		}
 	}
 	hasAux := len(bugsToShow) > 0 || len(ideasToShow) > 0
@@ -3672,7 +3677,7 @@ func runTree(args []string) error {
 		}
 	}
 
-	if pathQuery != nil && len(filteredPhases) == 0 && !hasAux {
+	if pathQuery != nil && len(filteredPhases) == 0 {
 		fmt.Printf("%s: %s\n", styleError("No tree nodes found for path query"), pathQuery.Raw)
 	}
 

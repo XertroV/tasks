@@ -1660,6 +1660,23 @@ def test_tree_path_query_filters_to_matching_nodes(runner, tmp_tasks_dir):
     assert "P1.M1.E1.T001" not in result.output
 
 
+def test_tree_path_query_scoped_text_hides_aux_items(runner, tmp_tasks_dir):
+    """Scoped tree output should hide bugs and ideas from aux sections."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Root bug", status="pending")
+    idea_result = runner.invoke(cli, ["idea", "Root idea"])
+    assert idea_result.exit_code == 0
+
+    result = runner.invoke(cli, ["tree", "P1.M1.E1"])
+    assert result.exit_code == 0
+    assert "Root bug" not in result.output
+    assert "Root idea" not in result.output
+    assert "Bugs" not in result.output
+    assert "Ideas" not in result.output
+    assert "P1.M1.E1.T002" in result.output
+
+
 def test_tree_path_query_with_wildcard_includes_descendants(runner, tmp_tasks_dir):
     """Tree path query should include wildcard descendants."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
@@ -1674,6 +1691,18 @@ def test_tree_path_query_with_wildcard_includes_descendants(runner, tmp_tasks_di
 def test_tree_path_query_no_match_shows_message(runner, tmp_tasks_dir):
     """Tree path query should report no matching nodes when query doesn't match."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+
+    result = runner.invoke(cli, ["tree", "P9"])
+    assert result.exit_code == 0
+    assert "No tree nodes found for path query: P9" in result.output
+
+
+def test_tree_path_query_no_match_shows_message_with_aux_items(runner, tmp_tasks_dir):
+    """No-match path query message should still print when aux items exist."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_bug_file(tmp_tasks_dir, "B001", "Root bug", status="pending")
+    idea_result = runner.invoke(cli, ["idea", "Root idea"])
+    assert idea_result.exit_code == 0
 
     result = runner.invoke(cli, ["tree", "P9"])
     assert result.exit_code == 0

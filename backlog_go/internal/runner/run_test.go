@@ -2105,6 +2105,62 @@ func TestRunTreeHidesCompletedBugsByDefault(t *testing.T) {
 	}
 }
 
+func TestRunTreePathQueryHidesAuxItemsFromText(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "tree", "P1.M1.E1")
+	if err != nil {
+		t.Fatalf("run tree P1.M1.E1 = %v, expected nil", err)
+	}
+
+	if strings.Contains(output, "Bugs") {
+		t.Fatalf("output = %q, expected Bugs section to be scoped out", output)
+	}
+	if strings.Contains(output, "Ideas") {
+		t.Fatalf("output = %q, expected Ideas section to be scoped out", output)
+	}
+	if strings.Contains(output, "Root bug") {
+		t.Fatalf("output = %q, expected scoped tree to hide bug", output)
+	}
+	if strings.Contains(output, "Root idea") {
+		t.Fatalf("output = %q, expected scoped tree to hide idea", output)
+	}
+}
+
+func TestRunTreePathQueryNoMatchStillPrintsNoMatchMessageWhenAuxExists(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "tree", "P9")
+	if err != nil {
+		t.Fatalf("run tree P9 = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "No tree nodes found for path query: P9") {
+		t.Fatalf("output = %q, expected no-match message", output)
+	}
+}
+
+func TestRunTreePathQueryJSONExcludesAuxItems(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	payloadRaw, err := runInDir(t, root, "tree", "P1.M1.E1", "--json")
+	if err != nil {
+		t.Fatalf("run tree P1.M1.E1 --json = %v, expected nil", err)
+	}
+
+	payload := cliTreeJSON{}
+	decodeJSONPayload(t, payloadRaw, &payload)
+
+	if len(payload.Bugs) != 0 {
+		t.Fatalf("bugs payload = %#v, expected empty for scoped path query", payload.Bugs)
+	}
+	if len(payload.Ideas) != 0 {
+		t.Fatalf("ideas payload = %#v, expected empty for scoped path query", payload.Ideas)
+	}
+}
+
 func TestRunDashCommandOutputsCurrentTaskAndProgress(t *testing.T) {
 	t.Parallel()
 
