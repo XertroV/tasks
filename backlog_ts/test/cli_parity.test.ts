@@ -1,8 +1,13 @@
 import { expect, test } from "bun:test";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const packageRoot = fileURLToPath(new URL("..", import.meta.url));
+const cliPath = join(packageRoot, "bin", "backlog");
 
 function run(args: string[]) {
-  return Bun.spawnSync(["bun", "run", "src/cli.ts", ...args], {
-    cwd: process.cwd(),
+  return Bun.spawnSync(["bun", cliPath, ...args], {
+    cwd: packageRoot,
     stdout: "pipe",
     stderr: "pipe",
   });

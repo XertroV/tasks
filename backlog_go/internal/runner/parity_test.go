@@ -93,6 +93,7 @@ func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
 	fixtureRoot := parityFixtureRoot(t)
 	template := filepath.Join(fixtureRoot, ".tasks")
 	pythonScript := filepath.Join(projectRoot, "backlog.py")
+	tsBundle := buildTypeScriptParityBundle(t, bunBinary, projectRoot)
 
 	for _, vector := range parityVectors {
 		vector := vector
@@ -110,10 +111,9 @@ func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
 			if runErr != nil {
 				t.Fatalf("python %s = %v", strings.Join(vector, " "), runErr)
 			}
-			tsScript := filepath.Join(projectRoot, "backlog_ts", "src", "cli.ts")
-			tsResult, runErr := runCommand(bunBinary, []string{"run", tsScript}, vector, tsRoot)
+			tsResult, runErr := runCommand(bunBinary, []string{tsBundle}, vector, tsRoot)
 			if runErr != nil {
-				t.Fatalf("bun run src/cli.ts %s = %v", strings.Join(vector, " "), runErr)
+				t.Fatalf("bun %s %s = %v", tsBundle, strings.Join(vector, " "), runErr)
 			}
 			tsResult.Stdout = sanitizeOutput(tsResult.Stdout, tsRoot)
 
@@ -202,6 +202,7 @@ func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing
 
 	fixtureRoot := parityFixtureRoot(t)
 	template := filepath.Join(fixtureRoot, ".tasks")
+	tsBundle := buildTypeScriptParityBundle(t, bunBinary, projectRoot)
 
 	type parityFailureCase struct {
 		command []string
@@ -248,14 +249,9 @@ func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing
 			if runErr != nil {
 				t.Fatalf("python %s = %v", strings.Join(testCase.command, " "), runErr)
 			}
-			tsResult, runErr := runCommand(
-				bunBinary,
-				[]string{"run", filepath.Join(projectRoot, "backlog_ts", "src", "cli.ts")},
-				testCase.command,
-				tsRoot,
-			)
+			tsResult, runErr := runCommand(bunBinary, []string{tsBundle}, testCase.command, tsRoot)
 			if runErr != nil {
-				t.Fatalf("bun run src/cli.ts %s = %v", strings.Join(testCase.command, " "), runErr)
+				t.Fatalf("bun %s %s = %v", tsBundle, strings.Join(testCase.command, " "), runErr)
 			}
 
 			if goResult.Code == 0 {
@@ -292,6 +288,38 @@ func mustProjectRoot(t *testing.T) string {
 		t.Fatal("failed to resolve project root caller path")
 	}
 	return filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", "..", ".."))
+}
+
+func buildTypeScriptParityBundle(t *testing.T, bunBinary, projectRoot string) string {
+	t.Helper()
+	entrypoint := filepath.Join(projectRoot, "backlog_ts", "src", "cli.ts")
+	outPath := filepath.Join(t.TempDir(), "backlog-ts-cli.bundle.js")
+	ctx, cancel := context.WithTimeout(context.Background(), parityCommandTimeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(
+		ctx,
+		bunBinary,
+		"build",
+		entrypoint,
+		"--outfile",
+		outPath,
+		"--target",
+		"bun",
+	)
+	cmd.Dir = projectRoot
+	var output bytes.Buffer
+	cmd.Stdout = &output
+	cmd.Stderr = &output
+
+	if err := cmd.Run(); err != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			t.Fatalf("bun build timed out after %s: %s", parityCommandTimeout, strings.TrimSpace(output.String()))
+		}
+		t.Fatalf("bun build failed: %v\n%s", err, strings.TrimSpace(output.String()))
+	}
+
+	return outPath
 }
 
 func runCommand(executable string, fixedArgs []string, command []string, cwd string) (parityCommandResult, error) {

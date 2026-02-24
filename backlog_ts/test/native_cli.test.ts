@@ -7,6 +7,8 @@ import { parse, stringify } from "yaml";
 
 let oldCwd = process.cwd();
 let root = "";
+const packageRoot = fileURLToPath(new URL("..", import.meta.url));
+const cliPath = join(packageRoot, "bin", "backlog");
 
 afterEach(() => {
   if (root) {
@@ -60,8 +62,7 @@ function setupFixtureInDir(tasksDir: string, includeBug = false): string {
 }
 
 function run(args: string[], cwd: string, extraEnv: NodeJS.ProcessEnv = {}) {
-  const cliPath = join(fileURLToPath(new URL("..", import.meta.url)), "src", "cli.ts");
-  return Bun.spawnSync(["bun", "run", cliPath, ...args], {
+  return Bun.spawnSync(["bun", cliPath, ...args], {
     cwd,
     stdout: "pipe",
     stderr: "pipe",

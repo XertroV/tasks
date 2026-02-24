@@ -3,6 +3,9 @@ import { Status } from "./models";
 import { findEpic, findMilestone, findPhase, getAllTasks } from "./helpers";
 
 export class CriticalPathCalculator {
+  private readonly allTasks: Task[];
+  private readonly taskById: Map<string, Task>;
+
   constructor(
     private readonly tree: TaskTree,
     private readonly complexityMultipliers: Record<string, number> = {
@@ -11,7 +14,10 @@ export class CriticalPathCalculator {
       high: 1.5,
       critical: 2,
     },
-  ) {}
+  ) {
+    this.allTasks = getAllTasks(tree);
+    this.taskById = new Map(this.allTasks.map((task) => [task.id, task]));
+  }
 
   private score(task: Task): number {
     return task.estimateHours * (this.complexityMultipliers[task.complexity] ?? 1);
@@ -44,7 +50,7 @@ export class CriticalPathCalculator {
     const cpPos = new Map(criticalPath.map((id, idx) => [id, idx]));
     const ranked = taskIds
       .map((id, originalIdx) => {
-        const task = getAllTasks(this.tree).find((t) => t.id === id);
+        const task = this.taskById.get(id);
         if (!task) return undefined;
         const typeRank = this.typeRank(task);
         const priorityRank = this.priorityRank(task);
@@ -68,9 +74,8 @@ export class CriticalPathCalculator {
   isTaskAvailable(task: Task): boolean {
     if (task.status !== Status.PENDING || task.claimedBy) return false;
 
-    const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
     for (const dep of task.dependsOn) {
-      const depTasks = this.resolveDependencyTargets(dep, task.milestoneId, byId);
+      const depTasks = this.resolveDependencyTargets(dep, task.milestoneId);
       if (!depTasks || depTasks.some((depTask) => depTask.status !== Status.DONE)) {
         return false;
       }
@@ -123,7 +128,7 @@ export class CriticalPathCalculator {
   }
 
   findAllAvailable(): string[] {
-    return getAllTasks(this.tree)
+    return this.allTasks
       .filter((t) => this.isTaskAvailable(t))
       .sort((a, b) => this.compareAvailable(a, b))
       .map((t) => t.id);
@@ -178,11 +183,11 @@ export class CriticalPathCalculator {
   }
 
   private checkDependenciesWithinBatch(task: Task, batchTaskIds: string[]): boolean {
-    const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
+    const batchTaskIdSet = new Set(batchTaskIds);
 
     for (const depId of task.dependsOn) {
-      const depTasks = this.resolveDependencyTargets(depId, task.milestoneId, byId);
-      if (!depTasks || depTasks.some((depTask) => depTask.status !== Status.DONE && !batchTaskIds.includes(depTask.id))) {
+      const depTasks = this.resolveDependencyTargets(depId, task.milestoneId);
+      if (!depTasks || depTasks.some((depTask) => depTask.status !== Status.DONE && !batchTaskIdSet.has(depTask.id))) {
         return false;
       }
     }
@@ -193,7 +198,7 @@ export class CriticalPathCalculator {
         const taskIndex = epic.tasks.findIndex((t) => t.id === task.id);
         if (taskIndex > 0) {
           const prevTask = epic.tasks[taskIndex - 1];
-          if (prevTask.status !== Status.DONE && !batchTaskIds.includes(prevTask.id)) {
+          if (prevTask.status !== Status.DONE && !batchTaskIdSet.has(prevTask.id)) {
             return false;
           }
         }
@@ -234,8 +239,7 @@ export class CriticalPathCalculator {
   }
 
   calculate(): { criticalPath: string[]; nextAvailable?: string } {
-    const all = getAllTasks(this.tree);
-    const criticalPath = all.slice().sort((a, b) => this.score(b) - this.score(a)).map((t) => t.id);
+    const criticalPath = this.allTasks.slice().sort((a, b) => this.score(b) - this.score(a)).map((t) => t.id);
     const available = this.findAllAvailable();
     const nextAvailable = available[0];
     return { criticalPath, nextAvailable };
@@ -249,10 +253,9 @@ export class CriticalPathCalculator {
     if (visited.has(task.id)) return false;
     visited.add(task.id);
 
-    const byId = new Map(getAllTasks(this.tree).map((t) => [t.id, t]));
     for (const depId of task.dependsOn) {
       if (depId === targetId) return true;
-      const depTasks = this.resolveDependencyTargets(depId, task.milestoneId, byId);
+      const depTasks = this.resolveDependencyTargets(depId, task.milestoneId);
       if (!depTasks) {
         continue;
       }
@@ -268,9 +271,8 @@ export class CriticalPathCalculator {
   private resolveDependencyTargets(
     depId: string,
     milestoneId: string | undefined,
-    byId: Map<string, Task>,
   ): Task[] | null {
-    const direct = byId.get(depId);
+    const direct = this.taskById.get(depId);
     if (direct) return [direct];
 
     const resolvedEpicId = depId.includes(".") ? depId : milestoneId ? `${milestoneId}.${depId}` : depId;
@@ -290,7 +292,7 @@ export class CriticalPathCalculator {
 
     const selected: Task[] = [];
     for (const id of prioritizedBugIds) {
-      const task = getAllTasks(this.tree).find((t) => t.id === id);
+      const task = this.taskById.get(id);
       if (!task) continue;
       if (selected.length >= count) break;
       if (this.hasDependencyRelationship(primaryTask, task)) continue;
