@@ -10,6 +10,7 @@ venv/
 *.egg-info/
 build/
 dist/
+/backlog-go
 
 # Test/tool caches
 .pytest_cache/

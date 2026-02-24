@@ -17,6 +17,9 @@
 - When adding commands, flags, etc, ALWAYS add to both codebases (and implement the base feature in typescript if it's missing).
 - When designing, remember that this is meant to be useful and discoverable for agents! Keep to predictable patterns, ensure error messages are detailed, and generally ensure the tool is as helpful as possible.
 
+An important principle of this cli tool is that we help the agent wherever we can. We print extra messages about next commands, we suggest similar flags, we print help when flags are wrong, etc.
+You are expected to uphold this principle in your work, and take opportunities to improve existing output to be better suited for agentic consumption.
+
 ## Task CLI quick rules (agent-facing)
 
 - Do not assume positional arguments are accepted by `backlog` commands.

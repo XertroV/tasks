@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B006
+priority: high
+status: pending
+tags: []
+title: 'go client: output of `bl claim X` should be much richer, like python client. Use this opporunity to build a general method for outputting details and reuse that for other commands as appropriate.'
+---
+
+go client: output of `bl claim X` should be much richer, like python client. Use this opporunity to build a general method for outputting details and reuse that for other commands as appropriate.

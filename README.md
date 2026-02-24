@@ -41,19 +41,31 @@ One-shot installer (Linux/macOS, no sudo required):
 ./install.sh
 ```
 
-This clones the repo into `~/.backlogs/backlogs` by default, creates a virtualenv, installs the Python CLI, and links `backlog`, `bl`, and `tasks` into your user bin directory (or `/usr/local/bin` when running as root).
+This clones the repo into `~/.backlogs/backlogs` by default, creates a virtualenv, installs the Python CLI, and places `backlog` and `bl` in that environment's `bin/` directory.
 
 You can override defaults with:
 
 - `BACKLOG_REPO_URL` (default: `https://github.com/XertroV/tasks.git`)
 - `BACKLOG_CLONE_DIR` (must end with `backlogs`)
-- `BACKLOG_BIN_DIR`
 
 Local editable (for development):
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
+```
+
+Create `backlog` and `bl` symlinks in `~/.local/bin`:
+
+```bash
+make install-python-with-links
+```
+
+If you only want to manage links after install:
+
+```bash
+make python-link
+make python-unlink
 ```
 
 User-global (Arch-friendly, offline):
@@ -66,7 +78,7 @@ sudo pacman -S --needed python-click python-pyyaml python-rich python-networkx p
 ./scripts/install-anywhere.sh
 ```
 
-After install, `backlog`, `bl`, and `tasks` are all equivalent entry points. `backlog.py` works as a repo-local wrapper that auto-reexecs into `.venv/bin/python`.
+After install, `backlog` and `bl` are equivalent entry points. `backlog.py` works as a repo-local wrapper that auto-reexecs into `.venv/bin/python`.
 
 ## Quick start
 
@@ -232,7 +244,7 @@ If you have an existing `.tasks/` directory:
 backlog migrate
 ```
 
-This moves `.tasks/` to `.backlog/` and creates a compatibility symlink. The `tasks` command alias continues to work.
+This moves `.tasks/` to `.backlog/` and creates a compatibility symlink.
 
 ## Tests
 

@@ -24,7 +24,6 @@ dev = [
 [project.scripts]
 backlog = "backlog.cli:cli"
 bl = "backlog.cli:cli"
-tasks = "backlog.cli:cli"
 
 [tool.setuptools.packages.find]
 include = ["backlog*"]

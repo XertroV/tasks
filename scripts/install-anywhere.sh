@@ -3,7 +3,6 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DATA_HOME="${XDG_DATA_HOME:-$HOME/.local/share}"
-BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
 INSTALL_ROOT="$DATA_HOME/backlog-cli"
 VENV_DIR="$INSTALL_ROOT/venv"
 
@@ -27,7 +26,7 @@ if missing:
     sys.exit(1)
 PY
 
-mkdir -p "$INSTALL_ROOT" "$BIN_HOME"
+mkdir -p "$INSTALL_ROOT"
 
 if [[ ! -x "$VENV_DIR/bin/python" ]]; then
   python -m venv --system-site-packages "$VENV_DIR"
@@ -35,15 +34,11 @@ fi
 
 "$VENV_DIR/bin/python" -m pip install --no-build-isolation --no-deps --editable "$ROOT_DIR"
 
-ln -sf "$VENV_DIR/bin/backlog" "$BIN_HOME/backlog"
-ln -sf "$VENV_DIR/bin/bl" "$BIN_HOME/bl"
-ln -sf "$VENV_DIR/bin/tasks" "$BIN_HOME/tasks"
-
 echo "Installed backlog-cli (editable) to: $VENV_DIR"
-echo "Linked commands in: $BIN_HOME"
+echo "Executables: $VENV_DIR/bin/backlog, $VENV_DIR/bin/bl"
 echo
 echo "Verify:"
-echo "  $BIN_HOME/backlog --version"
+echo "  $VENV_DIR/bin/backlog --version"
 echo
 echo "If needed, add to PATH:"
-echo "  export PATH=\"$BIN_HOME:\$PATH\""
+echo "  export PATH=\"$VENV_DIR/bin:\$PATH\""

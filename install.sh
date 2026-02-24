@@ -9,14 +9,6 @@ if [[ "$(basename "$CLONE_DIR")" != "backlogs" ]]; then
   exit 1
 fi
 
-if [[ -n "${BACKLOG_BIN_DIR:-}" ]]; then
-  BIN_DIR="$BACKLOG_BIN_DIR"
-elif [[ "$(id -u)" -eq 0 && -w "/usr/local/bin" ]]; then
-  BIN_DIR="/usr/local/bin"
-else
-  BIN_DIR="${XDG_BIN_HOME:-$HOME/.local/bin}"
-fi
-
 find_python() {
   if command -v python3 >/dev/null 2>&1; then
     command -v python3
@@ -58,20 +50,15 @@ VENV_DIR="$CLONE_DIR/.venv"
 "$VENV_DIR/bin/python" -m pip install --upgrade pip setuptools wheel
 "$VENV_DIR/bin/python" -m pip install --upgrade "$CLONE_DIR"
 
-mkdir -p "$BIN_DIR"
-ln -sf "$VENV_DIR/bin/backlog" "$BIN_DIR/backlog"
-ln -sf "$VENV_DIR/bin/bl" "$BIN_DIR/bl"
-ln -sf "$VENV_DIR/bin/tasks" "$BIN_DIR/tasks"
-
 echo "Installed Backlogs CLI"
 echo "  repo: $CLONE_DIR"
 echo "  venv: $VENV_DIR"
-echo "  bin : $BIN_DIR"
+echo "  executables: $VENV_DIR/bin/backlog, $VENV_DIR/bin/bl"
 
 echo
 echo "Try:"
-echo "  $BIN_DIR/backlog --help"
+echo "  $VENV_DIR/bin/backlog --help"
 
 echo
 echo "If backlog is not found in your shell, add this to your profile:"
-echo "  export PATH=\"$BIN_DIR:\$PATH\""
+echo "  export PATH=\"$VENV_DIR/bin:\$PATH\""

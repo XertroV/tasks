@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B004
+priority: high
+status: pending
+tags: []
+title: 'go client: output of `bl list --available` could be nicer.'
+---
+
+go client: output of `bl list --available` could be nicer.

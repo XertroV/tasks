@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B005
+priority: high
+status: pending
+tags: []
+title: Aliases should not be listed on their own line in the default help output, they should be listed alongside the command they are an alias of. Saves tokens.
+---
+
+Aliases should not be listed on their own line in the default help output, they should be listed alongside the command they are an alias of. Saves tokens.

@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B003
+priority: high
+status: pending
+tags: []
+title: 'go client: should have much nicer, richer reports. the report should say what it is, explain itself briefly where appropriate, have nice visualizations (see the python implementation), etc.'
+---
+
+go client: should have much nicer, richer reports. the report should say what it is, explain itself briefly where appropriate, have nice visualizations (see the python implementation), etc.

@@ -4,8 +4,7 @@
   "private": true,
   "bin": {
     "backlog": "./bin/backlog",
-    "bl": "./bin/bl",
-    "tasks": "./bin/tasks"
+    "bl": "./bin/bl"
   },
   "scripts": {
     "dev": "bun run src/cli.ts",

@@ -2,10 +2,14 @@ GO := go
 COVERAGE_THRESHOLD ?= 75
 COVERAGE_FILE := coverage.out
 
-.PHONY: help tidy fmt fmt-check test coverage coverage-check check clean
+.PHONY: help tidy fmt fmt-check test coverage coverage-check check clean compile-go
+
+compile-go:
+	bash ../scripts/compile-go.sh
 
 help:
 	@echo "Available targets:"
+	@echo "  compile-go     - Build Go binary to repo root (backlog-go)"
 	@echo "  tidy           - Sync module files (go mod tidy)"
 	@echo "  fmt            - Format all Go files (gofmt)"
 	@echo "  fmt-check      - Fail if formatting changes are needed"
