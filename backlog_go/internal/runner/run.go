@@ -4904,6 +4904,9 @@ func runGrab(args []string) error {
 			if _, err := resolveTaskFilePath(task.File); err != nil || !taskFileExists(task.File) {
 				return fmt.Errorf("Cannot claim %s because the task file is missing.", task.ID)
 			}
+			if task.Status == models.StatusDone {
+				return claimDoneError(*task)
+			}
 			if task.Status != models.StatusPending {
 				return fmt.Errorf("Cannot claim task %s: task is %s, not pending", task.ID, task.Status)
 			}
@@ -6445,6 +6448,9 @@ func runClaim(args []string) error {
 		if _, err := os.Stat(taskFilePath); err != nil {
 			return fmt.Errorf("Cannot claim %s because the task file is missing.", task.ID)
 		}
+		if task.Status == models.StatusDone {
+			return claimDoneError(*task)
+		}
 		if task.ClaimedBy != "" && !force {
 			return fmt.Errorf("Task %s is already claimed by %s", task.ID, task.ClaimedBy)
 		}
@@ -6481,6 +6487,13 @@ func runClaim(args []string) error {
 		}
 	}
 	return nil
+}
+
+func claimDoneError(task models.Task) error {
+	if task.CompletedAt != nil {
+		return fmt.Errorf("Cannot claim task %s: task is done (completed_at: %s)", task.ID, task.CompletedAt.Format(time.RFC3339))
+	}
+	return fmt.Errorf("Cannot claim task %s: task is done", task.ID)
 }
 
 func runCycle(args []string) error {

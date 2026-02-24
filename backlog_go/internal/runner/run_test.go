@@ -607,6 +607,56 @@ func TestRunClaimRejectsMissingTaskFile(t *testing.T) {
 	}
 }
 
+func TestRunClaimDoneTaskShowsCompletionTimestamp(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"done",
+		"agent-x",
+		"2026-01-01T00:00:00Z",
+		"2026-01-01T00:00:00Z",
+		"2026-01-01T00:30:00Z",
+	)
+
+	_, err := runInDir(t, root, "claim", "P1.M1.E1.T001")
+	if err == nil {
+		t.Fatalf("run claim expected error for done task")
+	}
+	if !strings.Contains(err.Error(), "task is done (completed_at: 2026-01-01T00:30:00Z)") {
+		t.Fatalf("error = %q, expected done/completed_at message", err)
+	}
+}
+
+func TestRunGrabExplicitDoneTaskShowsCompletionTimestamp(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"done",
+		"agent-x",
+		"2026-01-01T00:00:00Z",
+		"2026-01-01T00:00:00Z",
+		"2026-01-01T00:30:00Z",
+	)
+
+	_, err := runInDir(t, root, "grab", "P1.M1.E1.T001")
+	if err == nil {
+		t.Fatalf("run grab explicit expected error for done task")
+	}
+	if !strings.Contains(err.Error(), "task is done (completed_at: 2026-01-01T00:30:00Z)") {
+		t.Fatalf("error = %q, expected done/completed_at message", err)
+	}
+}
+
 func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
 	t.Parallel()
 
