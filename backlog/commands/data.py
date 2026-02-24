@@ -24,10 +24,15 @@ def data():
 @click.option("--format", "output_format", type=click.Choice(["json", "yaml"]), default="json",
               help="Output format")
 @click.option("--output", "-o", type=click.Path(), help="Output file (stdout if not specified)")
-@click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
+@click.option(
+    "--scope",
+    "scopes",
+    multiple=True,
+    help="Filter by scope (phase/milestone/epic ID). Repeat for multiple scopes.",
+)
 @click.option("--include-content", is_flag=True, help="Include .todo file contents")
 @click.option("--pretty", is_flag=True, default=True, help="Pretty-print output")
-def export_data(output_format, output, scope, include_content, pretty):
+def export_data(output_format, output, scopes, include_content, pretty):
     """Export task data to JSON or YAML.
 
     Exports the full task tree or a filtered subset for backup,
@@ -52,9 +57,23 @@ def export_data(output_format, output, scope, include_content, pretty):
             "phases": [],
         }
 
+        if scopes:
+            all_tasks = get_all_tasks(tree)
+            for scope in scopes:
+                if not (
+                    tree.find_phase(scope)
+                    or tree.find_milestone(scope)
+                    or tree.find_epic(scope)
+                    or any(t.id.startswith(scope) for t in all_tasks)
+                ):
+                    raise ValueError(f"No list nodes found for path query: {scope}")
+
         for phase in tree.phases:
             # Filter by scope
-            if scope and not phase.id.startswith(scope) and not scope.startswith(phase.id):
+            if scopes and not any(
+                phase.id.startswith(scope) or scope.startswith(phase.id)
+                for scope in scopes
+            ):
                 continue
 
             phase_data = {
@@ -71,7 +90,10 @@ def export_data(output_format, output, scope, include_content, pretty):
             }
 
             for milestone in phase.milestones:
-                if scope and not milestone.id.startswith(scope) and not scope.startswith(milestone.id):
+                if scopes and not any(
+                    milestone.id.startswith(scope) or scope.startswith(milestone.id)
+                    for scope in scopes
+                ):
                     continue
 
                 milestone_data = {
@@ -87,7 +109,10 @@ def export_data(output_format, output, scope, include_content, pretty):
                 }
 
                 for epic in milestone.epics:
-                    if scope and not epic.id.startswith(scope) and not scope.startswith(epic.id):
+                    if scopes and not any(
+                        epic.id.startswith(scope) or scope.startswith(epic.id)
+                        for scope in scopes
+                    ):
                         continue
 
                     epic_data = {
@@ -103,7 +128,7 @@ def export_data(output_format, output, scope, include_content, pretty):
                     }
 
                     for task in epic.tasks:
-                        if scope and not task.id.startswith(scope):
+                        if scopes and not any(task.id.startswith(scope) for scope in scopes):
                             continue
 
                         task_data = {
@@ -131,13 +156,13 @@ def export_data(output_format, output, scope, include_content, pretty):
 
                         epic_data["tasks"].append(task_data)
 
-                    if epic_data["tasks"] or not scope:
+                    if epic_data["tasks"] or not scopes:
                         milestone_data["epics"].append(epic_data)
 
-                if milestone_data["epics"] or not scope:
+                if milestone_data["epics"] or not scopes:
                     phase_data["milestones"].append(milestone_data)
 
-            if phase_data["milestones"] or not scope:
+            if phase_data["milestones"] or not scopes:
                 export["phases"].append(phase_data)
 
         # Format output
@@ -155,8 +180,10 @@ def export_data(output_format, output, scope, include_content, pretty):
 
             # Show summary
             all_tasks = get_all_tasks(tree)
-            if scope:
-                all_tasks = [t for t in all_tasks if t.id.startswith(scope)]
+            if scopes:
+                all_tasks = [
+                    t for t in all_tasks if any(t.id.startswith(scope) for scope in scopes)
+                ]
             console.print(f"  {len(export['phases'])} phases, {len(all_tasks)} tasks")
         else:
             click.echo(result)

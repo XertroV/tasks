@@ -34,6 +34,24 @@ func TestRunDataExportJSONIncludesScopedTasksAndContent(t *testing.T) {
 	}
 }
 
+func TestRunDataExportAcceptsRepeatedScopeFlags(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "data", "export", "--format", "json", "--scope", "P1.M1", "--scope", "P1.M1.E1")
+	if err != nil {
+		t.Fatalf("run data export repeated scopes = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") {
+		t.Fatalf("data export output missing scoped task: %q", output)
+	}
+
+	_, err = runInDir(t, root, "data", "export", "--format", "json", "--scope", "P9")
+	if err == nil {
+		t.Fatalf("run data export --scope P9 expected error")
+	}
+}
+
 func TestRunDataExportWritesYAMLFile(t *testing.T) {
 	t.Parallel()
 
@@ -171,6 +189,32 @@ func TestRunLsCoversScopes(t *testing.T) {
 	}
 	if !strings.Contains(epicOut, "P1.M1.E1: Epic") {
 		t.Fatalf("ls milestone output = %q, expected epic summary", epicOut)
+	}
+
+	multiOut, err := runInDir(t, root, "ls", "P1", "P1.M1")
+	if err != nil {
+		t.Fatalf("run ls multi-scope = %v", err)
+	}
+	if !strings.Contains(multiOut, "P1.M1.E1: Epic") {
+		t.Fatalf("ls multi output = %q, expected nested epic summary", multiOut)
+	}
+}
+
+func TestRunTimelineAcceptsRepeatedScopeFlags(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "timeline", "--scope", "P1", "--scope", "P1.M1", "--show-done")
+	if err != nil {
+		t.Fatalf("run timeline repeated scopes = %v", err)
+	}
+	if !strings.Contains(output, "Project Timeline") {
+		t.Fatalf("timeline output = %q, expected header", output)
+	}
+
+	_, err = runInDir(t, root, "timeline", "--scope", "P9")
+	if err == nil {
+		t.Fatalf("run timeline --scope P9 expected error")
 	}
 }
 

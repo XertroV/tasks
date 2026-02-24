@@ -21,7 +21,12 @@ def load_config():
 
 
 @click.command(short_help="ASCII project timeline (alias: tl).")
-@click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
+@click.option(
+    "--scope",
+    "scopes",
+    multiple=True,
+    help="Filter by scope (phase/milestone/epic ID). Repeat for multiple scopes.",
+)
 @click.option(
     "--weeks", type=int, help="Number of weeks to display (auto-detect if not set)"
 )
@@ -34,7 +39,7 @@ def load_config():
 )
 @click.option("--show-done", is_flag=True, help="Include completed tasks")
 @click.option("--width", type=int, default=40, help="Chart width in characters")
-def timeline(scope, weeks, group_by, show_done, width):
+def timeline(scopes, weeks, group_by, show_done, width):
     """Display an ASCII Gantt chart of the project timeline.
 
     Shows tasks as bars on a timeline, grouped by milestone/phase/epic.
@@ -56,9 +61,18 @@ def timeline(scope, weeks, group_by, show_done, width):
         # Get all tasks
         all_tasks = get_all_tasks(tree)
 
-        # Filter by scope
-        if scope:
-            all_tasks = [t for t in all_tasks if t.id.startswith(scope)]
+        if scopes:
+            for scope in scopes:
+                if not (
+                    tree.find_phase(scope)
+                    or tree.find_milestone(scope)
+                    or tree.find_epic(scope)
+                    or any(t.id.startswith(scope) for t in all_tasks)
+                ):
+                    raise ValueError(f"No list nodes found for path query: {scope}")
+            all_tasks = [
+                t for t in all_tasks if any(t.id.startswith(scope) for scope in scopes)
+            ]
 
         # Filter done tasks
         if not show_done:

@@ -1312,7 +1312,7 @@ func TestRunListHelpRendersCommandSpecificGuidance(t *testing.T) {
 		output,
 		"Command Help: backlog list",
 		"Usage:",
-		"backlog list [<SCOPE>] [options]",
+		"backlog list [<SCOPE> ...] [options]",
 		"--status",
 	)
 }
@@ -1358,10 +1358,18 @@ func TestRunListIncorrectArgsPrintsHelpAndError(t *testing.T) {
 	assertContainsAll(t, output, "Command Help: backlog list", "Usage:", "unexpected flag: --unknown")
 
 	output, err = runInDir(t, root, "list", "P1.M1", "P1.M2")
-	if err == nil {
-		t.Fatalf("run list P1.M1 P1.M2 expected error")
+	if err != nil {
+		t.Fatalf("run list P1.M1 P1.M2 = %v, expected nil", err)
 	}
-	assertContainsAll(t, output, "Command Help: backlog list", "Usage:", "supports at most one positional scope")
+	assertContainsAll(t, output, "Milestone One", "Milestone Two")
+
+	output, err = runInDir(t, root, "list", "P1.M1", "P9")
+	if err == nil {
+		t.Fatalf("run list P1.M1 P9 expected error")
+	}
+	if !strings.Contains(err.Error(), "No list nodes found for path query: P9") {
+		t.Fatalf("err = %q, expected missing path query error", err)
+	}
 }
 
 func TestRunListScopedMilestoneFiltersNestedItems(t *testing.T) {
@@ -1406,6 +1414,25 @@ func TestRunLsRejectsUnknownFlag(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "unexpected flag: --unknown") {
 		t.Fatalf("err = %q, expected unexpected flag error", err)
+	}
+}
+
+func TestRunLsAcceptsMultipleScopesAndFailsStrictly(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "ls", "P1", "P1.M1")
+	if err != nil {
+		t.Fatalf("run ls P1 P1.M1 = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "P1.M1: Milestone One", "P1.M1.E1: Epic One")
+
+	output, err = runInDir(t, root, "ls", "P1", "P9")
+	if err == nil {
+		t.Fatalf("run ls P1 P9 expected error")
+	}
+	if !strings.Contains(err.Error(), "Phase not found: P9") {
+		t.Fatalf("err = %q, expected phase not found", err)
 	}
 }
 

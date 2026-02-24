@@ -439,7 +439,13 @@ func runTimeline(args []string) error {
 	if err := validateAllowedFlagsForUsage(commands.CmdTimeline, args, allowed); err != nil {
 		return err
 	}
-	scope := strings.TrimSpace(parseOption(args, "--scope"))
+	scopes := []string{}
+	for _, scope := range parseOptions(args, "--scope") {
+		value := strings.TrimSpace(scope)
+		if value != "" {
+			scopes = append(scopes, value)
+		}
+	}
 	groupBy := strings.TrimSpace(parseOption(args, "--group-by"))
 	if groupBy == "" {
 		groupBy = "milestone"
@@ -455,6 +461,25 @@ func runTimeline(args []string) error {
 	if err != nil {
 		return err
 	}
+	if len(scopes) > 0 {
+		for _, scope := range scopes {
+			matches := false
+			if tree.FindPhase(scope) != nil || findMilestone(tree, scope) != nil || findEpic(tree, scope) != nil {
+				matches = true
+			}
+			if !matches {
+				for _, task := range findAllTasksInTree(tree) {
+					if strings.HasPrefix(task.ID, scope) {
+						matches = true
+						break
+					}
+				}
+			}
+			if !matches {
+				return fmt.Errorf("No list nodes found for path query: %s", scope)
+			}
+		}
+	}
 	calculator := critical_path.NewCriticalPathCalculator(tree, map[string]float64{})
 	criticalPath, _, err := calculator.Calculate()
 	if err != nil {
@@ -464,8 +489,17 @@ func runTimeline(args []string) error {
 	tasks := findAllTasksInTree(tree)
 	filtered := []models.Task{}
 	for _, task := range tasks {
-		if scope != "" && !strings.HasPrefix(task.ID, scope) {
-			continue
+		if len(scopes) > 0 {
+			matchesScope := false
+			for _, scope := range scopes {
+				if strings.HasPrefix(task.ID, scope) {
+					matchesScope = true
+					break
+				}
+			}
+			if !matchesScope {
+				continue
+			}
 		}
 		if !showDone && task.Status == models.StatusDone {
 			continue
@@ -491,7 +525,7 @@ func runTimeline(args []string) error {
 	if parseFlag(args, "--json") {
 		payload := map[string]any{
 			"group_by":      groupBy,
-			"scope":         scope,
+			"scope":         scopes,
 			"show_done":     showDone,
 			"critical_path": criticalPath,
 			"groups":        map[string]any{},
@@ -509,8 +543,8 @@ func runTimeline(args []string) error {
 	}
 
 	fmt.Printf("\n%s (%s)\n", styleHeader("Project Timeline"), styleMuted("grouped by "+groupBy))
-	if scope != "" {
-		fmt.Printf("%s %s\n", styleSubHeader("Scope:"), styleSuccess(scope))
+	if len(scopes) > 0 {
+		fmt.Printf("%s %s\n", styleSubHeader("Scope:"), styleSuccess(strings.Join(scopes, ", ")))
 	}
 	fmt.Printf("%s\n\n", styleMuted("Legend: ★ critical path, status icon indicates task state"))
 	for _, key := range order {
@@ -1266,12 +1300,37 @@ func runDataExport(args []string) error {
 		format = "json"
 	}
 	output := strings.TrimSpace(parseOption(args, "--output", "-o"))
-	scope := strings.TrimSpace(parseOption(args, "--scope"))
+	scopes := []string{}
+	for _, scope := range parseOptions(args, "--scope") {
+		value := strings.TrimSpace(scope)
+		if value != "" {
+			scopes = append(scopes, value)
+		}
+	}
 	includeContent := parseFlag(args, "--include-content")
 
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
 		return err
+	}
+	if len(scopes) > 0 {
+		for _, scope := range scopes {
+			matches := false
+			if tree.FindPhase(scope) != nil || findMilestone(tree, scope) != nil || findEpic(tree, scope) != nil {
+				matches = true
+			}
+			if !matches {
+				for _, task := range findAllTasksInTree(tree) {
+					if strings.HasPrefix(task.ID, scope) {
+						matches = true
+						break
+					}
+				}
+			}
+			if !matches {
+				return fmt.Errorf("No list nodes found for path query: %s", scope)
+			}
+		}
 	}
 	stats := calculateStatusCounts(findNormalTasksInTree(tree))
 	payload := map[string]any{
@@ -1290,8 +1349,30 @@ func runDataExport(args []string) error {
 	}
 
 	phasesPayload := []map[string]any{}
+	phaseMatchesScope := func(candidate string) bool {
+		if len(scopes) == 0 {
+			return true
+		}
+		for _, scope := range scopes {
+			if strings.HasPrefix(candidate, scope) || strings.HasPrefix(scope, candidate) {
+				return true
+			}
+		}
+		return false
+	}
+	taskMatchesScope := func(candidate string) bool {
+		if len(scopes) == 0 {
+			return true
+		}
+		for _, scope := range scopes {
+			if strings.HasPrefix(candidate, scope) {
+				return true
+			}
+		}
+		return false
+	}
 	for _, phase := range tree.Phases {
-		if scope != "" && !strings.HasPrefix(phase.ID, scope) && !strings.HasPrefix(scope, phase.ID) {
+		if !phaseMatchesScope(phase.ID) {
 			continue
 		}
 		phaseNode := map[string]any{
@@ -1307,7 +1388,7 @@ func runDataExport(args []string) error {
 		}
 		milestonesPayload := []map[string]any{}
 		for _, milestone := range phase.Milestones {
-			if scope != "" && !strings.HasPrefix(milestone.ID, scope) && !strings.HasPrefix(scope, milestone.ID) {
+			if !phaseMatchesScope(milestone.ID) {
 				continue
 			}
 			milestoneNode := map[string]any{
@@ -1322,7 +1403,7 @@ func runDataExport(args []string) error {
 			}
 			epicsPayload := []map[string]any{}
 			for _, epic := range milestone.Epics {
-				if scope != "" && !strings.HasPrefix(epic.ID, scope) && !strings.HasPrefix(scope, epic.ID) {
+				if !phaseMatchesScope(epic.ID) {
 					continue
 				}
 				epicNode := map[string]any{
@@ -1337,7 +1418,7 @@ func runDataExport(args []string) error {
 				}
 				taskPayload := []map[string]any{}
 				for _, task := range epic.Tasks {
-					if scope != "" && !strings.HasPrefix(task.ID, scope) {
+					if !taskMatchesScope(task.ID) {
 						continue
 					}
 					taskNode := map[string]any{
@@ -1981,10 +2062,17 @@ func runHandoff(args []string) error {
 	if err := validateAllowedFlagsForUsage(commands.CmdHandoff, args, allowed); err != nil {
 		return err
 	}
-	if len(positionalArgs(args, allowed)) > 1 {
+	valueTaking := map[string]bool{
+		"--to":    true,
+		"--notes": true,
+		"--force": false,
+		"--help":  false,
+		"-h":      false,
+	}
+	if len(positionalArgs(args, valueTaking)) > 1 {
 		return printUsageError(commands.CmdHandoff, errors.New("handoff accepts at most one TASK_ID"))
 	}
-	taskID := firstPositionalArg(args, allowed)
+	taskID := firstPositionalArg(args, valueTaking)
 	toAgent := strings.TrimSpace(parseOption(args, "--to"))
 	notes := strings.TrimSpace(parseOption(args, "--notes"))
 	force := parseFlag(args, "--force")

@@ -271,8 +271,18 @@ describe("native cli", () => {
     root = setupFixture();
 
     const p = run(["list", "P9"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("No list nodes found for path query: P9");
+  });
+
+  test("list accepts multiple positional scopes", () => {
+    root = setupFixture();
+
+    const p = run(["list", "P1", "P1.M1"], root);
     expect(p.exitCode).toBe(0);
-    expect(p.stdout.toString()).toContain("No list nodes found for path query: P9");
+    const out = p.stdout.toString();
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("P1.M1.E1.T002");
   });
 
   test("claim done update sync mutate files", () => {
@@ -878,6 +888,14 @@ tags: []
     expect(exported.project).toBe("Native");
     expect(Array.isArray(exported.phases)).toBeTrue();
     expect(exported.phases[0].milestones[0].epics[0].tasks.length).toBe(2);
+
+    p = run(["data", "export", "--format", "json", "--scope", "P1", "--scope", "P1.M1"], root);
+    expect(p.exitCode).toBe(0);
+    const scopedExport = JSON.parse(p.stdout.toString());
+    expect(scopedExport.phases.length).toBeGreaterThan(0);
+
+    p = run(["data", "export", "--format", "json", "--scope", "P9"], root);
+    expect(p.exitCode).toBe(1);
   });
 
   test("report progress/velocity/estimate-accuracy json", () => {
@@ -944,6 +962,13 @@ tags: []
     expect(alias.exitCode).toBe(0);
     expect(alias.stdout.toString()).toContain("Project Timeline");
     expect(alias.stdout.toString()).toBe(p.stdout.toString());
+
+    p = run(["timeline", "--scope", "P1", "--scope", "P1.M1"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Project Timeline");
+
+    p = run(["timeline", "--scope", "P9"], root);
+    expect(p.exitCode).toBe(1);
 
     p = run(["schema", "--json"], root);
     expect(p.exitCode).toBe(0);
@@ -1267,6 +1292,18 @@ tags: []
     p = run(["grab", "--single", "--agent", "agent-priority", "--no-content"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("B001");
+  });
+
+  test("grab supports repeated --scope and fails strictly on invalid scope", () => {
+    root = setupFixture();
+
+    let p = run(["grab", "--single", "--scope", "P1", "--scope", "P1.M1", "--agent", "agent-scope"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+
+    p = run(["grab", "--single", "--scope", "P9", "--agent", "agent-scope"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("No list nodes found for path query: P9");
   });
 
   test("grab auto-selected bug fans out to additional bugs", () => {
@@ -1843,6 +1880,19 @@ tags: []
     expect(out).toContain("title: A");
     expect(out).toContain("Body length:");
     expect(out).toContain("Run 'backlog show P1.M1.E1.T001' for full details.");
+  });
+
+  test("ls accepts multiple scopes and fails strictly for invalid scope", () => {
+    root = setupFixture();
+    let p = run(["ls", "P1", "P1.M1"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("P1.M1: M");
+    expect(out).toContain("P1.M1.E1: E");
+
+    p = run(["ls", "P1", "P9"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("Phase not found: P9");
   });
 
   test("fixed command captures metadata in todo and index", () => {

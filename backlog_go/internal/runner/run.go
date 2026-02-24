@@ -131,6 +131,9 @@ func printUsageForCommand(command string) {
 
 func printUsageError(command string, err error) error {
 	printUsageForCommand(command)
+	if err != nil {
+		fmt.Printf("%s\n", styleError(err.Error()))
+	}
 	return err
 }
 
@@ -170,7 +173,7 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"timeline": {
 		summary: "Display timeline view with optional grouping.",
-		usage:   "backlog timeline [--scope SCOPE] [--group-by phase|milestone|epic|status] [--show-done] [--json]",
+		usage:   "backlog timeline [--scope SCOPE ...] [--group-by phase|milestone|epic|status] [--show-done] [--json]",
 		options: []string{
 			"--scope",
 			"--group-by",
@@ -193,7 +196,7 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"data": {
 		summary:  "Summarize or export task data.",
-		usage:    "backlog data <summary|export> [--format json|yaml] [--scope SCOPE] [--include-content]",
+		usage:    "backlog data <summary|export> [--format json|yaml] [--scope SCOPE ...] [--include-content]",
 		examples: []string{"backlog data summary --format json", "backlog data export --scope P1.M1 --format yaml"},
 	},
 	"schema": {
@@ -839,7 +842,7 @@ func printListHelp() {
 	printCommandHelp(
 		"list",
 		"List tasks with filtering and scope controls.",
-		"backlog list [<SCOPE>] [options]",
+		"backlog list [<SCOPE> ...] [options]",
 		[]string{
 			"--status              Filter by comma-separated status values",
 			"--critical            Show only critical path tasks",
@@ -862,6 +865,7 @@ func printListHelp() {
 			"backlog list",
 			"backlog list --json",
 			"backlog list P1.M1 --progress",
+			"backlog list P1.M1 P2.M1 --json",
 			"backlog list --phase P1 --bugs",
 		},
 	)
@@ -2566,6 +2570,7 @@ func runList(command string, args []string) error {
 func runListCore(command string, args []string) error {
 	printListUsageError := func(err error) error {
 		printListHelp()
+		fmt.Printf("%s\n", styleError(err.Error()))
 		return err
 	}
 
@@ -2617,9 +2622,6 @@ func runListCore(command string, args []string) error {
 		"--milestone":  true,
 		"--epic":       true,
 	})
-	if len(scopeArgs) > 1 {
-		return printListUsageError(fmt.Errorf("%s supports at most one positional scope", command))
-	}
 
 	if parseFlag(args, "--critical") {
 		// Reserved for historical parity with Python CLI; progress output remains explicit via --progress.
@@ -2671,25 +2673,21 @@ func runListCore(command string, args []string) error {
 		hasPriorityFilter = true
 	}
 
-	scoped := false
 	scopeType := ""
-	scope := ""
+	scopeInputs := []string{}
 	if phaseScope != "" {
-		scope = phaseScope
+		scopeInputs = []string{phaseScope}
 		scopeType = "phase"
-		scoped = true
 	} else if milestoneScope != "" {
-		scope = milestoneScope
+		scopeInputs = []string{milestoneScope}
 		scopeType = "milestone"
-		scoped = true
 	} else if epicScope != "" {
-		scope = epicScope
+		scopeInputs = []string{epicScope}
 		scopeType = "epic"
-		scoped = true
-	} else if len(scopeArgs) == 1 {
-		scope = scopeArgs[0]
-		scoped = true
+	} else {
+		scopeInputs = scopeArgs
 	}
+	scoped := len(scopeInputs) > 0
 
 	includeNormal := !bugsOnly && !ideasOnly
 	includeBugs := bugsOnly || (!bugsOnly && !ideasOnly)
@@ -2719,46 +2717,46 @@ func runListCore(command string, args []string) error {
 	}
 	_ = nextAvailable
 
-	scopedPhases, scopedTasks, scopeDepth, scopeID := resolveListScope(tree, scope, scopeType)
-	if scope != "" && len(scopedPhases) == 0 {
-		if scopeType == "phase" {
-			if strings.TrimSpace(scopeID) == "" {
-				scopeID = scope
+	var scopedPhases []models.Phase
+	var scopedTasks []string
+	scopeDepth := 0
+	if scoped {
+		scopedTaskSet := map[string]struct{}{}
+		scopedPhaseSets := [][]models.Phase{}
+		for _, rawScope := range scopeInputs {
+			resolvedPhases, resolvedTasks, depth, scopeID := resolveListScope(tree, rawScope, scopeType)
+			if len(resolvedPhases) == 0 {
+				if strings.TrimSpace(scopeID) == "" {
+					scopeID = rawScope
+				}
+				switch scopeType {
+				case "phase":
+					return fmt.Errorf("Phase not found: %s", scopeID)
+				case "milestone":
+					return fmt.Errorf("Milestone not found: %s", scopeID)
+				case "epic":
+					return fmt.Errorf("Epic not found: %s", scopeID)
+				default:
+					return fmt.Errorf("No list nodes found for path query: %s", scopeID)
+				}
 			}
-			fmt.Printf("%s %s\n", styleError("Phase not found:"), styleMuted(scopeID))
-			for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
-				fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
+			scopedPhaseSets = append(scopedPhaseSets, resolvedPhases)
+			if depth > scopeDepth {
+				scopeDepth = depth
 			}
-			return nil
+			for _, taskID := range resolvedTasks {
+				if strings.TrimSpace(taskID) == "" {
+					continue
+				}
+				scopedTaskSet[taskID] = struct{}{}
+			}
 		}
-		if scopeType == "milestone" {
-			if strings.TrimSpace(scopeID) == "" {
-				scopeID = scope
+		scopedPhases = mergeScopedPhases(scopedPhaseSets)
+		for _, taskID := range allTaskIDs(tree) {
+			if _, ok := scopedTaskSet[taskID]; ok {
+				scopedTasks = append(scopedTasks, taskID)
 			}
-			fmt.Printf("%s %s\n", styleError("Milestone not found:"), styleMuted(scopeID))
-			for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
-				fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
-			}
-			return nil
 		}
-		if scopeType == "epic" {
-			if strings.TrimSpace(scopeID) == "" {
-				scopeID = scope
-			}
-			fmt.Printf("%s %s\n", styleError("Epic not found:"), styleMuted(scopeID))
-			for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
-				fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
-			}
-			return nil
-		}
-		if strings.TrimSpace(scopeID) == "" {
-			scopeID = scope
-		}
-		fmt.Printf("%s %s\n", styleWarning("No list nodes found for path query:"), styleMuted(scopeID))
-		for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
-			fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
-		}
-		return nil
 	}
 	if !scoped {
 		scopedTasks = allTaskIDs(tree)
@@ -2807,19 +2805,12 @@ func runLsCore(args []string, dataDir string) error {
 	}
 
 	positional := positionalArgs(args, map[string]bool{})
-	if len(positional) > 1 {
-		return errors.New("ls accepts at most one scope")
-	}
-	scope := ""
-	if len(positional) == 1 {
-		scope = positional[0]
-	}
 	tree, err := loader.New().Load("metadata", false, false)
 	if err != nil {
 		return err
 	}
 
-	if scope == "" {
+	if len(positional) == 0 {
 		if len(tree.Phases) == 0 {
 			fmt.Println(styleWarning("No phases found."))
 			return nil
@@ -2840,10 +2831,26 @@ func runLsCore(args []string, dataDir string) error {
 		return nil
 	}
 
+	for _, scope := range positional {
+		if err := validateLsScope(tree, scope); err != nil {
+			return err
+		}
+	}
+	for i, scope := range positional {
+		if i > 0 {
+			fmt.Println("")
+		}
+		if err := renderLsScope(tree, scope, dataDir); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateLsScope(tree models.TaskTree, scope string) error {
 	if isBugLikeID(scope) || isIdeaLikeID(scope) {
 		return fmt.Errorf("ls does not support bug/idea IDs. Use: backlog show %s", scope)
 	}
-
 	phasePath, err := models.ParseTaskPath(scope)
 	if err != nil {
 		if strings.Contains(scope, "--") {
@@ -2851,11 +2858,54 @@ func runLsCore(args []string, dataDir string) error {
 		}
 		return fmt.Errorf("Invalid path format: %s", scope)
 	}
+	if phasePath.IsPhase() && tree.FindPhase(phasePath.FullID()) == nil {
+		return formatNotFoundError(tree, "Phase", scope, "")
+	}
+	if phasePath.IsMilestone() {
+		milestone := findMilestone(tree, scope)
+		if milestone == nil {
+			parent := phasePath.Parent()
+			parentID := ""
+			if parent != nil {
+				parentID = parent.FullID()
+			}
+			return formatNotFoundError(tree, "Milestone", scope, parentID)
+		}
+	}
+	if phasePath.IsEpic() {
+		epic := findEpic(tree, scope)
+		if epic == nil {
+			parent := phasePath.Parent()
+			parentID := ""
+			if parent != nil {
+				parentID = parent.FullID()
+			}
+			return formatNotFoundError(tree, "Epic", scope, parentID)
+		}
+	}
+	if phasePath.IsTask() {
+		task := tree.FindTask(scope)
+		if task == nil {
+			parent := phasePath.Parent()
+			parentID := ""
+			if parent != nil {
+				parentID = parent.FullID()
+			}
+			return formatNotFoundError(tree, "Task", scope, parentID)
+		}
+	}
+	return nil
+}
 
+func renderLsScope(tree models.TaskTree, scope string, dataDir string) error {
+	phasePath, err := models.ParseTaskPath(scope)
+	if err != nil {
+		return err
+	}
 	if phasePath.IsPhase() {
 		phase := tree.FindPhase(phasePath.FullID())
 		if phase == nil {
-			return formatNotFoundError(tree, "Phase", scope, "")
+			return nil
 		}
 		if len(phase.Milestones) == 0 {
 			fmt.Printf("%s %s\n", styleWarning("Phase"), styleMuted(fmt.Sprintf("%s has no milestones.", scope)))
@@ -2880,12 +2930,7 @@ func runLsCore(args []string, dataDir string) error {
 	if phasePath.IsMilestone() {
 		milestone := findMilestone(tree, scope)
 		if milestone == nil {
-			parent := phasePath.Parent()
-			parentID := ""
-			if parent != nil {
-				parentID = parent.FullID()
-			}
-			return formatNotFoundError(tree, "Milestone", scope, parentID)
+			return nil
 		}
 		if len(milestone.Epics) == 0 {
 			fmt.Printf("%s %s\n", styleWarning("Milestone"), styleMuted(fmt.Sprintf("%s has no epics.", scope)))
@@ -2910,12 +2955,7 @@ func runLsCore(args []string, dataDir string) error {
 	if phasePath.IsEpic() {
 		epic := findEpic(tree, scope)
 		if epic == nil {
-			parent := phasePath.Parent()
-			parentID := ""
-			if parent != nil {
-				parentID = parent.FullID()
-			}
-			return formatNotFoundError(tree, "Epic", scope, parentID)
+			return nil
 		}
 		if len(epic.Tasks) == 0 {
 			fmt.Printf("%s %s\n", styleWarning("Epic"), styleMuted(fmt.Sprintf("%s has no tasks.", scope)))
@@ -2934,16 +2974,8 @@ func runLsCore(args []string, dataDir string) error {
 	}
 
 	task := tree.FindTask(scope)
-	if task == nil {
-		parent := phasePath.Parent()
-		parentID := ""
-		if parent != nil {
-			parentID = parent.FullID()
-		}
-		return formatNotFoundError(tree, "Task", scope, parentID)
-	}
-	if err := printTaskSummary(task, dataDir); err != nil {
-		return err
+	if task != nil {
+		return printTaskSummary(task, dataDir)
 	}
 	return nil
 }
@@ -5166,6 +5198,13 @@ func runGrab(args []string) error {
 	multi := parseFlag(args, "--multi")
 	includeSiblings := !parseFlag(args, "--no-siblings")
 	noContent := parseFlag(args, "--no-content")
+	scopeValues := []string{}
+	for _, scope := range parseOptions(args, "--scope") {
+		value := strings.TrimSpace(scope)
+		if value != "" {
+			scopeValues = append(scopeValues, value)
+		}
+	}
 	count := grabSiblingAdditionalMax
 	if rawCount := strings.TrimSpace(parseOption(args, "--count")); rawCount != "" {
 		parsed, err := parseIntOptionWithDefault(args, grabSiblingAdditionalMax, "--count")
@@ -5249,18 +5288,47 @@ func runGrab(args []string) error {
 		return nil
 	}
 
-	scope := strings.TrimSpace(parseOption(args, "--scope"))
-	if scope != "" {
+	if len(scopeValues) > 0 {
+		matchesTreeScope := func(scope string) bool {
+			if tree.FindPhase(scope) != nil {
+				return true
+			}
+			if findMilestone(tree, scope) != nil {
+				return true
+			}
+			if findEpic(tree, scope) != nil {
+				return true
+			}
+			for _, task := range findAllTasksInTree(tree) {
+				if strings.HasPrefix(task.ID, scope) {
+					return true
+				}
+			}
+			return false
+		}
+		for _, scope := range scopeValues {
+			if !matchesTreeScope(scope) {
+				return fmt.Errorf("No list nodes found for path query: %s", scope)
+			}
+		}
+
 		available := calculator.FindAllAvailable()
 		filtered := []string{}
+		filteredSet := map[string]struct{}{}
 		for _, id := range available {
-			if strings.HasPrefix(id, scope) {
-				filtered = append(filtered, id)
+			for _, scope := range scopeValues {
+				if strings.HasPrefix(id, scope) {
+					if _, ok := filteredSet[id]; !ok {
+						filtered = append(filtered, id)
+						filteredSet[id] = struct{}{}
+					}
+					break
+				}
 			}
 		}
 		filtered = prioritizeTaskIDs(tree, criticalPath, filtered)
 		if len(filtered) == 0 {
-			fmt.Printf("%s '%s'\n", styleWarning("No available tasks in scope"), styleMuted(scope))
+			fmt.Printf("%s '%s'\n", styleWarning("No available tasks in scope"), styleMuted(strings.Join(scopeValues, ", ")))
 			return nil
 		}
 		nextAvailable = filtered[0]
@@ -5744,6 +5812,66 @@ func resolveListScopeByEpic(tree models.TaskTree, rawScope string) ([]models.Pha
 		return nil, nil, 3, epic.ID
 	}
 	return []models.Phase{filteredPhase}, filteredTaskIDs, 3, epic.ID
+}
+
+func mergeScopedPhases(scopedPhaseSets [][]models.Phase) []models.Phase {
+	merged := map[string]models.Phase{}
+	order := []string{}
+	for _, phases := range scopedPhaseSets {
+		for _, phase := range phases {
+			current, ok := merged[phase.ID]
+			if !ok {
+				merged[phase.ID] = phase
+				order = append(order, phase.ID)
+				continue
+			}
+			milestoneIndex := map[string]int{}
+			for i, milestone := range current.Milestones {
+				milestoneIndex[milestone.ID] = i
+			}
+			for _, milestone := range phase.Milestones {
+				idx, hasMilestone := milestoneIndex[milestone.ID]
+				if !hasMilestone {
+					current.Milestones = append(current.Milestones, milestone)
+					milestoneIndex[milestone.ID] = len(current.Milestones) - 1
+					continue
+				}
+				currentMilestone := current.Milestones[idx]
+				epicIndex := map[string]int{}
+				for i, epic := range currentMilestone.Epics {
+					epicIndex[epic.ID] = i
+				}
+				for _, epic := range milestone.Epics {
+					epicIdx, hasEpic := epicIndex[epic.ID]
+					if !hasEpic {
+						currentMilestone.Epics = append(currentMilestone.Epics, epic)
+						epicIndex[epic.ID] = len(currentMilestone.Epics) - 1
+						continue
+					}
+					currentEpic := currentMilestone.Epics[epicIdx]
+					taskSet := map[string]struct{}{}
+					for _, task := range currentEpic.Tasks {
+						taskSet[task.ID] = struct{}{}
+					}
+					for _, task := range epic.Tasks {
+						if _, exists := taskSet[task.ID]; exists {
+							continue
+						}
+						currentEpic.Tasks = append(currentEpic.Tasks, task)
+						taskSet[task.ID] = struct{}{}
+					}
+					currentMilestone.Epics[epicIdx] = currentEpic
+				}
+				current.Milestones[idx] = currentMilestone
+			}
+			merged[phase.ID] = current
+		}
+	}
+	out := make([]models.Phase, 0, len(order))
+	for _, phaseID := range order {
+		out = append(out, merged[phaseID])
+	}
+	return out
 }
 
 func collectPhaseTaskIDs(phase models.Phase) []string {
@@ -8383,6 +8511,24 @@ func parseOption(args []string, keys ...string) string {
 		}
 	}
 	return ""
+}
+
+func parseOptions(args []string, key string) []string {
+	out := []string{}
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == key {
+			if i+1 < len(args) {
+				out = append(out, args[i+1])
+			}
+			i++
+			continue
+		}
+		if strings.HasPrefix(arg, key+"=") {
+			out = append(out, strings.TrimPrefix(arg, key+"="))
+		}
+	}
+	return out
 }
 
 func parseFloatOptionWithDefault(args []string, fallback float64, keys ...string) (float64, error) {

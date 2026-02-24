@@ -107,6 +107,23 @@ export function parseOpt(args: string[], name: string): string | undefined {
   return undefined;
 }
 
+export function parseOpts(args: string[], name: string): string[] {
+  const out: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) continue;
+    if (arg === name) {
+      if (i + 1 < args.length) out.push(args[i + 1]!);
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith(`${name}=`)) {
+      out.push(arg.slice(name.length + 1));
+    }
+  }
+  return out;
+}
+
 function parseNegatedFlag(args: string[], name: string, defaultValue: boolean): boolean {
   const yesIndex = args.indexOf(`--${name}`);
   const noIndex = args.indexOf(`--no-${name}`);
@@ -116,7 +133,7 @@ function parseNegatedFlag(args: string[], name: string, defaultValue: boolean): 
   return yesIndex > noIndex;
 }
 
-function listScopeArg(args: string[]): string | undefined {
+function listScopeArgs(args: string[]): string[] {
   const optionValues = new Set<number>();
   const optionValueNames = new Set([
     "--status",
@@ -135,15 +152,16 @@ function listScopeArg(args: string[]): string | undefined {
     }
   }
 
+  const scopes: string[] = [];
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     if (!arg) continue;
     if (arg.startsWith("-")) continue;
     if (optionValues.has(i)) continue;
-    return arg;
+    scopes.push(arg);
   }
 
-  return undefined;
+  return scopes;
 }
 
 function collectTaskIdsFromPhases(phases: Phase[]): Set<string> {
@@ -158,6 +176,71 @@ function collectTaskIdsFromPhases(phases: Phase[]): Set<string> {
     }
   }
   return ids;
+}
+
+function anyScopeMatch(candidate: string, scopes: string[]): boolean {
+  return scopes.some((scope) => candidate.startsWith(scope) || scope.startsWith(candidate));
+}
+
+function validateScopeTokens(tree: TaskTree, scopes: string[]): void {
+  for (const scope of scopes) {
+    const token = scope.trim();
+    if (!token) {
+      textError("Scope cannot be empty.");
+    }
+    let parsed = false;
+    try {
+      PathQuery.parse(token);
+      parsed = true;
+    } catch {
+      parsed = false;
+    }
+    if (!parsed) {
+      textError(`Invalid path format: ${token}`);
+    }
+    const matches =
+      !!findPhase(tree, token) ||
+      !!findMilestone(tree, token) ||
+      !!findEpic(tree, token) ||
+      getAllTasks(tree).some((t) => t.id.startsWith(token));
+    if (!matches) {
+      textError(`No list nodes found for path query: ${token}`);
+    }
+  }
+}
+
+function mergeScopedPhases(scopes: Phase[][]): Phase[] {
+  const phaseMap = new Map<string, Phase>();
+  for (const scopedPhases of scopes) {
+    for (const phase of scopedPhases) {
+      const phaseOut = phaseMap.get(phase.id) ?? { ...phase, milestones: [] };
+      if (!phaseMap.has(phase.id)) phaseMap.set(phase.id, phaseOut);
+      const milestoneMap = new Map(phaseOut.milestones.map((m) => [m.id, m]));
+      for (const milestone of phase.milestones) {
+        const milestoneOut = milestoneMap.get(milestone.id) ?? { ...milestone, epics: [] };
+        if (!milestoneMap.has(milestone.id)) {
+          phaseOut.milestones.push(milestoneOut);
+          milestoneMap.set(milestone.id, milestoneOut);
+        }
+        const epicMap = new Map(milestoneOut.epics.map((e) => [e.id, e]));
+        for (const epic of milestone.epics) {
+          const epicOut = epicMap.get(epic.id) ?? { ...epic, tasks: [] };
+          if (!epicMap.has(epic.id)) {
+            milestoneOut.epics.push(epicOut);
+            epicMap.set(epic.id, epicOut);
+          }
+          const taskSet = new Set(epicOut.tasks.map((t) => t.id));
+          for (const task of epic.tasks) {
+            if (!taskSet.has(task.id)) {
+              epicOut.tasks.push(task);
+              taskSet.add(task.id);
+            }
+          }
+        }
+      }
+    }
+  }
+  return [...phaseMap.values()];
 }
 
 export function jsonOut(obj: unknown): void {
@@ -696,20 +779,19 @@ async function cmdList(args: string[]): Promise<void> {
   const phase = parseOpt(args, "--phase");
   const milestone = parseOpt(args, "--milestone");
   const epic = parseOpt(args, "--epic");
-  const positionalScope = listScopeArg(args);
-  const scope = positionalScope ?? phase ?? milestone ?? epic;
+  const positionalScopes = listScopeArgs(args);
+  const hasScopeFlag = Boolean(phase || milestone || epic);
+  const scopeInputs = hasScopeFlag ? [phase ?? milestone ?? epic ?? ""] : positionalScopes;
   let scopedPhases: Phase[] | undefined;
   let scopedTaskIds: Set<string> | undefined;
   let scopeMaxDepth: number | undefined;
-  let scopeLabel = scope;
-  let scopeQuery: PathQuery | undefined;
 
   let effectiveShowCompletedAux = showCompletedAux || (showAll && (bugsOnly || ideasOnly));
 
   let includeNormal = !bugsOnly && !ideasOnly;
   let includeBugs = bugsOnly || (!bugsOnly && !ideasOnly);
   let includeIdeas = ideasOnly || (!bugsOnly && !ideasOnly);
-  if (scope) {
+  if (scopeInputs.length > 0) {
     effectiveShowCompletedAux = false;
     includeNormal = true;
     includeBugs = false;
@@ -724,52 +806,65 @@ async function cmdList(args: string[]): Promise<void> {
   tree.criticalPath = criticalPath;
   tree.nextAvailable = nextAvailable;
 
-  if (scope) {
-    let scopeId = scope;
+  if (scopeInputs.length > 0) {
+    const scopedSlices: Phase[][] = [];
+    const scopeDepths: number[] = [];
+
     if (phase) {
       const phaseMatch = findPhase(tree, phase);
       if (!phaseMatch) textError(`Phase not found: ${phase}`);
-      scopeId = phaseMatch.id;
+      const scopeQuery = PathQuery.parse(phaseMatch.id);
+      const phasesForScope = filterTreeByPathQuery(tree.phases, scopeQuery);
+      if (!phasesForScope.length) textError(`Phase not found: ${phase}`);
+      scopedSlices.push(phasesForScope);
+      scopeDepths.push(TaskPath.parse(phaseMatch.id).depth);
     } else if (milestone) {
       const milestoneMatch = findMilestone(tree, milestone);
       if (!milestoneMatch) textError(`Milestone not found: ${milestone}`);
-      scopeId = milestoneMatch.id;
+      const scopeQuery = PathQuery.parse(milestoneMatch.id);
+      const phasesForScope = filterTreeByPathQuery(tree.phases, scopeQuery);
+      if (!phasesForScope.length) textError(`Milestone not found: ${milestone}`);
+      scopedSlices.push(phasesForScope);
+      scopeDepths.push(TaskPath.parse(milestoneMatch.id).depth);
     } else if (epic) {
       const epicMatch = findEpic(tree, epic);
       if (!epicMatch) textError(`Epic not found: ${epic}`);
-      scopeId = epicMatch.id;
-    }
-
-    try {
-      scopeQuery = PathQuery.parse(scopeId);
-    } catch (error) {
-      textError(error instanceof Error ? error.message : `Invalid scope: ${scopeId}`);
-    }
-
-    if (!scopeQuery) {
-      scopeQuery = PathQuery.parse(String(scopeId));
-    }
-
-    scopedPhases = filterTreeByPathQuery(tree.phases, scopeQuery);
-
-    if ((!scopedPhases || scopedPhases.length === 0) && !phase && !milestone && !epic) {
-      const fallback =
-        findPhase(tree, scopeId) ?? findMilestone(tree, scopeId) ?? findEpic(tree, scopeId);
-      if (fallback) {
-        scopeId = fallback.id;
-        const fallbackQuery = PathQuery.parse(scopeId);
-        scopedPhases = filterTreeByPathQuery(tree.phases, fallbackQuery);
-        scopeQuery = fallbackQuery;
+      const scopeQuery = PathQuery.parse(epicMatch.id);
+      const phasesForScope = filterTreeByPathQuery(tree.phases, scopeQuery);
+      if (!phasesForScope.length) textError(`Epic not found: ${epic}`);
+      scopedSlices.push(phasesForScope);
+      scopeDepths.push(TaskPath.parse(epicMatch.id).depth);
+    } else {
+      validateScopeTokens(tree, scopeInputs);
+      for (const input of scopeInputs) {
+        let scopeId = input;
+        let scopeQuery = PathQuery.parse(scopeId);
+        let phasesForScope = filterTreeByPathQuery(tree.phases, scopeQuery);
+        if (!phasesForScope.length) {
+          const fallback = findPhase(tree, scopeId) ?? findMilestone(tree, scopeId) ?? findEpic(tree, scopeId);
+          if (fallback) {
+            scopeId = fallback.id;
+            scopeQuery = PathQuery.parse(scopeId);
+            phasesForScope = filterTreeByPathQuery(tree.phases, scopeQuery);
+          }
+        }
+        if (!phasesForScope.length) {
+          textError(`No list nodes found for path query: ${input}`);
+        }
+        scopedSlices.push(phasesForScope);
+        try {
+          scopeDepths.push(TaskPath.parse(scopeId).depth);
+        } catch {
+          scopeDepths.push(scopeQuery.segments.length);
+        }
       }
     }
 
-    scopedTaskIds = collectTaskIdsFromPhases(scopedPhases ?? []);
-    try {
-      scopeMaxDepth = Math.min(4, TaskPath.parse(scopeId).depth + 2);
-    } catch {
-      scopeMaxDepth = Math.min(4, PathQuery.parse(scopeId).segments.length + 2);
+    scopedPhases = mergeScopedPhases(scopedSlices);
+    scopedTaskIds = collectTaskIdsFromPhases(scopedPhases);
+    if (scopeDepths.length > 0) {
+      scopeMaxDepth = Math.min(4, Math.max(...scopeDepths) + 2);
     }
-    scopeLabel = scopeId;
   }
 
   if (showProgress) {
@@ -877,15 +972,7 @@ async function cmdList(args: string[]): Promise<void> {
     return;
   }
 
-  if (scope) {
-    if (!scopedPhases || !scopedPhases.length) {
-      if (scopeQuery) {
-        console.log(pc.yellow(`No list nodes found for path query: ${scopeQuery.raw}`));
-      } else {
-        console.log(pc.yellow(`No list nodes found for scope: ${scopeLabel}`));
-      }
-      return;
-    }
+  if (scopeInputs.length > 0) {
     const maxDepth = scopeMaxDepth ?? 4;
     for (let i = 0; i < scopedPhases.length; i++) {
       const p = scopedPhases[i]!;
@@ -1364,7 +1451,7 @@ async function cmdNext(args: string[]): Promise<void> {
     return;
   }
   const task = findTask(tree, nextAvailable);
-  if (!task) textError(`Task not found: ${nextAvailable}`);
+  if (!task) textError(`Task not found: ${selectedTaskId}`);
 
   if (outputJson) {
     jsonOut({
@@ -1640,11 +1727,11 @@ function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; bod
 }
 
 async function cmdLs(args: string[]): Promise<void> {
-  const scope = args.find((a) => !a.startsWith("-"));
+  const scopes = listScopeArgs(args);
   const loader = new TaskLoader();
   const tree = await loader.load("metadata", false, false);
 
-  if (!scope) {
+  if (!scopes.length) {
     if (!tree.phases.length) {
       console.log("No phases found.");
       return;
@@ -1659,18 +1746,32 @@ async function cmdLs(args: string[]): Promise<void> {
     return;
   }
 
-  if (isBugId(scope) || isIdeaId(scope)) {
-    textError(`ls does not support bug/idea IDs. Use: backlog show ${scope}`);
+  for (const scope of scopes) {
+    if (isBugId(scope) || isIdeaId(scope)) {
+      textError(`ls does not support bug/idea IDs. Use: backlog show ${scope}`);
+    }
+    let parsed: TaskPath;
+    try {
+      parsed = TaskPath.parse(scope);
+    } catch {
+      textError(`Invalid path format: ${scope}`);
+    }
+    if (parsed.isPhase && !findPhase(tree, scope)) textError(`Phase not found: ${scope}`);
+    if (parsed.isMilestone && !findMilestoneByScope(tree, scope)) textError(`Milestone not found: ${scope}`);
+    if (parsed.isEpic && !findEpicByScope(tree, scope)) textError(`Epic not found: ${scope}`);
+    if (parsed.isTask && !findTask(tree, scope)) textError(`Task not found: ${scope}`);
   }
 
-  try {
+  for (let i = 0; i < scopes.length; i += 1) {
+    const scope = scopes[i]!;
     const parsed = TaskPath.parse(scope);
+    if (i > 0) console.log("");
+
     if (parsed.isPhase) {
-      const phase = findPhase(tree, scope);
-      if (!phase) textError(`Phase not found: ${scope}`);
+      const phase = findPhase(tree, scope)!;
       if (!phase.milestones.length) {
         console.log(`Phase ${scope} has no milestones.`);
-        return;
+        continue;
       }
       for (const milestone of phase.milestones) {
         const milestoneTasks = milestone.epics.flatMap((e) => e.tasks);
@@ -1679,15 +1780,14 @@ async function cmdLs(args: string[]): Promise<void> {
           `${milestone.id}: ${milestone.name} [${milestone.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
         );
       }
-      return;
+      continue;
     }
 
     if (parsed.isMilestone) {
-      const milestone = findMilestoneByScope(tree, scope);
-      if (!milestone) textError(`Milestone not found: ${scope}`);
+      const milestone = findMilestoneByScope(tree, scope)!;
       if (!milestone.epics.length) {
         console.log(`Milestone ${scope} has no epics.`);
-        return;
+        continue;
       }
       for (const epic of milestone.epics) {
         const stats = taskCount(epic.tasks);
@@ -1695,39 +1795,32 @@ async function cmdLs(args: string[]): Promise<void> {
           `${epic.id}: ${epic.name} [${epic.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
         );
       }
-      return;
+      continue;
     }
 
     if (parsed.isEpic) {
-      const epic = findEpicByScope(tree, scope);
-      if (!epic) textError(`Epic not found: ${scope}`);
+      const epic = findEpicByScope(tree, scope)!;
       if (!epic.tasks.length) {
         console.log(`Epic ${scope} has no tasks.`);
-        return;
+        continue;
       }
       for (const task of epic.tasks) {
         console.log(`${task.id}: ${task.title} [${task.status}] ${task.estimateHours}h`);
       }
-      return;
+      continue;
     }
 
-    if (parsed.isTask) {
-      const task = findTask(tree, scope);
-      if (!task) textError(`Task not found: ${scope}`);
-      const { frontmatter, body } = parseTodoForLs(task);
-      console.log(`Task: ${task.id} - ${task.title}`);
-      console.log("Frontmatter:");
-      if (Object.keys(frontmatter).length > 0) {
-        console.log(stringify(frontmatter).trim());
-      } else {
-        console.log("  (unavailable)");
-      }
-      console.log(`Body length: ${body.length}`);
-      console.log(`Run 'backlog show ${task.id}' for full details.`);
-      return;
+    const task = findTask(tree, scope)!;
+    const { frontmatter, body } = parseTodoForLs(task);
+    console.log(`Task: ${task.id} - ${task.title}`);
+    console.log("Frontmatter:");
+    if (Object.keys(frontmatter).length > 0) {
+      console.log(stringify(frontmatter).trim());
+    } else {
+      console.log("  (unavailable)");
     }
-  } catch (e) {
-    textError(`Invalid path format: ${scope}`);
+    console.log(`Body length: ${body.length}`);
+    console.log(`Run 'backlog show ${task.id}' for full details.`);
   }
 }
 
@@ -1794,6 +1887,7 @@ async function cmdClaim(args: string[]): Promise<void> {
 
 async function cmdGrab(args: string[]): Promise<void> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
+  const scopes = parseOpts(args, "--scope").map((s) => s.trim()).filter((s) => s.length > 0);
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
 
@@ -1801,11 +1895,12 @@ async function cmdGrab(args: string[]): Promise<void> {
   const taskIds: string[] = [];
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i]!;
-    if (arg === "--agent") {
+    if (arg === "--agent" || arg === "--scope") {
       i += 1;
       continue;
     }
     if (arg.startsWith("--agent=")) continue;
+    if (arg.startsWith("--scope=")) continue;
     if (arg.startsWith("-")) continue;
     taskIds.push(arg);
   }
@@ -1836,15 +1931,31 @@ async function cmdGrab(args: string[]): Promise<void> {
     return;
   }
 
+  if (scopes.length > 0) {
+    validateScopeTokens(tree, scopes);
+  }
+
   // Auto-select next available
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
-  const { nextAvailable } = calc.calculate();
+  const { criticalPath, nextAvailable } = calc.calculate();
   if (!nextAvailable) {
     console.log("No available tasks found.");
     return;
   }
-  const task = findTask(tree, nextAvailable);
+  let selectedTaskId = nextAvailable;
+  if (scopes.length > 0) {
+    const available = calc.findAllAvailable();
+    const filtered = available.filter((taskId) => scopes.some((scope) => taskId.startsWith(scope)));
+    const prioritized = calc.prioritizeTaskIds(filtered, criticalPath);
+    if (!prioritized.length) {
+      console.log(`No available tasks in scope '${scopes.join(", ")}'`);
+      return;
+    }
+    selectedTaskId = prioritized[0]!;
+  }
+
+  const task = findTask(tree, selectedTaskId);
   if (!task) textError(`Task not found: ${nextAvailable}`);
   if (isTaskFileMissing(task)) textError(`Cannot claim ${task.id} because the task file is missing.`);
 
@@ -2250,7 +2361,7 @@ async function cmdData(args: string[]): Promise<void> {
   const rest = args.slice(1);
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
-  const scope = parseOpt(rest, "--scope");
+  const scopes = parseOpts(rest, "--scope").map((s) => s.trim()).filter((s) => s.length > 0);
 
   if (!sub || sub === "--help") {
     console.log("Usage: backlog data <summary|export> [options]");
@@ -2297,6 +2408,9 @@ async function cmdData(args: string[]): Promise<void> {
   }
 
   if (sub === "export") {
+    if (scopes.length > 0) {
+      validateScopeTokens(tree, scopes);
+    }
     const outputFormat = parseOpt(rest, "--format") ?? "json";
     const output = parseOpt(rest, "--output") ?? parseOpt(rest, "-o");
     const includeContent = parseFlag(rest, "--include-content");
@@ -2309,7 +2423,7 @@ async function cmdData(args: string[]): Promise<void> {
       timeline_weeks: tree.timelineWeeks ?? 0,
       stats,
       phases: tree.phases
-        .filter((p) => (scope ? p.id.startsWith(scope) || scope.startsWith(p.id) : true))
+        .filter((p) => (scopes.length > 0 ? anyScopeMatch(p.id, scopes) : true))
         .map((p) => ({
           id: p.id,
           name: p.name,
@@ -2320,7 +2434,7 @@ async function cmdData(args: string[]): Promise<void> {
           priority: p.priority,
           depends_on: p.dependsOn,
           milestones: p.milestones
-            .filter((m) => (scope ? m.id.startsWith(scope) || scope.startsWith(m.id) : true))
+            .filter((m) => (scopes.length > 0 ? anyScopeMatch(m.id, scopes) : true))
             .map((m) => ({
               id: m.id,
               name: m.name,
@@ -2330,7 +2444,7 @@ async function cmdData(args: string[]): Promise<void> {
               complexity: m.complexity,
               depends_on: m.dependsOn,
               epics: m.epics
-                .filter((e) => (scope ? e.id.startsWith(scope) || scope.startsWith(e.id) : true))
+                .filter((e) => (scopes.length > 0 ? anyScopeMatch(e.id, scopes) : true))
                 .map((e) => ({
                   id: e.id,
                   name: e.name,
@@ -2340,7 +2454,7 @@ async function cmdData(args: string[]): Promise<void> {
                   complexity: e.complexity,
                   depends_on: e.dependsOn,
                   tasks: e.tasks
-                    .filter((t) => (scope ? t.id.startsWith(scope) : true))
+                    .filter((t) => (scopes.length > 0 ? scopes.some((scope) => t.id.startsWith(scope)) : true))
                     .map((t) => ({
                       id: t.id,
                       title: t.title,
@@ -2385,16 +2499,19 @@ import { cmdReport } from "./report";
 import { cmdDash } from "./display";
 
 async function cmdTimeline(args: string[]): Promise<void> {
-  const scope = parseOpt(args, "--scope");
+  const scopes = parseOpts(args, "--scope").map((s) => s.trim()).filter((s) => s.length > 0);
   const groupBy = parseOpt(args, "--group-by") ?? "milestone";
   const showDone = parseFlag(args, "--show-done");
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
+  if (scopes.length > 0) {
+    validateScopeTokens(tree, scopes);
+  }
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath } = calc.calculate();
   let tasks = getAllTasks(tree);
-  if (scope) tasks = tasks.filter((t) => t.id.startsWith(scope));
+  if (scopes.length > 0) tasks = tasks.filter((t) => scopes.some((scope) => t.id.startsWith(scope)));
   if (!showDone) tasks = tasks.filter((t) => t.status !== Status.DONE);
   if (!tasks.length) {
     console.log("No tasks to display.");

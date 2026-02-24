@@ -347,7 +347,7 @@ def _select_next_available_task_id(
     loader,
     config,
     agent: str,
-    scope: str | None = None,
+    scopes: tuple[str, ...] = (),
     *,
     no_available_message: str,
     show_in_progress: bool,
@@ -363,16 +363,21 @@ def _select_next_available_task_id(
                 _print_in_progress_tasks(tree)
             return critical_path, None
 
-    if scope:
+    if scopes:
         all_available = calc.find_all_available()
-        scoped = [task_id for task_id in all_available if task_id.startswith(scope)]
+        scoped = [
+            task_id
+            for task_id in all_available
+            if any(task_id.startswith(scope) for scope in scopes)
+        ]
+        scope_label = ", ".join(scopes)
         if not scoped:
-            console.print(f"[yellow]No available tasks in scope '{scope}'[/]")
+            console.print(f"[yellow]No available tasks in scope '{scope_label}'[/]")
             return critical_path, None
         prioritized_scoped = calc.prioritize_task_ids(scoped, critical_path)
         next_available = prioritized_scoped[0] if prioritized_scoped else None
         if not next_available:
-            console.print(f"[yellow]No available tasks in scope '{scope}'[/]")
+            console.print(f"[yellow]No available tasks in scope '{scope_label}'[/]")
             return critical_path, None
 
     return critical_path, next_available
@@ -550,7 +555,12 @@ def _claim_and_display_batch(
 @click.command()
 @click.argument("task_ids", nargs=-1, required=False)
 @click.option("--agent", help="Agent session ID (uses config default if not set)")
-@click.option("--scope", help="Filter by scope (phase/milestone/epic ID)")
+@click.option(
+    "--scope",
+    "scopes",
+    multiple=True,
+    help="Filter by scope (phase/milestone/epic ID). Repeat for multiple scopes.",
+)
 @click.option("--no-content", is_flag=True, help="Suppress .todo file contents")
 @click.option(
     "--multi", is_flag=True, help="Claim up to 3 independent tasks from different epics"
@@ -567,7 +577,7 @@ def _claim_and_display_batch(
     type=int,
     help="Number of additional tasks (with --multi)",
 )
-def grab(task_ids, agent, scope, no_content, multi, single, siblings, count):
+def grab(task_ids, agent, scopes, no_content, multi, single, siblings, count):
     """Claim specific tasks or auto-claim the next available task.
 
     With TASK_IDS: claim those specific tasks.
@@ -613,6 +623,22 @@ def grab(task_ids, agent, scope, no_content, multi, single, siblings, count):
                 console.print(f"\n[bold]Working on:[/] {primary.id}")
             return
 
+        if scopes:
+            all_scope_matches = {
+                t.id
+                for t in get_all_tasks(tree)
+                if any(t.id.startswith(scope) for scope in scopes)
+            }
+            for scope in scopes:
+                if not (
+                    tree.find_phase(scope)
+                    or tree.find_milestone(scope)
+                    or tree.find_epic(scope)
+                    or any(task_id.startswith(scope) for task_id in all_scope_matches)
+                ):
+                    console.print(f"[red]Error:[/] No list nodes found for path query: {scope}")
+                    raise click.Abort()
+
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
         _, next_available = _select_next_available_task_id(
             tree,
@@ -620,7 +646,7 @@ def grab(task_ids, agent, scope, no_content, multi, single, siblings, count):
             loader,
             config,
             agent,
-            scope=scope,
+            scopes=scopes,
             no_available_message="No available tasks found.",
             show_in_progress=True,
         )

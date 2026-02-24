@@ -412,6 +412,33 @@ def test_tl_alias_matches_timeline_output(runner, tmp_feature_tasks_dir):
     assert alias_result.output == timeline_result.output
 
 
+def test_timeline_accepts_repeated_scope_flags(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(
+        cli,
+        ["timeline", "--scope", "P1", "--scope", "P1.M1", "--show-done"],
+    )
+    assert result.exit_code == 0
+    assert "Project Timeline" in result.output
+
+    invalid = runner.invoke(cli, ["timeline", "--scope", "P9"])
+    assert invalid.exit_code != 0
+    assert "No list nodes found for path query: P9" in invalid.output
+
+
+def test_data_export_accepts_repeated_scope_flags(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(
+        cli,
+        ["data", "export", "--format", "json", "--scope", "P1", "--scope", "P1.M1"],
+    )
+    assert result.exit_code == 0
+    payload = json.loads(result.output)
+    assert payload["phases"]
+
+    invalid = runner.invoke(cli, ["data", "export", "--format", "json", "--scope", "P9"])
+    assert invalid.exit_code != 0
+    assert "No list nodes found for path query: P9" in invalid.output
+
+
 def test_report_progress_json(runner, tmp_feature_tasks_dir):
     bug_result = runner.invoke(cli, ["bug", "fix flaky integration test"])
     assert bug_result.exit_code == 0

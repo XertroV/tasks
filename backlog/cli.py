@@ -1,5 +1,6 @@
 """CLI commands for backlog management."""
 
+import copy
 import click
 import json
 import yaml
@@ -620,6 +621,61 @@ def log(limit, output_json):
 # ============================================================================
 
 
+def _merge_scoped_phases(scoped_phase_sets):
+    merged = {}
+    phase_order = []
+    for phases in scoped_phase_sets:
+        for phase in phases:
+            if phase.id not in merged:
+                merged[phase.id] = copy.deepcopy(phase)
+                phase_order.append(phase.id)
+                continue
+            phase_out = merged[phase.id]
+            milestone_map = {m.id: m for m in phase_out.milestones}
+            for milestone in phase.milestones:
+                if milestone.id not in milestone_map:
+                    phase_out.milestones.append(copy.deepcopy(milestone))
+                    milestone_map[milestone.id] = phase_out.milestones[-1]
+                    continue
+                milestone_out = milestone_map[milestone.id]
+                epic_map = {e.id: e for e in milestone_out.epics}
+                for epic in milestone.epics:
+                    if epic.id not in epic_map:
+                        milestone_out.epics.append(copy.deepcopy(epic))
+                        epic_map[epic.id] = milestone_out.epics[-1]
+                        continue
+                    epic_out = epic_map[epic.id]
+                    task_ids = {t.id for t in epic_out.tasks}
+                    for task in epic.tasks:
+                        if task.id not in task_ids:
+                            epic_out.tasks.append(copy.deepcopy(task))
+                            task_ids.add(task.id)
+    return [merged[phase_id] for phase_id in phase_order]
+
+
+def _resolve_list_scope(tree, raw_scope):
+    scope_id = raw_scope
+    scope_query = PathQuery.parse(scope_id)
+    scoped_phases = filter_tree_by_path_query(tree, scope_query)
+    if not scoped_phases and scope_id:
+        fallback = (
+            tree.find_phase(scope_id)
+            or tree.find_milestone(scope_id)
+            or tree.find_epic(scope_id)
+        )
+        if fallback:
+            scope_id = fallback.id
+            scope_query = PathQuery.parse(scope_id)
+            scoped_phases = filter_tree_by_path_query(tree, scope_query)
+    if not scoped_phases:
+        raise ValueError(f"No list nodes found for path query: {raw_scope}")
+    try:
+        depth = TaskPath.parse(scope_id).depth
+    except ValueError:
+        depth = len(scope_query.segments)
+    return scoped_phases, depth
+
+
 @cli.command()
 @click.option("--status", help="Filter by status (comma-separated)")
 @click.option("--phase", help="Filter by phase ID")
@@ -648,7 +704,7 @@ def log(limit, output_json):
     is_flag=True,
     help="Include completed/cancelled/rejected bugs and ideas",
 )
-@click.argument("scope", required=False)
+@click.argument("scopes", nargs=-1)
 def list(
     status,
     phase,
@@ -665,7 +721,7 @@ def list(
     bugs,
     ideas,
     show_completed_aux,
-    scope,
+    scopes,
 ):
     """List tasks with filtering options."""
     try:
@@ -673,7 +729,8 @@ def list(
         include_normal = not bugs and not ideas
         include_bugs = bugs or (not bugs and not ideas)
         include_ideas = ideas or (not bugs and not ideas)
-        scoped = bool(scope or phase or milestone or epic)
+        scope_inputs = [*scopes]
+        scoped = bool(scope_inputs or phase or milestone or epic)
         if scoped:
             include_normal = True
             include_bugs = False
@@ -698,48 +755,41 @@ def list(
         scope_task_ids = None
 
         if scoped:
-            scope_input = scope or phase or milestone or epic
+            scoped_phase_sets = []
+            scoped_depths = []
             if phase:
-                phase_obj = tree.find_phase(scope_input)
+                phase_obj = tree.find_phase(phase)
                 if not phase_obj:
-                    console.print(f"[red]Error:[/] Phase not found: {scope_input}")
-                    raise click.Abort()
-                scope_input = phase_obj.id
+                    raise ValueError(f"Phase not found: {phase}")
+                scoped_item_phases, depth = _resolve_list_scope(tree, phase_obj.id)
+                scoped_phase_sets.append(scoped_item_phases)
+                scoped_depths.append(depth)
             elif milestone:
-                milestone_obj = tree.find_milestone(scope_input)
+                milestone_obj = tree.find_milestone(milestone)
                 if not milestone_obj:
-                    console.print(f"[red]Error:[/] Milestone not found: {scope_input}")
-                    raise click.Abort()
-                scope_input = milestone_obj.id
+                    raise ValueError(f"Milestone not found: {milestone}")
+                scoped_item_phases, depth = _resolve_list_scope(tree, milestone_obj.id)
+                scoped_phase_sets.append(scoped_item_phases)
+                scoped_depths.append(depth)
             elif epic:
-                epic_obj = tree.find_epic(scope_input)
+                epic_obj = tree.find_epic(epic)
                 if not epic_obj:
-                    console.print(f"[red]Error:[/] Epic not found: {scope_input}")
-                    raise click.Abort()
-                scope_input = epic_obj.id
+                    raise ValueError(f"Epic not found: {epic}")
+                scoped_item_phases, depth = _resolve_list_scope(tree, epic_obj.id)
+                scoped_phase_sets.append(scoped_item_phases)
+                scoped_depths.append(depth)
+            else:
+                for raw_scope in scope_inputs:
+                    scoped_item_phases, depth = _resolve_list_scope(tree, raw_scope)
+                    scoped_phase_sets.append(scoped_item_phases)
+                    scoped_depths.append(depth)
 
-            scope_query = PathQuery.parse(scope_input)
-            scoped_phases = filter_tree_by_path_query(tree, scope_query)
-
-            if not scoped_phases and not (phase or milestone or epic) and scope_input:
-                fallback = (
-                    tree.find_phase(scope_input)
-                    or tree.find_milestone(scope_input)
-                    or tree.find_epic(scope_input)
-                )
-                if fallback:
-                    scope_query = PathQuery.parse(fallback.id)
-                    scoped_phases = filter_tree_by_path_query(tree, scope_query)
-                    scope_input = fallback.id
-
-            if scope_query is not None:
-                try:
-                    scoped_depth = TaskPath.parse(scope_input).depth
-                except ValueError:
-                    scoped_depth = len(scope_query.segments)
+            scope_query = None
+            scoped_phases = _merge_scoped_phases(scoped_phase_sets)
+            scoped_depth = max(scoped_depths) if scoped_depths else None
             scope_task_ids = {
                 t.id
-                for p in (scoped_phases or [])
+                for p in scoped_phases
                 for m in p.milestones
                 for e in m.epics
                 for t in e.tasks
@@ -2230,9 +2280,97 @@ def _show_fixed_task(task):
 # ============================================================================
 
 
+def _match_ls_scoped_item(items, scope_id):
+    for item in items:
+        if item.id == scope_id:
+            return item
+
+    scoped = scope_id if scope_id.startswith(".") else f".{scope_id}"
+    matches = [item for item in items if item.id.endswith(scoped)]
+    if len(matches) >= 1:
+        return matches[0]
+    return None
+
+
+def _validate_ls_scope(tree, scope):
+    if is_bug_id(scope) or is_idea_id(scope):
+        raise ValueError(f"ls does not support bug/idea IDs. Use: backlog show {scope}")
+    parsed = TaskPath.parse(scope)
+    if parsed.is_phase and not tree.find_phase(scope):
+        raise ValueError(f"Phase not found: {scope}")
+    if parsed.is_milestone and not _match_ls_scoped_item(
+        [m for p in tree.phases for m in p.milestones], scope
+    ):
+        raise ValueError(f"Milestone not found: {scope}")
+    if parsed.is_epic and not _match_ls_scoped_item(
+        [e for p in tree.phases for m in p.milestones for e in m.epics], scope
+    ):
+        raise ValueError(f"Epic not found: {scope}")
+    if parsed.is_task and not tree.find_task(scope):
+        raise ValueError(f"Task not found: {scope}")
+
+
+def _render_ls_scope(tree, scope):
+    parsed = TaskPath.parse(scope)
+    if parsed.is_phase:
+        phase = tree.find_phase(scope)
+        if not phase.milestones:
+            console.print(f"Phase {scope} has no milestones.")
+            return
+
+        for milestone in phase.milestones:
+            stats = milestone.stats
+            console.print(
+                f"{milestone.id}: {milestone.name} "
+                f"[{milestone.status.value}] "
+                f"{stats['done']}/{stats['total_tasks']} tasks done "
+                f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
+            )
+        return
+
+    if parsed.is_milestone:
+        milestone = _match_ls_scoped_item(
+            [m for p in tree.phases for m in p.milestones], scope
+        )
+        if not milestone.epics:
+            console.print(f"Milestone {scope} has no epics.")
+            return
+
+        for epic in milestone.epics:
+            stats = epic.stats
+            console.print(
+                f"{epic.id}: {epic.name} "
+                f"[{epic.status.value}] "
+                f"{stats['done']}/{stats['total']} tasks done "
+                f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
+            )
+        return
+
+    if parsed.is_task:
+        task = tree.find_task(scope)
+        _show_ls_task_summary(task)
+        return
+
+    epic = _match_ls_scoped_item(
+        [e for p in tree.phases for m in p.milestones for e in m.epics],
+        scope,
+    )
+    if not epic.tasks:
+        console.print(f"Epic {scope} has no tasks.")
+        return
+
+    for task in epic.tasks:
+        console.print(
+            f"{task.id}: {task.title} "
+            f"[{task.status.value}] "
+            f"{task.estimate_hours}h",
+            markup=False,
+        )
+
+
 @cli.command()
-@click.argument("scope", required=False)
-def ls(scope):
+@click.argument("scopes", nargs=-1)
+def ls(scopes):
     """List tasks by hierarchy scope.
 
     Without SCOPE, lists all phases.
@@ -2245,7 +2383,7 @@ def ls(scope):
         loader = TaskLoader()
         tree = loader.load("metadata", include_bugs=False, include_ideas=False)
 
-        if scope is None:
+        if not scopes:
             if not tree.phases:
                 console.print("No phases found.")
                 return
@@ -2259,102 +2397,13 @@ def ls(scope):
                 )
             return
 
-        if is_bug_id(scope) or is_idea_id(scope):
-            console.print(f"[red]Error:[/] ls does not support bug/idea IDs. Use: backlog show {scope}")
-            raise click.Abort()
+        for scope in scopes:
+            _validate_ls_scope(tree, scope)
 
-        parsed = TaskPath.parse(scope)
-        # Normalize IDs that may include redundant parent prefixes (e.g. "P1.P1.M1").
-        # Existing fixtures write mixed ID formats in indexes, so we support suffix matching.
-        def _match_scoped_item(items, scope_id):
-            for item in items:
-                if item.id == scope_id:
-                    return item
-
-            scoped = scope_id if scope_id.startswith(".") else f".{scope_id}"
-            matches = [item for item in items if item.id.endswith(scoped)]
-            if len(matches) == 1:
-                return matches[0]
-            if len(matches) > 1:
-                return matches[0]
-            return None
-
-        if parsed.is_phase:
-            phase = tree.find_phase(scope)
-            if not phase:
-                console.print(f"[red]Error:[/] Phase not found: {scope}")
-                raise click.Abort()
-
-            if not phase.milestones:
-                console.print(f"Phase {scope} has no milestones.")
-                return
-
-            for milestone in phase.milestones:
-                stats = milestone.stats
-                console.print(
-                    f"{milestone.id}: {milestone.name} "
-                    f"[{milestone.status.value}] "
-                    f"{stats['done']}/{stats['total_tasks']} tasks done "
-                    f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
-                )
-            return
-
-        if parsed.is_milestone:
-            milestone = _match_scoped_item(
-                [m for p in tree.phases for m in p.milestones], scope
-            )
-            if not milestone:
-                console.print(f"[red]Error:[/] Milestone not found: {scope}")
-                raise click.Abort()
-
-            if not milestone.epics:
-                console.print(f"Milestone {scope} has no epics.")
-                return
-
-            for epic in milestone.epics:
-                stats = epic.stats
-                console.print(
-                    f"{epic.id}: {epic.name} "
-                    f"[{epic.status.value}] "
-                    f"{stats['done']}/{stats['total']} tasks done "
-                    f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
-                )
-            return
-
-        if parsed.is_task:
-            # Accept both full and non-full task IDs.
-            task = tree.find_task(scope)
-            if not task:
-                console.print(f"[red]Error:[/] Task not found: {scope}")
-                raise click.Abort()
-            _show_ls_task_summary(task)
-            return
-
-        if parsed.is_epic:
-            epic = _match_scoped_item(
-                [
-                    e
-                    for p in tree.phases
-                    for m in p.milestones
-                    for e in m.epics
-                ],
-                scope,
-            )
-            if not epic:
-                console.print(f"[red]Error:[/] Epic not found: {scope}")
-                raise click.Abort()
-            if not epic.tasks:
-                console.print(f"Epic {scope} has no tasks.")
-                return
-
-            for task in epic.tasks:
-                console.print(
-                    f"{task.id}: {task.title} "
-                    f"[{task.status.value}] "
-                    f"{task.estimate_hours}h"
-                    ,
-                    markup=False,
-                )
+        for i, scope in enumerate(scopes):
+            if i > 0:
+                console.print("")
+            _render_ls_scope(tree, scope)
 
     except ValueError as e:
         console.print(f"[red]Error:[/] {str(e)}")

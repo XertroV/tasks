@@ -452,6 +452,18 @@ class TestLsCommand:
         assert "Body length:" in result.output
         assert "Run 'backlog show P1.M1.E1.T001' for full details." in result.output
 
+    def test_ls_accepts_multiple_scopes_and_fails_strictly(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+
+        result = runner.invoke(cli, ["ls", "P1", "P1.M1"])
+        assert result.exit_code == 0
+        assert "P1.M1: Test Milestone" in result.output
+        assert "P1.M1.E1: Test Epic" in result.output
+
+        result = runner.invoke(cli, ["ls", "P1", "P9"])
+        assert result.exit_code != 0
+        assert "Phase not found: P9" in result.output
+
 
 class TestListCommand:
     """Tests for the list command."""
@@ -1490,7 +1502,35 @@ def test_list_missing_scope_query_reports_no_match(runner, tmp_tasks_dir):
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
 
     result = runner.invoke(cli, ["list", "P9"])
+    assert result.exit_code != 0
+    assert "No list nodes found for path query: P9" in result.output
+
+
+def test_list_accepts_multiple_positional_scopes(runner, tmp_tasks_dir):
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["list", "P1", "P1.M1"])
     assert result.exit_code == 0
+    assert "P1.M1.E1.T001" in result.output
+    assert "P1.M1.E1.T002" in result.output
+
+
+def test_grab_repeated_scope_flags_and_strict_validation(runner, tmp_tasks_dir):
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+
+    result = runner.invoke(
+        cli,
+        ["grab", "--single", "--scope", "P1", "--scope", "P1.M1", "--agent=test-agent", "--no-content"],
+    )
+    assert result.exit_code == 0
+    assert "P1.M1.E1.T001" in result.output
+
+    result = runner.invoke(
+        cli,
+        ["grab", "--single", "--scope", "P1", "--scope", "P9", "--agent=test-agent", "--no-content"],
+    )
+    assert result.exit_code != 0
     assert "No list nodes found for path query: P9" in result.output
 
 

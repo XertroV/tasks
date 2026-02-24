@@ -359,8 +359,22 @@ func TestRunGrabModesAndScope(t *testing.T) {
 	assertContainsAll(t, singleOut, "Grabbed: P1.M1.E1.T001 - a")
 
 	rootScope := setupWorkflowFixture(t)
-	scopeOut := mustRun(t, rootScope, "grab", "--scope", "P9")
-	assertContainsAll(t, scopeOut, "No available tasks in scope 'P9'")
+	_, err = runInDir(t, rootScope, "grab", "--scope", "P9")
+	if err == nil {
+		t.Fatalf("run grab --scope P9 expected error")
+	}
+	if !strings.Contains(err.Error(), "No list nodes found for path query: P9") {
+		t.Fatalf("err = %q, expected missing path query error", err)
+	}
+
+	rootMultiScope := setupWorkflowFixture(t)
+	_, err = runInDir(t, rootMultiScope, "grab", "--scope", "P1.M1", "--scope", "P9")
+	if err == nil {
+		t.Fatalf("run grab --scope P1.M1 --scope P9 expected error")
+	}
+	if !strings.Contains(err.Error(), "No list nodes found for path query: P9") {
+		t.Fatalf("err = %q, expected missing path query error", err)
+	}
 }
 
 func TestRunGrabMultiClaimsAdditionalTasks(t *testing.T) {
