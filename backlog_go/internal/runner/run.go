@@ -282,6 +282,275 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 		},
 		examples: []string{"backlog unclaim-stale --threshold 120", "backlog unclaim-stale --dry-run"},
 	},
+	"show": {
+		summary: "Show detailed information for one or more backlog IDs.",
+		usage:   "backlog show [PATH_ID ...]",
+		options: []string{
+			"PATH_ID supports phase/milestone/epic/task IDs (for example P1, P1.M1, P1.M1.E1, P1.M1.E1.T001)",
+			"When omitted, falls back to current working task",
+		},
+		examples: []string{
+			"backlog show P1.M1.E1.T001",
+			"backlog show P1.M1 P2.M1.E3",
+			"backlog show",
+		},
+	},
+	"tree": {
+		summary: "Display the hierarchical backlog tree.",
+		usage:   "backlog tree [PATH_QUERY] [--json] [--unfinished] [--show-completed-aux] [--details] [--depth N]",
+		options: []string{
+			"--json",
+			"--unfinished",
+			"--show-completed-aux",
+			"--details",
+			"--depth",
+		},
+		examples: []string{
+			"backlog tree",
+			"backlog tree P1.M1 --details",
+			"backlog tree --unfinished --json",
+		},
+	},
+	"next": {
+		summary: "Show the next available task on the critical path.",
+		usage:   "backlog next [--json]",
+		options: []string{
+			"--json",
+		},
+		examples: []string{
+			"backlog next",
+			"backlog next --json",
+		},
+	},
+	"preview": {
+		summary: "Preview upcoming work and grab suggestions.",
+		usage:   "backlog preview [--json]",
+		options: []string{
+			"--json",
+		},
+		examples: []string{
+			"backlog preview",
+			"backlog preview --json",
+		},
+	},
+	"grab": {
+		summary: "Auto-claim next available work or claim specific IDs.",
+		usage:   "backlog grab [TASK_ID ...] [--agent AGENT] [--single] [--json] [--no-content]",
+		options: []string{
+			"--agent",
+			"--single",
+			"--json",
+			"--no-content",
+		},
+		examples: []string{
+			"backlog grab",
+			"backlog grab --single",
+			"backlog grab P1.M1.E1.T001 --agent agent-a",
+		},
+	},
+	"cycle": {
+		summary: "Complete current task and grab the next available task.",
+		usage:   "backlog cycle [--agent AGENT] [--json] [--no-content]",
+		options: []string{
+			"--agent",
+			"--json",
+			"--no-content",
+		},
+		examples: []string{
+			"backlog cycle",
+			"backlog cycle --agent agent-a",
+		},
+	},
+	"dash": {
+		summary: "Show a concise project dashboard.",
+		usage:   "backlog dash [--json]",
+		options: []string{
+			"--json",
+		},
+		examples: []string{
+			"backlog dash",
+			"backlog dash --json",
+		},
+	},
+	"admin": {
+		summary: "Run administrative checks and diagnostics.",
+		usage:   "backlog admin [check-file-sync|check-ids] [--json]",
+		options: []string{
+			"--json",
+		},
+		examples: []string{
+			"backlog admin check-file-sync",
+			"backlog admin check-ids --json",
+		},
+	},
+	"agents": {
+		summary: "Print AGENTS.md snippets for workflow guidance.",
+		usage:   "backlog agents [short|medium|full] [--json]",
+		options: []string{
+			"--json",
+		},
+		examples: []string{
+			"backlog agents",
+			"backlog agents medium",
+			"backlog agents full --json",
+		},
+	},
+	"benchmark": {
+		summary: "Show loader benchmark timings.",
+		usage:   "backlog benchmark [--json] [--top N] [--mode metadata|full] [--parse-task-body]",
+		options: []string{
+			"--json",
+			"--top",
+			"--mode",
+			"--parse-task-body",
+		},
+		examples: []string{
+			"backlog benchmark",
+			"backlog benchmark --json --top 10",
+		},
+	},
+	"work": {
+		summary: "Set, clear, or show current working task.",
+		usage:   "backlog work [TASK_ID|clear] [--agent AGENT]",
+		options: []string{
+			"--agent",
+		},
+		examples: []string{
+			"backlog work",
+			"backlog work P1.M1.E1.T001",
+			"backlog work clear",
+		},
+	},
+	"unclaim": {
+		summary: "Release a claimed task back to pending.",
+		usage:   "backlog unclaim <TASK_ID> [--agent AGENT]",
+		options: []string{
+			"--agent",
+		},
+		examples: []string{
+			"backlog unclaim P1.M1.E1.T001",
+		},
+	},
+	"blocked": {
+		summary: "Mark a task as blocked and optionally grab next work.",
+		usage:   "backlog blocked <TASK_ID> --reason REASON [--agent AGENT] [--grab] [--json]",
+		options: []string{
+			"--reason",
+			"--agent",
+			"--grab",
+			"--json",
+		},
+		examples: []string{
+			"backlog blocked P1.M1.E1.T001 --reason \"waiting on API\"",
+			"backlog blocked P1.M1.E1.T001 --reason \"blocked\" --grab",
+		},
+	},
+	"init": {
+		summary: "Initialize a backlog project in the current directory.",
+		usage:   "backlog init --project NAME [--description TEXT] [--timeline-weeks N]",
+		options: []string{
+			"--project, -p",
+			"--description, -d",
+			"--timeline-weeks, -w",
+		},
+		examples: []string{
+			"backlog init --project my-project",
+			"backlog init -p my-project -d \"CLI rewrite\" -w 8",
+		},
+	},
+	"log": {
+		summary: "Show recent activity log entries.",
+		usage:   "backlog log [--limit N] [--json]",
+		options: []string{
+			"--limit",
+			"--json",
+		},
+		examples: []string{
+			"backlog log",
+			"backlog log --limit 20 --json",
+		},
+	},
+	"lock": {
+		summary: "Lock a phase, milestone, or epic.",
+		usage:   "backlog lock <ITEM_ID>",
+		examples: []string{
+			"backlog lock P1.M1",
+		},
+	},
+	"unlock": {
+		summary: "Unlock a phase, milestone, or epic.",
+		usage:   "backlog unlock <ITEM_ID>",
+		examples: []string{
+			"backlog unlock P1.M1",
+		},
+	},
+	"migrate": {
+		summary: "Migrate .tasks data into .backlog format.",
+		usage:   "backlog migrate [--force] [--no-symlink]",
+		options: []string{
+			"--force",
+			"--no-symlink",
+		},
+		examples: []string{
+			"backlog migrate",
+			"backlog migrate --force",
+		},
+	},
+	"sync": {
+		summary: "Recalculate derived metadata in index files.",
+		usage:   "backlog sync",
+		examples: []string{
+			"backlog sync",
+		},
+	},
+	"undone": {
+		summary: "Mark an item as not done (pending).",
+		usage:   "backlog undone <ITEM_ID>",
+		examples: []string{
+			"backlog undone P1.M1.E1.T001",
+			"backlog undone P1.M1",
+		},
+	},
+	"version": {
+		summary: "Show CLI version information.",
+		usage:   "backlog version",
+		examples: []string{
+			"backlog version",
+		},
+	},
+	"skills": {
+		summary: "Install backlog skills for supported clients.",
+		usage:   "backlog skills install <SKILL> [--client codex|claude] [--artifact skills|commands] [--dry-run] [--json]",
+		options: []string{
+			"--client",
+			"--artifact",
+			"--dry-run",
+			"--json",
+		},
+		examples: []string{
+			"backlog skills install plan-task --client codex",
+			"backlog skills install plan-task --client codex --dry-run --json",
+		},
+	},
+	"howto": {
+		summary: "Show the backlog how-to guidance for agents.",
+		usage:   "backlog howto [--json]",
+		options: []string{
+			"--json",
+		},
+		examples: []string{
+			"backlog howto",
+			"backlog howto --json",
+		},
+	},
+	"help": {
+		summary: "Show command overview and command-specific guidance.",
+		usage:   "backlog help [COMMAND]",
+		examples: []string{
+			"backlog help",
+			"backlog help show",
+		},
+	},
 }
 
 type previewTaskPayload struct {

@@ -309,6 +309,93 @@ Quick rules:
   - If command parsing fails, run 'backlog cycle' once.`);
 }
 
+type CommandHelpSpec = {
+  summary: string;
+  usage: string;
+  options: string[];
+  examples: string[];
+  tip?: string;
+};
+
+const helpAliases: Record<string, string> = {
+  ls: "list",
+  r: "report",
+  tl: "timeline",
+};
+
+const commandHelpSpecs: Record<string, CommandHelpSpec> = {
+  howto: { summary: "Show the agent how to use backlog effectively.", usage: "backlog howto [--json]", options: ["--json"], examples: ["backlog howto", "backlog howto --json"] },
+  add: { summary: "Add a new task to an epic.", usage: "backlog add <EPIC_ID> --title <TITLE> [options]", options: ["--title, -T", "--estimate, -e", "--complexity, -c", "--priority, -p", "--depends-on, -d", "--tags", "--body, -b"], examples: ["backlog add P1.M1.E1 --title \"Implement parser\""] },
+  "add-epic": { summary: "Add a new epic to a milestone.", usage: "backlog add-epic <MILESTONE_ID> --title <TITLE> [options]", options: ["--title, -T", "--name, -n", "--estimate, -e", "--complexity, -c", "--depends-on, -d", "--description"], examples: ["backlog add-epic P1.M1 --title \"CLI polish\""] },
+  "add-milestone": { summary: "Add a new milestone to a phase.", usage: "backlog add-milestone <PHASE_ID> --title <TITLE> [options]", options: ["--title, -T", "--name, -n", "--estimate, -e", "--complexity, -c", "--depends-on, -d", "--description"], examples: ["backlog add-milestone P1 --title \"Beta readiness\""] },
+  "add-phase": { summary: "Add a new phase to the project.", usage: "backlog add-phase --title <TITLE> [options]", options: ["--title, -T", "--name, -n", "--weeks, -w", "--estimate, -e", "--priority, -p", "--depends-on, -d", "--description"], examples: ["backlog add-phase --title \"Stabilization\""] },
+  admin: { summary: "Administrative checks and diagnostics.", usage: "backlog admin [check-file-sync|check-ids] [--json]", options: ["--json"], examples: ["backlog admin check-file-sync", "backlog admin check-ids --json"] },
+  agents: { summary: "Print AGENTS.md snippets.", usage: "backlog agents [short|medium|full] [--json]", options: ["--json"], examples: ["backlog agents", "backlog agents medium", "backlog agents full --json"] },
+  benchmark: { summary: "Show load-time benchmark for the full task tree.", usage: "backlog benchmark [--json] [--top N] [--mode metadata|full] [--parse-task-body]", options: ["--json", "--top", "--mode", "--parse-task-body"], examples: ["backlog benchmark", "backlog benchmark --json --top 10"] },
+  blocked: { summary: "Mark task as blocked and optionally grab the next task.", usage: "backlog blocked <TASK_ID> --reason REASON [--agent AGENT] [--grab] [--json]", options: ["--reason", "--agent", "--grab", "--json"], examples: ["backlog blocked P1.M1.E1.T001 --reason \"waiting on API\""] },
+  blockers: { summary: "Show blocking tasks.", usage: "backlog blockers [--deep] [--suggest] [--json]", options: ["--deep", "--suggest", "--json"], examples: ["backlog blockers", "backlog blockers --deep --suggest"] },
+  bug: { summary: "Create a new bug report.", usage: "backlog bug [--title <TITLE> | BUG_TEXT] [options]", options: ["--title, -T", "--estimate, -e", "--complexity, -c", "--priority, -p", "--depends-on, -d", "--tags", "--simple, -s", "--body, -b"], examples: ["backlog bug \"Crash when opening report\""] },
+  check: { summary: "Check task tree consistency.", usage: "backlog check [--json] [--strict]", options: ["--json", "--strict"], examples: ["backlog check", "backlog check --strict"] },
+  claim: { summary: "Claim specific task ID(s).", usage: "backlog claim <TASK_ID> [TASK_ID ...] [--agent AGENT] [--force] [--no-content]", options: ["--agent", "--force", "--no-content"], examples: ["backlog claim P1.M1.E1.T001", "backlog claim P1.M1.E1.T001 P1.M1.E1.T002 --agent agent-a"] },
+  cycle: { summary: "Complete current task and grab next.", usage: "backlog cycle [--agent AGENT] [--json] [--no-content]", options: ["--agent", "--json", "--no-content"], examples: ["backlog cycle", "backlog cycle --agent agent-a"] },
+  dash: { summary: "Show quick dashboard of project status.", usage: "backlog dash [--json]", options: ["--json"], examples: ["backlog dash", "backlog dash --json"] },
+  data: { summary: "Export/summarize task data.", usage: "backlog data <summary|export> [--format json|yaml] [--scope SCOPE] [--include-content]", options: ["--format", "--scope", "--include-content"], examples: ["backlog data summary --format json"] },
+  done: { summary: "Mark task as complete.", usage: "backlog done <TASK_ID> [TASK_ID ...] [--status STATUS] [--force] [--verify]", options: ["--status", "--force", "--verify"], examples: ["backlog done P1.M1.E1.T001"] },
+  fixed: { summary: "Capture an ad-hoc completed fix note.", usage: "backlog fixed [--title <TITLE> | FIX_TEXT] [--description DESC] [--at ISO8601]", options: ["--title, -T", "--description", "--at", "--tags", "--body, -b"], examples: ["backlog fixed \"Prevented deadlock in worker loop\""] },
+  grab: { summary: "Auto-claim next task (or claim IDs).", usage: "backlog grab [TASK_ID ...] [--agent AGENT] [--single] [--json] [--no-content]", options: ["--agent", "--single", "--json", "--no-content"], examples: ["backlog grab", "backlog grab --single"] },
+  handoff: { summary: "Transfer task ownership to another agent.", usage: "backlog handoff <TASK_ID> --to AGENT [--notes \"...\"] [--force]", options: ["--to", "--notes", "--force"], examples: ["backlog handoff P1.M1.E1.T001 --to agent-b --notes \"taking over\""] },
+  help: { summary: "Show command overview and guidance.", usage: "backlog help [COMMAND]", options: [], examples: ["backlog help", "backlog help show"] },
+  idea: { summary: "Capture an idea as planning intake.", usage: "backlog idea IDEA_TEXT", options: [], examples: ["backlog idea \"improve migration diagnostics\""] },
+  init: { summary: "Initialize a new .backlog project.", usage: "backlog init --project NAME [--description TEXT] [--timeline-weeks N]", options: ["--project, -p", "--description, -d", "--timeline-weeks, -w"], examples: ["backlog init --project my-project"] },
+  list: { summary: "List tasks with filtering options.", usage: "backlog list [<SCOPE>] [options]", options: ["--status", "--critical", "--available", "--complexity", "--priority", "--progress", "--json", "--all", "--unfinished", "--bugs", "--ideas", "--show-completed-aux", "--phase", "--milestone", "--epic"], examples: ["backlog list", "backlog list P1.M1 --progress", "backlog list --json"] },
+  lock: { summary: "Lock a phase/milestone/epic.", usage: "backlog lock <ITEM_ID>", options: [], examples: ["backlog lock P1.M1"] },
+  log: { summary: "Show recent activity log.", usage: "backlog log [--limit N] [--json]", options: ["--limit", "--json"], examples: ["backlog log", "backlog log --limit 20 --json"] },
+  migrate: { summary: "Migrate .tasks/ to .backlog/.", usage: "backlog migrate [--force] [--no-symlink]", options: ["--force", "--no-symlink"], examples: ["backlog migrate"] },
+  move: { summary: "Move task/epic/milestone to new parent.", usage: "backlog move <SOURCE_ID> --to <DEST_ID>", options: ["--to"], examples: ["backlog move P1.M1.E1.T001 --to P1.M1.E2"] },
+  next: { summary: "Get next available task on critical path.", usage: "backlog next [--json]", options: ["--json"], examples: ["backlog next", "backlog next --json"] },
+  preview: { summary: "Show upcoming work preview with grab suggestions.", usage: "backlog preview [--json]", options: ["--json"], examples: ["backlog preview", "backlog preview --json"] },
+  report: { summary: "Generate reports (progress, velocity, estimates).", usage: "backlog report [progress|velocity|estimate-accuracy|p|v|ea] [--json] [--format json|table]", options: ["progress|velocity|estimate-accuracy", "--json", "--format"], examples: ["backlog report progress", "backlog r v --json"] },
+  schema: { summary: "Show file schema information.", usage: "backlog schema [--json] [--compact]", options: ["--json", "--compact"], examples: ["backlog schema", "backlog schema --json"] },
+  search: { summary: "Search tasks by pattern.", usage: "backlog search <PATTERN> [options]", options: ["--status", "--tags", "--complexity", "--priority", "--limit", "--json"], examples: ["backlog search auth", "backlog search --status pending --limit 5 auth"] },
+  session: { summary: "Manage agent sessions.", usage: "backlog session <start|heartbeat|list|end|clean> [--agent AGENT] [--timeout MINUTES]", options: ["start", "heartbeat", "list", "end", "clean"], examples: ["backlog session start --agent agent-a", "backlog session list"] },
+  set: { summary: "Set task properties (status/priority/etc).", usage: "backlog set <TASK_ID> [property flags]", options: ["--status", "--priority", "--complexity", "--estimate", "--title", "--depends-on", "--tags", "--reason"], examples: ["backlog set P1.M1.E1.T001 --priority high --tags api,auth"] },
+  show: { summary: "Show detailed info for task/phase/milestone/epic.", usage: "backlog show [PATH_ID ...]", options: ["PATH_ID can be phase/milestone/epic/task ID", "If omitted, uses current working task"], examples: ["backlog show P1.M1.E1.T001", "backlog show P1.M1 P2.M1.E3", "backlog show"] },
+  skills: { summary: "Install skill files.", usage: "backlog skills install <SKILL> [--client codex|claude] [--artifact skills|commands] [--dry-run] [--json]", options: ["--client", "--artifact", "--dry-run", "--json"], examples: ["backlog skills install plan-task --client=codex --artifact=skills"] },
+  skip: { summary: "Skip current task and move on.", usage: "backlog skip <TASK_ID> [--agent AGENT] [--no-grab]", options: ["--agent", "--no-grab"], examples: ["backlog skip P1.M1.E1.T001 --agent agent-a"] },
+  sync: { summary: "Sync derived metadata in index files.", usage: "backlog sync", options: [], examples: ["backlog sync"] },
+  timeline: { summary: "Display an ASCII Gantt chart of the project timeline.", usage: "backlog timeline [--scope SCOPE] [--group-by phase|milestone|epic|status] [--show-done] [--json]", options: ["--scope", "--group-by", "--show-done", "--json"], examples: ["backlog timeline", "backlog timeline --group-by milestone"] },
+  tree: { summary: "Display full hierarchical task tree.", usage: "backlog tree [PATH_QUERY] [--json] [--unfinished] [--show-completed-aux] [--details] [--depth N]", options: ["--json", "--unfinished", "--show-completed-aux", "--details", "--depth"], examples: ["backlog tree", "backlog tree P1.M1 --details"] },
+  unclaim: { summary: "Release a claimed task.", usage: "backlog unclaim <TASK_ID> [--agent AGENT]", options: ["--agent"], examples: ["backlog unclaim P1.M1.E1.T001"] },
+  "unclaim-stale": { summary: "Release stale claims older than threshold.", usage: "backlog unclaim-stale [--threshold MINUTES] [--dry-run]", options: ["--threshold", "--dry-run"], examples: ["backlog unclaim-stale --threshold 120"] },
+  undone: { summary: "Mark task/epic/milestone/phase as not done.", usage: "backlog undone <ITEM_ID>", options: [], examples: ["backlog undone P1.M1.E1.T001"] },
+  unlock: { summary: "Unlock a phase/milestone/epic.", usage: "backlog unlock <ITEM_ID>", options: [], examples: ["backlog unlock P1.M1"] },
+  update: { summary: "Update task status.", usage: "backlog update <TASK_ID> <STATUS> [--reason REASON]", options: ["--reason"], examples: ["backlog update P1.M1.E1.T001 blocked --reason \"waiting on API\""] },
+  version: { summary: "Show CLI version.", usage: "backlog version", options: [], examples: ["backlog version"] },
+  why: { summary: "Explain why a task is blocked/unavailable.", usage: "backlog why <TASK_ID> [--json]", options: ["--json"], examples: ["backlog why P1.M1.E1.T001"] },
+  work: { summary: "Set/show current working task.", usage: "backlog work [TASK_ID|clear] [--agent AGENT]", options: ["--agent"], examples: ["backlog work", "backlog work P1.M1.E1.T001", "backlog work clear"] },
+};
+
+function maybePrintCommandHelp(command: string, args: string[]): boolean {
+  if (!parseFlag(args, "--help", "-h")) return false;
+  const normalized = helpAliases[command] ?? command;
+  const spec = commandHelpSpecs[normalized];
+  if (!spec) return false;
+
+  console.log(`\nCommand Help: backlog ${normalized}`);
+  console.log(spec.summary);
+  console.log(`\nUsage: ${spec.usage}`);
+  if (spec.options.length > 0) {
+    console.log("\nOptions");
+    for (const option of spec.options) console.log(`  ${option}`);
+  }
+  if (spec.examples.length > 0) {
+    console.log("\nExamples");
+    for (const example of spec.examples) console.log(`  ${example}`);
+  }
+  console.log("\nTip: Use `backlog list` or `backlog tree` to find valid IDs.");
+  return true;
+}
+
 // Helper functions for filtering and stats
 function isUnfinished(status: Status): boolean {
   return status !== Status.DONE && status !== Status.CANCELLED && status !== Status.REJECTED;
@@ -3416,6 +3503,9 @@ async function main(): Promise<void> {
   }
   if (cmd === "--version") {
     console.log("0.1.0");
+    return;
+  }
+  if (maybePrintCommandHelp(cmd, rest)) {
     return;
   }
 

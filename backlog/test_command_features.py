@@ -522,6 +522,64 @@ def test_howto_is_pinned_to_top_of_help(runner, tmp_feature_tasks_dir):
     assert first_command_line.strip().startswith("howto")
 
 
+def test_all_commands_have_non_thin_help(runner, tmp_feature_tasks_dir):
+    commands = [
+        "howto",
+        "add",
+        "add-epic",
+        "add-milestone",
+        "add-phase",
+        "agents",
+        "benchmark",
+        "blocked",
+        "blockers",
+        "bug",
+        "check",
+        "claim",
+        "cycle",
+        "dash",
+        "data",
+        "done",
+        "fixed",
+        "grab",
+        "handoff",
+        "idea",
+        "init",
+        "list",
+        "lock",
+        "log",
+        "ls",
+        "migrate",
+        "move",
+        "next",
+        "preview",
+        "report",
+        "schema",
+        "search",
+        "session",
+        "set",
+        "show",
+        "skills",
+        "skip",
+        "sync",
+        "timeline",
+        "tree",
+        "unclaim",
+        "unclaim-stale",
+        "undone",
+        "unlock",
+        "update",
+        "why",
+        "work",
+    ]
+
+    for command in commands:
+        result = runner.invoke(cli, [command, "--help"])
+        assert result.exit_code == 0
+        assert "Usage:" in result.output
+        assert len(result.output.strip()) > 40
+
+
 def test_howto_command_outputs_text_and_json(runner, tmp_feature_tasks_dir):
     text_result = runner.invoke(cli, ["howto"])
     assert text_result.exit_code == 0

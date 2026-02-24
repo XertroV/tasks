@@ -1334,6 +1334,53 @@ func TestRunLsHelpRendersCommandSpecificGuidance(t *testing.T) {
 	)
 }
 
+func TestRunShowHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "show", "--help")
+	if err != nil {
+		t.Fatalf("run show --help = %v, expected nil", err)
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Command Help: backlog show",
+		"Usage:",
+		"backlog show [PATH_ID ...]",
+	)
+}
+
+func TestRunAllCommandsHelpIsNotThin(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	commandsToCheck := []string{
+		"howto", "add", "add-epic", "add-milestone", "add-phase", "admin", "agents", "benchmark",
+		"blocked", "blockers", "bug", "check", "claim", "cycle", "dash", "data", "done", "fixed",
+		"grab", "handoff", "help", "idea", "init", "list", "lock", "log", "migrate", "move", "next",
+		"preview", "report", "schema", "search", "session", "set", "show", "skills", "skip", "sync",
+		"timeline", "tree", "unclaim", "unclaim-stale", "undone", "unlock", "update", "version", "why",
+		"work",
+	}
+	for _, command := range commandsToCheck {
+		command := command
+		t.Run(command, func(t *testing.T) {
+			t.Parallel()
+			output, err := runInDir(t, root, command, "--help")
+			if err != nil {
+				t.Fatalf("run %s --help = %v, expected nil", command, err)
+			}
+			if strings.TrimSpace(output) == "Usage: backlog "+command {
+				t.Fatalf("output for %s is thin usage-only help: %q", command, output)
+			}
+			if !strings.Contains(output, "Usage:") && !strings.Contains(output, "Usage") {
+				t.Fatalf("output for %s missing usage guidance: %q", command, output)
+			}
+		})
+	}
+}
+
 func TestRunListRejectsUnknownFlag(t *testing.T) {
 	t.Parallel()
 

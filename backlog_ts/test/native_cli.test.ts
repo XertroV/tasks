@@ -990,6 +990,33 @@ tags: []
     expect(out).not.toContain("\n  tl             Display an ASCII Gantt chart of the project timeline.");
   });
 
+  test("show --help renders command-specific guidance", () => {
+    root = setupFixture();
+    const p = run(["show", "--help"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Command Help: backlog show");
+    expect(out).toContain("Usage: backlog show [PATH_ID ...]");
+  });
+
+  test("all commands provide non-thin --help output", () => {
+    root = setupFixture();
+    const commands = [
+      "howto", "ls", "list", "tree", "show", "next", "preview", "claim", "grab", "done", "undone",
+      "cycle", "dash", "update", "set", "work", "unclaim", "blocked", "bug", "idea", "fixed", "search",
+      "check", "init", "add", "add-epic", "add-milestone", "add-phase", "lock", "unlock", "move", "session",
+      "data", "report", "timeline", "schema", "blockers", "skills", "agents", "log", "migrate", "benchmark",
+    ];
+    for (const command of commands) {
+      const p = run([command, "--help"], root);
+      expect(p.exitCode).toBe(0);
+      const out = p.stdout.toString();
+      expect(out.trim().length).toBeGreaterThan(30);
+      expect(out).toContain("Usage");
+      expect(out).not.toBe(`Usage: backlog ${command}\n`);
+    }
+  });
+
   test("howto prints agent guidance in text and json", () => {
     root = setupFixture();
     let p = run(["howto"], root);
