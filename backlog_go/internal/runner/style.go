@@ -215,6 +215,10 @@ func statusIconStyled(status models.Status) string {
 	}
 }
 
+func dependencyBlockedIconStyled() string {
+	return styleWarning("[~]") + " "
+}
+
 func criticalMarkerStyled(onCritical bool) string {
 	if !onCritical {
 		return " "

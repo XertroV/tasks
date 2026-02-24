@@ -2984,6 +2984,7 @@ func runListCore(command string, args []string) error {
 	if err != nil {
 		return err
 	}
+	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 	_ = nextAvailable
 
 	var scopedPhases []models.Phase
@@ -3058,14 +3059,14 @@ func runListCore(command string, args []string) error {
 	}
 
 	if availableOnly {
-		return renderListAvailable(tree, calculator, outputJSON, scopedTasks, taskMatches, criticalPath, includeNormal, includeBugs, includeIdeas, effectiveShowCompletedAux)
+		return renderListAvailable(tree, calculator, outputJSON, scopedTasks, taskMatches, criticalPath, availableTaskIDs, includeNormal, includeBugs, includeIdeas, effectiveShowCompletedAux)
 	}
 
 	if outputJSON {
 		return renderListJSON(tree, scoped, scopedPhases, includeNormal, includeBugs, includeIdeas, showAll, unfinished, effectiveShowCompletedAux, taskMatches, criticalPath, nextAvailable, hasComplexityFilter, hasPriorityFilter, complexityFilter, priorityFilter, scopedTasks, statusFilter)
 	}
 
-	return renderListText(command, tree, scoped, scopedPhases, scopedTasks, scopeType, scopeDepth, taskMatches, criticalPath, showAll)
+	return renderListText(command, tree, scoped, scopedPhases, scopedTasks, scopeType, scopeDepth, taskMatches, criticalPath, showAll, availableTaskIDs)
 }
 
 func runLsCore(args []string, dataDir string) error {
@@ -3615,6 +3616,7 @@ func runTree(args []string) error {
 	if err != nil {
 		return err
 	}
+	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 
 	filteredPhases := tree.Phases
 	if pathQuery != nil {
@@ -3664,7 +3666,7 @@ func runTree(args []string) error {
 
 	for i, phase := range filteredPhases {
 		isLast := i == len(filteredPhases)-1 && !hasAux
-		lines := renderTreePhase(phase, isLast, "", criticalPath, unfinished, showDetails, depth, 1)
+		lines := renderTreePhase(phase, isLast, "", criticalPath, availableTaskIDs, unfinished, showDetails, depth, 1)
 		for _, line := range lines {
 			fmt.Println(line)
 		}
@@ -3690,7 +3692,7 @@ func runTree(args []string) error {
 		fmt.Printf("%s%s\n", branch, styleSubHeader(fmt.Sprintf("Bugs (%d/%d)", bugsDone, len(bugsToShow))))
 		for i, bug := range bugsToShow {
 			isLast := i == len(bugsToShow)-1 && len(ideasToShow) == 0
-			fmt.Printf("%s\n", renderTreeTaskLine(bug, continuation, isLast, criticalPath, showDetails))
+			fmt.Printf("%s\n", renderTreeTaskLine(bug, continuation, isLast, criticalPath, availableTaskIDs, showDetails))
 		}
 	}
 
@@ -3704,7 +3706,7 @@ func runTree(args []string) error {
 		fmt.Printf("└── %s\n", styleSubHeader(fmt.Sprintf("Ideas (%d/%d)", ideasDone, len(ideasToShow))))
 		for i, idea := range ideasToShow {
 			isLast := i == len(ideasToShow)-1
-			fmt.Printf("  %s\n", strings.TrimSuffix(renderTreeTaskLine(idea, "", isLast, criticalPath, showDetails), "\n"))
+			fmt.Printf("  %s\n", strings.TrimSuffix(renderTreeTaskLine(idea, "", isLast, criticalPath, availableTaskIDs, showDetails), "\n"))
 		}
 	}
 
@@ -5020,7 +5022,7 @@ func treeTaskFromTask(task models.Task, criticalPath []string) treeTask {
 	return pathTask
 }
 
-func renderTreePhase(phase models.Phase, isLast bool, prefix string, criticalPath []string, unfinished bool, showDetails bool, maxDepth int, currentDepth int) []string {
+func renderTreePhase(phase models.Phase, isLast bool, prefix string, criticalPath []string, availableTaskIDs map[string]struct{}, unfinished bool, showDetails bool, maxDepth int, currentDepth int) []string {
 	stats := getTaskStatsForPhase(phase)
 	branch := "├── "
 	continuation := "│   "
@@ -5045,12 +5047,12 @@ func renderTreePhase(phase models.Phase, isLast bool, prefix string, criticalPat
 
 	for i, milestone := range milestones {
 		milestoneIsLast := i == len(milestones)-1
-		lines = append(lines, renderTreeMilestone(milestone, milestoneIsLast, prefix+continuation, criticalPath, unfinished, showDetails, maxDepth, currentDepth+1)...)
+		lines = append(lines, renderTreeMilestone(milestone, milestoneIsLast, prefix+continuation, criticalPath, availableTaskIDs, unfinished, showDetails, maxDepth, currentDepth+1)...)
 	}
 	return lines
 }
 
-func renderTreeMilestone(milestone models.Milestone, isLast bool, prefix string, criticalPath []string, unfinished bool, showDetails bool, maxDepth int, currentDepth int) []string {
+func renderTreeMilestone(milestone models.Milestone, isLast bool, prefix string, criticalPath []string, availableTaskIDs map[string]struct{}, unfinished bool, showDetails bool, maxDepth int, currentDepth int) []string {
 	stats := getTaskStatsForMilestone(milestone)
 	branch := "├── "
 	continuation := "│   "
@@ -5074,12 +5076,12 @@ func renderTreeMilestone(milestone models.Milestone, isLast bool, prefix string,
 	}
 	for i, epic := range epics {
 		isLastEpic := i == len(epics)-1
-		lines = append(lines, renderTreeEpic(epic, isLastEpic, prefix+continuation, criticalPath, unfinished, showDetails, maxDepth, currentDepth+1)...)
+		lines = append(lines, renderTreeEpic(epic, isLastEpic, prefix+continuation, criticalPath, availableTaskIDs, unfinished, showDetails, maxDepth, currentDepth+1)...)
 	}
 	return lines
 }
 
-func renderTreeEpic(epic models.Epic, isLast bool, prefix string, criticalPath []string, unfinished bool, showDetails bool, maxDepth int, currentDepth int) []string {
+func renderTreeEpic(epic models.Epic, isLast bool, prefix string, criticalPath []string, availableTaskIDs map[string]struct{}, unfinished bool, showDetails bool, maxDepth int, currentDepth int) []string {
 	stats := getTaskStatsForEpic(epic)
 	branch := "├── "
 	continuation := "│   "
@@ -5098,17 +5100,17 @@ func renderTreeEpic(epic models.Epic, isLast bool, prefix string, criticalPath [
 	}
 	for i, task := range tasks {
 		isLastTask := i == len(tasks)-1
-		lines = append(lines, renderTreeTaskLine(task, prefix+continuation, isLastTask, criticalPath, showDetails))
+		lines = append(lines, renderTreeTaskLine(task, prefix+continuation, isLastTask, criticalPath, availableTaskIDs, showDetails))
 	}
 	return lines
 }
 
-func renderTreeTaskLine(task models.Task, prefix string, isLast bool, criticalPath []string, showDetails bool) string {
+func renderTreeTaskLine(task models.Task, prefix string, isLast bool, criticalPath []string, availableTaskIDs map[string]struct{}, showDetails bool) string {
 	branch := "├── "
 	if isLast {
 		branch = "└── "
 	}
-	line := fmt.Sprintf("%s%s%s %s: %s", prefix, branch, statusIcon(task.Status), styleSuccess(task.ID), task.Title)
+	line := fmt.Sprintf("%s%s%s %s: %s", prefix, branch, checkboxIconForTask(task, availableTaskIDs), styleSuccess(task.ID), task.Title)
 	if !showDetails {
 		if isTaskOnCriticalPath(task.ID, criticalPath) {
 			line += " " + styleCritical("★")
@@ -5137,12 +5139,12 @@ func renderTreeTaskLine(task models.Task, prefix string, isLast bool, criticalPa
 	return line
 }
 
-func formatTaskSummary(task models.Task, criticalPath []string) string {
+func formatTaskSummary(task models.Task, criticalPath []string, availableTaskIDs map[string]struct{}) string {
 	critical := styleMuted("·")
 	if isTaskOnCriticalPath(task.ID, criticalPath) {
 		critical = styleCritical("★")
 	}
-	return fmt.Sprintf("%s %s %s %s", critical, statusIcon(task.Status), styleSuccess(task.ID), task.Title)
+	return fmt.Sprintf("%s %s %s %s", critical, checkboxIconForTask(task, availableTaskIDs), styleSuccess(task.ID), task.Title)
 }
 
 func formatTaskDetails(task models.Task) []string {
@@ -6249,7 +6251,7 @@ func filterTasksByIDs(taskIDs []string, allTasks []models.Task, taskMatches func
 	return out
 }
 
-func renderListAvailable(tree models.TaskTree, calculator *critical_path.CriticalPathCalculator, outputJSON bool, scopedTasks []string, taskMatches func(models.Task) bool, criticalPath []string, includeNormal, includeBugs, includeIdeas bool, _ bool) error {
+func renderListAvailable(tree models.TaskTree, calculator *critical_path.CriticalPathCalculator, outputJSON bool, scopedTasks []string, taskMatches func(models.Task) bool, criticalPath []string, availableTaskIDs map[string]struct{}, includeNormal, includeBugs, includeIdeas bool, _ bool) error {
 	scoped := map[string]struct{}{}
 	for _, id := range scopedTasks {
 		scoped[id] = struct{}{}
@@ -6350,7 +6352,7 @@ func renderListAvailable(tree models.TaskTree, calculator *critical_path.Critica
 		})
 		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("%s (%s) (%d available)", phase.Name, phase.ID, len(tasks))))
 		for _, task := range tasks {
-			fmt.Println(formatTaskSummary(task, criticalPath))
+			fmt.Println(formatTaskSummary(task, criticalPath, availableTaskIDs))
 			for _, detail := range formatTaskDetails(task) {
 				fmt.Printf("    %s\n", detail)
 			}
@@ -6363,7 +6365,7 @@ func renderListAvailable(tree models.TaskTree, calculator *critical_path.Critica
 		})
 		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("Bugs (%d available)", len(bugs))))
 		for _, task := range bugs {
-			fmt.Println(formatTaskSummary(task, criticalPath))
+			fmt.Println(formatTaskSummary(task, criticalPath, availableTaskIDs))
 			for _, detail := range formatTaskDetails(task) {
 				fmt.Printf("    %s\n", detail)
 			}
@@ -6376,7 +6378,7 @@ func renderListAvailable(tree models.TaskTree, calculator *critical_path.Critica
 		})
 		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("Ideas (%d available)", len(ideas))))
 		for _, task := range ideas {
-			fmt.Println(formatTaskSummary(task, criticalPath))
+			fmt.Println(formatTaskSummary(task, criticalPath, availableTaskIDs))
 			for _, detail := range formatTaskDetails(task) {
 				fmt.Printf("    %s\n", detail)
 			}
@@ -6570,7 +6572,7 @@ func renderListJSON(tree models.TaskTree, scoped bool, scopedPhases []models.Pha
 	return nil
 }
 
-func renderListText(command string, tree models.TaskTree, scoped bool, scopedPhases []models.Phase, scopedTasks []string, _ string, _ int, taskMatches func(models.Task) bool, criticalPath []string, showAll bool) error {
+func renderListText(command string, tree models.TaskTree, scoped bool, scopedPhases []models.Phase, scopedTasks []string, _ string, _ int, taskMatches func(models.Task) bool, criticalPath []string, showAll bool, availableTaskIDs map[string]struct{}) error {
 	_ = showAll
 	fmt.Printf("%s %s\n", styleSubHeader("Critical Path:"), strings.Join(criticalPath[:min(len(criticalPath), 10)], " -> "))
 
@@ -6664,7 +6666,7 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			if i == len(bugs)-1 {
 				prefix = "  └── "
 			}
-			icon := statusIcon(bug.Status)
+			icon := checkboxIconForTask(bug, availableTaskIDs)
 			critical := ""
 			if containsString(criticalPath, bug.ID) {
 				critical = string(styleCritical("★ "))
@@ -6695,7 +6697,7 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			if i == len(ideas)-1 {
 				prefix = "  └── "
 			}
-			icon := statusIcon(idea.Status)
+			icon := checkboxIconForTask(idea, availableTaskIDs)
 			critical := ""
 			if containsString(criticalPath, idea.ID) {
 				critical = string(styleCritical("★ "))
@@ -6725,6 +6727,9 @@ func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir stri
 }
 
 func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath, dataDir string) error {
+	calculator := critical_path.NewCriticalPathCalculator(tree, map[string]float64{})
+	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
+
 	if scopePath == nil {
 		parsed, err := models.ParseTaskPath(id)
 		if err != nil {
@@ -6798,7 +6803,7 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 			limit := min(10, len(epic.Tasks))
 			for i := 0; i < limit; i++ {
 				task := epic.Tasks[i]
-				fmt.Printf("  %s %s %s\n", statusIcon(task.Status), styleSuccess(task.ID), task.Title)
+				fmt.Printf("  %s %s %s\n", checkboxIconForTask(task, availableTaskIDs), styleSuccess(task.ID), task.Title)
 			}
 			if len(epic.Tasks) > limit {
 				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(epic.Tasks)-limit)))
@@ -7088,6 +7093,26 @@ func renderTaskDetail(task models.Task, dataDir string) {
 
 func statusIcon(status models.Status) string {
 	return statusIconStyled(status)
+}
+
+func taskIDSet(taskIDs []string) map[string]struct{} {
+	set := make(map[string]struct{}, len(taskIDs))
+	for _, id := range taskIDs {
+		if strings.TrimSpace(id) == "" {
+			continue
+		}
+		set[id] = struct{}{}
+	}
+	return set
+}
+
+func checkboxIconForTask(task models.Task, availableTaskIDs map[string]struct{}) string {
+	if task.Status == models.StatusPending && strings.TrimSpace(task.ClaimedBy) == "" && len(availableTaskIDs) > 0 {
+		if _, available := availableTaskIDs[task.ID]; !available {
+			return dependencyBlockedIconStyled()
+		}
+	}
+	return statusIcon(task.Status)
 }
 
 func min(a, b int) int {

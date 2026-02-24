@@ -126,6 +126,7 @@ func runSearch(args []string) error {
 	if err != nil {
 		return err
 	}
+	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 
 	re, err := regexp.Compile("(?i)" + pattern)
 	if err != nil {
@@ -226,7 +227,7 @@ func runSearch(args []string) error {
 		}
 		fmt.Println(styleSubHeader(phaseLabel))
 		for _, task := range tasks {
-			fmt.Println(formatTaskSummary(task, criticalPath))
+			fmt.Println(formatTaskSummary(task, criticalPath, availableTaskIDs))
 			for _, detail := range formatTaskDetails(task) {
 				fmt.Printf("    %s\n", detail)
 			}
@@ -269,6 +270,7 @@ func runBlockers(args []string) error {
 	if err != nil {
 		return err
 	}
+	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 	pendingBlocked, err := calculator.FindPendingBlocked()
 	if err != nil {
 		return err
@@ -321,7 +323,7 @@ func runBlockers(args []string) error {
 		if task == nil {
 			continue
 		}
-		fmt.Println(formatTaskSummary(*task, criticalPath))
+		fmt.Println(formatTaskSummary(*task, criticalPath, availableTaskIDs))
 		for _, detail := range formatTaskDetails(*task) {
 			fmt.Printf("    %s\n", detail)
 		}
@@ -485,6 +487,7 @@ func runTimeline(args []string) error {
 	if err != nil {
 		return err
 	}
+	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 
 	tasks := findAllTasksInTree(tree)
 	filtered := []models.Task{}
@@ -554,7 +557,7 @@ func runTimeline(args []string) error {
 			return items[i].ID < items[j].ID
 		})
 		for _, task := range items {
-			fmt.Println(formatTaskSummary(task, criticalPath))
+			fmt.Println(formatTaskSummary(task, criticalPath, availableTaskIDs))
 			for _, detail := range formatTaskDetails(task) {
 				fmt.Printf("    %s\n", detail)
 			}

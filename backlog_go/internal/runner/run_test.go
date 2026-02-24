@@ -1226,6 +1226,53 @@ func TestRunListBugsAndIdeasFlags(t *testing.T) {
 	}
 }
 
+func TestRunListBugsAndIdeasUseDependencyBlockedCheckbox(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	setAuxTaskDependsOn(t, root, "bugs", "B1", []string{"P1.M1.E1.T001"})
+	setAuxTaskDependsOn(t, root, "ideas", "I1", []string{"P1.M1.E1.T001"})
+
+	bugsOutput, err := runInDir(t, root, "list", "--bugs")
+	if err != nil {
+		t.Fatalf("run list --bugs = %v, expected nil", err)
+	}
+	if !strings.Contains(bugsOutput, "[~]") || !strings.Contains(bugsOutput, "B1: Root bug") {
+		t.Fatalf("bugs output = %q, expected dependency-blocked checkbox for bug", bugsOutput)
+	}
+
+	ideasOutput, err := runInDir(t, root, "list", "--ideas")
+	if err != nil {
+		t.Fatalf("run list --ideas = %v, expected nil", err)
+	}
+	if !strings.Contains(ideasOutput, "[~]") || !strings.Contains(ideasOutput, "I1: Root idea") {
+		t.Fatalf("ideas output = %q, expected dependency-blocked checkbox for idea", ideasOutput)
+	}
+}
+
+func TestRunTreeAndShowUseDependencyBlockedCheckboxForTasks(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	treeOutput, err := runInDir(t, root, "tree")
+	if err != nil {
+		t.Fatalf("run tree = %v, expected nil", err)
+	}
+	if !strings.Contains(treeOutput, "[~]  P1.M1.E1.T002: b") {
+		t.Fatalf("tree output = %q, expected dependency-blocked checkbox for task", treeOutput)
+	}
+
+	showOutput, err := runInDir(t, root, "show", "P1.M1.E1")
+	if err != nil {
+		t.Fatalf("run show P1.M1.E1 = %v, expected nil", err)
+	}
+	if !strings.Contains(showOutput, "[~]  P1.M1.E1.T002 b") {
+		t.Fatalf("show output = %q, expected dependency-blocked checkbox for epic task", showOutput)
+	}
+}
+
 func TestRunListAuxFallbackTitleFromFilename(t *testing.T) {
 	t.Parallel()
 
@@ -2692,6 +2739,30 @@ func setAuxTaskStatus(t *testing.T, root string, section string, itemID string, 
 		entry := raw.(map[string]interface{})
 		if asString(entry["id"]) == itemID {
 			entry["status"] = status
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("%s not found in %s index", itemID, section)
+	}
+	writeYAMLMap(t, indexPath, index)
+}
+
+func setAuxTaskDependsOn(t *testing.T, root string, section string, itemID string, dependsOn []string) {
+	t.Helper()
+	indexPath := filepath.Join(root, ".tasks", section, "index.yaml")
+	index := readYAMLMap(t, indexPath)
+	entries, ok := index[section].([]interface{})
+	if !ok {
+		t.Fatalf("expected %s index to contain %s entries", section, section)
+	}
+
+	found := false
+	for _, raw := range entries {
+		entry := raw.(map[string]interface{})
+		if asString(entry["id"]) == itemID {
+			entry["depends_on"] = dependsOn
 			found = true
 			break
 		}
