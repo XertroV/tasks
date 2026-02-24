@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -13,6 +14,7 @@ import (
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"gopkg.in/yaml.v3"
 )
@@ -21,6 +23,8 @@ type parityCommandResult struct {
 	Code   int
 	Stdout string
 }
+
+const parityCommandTimeout = 20 * time.Second
 
 var ansiEscape = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 
@@ -76,8 +80,6 @@ func TestGoParityFixtureSetIsCanonical(t *testing.T) {
 }
 
 func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
-	t.Parallel()
-
 	projectRoot := mustProjectRoot(t)
 	pythonBinary, err := findExecutable("python", "python3")
 	if err != nil {
@@ -95,8 +97,6 @@ func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
 	for _, vector := range parityVectors {
 		vector := vector
 		t.Run(strings.Join(vector, " "), func(t *testing.T) {
-			t.Parallel()
-
 			goRoot := t.TempDir()
 			pyRoot := t.TempDir()
 			tsRoot := t.TempDir()
@@ -151,8 +151,6 @@ func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
 }
 
 func TestRunParityCrossValidateGoAgainstPython(t *testing.T) {
-	t.Parallel()
-
 	projectRoot := mustProjectRoot(t)
 	pythonBinary, err := findExecutable("python", "python3")
 	if err != nil {
@@ -166,8 +164,6 @@ func TestRunParityCrossValidateGoAgainstPython(t *testing.T) {
 	for _, vector := range pythonGoOnlyParityVectors {
 		vector := vector
 		t.Run(strings.Join(vector, " "), func(t *testing.T) {
-			t.Parallel()
-
 			goRoot := t.TempDir()
 			pyRoot := t.TempDir()
 			copyFixture(t, template, filepath.Join(goRoot, ".tasks"))
@@ -194,8 +190,6 @@ func TestRunParityCrossValidateGoAgainstPython(t *testing.T) {
 }
 
 func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing.T) {
-	t.Parallel()
-
 	projectRoot := mustProjectRoot(t)
 	pythonBinary, err := findExecutable("python", "python3")
 	if err != nil {
@@ -235,8 +229,6 @@ func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing
 	for _, testCase := range cases {
 		testCase := testCase
 		t.Run(strings.Join(testCase.command, " "), func(t *testing.T) {
-			t.Parallel()
-
 			goRoot := t.TempDir()
 			pyRoot := t.TempDir()
 			tsRoot := t.TempDir()
@@ -304,12 +296,20 @@ func mustProjectRoot(t *testing.T) string {
 
 func runCommand(executable string, fixedArgs []string, command []string, cwd string) (parityCommandResult, error) {
 	args := append(append([]string{}, fixedArgs...), command...)
-	cmd := exec.Command(executable, args...)
+	ctx, cancel := context.WithTimeout(context.Background(), parityCommandTimeout)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, executable, args...)
 	cmd.Dir = cwd
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
 	err := cmd.Run()
+	if ctx.Err() == context.DeadlineExceeded {
+		return parityCommandResult{
+			Code:   124,
+			Stdout: sanitizeOutput(buf.String(), cwd),
+		}, fmt.Errorf("command timed out after %s: %s %s", parityCommandTimeout, executable, strings.Join(args, " "))
+	}
 	code := 0
 	if err != nil {
 		var exitErr *exec.ExitError
