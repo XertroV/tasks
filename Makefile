@@ -127,6 +127,7 @@ uninstall-ts:
 	$(MAKE) cli-unlink
 
 install-go:
+install-go: build-go
 	cd "$(GO_DIR)" && $(GO) install .
 	$(MAKE) go-link
 

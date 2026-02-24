@@ -1,10 +1,14 @@
 ---
+claimed_at: "2026-02-24T17:22:35Z"
+claimed_by: cli-user
+completed_at: null
 complexity: medium
 depends_on: []
 estimate_hours: 1
 id: B003
 priority: high
-status: pending
+started_at: "2026-02-24T17:22:35Z"
+status: in_progress
 tags: []
 title: 'go client: should have much nicer, richer reports. the report should say what it is, explain itself briefly where appropriate, have nice visualizations (see the python implementation), etc.'
 ---

@@ -5,3 +5,4 @@ bugs:
     - file: B004-go-client-output-of-bl-list-av.todo
     - file: B005-aliases-should-not-be-listed-o.todo
     - file: B006-go-client-output-of-bl-claim-x.todo
+    - file: B007-go-client-the-output-for-bl-ad.todo
