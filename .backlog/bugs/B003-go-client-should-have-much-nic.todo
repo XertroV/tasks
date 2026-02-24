@@ -1,16 +1,19 @@
 ---
-claimed_at: "2026-02-24T17:22:35Z"
+claimed_at: '2026-02-24T17:22:35+00:00'
 claimed_by: cli-user
-completed_at: null
+completed_at: '2026-02-24T18:05:22.314999+00:00'
 complexity: medium
 depends_on: []
-estimate_hours: 1
+estimate_hours: 1.0
 id: B003
 priority: high
-started_at: "2026-02-24T17:22:35Z"
-status: in_progress
+started_at: '2026-02-24T17:22:35+00:00'
+status: done
 tags: []
-title: 'go client: should have much nicer, richer reports. the report should say what it is, explain itself briefly where appropriate, have nice visualizations (see the python implementation), etc.'
+title: 'go client: should have much nicer, richer reports. the report should say what
+  it is, explain itself briefly where appropriate, have nice visualizations (see the
+  python implementation), etc.'
+duration_minutes: 42.78858316666666
 ---
 
 go client: should have much nicer, richer reports. the report should say what it is, explain itself briefly where appropriate, have nice visualizations (see the python implementation), etc.

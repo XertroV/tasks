@@ -44,6 +44,24 @@ func TestNewRootCommandDefaults(t *testing.T) {
 	if !strings.Contains(usage, "\n  howto") {
 		t.Fatalf("usage %q missing howto command entry", usage)
 	}
+	if strings.Contains(usage, "\n  ls ") {
+		t.Fatalf("usage %q should not list ls alias separately", usage)
+	}
+	if strings.Contains(usage, "\n  tl ") {
+		t.Fatalf("usage %q should not list tl alias separately", usage)
+	}
+	if strings.Contains(usage, "\n  r ") {
+		t.Fatalf("usage %q should not list r alias separately", usage)
+	}
+	if !strings.Contains(usage, "list (alias: ls)") {
+		t.Fatalf("usage %q missing list alias inline", usage)
+	}
+	if !strings.Contains(usage, "timeline (alias: tl)") {
+		t.Fatalf("usage %q missing timeline alias inline", usage)
+	}
+	if !strings.Contains(usage, "report (alias: r)") {
+		t.Fatalf("usage %q missing report alias inline", usage)
+	}
 	commandsSection := strings.SplitN(usage, "Commands:\n", 2)
 	if len(commandsSection) != 2 {
 		t.Fatalf("usage %q missing commands section", usage)

@@ -4,14 +4,15 @@ depends_on: []
 estimate_hours: 1.0
 id: B007
 priority: high
-status: in_progress
+status: done
 tags: []
 title: 'go client: The output for `bl add-phase --help` and similar commands needs
   tremendous improvement.'
 claimed_by: cli-user
 claimed_at: '2026-02-24T17:43:24.271757+00:00'
 started_at: '2026-02-24T17:43:24.271757+00:00'
-completed_at: null
+completed_at: '2026-02-24T18:05:22.322623+00:00'
+duration_minutes: 21.96751438333333
 ---
 
 go client: The output for `bl add-phase --help` and similar commands needs tremendous improvement.

@@ -109,8 +109,9 @@ func (r *RootCommand) Usage() string {
 	width := 0
 	ordered := usageCommandOrder(r.commands)
 	for _, command := range ordered {
-		if len(command) > width {
-			width = len(command)
+		label := usageCommandLabel(command)
+		if len(label) > width {
+			width = len(label)
 		}
 	}
 	lines := make([]string, 0, len(ordered))
@@ -119,7 +120,8 @@ func (r *RootCommand) Usage() string {
 		if description == "" {
 			description = "No description available."
 		}
-		lines = append(lines, fmt.Sprintf("  %-*s  %s", width, command, description))
+		label := usageCommandLabel(command)
+		lines = append(lines, fmt.Sprintf("  %-*s  %s", width, label, description))
 	}
 
 	return fmt.Sprintf(`Usage: %s <command> [options]
@@ -143,9 +145,34 @@ func usageCommandOrder(names []string) []string {
 		if command == commands.CmdHowto {
 			continue
 		}
+		if isAliasOnlyUsageCommand(command) {
+			continue
+		}
 		ordered = append(ordered, command)
 	}
 	return ordered
+}
+
+func isAliasOnlyUsageCommand(name string) bool {
+	switch name {
+	case commands.CmdLs, commands.CmdTimelineAlias, commands.CmdReportAlias:
+		return true
+	default:
+		return false
+	}
+}
+
+func usageCommandLabel(name string) string {
+	switch name {
+	case commands.CmdList:
+		return fmt.Sprintf("%s (alias: %s)", commands.CmdList, commands.CmdLs)
+	case commands.CmdTimeline:
+		return fmt.Sprintf("%s (alias: %s)", commands.CmdTimeline, commands.CmdTimelineAlias)
+	case commands.CmdReport:
+		return fmt.Sprintf("%s (alias: %s)", commands.CmdReport, commands.CmdReportAlias)
+	default:
+		return name
+	}
 }
 
 func hasCommand(commands []string, target string) bool {
