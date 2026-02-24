@@ -12,7 +12,9 @@ func TestMainPrintsUsage(t *testing.T) {
 	t.Parallel()
 
 	originalStdout := os.Stdout
+	originalArgs := os.Args
 	defer func() { os.Stdout = originalStdout }()
+	defer func() { os.Args = originalArgs }()
 
 	r, w, err := os.Pipe()
 	if err != nil {
@@ -27,6 +29,7 @@ func TestMainPrintsUsage(t *testing.T) {
 		close(readDone)
 	}()
 
+	os.Args = []string{"backlog"}
 	main()
 
 	if err := w.Close(); err != nil {

@@ -32,6 +32,54 @@ const (
 	grabBugAdditionalMax     = 2
 )
 
+const migrationComment = "<!-- CLI migrated: 'tasks' -> 'backlog' (alias 'bl' also works). -->\n"
+
+var agentsSnippets = map[string]string{
+	"short":  "# AGENTS.md (Short)\n\n# Work Loop & Task Backlog\n\n## Task Workflow\n- Use `backlog grab` to claim work, then `backlog done` or `backlog cycle`.\n- If a command fails to parse args/usage, run exactly one recovery command: `backlog cycle`.\n- For explicit task IDs, use `backlog claim <TASK_ID> [TASK_ID ...]`.\n- Prefer critical-path work, then `critical > high > medium > low` priority.\n- If blocked, run `backlog blocked --reason \"<why>\"` and handoff quickly.\n- Keep each change scoped to one task; update status as soon as state changes.\n- Before done: run targeted tests for changed code.\n- For more see `backlog --help`.\n",
+	"medium": "# AGENTS.md (Medium)\n\n# Work Loop & Task Backlog\n\n## Defaults\n- Claim with `backlog grab` (or `backlog grab --single` for focused work).\n- Use `backlog claim <TASK_ID> [TASK_ID ...]` when task IDs are provided.\n- If command argument parsing fails, run `backlog cycle` once to recover.\n- CLI selection order is: critical-path first, then task priority.\n- Use `backlog work <id>` when switching context; use `backlog show` to review details.\n",
+	"long":   "# AGENTS.md (Long)\n\n# Work Loop & Task Backlog\n\n## Operating Model\n- Default command: `backlog`. Use local `.backlog/` state as source of truth.\n- Selection strategy: critical-path first, then `critical > high > medium > low`.\n- Treat task files as contracts: requirements + acceptance criteria drive scope.\n",
+}
+
+var migrationKnownCommands = []string{
+	"list",
+	"ls",
+	"show",
+	"next",
+	"claim",
+	"grab",
+	"done",
+	"cycle",
+	"work",
+	"update",
+	"sync",
+	"check",
+	"unclaim-stale",
+	"add",
+	"add-epic",
+	"add-milestone",
+	"add-phase",
+	"move",
+	"idea",
+	"bug",
+	"fixed",
+	"blocked",
+	"skip",
+	"unclaim",
+	"handoff",
+	"why",
+	"dash",
+	"search",
+	"blockers",
+	"timeline",
+	"tl",
+	"session",
+	"report",
+	"data",
+	"schema",
+	"skills",
+	"migrate",
+}
+
 type previewTaskPayload struct {
 	ID             string   `json:"id"`
 	Title          string   `json:"title"`
@@ -258,11 +306,15 @@ func Run(rawArgs ...string) error {
 	copy(args, rawArgs)
 
 	root := cmd.NewRootCommand()
-	if len(args) == 0 || hasHelpFlag(args) {
+	if len(args) == 0 {
 		fmt.Println(root.Usage())
 		return nil
 	}
-	if hasVersionFlag(args) {
+	if len(args) == 1 && (args[0] == "-h" || args[0] == "--help" || args[0] == commands.CmdHelp) {
+		fmt.Println(root.Usage())
+		return nil
+	}
+	if len(args) == 1 && (args[0] == "-v" || args[0] == "--version" || args[0] == commands.CmdVersion) {
 		fmt.Printf("%s version %s\n", root.Name(), root.Version())
 		return nil
 	}
@@ -305,12 +357,16 @@ func Run(rawArgs ...string) error {
 		return runSkills(payload)
 	case commands.CmdAdmin:
 		return runAdmin(payload)
+	case commands.CmdAgents:
+		return runAgents(payload)
 	case commands.CmdClaim:
 		return runClaim(payload)
 	case commands.CmdDone:
 		return runDone(payload)
 	case commands.CmdUnclaim:
 		return runUnclaim(payload)
+	case commands.CmdBlocked:
+		return runBlocked(payload)
 	case commands.CmdCycle:
 		return runCycle(payload)
 	case commands.CmdWork:
@@ -327,27 +383,21 @@ func Run(rawArgs ...string) error {
 		return runSync()
 	case commands.CmdMove:
 		return runMove(payload)
+	case commands.CmdLock:
+		return runLock(payload, true)
+	case commands.CmdUnlock:
+		return runLock(payload, false)
+	case commands.CmdIdea:
+		return runIdea(payload)
+	case commands.CmdBug:
+		return runBug(payload)
+	case commands.CmdFixed:
+		return runFixed(payload)
+	case commands.CmdMigrate:
+		return runMigrate(payload)
 	default:
 		return fmt.Errorf("command not implemented: %s", command)
 	}
-}
-
-func hasHelpFlag(args []string) bool {
-	for _, arg := range args {
-		if arg == "-h" || arg == "--help" {
-			return true
-		}
-	}
-	return false
-}
-
-func hasVersionFlag(args []string) bool {
-	for _, arg := range args {
-		if arg == "-v" || arg == "--version" {
-			return true
-		}
-	}
-	return false
 }
 
 func normalizeCommand(value string) string {
@@ -620,22 +670,19 @@ func parseInit(args []string) (initOptions, error) {
 	for i := 0; i < len(args); i++ {
 		arg := args[i]
 		switch arg {
-		case "--project":
-		case "-p":
+		case "--project", "-p":
 			if i+1 >= len(args) {
 				return initOptions{}, errors.New("expected value for --project")
 			}
 			opts.project = args[i+1]
 			i++
-		case "--description":
-		case "-d":
+		case "--description", "-d":
 			if i+1 >= len(args) {
 				return initOptions{}, errors.New("expected value for --description")
 			}
 			opts.description = args[i+1]
 			i++
-		case "--timeline-weeks":
-		case "-w":
+		case "--timeline-weeks", "-w":
 			if i+1 >= len(args) {
 				return initOptions{}, errors.New("expected value for --timeline-weeks")
 			}
@@ -882,7 +929,11 @@ func runAddEpic(args []string) error {
 	}
 	existingEpicIDs := make([]string, 0, len(milestone.Epics))
 	for _, epicRef := range milestone.Epics {
-		existingEpicIDs = append(existingEpicIDs, epicRef.ID)
+		short := strings.TrimPrefix(epicRef.ID, parsedMilestoneID.FullID()+".")
+		if short == epicRef.ID {
+			short = epicRef.ID
+		}
+		existingEpicIDs = append(existingEpicIDs, short)
 	}
 	nextEpicID := models.NextEpicID(existingEpicIDs)
 	nextEpicNumber := idSuffixNumber(nextEpicID, "E")
@@ -991,7 +1042,11 @@ func runAddMilestone(args []string) error {
 	}
 	existingMilestoneIDs := make([]string, 0, len(phase.Milestones))
 	for _, milestoneRef := range phase.Milestones {
-		existingMilestoneIDs = append(existingMilestoneIDs, milestoneRef.ID)
+		short := strings.TrimPrefix(milestoneRef.ID, parsedPhaseID.FullID()+".")
+		if short == milestoneRef.ID {
+			short = milestoneRef.ID
+		}
+		existingMilestoneIDs = append(existingMilestoneIDs, short)
 	}
 	nextMilestoneID := models.NextMilestoneID(existingMilestoneIDs)
 	nextMilestoneNumber := idSuffixNumber(nextMilestoneID, "M")
@@ -1601,8 +1656,16 @@ func saveTaskState(task models.Task, tree models.TaskTree) error {
 	frontmatter["priority"] = string(task.Priority)
 	frontmatter["depends_on"] = task.DependsOn
 	frontmatter["tags"] = task.Tags
-	frontmatter["claimed_by"] = task.ClaimedBy
-	frontmatter["claimed_at"] = formatTimeForTodo(task.ClaimedAt)
+	if strings.TrimSpace(task.ClaimedBy) != "" {
+		frontmatter["claimed_by"] = task.ClaimedBy
+	} else {
+		delete(frontmatter, "claimed_by")
+	}
+	if task.ClaimedAt != nil {
+		frontmatter["claimed_at"] = formatTimeForTodo(task.ClaimedAt)
+	} else {
+		delete(frontmatter, "claimed_at")
+	}
 	frontmatter["started_at"] = formatTimeForTodo(task.StartedAt)
 	frontmatter["completed_at"] = formatTimeForTodo(task.CompletedAt)
 	if task.Reason != "" {
@@ -1866,23 +1929,13 @@ func runListCore(command string, args []string) error {
 	}
 
 	scopeArgs := positionalArgs(args, map[string]bool{
-		"--status":             true,
-		"--critical":           true,
-		"--available":          true,
-		"--complexity":         true,
-		"--priority":           true,
-		"--progress":           true,
-		"--json":               true,
-		"--all":                true,
-		"--unfinished":         true,
-		"--bugs":               true,
-		"--ideas":              true,
-		"--show-completed":     true,
-		"--show-completed-aux": true,
-		"--phase":              true,
-		"--milestone":          true,
-		"--epic":               true,
-		"--help":               true,
+		"--status":     true,
+		"--available":  true,
+		"--complexity": true,
+		"--priority":   true,
+		"--phase":      true,
+		"--milestone":  true,
+		"--epic":       true,
 	})
 	if len(scopeArgs) > 1 {
 		return fmt.Errorf("%s supports at most one positional scope", command)
@@ -2029,7 +2082,10 @@ func runListCore(command string, args []string) error {
 		if hasPriorityFilter && task.Priority != priorityFilter {
 			return false
 		}
-		if scoped && len(scopedTasks) > 0 && !scopedTaskSetContains(task.ID, scopedTasks) {
+		if !showAll && !unfinished && isCompletedStatus(task.Status) {
+			return false
+		}
+		if scoped && !scopedTaskSetContains(task.ID, scopedTasks) {
 			return false
 		}
 		if unfinished && isCompletedStatus(task.Status) {
@@ -2875,7 +2931,7 @@ func runDash(args []string) error {
 		} else {
 			fmt.Println()
 		}
-		fmt.Printf("  %d tasks, ~%.0fh remaining\n", len(remainingOnPath), int(remainingHours))
+		fmt.Printf("  %d tasks, ~%.0fh remaining\n", len(remainingOnPath), remainingHours)
 	}
 
 	if strings.TrimSpace(nextAvailable) != "" {
@@ -2927,6 +2983,775 @@ func runAdmin(args []string) error {
 	fmt.Println("admin command is not implemented in the Go client.")
 	fmt.Println("Use `backlog dash` to inspect current project status.")
 	return nil
+}
+
+func runAgents(args []string) error {
+	if err := validateAllowedFlags(args, map[string]bool{"--profile": true}); err != nil {
+		return err
+	}
+
+	profile := strings.TrimSpace(parseOption(args, "--profile"))
+	if profile == "" {
+		profile = "all"
+	}
+
+	order := []string{}
+	switch profile {
+	case "all":
+		order = []string{"short", "medium", "long"}
+	case "short", "medium", "long":
+		order = []string{profile}
+	default:
+		return fmt.Errorf("Invalid profile: %s", profile)
+	}
+
+	for i, key := range order {
+		snippet, ok := agentsSnippets[key]
+		if !ok {
+			return fmt.Errorf("Invalid profile: %s", profile)
+		}
+		if i > 0 {
+			fmt.Printf("\n%s\n\n", strings.Repeat("=", 72))
+		}
+		fmt.Print(snippet)
+	}
+	return nil
+}
+
+func runLock(args []string, locked bool) error {
+	if err := validateAllowedFlags(args, map[string]bool{}); err != nil {
+		return err
+	}
+
+	commandName := "lock"
+	if !locked {
+		commandName = "unlock"
+	}
+	itemID := firstPositionalArg(args, map[string]bool{})
+	if itemID == "" {
+		return fmt.Errorf("%s requires ITEM_ID", commandName)
+	}
+
+	parts := strings.Split(itemID, ".")
+	if len(parts) < 1 || len(parts) > 3 {
+		return errors.New("lock/unlock supports only phase, milestone, or epic IDs")
+	}
+
+	tree, err := loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return err
+	}
+	desired := locked
+
+	canonicalID := ""
+	switch len(parts) {
+	case 1:
+		phase := tree.FindPhase(parts[0])
+		if phase == nil {
+			return fmt.Errorf("Phase not found: %s", itemID)
+		}
+		canonicalID = phase.ID
+
+		rootPath := filepath.Join(dataDir, "index.yaml")
+		rootIndex, err := readYAMLMapFile(rootPath)
+		if err != nil {
+			return err
+		}
+		for _, raw := range asSlice(rootIndex["phases"]) {
+			entry, ok := raw.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if tree.IDsMatch(asString(entry["id"]), phase.ID) || asString(entry["id"]) == parts[0] {
+				entry["locked"] = desired
+				break
+			}
+		}
+		if err := writeYAMLMapFile(rootPath, rootIndex); err != nil {
+			return err
+		}
+
+		phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
+		if _, err := os.Stat(phaseIndexPath); err == nil {
+			phaseIndex, err := readYAMLMapFile(phaseIndexPath)
+			if err != nil {
+				return err
+			}
+			phaseIndex["locked"] = desired
+			if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
+				return err
+			}
+		}
+	case 2:
+		milestoneID := parts[0] + "." + parts[1]
+		milestone := tree.FindMilestone(milestoneID)
+		if milestone == nil {
+			return fmt.Errorf("Milestone not found: %s", itemID)
+		}
+		phase := tree.FindPhase(milestone.PhaseID)
+		if phase == nil {
+			return fmt.Errorf("Phase not found for milestone: %s", itemID)
+		}
+		canonicalID = milestone.ID
+
+		phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
+		phaseIndex, err := readYAMLMapFile(phaseIndexPath)
+		if err != nil {
+			return err
+		}
+		for _, raw := range asSlice(phaseIndex["milestones"]) {
+			entry, ok := raw.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if tree.IDsMatch(asString(entry["id"]), milestone.ID) || asString(entry["id"]) == parts[1] {
+				entry["locked"] = desired
+				break
+			}
+		}
+		if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
+			return err
+		}
+
+		msIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
+		if _, err := os.Stat(msIndexPath); err == nil {
+			msIndex, err := readYAMLMapFile(msIndexPath)
+			if err != nil {
+				return err
+			}
+			msIndex["locked"] = desired
+			if err := writeYAMLMapFile(msIndexPath, msIndex); err != nil {
+				return err
+			}
+		}
+	case 3:
+		epicID := parts[0] + "." + parts[1] + "." + parts[2]
+		epic := tree.FindEpic(epicID)
+		if epic == nil {
+			return fmt.Errorf("Epic not found: %s", itemID)
+		}
+		milestone := tree.FindMilestone(epic.MilestoneID)
+		phase := tree.FindPhase(epic.PhaseID)
+		if milestone == nil || phase == nil {
+			return fmt.Errorf("Could not resolve parent paths for epic: %s", itemID)
+		}
+		canonicalID = epic.ID
+
+		msIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
+		msIndex, err := readYAMLMapFile(msIndexPath)
+		if err != nil {
+			return err
+		}
+		for _, raw := range asSlice(msIndex["epics"]) {
+			entry, ok := raw.(map[string]interface{})
+			if !ok {
+				continue
+			}
+			if tree.IDsMatch(asString(entry["id"]), epic.ID) || asString(entry["id"]) == parts[2] {
+				entry["locked"] = desired
+				break
+			}
+		}
+		if err := writeYAMLMapFile(msIndexPath, msIndex); err != nil {
+			return err
+		}
+
+		epicIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, epic.Path, "index.yaml")
+		if _, err := os.Stat(epicIndexPath); err == nil {
+			epicIndex, err := readYAMLMapFile(epicIndexPath)
+			if err != nil {
+				return err
+			}
+			epicIndex["locked"] = desired
+			if err := writeYAMLMapFile(epicIndexPath, epicIndex); err != nil {
+				return err
+			}
+		}
+	default:
+		return errors.New("lock/unlock supports only phase, milestone, or epic IDs")
+	}
+
+	action := "Locked"
+	if !locked {
+		action = "Unlocked"
+	}
+	fmt.Printf("%s: %s\n", action, canonicalID)
+	return nil
+}
+
+func runIdea(args []string) error {
+	if err := validateAllowedFlags(args, map[string]bool{}); err != nil {
+		return err
+	}
+
+	title := strings.TrimSpace(strings.Join(args, " "))
+	if title == "" {
+		return errors.New("idea requires IDEA_TEXT")
+	}
+
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return err
+	}
+	ideasDir := filepath.Join(dataDir, "ideas")
+	indexPath := filepath.Join(ideasDir, "index.yaml")
+	next, err := nextAuxNumber(indexPath, "ideas", "I")
+	if err != nil {
+		return err
+	}
+
+	ideaID := fmt.Sprintf("I%03d", next)
+	slug := models.Slugify(title, models.DirectoryNameWidth*15)
+	if slug == "" {
+		slug = "idea"
+	}
+	filename := fmt.Sprintf("%s-%s.todo", ideaID, slug)
+	relFile := filepath.ToSlash(filepath.Join("ideas", filename))
+	filePath := filepath.Join(ideasDir, filename)
+
+	frontmatter := map[string]interface{}{
+		"id":             ideaID,
+		"title":          title,
+		"status":         "pending",
+		"estimate_hours": 10.0,
+		"complexity":     "medium",
+		"priority":       "medium",
+		"depends_on":     []string{},
+		"tags":           []string{"idea", "planning"},
+	}
+	body := fmt.Sprintf(
+		"\n# Idea Intake: %s\n\n## Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task \"%s\"` to decompose this idea into actionable work.\n- Confirm placement in the current `.tasks` hierarchy before creating work items.\n\n## Ingest Plan Into .tasks\n\n- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.\n- Create follow-up defects with `tasks bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete `.tasks` work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
+		title,
+		title,
+		title,
+	)
+	if err := writeTodoWithFrontmatter(filePath, frontmatter, body); err != nil {
+		return err
+	}
+
+	index, err := readYAMLMapFile(indexPath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if index == nil {
+		index = map[string]interface{}{"ideas": []interface{}{}}
+	}
+	appendToList(index, "ideas", map[string]interface{}{
+		"id":   ideaID,
+		"file": filename,
+	})
+	if err := writeYAMLMapFile(indexPath, index); err != nil {
+		return err
+	}
+
+	fmt.Printf("Created idea: %s\n", ideaID)
+	fmt.Printf("File: %s/%s\n", filepath.Base(dataDir), relFile)
+	fmt.Println("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.")
+	return nil
+}
+
+func runBug(args []string) error {
+	if err := validateAllowedFlags(args, map[string]bool{
+		"--title":      true,
+		"-T":           true,
+		"--estimate":   true,
+		"-e":           true,
+		"--complexity": true,
+		"-c":           true,
+		"--priority":   true,
+		"-p":           true,
+		"--depends-on": true,
+		"-d":           true,
+		"--tags":       true,
+		"--simple":     true,
+		"-s":           true,
+		"--body":       true,
+		"-b":           true,
+	}); err != nil {
+		return err
+	}
+
+	title := strings.TrimSpace(parseOption(args, "--title", "-T"))
+	optionNamesWithValue := map[string]bool{
+		"--title":      true,
+		"-T":           true,
+		"--priority":   true,
+		"-p":           true,
+		"--estimate":   true,
+		"-e":           true,
+		"--complexity": true,
+		"-c":           true,
+		"--depends-on": true,
+		"-d":           true,
+		"--tags":       true,
+		"--body":       true,
+		"-b":           true,
+	}
+	positional := positionalArgs(args, optionNamesWithValue)
+	positionalTitle := strings.TrimSpace(strings.Join(positional, " "))
+
+	estimate, err := parseFloatOptionWithDefault(args, 1, "--estimate", "-e")
+	if err != nil {
+		return err
+	}
+	complexity, err := parseComplexityOption(args, "--complexity", "-c")
+	if err != nil {
+		return err
+	}
+
+	priority := models.PriorityHigh
+	if rawPriority := strings.TrimSpace(parseOption(args, "--priority", "-p")); rawPriority != "" {
+		parsedPriority, err := models.ParsePriority(rawPriority)
+		if err != nil {
+			return err
+		}
+		priority = parsedPriority
+	}
+
+	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	tags := parseCSV(parseOption(args, "--tags"))
+	simple := parseFlag(args, "--simple", "-s")
+	body := parseOption(args, "--body", "-b")
+
+	if title == "" && positionalTitle != "" {
+		title = positionalTitle
+		simple = true
+	}
+	if title == "" {
+		return errors.New("bug requires --title or description text")
+	}
+
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return err
+	}
+	bugsDir := filepath.Join(dataDir, "bugs")
+	indexPath := filepath.Join(bugsDir, "index.yaml")
+	next, err := nextAuxNumber(indexPath, "bugs", "B")
+	if err != nil {
+		return err
+	}
+
+	bugID := fmt.Sprintf("B%03d", next)
+	slug := models.Slugify(title, models.DirectoryNameWidth*15)
+	if slug == "" {
+		slug = "bug"
+	}
+	filename := fmt.Sprintf("%s-%s.todo", bugID, slug)
+	filePath := filepath.Join(bugsDir, filename)
+
+	bodyText := body
+	if bodyText == "" {
+		if simple {
+			bodyText = fmt.Sprintf("\n%s\n", title)
+		} else {
+			bodyText = fmt.Sprintf(
+				"\n# %s\n\n## Steps to Reproduce\n\n1. TODO: Add steps\n\n## Expected Behavior\n\nTODO: Describe expected behavior\n\n## Actual Behavior\n\nTODO: Describe actual behavior\n",
+				title,
+			)
+		}
+	}
+
+	frontmatter := map[string]interface{}{
+		"id":             bugID,
+		"title":          title,
+		"status":         "pending",
+		"estimate_hours": estimate,
+		"complexity":     string(complexity),
+		"priority":       string(priority),
+		"depends_on":     dependsOn,
+		"tags":           tags,
+	}
+	if err := writeTodoWithFrontmatter(filePath, frontmatter, bodyText); err != nil {
+		return err
+	}
+
+	index, err := readYAMLMapFile(indexPath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if index == nil {
+		index = map[string]interface{}{"bugs": []interface{}{}}
+	}
+	appendToList(index, "bugs", map[string]interface{}{
+		"file": filename,
+	})
+	if err := writeYAMLMapFile(indexPath, index); err != nil {
+		return err
+	}
+
+	fmt.Printf("Created bug: %s\n", bugID)
+	if !simple && strings.TrimSpace(body) == "" {
+		fmt.Println("IMPORTANT: You MUST fill in the .todo file that was created.")
+	}
+	return nil
+}
+
+func runFixed(args []string) error {
+	if err := validateAllowedFlags(args, map[string]bool{
+		"--title":       true,
+		"-T":            true,
+		"--description": true,
+		"--desc":        true,
+		"--at":          true,
+		"--tags":        true,
+		"--body":        true,
+		"-b":            true,
+	}); err != nil {
+		return err
+	}
+
+	title := strings.TrimSpace(parseOption(args, "--title", "-T"))
+	optionNamesWithValue := map[string]bool{
+		"--title":       true,
+		"-T":            true,
+		"--description": true,
+		"--desc":        true,
+		"--at":          true,
+		"--tags":        true,
+		"--body":        true,
+		"-b":            true,
+	}
+	positional := positionalArgs(args, optionNamesWithValue)
+	positionalTitle := strings.TrimSpace(strings.Join(positional, " "))
+	if title == "" && positionalTitle != "" {
+		title = positionalTitle
+	}
+	if title == "" {
+		return errors.New("fixed requires --title or FIX_TEXT")
+	}
+
+	description := strings.TrimSpace(parseOption(args, "--description", "--desc"))
+	if description == "" {
+		description = title
+	}
+	atRaw := strings.TrimSpace(parseOption(args, "--at"))
+	timestamp, err := parseFixedTimestamp(atRaw)
+	if err != nil {
+		return err
+	}
+
+	tags := parseCSV(parseOption(args, "--tags"))
+	body := parseOption(args, "--body", "-b")
+
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return err
+	}
+	fixesDir := filepath.Join(dataDir, "fixes")
+	indexPath := filepath.Join(fixesDir, "index.yaml")
+	next, err := nextAuxNumber(indexPath, "fixes", "F")
+	if err != nil {
+		return err
+	}
+
+	fixedID := fmt.Sprintf("F%03d", next)
+	monthDir := timestamp.UTC().Format("2006-01")
+	slug := models.Slugify(title, models.DirectoryNameWidth*15)
+	if slug == "" {
+		slug = "fixed"
+	}
+	filename := fmt.Sprintf("%s-%s.todo", fixedID, slug)
+	monthPath := filepath.Join(fixesDir, monthDir)
+	filePath := filepath.Join(monthPath, filename)
+	relativeFile := filepath.ToSlash(filepath.Join("fixes", monthDir, filename))
+
+	frontmatter := map[string]interface{}{
+		"id":             fixedID,
+		"type":           "fixed",
+		"title":          title,
+		"description":    description,
+		"status":         "done",
+		"estimate_hours": 0.0,
+		"complexity":     "low",
+		"priority":       "low",
+		"depends_on":     []string{},
+		"tags":           tags,
+		"created_at":     timestamp.UTC().Format(time.RFC3339),
+		"completed_at":   timestamp.UTC().Format(time.RFC3339),
+	}
+	if err := writeTodoWithFrontmatter(filePath, frontmatter, body); err != nil {
+		return err
+	}
+
+	index, err := readYAMLMapFile(indexPath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+	if index == nil {
+		index = map[string]interface{}{"fixes": []interface{}{}}
+	}
+	appendToList(index, "fixes", map[string]interface{}{
+		"id":   fixedID,
+		"file": filepath.ToSlash(filepath.Join(monthDir, filename)),
+	})
+	if err := writeYAMLMapFile(indexPath, index); err != nil {
+		return err
+	}
+
+	fmt.Printf("Created fixed: %s\n", fixedID)
+	fmt.Printf("File: %s/%s\n", filepath.Base(dataDir), relativeFile)
+	if len(tags) > 0 {
+		fmt.Printf("Tags: %s\n", strings.Join(tags, ", "))
+	}
+	return nil
+}
+
+func runMigrate(args []string) error {
+	if err := validateAllowedFlags(args, map[string]bool{
+		"--force":      true,
+		"-f":           true,
+		"--no-symlink": true,
+	}); err != nil {
+		return err
+	}
+
+	force := parseFlag(args, "--force", "-f")
+	createSymlink := !parseFlag(args, "--no-symlink")
+
+	cwd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	tasksPath := filepath.Join(cwd, config.TasksDir)
+	backlogPath := filepath.Join(cwd, config.BacklogDir)
+
+	if info, err := os.Stat(backlogPath); err == nil && info.IsDir() {
+		if isSymlinkTo(tasksPath, backlogPath) {
+			fmt.Println("✓ Already migrated (.tasks is symlink to .backlog)")
+			return nil
+		}
+		if tasksInfo, err := os.Lstat(tasksPath); err == nil && tasksInfo.Mode()&os.ModeSymlink == 0 {
+			if !force {
+				return errors.New("Both .tasks/ and .backlog/ exist. Use --force to proceed.")
+			}
+			fmt.Println("✓ Both directories exist (force mode - using .backlog/)")
+			return nil
+		}
+		fmt.Println("✓ Already migrated (.backlog/ exists)")
+		return nil
+	}
+
+	if _, err := os.Stat(tasksPath); err != nil {
+		if os.IsNotExist(err) {
+			return errors.New("No .tasks/ directory found to migrate")
+		}
+		return err
+	}
+
+	if err := os.Rename(tasksPath, backlogPath); err != nil {
+		return fmt.Errorf("Failed to rename .tasks/ to .backlog/: %w", err)
+	}
+	if createSymlink {
+		if err := os.Symlink(config.BacklogDir, tasksPath); err != nil {
+			return fmt.Errorf("Migrated but failed to create symlink: %w", err)
+		}
+	}
+
+	updated := []string{}
+	for _, mdPath := range migrationMarkdownFiles(cwd) {
+		changed, err := updateMarkdownForMigration(mdPath)
+		if err != nil {
+			continue
+		}
+		if changed {
+			updated = append(updated, filepath.Base(mdPath))
+		}
+	}
+	sort.Strings(updated)
+
+	message := "Migrated .tasks/ -> .backlog/"
+	if createSymlink {
+		message += " (with symlink)"
+	}
+	if len(updated) > 0 {
+		message += "\nUpdated doc files: " + strings.Join(updated, ", ")
+	}
+	fmt.Printf("✓ %s\n", message)
+	return nil
+}
+
+func writeTodoWithFrontmatter(path string, frontmatter map[string]interface{}, body string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("failed to create directory %s: %w", filepath.Dir(path), err)
+	}
+	payload, err := yaml.Marshal(frontmatter)
+	if err != nil {
+		return fmt.Errorf("failed to serialize frontmatter for %s: %w", path, err)
+	}
+	content := fmt.Sprintf("---\n%s---\n%s", string(payload), body)
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		return fmt.Errorf("failed to write %s: %w", path, err)
+	}
+	return nil
+}
+
+func nextAuxNumber(indexPath, listKey, prefix string) (int, error) {
+	index, err := readYAMLMapFile(indexPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return 1, nil
+		}
+		return 0, err
+	}
+	maxID := 0
+	for _, raw := range asSlice(index[listKey]) {
+		switch entry := raw.(type) {
+		case map[string]interface{}:
+			if n := prefixedNumber(asString(entry["id"]), prefix); n > maxID {
+				maxID = n
+			}
+			if n := prefixedNumber(filepath.Base(asString(entry["file"])), prefix); n > maxID {
+				maxID = n
+			}
+		case string:
+			if n := prefixedNumber(filepath.Base(entry), prefix); n > maxID {
+				maxID = n
+			}
+		}
+	}
+	return maxID + 1, nil
+}
+
+func prefixedNumber(value, prefix string) int {
+	raw := strings.TrimSpace(value)
+	if raw == "" {
+		return 0
+	}
+	upperRaw := strings.ToUpper(raw)
+	upperPrefix := strings.ToUpper(prefix)
+	if !strings.HasPrefix(upperRaw, upperPrefix) {
+		return 0
+	}
+	digits := strings.Builder{}
+	for _, r := range raw[len(prefix):] {
+		if r < '0' || r > '9' {
+			break
+		}
+		digits.WriteRune(r)
+	}
+	if digits.Len() == 0 {
+		return 0
+	}
+	n, err := strconv.Atoi(digits.String())
+	if err != nil {
+		return 0
+	}
+	return n
+}
+
+func parseFixedTimestamp(raw string) (time.Time, error) {
+	if strings.TrimSpace(raw) == "" {
+		return time.Now().UTC(), nil
+	}
+	normalized := strings.TrimSpace(raw)
+	hasTimezone := regexp.MustCompile(`[zZ]|[+-]\d{2}:\d{2}$`).MatchString(normalized)
+	if !hasTimezone {
+		normalized += "Z"
+	}
+	timestamp, err := time.Parse(time.RFC3339, normalized)
+	if err != nil {
+		return time.Time{}, errors.New("fixed --at must be an ISO 8601 timestamp")
+	}
+	return timestamp.UTC(), nil
+}
+
+func migrationMarkdownFiles(root string) []string {
+	candidates := []string{
+		filepath.Join(root, "AGENTS.md"),
+		filepath.Join(root, "CLAUDE.md"),
+	}
+	if topLevel, err := filepath.Glob(filepath.Join(root, "*.md")); err == nil {
+		candidates = append(candidates, topLevel...)
+	}
+
+	skip := map[string]bool{
+		"README.md":       true,
+		"PARITY_DIFFS.md": true,
+	}
+	seen := map[string]bool{}
+	out := []string{}
+	for _, candidate := range candidates {
+		base := filepath.Base(candidate)
+		if skip[base] {
+			continue
+		}
+		if seen[candidate] {
+			continue
+		}
+		info, err := os.Stat(candidate)
+		if err != nil || info.IsDir() {
+			continue
+		}
+		seen[candidate] = true
+		out = append(out, candidate)
+	}
+	sort.Strings(out)
+	return out
+}
+
+func updateMarkdownForMigration(path string) (bool, error) {
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		return false, nil
+	}
+	content := string(raw)
+	if strings.Contains(content, migrationComment) {
+		return false, nil
+	}
+
+	updated := content
+	for _, command := range migrationKnownCommands {
+		updated = strings.ReplaceAll(updated, "`tasks "+command, "`backlog "+command)
+		updated = strings.ReplaceAll(updated, "    tasks "+command, "    backlog "+command)
+		updated = strings.ReplaceAll(updated, "- tasks "+command, "- backlog "+command)
+	}
+	updated = strings.ReplaceAll(updated, "`tasks --", "`backlog --")
+	updated = strings.ReplaceAll(updated, "`tasks [", "`backlog [")
+	updated = strings.ReplaceAll(updated, "python -m tasks", "python -m backlog")
+	updated = strings.ReplaceAll(updated, "./tasks.py", "./backlog.py")
+	updated = strings.ReplaceAll(updated, "`tasks/`", "`backlog/`")
+	updated = strings.ReplaceAll(updated, "\"tasks/", "\"backlog/")
+
+	if updated == content {
+		return false, nil
+	}
+	if err := os.WriteFile(path, []byte(migrationComment+updated), 0o644); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func isSymlinkTo(path string, target string) bool {
+	info, err := os.Lstat(path)
+	if err != nil || info.Mode()&os.ModeSymlink == 0 {
+		return false
+	}
+	linkTarget, err := os.Readlink(path)
+	if err != nil {
+		return false
+	}
+	if linkTarget == target {
+		return true
+	}
+
+	resolvedLink := linkTarget
+	if !filepath.IsAbs(resolvedLink) {
+		resolvedLink = filepath.Join(filepath.Dir(path), resolvedLink)
+	}
+	absLink, err := filepath.Abs(resolvedLink)
+	if err != nil {
+		return false
+	}
+	absTarget, err := filepath.Abs(target)
+	if err != nil {
+		return false
+	}
+	return filepath.Clean(absLink) == filepath.Clean(absTarget)
 }
 
 func staleClaims(tasks []models.Task, warnAfterMinutes int, errorAfterMinutes int) []models.Task {
@@ -3416,6 +4241,11 @@ func runPreview(args []string) error {
 func firstPlannedTask(taskIDs []string) string {
 	if len(taskIDs) == 0 {
 		return ""
+	}
+	for _, id := range taskIDs {
+		if !isBugLikeID(id) && !isIdeaLikeID(id) {
+			return id
+		}
 	}
 	return taskIDs[0]
 }
@@ -5942,6 +6772,117 @@ func runUnclaim(args []string) error {
 	return nil
 }
 
+func runBlocked(args []string) error {
+	if _, err := ensureDataRoot(); err != nil {
+		return err
+	}
+	if err := validateAllowedFlags(
+		args,
+		map[string]bool{
+			"--reason": true,
+			"-r":      true,
+			"--agent": true,
+			"--grab":  true,
+		},
+	); err != nil {
+		return err
+	}
+
+	taskID := firstPositionalArg(args, map[string]bool{
+		"--reason": true,
+		"-r":      true,
+		"--agent": true,
+		"--grab":  true,
+	})
+	reason := strings.TrimSpace(parseOption(args, "--reason", "-r"))
+	if reason == "" {
+		return errors.New("blocked requires --reason")
+	}
+
+	if taskID == "" {
+		dataDir, err := ensureDataRoot()
+		if err != nil {
+			return err
+		}
+		ctx, err := taskcontext.LoadContext(dataDir)
+		if err != nil {
+			return err
+		}
+		taskID = ctx.CurrentTask
+		if taskID == "" {
+			taskID = ctx.PrimaryTask
+		}
+		if taskID == "" {
+			return errors.New("No task ID provided and no current working task set.")
+		}
+	}
+	if err := validateTaskID(taskID); err != nil {
+		return err
+	}
+
+	tree, err := loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+	task := tree.FindTask(taskID)
+	if task == nil {
+		return fmt.Errorf("Task not found: %s", taskID)
+	}
+	if err := applyTaskStatusTransition(task, models.StatusBlocked, reason); err != nil {
+		return err
+	}
+	if err := saveTaskState(*task, tree); err != nil {
+		return err
+	}
+
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return err
+	}
+	if err := taskcontext.ClearContext(dataDir); err != nil {
+		return err
+	}
+
+	fmt.Printf("Blocked: %s (%s)\n", task.ID, reason)
+	if !parseFlag(args, "--grab") {
+		fmt.Println("Tip: Run `backlog grab` to claim the next available task.")
+		return nil
+	}
+
+	tree, err = loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+	cfg := map[string]float64{}
+	calculator := critical_path.NewCriticalPathCalculator(tree, cfg)
+	_, nextAvailable, err := calculator.Calculate()
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(nextAvailable) == "" {
+		fmt.Println("No available tasks found.")
+		return nil
+	}
+	next := tree.FindTask(nextAvailable)
+	if next == nil {
+		fmt.Println("No available tasks found.")
+		return nil
+	}
+	if _, err := resolveTaskFilePath(next.File); err != nil || !taskFileExists(next.File) {
+		fmt.Printf("Skipping auto-grab: %s has no task file.\n", next.ID)
+		return nil
+	}
+
+	agent := strings.TrimSpace(parseOption(args, "--agent"))
+	if agent == "" {
+		agent = "cli-user"
+	}
+	if err := grabTaskByID(tree, *calculator, next.ID, dataDirFromContext(), agent); err != nil {
+		return err
+	}
+	return nil
+}
+
 func runDone(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
@@ -5994,6 +6935,9 @@ func runDone(args []string) error {
 	task := findTask(tree, taskID)
 	if task == nil {
 		return fmt.Errorf("Task not found: %s", taskID)
+	}
+	if _, err := resolveTaskFilePath(task.File); err != nil || !taskFileExists(task.File) {
+		return fmt.Errorf("no such file: %s", task.File)
 	}
 
 	force := parseFlag(args, "--force")
@@ -6486,24 +7430,24 @@ func runSkills(args []string) error {
 		return nil
 	}
 	if err := validateAllowedFlags(rest, map[string]bool{
-		"--scope":   true,
-		"--client":  true,
+		"--scope":    true,
+		"--client":   true,
 		"--artifact": true,
-		"--dir":     true,
-		"--force":   true,
-		"--dry-run": true,
-		"--json":    true,
-		"--help":    true,
-		"-h":        true,
+		"--dir":      true,
+		"--force":    true,
+		"--dry-run":  true,
+		"--json":     true,
+		"--help":     true,
+		"-h":         true,
 	}); err != nil {
 		return err
 	}
 
 	skillNames := positionalArgs(rest, map[string]bool{
-		"--scope":   true,
-		"--client":  true,
+		"--scope":    true,
+		"--client":   true,
 		"--artifact": true,
-		"--dir":     true,
+		"--dir":      true,
 	})
 	selectedSkills, err := resolveSkillNames(skillNames)
 	if err != nil {
@@ -6627,15 +7571,15 @@ func runSkills(args []string) error {
 		outputDirValue = outputDir
 	}
 	result := map[string]any{
-		"skills":       selectedSkills,
-		"scope":        scope,
-		"client":       clientName,
-		"artifact":     artifact,
-		"output_dir":   outputDirValue,
-		"dry_run":      dryRun,
-		"force":        force,
-		"warnings":     warnings,
-		"operations":   operationPayload,
+		"skills":     selectedSkills,
+		"scope":      scope,
+		"client":     clientName,
+		"artifact":   artifact,
+		"output_dir": outputDirValue,
+		"dry_run":    dryRun,
+		"force":      force,
+		"warnings":   warnings,
+		"operations": operationPayload,
 		"written_count": func() int {
 			if dryRun {
 				return 0

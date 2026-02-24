@@ -243,7 +243,11 @@ func (c *CriticalPathCalculator) Calculate() ([]string, string, error) {
 	if len(prioritized) == 0 {
 		return criticalPath, "", nil
 	}
-
+	for _, candidate := range prioritized {
+		if !bugIDRegex.MatchString(candidate) && !ideaIDRegex.MatchString(candidate) {
+			return criticalPath, candidate, nil
+		}
+	}
 	return criticalPath, prioritized[0], nil
 }
 
@@ -337,7 +341,7 @@ func topologicalSort(graph *dependencyGraph) []string {
 	}
 
 	if len(resolved) != len(graph.order) {
-		return append([]string{}, graph.order...)
+		return resolved
 	}
 	return resolved
 }

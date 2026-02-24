@@ -924,9 +924,9 @@ def work(task_id, clear_ctx):
 @click.argument("task_id", required=False)
 @click.option("--reason", "-r", required=True, help="Reason for blocking")
 @click.option("--agent", help="Agent session ID (uses config default if not set)")
-@click.option("--no-grab", is_flag=True, help="Don't auto-grab next task")
-def blocked(task_id, reason, agent, no_grab):
-    """Mark task as blocked and grab the next one.
+@click.option("--grab", is_flag=True, help="Grab next task immediately after marking blocked")
+def blocked(task_id, reason, agent, grab):
+    """Mark task as blocked and optionally grab the next available task.
 
     If TASK_ID is not provided, uses the current working task.
     """
@@ -967,7 +967,10 @@ def blocked(task_id, reason, agent, no_grab):
         # Clear context
         clear_context()
 
-        if no_grab:
+        if not grab:
+            console.print(
+                "[dim]Tip:[/] Run `backlog grab` to claim the next available task."
+            )
             return
 
         # Grab next task

@@ -44,18 +44,32 @@ func DetectDataDir() (string, error) {
 // DetectDataDirFrom mirrors DetectDataDir but with a caller-supplied base path.
 // Tests can use this to inspect parent traversal behavior.
 func DetectDataDirFrom(basePath string) (string, error) {
-	candidates := []string{
-		filepath.Join(basePath, BacklogDir),
-		filepath.Join(basePath, TasksDir),
-		filepath.Join(filepath.Dir(basePath), BacklogDir),
-		filepath.Join(filepath.Dir(basePath), TasksDir),
-		filepath.Join(filepath.Dir(filepath.Dir(basePath)), BacklogDir),
-	}
-	for _, candidate := range candidates {
-		if info, err := os.Stat(candidate); err == nil && info.IsDir() {
-			return candidate, nil
+	start := filepath.Clean(basePath)
+	firstTasks := ""
+
+	for current := start; ; current = filepath.Dir(current) {
+		backlogCandidate := filepath.Join(current, BacklogDir)
+		if info, err := os.Stat(backlogCandidate); err == nil && info.IsDir() {
+			return backlogCandidate, nil
+		}
+
+		if firstTasks == "" {
+			tasksCandidate := filepath.Join(current, TasksDir)
+			if info, err := os.Stat(tasksCandidate); err == nil && info.IsDir() {
+				firstTasks = tasksCandidate
+			}
+		}
+
+		parent := filepath.Dir(current)
+		if parent == current {
+			break
 		}
 	}
+
+	if firstTasks != "" {
+		return firstTasks, nil
+	}
+
 	return "", &MissingDataDirError{BaseDir: basePath}
 }
 

@@ -459,17 +459,23 @@ func (l *Loader) loadTask(raw interface{}, taskRoot string, epPath models.TaskPa
 			task.Title = parsedTitle
 		}
 	}
-	if status := coerceStatus(front["status"]); status != "" {
-		task.Status = status
+	if rawStatus, has := front["status"]; has {
+		if status := coerceStatus(rawStatus); status != "" {
+			task.Status = status
+		}
 	}
 	if est, ok := asFloatFromMap(front, "estimate_hours", "estimated_hours"); ok {
 		task.EstimateHours = est
 	}
-	if comp := coerceComplexity(front["complexity"]); comp != "" {
-		task.Complexity = comp
+	if rawComplexity, has := front["complexity"]; has {
+		if comp := coerceComplexity(rawComplexity); comp != "" {
+			task.Complexity = comp
+		}
 	}
-	if prio := coercePriority(front["priority"]); prio != "" {
-		task.Priority = prio
+	if rawPriority, has := front["priority"]; has {
+		if prio := coercePriority(rawPriority); prio != "" {
+			task.Priority = prio
+		}
 	}
 	if deps, has := front["depends_on"]; has {
 		task.DependsOn = asStringSlice(deps)

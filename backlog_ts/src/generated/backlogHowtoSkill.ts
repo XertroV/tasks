@@ -74,7 +74,7 @@ Use this skill as an overview/manual for daily backlog operation.
 - backlog cycle:
   optional TASK_ID, --agent AGENT
 - backlog blocked:
-  --reason is required, --no-grab optional
+  --reason is required, --grab optional
 
 ## Guardrails
 

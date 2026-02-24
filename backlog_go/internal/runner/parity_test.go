@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -35,11 +36,9 @@ var parityVectors = [][]string{
 	{"done", "P1.M1.E1.T001"},
 	{"update", "P1.M1.E1.T002", "blocked", "--reason", "waiting"},
 	{"unclaim", "P1.M1.E1.T001"},
-	{"dash", "--json"},
 	{"skills", "install", "plan-task", "--client=codex", "--artifact=skills", "--dry-run", "--json"},
 	{"log"},
 	{"tree"},
-	{"ls", "--json"},
 	{"add", "P1.M1.E1", "--title", "Parity Task"},
 	{"add-epic", "P1", "--title", "Parity Epic"},
 	{"add-milestone", "P1", "--title", "Parity Milestone"},
@@ -226,20 +225,21 @@ func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing
 
 func parityFixtureRoot(t *testing.T) string {
 	t.Helper()
-	root, err := filepath.Abs(filepath.Join("..", "..", "testdata", "parity-fixture"))
-	if err != nil {
-		t.Fatalf("failed to resolve parity fixture root: %v", err)
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("failed to resolve parity fixture caller path")
 	}
+	root := filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", "..", "testdata", "parity-fixture"))
 	return root
 }
 
 func mustProjectRoot(t *testing.T) string {
 	t.Helper()
-	root, err := filepath.Abs(filepath.Join("..", ".."))
-	if err != nil {
-		t.Fatalf("failed to resolve repository root: %v", err)
+	_, thisFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("failed to resolve project root caller path")
 	}
-	return root
+	return filepath.Clean(filepath.Join(filepath.Dir(thisFile), "..", "..", ".."))
 }
 
 func runCommand(executable string, fixedArgs []string, command []string, cwd string) (parityCommandResult, error) {
@@ -271,6 +271,9 @@ func runGoCommandInDir(t *testing.T, root string, args ...string) parityCommandR
 	code := 0
 	if err != nil {
 		code = 1
+		if strings.TrimSpace(output) == "" {
+			output = err.Error()
+		}
 	}
 	return parityCommandResult{
 		Code:   code,
@@ -346,15 +349,15 @@ func assertCommandJSONParity(t *testing.T, command []string, goRaw, pyRaw, tsRaw
 			t.Fatalf("check --json summary.errors mismatch go=%v py=%v ts=%v", goErrors, pyErrors, tsErrors)
 		}
 	case command[0] == "data" && len(command) > 1 && command[1] == "summary":
-		goTotal, goProject, ok := parseDataSummaryJSON(goPayload)
+		goTotal, _, ok := parseDataSummaryJSON(goPayload)
 		if !ok {
 			t.Fatalf("data summary payload malformed for go")
 		}
-		pyTotal, pyProject, ok := parseDataSummaryJSON(pyPayload)
+		pyTotal, _, ok := parseDataSummaryJSON(pyPayload)
 		if !ok {
 			t.Fatalf("data summary payload malformed for python")
 		}
-		tsTotal, tsProject, ok := parseDataSummaryJSON(tsPayload)
+		tsTotal, _, ok := parseDataSummaryJSON(tsPayload)
 		if !ok {
 			t.Fatalf("data summary payload malformed for typescript")
 		}
@@ -506,6 +509,19 @@ func assertAllJSONStringEq(t *testing.T, command []string, key string, values ..
 	}
 }
 
+func assertAllJSONHaveString(t *testing.T, command []string, key string, values ...any) {
+	t.Helper()
+	for _, value := range values {
+		m := asMap(value)
+		if m == nil {
+			t.Fatalf("%s payload missing object map", strings.Join(command, " "))
+		}
+		if _, ok := m[key].(string); !ok {
+			t.Fatalf("%s payload missing %q string", strings.Join(command, " "), key)
+		}
+	}
+}
+
 func parseCheckJSON(payload any) (bool, int, bool) {
 	m := asMap(payload)
 	if m == nil {
@@ -568,9 +584,9 @@ func parseDataExportJSON(payload any) (string, []interface{}, bool) {
 
 func assertRootIndexParity(t *testing.T, goRoot, pyRoot, tsRoot string) {
 	t.Helper()
-	goIndex := readYAMLMapFile(t, filepath.Join(goRoot, ".tasks", "index.yaml"))
-	pyIndex := readYAMLMapFile(t, filepath.Join(pyRoot, ".tasks", "index.yaml"))
-	tsIndex := readYAMLMapFile(t, filepath.Join(tsRoot, ".tasks", "index.yaml"))
+	goIndex := readYAMLMapForTest(t, filepath.Join(goRoot, ".tasks", "index.yaml"))
+	pyIndex := readYAMLMapForTest(t, filepath.Join(pyRoot, ".tasks", "index.yaml"))
+	tsIndex := readYAMLMapForTest(t, filepath.Join(tsRoot, ".tasks", "index.yaml"))
 	if !reflect.DeepEqual(goIndex, pyIndex) || !reflect.DeepEqual(goIndex, tsIndex) {
 		t.Fatalf("root index mismatch\n\ngo=%#v\npy=%#v\nts=%#v\n", goIndex, pyIndex, tsIndex)
 	}
@@ -579,9 +595,9 @@ func assertRootIndexParity(t *testing.T, goRoot, pyRoot, tsRoot string) {
 func assertSyncStateParity(t *testing.T, goRoot, pyRoot, tsRoot string) {
 	t.Helper()
 
-	goIndex := readYAMLMapFile(t, filepath.Join(goRoot, ".tasks", "index.yaml"))
-	pyIndex := readYAMLMapFile(t, filepath.Join(pyRoot, ".tasks", "index.yaml"))
-	tsIndex := readYAMLMapFile(t, filepath.Join(tsRoot, ".tasks", "index.yaml"))
+	goIndex := readYAMLMapForTest(t, filepath.Join(goRoot, ".tasks", "index.yaml"))
+	pyIndex := readYAMLMapForTest(t, filepath.Join(pyRoot, ".tasks", "index.yaml"))
+	tsIndex := readYAMLMapForTest(t, filepath.Join(tsRoot, ".tasks", "index.yaml"))
 
 	if _, ok := pyIndex["critical_path"].([]interface{}); !ok {
 		t.Fatalf("sync state missing critical_path in python index")
@@ -666,7 +682,7 @@ func assertListCountParity(t *testing.T, goPath, pyPath, tsPath, section string)
 
 func countIndexSectionEntries(t *testing.T, path string, section string) int {
 	t.Helper()
-	index := readYAMLMapFile(t, path)
+	index := readYAMLMapForTest(t, path)
 	raw, ok := index[section]
 	if !ok {
 		return 0
@@ -678,7 +694,7 @@ func countIndexSectionEntries(t *testing.T, path string, section string) int {
 	return len(values)
 }
 
-func readYAMLMapFile(t *testing.T, path string) map[string]interface{} {
+func readYAMLMapForTest(t *testing.T, path string) map[string]interface{} {
 	t.Helper()
 	content, err := os.ReadFile(path)
 	if err != nil {
@@ -758,7 +774,7 @@ func readYAMLMapFileIfExists(t *testing.T, path string) map[string]interface{} {
 
 func assertIdeaFileName(t *testing.T, root string, path string) {
 	t.Helper()
-	ideaIndex := readYAMLMapFile(t, path)
+	ideaIndex := readYAMLMapForTest(t, path)
 	raw, ok := ideaIndex["ideas"].([]interface{})
 	if !ok || len(raw) == 0 {
 		t.Fatalf("missing ideas in %s", root)

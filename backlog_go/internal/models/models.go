@@ -101,6 +101,8 @@ func ParseStatus(raw string) (Status, error) {
 		return "", fmt.Errorf("status is required")
 	}
 	switch normalized {
+	case "inprogress":
+		return StatusInProgress, nil
 	case "complete", "completed":
 		return StatusDone, nil
 	case string(StatusPending), string(StatusInProgress), string(StatusBlocked), string(StatusDone), string(StatusRejected), string(StatusCancelled):
@@ -560,7 +562,8 @@ func (t TaskTree) AllTasks() []Task {
 var nonAlphaNum = regexp.MustCompile(`[^a-z0-9]+`)
 
 func Slugify(text string, maxLength int) string {
-	slug := strings.ToLower(nonAlphaNum.ReplaceAllString(text, "-"))
+	slug := strings.ToLower(text)
+	slug = nonAlphaNum.ReplaceAllString(slug, "-")
 	slug = strings.Trim(slug, "-")
 	if len(slug) > maxLength {
 		slug = slug[:maxLength]
@@ -570,10 +573,10 @@ func Slugify(text string, maxLength int) string {
 }
 
 var (
-	phaseIDRegexp     = regexp.MustCompile(`^P\d+$`)
-	milestoneIDRegexp = regexp.MustCompile(`^M\d+$`)
-	epicIDRegexp      = regexp.MustCompile(`^E\d+$`)
-	taskIDRegexp      = regexp.MustCompile(`^T\d+$`)
+	phaseIDRegexp     = regexp.MustCompile(`^P(\d+)$`)
+	milestoneIDRegexp = regexp.MustCompile(`^M(\d+)$`)
+	epicIDRegexp      = regexp.MustCompile(`^E(\d+)$`)
+	taskIDRegexp      = regexp.MustCompile(`^T(\d+)$`)
 )
 
 const (

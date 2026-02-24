@@ -92,6 +92,7 @@ func TestCalculateRejectsDependencyCycle(t *testing.T) {
 					},
 				},
 			},
+		},
 	}
 
 	calc := NewCriticalPathCalculator(tree, nil)
@@ -182,7 +183,10 @@ func TestFindSiblingTasksRespectsDependencyContext(t *testing.T) {
 
 	calc := NewCriticalPathCalculator(tree, nil)
 	primary := tree.FindTask("P1.M1.E1.T002")
-	siblings := calc.FindSiblingTasks(*primary, 3)
+	siblings, err := calc.FindSiblingTasks(primary.ID, 3)
+	if err != nil {
+		t.Fatalf("FindSiblingTasks() returned error: %v", err)
+	}
 
 	expected := []string{"P1.M1.E1.T003"}
 	if !reflect.DeepEqual(siblings, expected) {
@@ -219,7 +223,10 @@ func TestFindSiblingTasksSkipsClaimedAndPendingImplicitBlockers(t *testing.T) {
 	tree.FindTask("P1.M1.E1.T002").ClaimedBy = "other-agent"
 	calc := NewCriticalPathCalculator(tree, nil)
 	primary := tree.FindTask("P1.M1.E1.T001")
-	siblings := calc.FindSiblingTasks(*primary, 3)
+	siblings, err := calc.FindSiblingTasks(primary.ID, 3)
+	if err != nil {
+		t.Fatalf("FindSiblingTasks() returned error: %v", err)
+	}
 
 	if len(siblings) != 0 {
 		t.Fatalf("expected no siblings after claimed blocker, got %v", siblings)

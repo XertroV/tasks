@@ -59,7 +59,7 @@ AGENTS_SNIPPETS = {
 - If a command fails to parse args/usage, run exactly one recovery command: `backlog cycle`.
 - For explicit task IDs, use `backlog claim <TASK_ID> [TASK_ID ...]`.
 - Prefer critical-path work, then `critical > high > medium > low` priority.
-- If blocked, run `backlog blocked --reason "<why>" --no-grab` and handoff quickly.
+- If blocked, run `backlog blocked --reason "<why>"` and handoff quickly.
 - Keep each change scoped to one task; update status as soon as state changes.
 - Before done: run targeted tests for changed code.
 - For more see `backlog --help`.
@@ -117,7 +117,8 @@ AGENTS_SNIPPETS = {
 - Use handoff when parallelism helps:
   - `backlog handoff --to <agent> --notes "<state + next steps>"`
 - If blocked:
-  - `backlog blocked --reason "<root cause>" --no-grab`
+  - `backlog blocked --reason "<root cause>"`
+  - `backlog blocked --reason "<root cause>" --grab` (optional)
   - Unblock owner or dependency explicitly.
 - For triage:
   - `backlog blockers --deep --suggest`

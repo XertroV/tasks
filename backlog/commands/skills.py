@@ -646,12 +646,12 @@ def _start_tasks_skill(*, client: str) -> str:
         ## CLI Efficiency (Avoid Repeated `--help`)
         - Do not call `tasks --help` or `<command> --help` routinely.
         - Use the command signatures below directly:
-          - `tasks grab [--single|--multi|--no-siblings] [--agent AGENT] [--scope SCOPE]`
-          - `tasks cycle [TASK_ID] [--agent AGENT]`
-          - `tasks show [TASK_OR_SCOPE]`
-          - `tasks blocked [TASK_ID] --reason "..." [--no-grab]`
-          - `tasks skip [TASK_ID] [--no-grab]`
-          - `tasks handoff [TASK_ID] --to AGENT [--notes "..."]`
+        - `tasks grab [--single|--multi|--no-siblings] [--agent AGENT] [--scope SCOPE]`
+        - `tasks cycle [TASK_ID] [--agent AGENT]`
+        - `tasks show [TASK_OR_SCOPE]`
+        - `tasks blocked [TASK_ID] --reason "..." [--grab]`
+        - `tasks skip [TASK_ID] [--no-grab]`
+        - `tasks handoff [TASK_ID] --to AGENT [--notes "..."]`
         - Only consult help output if an invocation actually fails due to argument mismatch.
 
         ## Operational Guardrails
@@ -708,7 +708,7 @@ def _tasks_cli_quick_reference() -> str:
         - `tasks cycle [TASK_ID] [--agent AGENT]`
         - `tasks show [TASK_OR_SCOPE]`
         - `tasks list --available`
-        - `tasks blocked [TASK_ID] --reason "..." [--no-grab]`
+        - `tasks blocked [TASK_ID] --reason "..." [--grab]`
         - `tasks skip [TASK_ID] [--no-grab]`
         - `tasks handoff [TASK_ID] --to AGENT [--notes "..."]`
 

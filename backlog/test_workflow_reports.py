@@ -234,18 +234,15 @@ def test_work_set_show_clear(runner, tmp_workflow_reports_dir):
     assert "Cleared working task context" in clear_res.output
 
 
-def test_blocked_no_grab_uses_context_and_marks_blocked(
-    runner, tmp_workflow_reports_dir
-):
+def test_blocked_defaults_to_no_auto_grab_and_hints(runner, tmp_workflow_reports_dir):
     set_current_task("P1.M1.E1.T002", "agent-a")
-    result = runner.invoke(
-        cli, ["blocked", "--reason", "waiting on dependency", "--no-grab"]
-    )
+    result = runner.invoke(cli, ["blocked", "--reason", "waiting on dependency"])
 
     assert result.exit_code == 0
     assert "Blocked:" in result.output
     assert "waiting on dependency" in result.output
     assert "Grabbed:" not in result.output
+    assert "Tip: Run `backlog grab`" in result.output
 
     task = _load_task("P1.M1.E1.T002")
     assert task.status == Status.BLOCKED
@@ -253,6 +250,20 @@ def test_blocked_no_grab_uses_context_and_marks_blocked(
     assert "reason: waiting on dependency" in todo_text
     assert task.reason == "waiting on dependency"
     assert get_current_task_id() is None
+
+
+def test_blocked_with_grab_uses_next_task_flow_if_possible(
+    runner, tmp_workflow_reports_dir
+):
+    set_current_task("P1.M1.E1.T001", "agent-a")
+    result = runner.invoke(cli, ["blocked", "--reason", "waiting on dependency", "--grab"])
+
+    assert result.exit_code == 0
+    assert "Blocked:" in result.output
+    assert "Grabbed:" in result.output or "No available tasks found." in result.output
+
+    task = _load_task("P1.M1.E1.T001")
+    assert task.status == Status.BLOCKED
 
 
 def test_skip_auto_grabs_next_task(runner, tmp_workflow_reports_dir):

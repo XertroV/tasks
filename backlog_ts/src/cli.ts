@@ -63,7 +63,7 @@ const AGENTS_SNIPPETS: Record<string, string> = {
 - If a command fails to parse args/usage, run exactly one recovery command: \`backlog cycle\`.
 - For explicit task IDs, use \`backlog claim <TASK_ID> [TASK_ID ...]\`.
 - Prefer critical-path work, then \`critical > high > medium > low\` priority.
-- If blocked, run \`backlog blocked --reason "<why>" --no-grab\` and handoff quickly.
+- If blocked, run \`backlog blocked --reason "<why>"\` and handoff quickly.
 - Keep each change scoped to one task; update status as soon as state changes.
 - Before done: run targeted tests for changed code.
 - For more see \`backlog --help\`.
@@ -193,7 +193,7 @@ Commands:
   set             Set task properties (status/priority/etc)
   work            Set/show current working task
   unclaim         Release a claimed task
-  blocked         Mark task as blocked and optionally grab next
+  blocked         Mark task as blocked and optionally grab next with --grab
   bug             Create a new bug report
   idea            Capture an idea as planning intake
   fixed           Capture an ad-hoc completed fix note
@@ -2153,7 +2153,7 @@ async function cmdUnclaim(args: string[]): Promise<void> {
 }
 
 async function cmdBlocked(args: string[]): Promise<void> {
-  const noGrab = parseFlag(args, "--no-grab");
+  const grab = parseFlag(args, "--grab");
   let taskId = args.find((a) => !a.startsWith("-"));
   const reason = parseOpt(args, "--reason") ?? parseOpt(args, "-r");
   if (!reason) textError("blocked requires --reason");
@@ -2170,7 +2170,10 @@ async function cmdBlocked(args: string[]): Promise<void> {
   await clearContext();
   console.log(`Blocked: ${task.id} (${reason})`);
 
-  if (noGrab) return;
+  if (!grab) {
+    console.log("Tip: Run `backlog grab` to claim the next available task.");
+    return;
+  }
 
   const refreshed = await loader.load("metadata");
   const cfg = loadConfig();
