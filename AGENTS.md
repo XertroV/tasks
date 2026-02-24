@@ -1,16 +1,16 @@
 # `backlog` -- a utility for managing project backlogs via files
 
 3 clients are maintained to parity:
+- go: `backlog_go` (primary client)
 - python: `backlog`
 - typescript: `backlog_ts`
-- go: `backlog_go`
 
 ## Expectations
 
 - Keep files under 1000 LoC ideally; hard limit at 2000.
 - Proactively exploit refactor opportunities towards a cleaner, more maintainable codebase. Always remove code duplication where practical.
- - When implementing features, implement them for both the python `backlog/` and typescript `backlog_ts/`.
- - Ensure `backlog/` and `backlog_ts/` are kept in sync (especially behaviorally); we aim for parity.
+ - When implementing features, implement them for all of the go `backlog_go`, the python `backlog/` and typescript `backlog_ts/`.
+ - Ensure the clients are kept in sync (especially behaviorally); we aim for parity.
 - For JavaScript/TypeScript tooling and scripts, prefer `bun` over `npm` in all commands and docs.
 - When adding new features, ALWASY write accompanying tests (for both python and typescript).
 - When fixing bugs, ALWAYS check & fix both codebases.
