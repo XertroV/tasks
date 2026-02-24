@@ -273,6 +273,128 @@ func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing
 	}
 }
 
+func TestRunParityUXSemanticAnchors(t *testing.T) {
+	projectRoot := mustProjectRoot(t)
+	pythonBinary, err := findExecutable("python", "python3")
+	if err != nil {
+		t.Fatalf("python runtime is required for parity tests: %v", err)
+	}
+	bunBinary, err := findExecutable("bun")
+	if err != nil {
+		t.Fatalf("bun runtime is required for parity tests: %v", err)
+	}
+
+	fixtureRoot := parityFixtureRoot(t)
+	template := filepath.Join(fixtureRoot, ".tasks")
+	tsBundle := buildTypeScriptParityBundle(t, bunBinary, projectRoot)
+
+	t.Run("show-invalid-id-has-error-and-next-step-guidance", func(t *testing.T) {
+		goRoot := t.TempDir()
+		pyRoot := t.TempDir()
+		tsRoot := t.TempDir()
+
+		copyFixture(t, template, filepath.Join(goRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(pyRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(tsRoot, ".tasks"))
+
+		command := []string{"show", "P9"}
+		goResult := runGoCommandInDir(t, goRoot, command...)
+		pyResult, runErr := runCommand(pythonBinary, []string{filepath.Join(projectRoot, "backlog.py")}, command, pyRoot)
+		if runErr != nil {
+			t.Fatalf("python %s = %v", strings.Join(command, " "), runErr)
+		}
+		tsResult, runErr := runCommand(bunBinary, []string{tsBundle}, command, tsRoot)
+		if runErr != nil {
+			t.Fatalf("bun %s %s = %v", tsBundle, strings.Join(command, " "), runErr)
+		}
+
+		for _, impl := range []struct {
+			name   string
+			result parityCommandResult
+		}{
+			{name: "go", result: goResult},
+			{name: "python", result: pyResult},
+			{name: "typescript", result: tsResult},
+		} {
+			if impl.result.Code == 0 {
+				t.Fatalf("%s expected non-zero exit for %q", impl.name, strings.Join(command, " "))
+			}
+			assertContainsAllFragments(t, impl.name, impl.result.Stdout, "Phase not found", "Tip: Use 'backlog tree'")
+		}
+	})
+
+	t.Run("claim-missing-id-has-actionable-error", func(t *testing.T) {
+		goRoot := t.TempDir()
+		pyRoot := t.TempDir()
+		tsRoot := t.TempDir()
+
+		copyFixture(t, template, filepath.Join(goRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(pyRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(tsRoot, ".tasks"))
+
+		command := []string{"claim"}
+		goResult := runGoCommandInDir(t, goRoot, command...)
+		pyResult, runErr := runCommand(pythonBinary, []string{filepath.Join(projectRoot, "backlog.py")}, command, pyRoot)
+		if runErr != nil {
+			t.Fatalf("python %s = %v", strings.Join(command, " "), runErr)
+		}
+		tsResult, runErr := runCommand(bunBinary, []string{tsBundle}, command, tsRoot)
+		if runErr != nil {
+			t.Fatalf("bun %s %s = %v", tsBundle, strings.Join(command, " "), runErr)
+		}
+
+		for _, impl := range []struct {
+			name   string
+			result parityCommandResult
+		}{
+			{name: "go", result: goResult},
+			{name: "python", result: pyResult},
+			{name: "typescript", result: tsResult},
+		} {
+			if impl.result.Code == 0 {
+				t.Fatalf("%s expected non-zero exit for %q", impl.name, strings.Join(command, " "))
+			}
+			assertContainsAllFragments(t, impl.name, impl.result.Stdout, "claim requires at least one TASK_ID")
+		}
+	})
+
+	t.Run("help-mentions-core-commands-and-alias-discoverability", func(t *testing.T) {
+		goRoot := t.TempDir()
+		pyRoot := t.TempDir()
+		tsRoot := t.TempDir()
+
+		copyFixture(t, template, filepath.Join(goRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(pyRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(tsRoot, ".tasks"))
+
+		command := []string{"--help"}
+		goResult := runGoCommandInDir(t, goRoot, command...)
+		pyResult, runErr := runCommand(pythonBinary, []string{filepath.Join(projectRoot, "backlog.py")}, command, pyRoot)
+		if runErr != nil {
+			t.Fatalf("python %s = %v", strings.Join(command, " "), runErr)
+		}
+		tsResult, runErr := runCommand(bunBinary, []string{tsBundle}, command, tsRoot)
+		if runErr != nil {
+			t.Fatalf("bun %s %s = %v", tsBundle, strings.Join(command, " "), runErr)
+		}
+
+		for _, impl := range []struct {
+			name   string
+			result parityCommandResult
+		}{
+			{name: "go", result: goResult},
+			{name: "python", result: pyResult},
+			{name: "typescript", result: tsResult},
+		} {
+			if impl.result.Code != 0 {
+				t.Fatalf("%s expected zero exit for %q, got %d", impl.name, strings.Join(command, " "), impl.result.Code)
+			}
+			assertContainsAllFragments(t, impl.name, impl.result.Stdout, "list", "report", "timeline")
+			assertContainsAnyFragment(t, impl.name, impl.result.Stdout, "(alias:", "alias: tl", "  ls")
+		}
+	})
+}
+
 func parityFixtureRoot(t *testing.T) string {
 	t.Helper()
 	_, thisFile, _, ok := runtime.Caller(0)
@@ -915,4 +1037,23 @@ func findExecutable(names ...string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("required executable not found in PATH: %s", strings.Join(names, "/"))
+}
+
+func assertContainsAllFragments(t *testing.T, implementation, output string, fragments ...string) {
+	t.Helper()
+	for _, fragment := range fragments {
+		if !strings.Contains(output, fragment) {
+			t.Fatalf("%s output missing fragment %q\noutput:\n%s", implementation, fragment, output)
+		}
+	}
+}
+
+func assertContainsAnyFragment(t *testing.T, implementation, output string, fragments ...string) {
+	t.Helper()
+	for _, fragment := range fragments {
+		if strings.Contains(output, fragment) {
+			return
+		}
+	}
+	t.Fatalf("%s output missing all expected fragments %v\noutput:\n%s", implementation, fragments, output)
 }

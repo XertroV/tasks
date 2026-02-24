@@ -759,46 +759,91 @@ func runReportProgress(args []string) error {
 	)
 
 	fmt.Printf("\n%s\n", styleSubHeader("Phases"))
+	fmt.Printf("%s\n", styleMuted("Legend: ✓ complete | → in progress | · pending"))
 	visible := 0
 	for _, phase := range payload.Phases {
 		if !showAll && phase.Total > 0 && phase.Done == phase.Total {
 			continue
 		}
 		visible++
-		fmt.Printf("  %s %s: %s %5.1f%% (%d/%d)\n",
+		fmt.Printf("\n  %s %s %s\n",
 			auxStatusMarker(phase.Total, phase.Done, phase.InProgress),
 			styleSuccess(phase.ID),
+			phase.Name,
+		)
+		fmt.Printf("      %s %5.1f%% (%d/%d) | active %d | blocked %d | ~%.1fh\n",
 			styleProgressBar(phase.Done, phase.Total),
 			phase.PercentDone,
 			phase.Done,
 			phase.Total,
+			phase.InProgress,
+			phase.Blocked,
+			phase.Remaining,
 		)
 		if byMilestone || byEpic {
+			activeMilestonesHeaderPrinted := false
+			completedMilestonesHeaderPrinted := false
+			hiddenCompletedMilestones := 0
 			for _, milestone := range phase.Milestones {
-				if !showAll && milestone.Total > 0 && milestone.Done == milestone.Total {
+				milestoneComplete := milestone.Total > 0 && milestone.Done == milestone.Total
+				if milestoneComplete && !showAll {
+					hiddenCompletedMilestones++
 					continue
 				}
-				fmt.Printf("    %s %s: %4.1f%% (%d/%d)\n",
+				if milestoneComplete {
+					if !completedMilestonesHeaderPrinted {
+						fmt.Printf("    %s\n", styleMuted("Completed milestones"))
+						completedMilestonesHeaderPrinted = true
+					}
+				} else if !activeMilestonesHeaderPrinted {
+					fmt.Printf("    %s\n", styleSubHeader("Active milestones"))
+					activeMilestonesHeaderPrinted = true
+				}
+				fmt.Printf("      %s %s %s | %4.1f%% (%d/%d) | ~%.1fh\n",
 					auxStatusMarker(milestone.Total, milestone.Done, milestone.InProgress),
 					styleSubHeader(milestone.ID),
+					milestone.Name,
 					milestone.Percent,
 					milestone.Done,
 					milestone.Total,
+					milestone.Remaining,
 				)
 				if byEpic {
+					activeEpicsHeaderPrinted := false
+					completedEpicsHeaderPrinted := false
+					hiddenCompletedEpics := 0
 					for _, epic := range milestone.Epics {
-						if !showAll && epic.Total > 0 && epic.Done == epic.Total {
+						epicComplete := epic.Total > 0 && epic.Done == epic.Total
+						if epicComplete && !showAll {
+							hiddenCompletedEpics++
 							continue
 						}
-						fmt.Printf("      %s %s: %4.1f%% (%d/%d)\n",
+						if epicComplete {
+							if !completedEpicsHeaderPrinted {
+								fmt.Printf("        %s\n", styleMuted("Completed epics"))
+								completedEpicsHeaderPrinted = true
+							}
+						} else if !activeEpicsHeaderPrinted {
+							fmt.Printf("        %s\n", styleSubHeader("Active epics"))
+							activeEpicsHeaderPrinted = true
+						}
+						fmt.Printf("          %s %s %s | %4.1f%% (%d/%d) | ~%.1fh\n",
 							auxStatusMarker(epic.Total, epic.Done, epic.InProgress),
 							styleMuted(epic.ID),
+							epic.Name,
 							epic.Percent,
 							epic.Done,
 							epic.Total,
+							epic.Remaining,
 						)
 					}
+					if !showAll && hiddenCompletedEpics > 0 {
+						fmt.Printf("        %s %d %s\n", styleMuted("..."), hiddenCompletedEpics, styleMuted("completed epic branch(es) hidden (use --all)"))
+					}
 				}
+			}
+			if !showAll && hiddenCompletedMilestones > 0 {
+				fmt.Printf("    %s %d %s\n", styleMuted("..."), hiddenCompletedMilestones, styleMuted("completed milestone branch(es) hidden (use --all)"))
 			}
 		}
 	}
