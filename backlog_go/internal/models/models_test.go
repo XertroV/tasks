@@ -210,3 +210,74 @@ func TestTaskTreeFindHelpers(t *testing.T) {
 		t.Fatalf("AllTasks() returned %d tasks, expected 3", len(all))
 	}
 }
+
+func TestValidationHelpersAndTaskPathMethods(t *testing.T) {
+	t.Parallel()
+
+	if !IsValidStatus("pending") || IsValidStatus("bad") {
+		t.Fatalf("IsValidStatus() validation mismatch")
+	}
+	if !IsValidPriority("high") || IsValidPriority("urgent") {
+		t.Fatalf("IsValidPriority() validation mismatch")
+	}
+	if !IsValidComplexity("medium") || IsValidComplexity("insane") {
+		t.Fatalf("IsValidComplexity() validation mismatch")
+	}
+
+	milestone := ForMilestone("P1", "M2")
+	if milestone.FullID() != "P1.M2" || milestone.MilestoneID() != "P1.M2" {
+		t.Fatalf("ForMilestone() produced unexpected IDs: %+v", milestone)
+	}
+	epic := ForEpic("P1", "M2", "E3")
+	if !epic.IsEpic() || epic.EpicID() != "P1.M2.E3" {
+		t.Fatalf("ForEpic() produced unexpected path: %+v", epic)
+	}
+	task := ForTask("P1", "M2", "E3", "T004")
+	if !task.IsTask() || task.TaskID() != "P1.M2.E3.T004" {
+		t.Fatalf("ForTask() produced unexpected path: %+v", task)
+	}
+	if task.String() != task.FullID() || task.PhaseID() != "P1" {
+		t.Fatalf("task String()/PhaseID mismatch: %+v", task)
+	}
+
+	parent := task.Parent()
+	if parent == nil || parent.FullID() != "P1.M2.E3" {
+		t.Fatalf("Parent() = %+v, expected epic path", parent)
+	}
+
+	if next := NextEpicID([]string{"E1", "E3", "bad"}); next != "E4" {
+		t.Fatalf("NextEpicID() = %q, expected E4", next)
+	}
+}
+
+func TestPathQueryMatchingAndTaskHelpers(t *testing.T) {
+	t.Parallel()
+
+	query, err := ParsePathQuery("P1.M1.*")
+	if err != nil {
+		t.Fatalf("ParsePathQuery() = %v", err)
+	}
+	if !query.Matches("P1.M1.E2.T001") {
+		t.Fatalf("expected query to match child path")
+	}
+	if query.Matches("P2.M1.E2.T001") {
+		t.Fatalf("query should not match wrong phase")
+	}
+
+	task := Task{ID: "P1.M1.E1.T001", Status: StatusPending}
+	if !task.IsAvailable() {
+		t.Fatalf("task should be available when pending and unclaimed")
+	}
+	task.ClaimedBy = "agent"
+	if task.IsAvailable() {
+		t.Fatalf("claimed task should not be available")
+	}
+	if _, err := task.TaskPath(); err != nil {
+		t.Fatalf("TaskPath() = %v, expected success", err)
+	}
+
+	empty := Task{}
+	if _, err := empty.TaskPath(); err == nil {
+		t.Fatalf("TaskPath() expected error for empty ID")
+	}
+}

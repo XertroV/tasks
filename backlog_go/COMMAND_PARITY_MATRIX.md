@@ -36,25 +36,28 @@ implementations for milestone release planning.
 | `sync` | ✅ | Parity-targeted |
 | `log` | ✅ | Parity-targeted |
 | `dash` | ✅ | Parity-targeted |
+| `blocked` | ✅ | Parity-targeted |
+| `skip` | ✅ | Implemented and tested |
+| `unclaim-stale` | ✅ | Implemented and tested |
+| `handoff` | ✅ | Implemented and tested |
 | `admin` | ⚙️ | Compatibility stub with explicit guidance |
-| `check` | ❌ | Not implemented |
-| `search` | ❌ | Not implemented |
-| `blockers` | ❌ | Not implemented |
-| `why` | ❌ | Not implemented |
-| `timeline` | ❌ | Not implemented |
-| `report` | ❌ | Not implemented |
-| `data` | ❌ | Not implemented |
-| `schema` | ❌ | Not implemented |
-| `session` | ❌ | Not implemented |
-| `agents` | ❌ | Not implemented |
+| `check` | ✅ | Implemented with JSON/text output |
+| `search` | ✅ | Implemented with filtering support |
+| `blockers` | ✅ | Implemented with root-blocker analysis |
+| `why` | ✅ | Implemented with dependency rationale |
+| `timeline`, `tl` | ✅ | Implemented |
+| `report`, `r` | ✅ | `progress`, `velocity`, `estimate-accuracy` implemented |
+| `data` | ✅ | `summary` and `export` implemented |
+| `schema` | ✅ | Implemented with JSON/text output |
+| `session` | ✅ | `start`, `heartbeat`, `list`, `end`, `clean` implemented |
+| `agents` | ✅ | Implemented |
 | `skills` | ✅ | `install` implemented for codex/claude/opencode artifacts |
-| `idea` | ❌ | Not implemented |
-| `bug` | ❌ | Not implemented |
-| `handoff` | ❌ | Not implemented |
+| `idea` | ✅ | Implemented |
+| `bug` | ✅ | Implemented |
 
 ## Current known limitation
 
-- The Go CLI uses `.backlog` as the primary project directory and intentionally
-  reports unsupported command gaps instead of silently no-opping.
-- Some command aliases from Python/TypeScript (`grants`, `sprint`, and other legacy
-  entrypoints) are deferred to future milestones.
+- The Go CLI uses `.backlog` as the primary project directory while still
+  supporting `.tasks` fallback for compatibility.
+- Legacy aliases not present in Python/TypeScript (`grants`, `sprint`, `unknown`)
+  are intentionally excluded from the default command surface.

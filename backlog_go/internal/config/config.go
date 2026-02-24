@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	BacklogDir      = ".backlog"
-	TasksDir        = ".tasks"
-	ContextFileName = ".context.yaml"
+	BacklogDir       = ".backlog"
+	TasksDir         = ".tasks"
+	ContextFileName  = ".context.yaml"
 	SessionsFileName = ".sessions.yaml"
 	ConfigFileName   = "config.yaml"
 )

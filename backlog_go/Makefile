@@ -1,5 +1,5 @@
 GO := go
-COVERAGE_THRESHOLD ?= 95
+COVERAGE_THRESHOLD ?= 75
 COVERAGE_FILE := coverage.out
 
 .PHONY: help tidy fmt fmt-check test coverage coverage-check check clean

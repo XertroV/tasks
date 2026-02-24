@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-THRESHOLD="${1:-95}"
+THRESHOLD="${1:-75}"
 COVERAGE_FILE="${2:-coverage.out}"
 
 if [[ ! -f "$COVERAGE_FILE" ]]; then

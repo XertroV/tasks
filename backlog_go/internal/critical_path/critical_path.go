@@ -163,26 +163,26 @@ func (c *CriticalPathCalculator) BuildDependencyGraph() (*dependencyGraph, error
 			}
 		}
 
-			for _, depPhaseID := range phase.DependsOn {
-				depPhase, err := c.resolvePhaseDependency(depPhaseID)
-				if err != nil {
-					return nil, err
-				}
-				if depPhase == nil || len(phase.Milestones) == 0 || len(depPhase.Milestones) == 0 {
-					continue
-				}
+		for _, depPhaseID := range phase.DependsOn {
+			depPhase, err := c.resolvePhaseDependency(depPhaseID)
+			if err != nil {
+				return nil, err
+			}
+			if depPhase == nil || len(phase.Milestones) == 0 || len(depPhase.Milestones) == 0 {
+				continue
+			}
 
-				depPhaseLastTask := lastTaskInPhase(*depPhase)
-				if depPhaseLastTask == "" {
-					continue
-				}
+			depPhaseLastTask := lastTaskInPhase(*depPhase)
+			if depPhaseLastTask == "" {
+				continue
+			}
 
-				currentMilestoneFirstTask := firstTaskInPhase(phase)
-				if currentMilestoneFirstTask != "" {
-					graph.addEdge(depPhaseLastTask, currentMilestoneFirstTask)
-				}
+			currentMilestoneFirstTask := firstTaskInPhase(phase)
+			if currentMilestoneFirstTask != "" {
+				graph.addEdge(depPhaseLastTask, currentMilestoneFirstTask)
 			}
 		}
+	}
 
 	for _, bug := range c.tree.Bugs {
 		for _, depID := range bug.DependsOn {

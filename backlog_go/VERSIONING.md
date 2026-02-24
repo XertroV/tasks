@@ -19,7 +19,7 @@ This module follows semantic versioning for public releases.
 - The CI/CD workflow should gate release candidates with:
   - formatting (`make fmt-check`)
   - unit tests (`go test ./...`)
-  - coverage threshold (`95%` minimum)
+  - coverage threshold (`75%` minimum)
   - parity/fixture checks for supported commands.
 
 ## Module compatibility

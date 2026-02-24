@@ -15,6 +15,12 @@ func TestNewRootCommandDefaults(t *testing.T) {
 	if command.version != "0.1.0" {
 		t.Fatalf("version = %q, expected 0.1.0", command.version)
 	}
+	if command.Name() != "backlog" {
+		t.Fatalf("Name() = %q, expected backlog", command.Name())
+	}
+	if command.Version() != "0.1.0" {
+		t.Fatalf("Version() = %q, expected 0.1.0", command.Version())
+	}
 
 	if command.Usage() == "" {
 		t.Fatal("usage should not be empty")

@@ -27,8 +27,15 @@ var ansiEscape = regexp.MustCompile(`\x1b\[[0-9;]*m`)
 var parityVectors = [][]string{
 	{"list", "--json"},
 	{"next", "--json"},
+	{"search", "one"},
+	{"blockers"},
 	{"show"},
 	{"show", "P1.M1.E1.T001"},
+	{"timeline"},
+	{"report", "progress"},
+	{"check", "--json"},
+	{"data", "summary"},
+	{"schema", "--json"},
 	{"work"},
 	{"work", "P1.M1.E1.T001"},
 	{"claim", "P1.M1.E1.T001", "--agent", "agent-x"},
@@ -43,6 +50,8 @@ var parityVectors = [][]string{
 	{"add-epic", "P1", "--title", "Parity Epic"},
 	{"add-milestone", "P1", "--title", "Parity Milestone"},
 	{"add-phase", "--title", "Parity Phase"},
+	{"session", "start", "--agent", "agent-p", "--task", "P1.M1.E1.T001"},
+	{"session", "end", "--agent", "agent-p"},
 	{"sync"},
 }
 
@@ -64,11 +73,11 @@ func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
 	projectRoot := mustProjectRoot(t)
 	pythonBinary, err := findExecutable("python", "python3")
 	if err != nil {
-		t.Skip(err)
+		t.Fatalf("python runtime is required for parity tests: %v", err)
 	}
 	bunBinary, err := findExecutable("bun")
 	if err != nil {
-		t.Skip(err)
+		t.Fatalf("bun runtime is required for parity tests: %v", err)
 	}
 
 	fixtureRoot := parityFixtureRoot(t)
@@ -139,11 +148,11 @@ func TestRunParityCrossValidateFailureModesAgainstPythonAndTypeScript(t *testing
 	projectRoot := mustProjectRoot(t)
 	pythonBinary, err := findExecutable("python", "python3")
 	if err != nil {
-		t.Skip(err)
+		t.Fatalf("python runtime is required for parity tests: %v", err)
 	}
 	bunBinary, err := findExecutable("bun")
 	if err != nil {
-		t.Skip(err)
+		t.Fatalf("bun runtime is required for parity tests: %v", err)
 	}
 
 	fixtureRoot := parityFixtureRoot(t)

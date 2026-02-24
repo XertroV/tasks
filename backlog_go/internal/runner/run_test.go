@@ -1919,6 +1919,264 @@ func TestRunDoneRejectsMissingTaskFile(t *testing.T) {
 	}
 }
 
+func TestRunSearchAndWhyCommands(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	searchOutput, err := runInDir(t, root, "search", "a")
+	if err != nil {
+		t.Fatalf("run search = %v, expected nil", err)
+	}
+	if !strings.Contains(searchOutput, "P1.M1.E1.T001") {
+		t.Fatalf("search output = %q, expected matching task", searchOutput)
+	}
+
+	whyOutput, err := runInDir(t, root, "why", "P1.M1.E1.T002")
+	if err != nil {
+		t.Fatalf("run why = %v, expected nil", err)
+	}
+	if !strings.Contains(whyOutput, "Explicit dependencies:") {
+		t.Fatalf("why output = %q, expected dependency section", whyOutput)
+	}
+}
+
+func TestRunBlockersCommandReportsRootBlocker(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	output, err := runInDir(t, root, "blockers")
+	if err != nil {
+		t.Fatalf("run blockers = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "task(s) waiting on dependencies") {
+		t.Fatalf("output = %q, expected pending blocked summary", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected root blocker id", output)
+	}
+}
+
+func TestRunTimelineJSONContract(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "timeline", "--json")
+	if err != nil {
+		t.Fatalf("run timeline --json = %v, expected nil", err)
+	}
+
+	var payload map[string]interface{}
+	decodeJSONPayload(t, output, &payload)
+	if _, ok := payload["groups"]; !ok {
+		t.Fatalf("timeline payload missing groups: %#v", payload)
+	}
+}
+
+func TestRunReportProgressJSONContract(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "report", "progress", "--json")
+	if err != nil {
+		t.Fatalf("run report progress --json = %v, expected nil", err)
+	}
+
+	var payload map[string]interface{}
+	decodeJSONPayload(t, output, &payload)
+	if _, ok := payload["overall"]; !ok {
+		t.Fatalf("report payload missing overall: %#v", payload)
+	}
+}
+
+func TestRunReportVelocityAndEstimateAccuracyJSONContracts(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	doneAt := time.Now().UTC().Format(time.RFC3339)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"done",
+		"",
+		"",
+		time.Now().Add(-30*time.Minute).UTC().Format(time.RFC3339),
+		doneAt,
+	)
+	setTaskDurationMinutes(t, root, "P1.M1.E1.T001", 30)
+
+	velocityOutput, err := runInDir(t, root, "report", "velocity", "--json")
+	if err != nil {
+		t.Fatalf("run report velocity --json = %v, expected nil", err)
+	}
+	var velocityPayload map[string]interface{}
+	decodeJSONPayload(t, velocityOutput, &velocityPayload)
+	if _, ok := velocityPayload["daily_data"]; !ok {
+		t.Fatalf("velocity payload missing daily_data: %#v", velocityPayload)
+	}
+
+	accuracyOutput, err := runInDir(t, root, "report", "estimate-accuracy", "--json")
+	if err != nil {
+		t.Fatalf("run report estimate-accuracy --json = %v, expected nil", err)
+	}
+	var accuracyPayload map[string]interface{}
+	decodeJSONPayload(t, accuracyOutput, &accuracyPayload)
+	if _, ok := accuracyPayload["tasks_analyzed"]; !ok {
+		t.Fatalf("estimate-accuracy payload missing tasks_analyzed: %#v", accuracyPayload)
+	}
+}
+
+func TestRunDataSummaryAndSchemaJSONContracts(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	summaryOutput, err := runInDir(t, root, "data", "summary", "--format", "json")
+	if err != nil {
+		t.Fatalf("run data summary --format json = %v, expected nil", err)
+	}
+	var summaryPayload map[string]interface{}
+	decodeJSONPayload(t, summaryOutput, &summaryPayload)
+	if _, ok := summaryPayload["overall"]; !ok {
+		t.Fatalf("data summary payload missing overall: %#v", summaryPayload)
+	}
+
+	schemaOutput, err := runInDir(t, root, "schema", "--json")
+	if err != nil {
+		t.Fatalf("run schema --json = %v, expected nil", err)
+	}
+	var schemaPayload map[string]interface{}
+	decodeJSONPayload(t, schemaOutput, &schemaPayload)
+	if _, ok := schemaPayload["schema_version"]; !ok {
+		t.Fatalf("schema payload missing schema_version: %#v", schemaPayload)
+	}
+}
+
+func TestRunSessionLifecycle(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	startOutput, err := runInDir(t, root, "session", "start", "--agent", "agent-a", "--task", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run session start = %v, expected nil", err)
+	}
+	if !strings.Contains(startOutput, "Session started") {
+		t.Fatalf("start output = %q, expected session started message", startOutput)
+	}
+
+	heartbeatOutput, err := runInDir(t, root, "session", "heartbeat", "--agent", "agent-a", "--progress", "halfway")
+	if err != nil {
+		t.Fatalf("run session heartbeat = %v, expected nil", err)
+	}
+	if !strings.Contains(heartbeatOutput, "Heartbeat updated") {
+		t.Fatalf("heartbeat output = %q, expected heartbeat update message", heartbeatOutput)
+	}
+
+	listOutput, err := runInDir(t, root, "session", "list")
+	if err != nil {
+		t.Fatalf("run session list = %v, expected nil", err)
+	}
+	if !strings.Contains(listOutput, "agent-a") {
+		t.Fatalf("list output = %q, expected listed session", listOutput)
+	}
+
+	endOutput, err := runInDir(t, root, "session", "end", "--agent", "agent-a")
+	if err != nil {
+		t.Fatalf("run session end = %v, expected nil", err)
+	}
+	if !strings.Contains(endOutput, "Session ended") {
+		t.Fatalf("end output = %q, expected ended message", endOutput)
+	}
+}
+
+func TestRunCheckJSONContractAndStrictFailure(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeYAMLMap(t, filepath.Join(root, ".tasks", ".context.yaml"), map[string]interface{}{
+		"current_task": "P9.M9.E9.T999",
+		"mode":         "single",
+	})
+
+	output, err := runInDir(t, root, "check", "--json")
+	if err != nil {
+		t.Fatalf("run check --json = %v, expected nil", err)
+	}
+	var payload map[string]interface{}
+	decodeJSONPayload(t, output, &payload)
+	if _, ok := payload["summary"]; !ok {
+		t.Fatalf("check payload missing summary: %#v", payload)
+	}
+
+	_, err = runInDir(t, root, "check", "--strict")
+	if err == nil {
+		t.Fatalf("run check --strict expected non-nil error for warnings")
+	}
+}
+
+func TestRunSkipAndHandoffAndUnclaimStale(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	_, err := runInDir(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-a")
+	if err != nil {
+		t.Fatalf("claim fixture task = %v", err)
+	}
+
+	skipOutput, err := runInDir(t, root, "skip", "P1.M1.E1.T001", "--no-grab")
+	if err != nil {
+		t.Fatalf("run skip = %v, expected nil", err)
+	}
+	if !strings.Contains(skipOutput, "Skipped: P1.M1.E1.T001") {
+		t.Fatalf("skip output = %q, expected skipped message", skipOutput)
+	}
+
+	_, err = runInDir(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-a")
+	if err != nil {
+		t.Fatalf("re-claim fixture task = %v", err)
+	}
+	handoffOutput, err := runInDir(t, root, "handoff", "P1.M1.E1.T001", "--to", "agent-b", "--notes", "test handoff")
+	if err != nil {
+		t.Fatalf("run handoff = %v, expected nil", err)
+	}
+	if !strings.Contains(handoffOutput, "Handed off: P1.M1.E1.T001") {
+		t.Fatalf("handoff output = %q, expected handoff message", handoffOutput)
+	}
+
+	staleAt := time.Now().Add(-3 * time.Hour).UTC().Format(time.RFC3339)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"in_progress",
+		"agent-b",
+		staleAt,
+		staleAt,
+		"",
+	)
+	dryRunOutput, err := runInDir(t, root, "unclaim-stale", "--threshold", "60", "--dry-run")
+	if err != nil {
+		t.Fatalf("run unclaim-stale --dry-run = %v, expected nil", err)
+	}
+	if !strings.Contains(dryRunOutput, "Would unclaim 1 stale task") {
+		t.Fatalf("dry-run output = %q, expected stale preview", dryRunOutput)
+	}
+
+	applyOutput, err := runInDir(t, root, "unclaim-stale", "--threshold", "60")
+	if err != nil {
+		t.Fatalf("run unclaim-stale = %v, expected nil", err)
+	}
+	if !strings.Contains(applyOutput, "Unclaimed 1 stale task") {
+		t.Fatalf("apply output = %q, expected stale unclaim message", applyOutput)
+	}
+}
+
 func asInt(value any) int {
 	switch n := value.(type) {
 	case int:
@@ -2053,6 +2311,74 @@ func setTaskTodoFilePath(t *testing.T, root, fullID, todoFile string) {
 		}
 	}
 	writeYAMLMap(t, indexPath, index)
+}
+
+func addDependencyForWorkflowTask(t *testing.T, root, fullID string, dependsOn []string) {
+	t.Helper()
+
+	indexPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "index.yaml")
+	index := readYAMLMap(t, indexPath)
+	entries, ok := index["tasks"].([]interface{})
+	if !ok {
+		t.Fatalf("expected epic tasks entry to be a list")
+	}
+	for _, raw := range entries {
+		entry := raw.(map[string]interface{})
+		shortID := asString(entry["id"])
+		if strings.HasSuffix(fullID, shortID) {
+			entry["depends_on"] = dependsOn
+			break
+		}
+	}
+	writeYAMLMap(t, indexPath, index)
+
+	taskPath := filepath.Join(root, ".tasks", workflowTaskFilePath(fullID))
+	frontmatter, body := readTodoTask(t, taskPath)
+	frontmatter["depends_on"] = dependsOn
+	writeTodoTask(t, taskPath, frontmatter, body)
+}
+
+func setTaskDurationMinutes(t *testing.T, root, fullID string, minutes float64) {
+	t.Helper()
+
+	taskPath := filepath.Join(root, ".tasks", workflowTaskFilePath(fullID))
+	frontmatter, body := readTodoTask(t, taskPath)
+	frontmatter["duration_minutes"] = minutes
+	writeTodoTask(t, taskPath, frontmatter, body)
+}
+
+func readTodoTask(t *testing.T, path string) (map[string]interface{}, string) {
+	t.Helper()
+
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read todo file %s: %v", path, err)
+	}
+	text := strings.ReplaceAll(string(raw), "\r\n", "\n")
+	parts := strings.SplitN(text, "---\n", 3)
+	if len(parts) < 3 {
+		t.Fatalf("todo file missing frontmatter: %s", path)
+	}
+
+	frontmatter := map[string]interface{}{}
+	if err := yaml.Unmarshal([]byte(parts[1]), &frontmatter); err != nil {
+		t.Fatalf("parse frontmatter %s: %v", path, err)
+	}
+	body := parts[2]
+	return frontmatter, body
+}
+
+func writeTodoTask(t *testing.T, path string, frontmatter map[string]interface{}, body string) {
+	t.Helper()
+
+	payload, err := yaml.Marshal(frontmatter)
+	if err != nil {
+		t.Fatalf("marshal frontmatter %s: %v", path, err)
+	}
+	content := fmt.Sprintf("---\n%s---\n%s", string(payload), body)
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("write todo file %s: %v", path, err)
+	}
 }
 
 func setupWorkflowFixture(t *testing.T) string {

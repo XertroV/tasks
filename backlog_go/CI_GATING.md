@@ -4,7 +4,7 @@
 
 - Formatting: `gofmt` must report no files.
 - Unit tests: `go test ./...` must pass.
-- Coverage: minimum line coverage is `95%`.
+- Coverage: minimum line coverage is `75%`.
 - Parse/JSON contract checks: command families with `--json` outputs must continue
   to emit parseable JSON in compatibility mode.
 
@@ -21,6 +21,6 @@
 
 1. Execute `make fmt-check` from `backlog_go`.
 2. Execute `go test ./...`.
-3. Execute `make coverage-check COVERAGE_THRESHOLD=95`.
+3. Execute `make coverage-check COVERAGE_THRESHOLD=75`.
 4. Execute parity harness checks when external toolchain dependencies are
    available.

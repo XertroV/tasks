@@ -355,6 +355,24 @@ func Run(rawArgs ...string) error {
 		return runPreview(payload)
 	case commands.CmdSkills:
 		return runSkills(payload)
+	case commands.CmdSearch:
+		return runSearch(payload)
+	case commands.CmdBlockers:
+		return runBlockers(payload)
+	case commands.CmdWhy:
+		return runWhy(payload)
+	case commands.CmdCheck:
+		return runCheck(payload)
+	case commands.CmdData:
+		return runData(payload)
+	case commands.CmdSchema:
+		return runSchema(payload)
+	case commands.CmdSession:
+		return runSession(payload)
+	case commands.CmdReport, commands.CmdReportAlias:
+		return runReport(payload)
+	case commands.CmdTimeline, commands.CmdTimelineAlias:
+		return runTimeline(payload)
 	case commands.CmdAdmin:
 		return runAdmin(payload)
 	case commands.CmdAgents:
@@ -371,6 +389,12 @@ func Run(rawArgs ...string) error {
 		return runCycle(payload)
 	case commands.CmdWork:
 		return runWork(payload)
+	case commands.CmdSkip:
+		return runSkip(payload)
+	case commands.CmdHandoff:
+		return runHandoff(payload)
+	case commands.CmdUnclaimStale:
+		return runUnclaimStale(payload)
 	case commands.CmdSet:
 		return runSet(payload)
 	case commands.CmdUpdate:
@@ -1798,7 +1822,7 @@ func updateTaskIndexEntry(raw any, taskShortID string, task models.Task) {
 		entry["priority"] = string(task.Priority)
 		entry["depends_on"] = task.DependsOn
 		entry["tags"] = task.Tags
-		entry["file"] = task.File
+		entry["file"] = filepath.Base(task.File)
 	}
 }
 
@@ -6779,20 +6803,22 @@ func runBlocked(args []string) error {
 	if err := validateAllowedFlags(
 		args,
 		map[string]bool{
-			"--reason": true,
-			"-r":      true,
-			"--agent": true,
-			"--grab":  true,
+			"--reason":  true,
+			"-r":        true,
+			"--agent":   true,
+			"--grab":    true,
+			"--no-grab": true,
 		},
 	); err != nil {
 		return err
 	}
 
 	taskID := firstPositionalArg(args, map[string]bool{
-		"--reason": true,
-		"-r":      true,
-		"--agent": true,
-		"--grab":  true,
+		"--reason":  true,
+		"-r":        true,
+		"--agent":   true,
+		"--grab":    true,
+		"--no-grab": false,
 	})
 	reason := strings.TrimSpace(parseOption(args, "--reason", "-r"))
 	if reason == "" {
@@ -6844,7 +6870,7 @@ func runBlocked(args []string) error {
 	}
 
 	fmt.Printf("Blocked: %s (%s)\n", task.ID, reason)
-	if !parseFlag(args, "--grab") {
+	if parseFlag(args, "--no-grab") || !parseFlag(args, "--grab") {
 		fmt.Println("Tip: Run `backlog grab` to claim the next available task.")
 		return nil
 	}

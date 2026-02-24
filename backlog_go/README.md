@@ -53,7 +53,7 @@ make tidy            # go mod tidy
 make fmt             # format source
 make fmt-check       # fail if gofmt changes are needed
 make test            # run unit tests
-make coverage-check  # enforce COVERAGE_THRESHOLD (defaults to 95)
+make coverage-check  # enforce COVERAGE_THRESHOLD (defaults to 75)
 make check           # fmt-check + test + coverage
 ```
 

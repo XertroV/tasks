@@ -405,7 +405,7 @@ func TestLoadTaskUsesEstimateAndDependenciesFromFrontmatterAndIndex(t *testing.T
 				"estimate_hours": 4,
 				"complexity":     "low",
 				"priority":       "medium",
-				"depends_on":      []string{"T002"},
+				"depends_on":     []string{"T002"},
 			},
 			{
 				"id":             "T002",
@@ -461,7 +461,7 @@ func TestLoadRejectsMalformedTaskFrontmatterYAML(t *testing.T) {
 	tasksDir := filepath.Join(root, ".tasks")
 
 	writeYAMLFile(t, filepath.Join(tasksDir, "index.yaml"), map[string]interface{}{
-		"project": "Malformed Frontmatter",
+		"project":        "Malformed Frontmatter",
 		"timeline_weeks": 1,
 		"phases": []map[string]interface{}{
 			{
@@ -496,7 +496,7 @@ func TestLoadRejectsMalformedTaskFrontmatterYAML(t *testing.T) {
 				"file":           "T001-bad.todo",
 				"title":          "Bad Task",
 				"status":         "pending",
-				"estimate_hours":  1,
+				"estimate_hours": 1,
 				"complexity":     "medium",
 				"priority":       "medium",
 				"depends_on":     []string{},

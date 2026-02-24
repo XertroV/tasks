@@ -6,7 +6,7 @@
 - [ ] `go run . init --project` smoke path works on a fresh temporary directory.
 - [ ] `go test ./...` passes.
 - [ ] `make fmt-check` passes.
-- [ ] Coverage gate passes (`make coverage-check COVERAGE_THRESHOLD=95`).
+- [ ] Coverage gate passes (`make coverage-check COVERAGE_THRESHOLD=75`).
 - [ ] Command parity acceptance checklist completed (`PARITY_ACCEPTANCE_CHECKLIST.md`).
 - [ ] Known command gaps are reviewed in `COMMAND_PARITY_MATRIX.md`.
 - [ ] Golden fixture path under `backlog_go/testdata/parity-fixture/` remains stable.

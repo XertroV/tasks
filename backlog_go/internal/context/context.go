@@ -10,25 +10,27 @@ import (
 )
 
 const (
-	modeSingle    = "single"
-	modeMulti     = "multi"
-	modeSiblings  = "siblings"
+	modeSingle   = "single"
+	modeMulti    = "multi"
+	modeSiblings = "siblings"
 )
 
 type Context struct {
-	CurrentTask    string   `yaml:"current_task,omitempty"`
-	PrimaryTask    string   `yaml:"primary_task,omitempty"`
+	CurrentTask     string   `yaml:"current_task,omitempty"`
+	PrimaryTask     string   `yaml:"primary_task,omitempty"`
 	AdditionalTasks []string `yaml:"additional_tasks,omitempty"`
-	SiblingTasks   []string `yaml:"sibling_tasks,omitempty"`
-	Agent          string   `yaml:"agent,omitempty"`
-	StartedAt      string   `yaml:"started_at,omitempty"`
-	Mode           string   `yaml:"mode,omitempty"`
+	SiblingTasks    []string `yaml:"sibling_tasks,omitempty"`
+	Agent           string   `yaml:"agent,omitempty"`
+	StartedAt       string   `yaml:"started_at,omitempty"`
+	Mode            string   `yaml:"mode,omitempty"`
 }
 
-type sessionPayload struct {
-	Agent        string `yaml:"agent"`
-	TaskID       string `yaml:"task_id"`
+type SessionPayload struct {
+	Agent         string `yaml:"agent"`
+	TaskID        string `yaml:"task_id"`
 	LastHeartbeat string `yaml:"last_heartbeat"`
+	StartedAt     string `yaml:"started_at,omitempty"`
+	Progress      string `yaml:"progress,omitempty"`
 }
 
 // LoadContext loads existing context from the active data root.
@@ -98,9 +100,9 @@ func SetMultiTaskContext(dataDir string, agent string, primaryTaskID string, add
 	ctx := Context{
 		PrimaryTask:     primaryTaskID,
 		AdditionalTasks: additionalTasks,
-		Agent:          agent,
-		StartedAt:      time.Now().UTC().Format(time.RFC3339),
-		Mode:           modeMulti,
+		Agent:           agent,
+		StartedAt:       time.Now().UTC().Format(time.RFC3339),
+		Mode:            modeMulti,
 	}
 	return SaveContext(dataDir, ctx)
 }
@@ -118,15 +120,15 @@ func SetSiblingTaskContext(dataDir string, agent string, primaryTaskID string, s
 }
 
 // LoadSessions loads raw sessions map entries. Kept intentionally generic.
-func LoadSessions(dataDir string) (map[string]sessionPayload, error) {
+func LoadSessions(dataDir string) (map[string]SessionPayload, error) {
 	raw, err := os.ReadFile(config.SessionsFilePath(dataDir))
 	if err != nil {
 		if os.IsNotExist(err) {
-			return map[string]sessionPayload{}, nil
+			return map[string]SessionPayload{}, nil
 		}
 		return nil, err
 	}
-	sessions := map[string]sessionPayload{}
+	sessions := map[string]SessionPayload{}
 	if err := yaml.Unmarshal(raw, &sessions); err != nil {
 		return nil, err
 	}
@@ -134,7 +136,7 @@ func LoadSessions(dataDir string) (map[string]sessionPayload, error) {
 }
 
 // SaveSessions writes raw session map entries.
-func SaveSessions(dataDir string, sessions map[string]sessionPayload) error {
+func SaveSessions(dataDir string, sessions map[string]SessionPayload) error {
 	if err := config.ValidateDataDir(dataDir); err != nil {
 		return err
 	}
