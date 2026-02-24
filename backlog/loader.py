@@ -1060,10 +1060,13 @@ class TaskLoader:
                     frontmatter = self._parse_todo_frontmatter(
                         file_path, benchmark=benchmark, file_type="bug_file"
                     )
+            title = str(frontmatter.get("title") or entry.get("title") or "").strip()
+            if not title:
+                title = self._fallback_aux_title(filename, str(frontmatter.get("id", "")))
             bugs.append(
                 Task(
                     id=str(frontmatter.get("id", "")),
-                    title=str(frontmatter.get("title", "")),
+                    title=title,
                     file=str(Path("bugs") / filename),
                     status=self._coerce_status(frontmatter.get("status", "pending")),
                     estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
@@ -1135,10 +1138,13 @@ class TaskLoader:
                     frontmatter = self._parse_todo_frontmatter(
                         file_path, benchmark=benchmark, file_type="idea_file"
                     )
+            title = str(frontmatter.get("title") or entry.get("title") or "").strip()
+            if not title:
+                title = self._fallback_aux_title(filename, str(frontmatter.get("id", "")))
             ideas.append(
                 Task(
                     id=str(frontmatter.get("id", "")),
-                    title=str(frontmatter.get("title", "")),
+                    title=title,
                     file=str(Path("ideas") / filename),
                     status=self._coerce_status(frontmatter.get("status", "pending")),
                     estimate_hours=float(self._get_estimate_hours(frontmatter, 1.0)),
@@ -2052,6 +2058,22 @@ TODO: Describe actual behavior
         if len(slug) > max_length:
             slug = slug[:max_length].rstrip("-")
         return slug
+
+    def _fallback_aux_title(self, filename: str, task_id: str = "") -> str:
+        """Build a readable aux title from filename when title metadata is absent."""
+        stem = Path(filename).stem
+        if task_id:
+            prefixes = [task_id, task_id.upper(), task_id.lower()]
+            for prefix in prefixes:
+                if stem.startswith(prefix):
+                    stem = stem[len(prefix) :]
+                    stem = stem.lstrip("-_")
+                    break
+        stem = stem.replace("-", " ").replace("_", " ")
+        stem = " ".join(stem.split()).strip()
+        if stem:
+            return stem
+        return task_id or "untitled"
 
     def _add_task_to_epic_index(
         self, epic_dir: Path, task_short_id: str, filename: str, task_data: dict

@@ -562,9 +562,40 @@ func (l *Loader) loadAux(section string, fileType string, mode string, parseTask
 			return nil, err
 		}
 		task.File = filepath.ToSlash(filepath.Join(section, filename))
+		task.Title = fallbackAuxTitle(task.Title, asString(entry["title"]), filename, task.ID)
 		out = append(out, task)
 	}
 	return out, nil
+}
+
+func fallbackAuxTitle(taskTitle string, entryTitle string, filename string, taskID string) string {
+	if title := strings.TrimSpace(taskTitle); title != "" {
+		return title
+	}
+	if title := strings.TrimSpace(entryTitle); title != "" {
+		return title
+	}
+
+	base := strings.TrimSuffix(filepath.Base(filename), filepath.Ext(filename))
+	prefixes := []string{taskID, strings.ToUpper(taskID), strings.ToLower(taskID)}
+	for _, prefix := range prefixes {
+		if strings.TrimSpace(prefix) == "" {
+			continue
+		}
+		base = strings.TrimPrefix(base, prefix)
+		base = strings.TrimPrefix(base, "-")
+		base = strings.TrimPrefix(base, "_")
+	}
+	base = strings.ReplaceAll(base, "-", " ")
+	base = strings.ReplaceAll(base, "_", " ")
+	base = strings.Join(strings.Fields(base), " ")
+	if strings.TrimSpace(base) != "" {
+		return base
+	}
+	if strings.TrimSpace(taskID) != "" {
+		return taskID
+	}
+	return "untitled"
 }
 
 func (l *Loader) parseTodoFile(path string, includeBody bool, parseFrontmatter bool, bench *Benchmark) (map[string]interface{}, string, error) {

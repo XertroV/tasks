@@ -1352,6 +1352,44 @@ tags: []
     expect(ideasOut).not.toContain("Phase");
   });
 
+  test("list falls back to aux filename when title metadata is missing", () => {
+    root = setupFixture();
+
+    let p = run(["bug", "--title", "critical bug", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["idea", "future planning idea"], root);
+    expect(p.exitCode).toBe(0);
+
+    const bugsIndexPath = join(root, ".tasks", "bugs", "index.yaml");
+    const bugsIndex = parse(readFileSync(bugsIndexPath, "utf8")) as {
+      bugs: Array<{ id?: string; file: string; title?: string }>;
+    };
+    delete bugsIndex.bugs[0]!.title;
+    writeFileSync(bugsIndexPath, stringify(bugsIndex));
+
+    const ideasIndexPath = join(root, ".tasks", "ideas", "index.yaml");
+    const ideasIndex = parse(readFileSync(ideasIndexPath, "utf8")) as {
+      ideas: Array<{ id?: string; file: string; title?: string }>;
+    };
+    delete ideasIndex.ideas[0]!.title;
+    writeFileSync(ideasIndexPath, stringify(ideasIndex));
+
+    writeFileSync(
+      join(root, ".tasks", "bugs", bugsIndex.bugs[0]!.file),
+      `---\nid: B001\nstatus: pending\nestimate_hours: 1\ncomplexity: medium\npriority: high\ndepends_on: []\ntags: []\n---\n`,
+    );
+    writeFileSync(
+      join(root, ".tasks", "ideas", ideasIndex.ideas[0]!.file),
+      `---\nid: I001\nstatus: pending\nestimate_hours: 1\ncomplexity: medium\npriority: high\ndepends_on: []\ntags: []\n---\n`,
+    );
+
+    p = run(["list"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("B001: critical bug");
+    expect(out).toContain("I001: future planning idea");
+  });
+
   test("grab can claim idea tasks", () => {
     root = setupFixture();
     const t001Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");

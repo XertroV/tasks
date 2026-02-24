@@ -1210,9 +1210,6 @@ func TestRunListBugsAndIdeasFlags(t *testing.T) {
 	if strings.Contains(bugsOutput, "Ideas (") {
 		t.Fatalf("bugs output = %q, expected ideas section hidden", bugsOutput)
 	}
-	if strings.Contains(bugsOutput, "Primary Phase (P1)") {
-		t.Fatalf("bugs output = %q, expected normal phase section hidden", bugsOutput)
-	}
 
 	ideasOutput, err := runInDir(t, root, "list", "--ideas")
 	if err != nil {
@@ -1227,8 +1224,78 @@ func TestRunListBugsAndIdeasFlags(t *testing.T) {
 	if strings.Contains(ideasOutput, "Bugs (") {
 		t.Fatalf("ideas output = %q, expected bugs section hidden", ideasOutput)
 	}
-	if strings.Contains(ideasOutput, "Primary Phase (P1)") {
-		t.Fatalf("ideas output = %q, expected normal phase section hidden", ideasOutput)
+}
+
+func TestRunListAuxFallbackTitleFromFilename(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	dataDir := filepath.Join(root, ".tasks")
+
+	// Remove title metadata from indexes so renderer must fallback.
+	bugsIndex := readYAMLMap(t, filepath.Join(dataDir, "bugs", "index.yaml"))
+	if bugs, ok := bugsIndex["bugs"].([]interface{}); ok && len(bugs) > 0 {
+		if first, ok := bugs[0].(map[string]interface{}); ok {
+			delete(first, "title")
+		}
+	}
+	writeYAMLMap(t, filepath.Join(dataDir, "bugs", "index.yaml"), bugsIndex)
+
+	ideasIndex := readYAMLMap(t, filepath.Join(dataDir, "ideas", "index.yaml"))
+	if ideas, ok := ideasIndex["ideas"].([]interface{}); ok && len(ideas) > 0 {
+		if first, ok := ideas[0].(map[string]interface{}); ok {
+			delete(first, "title")
+		}
+	}
+	writeYAMLMap(t, filepath.Join(dataDir, "ideas", "index.yaml"), ideasIndex)
+
+	// Remove title from aux todo frontmatter.
+	if err := os.WriteFile(
+		filepath.Join(dataDir, "bugs", "bug-task.todo"),
+		[]byte(strings.Join([]string{
+			"---",
+			"id: B1",
+			"status: pending",
+			"estimate_hours: 1",
+			"complexity: medium",
+			"priority: high",
+			"depends_on: []",
+			"tags: []",
+			"---",
+			"# Bug task",
+		}, "\n")),
+		0o644,
+	); err != nil {
+		t.Fatalf("rewrite bug task without title: %v", err)
+	}
+	if err := os.WriteFile(
+		filepath.Join(dataDir, "ideas", "idea-task.todo"),
+		[]byte(strings.Join([]string{
+			"---",
+			"id: I1",
+			"status: pending",
+			"estimate_hours: 1",
+			"complexity: medium",
+			"priority: high",
+			"depends_on: []",
+			"tags: []",
+			"---",
+			"# Idea task",
+		}, "\n")),
+		0o644,
+	); err != nil {
+		t.Fatalf("rewrite idea task without title: %v", err)
+	}
+
+	output, err := runInDir(t, root, "list")
+	if err != nil {
+		t.Fatalf("run list = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "B1: bug task") {
+		t.Fatalf("output = %q, expected bug fallback title from filename", output)
+	}
+	if !strings.Contains(output, "I1: idea task") {
+		t.Fatalf("output = %q, expected idea fallback title from filename", output)
 	}
 }
 

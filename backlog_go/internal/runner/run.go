@@ -81,7 +81,7 @@ var migrationKnownCommands = []string{
 	"migrate",
 }
 
-type commandHelpSpec struct {
+type commandUsageSpec struct {
 	summary  string
 	usage    string
 	options  []string
@@ -279,36 +279,6 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 		},
 		examples: []string{"backlog unclaim-stale --threshold 120", "backlog unclaim-stale --dry-run"},
 	},
-}
-
-var commandHelpFunctions = map[string]func(){
-	commands.CmdAdd:          printAddHelp,
-	commands.CmdAddEpic:      printAddEpicHelp,
-	commands.CmdAddMilestone: printAddMilestoneHelp,
-	commands.CmdAddPhase:     printAddPhaseHelp,
-	commands.CmdClaim:        printClaimHelp,
-	commands.CmdDone:         printDoneHelp,
-	commands.CmdUpdate:       printUpdateHelp,
-	commands.CmdMove:         printMoveHelp,
-	commands.CmdSet:          printSetHelp,
-	commands.CmdList:         printListHelp,
-	commands.CmdLs:           printListHelp,
-	commands.CmdSearch:       printSearchHelp,
-	commands.CmdBlockers:     printBlockersHelp,
-	commands.CmdWhy:          printWhyHelp,
-	commands.CmdTimeline:     printTimelineHelp,
-	commands.CmdReport:       printReportHelp,
-	commands.CmdReportAlias:  printReportHelp,
-	commands.CmdData:         printDataHelp,
-	commands.CmdSchema:       printSchemaHelp,
-	commands.CmdSession:      printSessionHelp,
-	commands.CmdCheck:        printCheckHelp,
-	commands.CmdIdea:         printIdeaHelp,
-	commands.CmdBug:          printBugHelp,
-	commands.CmdFixed:        printFixedHelp,
-	commands.CmdSkip:         printSkipHelp,
-	commands.CmdHandoff:      printHandoffHelp,
-	commands.CmdUnclaimStale: printUnclaimStaleHelp,
 }
 
 type previewTaskPayload struct {

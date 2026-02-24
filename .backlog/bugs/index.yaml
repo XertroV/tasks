@@ -6,3 +6,4 @@ bugs:
     - file: B005-aliases-should-not-be-listed-o.todo
     - file: B006-go-client-output-of-bl-claim-x.todo
     - file: B007-go-client-the-output-for-bl-ad.todo
+    - file: B008-go-client-list-is-not-as-usefu.todo

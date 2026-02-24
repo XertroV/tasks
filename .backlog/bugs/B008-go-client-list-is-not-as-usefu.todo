@@ -1,0 +1,17 @@
+---
+claimed_at: "2026-02-24T20:04:28Z"
+claimed_by: cli-user
+completed_at: "2026-02-24T20:08:52Z"
+complexity: medium
+depends_on: []
+duration_minutes: 4.402932034983333
+estimate_hours: 1
+id: B008
+priority: high
+started_at: "2026-02-24T20:04:28Z"
+status: done
+tags: []
+title: 'go client: list is not as useful. when specifying a node, we should list an extra depth under them. see the python client for ideas about how to improve the ergonomics and utility of list.'
+---
+
+go client: list is not as useful. when specifying a node, we should list an extra depth under them. see the python client for ideas about how to improve the ergonomics and utility of list.

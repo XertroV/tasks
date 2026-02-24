@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { basename, dirname, extname, join } from "node:path";
 import { performance } from "node:perf_hooks";
 import { parse, stringify } from "yaml";
 import { Complexity, Priority, Status, TaskPath, type Epic, type Milestone, type Phase, type Task, type TaskTree } from "./models";
@@ -76,6 +76,25 @@ function parseTodo(content: string): { frontmatter: AnyRec; body: string } {
 function slugify(text: string, maxLength = 30): string {
   const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return base.length > maxLength ? base.slice(0, maxLength).replace(/-+$/g, "") : base;
+}
+
+function fallbackAuxTitle(filename: string, taskId: string, entryTitle?: string, frontmatterTitle?: string): string {
+  const frontmatter = String(frontmatterTitle ?? "").trim();
+  if (frontmatter) return frontmatter;
+
+  const entry = String(entryTitle ?? "").trim();
+  if (entry) return entry;
+
+  let stem = basename(filename, extname(filename));
+  const prefixes = [taskId, taskId.toUpperCase(), taskId.toLowerCase()].filter(Boolean);
+  for (const prefix of prefixes) {
+    if (stem.startsWith(prefix)) {
+      stem = stem.slice(prefix.length).replace(/^[-_]+/, "");
+      break;
+    }
+  }
+  stem = stem.replace(/[-_]+/g, " ").trim().replace(/\s+/g, " ");
+  return stem || taskId || "untitled";
 }
 
 export class TaskLoader {
@@ -776,7 +795,12 @@ export class TaskLoader {
       }
       bugs.push({
         id: String(frontmatter.id ?? ""),
-        title: String(frontmatter.title ?? ""),
+        title: fallbackAuxTitle(
+          filename,
+          String(frontmatter.id ?? ""),
+          String(entry.title ?? ""),
+          String(frontmatter.title ?? ""),
+        ),
         file: join("bugs", filename),
         status: coerceStatus(frontmatter.status, Status.PENDING),
         estimateHours: estimateHoursFrom(frontmatter),
@@ -836,7 +860,12 @@ export class TaskLoader {
       }
       ideas.push({
         id: String(frontmatter.id ?? ""),
-        title: String(frontmatter.title ?? ""),
+        title: fallbackAuxTitle(
+          filename,
+          String(frontmatter.id ?? ""),
+          String(entry.title ?? ""),
+          String(frontmatter.title ?? ""),
+        ),
         file: join("ideas", filename),
         status: coerceStatus(frontmatter.status, Status.PENDING),
         estimateHours: estimateHoursFrom(frontmatter),

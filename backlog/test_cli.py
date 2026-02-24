@@ -1770,6 +1770,56 @@ def test_list_bugs_and_ideas_flags(runner, tmp_tasks_dir):
     assert "Phase" not in ideas_only.output
 
 
+def test_list_aux_fallback_title_from_filename(runner, tmp_tasks_dir):
+    bug_result = runner.invoke(cli, ["bug", "--title", "critical bug", "--simple"])
+    assert bug_result.exit_code == 0
+
+    idea_result = runner.invoke(cli, ["idea", "future planning idea"])
+    assert idea_result.exit_code == 0
+
+    bugs_index_path = tmp_tasks_dir / ".tasks" / "bugs" / "index.yaml"
+    bugs_index = yaml.safe_load(bugs_index_path.read_text()) or {"bugs": []}
+    if bugs_index.get("bugs"):
+        bugs_index["bugs"][0].pop("title", None)
+    bugs_index_path.write_text(yaml.safe_dump(bugs_index))
+
+    ideas_index_path = tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml"
+    ideas_index = yaml.safe_load(ideas_index_path.read_text()) or {"ideas": []}
+    if ideas_index.get("ideas"):
+        ideas_index["ideas"][0].pop("title", None)
+    ideas_index_path.write_text(yaml.safe_dump(ideas_index))
+
+    bug_file = tmp_tasks_dir / ".tasks" / "bugs" / bugs_index["bugs"][0]["file"]
+    bug_file.write_text(
+        "---\n"
+        "id: B001\n"
+        "status: pending\n"
+        "estimate_hours: 1\n"
+        "complexity: medium\n"
+        "priority: high\n"
+        "depends_on: []\n"
+        "tags: []\n"
+        "---\n"
+    )
+    idea_file = tmp_tasks_dir / ".tasks" / "ideas" / ideas_index["ideas"][0]["file"]
+    idea_file.write_text(
+        "---\n"
+        "id: I001\n"
+        "status: pending\n"
+        "estimate_hours: 1\n"
+        "complexity: medium\n"
+        "priority: high\n"
+        "depends_on: []\n"
+        "tags: []\n"
+        "---\n"
+    )
+
+    result = runner.invoke(cli, ["list"])
+    assert result.exit_code == 0
+    assert "B001: critical bug" in result.output
+    assert "I001: future planning idea" in result.output
+
+
 def test_set_updates_multiple_fields(runner, tmp_tasks_dir):
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original")
 
