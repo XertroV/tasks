@@ -42,24 +42,32 @@ func captureStdout(t *testing.T, fn func()) string {
 	return buf.String()
 }
 
+func mustRun(t *testing.T, root string, args ...string) string {
+	t.Helper()
+	output, err := runInDir(t, root, args...)
+	if err != nil {
+		t.Fatalf("run %v = %v", args, err)
+	}
+	return output
+}
+
+func assertContainsAll(t *testing.T, value string, wants ...string) {
+	t.Helper()
+	for _, want := range wants {
+		if !strings.Contains(value, want) {
+			t.Fatalf("output = %q, expected to contain %q", value, want)
+		}
+	}
+}
+
 func TestRunCycleAutoGrabsNextTask(t *testing.T) {
 	t.Parallel()
 
 	root := setupWorkflowFixture(t)
-	if _, err := runInDir(t, root, "claim", "P1.M1.E1.T001"); err != nil {
-		t.Fatalf("claim before cycle: %v", err)
-	}
+	_ = mustRun(t, root, "claim", "P1.M1.E1.T001")
 
-	output, err := runInDir(t, root, "cycle", "P1.M1.E1.T001")
-	if err != nil {
-		t.Fatalf("run cycle = %v, expected nil", err)
-	}
-	if !strings.Contains(output, "Completed: P1.M1.E1.T001 - a") {
-		t.Fatalf("cycle output = %q, expected completion message", output)
-	}
-	if !strings.Contains(output, "Grabbed: P1.M1.E1.T002 - b") {
-		t.Fatalf("cycle output = %q, expected auto-grab message", output)
-	}
+	output := mustRun(t, root, "cycle", "P1.M1.E1.T001")
+	assertContainsAll(t, output, "Completed: P1.M1.E1.T001 - a", "Grabbed: P1.M1.E1.T002 - b")
 
 	dataDir := filepath.Join(root, ".tasks")
 	currentTask, err := taskcontext.GetCurrentTask(dataDir)
@@ -75,21 +83,14 @@ func TestRunCycleAdvancesSiblingContext(t *testing.T) {
 	t.Parallel()
 
 	root := setupWorkflowFixture(t)
-	if _, err := runInDir(t, root, "claim", "P1.M1.E1.T001"); err != nil {
-		t.Fatalf("claim before cycle: %v", err)
-	}
+	_ = mustRun(t, root, "claim", "P1.M1.E1.T001")
 	dataDir := filepath.Join(root, ".tasks")
 	if err := taskcontext.SetSiblingTaskContext(dataDir, "cli-user", "P1.M1.E1.T001", []string{"P1.M1.E1.T002"}); err != nil {
 		t.Fatalf("SetSiblingTaskContext() = %v", err)
 	}
 
-	output, err := runInDir(t, root, "cycle")
-	if err != nil {
-		t.Fatalf("run cycle with sibling context = %v", err)
-	}
-	if !strings.Contains(output, "Primary sibling completed. Next sibling: P1.M1.E1.T002") {
-		t.Fatalf("cycle output = %q, expected sibling handoff", output)
-	}
+	output := mustRun(t, root, "cycle")
+	assertContainsAll(t, output, "Primary sibling completed. Next sibling: P1.M1.E1.T002")
 
 	ctx, err := taskcontext.LoadContext(dataDir)
 	if err != nil {
@@ -150,18 +151,10 @@ func TestRunListAvailableAndProgressViews(t *testing.T) {
 
 	root := setupListAuxAndScopeFixture(t)
 
-	availableOut, err := runInDir(t, root, "list", "--available")
-	if err != nil {
-		t.Fatalf("list --available = %v", err)
-	}
-	if !strings.Contains(availableOut, "Primary Phase") {
-		t.Fatalf("list --available output = %q, expected phase grouping", availableOut)
-	}
+	availableOut := mustRun(t, root, "list", "--available")
+	assertContainsAll(t, availableOut, "Primary Phase")
 
-	availableJSON, err := runInDir(t, root, "list", "--available", "--json", "--bugs")
-	if err != nil {
-		t.Fatalf("list --available --json --bugs = %v", err)
-	}
+	availableJSON := mustRun(t, root, "list", "--available", "--json", "--bugs")
 	var payload map[string]interface{}
 	decodeJSONPayload(t, availableJSON, &payload)
 	entries, ok := payload["available"].([]interface{})
@@ -175,13 +168,8 @@ func TestRunListAvailableAndProgressViews(t *testing.T) {
 		}
 	}
 
-	progressOut, err := runInDir(t, root, "list", "--progress", "--phase", "P1")
-	if err != nil {
-		t.Fatalf("list --progress --phase P1 = %v", err)
-	}
-	if !strings.Contains(progressOut, "Project Progress") || !strings.Contains(progressOut, "P1 (") {
-		t.Fatalf("list --progress output = %q, expected progress summary", progressOut)
-	}
+	progressOut := mustRun(t, root, "list", "--progress", "--phase", "P1")
+	assertContainsAll(t, progressOut, "Project Progress", "P1 (")
 }
 
 func TestRenderListProgressNoNodesMessage(t *testing.T) {
@@ -212,72 +200,55 @@ func TestRunTreePathQueryFiltering(t *testing.T) {
 	t.Parallel()
 
 	root := setupListAuxAndScopeFixture(t)
-	filteredOut, err := runInDir(t, root, "tree", "P1.M1.E1")
-	if err != nil {
-		t.Fatalf("tree P1.M1.E1 = %v", err)
-	}
-	if !strings.Contains(filteredOut, "Epic One") {
-		t.Fatalf("tree filtered output = %q, expected scoped epic", filteredOut)
-	}
+	filteredOut := mustRun(t, root, "tree", "P1.M1.E1")
+	assertContainsAll(t, filteredOut, "Epic One")
 
 	rootNoAux := setupWorkflowFixture(t)
-	emptyOut, err := runInDir(t, rootNoAux, "tree", "P9")
-	if err != nil {
-		t.Fatalf("tree P9 = %v", err)
-	}
-	if !strings.Contains(emptyOut, "No tree nodes found for path query: P9") {
-		t.Fatalf("tree no-node output = %q, expected path-query empty message", emptyOut)
-	}
+	emptyOut := mustRun(t, rootNoAux, "tree", "P9")
+	assertContainsAll(t, emptyOut, "No tree nodes found for path query: P9")
 }
 
 func TestRunLsTaskSummaryAndMissingFile(t *testing.T) {
 	t.Parallel()
 
 	root := setupWorkflowFixture(t)
-	summaryOut, err := runInDir(t, root, "ls", "P1.M1.E1.T001")
-	if err != nil {
-		t.Fatalf("ls task summary = %v", err)
-	}
-	if !strings.Contains(summaryOut, "Task: P1.M1.E1.T001 - a") || !strings.Contains(summaryOut, "Frontmatter:") {
-		t.Fatalf("ls task summary output = %q, expected task summary fields", summaryOut)
-	}
+	summaryOut := mustRun(t, root, "ls", "P1.M1.E1.T001")
+	assertContainsAll(t, summaryOut, "Task: P1.M1.E1.T001 - a", "Frontmatter:")
 
 	taskPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo")
 	if err := os.Remove(taskPath); err != nil {
 		t.Fatalf("remove task file: %v", err)
 	}
-	missingOut, err := runInDir(t, root, "ls", "P1.M1.E1.T001")
-	if err != nil {
-		t.Fatalf("ls task summary missing file = %v", err)
-	}
-	if !strings.Contains(missingOut, "Task file missing") {
-		t.Fatalf("missing summary output = %q, expected missing-file message", missingOut)
-	}
+	missingOut := mustRun(t, root, "ls", "P1.M1.E1.T001")
+	assertContainsAll(t, missingOut, "Task file missing")
 }
 
 func TestRunShowAuxiliaryAndErrorBranch(t *testing.T) {
 	t.Parallel()
 
 	root := setupListAuxAndScopeFixture(t)
-	ideaOut, err := runInDir(t, root, "show", "I1")
-	if err != nil {
-		t.Fatalf("show I1 = %v", err)
-	}
-	if !strings.Contains(ideaOut, "Idea instructions") {
-		t.Fatalf("show idea output = %q, expected idea instructions", ideaOut)
-	}
+	ideaOut := mustRun(t, root, "show", "I1")
+	assertContainsAll(t, ideaOut, "Idea instructions")
 
-	bugOut, err := runInDir(t, root, "show", "B1")
-	if err != nil {
-		t.Fatalf("show B1 = %v", err)
-	}
-	if !strings.Contains(bugOut, "status=") {
-		t.Fatalf("show bug output = %q, expected bug detail", bugOut)
-	}
+	bugOut := mustRun(t, root, "show", "B1")
+	assertContainsAll(t, bugOut, "status=")
 
-	_, err = runInDir(t, root, "show", "B99")
+	_, err := runInDir(t, root, "show", "B99")
 	if err == nil {
 		t.Fatal("show B99 expected task-not-found error")
+	}
+}
+
+func TestRunClaimRejectsUnknownFlag(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	_, err := runInDir(t, root, "claim", "P1.M1.E1.T001", "--bogus")
+	if err == nil {
+		t.Fatal("claim with unknown flag expected error")
+	}
+	if !strings.Contains(err.Error(), "unexpected flag: --bogus") {
+		t.Fatalf("error = %q, expected unknown-flag message", err)
 	}
 }
 
@@ -372,13 +343,8 @@ func TestRunGrabModesAndScope(t *testing.T) {
 	t.Parallel()
 
 	rootExplicit := setupWorkflowFixture(t)
-	explicitOut, err := runInDir(t, rootExplicit, "grab", "P1.M1.E1.T001", "P1.M1.E1.T002", "--agent", "agent-x")
-	if err != nil {
-		t.Fatalf("grab explicit ids = %v", err)
-	}
-	if !strings.Contains(explicitOut, "✓ Claimed: P1.M1.E1.T001 - a") || !strings.Contains(explicitOut, "✓ Claimed: P1.M1.E1.T002 - b") {
-		t.Fatalf("explicit grab output = %q, expected multi-claim output", explicitOut)
-	}
+	explicitOut := mustRun(t, rootExplicit, "grab", "P1.M1.E1.T001", "P1.M1.E1.T002", "--agent", "agent-x")
+	assertContainsAll(t, explicitOut, "✓ Claimed: P1.M1.E1.T001 - a", "✓ Claimed: P1.M1.E1.T002 - b")
 
 	ctx, err := taskcontext.LoadContext(filepath.Join(rootExplicit, ".tasks"))
 	if err != nil {
@@ -389,102 +355,79 @@ func TestRunGrabModesAndScope(t *testing.T) {
 	}
 
 	rootSingle := setupWorkflowFixture(t)
-	singleOut, err := runInDir(t, rootSingle, "grab", "--single")
-	if err != nil {
-		t.Fatalf("grab --single = %v", err)
-	}
-	if !strings.Contains(singleOut, "Grabbed: P1.M1.E1.T001 - a") {
-		t.Fatalf("single grab output = %q, expected primary grab", singleOut)
-	}
+	singleOut := mustRun(t, rootSingle, "grab", "--single")
+	assertContainsAll(t, singleOut, "Grabbed: P1.M1.E1.T001 - a")
 
 	rootScope := setupWorkflowFixture(t)
-	scopeOut, err := runInDir(t, rootScope, "grab", "--scope", "P9")
-	if err != nil {
-		t.Fatalf("grab --scope P9 = %v", err)
-	}
-	if !strings.Contains(scopeOut, "No available tasks in scope 'P9'") {
-		t.Fatalf("scope grab output = %q, expected scope miss message", scopeOut)
-	}
+	scopeOut := mustRun(t, rootScope, "grab", "--scope", "P9")
+	assertContainsAll(t, scopeOut, "No available tasks in scope 'P9'")
 }
 
 func TestRunGrabMultiClaimsAdditionalTasks(t *testing.T) {
 	t.Parallel()
 
 	root := setupListAuxAndScopeFixture(t)
-	output, err := runInDir(t, root, "grab", "--multi", "--count", "2")
-	if err != nil {
-		t.Fatalf("grab --multi --count 2 = %v", err)
-	}
-	if !strings.Contains(output, "Also grabbed") {
-		t.Fatalf("multi grab output = %q, expected additional claims", output)
-	}
+	output := mustRun(t, root, "grab", "--multi", "--count", "2")
+	assertContainsAll(t, output, "Also grabbed")
 }
 
 func TestRunWorkSetShowAndClear(t *testing.T) {
 	t.Parallel()
 
 	root := setupWorkflowFixture(t)
-	setOut, err := runInDir(t, root, "work", "P1.M1.E1.T001")
-	if err != nil {
-		t.Fatalf("work set = %v", err)
-	}
-	if !strings.Contains(setOut, "Working task set: P1.M1.E1.T001 - a") {
-		t.Fatalf("work set output = %q, expected set message", setOut)
-	}
+	setOut := mustRun(t, root, "work", "P1.M1.E1.T001")
+	assertContainsAll(t, setOut, "Working task set: P1.M1.E1.T001 - a")
 
-	showOut, err := runInDir(t, root, "work")
-	if err != nil {
-		t.Fatalf("work show = %v", err)
-	}
-	if !strings.Contains(showOut, "Current Working Task") || !strings.Contains(showOut, "ID: P1.M1.E1.T001") {
-		t.Fatalf("work show output = %q, expected current task details", showOut)
-	}
+	showOut := mustRun(t, root, "work")
+	assertContainsAll(t, showOut, "Current Working Task", "ID: P1.M1.E1.T001")
 
-	clearOut, err := runInDir(t, root, "work", "--clear")
-	if err != nil {
-		t.Fatalf("work --clear = %v", err)
-	}
-	if !strings.Contains(clearOut, "Cleared working task context.") {
-		t.Fatalf("work clear output = %q, expected clear confirmation", clearOut)
-	}
+	clearOut := mustRun(t, root, "work", "--clear")
+	assertContainsAll(t, clearOut, "Cleared working task context.")
 }
 
 func TestRunBlockedAutoGrabAndUnclaimFromContext(t *testing.T) {
 	t.Parallel()
 
 	root := setupListAuxAndScopeFixture(t)
-	if _, err := runInDir(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-z"); err != nil {
-		t.Fatalf("claim before blocked = %v", err)
-	}
+	_ = mustRun(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-z")
 
-	blockedOut, err := runInDir(t, root, "blocked", "P1.M1.E1.T001", "--reason", "waiting", "--grab", "--agent", "agent-z")
-	if err != nil {
-		t.Fatalf("blocked --grab = %v", err)
-	}
-	if !strings.Contains(blockedOut, "Blocked: P1.M1.E1.T001 (waiting)") || !strings.Contains(blockedOut, "Grabbed:") {
-		t.Fatalf("blocked output = %q, expected blocked and auto-grab messages", blockedOut)
-	}
+	blockedOut := mustRun(t, root, "blocked", "P1.M1.E1.T001", "--reason", "waiting", "--grab", "--agent", "agent-z")
+	assertContainsAll(t, blockedOut, "Blocked: P1.M1.E1.T001 (waiting)", "Grabbed:")
 
-	unclaimOut, err := runInDir(t, root, "unclaim")
-	if err != nil {
-		t.Fatalf("unclaim without task id = %v", err)
-	}
-	if !strings.Contains(unclaimOut, "Unclaimed:") {
-		t.Fatalf("unclaim output = %q, expected context-based unclaim", unclaimOut)
-	}
+	unclaimOut := mustRun(t, root, "unclaim")
+	assertContainsAll(t, unclaimOut, "Unclaimed:")
+}
+
+func TestRunDoneSupportsMultipleTaskIDsAndVerifyFlag(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	_ = mustRun(t, root, "claim", "P1.M1.E1.T001")
+	_ = mustRun(t, root, "claim", "P1.M1.E1.T002")
+
+	output := mustRun(t, root, "done", "P1.M1.E1.T001", "P1.M1.E1.T002", "--verify")
+	assertContainsAll(t, output, "Completed: P1.M1.E1.T001 - a", "Completed: P1.M1.E1.T002 - b")
+
+	taskOne := readFile(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"))
+	taskTwo := readFile(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo"))
+	assertContainsAll(t, taskOne, "status: done")
+	assertContainsAll(t, taskTwo, "status: done")
+}
+
+func TestRunSkipPendingUnclaimedIsNoop(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output := mustRun(t, root, "skip", "P1.M1.E1.T001")
+	assertContainsAll(t, output, "Task is not in progress: pending")
 }
 
 func TestRunPreviewTextOutput(t *testing.T) {
 	t.Parallel()
 
 	root := setupWorkflowFixture(t)
-	previewOut, err := runInDir(t, root, "preview")
-	if err != nil {
-		t.Fatalf("preview = %v", err)
-	}
-	if !strings.Contains(previewOut, "Preview available work:") || !strings.Contains(previewOut, "Normal Tasks") {
-		t.Fatalf("preview output = %q, expected preview sections", previewOut)
-	}
+	previewOut := mustRun(t, root, "preview")
+	assertContainsAll(t, previewOut, "Preview available work:", "Normal Tasks")
 }
 
 func TestShowScopedItemBranches(t *testing.T) {

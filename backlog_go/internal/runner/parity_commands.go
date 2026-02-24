@@ -1459,12 +1459,13 @@ func runSkip(args []string) error {
 		if err := applyTaskStatusTransition(task, models.StatusPending, "skip"); err != nil {
 			return err
 		}
-	} else if task.Status == models.StatusPending {
+	} else if task.Status == models.StatusPending && (task.ClaimedBy != "" || task.ClaimedAt != nil) {
 		task.ClaimedBy = ""
 		task.ClaimedAt = nil
 		task.Reason = ""
 	} else {
-		return fmt.Errorf("Cannot skip task %s: task is %s", task.ID, task.Status)
+		fmt.Printf("Task is not in progress: %s\n", task.Status)
+		return nil
 	}
 	if err := saveTaskState(*task, tree); err != nil {
 		return err

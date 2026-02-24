@@ -5716,27 +5716,19 @@ func runClaim(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	taskIDs := []string{}
-	for i := 0; i < len(args); i++ {
-		arg := args[i]
-		if arg == "--agent" {
-			i++
-			continue
-		}
-		if strings.HasPrefix(arg, "--agent=") {
-			continue
-		}
-		if arg == "--force" {
-			continue
-		}
-		if strings.HasPrefix(arg, "--force=") {
-			continue
-		}
-		if strings.HasPrefix(arg, "-") {
-			continue
-		}
-		taskIDs = append(taskIDs, arg)
+	if err := validateAllowedFlags(args, map[string]bool{
+		"--agent":      true,
+		"--force":      true,
+		"--no-content": true,
+	}); err != nil {
+		return err
 	}
+
+	taskIDs := positionalArgs(args, map[string]bool{
+		"--agent":      true,
+		"--force":      false,
+		"--no-content": false,
+	})
 	if len(taskIDs) == 0 {
 		return errors.New("claim requires at least one TASK_ID")
 	}
@@ -6913,11 +6905,20 @@ func runDone(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	taskID := firstPositionalArg(args, map[string]bool{
+	if err := validateAllowedFlags(args, map[string]bool{
 		"--status": true,
 		"--force":  true,
+		"--verify": true,
+	}); err != nil {
+		return err
+	}
+
+	taskIDs := positionalArgs(args, map[string]bool{
+		"--status": true,
+		"--force":  false,
+		"--verify": false,
 	})
-	if strings.TrimSpace(taskID) == "" {
+	if len(taskIDs) == 0 {
 		dataDir, err := ensureDataRoot()
 		if err != nil {
 			return err
@@ -6926,16 +6927,20 @@ func runDone(args []string) error {
 		if err != nil {
 			return err
 		}
-		taskID = ctx.CurrentTask
+		taskID := ctx.CurrentTask
 		if taskID == "" {
 			taskID = ctx.PrimaryTask
 		}
 		if taskID == "" {
 			return errors.New("No task ID provided and no current working task set.")
 		}
+		taskIDs = []string{taskID}
 	}
-	if err := validateTaskID(taskID); err != nil {
-		return err
+
+	for _, taskID := range taskIDs {
+		if err := validateTaskID(taskID); err != nil {
+			return err
+		}
 	}
 
 	statusRaw, hasStatus := parseOptionWithPresence(args, "--status")
@@ -6954,55 +6959,59 @@ func runDone(args []string) error {
 		return err
 	}
 
+	force := parseFlag(args, "--force")
+	_ = parseFlag(args, "--verify")
+
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
 		return err
 	}
-	task := findTask(tree, taskID)
-	if task == nil {
-		return fmt.Errorf("Task not found: %s", taskID)
-	}
-	if _, err := resolveTaskFilePath(task.File); err != nil || !taskFileExists(task.File) {
-		return fmt.Errorf("no such file: %s", task.File)
-	}
+	for _, taskID := range taskIDs {
+		task := findTask(tree, taskID)
+		if task == nil {
+			return fmt.Errorf("Task not found: %s", taskID)
+		}
+		if _, err := resolveTaskFilePath(task.File); err != nil || !taskFileExists(task.File) {
+			return fmt.Errorf("no such file: %s", task.File)
+		}
 
-	force := parseFlag(args, "--force")
-	if task.Status == models.StatusDone && status == models.StatusDone {
-		fmt.Printf("Already done: %s - %s\n", task.ID, task.Title)
-		return nil
-	}
-	if status == models.StatusDone && task.StartedAt != nil {
-		duration := time.Since(*task.StartedAt).Minutes()
-		task.DurationMinutes = &duration
-	}
-	if err := applyTaskStatusTransition(task, status, ""); err != nil {
-		if force {
-			task.Status = status
+		if task.Status == models.StatusDone && status == models.StatusDone {
+			fmt.Printf("Already done: %s - %s\n", task.ID, task.Title)
+			continue
+		}
+		if status == models.StatusDone && task.StartedAt != nil {
+			duration := time.Since(*task.StartedAt).Minutes()
+			task.DurationMinutes = &duration
+		}
+		if err := applyTaskStatusTransition(task, status, ""); err != nil {
+			if force {
+				task.Status = status
+			} else {
+				return err
+			}
+		}
+		if err := saveTaskState(*task, tree); err != nil {
+			return err
+		}
+
+		if status == models.StatusDone {
+			completion := completionNotice{}
+			completeNotice, err := setItemDone(*task, tree)
+			if err != nil {
+				return err
+			}
+			completion = completeNotice
+			printCompletionNotice(tree, *task, completion)
+		}
+
+		if status == models.StatusDone {
+			fmt.Printf("Completed: %s - %s\n", task.ID, task.Title)
 		} else {
-			return err
+			fmt.Printf("Updated: %s - %s\n", task.ID, status)
 		}
-	}
-	if err := saveTaskState(*task, tree); err != nil {
-		return err
-	}
-
-	if status == models.StatusDone {
-		completion := completionNotice{}
-		completeNotice, err := setItemDone(*task, tree)
-		if err != nil {
-			return err
+		if status == models.StatusDone && task.DurationMinutes != nil {
+			fmt.Printf("Duration: %d minutes\n", int(*task.DurationMinutes))
 		}
-		completion = completeNotice
-		printCompletionNotice(tree, *task, completion)
-	}
-
-	if status == models.StatusDone {
-		fmt.Printf("Completed: %s - %s\n", task.ID, task.Title)
-	} else {
-		fmt.Printf("Updated: %s - %s\n", task.ID, status)
-	}
-	if status == models.StatusDone && task.DurationMinutes != nil {
-		fmt.Printf("Duration: %d minutes\n", int(*task.DurationMinutes))
 	}
 	return nil
 }

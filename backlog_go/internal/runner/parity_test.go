@@ -39,8 +39,10 @@ var parityVectors = [][]string{
 	{"work"},
 	{"work", "P1.M1.E1.T001"},
 	{"claim", "P1.M1.E1.T001", "--agent", "agent-x"},
+	{"claim", "P1.M1.E1.T001", "--agent", "agent-x", "--no-content"},
 	{"grab", "--agent", "agent-x"},
 	{"done", "P1.M1.E1.T001"},
+	{"done", "P1.M1.E1.T001", "P1.M1.E1.T002", "--force", "--verify"},
 	{"update", "P1.M1.E1.T002", "blocked", "--reason", "waiting"},
 	{"unclaim", "P1.M1.E1.T001"},
 	{"skills", "install", "plan-task", "--client=codex", "--artifact=skills", "--dry-run", "--json"},
@@ -53,6 +55,12 @@ var parityVectors = [][]string{
 	{"session", "start", "--agent", "agent-p", "--task", "P1.M1.E1.T001"},
 	{"session", "end", "--agent", "agent-p"},
 	{"sync"},
+}
+
+var pythonGoOnlyParityVectors = [][]string{
+	{"skip", "P1.M1.E1.T001"},
+	{"handoff", "P1.M1.E1.T001", "--to", "agent-y", "--force", "--notes", "parity"},
+	{"unclaim-stale", "--threshold", "30", "--dry-run"},
 }
 
 func TestGoParityFixtureSetIsCanonical(t *testing.T) {
@@ -138,6 +146,49 @@ func TestRunParityCrossValidateGoAgainstPythonAndTypeScript(t *testing.T) {
 			}
 
 			assertCommandStateParity(t, vector, goRoot, pyRoot, tsRoot)
+		})
+	}
+}
+
+func TestRunParityCrossValidateGoAgainstPython(t *testing.T) {
+	t.Parallel()
+
+	projectRoot := mustProjectRoot(t)
+	pythonBinary, err := findExecutable("python", "python3")
+	if err != nil {
+		t.Fatalf("python runtime is required for parity tests: %v", err)
+	}
+
+	fixtureRoot := parityFixtureRoot(t)
+	template := filepath.Join(fixtureRoot, ".tasks")
+	pythonScript := filepath.Join(projectRoot, "backlog.py")
+
+	for _, vector := range pythonGoOnlyParityVectors {
+		vector := vector
+		t.Run(strings.Join(vector, " "), func(t *testing.T) {
+			t.Parallel()
+
+			goRoot := t.TempDir()
+			pyRoot := t.TempDir()
+			copyFixture(t, template, filepath.Join(goRoot, ".tasks"))
+			copyFixture(t, template, filepath.Join(pyRoot, ".tasks"))
+
+			goResult := runGoCommandInDir(t, goRoot, vector...)
+			pyResult, runErr := runCommand(pythonBinary, []string{pythonScript}, vector, pyRoot)
+			if runErr != nil {
+				t.Fatalf("python %s = %v", strings.Join(vector, " "), runErr)
+			}
+
+			if goResult.Code != pyResult.Code {
+				t.Fatalf("exit code mismatch go=%d py=%d for %q", goResult.Code, pyResult.Code, strings.Join(vector, " "))
+			}
+
+			if hasArg(vector, "--json") {
+				assertCommandJSONParity(t, vector, goResult.Stdout, pyResult.Stdout, pyResult.Stdout)
+			}
+
+			assertRootIndexParity(t, goRoot, pyRoot, pyRoot)
+			assertCommandStateParity(t, vector, goRoot, pyRoot, pyRoot)
 		})
 	}
 }
