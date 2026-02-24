@@ -607,6 +607,75 @@ func TestRunClaimRejectsMissingTaskFile(t *testing.T) {
 	}
 }
 
+func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-z", "--no-content")
+	if err != nil {
+		t.Fatalf("run claim = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "✓ Claimed P1.M1.E1.T001 - a") {
+		t.Fatalf("claim output = %q, expected rich claimed summary", output)
+	}
+	if !strings.Contains(output, "Task body preview suppressed via --no-content") {
+		t.Fatalf("claim output = %q, expected --no-content hint", output)
+	}
+	if !strings.Contains(output, "Next: backlog done P1.M1.E1.T001") {
+		t.Fatalf("claim output = %q, expected next-step guidance", output)
+	}
+}
+
+func TestRunAddPhaseHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "add-phase", "--help")
+	if err != nil {
+		t.Fatalf("run add-phase --help = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Command Help: backlog add-phase", "Usage:", "backlog add-phase --title <TITLE>", "--weeks, -w")
+}
+
+func TestRunAddPhaseWithoutArgsPrintsHelpAndError(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "add-phase")
+	if err == nil {
+		t.Fatalf("run add-phase expected error when missing args")
+	}
+	assertContainsAll(t, output, "Command Help: backlog add-phase", "backlog add-phase --title <TITLE>")
+	if !strings.Contains(err.Error(), "add-phase requires --title") {
+		t.Fatalf("err = %q, expected missing title error", err)
+	}
+}
+
+func TestRunAddPhaseUnknownFlagPrintsHelpAndError(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "add-phase", "--bogus")
+	if err == nil {
+		t.Fatalf("run add-phase --bogus expected error")
+	}
+	assertContainsAll(t, output, "Command Help: backlog add-phase", "Usage:")
+	if !strings.Contains(err.Error(), "unexpected flag: --bogus") {
+		t.Fatalf("err = %q, expected unknown-flag error", err)
+	}
+}
+
+func TestRunAddHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "add", "--help")
+	if err != nil {
+		t.Fatalf("run add --help = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Command Help: backlog add", "backlog add <EPIC_ID> --title <TITLE>", "--depends-on, -d")
+}
+
 func TestRunMoveTaskToEpicRenumbersID(t *testing.T) {
 	t.Parallel()
 
@@ -1976,6 +2045,17 @@ func TestRunTimelineJSONContract(t *testing.T) {
 	}
 }
 
+func TestRunTimelineTextRendersLegendAndGrouping(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "timeline")
+	if err != nil {
+		t.Fatalf("run timeline = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Project Timeline", "Legend:", "grouped by")
+}
+
 func TestRunReportProgressJSONContract(t *testing.T) {
 	t.Parallel()
 
@@ -1990,6 +2070,28 @@ func TestRunReportProgressJSONContract(t *testing.T) {
 	if _, ok := payload["overall"]; !ok {
 		t.Fatalf("report payload missing overall: %#v", payload)
 	}
+}
+
+func TestRunReportProgressTextRendersSections(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "report", "progress")
+	if err != nil {
+		t.Fatalf("run report progress = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Progress Report", "Overall", "Auxiliary", "Phases")
+}
+
+func TestRunListAvailableTextRendersHeaderAndLegend(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "list", "--available")
+	if err != nil {
+		t.Fatalf("run list --available = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Available Tasks (", "Legend:", "Use `backlog grab`")
 }
 
 func TestRunReportVelocityAndEstimateAccuracyJSONContracts(t *testing.T) {

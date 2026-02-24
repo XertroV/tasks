@@ -345,11 +345,11 @@ func runWhy(args []string) error {
 		return nil
 	}
 
-	fmt.Printf("%s - %s\n", styleHeader(fmt.Sprintf("%s - %s", report.TaskID, report.TaskTitle)))
-	fmt.Printf("%s %s\n", styleSubHeader("Status"), styleStatusText(report.Status))
+	fmt.Println(styleHeader(fmt.Sprintf("%s - %s", report.TaskID, report.TaskTitle)))
+	fmt.Printf("%s %s\n", styleSubHeader("Status"), styleStatusText(string(report.Status)))
 	fmt.Printf("%s %s\n", styleSubHeader("On critical path"), styleMuted(fmt.Sprintf("%t", report.OnCriticalPath)))
 	if report.OnCriticalPath {
-		fmt.Printf("%s %d\n", styleSubHeader("Critical path index"), styleMuted(fmt.Sprintf("%d", report.CriticalPathIndex+1)))
+		fmt.Printf("%s %s\n", styleSubHeader("Critical path index"), styleMuted(fmt.Sprintf("%d", report.CriticalPathIndex+1)))
 	}
 	if len(report.ExplicitDependencies) > 0 {
 		fmt.Println(styleSubHeader("Explicit dependencies:"))
@@ -1257,7 +1257,7 @@ func runDataExport(args []string) error {
 		if err := os.WriteFile(output, rendered, 0o644); err != nil {
 			return err
 		}
-		fmt.Printf("%s: %s\n", styleSuccess("Exported to"), output)
+		fmt.Printf("%s %s\n", styleSuccess("Exported to"), output)
 		return nil
 	}
 	fmt.Println(string(rendered))
@@ -1454,7 +1454,7 @@ func runSession(args []string) error {
 				if session.TaskID != "" {
 					fmt.Printf("    %s %s\n", styleSubHeader("Task:"), styleMuted(session.TaskID))
 				}
-				fmt.Printf("    %s %dm ago\n", styleSubHeader("Last heartbeat:"), styleSuccess(ageSinceRFC3339(session.LastHeartbeat)))
+				fmt.Printf("    %s %dm ago\n", styleSubHeader("Last heartbeat:"), ageSinceRFC3339(session.LastHeartbeat))
 				if strings.TrimSpace(session.Progress) != "" {
 					fmt.Printf("    %s %s\n", styleSubHeader("Last progress:"), styleMuted(session.Progress))
 				}

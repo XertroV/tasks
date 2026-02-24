@@ -331,6 +331,9 @@ func Run(rawArgs ...string) error {
 	if !root.IsKnownCommand(command) {
 		return fmt.Errorf("unknown command: %s", command)
 	}
+	if maybeHandleCommandHelp(command, payload) {
+		return nil
+	}
 
 	switch command {
 	case commands.CmdInit:
@@ -430,6 +433,129 @@ func Run(rawArgs ...string) error {
 	default:
 		return fmt.Errorf("command not implemented: %s", command)
 	}
+}
+
+func maybeHandleCommandHelp(command string, args []string) bool {
+	if !parseFlag(args, "--help", "-h") {
+		return false
+	}
+	switch command {
+	case commands.CmdAdd:
+		printAddHelp()
+		return true
+	case commands.CmdAddEpic:
+		printAddEpicHelp()
+		return true
+	case commands.CmdAddMilestone:
+		printAddMilestoneHelp()
+		return true
+	case commands.CmdAddPhase:
+		printAddPhaseHelp()
+		return true
+	default:
+		return false
+	}
+}
+
+func printCommandHelp(command, summary, usage string, options []string, examples []string) {
+	fmt.Printf("\n%s\n", styleHeader("Command Help: backlog "+command))
+	fmt.Printf("%s\n\n", styleMuted(summary))
+	fmt.Printf("%s %s\n", styleSubHeader("Usage:"), styleSuccess(usage))
+	if len(options) > 0 {
+		fmt.Printf("\n%s\n", styleSubHeader("Options"))
+		for _, option := range options {
+			fmt.Printf("  %s\n", styleMuted(option))
+		}
+	}
+	if len(examples) > 0 {
+		fmt.Printf("\n%s\n", styleSubHeader("Examples"))
+		for _, example := range examples {
+			fmt.Printf("  %s\n", styleSuccess(example))
+		}
+	}
+	fmt.Printf("\n%s\n", styleMuted("Tip: Use `backlog list` or `backlog tree` to find valid IDs for parent scopes."))
+}
+
+func printAddHelp() {
+	printCommandHelp(
+		"add",
+		"Create a task under an epic.",
+		"backlog add <EPIC_ID> --title <TITLE> [options]",
+		[]string{
+			"--title, -T         Task title (required)",
+			"--estimate, -e      Estimate hours (default: 1)",
+			"--complexity, -c    low|medium|high",
+			"--priority, -p      low|medium|high|critical",
+			"--depends-on, -d    Comma-separated dependency IDs",
+			"--tags              Comma-separated tags",
+			"--body, -b          Optional task body content",
+		},
+		[]string{
+			"backlog add P1.M1.E1 --title \"Implement parser\"",
+			"backlog add P1.M1.E1 -T \"Wire API\" -e 3 -c high -p high",
+		},
+	)
+}
+
+func printAddEpicHelp() {
+	printCommandHelp(
+		"add-epic",
+		"Create an epic under a milestone.",
+		"backlog add-epic <MILESTONE_ID> --title <TITLE> [options]",
+		[]string{
+			"--title, -T         Epic title (required)",
+			"--name, -n          Alias for --title",
+			"--estimate, -e      Estimate hours (default: 4)",
+			"--complexity, -c    low|medium|high",
+			"--depends-on, -d    Comma-separated dependency IDs",
+			"--description       Optional epic description",
+		},
+		[]string{
+			"backlog add-epic P1.M1 --title \"CLI polish\"",
+			"backlog add-epic P1.M1 -n \"Reporting\" --depends-on P1.M1.E1",
+		},
+	)
+}
+
+func printAddMilestoneHelp() {
+	printCommandHelp(
+		"add-milestone",
+		"Create a milestone under a phase.",
+		"backlog add-milestone <PHASE_ID> --title <TITLE> [options]",
+		[]string{
+			"--title, -T         Milestone title (required)",
+			"--name, -n          Alias for --title",
+			"--estimate, -e      Estimate hours (default: 8)",
+			"--complexity, -c    low|medium|high",
+			"--depends-on, -d    Comma-separated dependency IDs",
+			"--description       Optional milestone description",
+		},
+		[]string{
+			"backlog add-milestone P1 --title \"Beta Readiness\"",
+			"backlog add-milestone P1 -n \"Hardening\" -e 16",
+		},
+	)
+}
+
+func printAddPhaseHelp() {
+	printCommandHelp(
+		"add-phase",
+		"Create a top-level phase in the backlog.",
+		"backlog add-phase --title <TITLE> [options]",
+		[]string{
+			"--title, -T         Phase title (required)",
+			"--name, -n          Alias for --title",
+			"--weeks, -w         Timeline weeks (default: 2)",
+			"--estimate, -e      Estimate hours (default: 40)",
+			"--priority, -p      low|medium|high|critical",
+			"--depends-on, -d    Comma-separated dependency IDs",
+			"--description       Optional phase description",
+		},
+		[]string{
+			"backlog add-phase --title \"Stabilization\"",
+			"backlog add-phase -T \"v2 Launch\" -w 6 -e 120 -p high",
+		},
+	)
 }
 
 func normalizeCommand(value string) string {
@@ -745,7 +871,7 @@ func runAdd(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	epicID := firstPositionalArg(args, map[string]bool{
+	allowed := map[string]bool{
 		"--title":      true,
 		"-T":           true,
 		"--estimate":   true,
@@ -757,9 +883,29 @@ func runAdd(args []string) error {
 		"--depends-on": true,
 		"-d":           true,
 		"--tags":       true,
+		"--body":       true,
 		"-b":           true,
-	})
+	}
+	if len(args) == 0 {
+		printAddHelp()
+		return errors.New("add requires EPIC_ID")
+	}
+	if err := validateAllowedFlags(args, allowed); err != nil {
+		printAddHelp()
+		return err
+	}
+	positional := positionalArgs(args, allowed)
+	if len(positional) == 0 {
+		printAddHelp()
+		return errors.New("add requires EPIC_ID")
+	}
+	if len(positional) > 1 {
+		printAddHelp()
+		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " "))
+	}
+	epicID := positional[0]
 	if epicID == "" {
+		printAddHelp()
 		return errors.New("add requires EPIC_ID")
 	}
 	title := parseOption(args, "--title", "-T")
@@ -904,7 +1050,7 @@ func runAddEpic(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	milestoneID := firstPositionalArg(args, map[string]bool{
+	allowed := map[string]bool{
 		"--title":       true,
 		"-T":            true,
 		"--name":        true,
@@ -916,8 +1062,27 @@ func runAddEpic(args []string) error {
 		"--depends-on":  true,
 		"-d":            true,
 		"--description": true,
-	})
+	}
+	if len(args) == 0 {
+		printAddEpicHelp()
+		return errors.New("add-epic requires MILESTONE_ID")
+	}
+	if err := validateAllowedFlags(args, allowed); err != nil {
+		printAddEpicHelp()
+		return err
+	}
+	positional := positionalArgs(args, allowed)
+	if len(positional) == 0 {
+		printAddEpicHelp()
+		return errors.New("add-epic requires MILESTONE_ID")
+	}
+	if len(positional) > 1 {
+		printAddEpicHelp()
+		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " "))
+	}
+	milestoneID := positional[0]
 	if milestoneID == "" {
+		printAddEpicHelp()
 		return errors.New("add-epic requires MILESTONE_ID")
 	}
 	title := parseOption(args, "--title", "-T", "--name", "-n")
@@ -1031,7 +1196,7 @@ func runAddMilestone(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	phaseID := firstPositionalArg(args, map[string]bool{
+	allowed := map[string]bool{
 		"--title":       true,
 		"-T":            true,
 		"--name":        true,
@@ -1043,8 +1208,27 @@ func runAddMilestone(args []string) error {
 		"--depends-on":  true,
 		"-d":            true,
 		"--description": true,
-	})
+	}
+	if len(args) == 0 {
+		printAddMilestoneHelp()
+		return errors.New("add-milestone requires PHASE_ID")
+	}
+	if err := validateAllowedFlags(args, allowed); err != nil {
+		printAddMilestoneHelp()
+		return err
+	}
+	positional := positionalArgs(args, allowed)
+	if len(positional) == 0 {
+		printAddMilestoneHelp()
+		return errors.New("add-milestone requires PHASE_ID")
+	}
+	if len(positional) > 1 {
+		printAddMilestoneHelp()
+		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " "))
+	}
+	phaseID := positional[0]
 	if phaseID == "" {
+		printAddMilestoneHelp()
 		return errors.New("add-milestone requires PHASE_ID")
 	}
 	title := parseOption(args, "--title", "-T", "--name", "-n")
@@ -1143,6 +1327,34 @@ func runAddMilestone(args []string) error {
 func runAddPhase(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
+	}
+	allowed := map[string]bool{
+		"--title":       true,
+		"-T":            true,
+		"--name":        true,
+		"-n":            true,
+		"--weeks":       true,
+		"-w":            true,
+		"--estimate":    true,
+		"-e":            true,
+		"--priority":    true,
+		"-p":            true,
+		"--depends-on":  true,
+		"-d":            true,
+		"--description": true,
+	}
+	if len(args) == 0 {
+		printAddPhaseHelp()
+		return errors.New("add-phase requires --title")
+	}
+	if err := validateAllowedFlags(args, allowed); err != nil {
+		printAddPhaseHelp()
+		return err
+	}
+	positional := positionalArgs(args, allowed)
+	if len(positional) > 0 {
+		printAddPhaseHelp()
+		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional, " "))
 	}
 	title := parseOption(args, "--title", "-T", "--name", "-n")
 	if strings.TrimSpace(title) == "" {
@@ -2938,7 +3150,7 @@ func runDash(args []string) error {
 	}
 	fmt.Println()
 
-	fmt.Println(styleSubHeader("Progress"))
+	fmt.Println(styleSubHeader("Progress:"))
 	fmt.Printf("  Total: %s %5.1f%% (%d/%d)\n", makeProgressBar(dashboardDone, dashboardTasks), totalPct, dashboardDone, dashboardTasks)
 
 	for _, phase := range phases {
@@ -2949,7 +3161,7 @@ func runDash(args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Println(styleSubHeader("Critical Path"))
+	fmt.Println(styleSubHeader("Critical Path:"))
 	if len(remainingOnPath) == 0 {
 		fmt.Println("  " + styleSuccess("✓ All critical path tasks complete"))
 	} else {
@@ -2974,7 +3186,7 @@ func runDash(args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Println(styleSubHeader("Status"))
+	fmt.Println(styleSubHeader("Status:"))
 	fmt.Printf("  %s: %d\n", styleWarning("In progress"), totalInProgress)
 	if totalBlocked > 0 {
 		fmt.Printf("  %s: %d\n", styleError("Blocked"), totalBlocked)
@@ -4353,7 +4565,7 @@ func runPreview(args []string) error {
 			}
 			criticalMarker := styleMuted(critical)
 			fmt.Printf("%s%s %s: %s\n", criticalMarker, styleSuccess(item.ID), criticalMarker, item.Title)
-			fmt.Printf("  %s: %s | %s: %.2fh | %s / %s\n", styleSubHeader("File"), styleMuted(path), styleSubHeader("Estimate"), item.EstimateHours, item.Complexity)
+			fmt.Printf("  %s: %s | %s: %.2fh | %s / %s\n", styleSubHeader("File"), styleMuted(path), styleSubHeader("Estimate"), item.EstimateHours, styleMuted(item.Priority), styleMuted(item.Complexity))
 			if len(item.GrabAdditional) > 0 {
 				fmt.Printf("  %s %s\n", styleMuted("If you run `backlog grab`, you would also get:"), styleMuted(strings.Join(item.GrabAdditional, ", ")))
 			} else {
@@ -5804,7 +6016,7 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 		return nil
 	}
 	fmt.Printf("%s: %s - %s\n", styleSuccess("Task"), styleSuccess(task.ID), task.Title)
-	fmt.Printf("%s\n", styleSubHeader("Frontmatter"))
+	fmt.Printf("%s\n", styleSubHeader("Frontmatter:"))
 	if len(frontmatter) > 0 {
 		out, err := yaml.Marshal(frontmatter)
 		if err != nil {
@@ -7152,7 +7364,7 @@ func runDone(args []string) error {
 }
 
 func printCommandNotImplemented(name string) error {
-	fmt.Printf("%s %s\n", styleWarning("Command is not implemented yet:"), styleMuted(name))
+	fmt.Printf("%s command is not implemented yet\n", name)
 	return nil
 }
 
