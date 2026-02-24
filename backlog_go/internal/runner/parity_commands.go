@@ -175,21 +175,50 @@ func runSearch(args []string) error {
 	}
 
 	if len(matches) == 0 {
-		fmt.Printf("No tasks found matching '%s'\n", pattern)
+		fmt.Printf("%s\n", styleWarning(fmt.Sprintf("No tasks found matching '%s'", pattern)))
 		return nil
 	}
-	fmt.Printf("Found %d result(s) for %q:\n", len(matches), pattern)
-	for i, task := range matches {
-		if i >= limit {
-			fmt.Printf("... and %d more\n", len(matches)-limit)
-			break
-		}
-		crit := " "
-		if containsString(criticalPath, task.ID) {
-			crit = "*"
-		}
-		fmt.Printf("%s %s %s [%s]\n", crit, task.ID, task.Title, task.Status)
+
+	displayMatches := matches
+	if len(matches) > limit {
+		displayMatches = matches[:limit]
 	}
+	byPhase := map[string][]models.Task{}
+	phaseOrder := []string{}
+	for _, task := range displayMatches {
+		phaseLabel := task.PhaseID
+		if strings.TrimSpace(phaseLabel) == "" {
+			phaseLabel = "Unknown"
+		} else if phase := tree.FindPhase(task.PhaseID); phase != nil && phase.Name != "" {
+			phaseLabel = fmt.Sprintf("%s (%s)", task.PhaseID, phase.Name)
+		}
+		if _, ok := byPhase[phaseLabel]; !ok {
+			phaseOrder = append(phaseOrder, phaseLabel)
+		}
+		byPhase[phaseLabel] = append(byPhase[phaseLabel], task)
+	}
+	sort.Strings(phaseOrder)
+
+	fmt.Printf("%s\n", styleHeader(fmt.Sprintf("Found %d result(s) for %q:", len(matches), pattern)))
+	for _, phaseLabel := range phaseOrder {
+		tasks := byPhase[phaseLabel]
+		if len(tasks) == 0 {
+			continue
+		}
+		fmt.Println(styleSubHeader(phaseLabel))
+		for _, task := range tasks {
+			fmt.Println(formatTaskSummary(task, criticalPath))
+			for _, detail := range formatTaskDetails(task) {
+				fmt.Printf("    %s\n", detail)
+			}
+		}
+		fmt.Println()
+	}
+
+	if len(matches) > limit {
+		fmt.Printf("%s\n", styleMuted(fmt.Sprintf("... and %d more results (use --limit to show more)", len(matches)-limit)))
+	}
+	fmt.Printf("%s\n", styleMuted("★ = On critical path"))
 	return nil
 }
 
@@ -246,13 +275,13 @@ func runBlockers(args []string) error {
 	}
 
 	if len(blockedMarked) == 0 && len(pendingBlocked) == 0 {
-		fmt.Println("No blocked tasks!")
+		fmt.Println(styleSuccess("✓ No blocked tasks!"))
 		return nil
 	}
 
-	fmt.Printf("%d task(s) marked as BLOCKED\n", len(blockedMarked))
-	fmt.Printf("%d task(s) waiting on dependencies\n", len(pendingBlocked))
-	fmt.Println("Blocking Chains:")
+	fmt.Printf("%s\n", styleError(fmt.Sprintf("%d task(s) marked as BLOCKED", len(blockedMarked))))
+	fmt.Printf("%s\n", styleWarning(fmt.Sprintf("%d task(s) waiting on dependencies", len(pendingBlocked))))
+	fmt.Println(styleSubHeader("Blocking Chains:"))
 
 	limit := 10
 	if parseFlag(args, "--deep") {
@@ -260,25 +289,21 @@ func runBlockers(args []string) error {
 	}
 	for i, id := range rootBlockers {
 		if i >= limit {
-			fmt.Printf("... and %d more blocking chains (use --deep to see all)\n", len(rootBlockers)-limit)
+			fmt.Printf("%s %d more blocking chains (use --deep to see all)\n", styleMuted("... and"), len(rootBlockers)-limit)
 			break
 		}
 		task := findTask(tree, id)
 		if task == nil {
 			continue
 		}
-		crit := ""
-		if containsString(criticalPath, id) {
-			crit = " CRITICAL"
+		fmt.Println(formatTaskSummary(*task, criticalPath))
+		for _, detail := range formatTaskDetails(*task) {
+			fmt.Printf("    %s\n", detail)
 		}
-		owner := "UNCLAIMED"
-		if strings.TrimSpace(task.ClaimedBy) != "" {
-			owner = "@" + task.ClaimedBy
-		}
-		fmt.Printf("%s %s%s %s\n", task.ID, task.Status, crit, owner)
 		if parseFlag(args, "--suggest") && task.Status == models.StatusPending && strings.TrimSpace(task.ClaimedBy) == "" {
-			fmt.Printf("  suggest: backlog grab %s\n", task.ID)
+			fmt.Printf("  %s backlog grab %s\n", styleMuted("suggest:"), styleSuccess(task.ID))
 		}
+		fmt.Println()
 	}
 	return nil
 }
@@ -320,37 +345,42 @@ func runWhy(args []string) error {
 		return nil
 	}
 
-	fmt.Printf("%s - %s\n", report.TaskID, report.TaskTitle)
-	fmt.Printf("Status: %s\n", report.Status)
-	fmt.Printf("On critical path: %t\n", report.OnCriticalPath)
+	fmt.Printf("%s - %s\n", styleHeader(fmt.Sprintf("%s - %s", report.TaskID, report.TaskTitle)))
+	fmt.Printf("%s %s\n", styleSubHeader("Status"), styleStatusText(report.Status))
+	fmt.Printf("%s %s\n", styleSubHeader("On critical path"), styleMuted(fmt.Sprintf("%t", report.OnCriticalPath)))
 	if report.OnCriticalPath {
-		fmt.Printf("Critical path index: %d\n", report.CriticalPathIndex+1)
+		fmt.Printf("%s %d\n", styleSubHeader("Critical path index"), styleMuted(fmt.Sprintf("%d", report.CriticalPathIndex+1)))
 	}
 	if len(report.ExplicitDependencies) > 0 {
-		fmt.Println("Explicit dependencies:")
+		fmt.Println(styleSubHeader("Explicit dependencies:"))
 		for _, dep := range report.ExplicitDependencies {
 			if !dep.Found {
-				fmt.Printf("  - %s (missing)\n", dep.ID)
+				fmt.Printf("  %s %s (%s)\n", styleError("?"), styleCritical(dep.ID), styleError("not found"))
 				continue
 			}
 			marker := "✗"
 			if dep.Satisfied {
-				marker = "✓"
+				marker = styleSuccess("✓")
+			} else {
+				marker = styleError("✗")
 			}
-			fmt.Printf("  - %s %s (%s)\n", marker, dep.ID, dep.Status)
+			fmt.Printf("  %s %s (%s)\n", marker, styleSuccess(dep.ID), styleStatusText(string(dep.Status)))
 		}
 	}
 	if report.ImplicitDependency != nil {
 		marker := "✗"
 		if report.ImplicitDependency.Satisfied {
-			marker = "✓"
+			marker = styleSuccess("✓")
+		} else {
+			marker = styleError("✗")
 		}
-		fmt.Printf("Implicit dependency: %s %s (%s)\n", marker, report.ImplicitDependency.ID, report.ImplicitDependency.Status)
+		fmt.Println(styleSubHeader("Implicit dependency:"))
+		fmt.Printf("  %s %s (%s)\n", marker, styleSuccess(report.ImplicitDependency.ID), styleStatusText(string(report.ImplicitDependency.Status)))
 	}
 	if report.CanStart {
-		fmt.Println("Task can be started.")
+		fmt.Println(styleSuccess("Task can be started."))
 	} else {
-		fmt.Println("Task is blocked on dependencies.")
+		fmt.Println(styleError("Task is blocked on dependencies."))
 	}
 	return nil
 }
@@ -397,7 +427,7 @@ func runTimeline(args []string) error {
 		filtered = append(filtered, task)
 	}
 	if len(filtered) == 0 {
-		fmt.Println("No tasks to display.")
+		fmt.Println(styleWarning("No tasks to display."))
 		return nil
 	}
 
@@ -432,20 +462,24 @@ func runTimeline(args []string) error {
 		return nil
 	}
 
-	fmt.Println("Project Timeline")
+	fmt.Printf("\n%s (%s)\n", styleHeader("Project Timeline"), styleMuted("grouped by "+groupBy))
+	if scope != "" {
+		fmt.Printf("%s %s\n", styleSubHeader("Scope:"), styleSuccess(scope))
+	}
+	fmt.Printf("%s\n\n", styleMuted("Legend: ★ critical path, status icon indicates task state"))
 	for _, key := range order {
-		fmt.Println(key)
+		fmt.Printf("%s (%d)\n", styleSubHeader(key), len(groups[key]))
 		items := groups[key]
 		sort.Slice(items, func(i, j int) bool {
 			return items[i].ID < items[j].ID
 		})
 		for _, task := range items {
-			crit := " "
-			if containsString(criticalPath, task.ID) {
-				crit = "*"
+			fmt.Println(formatTaskSummary(task, criticalPath))
+			for _, detail := range formatTaskDetails(task) {
+				fmt.Printf("    %s\n", detail)
 			}
-			fmt.Printf("  %s %s %s %s\n", crit, task.ID, task.Status, task.Title)
 		}
+		fmt.Println("")
 	}
 	return nil
 }
@@ -471,8 +505,23 @@ func runReport(args []string) error {
 	case "estimate-accuracy", "ea":
 		return runReportEstimateAccuracy(rest)
 	default:
-		return fmt.Errorf("unknown report subcommand: %s", subcommand)
+		return fmt.Errorf(reportSubcommandHelp(subcommand))
 	}
+}
+
+func reportSubcommandHelp(subcommand string) string {
+	base := []string{
+		fmt.Sprintf("unknown report subcommand: %s", subcommand),
+		"Valid report subcommands:",
+		"  progress (alias: p)",
+		"  velocity (alias: v)",
+		"  estimate-accuracy (alias: ea)",
+	}
+	trimmed := strings.ToLower(strings.TrimSpace(subcommand))
+	if trimmed == "t" || strings.HasPrefix(trimmed, "est") {
+		base = append(base, "Tip: Did you mean `backlog r p`, `backlog r v`, or `backlog r ea`?")
+	}
+	return strings.Join(base, "\n")
 }
 
 func runReportProgress(args []string) error {
@@ -488,6 +537,9 @@ func runReportProgress(args []string) error {
 		return err
 	}
 	asJSON := parseFlag(args, "--json") || strings.EqualFold(parseOption(args, "--format"), "json")
+	showAll := parseFlag(args, "--all")
+	byMilestone := parseFlag(args, "--by-milestone")
+	byEpic := parseFlag(args, "--by-epic")
 
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
@@ -679,12 +731,92 @@ func runReportProgress(args []string) error {
 		return nil
 	}
 
-	fmt.Printf("Overall: %d/%d tasks complete (%.1f%%)\n", payload.Overall.Done, payload.Overall.Total, payload.Overall.PercentComplete)
-	fmt.Printf("In progress: %d | Pending: %d | Blocked: %d\n", payload.Overall.InProgress, payload.Overall.Pending, payload.Overall.Blocked)
+	fmt.Printf("\n%s\n\n", styleHeader("Progress Report"))
+	fmt.Printf("%s: %s %5.1f%%\n", styleSubHeader("Overall"), styleProgressBar(payload.Overall.Done, payload.Overall.Total), payload.Overall.PercentComplete)
+	fmt.Printf("  %s: %d | %s: %d | %s: %d | %s: %d\n",
+		styleSuccess("Done"), payload.Overall.Done,
+		styleWarning("In Progress"), payload.Overall.InProgress,
+		styleSubHeader("Pending"), payload.Overall.Pending,
+		styleError("Blocked"), payload.Overall.Blocked,
+	)
+	fmt.Printf("  %s: %d tasks | ~%.1fh remaining\n", styleSubHeader("Total"), payload.Overall.Total, payload.Overall.RemainingHours)
+
+	fmt.Printf("\n%s\n", styleSubHeader("Auxiliary"))
+	fmt.Printf("  %s Bugs: %s %5.1f%% (%d/%d)  ~%.1fh remaining\n",
+		auxStatusMarker(payload.Auxiliary.Bugs.Total, payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.InProgress),
+		styleProgressBar(payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.Total),
+		percent(payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.Total),
+		payload.Auxiliary.Bugs.Done,
+		payload.Auxiliary.Bugs.Total,
+		payload.Auxiliary.Bugs.RemainingHours,
+	)
+	fmt.Printf("  %s Ideas: %s %5.1f%% (%d/%d)\n",
+		auxStatusMarker(payload.Auxiliary.Ideas.Total, payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.InProgress),
+		styleProgressBar(payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.Total),
+		percent(payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.Total),
+		payload.Auxiliary.Ideas.Done,
+		payload.Auxiliary.Ideas.Total,
+	)
+
+	fmt.Printf("\n%s\n", styleSubHeader("Phases"))
+	visible := 0
 	for _, phase := range payload.Phases {
-		fmt.Printf("%s: %d/%d (%.1f%%)\n", phase.ID, phase.Done, phase.Total, phase.PercentDone)
+		if !showAll && phase.Total > 0 && phase.Done == phase.Total {
+			continue
+		}
+		visible++
+		fmt.Printf("  %s %s: %s %5.1f%% (%d/%d)\n",
+			auxStatusMarker(phase.Total, phase.Done, phase.InProgress),
+			styleSuccess(phase.ID),
+			styleProgressBar(phase.Done, phase.Total),
+			phase.PercentDone,
+			phase.Done,
+			phase.Total,
+		)
+		if byMilestone || byEpic {
+			for _, milestone := range phase.Milestones {
+				if !showAll && milestone.Total > 0 && milestone.Done == milestone.Total {
+					continue
+				}
+				fmt.Printf("    %s %s: %4.1f%% (%d/%d)\n",
+					auxStatusMarker(milestone.Total, milestone.Done, milestone.InProgress),
+					styleSubHeader(milestone.ID),
+					milestone.Percent,
+					milestone.Done,
+					milestone.Total,
+				)
+				if byEpic {
+					for _, epic := range milestone.Epics {
+						if !showAll && epic.Total > 0 && epic.Done == epic.Total {
+							continue
+						}
+						fmt.Printf("      %s %s: %4.1f%% (%d/%d)\n",
+							auxStatusMarker(epic.Total, epic.Done, epic.InProgress),
+							styleMuted(epic.ID),
+							epic.Percent,
+							epic.Done,
+							epic.Total,
+						)
+					}
+				}
+			}
+		}
 	}
+	if visible == 0 {
+		fmt.Println(styleMuted("  All phases complete. Use --all to show completed phases."))
+	}
+	fmt.Println("")
 	return nil
+}
+
+func auxStatusMarker(total, done, inProgress int) string {
+	if total > 0 && done == total {
+		return styleSuccess("✓")
+	}
+	if inProgress > 0 {
+		return styleWarning("→")
+	}
+	return styleMuted("·")
 }
 
 func runReportVelocity(args []string) error {
@@ -742,11 +874,12 @@ func runReportVelocity(args []string) error {
 		})
 	}
 
+	averagePerDay := float64(completed) / float64(max(days, 1))
 	payload := map[string]any{
 		"days":            days,
 		"completed_tasks": completed,
 		"total_hours":     totalHours,
-		"average_per_day": float64(completed) / float64(max(days, 1)),
+		"average_per_day": averagePerDay,
 		"daily_data":      dailyData,
 	}
 
@@ -758,7 +891,37 @@ func runReportVelocity(args []string) error {
 		fmt.Println(string(raw))
 		return nil
 	}
-	fmt.Printf("Velocity (%d days): %d tasks complete (%.1f/day)\n", days, completed, payload["average_per_day"].(float64))
+	fmt.Printf("\n%s\n\n", styleHeader(fmt.Sprintf("Velocity Report (%d days)", days)))
+	fmt.Printf("%s: %d completed task(s)\n", styleSubHeader("Completed"), completed)
+	fmt.Printf("%s: %.1f/day\n", styleSubHeader("Average Throughput"), averagePerDay)
+	fmt.Printf("%s: %.1fh\n", styleSubHeader("Estimated Hours Completed"), totalHours)
+	if len(dailyData) == 0 {
+		fmt.Printf("%s\n\n", styleMuted("No completions in this window."))
+		return nil
+	}
+	fmt.Printf("\n%s\n", styleSubHeader("Daily Breakdown"))
+	maxCount := 0
+	for _, row := range dailyData {
+		count := row["completed_tasks"].(int)
+		if count > maxCount {
+			maxCount = count
+		}
+	}
+	for _, row := range dailyData {
+		day := row["date"].(string)
+		count := row["completed_tasks"].(int)
+		hours := row["hours"].(float64)
+		width := 0
+		if maxCount > 0 {
+			width = int((float64(count) / float64(maxCount)) * 20.0)
+		}
+		if width < 1 && count > 0 {
+			width = 1
+		}
+		bar := styleSuccess(strings.Repeat("█", width)) + styleMuted(strings.Repeat("░", max(0, 20-width)))
+		fmt.Printf("  %s %s %2d task(s), %.1fh\n", styleMuted(day), bar, count, hours)
+	}
+	fmt.Println("")
 	return nil
 }
 
@@ -776,7 +939,15 @@ func runReportEstimateAccuracy(args []string) error {
 	if err != nil {
 		return err
 	}
-	rows := []map[string]any{}
+	type estimateRow struct {
+		ID            string
+		Title         string
+		EstimateHours float64
+		ActualHours   float64
+		VariancePct   float64
+	}
+	rows := []estimateRow{}
+	rowsJSON := []map[string]any{}
 	varianceTotal := 0.0
 	for _, task := range findAllTasksInTree(tree) {
 		if task.Status != models.StatusDone || task.DurationMinutes == nil || task.EstimateHours <= 0 {
@@ -785,7 +956,14 @@ func runReportEstimateAccuracy(args []string) error {
 		actualHours := *task.DurationMinutes / 60.0
 		variancePct := ((actualHours - task.EstimateHours) / task.EstimateHours) * 100.0
 		varianceTotal += variancePct
-		rows = append(rows, map[string]any{
+		rows = append(rows, estimateRow{
+			ID:            task.ID,
+			Title:         task.Title,
+			EstimateHours: task.EstimateHours,
+			ActualHours:   actualHours,
+			VariancePct:   variancePct,
+		})
+		rowsJSON = append(rowsJSON, map[string]any{
 			"id":               task.ID,
 			"title":            task.Title,
 			"estimate_hours":   task.EstimateHours,
@@ -800,7 +978,7 @@ func runReportEstimateAccuracy(args []string) error {
 	payload := map[string]any{
 		"tasks_analyzed":       len(rows),
 		"average_variance_pct": avgVariance,
-		"tasks":                rows,
+		"tasks":                rowsJSON,
 	}
 	if asJSON {
 		raw, err := json.MarshalIndent(payload, "", "  ")
@@ -811,10 +989,43 @@ func runReportEstimateAccuracy(args []string) error {
 		return nil
 	}
 	if len(rows) == 0 {
-		fmt.Println("No completed tasks with duration data found.")
+		fmt.Println(styleWarning("No completed tasks with duration data found."))
 		return nil
 	}
-	fmt.Printf("Estimate accuracy: %d task(s), avg variance %.1f%%\n", len(rows), avgVariance)
+	sort.Slice(rows, func(i, j int) bool {
+		left := rows[i].VariancePct
+		if left < 0 {
+			left = -left
+		}
+		right := rows[j].VariancePct
+		if right < 0 {
+			right = -right
+		}
+		return left > right
+	})
+
+	fmt.Printf("\n%s\n\n", styleHeader("Estimate Accuracy Report"))
+	fmt.Printf("%s: %d completed task(s) with duration data\n", styleSubHeader("Analyzed"), len(rows))
+	fmt.Printf("%s: %.1f%%\n", styleSubHeader("Average Variance"), avgVariance)
+	if avgVariance > 20 {
+		fmt.Printf("%s\n", styleWarning("Estimates trend low; consider adding buffer."))
+	} else if avgVariance < -20 {
+		fmt.Printf("%s\n", styleWarning("Estimates trend high; consider tightening estimates."))
+	} else {
+		fmt.Printf("%s\n", styleSuccess("Estimate accuracy is within a healthy range."))
+	}
+	fmt.Printf("\n%s\n", styleSubHeader("Largest Variances"))
+	limit := min(5, len(rows))
+	for i := 0; i < limit; i++ {
+		row := rows[i]
+		varianceStyle := styleWarning
+		if row.VariancePct > 0 {
+			varianceStyle = styleError
+		}
+		fmt.Printf("  %s %s\n", styleSuccess(row.ID), row.Title)
+		fmt.Printf("    est %.1fh -> actual %.1fh (%s)\n", row.EstimateHours, row.ActualHours, varianceStyle(fmt.Sprintf("%+.1f%%", row.VariancePct)))
+	}
+	fmt.Println("")
 	return nil
 }
 
@@ -823,7 +1034,7 @@ func runData(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		fmt.Println("Usage: backlog data <summary|export> [options]")
+		fmt.Println(styleMuted("Usage: backlog data <summary|export> [options]"))
 		return nil
 	}
 	sub := strings.TrimSpace(args[0])
@@ -892,8 +1103,8 @@ func runDataSummary(args []string) error {
 		fmt.Println(string(raw))
 		return nil
 	}
-	fmt.Printf("%s\n", tree.Project)
-	fmt.Printf("Overall: %d/%d tasks (%.1f%%)\n", counts.Done, counts.Total, percent(counts.Done, counts.Total))
+	fmt.Printf("%s\n", styleSubHeader(tree.Project))
+	fmt.Printf("%s: %d/%d tasks (%.1f%%)\n", styleSuccess("Overall"), counts.Done, counts.Total, percent(counts.Done, counts.Total))
 	return nil
 }
 
@@ -1046,7 +1257,7 @@ func runDataExport(args []string) error {
 		if err := os.WriteFile(output, rendered, 0o644); err != nil {
 			return err
 		}
-		fmt.Printf("Exported to %s\n", output)
+		fmt.Printf("%s: %s\n", styleSuccess("Exported to"), output)
 		return nil
 	}
 	fmt.Println(string(rendered))
@@ -1102,9 +1313,9 @@ func runSchema(args []string) error {
 		fmt.Println(string(raw))
 		return nil
 	}
-	fmt.Println("Schema")
+	fmt.Println(styleSubHeader("Schema"))
 	for _, entry := range spec["files"].([]map[string]any) {
-		fmt.Printf("- %s: %s\n", entry["name"], entry["path_pattern"])
+		fmt.Printf("- %s: %s\n", styleMuted(fmt.Sprintf("%v", entry["name"])), styleMuted(fmt.Sprintf("%v", entry["path_pattern"])))
 	}
 	return nil
 }
@@ -1114,7 +1325,7 @@ func runSession(args []string) error {
 		return err
 	}
 	if len(args) == 0 || args[0] == "--help" {
-		fmt.Println("Usage: backlog session <start|heartbeat|list|end|clean> [options]")
+		fmt.Println(styleMuted("Usage: backlog session <start|heartbeat|list|end|clean> [options]"))
 		return nil
 	}
 
@@ -1153,12 +1364,12 @@ func runSession(args []string) error {
 		if err := taskcontext.SaveSessions(dataDir, sessions); err != nil {
 			return err
 		}
-		fmt.Println("✓ Session started")
-		fmt.Printf("  Agent: %s\n", agent)
+		fmt.Println(styleSuccess("✓ Session started"))
+		fmt.Printf("  %s %s\n", styleSubHeader("Agent:"), styleMuted(agent))
 		if taskID != "" {
-			fmt.Printf("  Task:  %s\n", taskID)
+			fmt.Printf("  %s  %s\n", styleSubHeader("Task:"), styleMuted(taskID))
 		}
-		fmt.Printf("  Time:  %s\n", now)
+		fmt.Printf("  %s  %s\n", styleSubHeader("Time:"), styleMuted(now))
 		return nil
 
 	case "heartbeat":
@@ -1169,7 +1380,7 @@ func runSession(args []string) error {
 		}
 		session, ok := sessions[agent]
 		if !ok {
-			fmt.Printf("Warning: No active session for '%s'\n", agent)
+			fmt.Printf("%s %s\n", styleWarning("Warning:"), styleMuted(fmt.Sprintf("No active session for '%s'", agent)))
 			return nil
 		}
 		session.LastHeartbeat = now
@@ -1180,9 +1391,9 @@ func runSession(args []string) error {
 		if err := taskcontext.SaveSessions(dataDir, sessions); err != nil {
 			return err
 		}
-		fmt.Printf("✓ Heartbeat updated for %s\n", agent)
+		fmt.Printf("%s %s\n", styleSuccess("✓ Heartbeat updated for"), styleMuted(agent))
 		if progress != "" {
-			fmt.Printf("  Progress: %s\n", progress)
+			fmt.Printf("  %s %s\n", styleSubHeader("Progress:"), styleMuted(progress))
 		}
 		return nil
 
@@ -1196,24 +1407,24 @@ func runSession(args []string) error {
 			return errors.New("session end requires --agent")
 		}
 		if _, ok := sessions[agent]; !ok {
-			fmt.Printf("No active session found for '%s'\n", agent)
+			fmt.Printf("%s %s\n", styleWarning("No active session found for"), styleMuted(agent))
 			return nil
 		}
 		delete(sessions, agent)
 		if err := taskcontext.SaveSessions(dataDir, sessions); err != nil {
 			return err
 		}
-		fmt.Printf("✓ Session ended for %s\n", agent)
-		fmt.Printf("  Status: %s\n", status)
+		fmt.Printf("%s %s\n", styleSuccess("✓ Session ended for"), styleMuted(agent))
+		fmt.Printf("  %s %s\n", styleSubHeader("Status:"), styleMuted(status))
 		return nil
 
 	case "list":
 		onlyStale := parseFlag(rest, "--stale")
 		if len(sessions) == 0 {
 			if onlyStale {
-				fmt.Println("✓ No stale sessions")
+				fmt.Println(styleSuccess("✓ No stale sessions"))
 			} else {
-				fmt.Println("No active sessions")
+				fmt.Println(styleWarning("No active sessions"))
 			}
 			return nil
 		}
@@ -1233,19 +1444,19 @@ func runSession(args []string) error {
 				}
 			}
 			if len(stale) == 0 {
-				fmt.Println("✓ No stale sessions")
+				fmt.Println(styleSuccess("✓ No stale sessions"))
 				return nil
 			}
-			fmt.Printf("Stale Sessions (no heartbeat > %dm):\n", timeoutMinutes)
+			fmt.Printf("%s (no heartbeat > %dm):\n", styleWarning("Stale Sessions"), timeoutMinutes)
 			for _, agent := range stale {
 				session := sessions[agent]
-				fmt.Printf("  %s\n", agent)
+				fmt.Printf("  %s\n", styleMuted(agent))
 				if session.TaskID != "" {
-					fmt.Printf("    Task: %s\n", session.TaskID)
+					fmt.Printf("    %s %s\n", styleSubHeader("Task:"), styleMuted(session.TaskID))
 				}
-				fmt.Printf("    Last heartbeat: %dm ago\n", ageSinceRFC3339(session.LastHeartbeat))
+				fmt.Printf("    %s %dm ago\n", styleSubHeader("Last heartbeat:"), styleSuccess(ageSinceRFC3339(session.LastHeartbeat)))
 				if strings.TrimSpace(session.Progress) != "" {
-					fmt.Printf("    Last progress: %s\n", session.Progress)
+					fmt.Printf("    %s %s\n", styleSubHeader("Last progress:"), styleMuted(session.Progress))
 				}
 			}
 			return nil
@@ -1257,7 +1468,7 @@ func runSession(args []string) error {
 			if taskLabel == "" {
 				taskLabel = "-"
 			}
-			fmt.Printf("%s task=%s last_hb=%dm progress=%s\n", agent, taskLabel, ageSinceRFC3339(session.LastHeartbeat), defaultDash(session.Progress))
+			fmt.Printf("%s task=%s last_hb=%dm progress=%s\n", styleMuted(agent), styleSuccess(taskLabel), ageSinceRFC3339(session.LastHeartbeat), styleMuted(defaultDash(session.Progress)))
 		}
 		return nil
 
@@ -1274,12 +1485,12 @@ func runSession(args []string) error {
 			return err
 		}
 		if len(removed) == 0 {
-			fmt.Println("✓ No stale sessions to clean")
+			fmt.Println(styleSuccess("✓ No stale sessions to clean"))
 			return nil
 		}
-		fmt.Printf("✓ Removed %d stale session(s):\n", len(removed))
+		fmt.Printf("%s %d stale session(s):\n", styleSuccess("✓ Removed"), len(removed))
 		for _, agent := range removed {
-			fmt.Printf("  - %s\n", agent)
+			fmt.Printf("  - %s\n", styleMuted(agent))
 		}
 		return nil
 	}
@@ -1384,26 +1595,26 @@ func runCheck(args []string) error {
 		}
 		fmt.Println(string(raw))
 	} else if len(report.Errors) == 0 && len(report.Warnings) == 0 {
-		fmt.Println("Consistency check passed with no issues.")
+		fmt.Println(styleSuccess("Consistency check passed with no issues."))
 	} else {
-		fmt.Printf("Consistency check results: %d error(s), %d warning(s)\n", report.Summary.Errors, report.Summary.Warnings)
+		fmt.Printf("%s: %d error(s), %d warning(s)\n", styleWarning("Consistency check results"), report.Summary.Errors, report.Summary.Warnings)
 		if len(report.Errors) > 0 {
-			fmt.Println("Errors:")
+			fmt.Println(styleError("Errors:"))
 			for _, issue := range report.Errors {
 				if issue.Location != "" {
-					fmt.Printf("- %s: %s (%s)\n", issue.Code, issue.Message, issue.Location)
+					fmt.Printf("- %s: %s (%s)\n", styleError(issue.Code), styleMuted(issue.Message), styleMuted(issue.Location))
 				} else {
-					fmt.Printf("- %s: %s\n", issue.Code, issue.Message)
+					fmt.Printf("- %s: %s\n", styleError(issue.Code), styleMuted(issue.Message))
 				}
 			}
 		}
 		if len(report.Warnings) > 0 {
-			fmt.Println("Warnings:")
+			fmt.Println(styleWarning("Warnings:"))
 			for _, issue := range report.Warnings {
 				if issue.Location != "" {
-					fmt.Printf("- %s: %s (%s)\n", issue.Code, issue.Message, issue.Location)
+					fmt.Printf("- %s: %s (%s)\n", styleWarning(issue.Code), styleMuted(issue.Message), styleMuted(issue.Location))
 				} else {
-					fmt.Printf("- %s: %s\n", issue.Code, issue.Message)
+					fmt.Printf("- %s: %s\n", styleWarning(issue.Code), styleMuted(issue.Message))
 				}
 			}
 		}
@@ -1464,7 +1675,7 @@ func runSkip(args []string) error {
 		task.ClaimedAt = nil
 		task.Reason = ""
 	} else {
-		fmt.Printf("Task is not in progress: %s\n", task.Status)
+		fmt.Printf("%s %s\n", styleError("Task is not in progress:"), styleMuted(string(task.Status)))
 		return nil
 	}
 	if err := saveTaskState(*task, tree); err != nil {
@@ -1473,10 +1684,10 @@ func runSkip(args []string) error {
 	if err := taskcontext.ClearContext(dataDir); err != nil {
 		return err
 	}
-	fmt.Printf("Skipped: %s - %s\n", task.ID, task.Title)
+	fmt.Printf("%s %s - %s\n", styleWarning("Skipped:"), styleSuccess(task.ID), styleSuccess(task.Title))
 
 	if parseFlag(args, "--no-grab") {
-		fmt.Println("Tip: Run `backlog grab` to claim the next available task.")
+		fmt.Println(styleWarning("Tip: Run `backlog grab` to claim the next available task."))
 		return nil
 	}
 
@@ -1490,7 +1701,7 @@ func runSkip(args []string) error {
 		return err
 	}
 	if strings.TrimSpace(nextAvailable) == "" || nextAvailable == task.ID {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleWarning("No available tasks found."))
 		return nil
 	}
 	agent := strings.TrimSpace(parseOption(args, "--agent"))
@@ -1583,10 +1794,10 @@ func runHandoff(args []string) error {
 	if err := taskcontext.SetCurrentTask(dataDir, task.ID, toAgent); err != nil {
 		return err
 	}
-	fmt.Printf("Handed off: %s - %s\n", task.ID, task.Title)
-	fmt.Printf("To: %s\n", toAgent)
+	fmt.Printf("%s %s - %s\n", styleWarning("Handed off:"), styleSuccess(task.ID), styleSuccess(task.Title))
+	fmt.Printf("  %s %s\n", styleSubHeader("To:"), styleMuted(toAgent))
 	if notes != "" {
-		fmt.Printf("Notes: %s\n", notes)
+		fmt.Printf("  %s %s\n", styleSubHeader("Notes:"), styleMuted(notes))
 	}
 	return nil
 }
@@ -1628,7 +1839,7 @@ func runUnclaimStale(args []string) error {
 	}
 
 	if len(stale) == 0 {
-		fmt.Println("No stale claimed tasks found.")
+		fmt.Println(styleWarning("No stale claimed tasks found."))
 		return nil
 	}
 	sort.Slice(stale, func(i, j int) bool {
@@ -1636,9 +1847,9 @@ func runUnclaimStale(args []string) error {
 	})
 
 	if dryRun {
-		fmt.Printf("Would unclaim %d stale task(s):\n", len(stale))
+		fmt.Printf("%s %d stale task(s):\n", styleWarning("Would unclaim"), len(stale))
 		for _, task := range stale {
-			fmt.Printf("  %s (%s)\n", task.ID, defaultDash(task.ClaimedBy))
+			fmt.Printf("  %s (%s)\n", styleMuted(task.ID), styleMuted(defaultDash(task.ClaimedBy)))
 		}
 		return nil
 	}
@@ -1653,7 +1864,7 @@ func runUnclaimStale(args []string) error {
 			return err
 		}
 	}
-	fmt.Printf("Unclaimed %d stale task(s)\n", len(stale))
+	fmt.Printf("%s %d stale task(s)\n", styleWarning("Unclaimed"), len(stale))
 	return nil
 }
 

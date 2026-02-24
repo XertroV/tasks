@@ -305,18 +305,23 @@ func Run(rawArgs ...string) error {
 	}
 	args := make([]string, len(rawArgs))
 	copy(args, rawArgs)
+	filtered, err := parseCommandColorFlags(args)
+	if err != nil {
+		return err
+	}
+	args = filtered
 
 	root := cmd.NewRootCommand()
 	if len(args) == 0 {
-		fmt.Println(root.Usage())
+		fmt.Println(styleHeader(root.Usage()))
 		return nil
 	}
 	if len(args) == 1 && (args[0] == "-h" || args[0] == "--help" || args[0] == commands.CmdHelp) {
-		fmt.Println(root.Usage())
+		fmt.Println(styleHeader(root.Usage()))
 		return nil
 	}
 	if len(args) == 1 && (args[0] == "-v" || args[0] == "--version" || args[0] == commands.CmdVersion) {
-		fmt.Printf("%s version %s\n", root.Name(), root.Version())
+		fmt.Printf("%s version %s\n", styleSuccess(root.Name()), root.Version())
 		return nil
 	}
 
@@ -469,7 +474,7 @@ phases: []
 	if err := os.WriteFile(indexPath, []byte(content), 0o644); err != nil {
 		return fmt.Errorf("failed to write %s: %w", indexPath, err)
 	}
-	fmt.Printf("Initialized project %q in %s/\n", opts.project, filepath.Dir(indexPath))
+	fmt.Printf("%s %s in %s/\n", styleSuccess("Initialized project"), styleMuted(fmt.Sprintf("%q", opts.project)), filepath.Dir(indexPath))
 	return nil
 }
 
@@ -594,19 +599,29 @@ func runBenchmark(args []string) error {
 		return nil
 	}
 
-	fmt.Println("\nTask Tree Benchmark")
-	fmt.Printf("Overall parse time: %s\n", formatMs(benchmark.OverallMs))
-	fmt.Printf("Parse mode: %s\n", mode)
-	fmt.Printf("Task body parsing: %s\n", boolLabel(effectiveParseTaskBody, "enabled", "disabled"))
-	fmt.Printf("Index parse time: %s\n", formatMs(indexParseMs))
-	fmt.Printf("Task frontmatter parse time: %s\n", formatMs(taskFrontmatterParseMs))
-	fmt.Printf("Task body parse time: %s\n", formatMs(taskBodyParseMs))
-	fmt.Printf("Other parse time: %s\n", formatMs(otherParseMs))
-	fmt.Printf("Total files parsed: %d\n", totalFilesParsed)
-	fmt.Printf("Task files (leaves): %d (%d found, %d missing)\n", taskTotal, foundTaskFiles, missingTaskFiles)
-	fmt.Printf("Phases parsed: %d\n", benchmark.Counts["phases"])
-	fmt.Printf("Milestones parsed: %d\n", benchmark.Counts["milestones"])
-	fmt.Printf("Epics parsed: %d\n", benchmark.Counts["epics"])
+	fmt.Println(styleHeader("Task Tree Benchmark"))
+	parseBodyStatus := styleError("disabled")
+	if effectiveParseTaskBody {
+		parseBodyStatus = styleSuccess("enabled")
+	}
+	fmt.Printf("%s: %s\n", styleSubHeader("Overall parse time"), formatMs(benchmark.OverallMs))
+	fmt.Printf("%s: %s\n", styleSubHeader("Parse mode"), styleSuccess(mode))
+	fmt.Printf("%s: %s\n", styleSubHeader("Task body parsing"), parseBodyStatus)
+	fmt.Printf("%s: %s\n", styleSubHeader("Index parse time"), formatMs(indexParseMs))
+	fmt.Printf("%s: %s\n", styleSubHeader("Task frontmatter parse time"), formatMs(taskFrontmatterParseMs))
+	fmt.Printf("%s: %s\n", styleSubHeader("Task body parse time"), formatMs(taskBodyParseMs))
+	fmt.Printf("%s: %s\n", styleSubHeader("Other parse time"), formatMs(otherParseMs))
+	fmt.Printf("%s: %d\n", styleSubHeader("Total files parsed"), totalFilesParsed)
+	fmt.Printf(
+		"%s: %d (%s, %s)\n",
+		styleSubHeader("Task files (leaves)"),
+		taskTotal,
+		styleSuccess(fmt.Sprintf("%d found", foundTaskFiles)),
+		styleError(fmt.Sprintf("%d missing", missingTaskFiles)),
+	)
+	fmt.Printf("%s: %d\n", styleSubHeader("Phases parsed"), benchmark.Counts["phases"])
+	fmt.Printf("%s: %d\n", styleSubHeader("Milestones parsed"), benchmark.Counts["milestones"])
+	fmt.Printf("%s: %d\n", styleSubHeader("Epics parsed"), benchmark.Counts["epics"])
 	fmt.Println("")
 
 	fileTypes := make([]string, 0, len(benchmark.Files))
@@ -615,35 +630,35 @@ func runBenchmark(args []string) error {
 	}
 	sort.Strings(fileTypes)
 	if len(fileTypes) > 0 {
-		fmt.Println("Files by type:")
+		fmt.Println(styleSubHeader("Files by type:"))
 		for _, fileType := range fileTypes {
 			count := benchmark.Files[fileType]
 			if count == 0 {
 				continue
 			}
 			fileTypeMs := benchmark.FilesByTypeMs[fileType]
-			fmt.Printf("  %s: %d files (%s)\n", fileType, count, formatMs(fileTypeMs))
+			fmt.Printf("  %s: %d files (%s)\n", styleSubHeader(fileType), count, formatMs(fileTypeMs))
 		}
 	}
 
 	if len(slowestPhases) > 0 {
-		fmt.Println("\nSlowest phases:")
+		fmt.Println(styleSubHeader("\nSlowest phases"))
 		for _, item := range slowestPhases {
-			fmt.Printf("  %s (%s): %s\n", asString(item["id"]), asString(item["path"]), formatMs(timingMS(item)))
+			fmt.Printf("  %s (%s): %s\n", styleSuccess(asString(item["id"])), styleMuted(asString(item["path"])), styleMuted(formatMs(timingMS(item))))
 		}
 	}
 
 	if len(slowestMilestones) > 0 {
-		fmt.Println("\nSlowest milestones:")
+		fmt.Println(styleSubHeader("\nSlowest milestones"))
 		for _, item := range slowestMilestones {
-			fmt.Printf("  %s (%s): %s\n", asString(item["id"]), asString(item["path"]), formatMs(timingMS(item)))
+			fmt.Printf("  %s (%s): %s\n", styleSuccess(asString(item["id"])), styleMuted(asString(item["path"])), styleMuted(formatMs(timingMS(item))))
 		}
 	}
 
 	if len(slowestEpics) > 0 {
-		fmt.Println("\nSlowest epics:")
+		fmt.Println(styleSubHeader("\nSlowest epics"))
 		for _, item := range slowestEpics {
-			fmt.Printf("  %s (%s): %s\n", asString(item["id"]), asString(item["path"]), formatMs(timingMS(item)))
+			fmt.Printf("  %s (%s): %s\n", styleSuccess(asString(item["id"])), styleMuted(asString(item["path"])), styleMuted(formatMs(timingMS(item))))
 		}
 	}
 
@@ -878,9 +893,9 @@ func runAdd(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Created task: %s\n", parsedEpicID.FullID()+"."+nextTaskID)
+	fmt.Printf("%s %s\n", styleSuccess("Created task:"), styleSuccess(parsedEpicID.FullID()+"."+nextTaskID))
 	if body == "" {
-		fmt.Println("IMPORTANT: You MUST fill in the .todo file that was created.")
+		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
 	}
 	return nil
 }
@@ -1008,7 +1023,7 @@ func runAddEpic(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Created epic: %s\n", parsedMilestoneID.FullID()+"."+nextEpicID)
+	fmt.Printf("%s %s\n", styleSuccess("Created epic:"), styleSuccess(parsedMilestoneID.FullID()+"."+nextEpicID))
 	return nil
 }
 
@@ -1121,7 +1136,7 @@ func runAddMilestone(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Created milestone: %s\n", fmt.Sprintf("%s.%s", phase.ID, nextMilestoneID))
+	fmt.Printf("%s %s\n", styleSuccess("Created milestone:"), styleSuccess(fmt.Sprintf("%s.%s", phase.ID, nextMilestoneID)))
 	return nil
 }
 
@@ -1210,7 +1225,7 @@ func runAddPhase(args []string) error {
 	if err := writeYAMLMapFile(rootIndexPath, rootIndex); err != nil {
 		return err
 	}
-	fmt.Printf("Created phase: %s\n", nextPhaseID)
+	fmt.Printf("%s %s\n", styleSuccess("Created phase:"), styleSuccess(nextPhaseID))
 	return nil
 }
 
@@ -1293,7 +1308,7 @@ func runSet(args []string) error {
 	if err := saveTaskState(*task, tree); err != nil {
 		return err
 	}
-	fmt.Printf("Updated: %s\n", task.ID)
+	fmt.Printf("%s %s\n", styleSuccess("Updated:"), styleSuccess(task.ID))
 	return nil
 }
 
@@ -1340,7 +1355,7 @@ func runUpdate(args []string) error {
 	if err := saveTaskState(*task, tree); err != nil {
 		return err
 	}
-	fmt.Printf("Updated: %s -> %s\n", task.ID, task.Status)
+	fmt.Printf("%s %s -> %s\n", styleSuccess("Updated:"), styleSuccess(task.ID), styleStatusText(string(task.Status)))
 	return nil
 }
 
@@ -1366,8 +1381,8 @@ func runUndone(args []string) error {
 		if err := saveTaskState(*task, tree); err != nil {
 			return err
 		}
-		fmt.Printf("Marked not done: %s\n", task.ID)
-		fmt.Printf("Reset tasks: 1\n")
+		fmt.Printf("%s %s\n", styleWarning("Marked not done:"), styleSuccess(task.ID))
+		fmt.Printf("%s 1\n", styleWarning("Reset tasks:"))
 		return nil
 	}
 
@@ -1491,8 +1506,8 @@ func setPhaseNotDone(path models.TaskPath, tree models.TaskTree) error {
 			}
 		}
 	}
-	fmt.Printf("Marked not done: %s\n", path.FullID())
-	fmt.Printf("Reset tasks: %d\n", resetCount)
+	fmt.Printf("%s %s\n", styleWarning("Marked not done:"), styleSuccess(path.FullID()))
+	fmt.Printf("%s %d\n", styleWarning("Reset tasks:"), resetCount)
 	return nil
 }
 
@@ -1568,8 +1583,8 @@ func setMilestoneNotDone(path models.TaskPath, tree models.TaskTree) error {
 			resetCount++
 		}
 	}
-	fmt.Printf("Marked not done: %s\n", path.FullID())
-	fmt.Printf("Reset tasks: %d\n", resetCount)
+	fmt.Printf("%s %s\n", styleWarning("Marked not done:"), styleSuccess(path.FullID()))
+	fmt.Printf("%s %d\n", styleWarning("Reset tasks:"), resetCount)
 	return nil
 }
 
@@ -1629,8 +1644,8 @@ func setEpicNotDone(path models.TaskPath, tree models.TaskTree) error {
 			return err
 		}
 	}
-	fmt.Printf("Marked not done: %s\n", path.FullID())
-	fmt.Printf("Reset tasks: %d\n", len(epic.Tasks))
+	fmt.Printf("%s %s\n", styleWarning("Marked not done:"), styleSuccess(path.FullID()))
+	fmt.Printf("%s %d\n", styleWarning("Reset tasks:"), len(epic.Tasks))
 	return nil
 }
 
@@ -2072,27 +2087,27 @@ func runListCore(command string, args []string) error {
 			if strings.TrimSpace(scopeID) == "" {
 				scopeID = scope
 			}
-			fmt.Printf("Phase not found: %s\n", scopeID)
+			fmt.Printf("%s %s\n", styleError("Phase not found:"), styleMuted(scopeID))
 			return nil
 		}
 		if scopeType == "milestone" {
 			if strings.TrimSpace(scopeID) == "" {
 				scopeID = scope
 			}
-			fmt.Printf("Milestone not found: %s\n", scopeID)
+			fmt.Printf("%s %s\n", styleError("Milestone not found:"), styleMuted(scopeID))
 			return nil
 		}
 		if scopeType == "epic" {
 			if strings.TrimSpace(scopeID) == "" {
 				scopeID = scope
 			}
-			fmt.Printf("Epic not found: %s\n", scopeID)
+			fmt.Printf("%s %s\n", styleError("Epic not found:"), styleMuted(scopeID))
 			return nil
 		}
 		if strings.TrimSpace(scopeID) == "" {
 			scopeID = scope
 		}
-		fmt.Printf("No list nodes found for path query: %s\n", scopeID)
+		fmt.Printf("%s %s\n", styleWarning("No list nodes found for path query:"), styleMuted(scopeID))
 		return nil
 	}
 	if !scoped {
@@ -2156,7 +2171,7 @@ func runLsCore(args []string, dataDir string) error {
 
 	if scope == "" {
 		if len(tree.Phases) == 0 {
-			fmt.Println("No phases found.")
+			fmt.Println(styleWarning("No phases found."))
 			return nil
 		}
 		for _, phase := range tree.Phases {
@@ -2164,8 +2179,8 @@ func runLsCore(args []string, dataDir string) error {
 			fmt.Printf(
 				"%s: %s [%s] %d/%d tasks done (in_progress=%d, blocked=%d)\n",
 				phase.ID,
-				phase.Name,
-				string(phase.Status),
+				styleSubHeader(phase.Name),
+				styleStatusText(string(phase.Status)),
 				stats.done,
 				stats.total,
 				stats.inProgress,
@@ -2193,7 +2208,7 @@ func runLsCore(args []string, dataDir string) error {
 			return fmt.Errorf("Phase not found: %s", scope)
 		}
 		if len(phase.Milestones) == 0 {
-			fmt.Printf("Phase %s has no milestones.\n", scope)
+			fmt.Printf("%s %s\n", styleWarning("Phase"), styleMuted(fmt.Sprintf("%s has no milestones.", scope)))
 			return nil
 		}
 		for _, milestone := range phase.Milestones {
@@ -2201,8 +2216,8 @@ func runLsCore(args []string, dataDir string) error {
 			fmt.Printf(
 				"%s: %s [%s] %d/%d tasks done (in_progress=%d, blocked=%d)\n",
 				milestone.ID,
-				milestone.Name,
-				string(milestone.Status),
+				styleSubHeader(milestone.Name),
+				styleStatusText(string(milestone.Status)),
 				stats.done,
 				stats.total,
 				stats.inProgress,
@@ -2218,7 +2233,7 @@ func runLsCore(args []string, dataDir string) error {
 			return fmt.Errorf("Milestone not found: %s", scope)
 		}
 		if len(milestone.Epics) == 0 {
-			fmt.Printf("Milestone %s has no epics.\n", scope)
+			fmt.Printf("%s %s\n", styleWarning("Milestone"), styleMuted(fmt.Sprintf("%s has no epics.", scope)))
 			return nil
 		}
 		for _, epic := range milestone.Epics {
@@ -2226,8 +2241,8 @@ func runLsCore(args []string, dataDir string) error {
 			fmt.Printf(
 				"%s: %s [%s] %d/%d tasks done (in_progress=%d, blocked=%d)\n",
 				epic.ID,
-				epic.Name,
-				string(epic.Status),
+				styleSubHeader(epic.Name),
+				styleStatusText(string(epic.Status)),
 				stats.done,
 				stats.total,
 				stats.inProgress,
@@ -2243,7 +2258,7 @@ func runLsCore(args []string, dataDir string) error {
 			return fmt.Errorf("Epic not found: %s", scope)
 		}
 		if len(epic.Tasks) == 0 {
-			fmt.Printf("Epic %s has no tasks.\n", scope)
+			fmt.Printf("%s %s\n", styleWarning("Epic"), styleMuted(fmt.Sprintf("%s has no tasks.", scope)))
 			return nil
 		}
 		for _, task := range epic.Tasks {
@@ -2251,7 +2266,7 @@ func runLsCore(args []string, dataDir string) error {
 				"%s: %s [%s] %.0f\n",
 				task.ID,
 				task.Title,
-				string(task.Status),
+				styleStatusText(string(task.Status)),
 				task.EstimateHours,
 			)
 		}
@@ -2284,13 +2299,13 @@ func warnMissingTaskFiles(tree models.TaskTree, dataDir string) {
 		return
 	}
 
-	fmt.Printf("Warning: %d task file(s) referenced in index are missing.\n", len(missing))
+	fmt.Printf("%s %d task file(s) referenced in index are missing.\n", styleWarning("Warning:"), len(missing))
 	for i := 0; i < len(missing) && i < warningLimit; i++ {
 		task := missing[i]
-		fmt.Printf("  - %s: %s\n", task.ID, filepath.Join(dataDir, task.File))
+		fmt.Printf("  - %s: %s\n", styleSuccess(task.ID), filepath.Join(dataDir, task.File))
 	}
 	if len(missing) > warningLimit {
-		fmt.Printf("  ... and %d more\n", len(missing)-warningLimit)
+		fmt.Printf("  %s %d more\n", styleWarning("... and"), len(missing)-warningLimit)
 	}
 	fmt.Println()
 }
@@ -2314,8 +2329,8 @@ func runShow(args []string) error {
 			return err
 		}
 		if strings.TrimSpace(ctx) == "" {
-			fmt.Println("No task specified and no current working task set.")
-			fmt.Println("Use 'work <task-id>' to set a working task.")
+			fmt.Println(styleWarning("No task specified and no current working task set."))
+			fmt.Println(styleMuted("Use 'work <task-id>' to set a working task."))
 			return nil
 		}
 		ids = []string{ctx}
@@ -2330,7 +2345,7 @@ func runShow(args []string) error {
 	for idx, id := range ids {
 		if idx > 0 {
 			fmt.Println()
-			fmt.Println(strings.Repeat("═", 60))
+			fmt.Println(styleMuted(strings.Repeat("═", 60)))
 		}
 
 		if isBugLikeID(id) || isIdeaLikeID(id) {
@@ -2378,7 +2393,7 @@ func runNext(args []string) error {
 		return err
 	}
 	if strings.TrimSpace(nextAvailable) == "" {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleWarning("No available tasks found."))
 		return nil
 	}
 
@@ -2426,7 +2441,7 @@ func runNext(args []string) error {
 		return nil
 	}
 
-	fmt.Printf("%s: %s\n", task.ID, task.Title)
+	fmt.Printf("%s: %s\n", styleSuccess(task.ID), task.Title)
 	return nil
 }
 
@@ -2477,20 +2492,20 @@ func runLog(args []string) error {
 	}
 
 	if len(events) == 0 {
-		fmt.Println("No recent activity found.")
+		fmt.Println(styleWarning("No recent activity found."))
 		return nil
 	}
 
-	fmt.Println("Recent Activity Log")
+	fmt.Println(styleHeader("Recent Activity Log"))
 	for _, event := range events {
 		actor := ""
 		if event.Actor != nil {
 			actor = " (" + *event.Actor + ")"
 		}
 		age := formatRelativeTime(event.Timestamp)
-		fmt.Printf("%s [%s] [%s] %s%s\n", logEventIcon(event.Event), logEventKind(event.Event), event.Event, event.TaskID, actor)
-		fmt.Printf("  %s\n", event.Title)
-		fmt.Printf("  %s (%s)\n\n", event.Timestamp.Format(time.RFC3339), age)
+		fmt.Printf("%s [%s] %s %s%s\n", logEventIcon(event.Event), styleSubHeader(logEventKind(event.Event)), styleMuted(event.Event), event.TaskID, actor)
+		fmt.Printf("  %s\n", styleMuted(event.Title))
+		fmt.Printf("  %s (%s)\n\n", styleMuted(event.Timestamp.Format(time.RFC3339)), styleMuted(age))
 	}
 	return nil
 }
@@ -2503,16 +2518,7 @@ func logEventKind(eventType string) string {
 }
 
 func logEventIcon(eventType string) string {
-	switch eventType {
-	case "completed":
-		return "✓"
-	case "started":
-		return "▶"
-	case "claimed":
-		return "✎"
-	default:
-		return "✚"
-	}
+	return logEventIconStyled(eventType)
 }
 
 func formatRelativeTime(ts time.Time) string {
@@ -2703,7 +2709,7 @@ func runTree(args []string) error {
 	}
 
 	if pathQuery != nil && len(filteredPhases) == 0 && !hasAux {
-		fmt.Printf("No tree nodes found for path query: %s\n", pathQuery.Raw)
+		fmt.Printf("%s: %s\n", styleError("No tree nodes found for path query"), pathQuery.Raw)
 	}
 
 	if len(bugsToShow) > 0 {
@@ -2719,7 +2725,7 @@ func runTree(args []string) error {
 			branch = "├── "
 			continuation = "│   "
 		}
-		fmt.Printf("%sBugs (%d/%d)\n", branch, bugsDone, len(bugsToShow))
+		fmt.Printf("%s%s\n", branch, styleSubHeader(fmt.Sprintf("Bugs (%d/%d)", bugsDone, len(bugsToShow))))
 		for i, bug := range bugsToShow {
 			isLast := i == len(bugsToShow)-1 && len(ideasToShow) == 0
 			fmt.Printf("%s\n", renderTreeTaskLine(bug, continuation, isLast, criticalPath, showDetails))
@@ -2733,7 +2739,7 @@ func runTree(args []string) error {
 				ideasDone++
 			}
 		}
-		fmt.Printf("└── Ideas (%d/%d)\n", ideasDone, len(ideasToShow))
+		fmt.Printf("└── %s\n", styleSubHeader(fmt.Sprintf("Ideas (%d/%d)", ideasDone, len(ideasToShow))))
 		for i, idea := range ideasToShow {
 			isLast := i == len(ideasToShow)-1
 			fmt.Printf("  %s\n", strings.TrimSuffix(renderTreeTaskLine(idea, "", isLast, criticalPath, showDetails), "\n"))
@@ -2918,66 +2924,66 @@ func runDash(args []string) error {
 	}
 
 	fmt.Println()
-	fmt.Println("Current Task")
+	fmt.Println(styleHeader("Current Task"))
 	if currentTask != nil {
-		fmt.Printf("  %s: %s\n", currentTask.ID, currentTask.Title)
-		fmt.Printf("  Agent: %s\n", currentAgent)
+		fmt.Printf("  %s: %s\n", styleSuccess(currentTask.ID), currentTask.Title)
+		fmt.Printf("  %s: %s\n", styleSubHeader("Agent"), currentAgent)
 		if !taskFileExists(currentTask.File) {
-			fmt.Printf("  Task file missing: %s\n", currentTask.File)
+			fmt.Printf("  %s: %s\n", styleWarning("Task file missing"), currentTask.File)
 		}
 	} else if strings.TrimSpace(currentTaskID) != "" {
-		fmt.Printf("  Working task '%s' not found\n", currentTaskID)
+		fmt.Printf("  Working task %s not found\n", styleWarning(currentTaskID))
 	} else {
-		fmt.Println("  No current working task set.")
+		fmt.Println(styleMuted("  No current working task set."))
 	}
 	fmt.Println()
 
-	fmt.Println("Progress:")
+	fmt.Println(styleSubHeader("Progress"))
 	fmt.Printf("  Total: %s %5.1f%% (%d/%d)\n", makeProgressBar(dashboardDone, dashboardTasks), totalPct, dashboardDone, dashboardTasks)
 
 	for _, phase := range phases {
-		fmt.Printf("  %s: %s %5.1f%% (%d/%d)\n", phase.ID, makeProgressBar(phase.Done, phase.Total), phase.PercentComplete, phase.Done, phase.Total)
+		fmt.Printf("  %s: %s %5.1f%% (%d/%d)\n", styleSuccess(phase.ID), makeProgressBar(phase.Done, phase.Total), phase.PercentComplete, phase.Done, phase.Total)
 	}
 	if len(completedPhases) > 0 {
-		fmt.Printf("  Completed Phases: %s\n", strings.Join(completedPhases, ", "))
+		fmt.Printf("  %s: %s\n", styleSubHeader("Completed Phases"), strings.Join(completedPhases, ", "))
 	}
 
 	fmt.Println()
-	fmt.Println("Critical Path:")
+	fmt.Println(styleSubHeader("Critical Path"))
 	if len(remainingOnPath) == 0 {
-		fmt.Println("  ✓ All critical path tasks complete")
+		fmt.Println("  " + styleSuccess("✓ All critical path tasks complete"))
 	} else {
 		maxDisplay := 5
 		show := len(remainingOnPath)
 		if show > maxDisplay {
 			show = maxDisplay
 		}
-		fmt.Printf("  %s", strings.Join(remainingOnPath[:show], " -> "))
+		fmt.Printf("  %s", strings.Join(remainingOnPath[:show], styleMuted(" -> ")))
 		if len(remainingOnPath) > maxDisplay {
 			fmt.Println(" -> ...")
 		} else {
 			fmt.Println()
 		}
-		fmt.Printf("  %d tasks, ~%.0fh remaining\n", len(remainingOnPath), remainingHours)
+		fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("%d tasks, ~%.0fh remaining", len(remainingOnPath), remainingHours)))
 	}
 
 	if strings.TrimSpace(nextAvailable) != "" {
 		if nextTask := tree.FindTask(nextAvailable); nextTask != nil {
-			fmt.Printf("  Next: %s - %s\n", nextTask.ID, nextTask.Title)
+			fmt.Printf("  %s %s - %s\n", styleSuccess("Next:"), styleSuccess(nextTask.ID), styleSuccess(nextTask.Title))
 		}
 	}
 
 	fmt.Println()
-	fmt.Println("Status:")
-	fmt.Printf("  In progress: %d\n", totalInProgress)
+	fmt.Println(styleSubHeader("Status"))
+	fmt.Printf("  %s: %d\n", styleWarning("In progress"), totalInProgress)
 	if totalBlocked > 0 {
-		fmt.Printf("  Blocked: %d\n", totalBlocked)
+		fmt.Printf("  %s: %d\n", styleError("Blocked"), totalBlocked)
 	}
 	if staleClaimsCount > 0 {
-		fmt.Printf("  Stale claims: %d\n", staleClaimsCount)
+		fmt.Printf("  %s: %s\n", styleWarning("Stale claims"), styleSuccess(fmt.Sprintf("%d", staleClaimsCount)))
 	}
 	if activeSessions > 0 {
-		fmt.Printf("  Active Sessions: %d\n", activeSessions)
+		fmt.Printf("  %s: %s\n", styleSubHeader("Active Sessions"), styleSuccess(fmt.Sprintf("%d", activeSessions)))
 	}
 	fmt.Println()
 
@@ -2989,8 +2995,8 @@ func runAdmin(args []string) error {
 		return err
 	}
 	if parseFlag(args, "--help") {
-		fmt.Println("Usage: backlog admin")
-		fmt.Println("The admin command is not implemented in the Go client.")
+		fmt.Println(styleSubHeader("Usage: backlog admin"))
+		fmt.Println(styleWarning("The admin command is not implemented in the Go client."))
 		return nil
 	}
 	if parseFlag(args, "--json") {
@@ -3007,8 +3013,8 @@ func runAdmin(args []string) error {
 		fmt.Println(string(raw))
 		return nil
 	}
-	fmt.Println("admin command is not implemented in the Go client.")
-	fmt.Println("Use `backlog dash` to inspect current project status.")
+	fmt.Println(styleWarning("admin command is not implemented in the Go client."))
+	fmt.Println(styleMuted("Use `backlog dash` to inspect current project status."))
 	return nil
 }
 
@@ -3229,7 +3235,7 @@ func runLock(args []string, locked bool) error {
 	if !locked {
 		action = "Unlocked"
 	}
-	fmt.Printf("%s: %s\n", action, canonicalID)
+	fmt.Printf("%s: %s\n", styleSuccess(action), styleSuccess(canonicalID))
 	return nil
 }
 
@@ -3298,9 +3304,9 @@ func runIdea(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Created idea: %s\n", ideaID)
-	fmt.Printf("File: %s/%s\n", filepath.Base(dataDir), relFile)
-	fmt.Println("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.")
+	fmt.Printf("%s %s\n", styleSuccess("Created idea:"), styleSuccess(ideaID))
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(relFile))
+	fmt.Println(styleWarning("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands."))
 	return nil
 }
 
@@ -3434,9 +3440,9 @@ func runBug(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Created bug: %s\n", bugID)
+	fmt.Printf("%s %s\n", styleSuccess("Created bug:"), styleSuccess(bugID))
 	if !simple && strings.TrimSpace(body) == "" {
-		fmt.Println("IMPORTANT: You MUST fill in the .todo file that was created.")
+		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
 	}
 	return nil
 }
@@ -3543,10 +3549,10 @@ func runFixed(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Created fixed: %s\n", fixedID)
-	fmt.Printf("File: %s/%s\n", filepath.Base(dataDir), relativeFile)
+	fmt.Printf("%s %s\n", styleSuccess("Created fixed:"), styleSuccess(fixedID))
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(relativeFile))
 	if len(tags) > 0 {
-		fmt.Printf("Tags: %s\n", strings.Join(tags, ", "))
+		fmt.Printf("%s %s\n", styleSubHeader("Tags:"), styleMuted(strings.Join(tags, ", ")))
 	}
 	return nil
 }
@@ -3572,17 +3578,17 @@ func runMigrate(args []string) error {
 
 	if info, err := os.Stat(backlogPath); err == nil && info.IsDir() {
 		if isSymlinkTo(tasksPath, backlogPath) {
-			fmt.Println("✓ Already migrated (.tasks is symlink to .backlog)")
+			fmt.Println(styleSuccess("✓ Already migrated (.tasks is symlink to .backlog)"))
 			return nil
 		}
 		if tasksInfo, err := os.Lstat(tasksPath); err == nil && tasksInfo.Mode()&os.ModeSymlink == 0 {
 			if !force {
 				return errors.New("Both .tasks/ and .backlog/ exist. Use --force to proceed.")
 			}
-			fmt.Println("✓ Both directories exist (force mode - using .backlog/)")
+			fmt.Println(styleSuccess("✓ Both directories exist (force mode - using .backlog/)"))
 			return nil
 		}
-		fmt.Println("✓ Already migrated (.backlog/ exists)")
+		fmt.Println(styleSuccess("✓ Already migrated (.backlog/ exists)"))
 		return nil
 	}
 
@@ -3621,7 +3627,7 @@ func runMigrate(args []string) error {
 	if len(updated) > 0 {
 		message += "\nUpdated doc files: " + strings.Join(updated, ", ")
 	}
-	fmt.Printf("✓ %s\n", message)
+	fmt.Printf("%s %s\n", styleSuccess("✓"), styleSuccess(message))
 	return nil
 }
 
@@ -3820,15 +3826,7 @@ func staleClaims(tasks []models.Task, warnAfterMinutes int, errorAfterMinutes in
 }
 
 func makeProgressBar(done, total int) string {
-	const width = 20
-	if total <= 0 {
-		return strings.Repeat("░", width)
-	}
-	filled := int((float64(done) / float64(total)) * width)
-	if filled > width {
-		filled = width
-	}
-	return strings.Repeat("█", filled) + strings.Repeat("░", width-filled)
+	return styleProgressBar(done, total)
 }
 
 func filterPhasesByPathQuery(phases []models.Phase, query models.PathQuery) []models.Phase {
@@ -4049,7 +4047,7 @@ func renderTreePhase(phase models.Phase, isLast bool, prefix string, criticalPat
 		branch = "└── "
 		continuation = "    "
 	}
-	lines := []string{fmt.Sprintf("%s% s%s (%d/%d) [%s]", prefix, branch, phase.Name, stats.done, stats.total, phase.Status)}
+	lines := []string{fmt.Sprintf("%s%s%s (%d/%d) [%s]", prefix, branch, styleSubHeader(phase.Name), stats.done, stats.total, styleStatusText(string(phase.Status)))}
 	if currentDepth >= maxDepth {
 		return lines
 	}
@@ -4079,7 +4077,7 @@ func renderTreeMilestone(milestone models.Milestone, isLast bool, prefix string,
 		branch = "└── "
 		continuation = "    "
 	}
-	lines := []string{fmt.Sprintf("%s% s%s (%d/%d) [%s]", prefix, branch, milestone.Name, stats.done, stats.total, milestone.Status)}
+	lines := []string{fmt.Sprintf("%s%s%s (%d/%d) [%s]", prefix, branch, styleSubHeader(milestone.Name), stats.done, stats.total, styleStatusText(string(milestone.Status)))}
 	if currentDepth >= maxDepth {
 		return lines
 	}
@@ -4108,7 +4106,7 @@ func renderTreeEpic(epic models.Epic, isLast bool, prefix string, criticalPath [
 		branch = "└── "
 		continuation = "    "
 	}
-	lines := []string{fmt.Sprintf("%s%s%s (%d/%d) [%s]", prefix, branch, epic.Name, stats.done, stats.total, epic.Status)}
+	lines := []string{fmt.Sprintf("%s%s%s (%d/%d) [%s]", prefix, branch, styleSubHeader(epic.Name), stats.done, stats.total, styleStatusText(string(epic.Status)))}
 	if currentDepth >= maxDepth {
 		return lines
 	}
@@ -4129,10 +4127,10 @@ func renderTreeTaskLine(task models.Task, prefix string, isLast bool, criticalPa
 	if isLast {
 		branch = "└── "
 	}
-	line := fmt.Sprintf("%s%s%s %s: %s", prefix, branch, statusIcon(task.Status), task.ID, task.Title)
+	line := fmt.Sprintf("%s%s%s %s: %s", prefix, branch, statusIcon(task.Status), styleSuccess(task.ID), task.Title)
 	if !showDetails {
 		if isTaskOnCriticalPath(task.ID, criticalPath) {
-			line += " ★"
+			line += " " + styleCritical("★")
 		}
 		return line
 	}
@@ -4141,7 +4139,7 @@ func renderTreeTaskLine(task models.Task, prefix string, isLast bool, criticalPa
 		details = append(details, fmt.Sprintf("(%.2fh)", task.EstimateHours))
 	}
 	if task.Status != "" {
-		details = append(details, fmt.Sprintf("[%s]", task.Status))
+		details = append(details, fmt.Sprintf("[%s]", styleStatusText(string(task.Status))))
 	}
 	if task.ClaimedBy != "" {
 		details = append(details, "@"+task.ClaimedBy)
@@ -4150,12 +4148,98 @@ func renderTreeTaskLine(task models.Task, prefix string, isLast bool, criticalPa
 		details = append(details, "depends:"+strings.Join(task.DependsOn, ","))
 	}
 	if isTaskOnCriticalPath(task.ID, criticalPath) {
-		details = append(details, "★")
+		details = append(details, styleCritical("★"))
 	}
 	if len(details) > 0 {
 		line += " " + strings.Join(details, " ")
 	}
 	return line
+}
+
+func formatTaskSummary(task models.Task, criticalPath []string) string {
+	critical := styleMuted("·")
+	if isTaskOnCriticalPath(task.ID, criticalPath) {
+		critical = styleCritical("★")
+	}
+	return fmt.Sprintf("%s %s %s %s", critical, statusIcon(task.Status), styleSuccess(task.ID), task.Title)
+}
+
+func formatTaskDetails(task models.Task) []string {
+	details := []string{}
+	stats := []string{}
+	if task.EstimateHours > 0 {
+		stats = append(stats, fmt.Sprintf("est %.2fh", task.EstimateHours))
+	}
+	if strings.TrimSpace(string(task.Complexity)) != "" {
+		stats = append(stats, "complexity "+string(task.Complexity))
+	}
+	if strings.TrimSpace(string(task.Priority)) != "" {
+		stats = append(stats, "priority "+string(task.Priority))
+	}
+	if len(stats) > 0 {
+		details = append(details, strings.Join(stats, " | "))
+	}
+	if len(task.Tags) > 0 {
+		details = append(details, fmt.Sprintf("Tags: %s", strings.Join(task.Tags, ", ")))
+	}
+	if strings.TrimSpace(task.ClaimedBy) != "" {
+		details = append(details, fmt.Sprintf("Claimed by: %s", task.ClaimedBy))
+	}
+	if len(task.DependsOn) > 0 {
+		details = append(details, fmt.Sprintf("Depends on: %s", strings.Join(task.DependsOn, ", ")))
+	}
+
+	formatted := make([]string, 0, len(details))
+	for _, item := range details {
+		formatted = append(formatted, styleMuted(item))
+	}
+	return formatted
+}
+
+func renderTaskActionCard(action string, task models.Task, agent, dataDir string, showContent bool) {
+	fmt.Printf("\n%s %s - %s\n", styleSuccess(action), styleSuccess(task.ID), task.Title)
+	fmt.Printf("  %s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
+	fmt.Printf("  %s: %s\n", styleSubHeader("Agent"), agent)
+	if task.ClaimedAt != nil {
+		fmt.Printf("  %s: %s\n", styleSubHeader("Claimed At"), task.ClaimedAt.Format(time.RFC3339))
+	}
+	if task.EstimateHours > 0 {
+		fmt.Printf("  %s: %.2fh\n", styleSubHeader("Estimate"), task.EstimateHours)
+	}
+	if strings.TrimSpace(string(task.Complexity)) != "" || strings.TrimSpace(string(task.Priority)) != "" {
+		fmt.Printf("  %s: %s / %s\n", styleSubHeader("Sizing"), styleMuted(string(task.Priority)), styleMuted(string(task.Complexity)))
+	}
+	fmt.Printf("  %s: %s\n", styleSubHeader("File"), filepath.Join(dataDir, task.File))
+
+	if !showContent {
+		fmt.Printf("  %s\n", styleMuted("Task body preview suppressed via --no-content"))
+		fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+		return
+	}
+
+	_, body, err := readTodoFrontmatter(task.ID, task.File)
+	if err != nil {
+		fmt.Printf("  %s\n", styleWarning("Unable to preview task body."))
+		fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+		return
+	}
+	body = strings.TrimSpace(body)
+	if body == "" {
+		fmt.Printf("  %s\n", styleMuted("Task body is empty."))
+		fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+		return
+	}
+
+	fmt.Printf("\n  %s\n", styleSubHeader("Task Body Preview"))
+	lines := strings.Split(body, "\n")
+	maxLines := min(12, len(lines))
+	for i := 0; i < maxLines; i++ {
+		fmt.Printf("    %s\n", lines[i])
+	}
+	if len(lines) > maxLines {
+		fmt.Printf("    %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-maxLines)))
+	}
+	fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
 }
 
 func isTaskOnCriticalPath(taskID string, criticalPath []string) bool {
@@ -4203,7 +4287,7 @@ func runPreview(args []string) error {
 	}
 	available := calculator.FindAllAvailable()
 	if len(available) == 0 {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleWarning("No available tasks found."))
 		return nil
 	}
 	ordered := prioritizeTaskIDs(tree, criticalPath, available)
@@ -4257,7 +4341,7 @@ func runPreview(args []string) error {
 		if len(items) == 0 {
 			return
 		}
-		fmt.Printf("\n%s (%d)\n", label, len(items))
+		fmt.Printf("\n%s (%d)\n", styleSubHeader(label), len(items))
 		for _, item := range items {
 			critical := "  "
 			if item.OnCritical {
@@ -4267,23 +4351,24 @@ func runPreview(args []string) error {
 			if strings.TrimSpace(path) == "" {
 				path = item.File
 			}
-			fmt.Printf("%s%s %s: %s\n", critical, item.ID, critical, item.Title)
-			fmt.Printf("  File: %s | Estimate: %.2fh | %s / %s\n", path, item.EstimateHours, item.Priority, item.Complexity)
+			criticalMarker := styleMuted(critical)
+			fmt.Printf("%s%s %s: %s\n", criticalMarker, styleSuccess(item.ID), criticalMarker, item.Title)
+			fmt.Printf("  %s: %s | %s: %.2fh | %s / %s\n", styleSubHeader("File"), styleMuted(path), styleSubHeader("Estimate"), item.EstimateHours, item.Complexity)
 			if len(item.GrabAdditional) > 0 {
-				fmt.Printf("  If you run `backlog grab`, you would also get: %s\n", strings.Join(item.GrabAdditional, ", "))
+				fmt.Printf("  %s %s\n", styleMuted("If you run `backlog grab`, you would also get:"), styleMuted(strings.Join(item.GrabAdditional, ", ")))
 			} else {
-				fmt.Println("  If you run `backlog grab`, you get this task only.")
+				fmt.Println(styleMuted("  If you run `backlog grab`, you get this task only."))
 			}
 		}
 	}
 
 	fmt.Println()
-	fmt.Println("Preview available work:")
+	fmt.Println(styleSubHeader("Preview available work:"))
 	printPreviewItems("Normal Tasks", normal)
 	printPreviewItems("Bugs", bugs)
 	printPreviewItems("Ideas", ideas)
 	if len(normal) > 0 || len(bugs) > 0 || len(ideas) > 0 {
-		fmt.Println("\n★ = On critical path")
+		fmt.Println(styleMuted("\n★ = On critical path"))
 	}
 	return nil
 }
@@ -4400,6 +4485,7 @@ func runGrab(args []string) error {
 	single := parseFlag(args, "--single")
 	multi := parseFlag(args, "--multi")
 	includeSiblings := !parseFlag(args, "--no-siblings")
+	noContent := parseFlag(args, "--no-content")
 	count := grabSiblingAdditionalMax
 	if rawCount := strings.TrimSpace(parseOption(args, "--count")); rawCount != "" {
 		parsed, err := parseIntOptionWithDefault(args, grabSiblingAdditionalMax, "--count")
@@ -4443,13 +4529,16 @@ func runGrab(args []string) error {
 				return err
 			}
 			if len(taskIDs) == 1 {
-				fmt.Printf("Claimed: %s\n", task.ID)
+				renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
 			} else {
-				fmt.Printf("✓ Claimed: %s - %s\n", task.ID, task.Title)
+				fmt.Printf("%s %s - %s\n", styleSuccess("✓ Claimed:"), task.ID, task.Title)
+				for _, detail := range formatTaskDetails(*task) {
+					fmt.Printf("  %s\n", detail)
+				}
 			}
 			claimed = append(claimed, *task)
 		}
-		if len(taskIDs) > 1 {
+		if len(claimed) > 1 {
 			additional := make([]string, 0, len(claimed)-1)
 			for _, t := range claimed[1:] {
 				additional = append(additional, t.ID)
@@ -4457,13 +4546,12 @@ func runGrab(args []string) error {
 			if err := taskcontext.SetMultiTaskContext(dataDir, agent, claimed[0].ID, additional); err != nil {
 				return err
 			}
-			fmt.Printf("\nWorking on: %s\n", claimed[0].ID)
 		} else {
 			if err := taskcontext.SetCurrentTask(dataDir, claimed[0].ID, agent); err != nil {
 				return err
 			}
-			fmt.Printf("Working on: %s\n", claimed[0].ID)
 		}
+		fmt.Printf("%s %s\n", styleSubHeader("Working on:"), styleSuccess(claimed[0].ID))
 		return nil
 	}
 
@@ -4474,7 +4562,7 @@ func runGrab(args []string) error {
 		return err
 	}
 	if strings.TrimSpace(nextAvailable) == "" {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleWarning("No available tasks found."))
 		return nil
 	}
 
@@ -4489,7 +4577,7 @@ func runGrab(args []string) error {
 		}
 		filtered = prioritizeTaskIDs(tree, criticalPath, filtered)
 		if len(filtered) == 0 {
-			fmt.Printf("No available tasks in scope '%s'\n", scope)
+			fmt.Printf("%s '%s'\n", styleWarning("No available tasks in scope"), styleMuted(scope))
 			return nil
 		}
 		nextAvailable = filtered[0]
@@ -4557,15 +4645,30 @@ func runGrab(args []string) error {
 				return err
 			}
 		}
-		fmt.Printf("Grabbed: %s - %s\n", primary.ID, primary.Title)
-		fmt.Printf("Also grabbed %d additional task(s): %s\n", len(additional), strings.Join(additionalIDs, ", "))
+		fmt.Printf("%s %s - %s\n", styleSuccess("Grabbed:"), primary.ID, primary.Title)
+		if !noContent {
+			for _, detail := range formatTaskDetails(*primary) {
+				fmt.Printf("  %s\n", detail)
+			}
+			for _, task := range additional {
+				for _, detail := range formatTaskDetails(task) {
+					fmt.Printf("    %s %s\n", styleMuted(task.ID), detail)
+				}
+			}
+		}
+		fmt.Printf("%s %s additional task(s): %s\n", styleSubHeader("Also grabbed"), styleSuccess(fmt.Sprintf("%d", len(additional))), styleMuted(strings.Join(additionalIDs, ", ")))
 		return nil
 	}
 
 	if err := taskcontext.SetCurrentTask(dataDir, primary.ID, agent); err != nil {
 		return err
 	}
-	fmt.Printf("Grabbed: %s - %s\n", primary.ID, primary.Title)
+	fmt.Printf("%s %s - %s\n", styleSuccess("Grabbed:"), primary.ID, primary.Title)
+	if !noContent {
+		for _, detail := range formatTaskDetails(*primary) {
+			fmt.Printf("  %s\n", detail)
+		}
+	}
 	return nil
 }
 
@@ -5017,25 +5120,25 @@ func renderListProgress(tree models.TaskTree, criticalPath []string, scoped bool
 		phases = scopedPhases
 	}
 	if len(phases) == 0 {
-		fmt.Println("No list nodes found for path query: unknown")
+		fmt.Println(styleError("No list nodes found for path query: unknown"))
 		return nil
 	}
 
-	fmt.Println("Project Progress")
+	fmt.Println(styleHeader("Project Progress"))
 	allTasks := findAllTasksInTree(tree)
 	for _, phase := range phases {
 		phaseTasks := collectPhaseTaskIDs(phase)
 		counts := parsePhaseTaskStats(filterTasksByIDs(phaseTasks, allTasks, taskMatches))
-		fmt.Printf("%s (%d/%d done, in_progress=%d, blocked=%d)\n", phase.ID, counts.done, counts.total, counts.inProgress, counts.blocked)
+		fmt.Printf("%s (%d/%d done, %s=%d, %s=%d)\n", styleSuccess(phase.ID), counts.done, counts.total, styleSubHeader("in_progress"), counts.inProgress, styleError("blocked"), counts.blocked)
 		bugMarker := ""
 		for _, id := range criticalPath {
 			if strings.HasPrefix(id, phase.ID) {
-				bugMarker = "★"
+				bugMarker = string(styleCritical("★"))
 				break
 			}
 		}
 		if bugMarker != "" {
-			fmt.Println("  on critical path")
+			fmt.Printf("%s %s\n", bugMarker, styleMuted("on critical path"))
 		}
 	}
 	return nil
@@ -5131,7 +5234,7 @@ func renderListAvailable(tree models.TaskTree, calculator *critical_path.Critica
 	}
 
 	if len(filtered) == 0 {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleError("No available tasks found."))
 		return nil
 	}
 	grouped := map[string][]models.Task{}
@@ -5154,40 +5257,53 @@ func renderListAvailable(tree models.TaskTree, calculator *critical_path.Critica
 		grouped[phaseID] = append(grouped[phaseID], task)
 	}
 
+	fmt.Printf("\n%s\n", styleHeader(fmt.Sprintf("Available Tasks (%d)", len(filtered))))
+	fmt.Printf("%s\n\n", styleMuted("Legend: ★ critical path, status icon indicates current state"))
+
 	for _, phase := range tree.Phases {
 		tasks := grouped[phase.ID]
 		if len(tasks) == 0 {
 			continue
 		}
-		fmt.Printf("%s (%d available)\n", phase.Name, len(tasks))
+		sort.Slice(tasks, func(i, j int) bool {
+			return tasks[i].ID < tasks[j].ID
+		})
+		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("%s (%s) (%d available)", phase.Name, phase.ID, len(tasks))))
 		for _, task := range tasks {
-			critical := "  "
-			if containsString(criticalPath, task.ID) {
-				critical = "★ "
+			fmt.Println(formatTaskSummary(task, criticalPath))
+			for _, detail := range formatTaskDetails(task) {
+				fmt.Printf("    %s\n", detail)
 			}
-			fmt.Printf("%s%s: %s\n", critical, task.ID, task.Title)
 		}
+		fmt.Println("")
 	}
 	if len(bugs) > 0 {
-		fmt.Printf("Bugs (%d available)\n", len(bugs))
+		sort.Slice(bugs, func(i, j int) bool {
+			return bugs[i].ID < bugs[j].ID
+		})
+		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("Bugs (%d available)", len(bugs))))
 		for _, task := range bugs {
-			critical := "  "
-			if containsString(criticalPath, task.ID) {
-				critical = "★ "
+			fmt.Println(formatTaskSummary(task, criticalPath))
+			for _, detail := range formatTaskDetails(task) {
+				fmt.Printf("    %s\n", detail)
 			}
-			fmt.Printf("%s%s: %s\n", critical, task.ID, task.Title)
 		}
+		fmt.Println("")
 	}
 	if len(ideas) > 0 {
-		fmt.Printf("Ideas (%d available)\n", len(ideas))
+		sort.Slice(ideas, func(i, j int) bool {
+			return ideas[i].ID < ideas[j].ID
+		})
+		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("Ideas (%d available)", len(ideas))))
 		for _, task := range ideas {
-			critical := "  "
-			if containsString(criticalPath, task.ID) {
-				critical = "★ "
+			fmt.Println(formatTaskSummary(task, criticalPath))
+			for _, detail := range formatTaskDetails(task) {
+				fmt.Printf("    %s\n", detail)
 			}
-			fmt.Printf("%s%s: %s\n", critical, task.ID, task.Title)
 		}
+		fmt.Println("")
 	}
+	fmt.Printf("%s\n", styleMuted("Use `backlog grab` to auto-claim the best available task."))
 	return nil
 }
 
@@ -5376,7 +5492,7 @@ func renderListJSON(tree models.TaskTree, scoped bool, scopedPhases []models.Pha
 
 func renderListText(command string, tree models.TaskTree, scoped bool, scopedPhases []models.Phase, scopedTasks []string, _ string, _ int, taskMatches func(models.Task) bool, criticalPath []string, showAll bool) error {
 	_ = showAll
-	fmt.Printf("Critical Path: %s\n", strings.Join(criticalPath[:min(len(criticalPath), 10)], " -> "))
+	fmt.Printf("%s %s\n", styleSubHeader("Critical Path:"), strings.Join(criticalPath[:min(len(criticalPath), 10)], " -> "))
 
 	phases := tree.Phases
 	if scoped {
@@ -5423,13 +5539,13 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			if milestoneTotal == 0 {
 				continue
 			}
-			milestoneLines = append(milestoneLines, fmt.Sprintf("  %s (%d/%d tasks done)", milestone.Name, milestoneDone, milestoneTotal))
+			milestoneLines = append(milestoneLines, fmt.Sprintf("%s (%d/%d tasks done)", styleSubHeader("  "+milestone.Name), milestoneDone, milestoneTotal))
 		}
-		fmt.Printf("%s (%d/%d tasks done)\n", phase.Name, stats.done, stats.total)
+		fmt.Printf("%s (%d/%d tasks done)\n", styleSuccess(phase.Name), stats.done, stats.total)
 		limit := 5
 		for i, line := range milestoneLines {
 			if i >= limit {
-				fmt.Printf("  ... and %d more milestones\n", len(milestoneLines)-limit)
+				fmt.Printf("%s\n", styleMuted(fmt.Sprintf("  ... and %d more milestones", len(milestoneLines)-limit)))
 				break
 			}
 			fmt.Println(line)
@@ -5453,7 +5569,7 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 				done++
 			}
 		}
-		fmt.Printf("Bugs (%d/%d done)\n", done, len(bugs))
+		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("Bugs (%d/%d done)", done, len(bugs))))
 		for i, bug := range bugs {
 			prefix := "  ├── "
 			if i == len(bugs)-1 {
@@ -5462,9 +5578,9 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			icon := statusIcon(bug.Status)
 			critical := ""
 			if containsString(criticalPath, bug.ID) {
-				critical = "★ "
+				critical = string(styleCritical("★ "))
 			}
-			fmt.Printf("%s%s%s: %s [%s]\n", prefix, icon, critical, bug.ID, bug.Title)
+			fmt.Printf("%s%s%s: %s\n", prefix, icon, critical, styleSuccess(bug.ID))
 		}
 	}
 
@@ -5484,7 +5600,7 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 				done++
 			}
 		}
-		fmt.Printf("Ideas (%d/%d done)\n", done, len(ideas))
+		fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("Ideas (%d/%d done)", done, len(ideas))))
 		for i, idea := range ideas {
 			prefix := "  ├── "
 			if i == len(ideas)-1 {
@@ -5493,22 +5609,22 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			icon := statusIcon(idea.Status)
 			critical := ""
 			if containsString(criticalPath, idea.ID) {
-				critical = "★ "
+				critical = string(styleCritical("★ "))
 			}
-			fmt.Printf("%s%s%s: %s [%s]\n", prefix, icon, critical, idea.ID, idea.Title)
+			fmt.Printf("%s%s%s: %s\n", prefix, icon, critical, styleSuccess(idea.ID))
 		}
 	}
 	return nil
 }
 
 func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir string) {
-	fmt.Printf("%s: %s\nstatus=%s estimate=%.2f\n", task.ID, task.Title, task.Status, task.EstimateHours)
+	fmt.Printf("%s: %s\nstatus=%s estimate=%.2f\n", styleSuccess(task.ID), task.Title, styleStatusText(string(task.Status)), task.EstimateHours)
 	if showInstructions {
-		fmt.Println("Idea instructions: evaluate feasibility and create concrete tasks in backlog.")
+		fmt.Println(styleWarning("Idea instructions: evaluate feasibility and create concrete tasks in backlog."))
 	}
 	file := filepath.Join(dataDir, task.File)
 	if task.File != "" {
-		fmt.Printf("File: %s\n", file)
+		fmt.Printf("%s: %s\n", styleSubHeader("File"), file)
 	}
 }
 
@@ -5532,9 +5648,9 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 			return showNotFound("Phase", id, scopeHint)
 		}
 		stats := getTaskStatsForPhase(*phase)
-		fmt.Printf("%s: %s\n", phase.ID, phase.Name)
-		fmt.Printf("Status: %s\n", phase.Status)
-		fmt.Printf("Done: %d / %d\n", stats.done, stats.total)
+		fmt.Printf("%s: %s\n", styleSuccess(phase.ID), styleSubHeader(phase.Name))
+		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(phase.Status)))
+		fmt.Printf("%s: %d / %d\n", styleSubHeader("Done"), stats.done, stats.total)
 		return nil
 	case scopePath.IsMilestone():
 		milestone := findMilestone(tree, scopePath.FullID())
@@ -5542,9 +5658,9 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 			return showNotFound("Milestone", id, scopeHint)
 		}
 		stats := getTaskStatsForMilestone(*milestone)
-		fmt.Printf("%s: %s\n", milestone.ID, milestone.Name)
-		fmt.Printf("Status: %s\n", milestone.Status)
-		fmt.Printf("Done: %d / %d\n", stats.done, stats.total)
+		fmt.Printf("%s: %s\n", styleSuccess(milestone.ID), styleSubHeader(milestone.Name))
+		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(milestone.Status)))
+		fmt.Printf("%s: %d / %d\n", styleSubHeader("Done"), stats.done, stats.total)
 		return nil
 	case scopePath.IsEpic():
 		epic := findEpic(tree, scopePath.FullID())
@@ -5552,9 +5668,9 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 			return showNotFound("Epic", id, scopeHint)
 		}
 		stats := getTaskStatsForEpic(*epic)
-		fmt.Printf("%s: %s\n", epic.ID, epic.Name)
-		fmt.Printf("Status: %s\n", epic.Status)
-		fmt.Printf("Done: %d / %d\n", stats.done, stats.total)
+		fmt.Printf("%s: %s\n", styleSuccess(epic.ID), styleSubHeader(epic.Name))
+		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(epic.Status)))
+		fmt.Printf("%s: %d / %d\n", styleSubHeader("Done"), stats.done, stats.total)
 		return nil
 	case scopePath.IsTask():
 		task := findTask(tree, scopePath.FullID())
@@ -5569,11 +5685,11 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 }
 
 func showNotFound(itemType, itemID, scopeHint string) error {
-	fmt.Printf("Error: %s not found: %s\n", itemType, itemID)
+	fmt.Printf("%s %s not found: %s\n", styleError("Error:"), styleSubHeader(itemType), itemID)
 	if scopeHint != "" {
-		fmt.Printf("Tip: Use 'backlog tree %s' to verify available IDs.\n", scopeHint)
+		fmt.Printf("%s Use 'backlog tree %s' to verify available IDs.\n", styleWarning("Tip:"), scopeHint)
 	} else {
-		fmt.Println("Tip: Use 'backlog tree' to list available IDs.")
+		fmt.Println(styleWarning("Tip: Use 'backlog tree' to list available IDs."))
 	}
 	return fmt.Errorf("%s not found", itemType)
 }
@@ -5678,17 +5794,17 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 	taskPath := filepath.Join(dataDir, task.File)
 	frontmatter, body, err := readTodoFrontmatter(task.ID, task.File)
 	if err != nil {
-		fmt.Println("Task file missing")
-		fmt.Printf("Task: %s - %s\n", task.ID, task.Title)
-		fmt.Println("Frontmatter:")
-		fmt.Println("  (unavailable)")
+		fmt.Println(styleError("Task file missing"))
+		fmt.Printf("%s: %s - %s\n", styleError("Task file missing"), styleSuccess(task.ID), task.Title)
+		fmt.Printf("%s\n", styleSubHeader("Frontmatter:"))
+		fmt.Println(styleMuted("  (unavailable)"))
 		if strings.TrimSpace(taskPath) != "" {
-			fmt.Printf("Missing: %s\n", taskPath)
+			fmt.Printf("%s: %s\n", styleSubHeader("Missing"), taskPath)
 		}
 		return nil
 	}
-	fmt.Printf("Task: %s - %s\n", task.ID, task.Title)
-	fmt.Println("Frontmatter:")
+	fmt.Printf("%s: %s - %s\n", styleSuccess("Task"), styleSuccess(task.ID), task.Title)
+	fmt.Printf("%s\n", styleSubHeader("Frontmatter"))
 	if len(frontmatter) > 0 {
 		out, err := yaml.Marshal(frontmatter)
 		if err != nil {
@@ -5696,39 +5812,28 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 		}
 		fmt.Println(strings.TrimSpace(string(out)))
 	} else {
-		fmt.Println("  (unavailable)")
+		fmt.Println(styleMuted("  (unavailable)"))
 	}
-	fmt.Printf("Body length: %d\n", len(body))
-	fmt.Printf("Run 'backlog show %s' for full details.\n", task.ID)
+	fmt.Printf("%s: %d\n", styleSubHeader("Body length"), len(body))
+	fmt.Printf("%s\n", styleMuted(fmt.Sprintf("Run 'backlog show %s' for full details.", task.ID)))
 	return nil
 }
 
 func renderTaskDetail(task models.Task, dataDir string) {
-	fmt.Printf("Task: %s\n", task.ID)
-	fmt.Printf("Title: %s\n", task.Title)
-	fmt.Printf("Status: %s\n", task.Status)
-	fmt.Printf("Estimate: %.2f\n", task.EstimateHours)
-	fmt.Printf("Complexity: %s\n", task.Complexity)
-	fmt.Printf("Priority: %s\n", task.Priority)
+	fmt.Printf("%s: %s\n", styleSuccess("Task"), task.ID)
+	fmt.Printf("%s: %s\n", styleSubHeader("Title"), task.Title)
+	fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
+	fmt.Printf("%s: %.2f\n", styleSubHeader("Estimate"), task.EstimateHours)
+	fmt.Printf("%s: %s\n", styleSubHeader("Complexity"), task.Complexity)
+	fmt.Printf("%s: %s\n", styleSubHeader("Priority"), task.Priority)
 	if task.ClaimedBy != "" {
-		fmt.Printf("Claimed by: %s\n", task.ClaimedBy)
+		fmt.Printf("%s: %s\n", styleSubHeader("Claimed by"), task.ClaimedBy)
 	}
-	fmt.Printf("File: %s\n", filepath.Join(dataDir, task.File))
+	fmt.Printf("%s: %s\n", styleSubHeader("File"), filepath.Join(dataDir, task.File))
 }
 
 func statusIcon(status models.Status) string {
-	switch status {
-	case models.StatusDone:
-		return "✓ "
-	case models.StatusInProgress:
-		return "→ "
-	case models.StatusPending:
-		return "[ ] "
-	case models.StatusBlocked:
-		return "✗ "
-	default:
-		return "X "
-	}
+	return statusIconStyled(status)
 }
 
 func min(a, b int) int {
@@ -5767,6 +5872,7 @@ func runClaim(args []string) error {
 		agent = "cli-user"
 	}
 	force := parseFlag(args, "--force")
+	noContent := parseFlag(args, "--no-content")
 
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
@@ -5814,9 +5920,14 @@ func runClaim(args []string) error {
 		}
 
 		if len(taskIDs) == 1 {
-			fmt.Printf("Claimed: %s\n", task.ID)
+			renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
 		} else {
-			fmt.Printf("✓ Claimed: %s - %s\n", task.ID, task.Title)
+			fmt.Printf("%s %s - %s\n", styleSuccess("✓ Claimed:"), task.ID, task.Title)
+		}
+		if len(taskIDs) > 1 && !noContent {
+			for _, detail := range formatTaskDetails(*task) {
+				fmt.Printf("  %s\n", detail)
+			}
 		}
 	}
 	return nil
@@ -5886,9 +5997,9 @@ func runCycle(args []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Completed: %s - %s\n", task.ID, task.Title)
+	fmt.Printf("%s %s - %s\n", styleSuccess("Completed:"), styleSuccess(task.ID), styleSuccess(task.Title))
 	if task.DurationMinutes != nil {
-		fmt.Printf("Duration: %d minutes\n", int(*task.DurationMinutes))
+		fmt.Printf("%s: %d minutes\n", styleSubHeader("Duration"), int(*task.DurationMinutes))
 	}
 	printCompletionNotice(tree, *task, completion)
 
@@ -5896,9 +6007,9 @@ func runCycle(args []string) error {
 		if err := taskcontext.ClearContext(dataDir); err != nil {
 			return err
 		}
-		fmt.Println("Review Required")
-		fmt.Println("Please review the completed work before continuing.")
-		fmt.Println("Run 'backlog grab' after review.")
+		fmt.Println(styleWarning("Review Required"))
+		fmt.Println(styleMuted("Please review the completed work before continuing."))
+		fmt.Println(styleMuted("Run 'backlog grab' after review."))
 		return nil
 	}
 
@@ -5926,7 +6037,7 @@ func runCycle(args []string) error {
 		if err := taskcontext.ClearContext(dataDir); err != nil {
 			return err
 		}
-		fmt.Println("No more available tasks.")
+		fmt.Println(styleWarning("No more available tasks."))
 		return nil
 	}
 	return grabTaskByID(refreshedTree, *calculator, nextAvailable, dataDirFromContext(), agent)
@@ -5967,7 +6078,7 @@ func advanceCycleContext(taskID string, agent string, dataDir string) (bool, err
 					return false, err
 				}
 			}
-			fmt.Printf("Primary sibling completed. Next sibling: %s\n", newPrimary)
+			fmt.Printf("%s %s\n", styleSuccess("Primary sibling completed. Next sibling:"), styleSuccess(newPrimary))
 			return true, nil
 		}
 
@@ -5981,7 +6092,7 @@ func advanceCycleContext(taskID string, agent string, dataDir string) (bool, err
 				return false, err
 			}
 		}
-		fmt.Printf("Sibling task completed. Returning to primary: %s\n", primary)
+		fmt.Printf("%s %s\n", styleSuccess("Sibling task completed. Returning to primary:"), styleSuccess(primary))
 		return true, nil
 
 	case "multi":
@@ -6009,8 +6120,8 @@ func advanceCycleContext(taskID string, agent string, dataDir string) (bool, err
 					return false, err
 				}
 			}
-			fmt.Printf("Primary task completed. Additional tasks still active.\n")
-			fmt.Printf("New primary task: %s\n", newPrimary)
+			fmt.Printf("%s\n", styleSuccess("Primary task completed. Additional tasks still active."))
+			fmt.Printf("%s %s\n", styleSuccess("New primary task:"), styleSuccess(newPrimary))
 			return true, nil
 		}
 
@@ -6024,7 +6135,7 @@ func advanceCycleContext(taskID string, agent string, dataDir string) (bool, err
 				return false, err
 			}
 		}
-		fmt.Printf("Additional task completed. Returning to primary: %s\n", primary)
+		fmt.Printf("%s %s\n", styleSuccess("Additional task completed. Returning to primary:"), styleSuccess(primary))
 		return true, nil
 	}
 	return false, nil
@@ -6101,15 +6212,15 @@ func grabTaskByID(tree models.TaskTree, calc critical_path.CriticalPathCalculato
 				return err
 			}
 		}
-		fmt.Printf("Grabbed: %s - %s\n", primary.ID, primary.Title)
-		fmt.Printf("Also grabbed %d additional task(s): %s\n", len(additional), strings.Join(additionalIDs, ", "))
+		fmt.Printf("%s %s - %s\n", styleSuccess("Grabbed:"), styleSuccess(primary.ID), styleSuccess(primary.Title))
+		fmt.Printf("%s %d additional task(s): %s\n", styleSuccess("Also grabbed"), len(additional), strings.Join(additionalIDs, ", "))
 		return nil
 	}
 
 	if err := taskcontext.SetCurrentTask(dataDir, primary.ID, agent); err != nil {
 		return err
 	}
-	fmt.Printf("Grabbed: %s - %s\n", primary.ID, primary.Title)
+	fmt.Printf("%s %s - %s\n", styleSuccess("Grabbed:"), styleSuccess(primary.ID), styleSuccess(primary.Title))
 	return nil
 }
 
@@ -6277,9 +6388,9 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 	if notice.EpicCompleted {
 		epic := findEpic(tree, task.EpicID)
 		if epic != nil {
-			fmt.Printf("════════════════════════════════════════════════════════════════════\n")
-			fmt.Printf("EPIC COMPLETE: %s (%s)\n", epic.Name, epic.ID)
-			fmt.Printf("Review the completed epic.\n")
+			fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
+			fmt.Printf("%s: %s (%s)\n", styleSuccess("EPIC COMPLETE"), styleSubHeader(epic.Name), styleSuccess(epic.ID))
+			fmt.Println(styleSubHeader("Review the completed epic."))
 			fmt.Println()
 		}
 	}
@@ -6287,9 +6398,9 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 	if notice.MilestoneCompleted {
 		milestone := findMilestone(tree, task.MilestoneID)
 		if milestone != nil && len(milestone.Epics) > 1 {
-			fmt.Printf("════════════════════════════════════════════════════════════════════\n")
-			fmt.Printf("MILESTONE COMPLETE: %s (%s)\n", milestone.Name, milestone.ID)
-			fmt.Printf("Review the completed milestone.\n")
+			fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
+			fmt.Printf("%s: %s (%s)\n", styleSuccess("MILESTONE COMPLETE"), styleSubHeader(milestone.Name), styleSuccess(milestone.ID))
+			fmt.Println(styleSubHeader("Review the completed milestone."))
 			fmt.Println()
 		}
 	}
@@ -6297,9 +6408,9 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 	if notice.PhaseCompleted {
 		phase := tree.FindPhase(task.PhaseID)
 		if phase != nil {
-			fmt.Printf("════════════════════════════════════════════════════════════════════\n")
-			fmt.Printf("PHASE COMPLETE: %s (%s)\n", phase.Name, phase.ID)
-			fmt.Printf("Review the completed phase.\n")
+			fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
+			fmt.Printf("%s: %s (%s)\n", styleSuccess("PHASE COMPLETE"), styleSubHeader(phase.Name), styleSuccess(phase.ID))
+			fmt.Println(styleSubHeader("Review the completed phase."))
 			fmt.Println()
 		}
 	}
@@ -6319,7 +6430,7 @@ func runWork(args []string) error {
 		if err := taskcontext.ClearContext(dataDir); err != nil {
 			return err
 		}
-		fmt.Println("Cleared working task context.")
+		fmt.Println(styleSuccess("Cleared working task context."))
 		return nil
 	}
 
@@ -6348,7 +6459,7 @@ func runWork(args []string) error {
 		if err := taskcontext.SetCurrentTask(dataDir, task.ID, ""); err != nil {
 			return err
 		}
-		fmt.Printf("Working task set: %s - %s\n", task.ID, task.Title)
+		fmt.Printf("%s %s - %s\n", styleSuccess("Working task set:"), styleSuccess(task.ID), task.Title)
 		return nil
 	}
 
@@ -6361,22 +6472,22 @@ func runWork(args []string) error {
 		currentTask = ctx.PrimaryTask
 	}
 	if currentTask == "" {
-		fmt.Println("No current working task set.")
+		fmt.Println(styleWarning("No current working task set."))
 		return nil
 	}
 
 	task := tree.FindTask(currentTask)
 	if task == nil {
-		fmt.Printf("Working task '%s' not found in tree.\n", currentTask)
+		fmt.Printf("%s '%s' not found in tree.\n", styleWarning("Working task"), currentTask)
 		return nil
 	}
 
-	fmt.Println("Current Working Task")
-	fmt.Printf("ID: %s\n", task.ID)
-	fmt.Printf("Title: %s\n", task.Title)
-	fmt.Printf("Status: %s\n", task.Status)
-	fmt.Printf("Estimate: %.2f hours\n", task.EstimateHours)
-	fmt.Printf("File: %s\n", filepath.Join(dataDir, task.File))
+	fmt.Println(styleHeader("Current Working Task"))
+	fmt.Printf("%s %s\n", styleSubHeader("ID:"), task.ID)
+	fmt.Printf("%s %s\n", styleSubHeader("Title:"), task.Title)
+	fmt.Printf("%s %s\n", styleSubHeader("Status:"), styleStatusText(string(task.Status)))
+	fmt.Printf("%s %.2f hours\n", styleSubHeader("Estimate:"), task.EstimateHours)
+	fmt.Printf("%s %s\n", styleSubHeader("File:"), filepath.Join(dataDir, task.File))
 	return nil
 }
 
@@ -6674,9 +6785,9 @@ func runMove(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Moved: %s\n", source)
-	fmt.Printf("To: %s\n", dest)
-	fmt.Printf("New ID: %s\n", remap[source])
+	fmt.Printf("%s %s\n", styleSuccess("Moved:"), styleSuccess(source))
+	fmt.Printf("%s %s\n", styleSuccess("To:"), styleSuccess(dest))
+	fmt.Printf("%s %s\n", styleSuccess("New ID:"), styleSuccess(remap[source]))
 	return nil
 }
 
@@ -6738,7 +6849,7 @@ func runSync() error {
 	if err := writeYAMLMapFile(rootPath, root); err != nil {
 		return err
 	}
-	fmt.Println("Synced")
+	fmt.Println(styleSuccess("Synced"))
 	return nil
 }
 
@@ -6785,7 +6896,7 @@ func runUnclaim(args []string) error {
 	}
 
 	if task.Status != models.StatusInProgress && task.Status != models.StatusPending {
-		fmt.Printf("Task is not in progress: %s\n", task.Status)
+		fmt.Printf("%s %s\n", styleError("Task is not in progress:"), task.Status)
 		return nil
 	}
 	if task.Status == models.StatusInProgress {
@@ -6793,7 +6904,7 @@ func runUnclaim(args []string) error {
 			return err
 		}
 	} else if task.ClaimedBy == "" && task.ClaimedAt == nil {
-		fmt.Printf("Task is not in progress: %s\n", task.Status)
+		fmt.Printf("%s %s\n", styleError("Task is not in progress:"), task.Status)
 		return nil
 	} else {
 		task.ClaimedBy = ""
@@ -6810,7 +6921,7 @@ func runUnclaim(args []string) error {
 	if err := taskcontext.ClearContext(dataDir); err != nil {
 		return err
 	}
-	fmt.Printf("Unclaimed: %s - %s\n", task.ID, task.Title)
+	fmt.Printf("%s %s - %s\n", styleSuccess("Unclaimed:"), styleSuccess(task.ID), styleSuccess(task.Title))
 	return nil
 }
 
@@ -6885,9 +6996,9 @@ func runBlocked(args []string) error {
 		return err
 	}
 
-	fmt.Printf("Blocked: %s (%s)\n", task.ID, reason)
+	fmt.Printf("%s %s (%s)\n", styleWarning("Blocked:"), styleSuccess(task.ID), styleWarning(reason))
 	if !parseFlag(args, "--grab") {
-		fmt.Println("Tip: Run `backlog grab` to claim the next available task.")
+		fmt.Println(styleWarning("Tip: Run `backlog grab` to claim the next available task."))
 		return nil
 	}
 
@@ -6902,16 +7013,16 @@ func runBlocked(args []string) error {
 		return err
 	}
 	if strings.TrimSpace(nextAvailable) == "" {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleWarning("No available tasks found."))
 		return nil
 	}
 	next := tree.FindTask(nextAvailable)
 	if next == nil {
-		fmt.Println("No available tasks found.")
+		fmt.Println(styleWarning("No available tasks found."))
 		return nil
 	}
 	if _, err := resolveTaskFilePath(next.File); err != nil || !taskFileExists(next.File) {
-		fmt.Printf("Skipping auto-grab: %s has no task file.\n", next.ID)
+		fmt.Printf("%s: %s has no task file.\n", styleWarning("Skipping auto-grab"), styleMuted(next.ID))
 		return nil
 	}
 
@@ -7000,7 +7111,7 @@ func runDone(args []string) error {
 		}
 
 		if task.Status == models.StatusDone && status == models.StatusDone {
-			fmt.Printf("Already done: %s - %s\n", task.ID, task.Title)
+			fmt.Printf("%s %s - %s\n", styleMuted("Already done:"), styleSuccess(task.ID), styleSuccess(task.Title))
 			continue
 		}
 		if status == models.StatusDone && task.StartedAt != nil {
@@ -7029,19 +7140,19 @@ func runDone(args []string) error {
 		}
 
 		if status == models.StatusDone {
-			fmt.Printf("Completed: %s - %s\n", task.ID, task.Title)
+			fmt.Printf("%s %s - %s\n", styleSuccess("Completed:"), styleSuccess(task.ID), styleSuccess(task.Title))
 		} else {
-			fmt.Printf("Updated: %s - %s\n", task.ID, status)
+			fmt.Printf("%s %s - %s\n", styleSuccess("Updated:"), styleSuccess(task.ID), styleStatusText(string(status)))
 		}
 		if status == models.StatusDone && task.DurationMinutes != nil {
-			fmt.Printf("Duration: %d minutes\n", int(*task.DurationMinutes))
+			fmt.Printf("%s: %d minutes\n", styleSubHeader("Duration"), int(*task.DurationMinutes))
 		}
 	}
 	return nil
 }
 
 func printCommandNotImplemented(name string) error {
-	fmt.Printf("%s command is not implemented yet\n", name)
+	fmt.Printf("%s %s\n", styleWarning("Command is not implemented yet:"), styleMuted(name))
 	return nil
 }
 
@@ -7474,7 +7585,7 @@ type skillInstallOperation struct {
 
 func runSkills(args []string) error {
 	if len(args) == 0 || parseFlag(args, "--help", "-h") {
-		fmt.Println("Usage: backlog skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]")
+		fmt.Println(styleMuted("Usage: backlog skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]"))
 		return nil
 	}
 
@@ -7485,7 +7596,7 @@ func runSkills(args []string) error {
 
 	rest := args[1:]
 	if parseFlag(rest, "--help", "-h") {
-		fmt.Println("Usage: backlog skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]")
+		fmt.Println(styleMuted("Usage: backlog skills install [skill_names...] [--scope local|global] [--client codex|claude|opencode|common]"))
 		return nil
 	}
 	if err := validateAllowedFlags(rest, map[string]bool{
@@ -7657,12 +7768,12 @@ func runSkills(args []string) error {
 	}
 
 	if dryRun {
-		fmt.Println("Dry run: no files written.")
+		fmt.Println(styleWarning("Dry run: no files written."))
 	} else {
-		fmt.Printf("Installed %d file(s).\n", writtenCount)
+		fmt.Printf("%s\n", styleSuccess(fmt.Sprintf("Installed %d file(s).", writtenCount)))
 	}
 	for _, warning := range warnings {
-		fmt.Printf("Warning: %s\n", warning)
+		fmt.Printf("%s %s\n", styleWarning("Warning:"), styleMuted(warning))
 	}
 	return nil
 }
