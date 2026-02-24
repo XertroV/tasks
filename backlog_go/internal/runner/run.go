@@ -76,6 +76,7 @@ var migrationKnownCommands = []string{
 	"report",
 	"data",
 	"schema",
+	"howto",
 	"skills",
 	"migrate",
 }
@@ -375,6 +376,8 @@ func Run(rawArgs ...string) error {
 		return runTimeline(payload)
 	case commands.CmdAdmin:
 		return runAdmin(payload)
+	case commands.CmdHowto:
+		return runHowto(payload)
 	case commands.CmdAgents:
 		return runAgents(payload)
 	case commands.CmdClaim:
@@ -3039,6 +3042,29 @@ func runAgents(args []string) error {
 		}
 		fmt.Print(snippet)
 	}
+	return nil
+}
+
+func runHowto(args []string) error {
+	if err := validateAllowedFlags(args, map[string]bool{"--help": true, "--json": true}); err != nil {
+		return err
+	}
+
+	if parseFlag(args, "--json") {
+		payload := map[string]any{
+			"name":          "backlog-howto",
+			"skill_version": skills.BacklogHowtoSkillVersion,
+			"content":       skills.BacklogHowtoSkillMD,
+		}
+		raw, err := json.MarshalIndent(payload, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(raw))
+		return nil
+	}
+
+	fmt.Print(skills.BacklogHowtoSkillMD)
 	return nil
 }
 

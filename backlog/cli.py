@@ -40,6 +40,10 @@ from .helpers import (
     format_epic_path,
     filter_tree_by_path_query,
 )
+from .commands.generated_backlog_howto import (
+    BACKLOG_HOWTO_SKILL_MD,
+    BACKLOG_HOWTO_SKILL_VERSION,
+)
 
 
 console = Console()
@@ -130,6 +134,17 @@ AGENTS_SNIPPETS = {
 - Do not mark done with unresolved blockers, hidden assumptions, or failing tests.
 """,
 }
+
+
+class BacklogGroup(click.Group):
+    """Click group with agent how-to command pinned at top of help output."""
+
+    def list_commands(self, ctx):
+        commands = super().list_commands(ctx)
+        if "howto" in commands:
+            commands.remove("howto")
+            return ["howto", *commands]
+        return commands
 
 
 def load_config():
@@ -439,7 +454,7 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
     console.print()
 
 
-@click.group(invoke_without_command=True)
+@click.group(invoke_without_command=True, cls=BacklogGroup)
 @click.version_option(version="0.1.0")
 @click.pass_context
 def cli(ctx):
@@ -463,6 +478,25 @@ def cli(ctx):
                 print(line)
             print()
         click.echo(ctx.get_help())
+
+
+@cli.command()
+@click.option("--json", "output_json", is_flag=True, help="Output as JSON")
+def howto(output_json):
+    """Show the agent how to use backlog effectively."""
+    if output_json:
+        click.echo(
+            json.dumps(
+                {
+                    "name": "backlog-howto",
+                    "skill_version": BACKLOG_HOWTO_SKILL_VERSION,
+                    "content": BACKLOG_HOWTO_SKILL_MD,
+                },
+                indent=2,
+            )
+        )
+        return
+    click.echo(BACKLOG_HOWTO_SKILL_MD)
 
 
 @cli.command()

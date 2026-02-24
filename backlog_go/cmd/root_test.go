@@ -1,6 +1,9 @@
 package cmd
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestNewRootCommandDefaults(t *testing.T) {
 	t.Parallel()
@@ -32,5 +35,28 @@ func TestNewRootCommandDefaults(t *testing.T) {
 
 	if len(command.Commands()) == 0 {
 		t.Fatal("commands should not be empty")
+	}
+
+	usage := command.Usage()
+	if !strings.Contains(usage, "next") || !strings.Contains(usage, "Show next available task on critical path.") {
+		t.Fatalf("usage %q missing command descriptions", usage)
+	}
+	if !strings.Contains(usage, "\n  howto") {
+		t.Fatalf("usage %q missing howto command entry", usage)
+	}
+	commandsSection := strings.SplitN(usage, "Commands:\n", 2)
+	if len(commandsSection) != 2 {
+		t.Fatalf("usage %q missing commands section", usage)
+	}
+	firstCommandLine := strings.SplitN(commandsSection[1], "\n", 2)[0]
+	if !strings.Contains(firstCommandLine, "howto") {
+		t.Fatalf("first command line %q does not prioritize howto", firstCommandLine)
+	}
+
+	for _, name := range command.Commands() {
+		desc := command.commandDescriptions[name]
+		if strings.TrimSpace(desc) == "" {
+			t.Fatalf("missing description for command %q", name)
+		}
 	}
 }

@@ -484,6 +484,31 @@ def test_timeline_alias_is_shown_inline_in_help(runner, tmp_feature_tasks_dir):
     assert "\n  tl " not in result.output
 
 
+def test_howto_is_pinned_to_top_of_help(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["--help"])
+
+    assert result.exit_code == 0
+    commands_section = result.output.split("Commands:\n", 1)[1]
+    first_command_line = next(
+        line for line in commands_section.splitlines() if line.startswith("  ")
+    )
+    assert first_command_line.strip().startswith("howto")
+
+
+def test_howto_command_outputs_text_and_json(runner, tmp_feature_tasks_dir):
+    text_result = runner.invoke(cli, ["howto"])
+    assert text_result.exit_code == 0
+    assert "# Backlog How-To" in text_result.output
+    assert "Core Work Loop" in text_result.output
+
+    json_result = runner.invoke(cli, ["howto", "--json"])
+    assert json_result.exit_code == 0
+    payload = json.loads(json_result.output)
+    assert payload["name"] == "backlog-howto"
+    assert isinstance(payload["skill_version"], str)
+    assert "# Backlog How-To" in payload["content"]
+
+
 def test_report_estimate_accuracy_json(runner, tmp_feature_tasks_dir):
     result = runner.invoke(cli, ["report", "estimate-accuracy", "--format", "json"])
     assert result.exit_code == 0

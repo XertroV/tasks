@@ -957,8 +957,27 @@ tags: []
     const p = run(["--help"], root);
     expect(p.exitCode).toBe(0);
     const out = p.stdout.toString();
+    expect(out).toContain("\n  howto");
+    const commandsSection = out.split("Commands:\n")[1] ?? "";
+    const firstLine = commandsSection.split("\n")[0] ?? "";
+    expect(firstLine).toContain("howto");
     expect(out).toContain("timeline        Display an ASCII Gantt chart of the project timeline (alias: tl)");
     expect(out).not.toContain("\n  tl             Display an ASCII Gantt chart of the project timeline.");
+  });
+
+  test("howto prints agent guidance in text and json", () => {
+    root = setupFixture();
+    let p = run(["howto"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("# Backlog How-To");
+    expect(p.stdout.toString()).toContain("Core Work Loop");
+
+    p = run(["howto", "--json"], root);
+    expect(p.exitCode).toBe(0);
+    const payload = JSON.parse(p.stdout.toString());
+    expect(payload.name).toBe("backlog-howto");
+    expect(typeof payload.skill_version).toBe("string");
+    expect(payload.content).toContain("# Backlog How-To");
   });
 
   test("search and blockers commands", () => {

@@ -40,6 +40,8 @@ var parityVectors = [][]string{
 	{"check", "--json"},
 	{"data", "summary"},
 	{"schema", "--json"},
+	{"howto"},
+	{"howto", "--json"},
 	{"work"},
 	{"work", "P1.M1.E1.T001"},
 	{"claim", "P1.M1.E1.T001", "--agent", "agent-x"},

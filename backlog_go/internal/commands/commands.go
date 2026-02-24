@@ -16,6 +16,7 @@ const (
 	CmdSchema        = "schema"
 	CmdSession       = "session"
 	CmdSkills        = "skills"
+	CmdHowto         = "howto"
 	CmdAgents        = "agents"
 	CmdReport        = "report"
 	CmdTimeline      = "timeline"

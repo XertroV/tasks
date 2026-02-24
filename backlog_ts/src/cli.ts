@@ -177,6 +177,7 @@ function usage(): void {
   console.log(`Usage: backlog <command> [options]
 
 Commands:
+  howto           Show the agent how to use backlog effectively
   ls              List by scope or show task summary by full ID
   list            List tasks with filtering options
   tree            Display full hierarchical tree
@@ -2461,6 +2462,19 @@ async function cmdAgents(args: string[]): Promise<void> {
   }
 }
 
+async function cmdHowto(args: string[]): Promise<void> {
+  const asJson = parseFlag(args, "--json");
+  if (asJson) {
+    jsonOut({
+      name: "backlog-howto",
+      skill_version: BACKLOG_HOWTO_SKILL_VERSION,
+      content: BACKLOG_HOWTO_SKILL_MD,
+    });
+    return;
+  }
+  console.log(BACKLOG_HOWTO_SKILL_MD);
+}
+
 function slugify(text: string, maxLength = 30): string {
   const base = text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   return base.length > maxLength ? base.slice(0, maxLength).replace(/-+$/g, "") : base;
@@ -3384,6 +3398,9 @@ async function main(): Promise<void> {
       return;
     case "agents":
       await cmdAgents(rest);
+      return;
+    case "howto":
+      await cmdHowto(rest);
       return;
     case "add":
       await cmdAdd(rest);
