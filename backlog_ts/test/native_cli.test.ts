@@ -1379,8 +1379,8 @@ tags: []
     let p = run(["list"], root);
     expect(p.exitCode).toBe(0);
     const out = p.stdout.toString();
-    expect(out).toContain("Phase (0/2 tasks done)");
-    expect(out).toContain("M (0/2 tasks done)");
+    expect(out).toContain("Phase (P1) (0/2 tasks done)");
+    expect(out).toContain("M (P1.M1) (0/2 tasks done)");
   });
 
   test("list --all shows all milestones", () => {
@@ -1421,8 +1421,8 @@ tags: []
     expect(p.exitCode).toBe(0);
     const out = p.stdout.toString();
     // Stats should show actual completion (1/2), not filtered view
-    expect(out).toContain("Phase (1/2 tasks done)");
-    expect(out).toContain("M (1/2 tasks done)");
+    expect(out).toContain("Phase (P1) (1/2 tasks done)");
+    expect(out).toContain("M (P1.M1) (1/2 tasks done)");
   });
 
   test("list --json includes milestone metadata", () => {

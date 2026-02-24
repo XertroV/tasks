@@ -1315,8 +1315,9 @@ def test_list_enhanced_shows_milestones(runner, tmp_tasks_dir):
 
     result = runner.invoke(cli, ["list"])
     assert result.exit_code == 0
-    assert "Test Phase (0/2 tasks done)" in result.output
-    assert "Test Milestone (0/2 tasks done)" in result.output
+    assert "Test Phase (P1) (0/2 tasks done)" in result.output
+    assert "Test Milestone (" in result.output
+    assert "M1) (0/2 tasks done)" in result.output
 
 
 def test_list_all_shows_all_milestones(runner, tmp_tasks_dir):
@@ -1364,8 +1365,9 @@ def test_list_unfinished_filters_completed(runner, tmp_tasks_dir):
     result = runner.invoke(cli, ["list", "--unfinished"])
     assert result.exit_code == 0
     # Stats should show actual completion (1/2)
-    assert "Test Phase (1/2 tasks done)" in result.output
-    assert "Test Milestone (1/2 tasks done)" in result.output
+    assert "Test Phase (P1) (1/2 tasks done)" in result.output
+    assert "Test Milestone (" in result.output
+    assert "M1) (1/2 tasks done)" in result.output
 
 
 def test_list_json_includes_milestone_metadata(runner, tmp_tasks_dir):

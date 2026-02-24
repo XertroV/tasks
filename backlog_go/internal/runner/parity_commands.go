@@ -38,6 +38,10 @@ func runSearch(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdSearch)
+		return nil
+	}
 	allowed := map[string]bool{
 		"--status":     true,
 		"--tags":       true,
@@ -45,9 +49,22 @@ func runSearch(args []string) error {
 		"--priority":   true,
 		"--limit":      true,
 		"--json":       true,
+		"--help":       true,
+		"-h":           true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if err := validateAllowedFlagsForUsage(commands.CmdSearch, args, allowed); err != nil {
 		return err
+	}
+	positionals := positionalArgs(args, map[string]bool{
+		"--status":     true,
+		"--tags":       true,
+		"--complexity": true,
+		"--priority":   true,
+		"--limit":      true,
+		"--json":       false,
+	})
+	if len(positionals) != 1 {
+		return printUsageError(commands.CmdSearch, errors.New("search requires exactly one PATTERN argument"))
 	}
 	pattern := firstPositionalArg(args, map[string]bool{
 		"--status":     true,
@@ -57,8 +74,9 @@ func runSearch(args []string) error {
 		"--limit":      true,
 		"--json":       false,
 	})
-	if strings.TrimSpace(pattern) == "" {
-		return errors.New("search requires PATTERN")
+	pattern = strings.TrimSpace(pattern)
+	if pattern == "" {
+		return printUsageError(commands.CmdSearch, errors.New("search requires PATTERN"))
 	}
 
 	limit, err := parseIntOptionWithDefault(args, 20, "--limit")
@@ -80,21 +98,21 @@ func runSearch(args []string) error {
 	if hasStatus {
 		statusFilter, err = models.ParseStatus(statusRaw)
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdSearch, err)
 		}
 	}
 	var complexityFilter models.Complexity
 	if hasComplexity {
 		complexityFilter, err = models.ParseComplexity(complexityRaw)
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdSearch, err)
 		}
 	}
 	var priorityFilter models.Priority
 	if hasPriority {
 		priorityFilter, err = models.ParsePriority(priorityRaw)
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdSearch, err)
 		}
 	}
 
@@ -230,8 +248,14 @@ func runBlockers(args []string) error {
 		"--deep":    true,
 		"--suggest": true,
 		"--json":    true,
+		"--help":    true,
+		"-h":        true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdBlockers)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdBlockers, args, allowed); err != nil {
 		return err
 	}
 
@@ -314,16 +338,26 @@ func runWhy(args []string) error {
 	}
 	allowed := map[string]bool{
 		"--json": true,
+		"--help": true,
+		"-h":     true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdWhy)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdWhy, args, allowed); err != nil {
 		return err
+	}
+	if len(positionalArgs(args, allowed)) != 1 {
+		return printUsageError(commands.CmdWhy, errors.New("why requires TASK_ID"))
 	}
 	taskID := firstPositionalArg(args, allowed)
-	if strings.TrimSpace(taskID) == "" {
-		return errors.New("why requires TASK_ID")
+	taskID = strings.TrimSpace(taskID)
+	if taskID == "" {
+		return printUsageError(commands.CmdWhy, errors.New("why requires TASK_ID"))
 	}
 	if err := validateTaskID(taskID); err != nil {
-		return err
+		return printUsageError(commands.CmdWhy, err)
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -394,14 +428,25 @@ func runTimeline(args []string) error {
 		"--group-by":  true,
 		"--show-done": true,
 		"--json":      true,
+		"--help":      true,
+		"-h":          true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdTimeline)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdTimeline, args, allowed); err != nil {
 		return err
 	}
 	scope := strings.TrimSpace(parseOption(args, "--scope"))
 	groupBy := strings.TrimSpace(parseOption(args, "--group-by"))
 	if groupBy == "" {
 		groupBy = "milestone"
+	}
+	switch strings.ToLower(groupBy) {
+	case "phase", "milestone", "epic", "status":
+	default:
+		return printUsageError(commands.CmdTimeline, fmt.Errorf("invalid --group-by value: %s", groupBy))
 	}
 	showDone := parseFlag(args, "--show-done")
 
@@ -488,6 +533,10 @@ func runReport(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdReport)
+		return nil
+	}
 	if len(args) == 0 {
 		return runReportProgress(nil)
 	}
@@ -505,7 +554,7 @@ func runReport(args []string) error {
 	case "estimate-accuracy", "ea":
 		return runReportEstimateAccuracy(rest)
 	default:
-		return fmt.Errorf(reportSubcommandHelp(subcommand))
+		return printUsageError(commands.CmdReport, fmt.Errorf(reportSubcommandHelp(subcommand)))
 	}
 }
 
@@ -532,8 +581,14 @@ func runReportProgress(args []string) error {
 		"--by-milestone": true,
 		"--by-epic":      true,
 		"--all":          true,
+		"--help":         true,
+		"-h":             true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdReport)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdReport, args, allowed); err != nil {
 		return err
 	}
 	asJSON := parseFlag(args, "--json") || strings.EqualFold(parseOption(args, "--format"), "json")
@@ -869,8 +924,14 @@ func runReportVelocity(args []string) error {
 		"--days":   true,
 		"--format": true,
 		"--json":   true,
+		"--help":   true,
+		"-h":       true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdReport)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdReport, args, allowed); err != nil {
 		return err
 	}
 	days, err := parseIntOptionWithDefault(args, 14, "--days")
@@ -974,8 +1035,14 @@ func runReportEstimateAccuracy(args []string) error {
 	allowed := map[string]bool{
 		"--format": true,
 		"--json":   true,
+		"--help":   true,
+		"-h":       true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdReport)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdReport, args, allowed); err != nil {
 		return err
 	}
 	asJSON := parseFlag(args, "--json") || strings.EqualFold(parseOption(args, "--format"), "json")
@@ -1079,8 +1146,24 @@ func runData(args []string) error {
 		return err
 	}
 	if len(args) == 0 {
-		fmt.Println(styleMuted("Usage: backlog data <summary|export> [options]"))
+		return printUsageError(commands.CmdData, errors.New("data requires <summary|export>"))
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdData)
 		return nil
+	}
+	if strings.HasPrefix(strings.TrimSpace(args[0]), "-") {
+		return printUsageError(commands.CmdData, errors.New("data requires <summary|export>"))
+	}
+	if len(positionalArgs(args[1:], map[string]bool{
+		"--format":          true,
+		"--output":          true,
+		"-o":                true,
+		"--scope":           true,
+		"--include-content": false,
+		"--pretty":          false,
+	})) > 0 {
+		return printUsageError(commands.CmdData, fmt.Errorf("data accepts only one subcommand"))
 	}
 	sub := strings.TrimSpace(args[0])
 	rest := args[1:]
@@ -1090,15 +1173,21 @@ func runData(args []string) error {
 	case "export":
 		return runDataExport(rest)
 	default:
-		return fmt.Errorf("Unknown data subcommand: %s", sub)
+		return printUsageError(commands.CmdData, fmt.Errorf("unknown data subcommand: %s", sub))
 	}
 }
 
 func runDataSummary(args []string) error {
 	allowed := map[string]bool{
 		"--format": true,
+		"--help":   true,
+		"-h":       true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdData)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdData, args, allowed); err != nil {
 		return err
 	}
 	asJSON := strings.EqualFold(parseOption(args, "--format"), "json")
@@ -1161,8 +1250,14 @@ func runDataExport(args []string) error {
 		"--scope":           true,
 		"--include-content": true,
 		"--pretty":          true,
+		"--help":            true,
+		"-h":                true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdData)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdData, args, allowed); err != nil {
 		return err
 	}
 	format := strings.TrimSpace(parseOption(args, "--format"))
@@ -1313,8 +1408,14 @@ func runSchema(args []string) error {
 	allowed := map[string]bool{
 		"--json":    true,
 		"--compact": true,
+		"--help":    true,
+		"-h":        true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdSchema)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdSchema, args, allowed); err != nil {
 		return err
 	}
 	asJSON := parseFlag(args, "--json")
@@ -1369,20 +1470,16 @@ func runSession(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	if len(args) == 0 || args[0] == "--help" {
-		fmt.Println(styleMuted("Usage: backlog session <start|heartbeat|list|end|clean> [options]"))
+	if len(args) == 0 {
+		return printUsageError(commands.CmdSession, errors.New("session requires subcommand"))
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdSession)
 		return nil
 	}
 
 	subcommand := args[0]
 	rest := args[1:]
-	timeoutMinutes, err := parseIntOptionWithDefault(rest, 15, "--timeout")
-	if err != nil {
-		return err
-	}
-	if timeoutMinutes <= 0 {
-		timeoutMinutes = 15
-	}
 	dataDir, err := ensureDataRoot()
 	if err != nil {
 		return err
@@ -1391,13 +1488,36 @@ func runSession(args []string) error {
 	if err != nil {
 		return err
 	}
+	validateSubcommandArgs := func(valueTaking map[string]bool, allowed map[string]bool) error {
+		if err := validateAllowedFlagsForUsage(commands.CmdSession, rest, allowed); err != nil {
+			return err
+		}
+		if len(positionalArgs(rest, valueTaking)) > 0 {
+			return printUsageError(commands.CmdSession, fmt.Errorf("session %s does not take positional arguments", subcommand))
+		}
+		return nil
+	}
 
 	now := time.Now().UTC().Format(time.RFC3339)
 	switch subcommand {
 	case "start":
+		if err := validateSubcommandArgs(
+			map[string]bool{
+				"--agent": true,
+				"--task":  true,
+			},
+			map[string]bool{
+				"--agent": true,
+				"--task":  true,
+				"--help":  true,
+				"-h":      true,
+			},
+		); err != nil {
+			return err
+		}
 		agent := strings.TrimSpace(parseOption(rest, "--agent"))
 		if agent == "" {
-			return errors.New("session start requires --agent")
+			return printUsageError(commands.CmdSession, errors.New("session start requires --agent"))
 		}
 		taskID := strings.TrimSpace(parseOption(rest, "--task"))
 		sessions[agent] = taskcontext.SessionPayload{
@@ -1418,10 +1538,24 @@ func runSession(args []string) error {
 		return nil
 
 	case "heartbeat":
+		if err := validateSubcommandArgs(
+			map[string]bool{
+				"--agent":    true,
+				"--progress": true,
+			},
+			map[string]bool{
+				"--agent":    true,
+				"--progress": true,
+				"--help":     true,
+				"-h":         true,
+			},
+		); err != nil {
+			return err
+		}
 		agent := strings.TrimSpace(parseOption(rest, "--agent"))
 		progress := strings.TrimSpace(parseOption(rest, "--progress"))
 		if agent == "" {
-			return errors.New("session heartbeat requires --agent")
+			return printUsageError(commands.CmdSession, errors.New("session heartbeat requires --agent"))
 		}
 		session, ok := sessions[agent]
 		if !ok {
@@ -1443,13 +1577,27 @@ func runSession(args []string) error {
 		return nil
 
 	case "end":
+		if err := validateSubcommandArgs(
+			map[string]bool{
+				"--agent":  true,
+				"--status": true,
+			},
+			map[string]bool{
+				"--agent":  true,
+				"--status": true,
+				"--help":   true,
+				"-h":       true,
+			},
+		); err != nil {
+			return err
+		}
 		agent := strings.TrimSpace(parseOption(rest, "--agent"))
 		status := strings.TrimSpace(parseOption(rest, "--status"))
 		if status == "" {
 			status = "completed"
 		}
 		if agent == "" {
-			return errors.New("session end requires --agent")
+			return printUsageError(commands.CmdSession, errors.New("session end requires --agent"))
 		}
 		if _, ok := sessions[agent]; !ok {
 			fmt.Printf("%s %s\n", styleWarning("No active session found for"), styleMuted(agent))
@@ -1464,6 +1612,27 @@ func runSession(args []string) error {
 		return nil
 
 	case "list":
+		timeoutMinutes, err := parseIntOptionWithDefault(rest, 15, "--timeout")
+		if err != nil {
+			return err
+		}
+		if timeoutMinutes <= 0 {
+			timeoutMinutes = 15
+		}
+		if err := validateSubcommandArgs(
+			map[string]bool{
+				"--stale":   false,
+				"--timeout": true,
+			},
+			map[string]bool{
+				"--stale":   true,
+				"--timeout": true,
+				"--help":    true,
+				"-h":        true,
+			},
+		); err != nil {
+			return err
+		}
 		onlyStale := parseFlag(rest, "--stale")
 		if len(sessions) == 0 {
 			if onlyStale {
@@ -1518,6 +1687,25 @@ func runSession(args []string) error {
 		return nil
 
 	case "clean":
+		timeoutMinutes, err := parseIntOptionWithDefault(rest, 15, "--timeout")
+		if err != nil {
+			return err
+		}
+		if timeoutMinutes <= 0 {
+			timeoutMinutes = 15
+		}
+		if err := validateSubcommandArgs(
+			map[string]bool{
+				"--timeout": true,
+			},
+			map[string]bool{
+				"--timeout": true,
+				"--help":    true,
+				"-h":        true,
+			},
+		); err != nil {
+			return err
+		}
 		removed := []string{}
 		for agent, session := range sessions {
 			if ageSinceRFC3339(session.LastHeartbeat) > timeoutMinutes {
@@ -1540,7 +1728,7 @@ func runSession(args []string) error {
 		return nil
 	}
 
-	return fmt.Errorf("Unknown session subcommand: %s", subcommand)
+	return printUsageError(commands.CmdSession, fmt.Errorf("unknown session subcommand: %s", subcommand))
 }
 
 func runCheck(args []string) error {
@@ -1550,8 +1738,14 @@ func runCheck(args []string) error {
 	allowed := map[string]bool{
 		"--json":   true,
 		"--strict": true,
+		"--help":   true,
+		"-h":       true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdCheck)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdCheck, args, allowed); err != nil {
 		return err
 	}
 	asJSON := parseFlag(args, "--json")
@@ -1678,9 +1872,21 @@ func runSkip(args []string) error {
 	allowed := map[string]bool{
 		"--agent":   true,
 		"--no-grab": true,
+		"--help":    true,
+		"-h":        true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdSkip)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdSkip, args, allowed); err != nil {
 		return err
+	}
+	if len(positionalArgs(args, map[string]bool{
+		"--agent":   true,
+		"--no-grab": false,
+	})) > 1 {
+		return printUsageError(commands.CmdSkip, errors.New("skip accepts at most one TASK_ID"))
 	}
 	taskID := firstPositionalArg(args, allowed)
 	dataDir, err := ensureDataRoot()
@@ -1697,11 +1903,11 @@ func runSkip(args []string) error {
 			taskID = ctx.PrimaryTask
 		}
 		if taskID == "" {
-			return errors.New("No task ID provided and no current working task set.")
+			return printUsageError(commands.CmdSkip, errors.New("No task ID provided and no current working task set."))
 		}
 	}
 	if err := validateTaskID(taskID); err != nil {
-		return err
+		return printUsageError(commands.CmdSkip, err)
 	}
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
@@ -1764,16 +1970,25 @@ func runHandoff(args []string) error {
 		"--to":    true,
 		"--notes": true,
 		"--force": true,
+		"--help":  true,
+		"-h":      true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdHandoff)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdHandoff, args, allowed); err != nil {
 		return err
+	}
+	if len(positionalArgs(args, allowed)) > 1 {
+		return printUsageError(commands.CmdHandoff, errors.New("handoff accepts at most one TASK_ID"))
 	}
 	taskID := firstPositionalArg(args, allowed)
 	toAgent := strings.TrimSpace(parseOption(args, "--to"))
 	notes := strings.TrimSpace(parseOption(args, "--notes"))
 	force := parseFlag(args, "--force")
 	if toAgent == "" {
-		return errors.New("handoff requires --to AGENT")
+		return printUsageError(commands.CmdHandoff, errors.New("handoff requires --to AGENT"))
 	}
 
 	dataDir, err := ensureDataRoot()
@@ -1790,11 +2005,11 @@ func runHandoff(args []string) error {
 			taskID = ctx.PrimaryTask
 		}
 		if taskID == "" {
-			return errors.New("No task ID provided and no current working task set.")
+			return printUsageError(commands.CmdHandoff, errors.New("No task ID provided and no current working task set."))
 		}
 	}
 	if err := validateTaskID(taskID); err != nil {
-		return err
+		return printUsageError(commands.CmdHandoff, err)
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -1858,8 +2073,14 @@ func runUnclaimStale(args []string) error {
 	allowed := map[string]bool{
 		"--threshold": true,
 		"--dry-run":   true,
+		"--help":      true,
+		"-h":          true,
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdUnclaimStale)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdUnclaimStale, args, allowed); err != nil {
 		return err
 	}
 	thresholdMinutes, err := parseIntOptionWithDefault(args, 120, "--threshold")

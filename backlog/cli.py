@@ -1552,7 +1552,7 @@ def _list_text(
         if in_progress:
             status_display += f", {in_progress} in progress"
 
-        console.print(f"[bold]{p.name}[/] ({status_display})")
+        console.print(f"[bold]{p.name} ({p.id})[/] ({status_display})")
 
         # Show up to 5 milestones (or all with --all)
         milestones_to_show = []
@@ -1592,7 +1592,9 @@ def _list_text(
                 and len(milestones_to_show) <= milestone_limit
             )
             prefix = "└──" if is_last else "├──"
-            console.print(f"  {prefix} {m.name} ({m_done}/{m_total} tasks done)")
+            console.print(
+                f"  {prefix} {m.name} ({m.id}) ({m_done}/{m_total} tasks done)"
+            )
 
         if len(milestones_to_show) > milestone_limit:
             console.print(

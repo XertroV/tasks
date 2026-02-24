@@ -81,6 +81,236 @@ var migrationKnownCommands = []string{
 	"migrate",
 }
 
+type commandHelpSpec struct {
+	summary  string
+	usage    string
+	options  []string
+	examples []string
+}
+
+var currentCommandForUsage string
+
+func printUsageForCommand(command string) {
+	command = normalizeCommand(command)
+	currentCommandForUsage = command
+	switch command {
+	case commands.CmdAdd:
+		printAddHelp()
+	case commands.CmdAddEpic:
+		printAddEpicHelp()
+	case commands.CmdAddMilestone:
+		printAddMilestoneHelp()
+	case commands.CmdAddPhase:
+		printAddPhaseHelp()
+	case commands.CmdClaim:
+		printClaimHelp()
+	case commands.CmdDone:
+		printDoneHelp()
+	case commands.CmdUpdate:
+		printUpdateHelp()
+	case commands.CmdMove:
+		printMoveHelp()
+	case commands.CmdSet:
+		printSetHelp()
+	case commands.CmdList, commands.CmdLs:
+		printListHelp()
+	default:
+		if command == commands.CmdReportAlias {
+			command = commands.CmdReport
+		}
+		if command == commands.CmdTimelineAlias {
+			command = commands.CmdTimeline
+		}
+		if spec, ok := commandUsageFallbacks[command]; ok {
+			printCommandHelp(command, spec.summary, spec.usage, spec.options, spec.examples)
+			return
+		}
+		fmt.Printf("%s backlog %s\n", styleSubHeader("Usage:"), command)
+	}
+}
+
+func printUsageError(command string, err error) error {
+	printUsageForCommand(command)
+	return err
+}
+
+func validateAllowedFlagsForUsage(command string, args []string, allowed map[string]bool) error {
+	if err := validateAllowedFlags(args, allowed); err != nil {
+		return printUsageError(command, err)
+	}
+	return nil
+}
+
+var commandUsageFallbacks = map[string]commandUsageSpec{
+	"search": {
+		summary: "Find tasks and milestones by regex pattern.",
+		usage:   "backlog search <PATTERN> [options]",
+		options: []string{
+			"--status             Filter by comma-separated status values",
+			"--tags               Filter by comma-separated tags",
+			"--complexity         Filter by complexity (low|medium|high|critical)",
+			"--priority           Filter by priority (low|medium|high|critical)",
+			"--limit              Maximum results",
+			"--json               Output JSON",
+		},
+		examples: []string{
+			"backlog search a",
+			"backlog search --status pending --limit 5 --json auth",
+		},
+	},
+	"blockers": {
+		summary:  "Show tasks currently blocking progress.",
+		usage:    "backlog blockers [--deep] [--suggest] [--json]",
+		examples: []string{"backlog blockers", "backlog blockers --deep --json"},
+	},
+	"why": {
+		summary:  "Explain blockers and dependency reasons for a task.",
+		usage:    "backlog why <TASK_ID> [--json]",
+		examples: []string{"backlog why P1.M1.E1.T001"},
+	},
+	"timeline": {
+		summary: "Display timeline view with optional grouping.",
+		usage:   "backlog timeline [--scope SCOPE] [--group-by phase|milestone|epic|status] [--show-done] [--json]",
+		options: []string{
+			"--scope",
+			"--group-by",
+			"--show-done",
+			"--json",
+		},
+		examples: []string{"backlog timeline", "backlog timeline --group-by milestone --json"},
+	},
+	"report": {
+		summary: "Generate reports for progress, velocity, and accuracy.",
+		usage:   "backlog report [progress|velocity|estimate-accuracy|p|v|ea] [--json] [--format {json,table}]",
+		options: []string{
+			"progress (alias p)",
+			"velocity (alias v)",
+			"estimate-accuracy (alias ea)",
+			"--json",
+			"--format",
+		},
+		examples: []string{"backlog report progress", "backlog r v --json"},
+	},
+	"data": {
+		summary:  "Summarize or export task data.",
+		usage:    "backlog data <summary|export> [--format json|yaml] [--scope SCOPE] [--include-content]",
+		examples: []string{"backlog data summary --format json", "backlog data export --scope P1.M1 --format yaml"},
+	},
+	"schema": {
+		summary:  "Print backlog file format schema.",
+		usage:    "backlog schema [--json] [--compact]",
+		examples: []string{"backlog schema", "backlog schema --json --compact"},
+	},
+	"session": {
+		summary: "Manage agent working sessions.",
+		usage:   "backlog session <start|heartbeat|list|end|clean> [--agent AGENT] [--timeout MINUTES]",
+		options: []string{
+			"start --agent AGENT [--task TASK_ID]",
+			"heartbeat --agent AGENT [--progress TEXT]",
+			"end --agent AGENT [--status STATUS]",
+			"list [--stale] [--timeout MINUTES]",
+			"clean [--timeout MINUTES]",
+		},
+		examples: []string{
+			"backlog session start --agent agent-a --task P1.M1.E1.T001",
+			"backlog session heartbeat --agent agent-a --progress in_progress",
+		},
+	},
+	"check": {
+		summary:  "Run consistency checks across backlog metadata.",
+		usage:    "backlog check [--json] [--strict]",
+		examples: []string{"backlog check", "backlog check --strict"},
+	},
+	"idea": {
+		summary:  "Create a new planning idea.",
+		usage:    "backlog idea IDEA_TEXT",
+		examples: []string{"backlog idea \"Reduce setup friction in onboarding\""},
+	},
+	"bug": {
+		summary: "Create a bug item for tracking and resolution.",
+		usage:   "backlog bug [--title <TITLE> | BUG_TEXT] [options]",
+		options: []string{
+			"--title, -T",
+			"--estimate, -e",
+			"--complexity, -c",
+			"--priority, -p",
+			"--depends-on, -d",
+			"--tags",
+			"--simple, -s",
+			"--body, -b",
+		},
+		examples: []string{"backlog bug \"Crash when ...\"", "backlog bug --title \"Invalid login\" --simple"},
+	},
+	"fixed": {
+		summary: "Capture completed fix notes and observations.",
+		usage:   "backlog fixed [--title <TITLE> | FIX_TEXT] [--description DESC] [--at ISO8601]",
+		options: []string{
+			"--title, -T",
+			"--description, --desc",
+			"--at",
+			"--tags",
+			"--body, -b",
+			"--json",
+		},
+		examples: []string{"backlog fixed \"Prevented deadlock in worker loop\"", "backlog fixed --title \"Fix auth token refresh\" --at 2026-02-01T12:00:00Z"},
+	},
+	"skip": {
+		summary:  "Mark current/context task as skipped and move on.",
+		usage:    "backlog skip <TASK_ID> [--agent AGENT] [--no-grab]",
+		options:  []string{"--agent", "--no-grab"},
+		examples: []string{"backlog skip P1.M1.E1.T001 --agent agent-a"},
+	},
+	"handoff": {
+		summary: "Transfer task ownership.",
+		usage:   "backlog handoff <TASK_ID> --to AGENT [--notes \"...\"] [--force]",
+		options: []string{
+			"--to",
+			"--notes",
+			"--force",
+		},
+		examples: []string{"backlog handoff P1.M1.E1.T001 --to agent-b --notes \"Taking over\""},
+	},
+	"unclaim-stale": {
+		summary: "Release old claims for stale tasks.",
+		usage:   "backlog unclaim-stale [--threshold MINUTES] [--dry-run]",
+		options: []string{
+			"--threshold",
+			"--dry-run",
+		},
+		examples: []string{"backlog unclaim-stale --threshold 120", "backlog unclaim-stale --dry-run"},
+	},
+}
+
+var commandHelpFunctions = map[string]func(){
+	commands.CmdAdd:          printAddHelp,
+	commands.CmdAddEpic:      printAddEpicHelp,
+	commands.CmdAddMilestone: printAddMilestoneHelp,
+	commands.CmdAddPhase:     printAddPhaseHelp,
+	commands.CmdClaim:        printClaimHelp,
+	commands.CmdDone:         printDoneHelp,
+	commands.CmdUpdate:       printUpdateHelp,
+	commands.CmdMove:         printMoveHelp,
+	commands.CmdSet:          printSetHelp,
+	commands.CmdList:         printListHelp,
+	commands.CmdLs:           printListHelp,
+	commands.CmdSearch:       printSearchHelp,
+	commands.CmdBlockers:     printBlockersHelp,
+	commands.CmdWhy:          printWhyHelp,
+	commands.CmdTimeline:     printTimelineHelp,
+	commands.CmdReport:       printReportHelp,
+	commands.CmdReportAlias:  printReportHelp,
+	commands.CmdData:         printDataHelp,
+	commands.CmdSchema:       printSchemaHelp,
+	commands.CmdSession:      printSessionHelp,
+	commands.CmdCheck:        printCheckHelp,
+	commands.CmdIdea:         printIdeaHelp,
+	commands.CmdBug:          printBugHelp,
+	commands.CmdFixed:        printFixedHelp,
+	commands.CmdSkip:         printSkipHelp,
+	commands.CmdHandoff:      printHandoffHelp,
+	commands.CmdUnclaimStale: printUnclaimStaleHelp,
+}
+
 type previewTaskPayload struct {
 	ID             string   `json:"id"`
 	Title          string   `json:"title"`
@@ -327,6 +557,7 @@ func Run(rawArgs ...string) error {
 
 	command := normalizeCommand(args[0])
 	payload := args[1:]
+	currentCommandForUsage = command
 
 	if !root.IsKnownCommand(command) {
 		return fmt.Errorf("unknown command: %s", command)
@@ -439,43 +670,8 @@ func maybeHandleCommandHelp(command string, args []string) bool {
 	if !parseFlag(args, "--help", "-h") {
 		return false
 	}
-	switch command {
-	case commands.CmdAdd:
-		printAddHelp()
-		return true
-	case commands.CmdAddEpic:
-		printAddEpicHelp()
-		return true
-	case commands.CmdAddMilestone:
-		printAddMilestoneHelp()
-		return true
-	case commands.CmdAddPhase:
-		printAddPhaseHelp()
-		return true
-	case commands.CmdClaim:
-		printClaimHelp()
-		return true
-	case commands.CmdDone:
-		printDoneHelp()
-		return true
-	case commands.CmdUpdate:
-		printUpdateHelp()
-		return true
-	case commands.CmdMove:
-		printMoveHelp()
-		return true
-	case commands.CmdSet:
-		printSetHelp()
-		return true
-	case commands.CmdList:
-		printListHelp()
-		return true
-	case commands.CmdLs:
-		printListHelp()
-		return true
-	default:
-		return false
-	}
+	printUsageForCommand(command)
+	return true
 }
 
 func printCommandHelp(command, summary, usage string, options []string, examples []string) {
@@ -729,12 +925,16 @@ type initOptions struct {
 }
 
 func runInit(args []string) error {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdInit)
+		return nil
+	}
 	opts, err := parseInit(args)
 	if err != nil {
-		return err
+		return printUsageError(commands.CmdInit, err)
 	}
 	if opts.project == "" {
-		return errors.New("init requires --project")
+		return printUsageError(commands.CmdInit, errors.New("init requires --project"))
 	}
 
 	if err := ensureBacklogDataAvailable(); err != nil {
@@ -765,7 +965,12 @@ phases: []
 }
 
 func runBenchmark(args []string) error {
-	if err := validateAllowedFlags(
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdBenchmark)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(
+		commands.CmdBenchmark,
 		args,
 		map[string]bool{
 			"--json":          true,
@@ -773,6 +978,8 @@ func runBenchmark(args []string) error {
 			"--mode":          true,
 			"--parse-body":    true,
 			"--no-parse-body": true,
+			"--help":          true,
+			"-h":              true,
 		},
 	); err != nil {
 		return err
@@ -784,7 +991,7 @@ func runBenchmark(args []string) error {
 		mode = rawMode
 	}
 	if mode != "full" && mode != "metadata" && mode != "index" {
-		return fmt.Errorf("--mode must be one of: full, metadata, index")
+		return printUsageError(commands.CmdBenchmark, fmt.Errorf("--mode must be one of: full, metadata, index"))
 	}
 
 	parseTaskBody := true
@@ -801,7 +1008,7 @@ func runBenchmark(args []string) error {
 		return err
 	}
 	if top <= 0 {
-		return fmt.Errorf("--top must be a positive integer")
+		return printUsageError(commands.CmdBenchmark, fmt.Errorf("--top must be a positive integer"))
 	}
 
 	_, benchmark, err := loader.New().LoadWithBenchmark(mode, effectiveParseTaskBody, true, true)
@@ -1031,6 +1238,10 @@ func runAdd(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printAddHelp()
+		return nil
+	}
 	allowed := map[string]bool{
 		"--title":      true,
 		"-T":           true,
@@ -1045,32 +1256,29 @@ func runAdd(args []string) error {
 		"--tags":       true,
 		"--body":       true,
 		"-b":           true,
+		"--help":       true,
+		"-h":           true,
 	}
 	if len(args) == 0 {
-		printAddHelp()
-		return errors.New("add requires EPIC_ID")
+		return printUsageError(commands.CmdAdd, errors.New("add requires EPIC_ID"))
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
-		printAddHelp()
+	if err := validateAllowedFlagsForUsage(commands.CmdAdd, args, allowed); err != nil {
 		return err
 	}
 	positional := positionalArgs(args, allowed)
 	if len(positional) == 0 {
-		printAddHelp()
-		return errors.New("add requires EPIC_ID")
+		return printUsageError(commands.CmdAdd, errors.New("add requires EPIC_ID"))
 	}
 	if len(positional) > 1 {
-		printAddHelp()
-		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " "))
+		return printUsageError(commands.CmdAdd, fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " ")))
 	}
 	epicID := positional[0]
 	if epicID == "" {
-		printAddHelp()
-		return errors.New("add requires EPIC_ID")
+		return printUsageError(commands.CmdAdd, errors.New("add requires EPIC_ID"))
 	}
 	title := parseOption(args, "--title", "-T")
 	if strings.TrimSpace(title) == "" {
-		return errors.New("add requires --title")
+		return printUsageError(commands.CmdAdd, errors.New("add requires --title"))
 	}
 	estimate, err := parseFloatOptionWithDefault(args, 1, "--estimate", "-e")
 	if err != nil {
@@ -1215,6 +1423,10 @@ func runAddEpic(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdAddEpic)
+		return nil
+	}
 	allowed := map[string]bool{
 		"--title":       true,
 		"-T":            true,
@@ -1227,32 +1439,29 @@ func runAddEpic(args []string) error {
 		"--depends-on":  true,
 		"-d":            true,
 		"--description": true,
+		"--help":        true,
+		"-h":            true,
 	}
 	if len(args) == 0 {
-		printAddEpicHelp()
-		return errors.New("add-epic requires MILESTONE_ID")
+		return printUsageError(commands.CmdAddEpic, errors.New("add-epic requires MILESTONE_ID"))
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
-		printAddEpicHelp()
+	if err := validateAllowedFlagsForUsage(commands.CmdAddEpic, args, allowed); err != nil {
 		return err
 	}
 	positional := positionalArgs(args, allowed)
 	if len(positional) == 0 {
-		printAddEpicHelp()
-		return errors.New("add-epic requires MILESTONE_ID")
+		return printUsageError(commands.CmdAddEpic, errors.New("add-epic requires MILESTONE_ID"))
 	}
 	if len(positional) > 1 {
-		printAddEpicHelp()
-		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " "))
+		return printUsageError(commands.CmdAddEpic, fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " ")))
 	}
 	milestoneID := positional[0]
 	if milestoneID == "" {
-		printAddEpicHelp()
-		return errors.New("add-epic requires MILESTONE_ID")
+		return printUsageError(commands.CmdAddEpic, errors.New("add-epic requires MILESTONE_ID"))
 	}
 	title := parseOption(args, "--title", "-T", "--name", "-n")
 	if strings.TrimSpace(title) == "" {
-		return errors.New("add-epic requires --title")
+		return printUsageError(commands.CmdAddEpic, errors.New("add-epic requires --title"))
 	}
 	estimate, err := parseFloatOptionWithDefault(args, 4, "--estimate", "-e")
 	if err != nil {
@@ -1378,32 +1587,33 @@ func runAddMilestone(args []string) error {
 		"--depends-on":  true,
 		"-d":            true,
 		"--description": true,
+		"--help":        true,
+		"-h":            true,
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdAddMilestone)
+		return nil
 	}
 	if len(args) == 0 {
-		printAddMilestoneHelp()
-		return errors.New("add-milestone requires PHASE_ID")
+		return printUsageError(commands.CmdAddMilestone, errors.New("add-milestone requires PHASE_ID"))
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
-		printAddMilestoneHelp()
+	if err := validateAllowedFlagsForUsage(commands.CmdAddMilestone, args, allowed); err != nil {
 		return err
 	}
 	positional := positionalArgs(args, allowed)
 	if len(positional) == 0 {
-		printAddMilestoneHelp()
-		return errors.New("add-milestone requires PHASE_ID")
+		return printUsageError(commands.CmdAddMilestone, errors.New("add-milestone requires PHASE_ID"))
 	}
 	if len(positional) > 1 {
-		printAddMilestoneHelp()
-		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " "))
+		return printUsageError(commands.CmdAddMilestone, fmt.Errorf("unexpected argument(s): %s", strings.Join(positional[1:], " ")))
 	}
 	phaseID := positional[0]
 	if phaseID == "" {
-		printAddMilestoneHelp()
-		return errors.New("add-milestone requires PHASE_ID")
+		return printUsageError(commands.CmdAddMilestone, errors.New("add-milestone requires PHASE_ID"))
 	}
 	title := parseOption(args, "--title", "-T", "--name", "-n")
 	if strings.TrimSpace(title) == "" {
-		return errors.New("add-milestone requires --title")
+		return printUsageError(commands.CmdAddMilestone, errors.New("add-milestone requires --title"))
 	}
 	estimate, err := parseFloatOptionWithDefault(args, 8, "--estimate", "-e")
 	if err != nil {
@@ -1517,23 +1727,26 @@ func runAddPhase(args []string) error {
 		"--depends-on":  true,
 		"-d":            true,
 		"--description": true,
+		"--help":        true,
+		"-h":            true,
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdAddPhase)
+		return nil
 	}
 	if len(args) == 0 {
-		printAddPhaseHelp()
-		return errors.New("add-phase requires --title")
+		return printUsageError(commands.CmdAddPhase, errors.New("add-phase requires --title"))
 	}
-	if err := validateAllowedFlags(args, allowed); err != nil {
-		printAddPhaseHelp()
+	if err := validateAllowedFlagsForUsage(commands.CmdAddPhase, args, allowed); err != nil {
 		return err
 	}
 	positional := positionalArgs(args, allowed)
 	if len(positional) > 0 {
-		printAddPhaseHelp()
-		return fmt.Errorf("unexpected argument(s): %s", strings.Join(positional, " "))
+		return printUsageError(commands.CmdAddPhase, fmt.Errorf("unexpected argument(s): %s", strings.Join(positional, " ")))
 	}
 	title := parseOption(args, "--title", "-T", "--name", "-n")
 	if strings.TrimSpace(title) == "" {
-		return errors.New("add-phase requires --title")
+		return printUsageError(commands.CmdAddPhase, errors.New("add-phase requires --title"))
 	}
 	weeks, err := parseIntOptionWithDefault(args, 2, "--weeks", "-w")
 	if err != nil {
@@ -1624,13 +1837,42 @@ func runSet(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdSet)
+		return nil
+	}
 
-	taskID := firstPositionalArg(args, map[string]bool{})
+	allowed := map[string]bool{
+		"--status":     true,
+		"--priority":   true,
+		"--complexity": true,
+		"--estimate":   true,
+		"--title":      true,
+		"--depends-on": true,
+		"--tags":       true,
+		"--reason":     true,
+		"--help":       true,
+		"-h":           true,
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdSet, args, allowed); err != nil {
+		return err
+	}
+
+	taskID := firstPositionalArg(args, map[string]bool{
+		"--status":     true,
+		"--priority":   true,
+		"--complexity": true,
+		"--estimate":   true,
+		"--title":      true,
+		"--depends-on": true,
+		"--tags":       true,
+		"--reason":     true,
+	})
 	if taskID == "" {
-		return errors.New("set requires TASK_ID")
+		return printUsageError(commands.CmdSet, errors.New("set requires TASK_ID"))
 	}
 	if err := validateTaskID(taskID); err != nil {
-		return err
+		return printUsageError(commands.CmdSet, err)
 	}
 
 	statusRaw, hasStatus := parseOptionWithPresence(args, "--status")
@@ -1644,7 +1886,7 @@ func runSet(args []string) error {
 
 	hasAny := hasStatus || hasPriority || hasComplexity || hasEstimate || hasTitle || hasDependsOn || hasTags
 	if !hasAny {
-		return errors.New("set requires at least one property flag")
+		return printUsageError(commands.CmdSet, errors.New("set requires at least one property flag"))
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -1659,21 +1901,21 @@ func runSet(args []string) error {
 	if hasPriority {
 		priority, err := models.ParsePriority(priorityRaw)
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdSet, err)
 		}
 		task.Priority = priority
 	}
 	if hasComplexity {
 		complexity, err := models.ParseComplexity(complexityRaw)
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdSet, err)
 		}
 		task.Complexity = complexity
 	}
 	if hasEstimate {
 		raw, err := strconv.ParseFloat(estimateRaw, 64)
 		if err != nil {
-			return fmt.Errorf("invalid --estimate: %s", estimateRaw)
+			return printUsageError(commands.CmdSet, fmt.Errorf("invalid --estimate: %s", estimateRaw))
 		}
 		task.EstimateHours = raw
 	}
@@ -1689,7 +1931,7 @@ func runSet(args []string) error {
 	if hasStatus {
 		next, err := models.ParseStatus(statusRaw)
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdSet, err)
 		}
 		if err := applyTaskStatusTransition(task, next, reason); err != nil {
 			return err
@@ -1708,6 +1950,17 @@ func runUpdate(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdUpdate)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdUpdate, args, map[string]bool{
+		"--reason": true,
+		"--help":   true,
+		"-h":       true,
+	}); err != nil {
+		return err
+	}
 	pos := []string{}
 	for _, arg := range args {
 		if strings.HasPrefix(arg, "-") {
@@ -1716,21 +1969,21 @@ func runUpdate(args []string) error {
 		pos = append(pos, arg)
 	}
 	if len(pos) == 0 {
-		return errors.New("update requires TASK_ID")
+		return printUsageError(commands.CmdUpdate, errors.New("update requires TASK_ID"))
 	}
 	if len(pos) == 1 {
-		return errors.New("update requires TASK_ID STATUS")
+		return printUsageError(commands.CmdUpdate, errors.New("update requires TASK_ID STATUS"))
 	}
 	taskID := pos[0]
 	rawStatus := pos[1]
 	reason := parseOption(args, "--reason")
 
 	if err := validateTaskID(taskID); err != nil {
-		return err
+		return printUsageError(commands.CmdUpdate, err)
 	}
 	nextStatus, err := models.ParseStatus(rawStatus)
 	if err != nil {
-		return err
+		return printUsageError(commands.CmdUpdate, err)
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -2327,7 +2580,7 @@ func parseIntOptionWithDefault(args []string, fallback int, keys ...string) (int
 	}
 	value, err := strconv.Atoi(strings.TrimSpace(raw))
 	if err != nil {
-		return 0, fmt.Errorf("invalid %s: %s", keyName, raw)
+		return 0, printUsageError(currentCommandForUsage, fmt.Errorf("invalid %s: %s", keyName, raw))
 	}
 	return value, nil
 }
@@ -3678,13 +3931,20 @@ func runLock(args []string, locked bool) error {
 }
 
 func runIdea(args []string) error {
-	if err := validateAllowedFlags(args, map[string]bool{}); err != nil {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdIdea)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdIdea, args, map[string]bool{
+		"--help": true,
+		"-h":     true,
+	}); err != nil {
 		return err
 	}
 
 	title := strings.TrimSpace(strings.Join(args, " "))
 	if title == "" {
-		return errors.New("idea requires IDEA_TEXT")
+		return printUsageError(commands.CmdIdea, errors.New("idea requires IDEA_TEXT"))
 	}
 
 	dataDir, err := ensureDataRoot()
@@ -3749,7 +4009,11 @@ func runIdea(args []string) error {
 }
 
 func runBug(args []string) error {
-	if err := validateAllowedFlags(args, map[string]bool{
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdBug)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdBug, args, map[string]bool{
 		"--title":      true,
 		"-T":           true,
 		"--estimate":   true,
@@ -3765,6 +4029,8 @@ func runBug(args []string) error {
 		"-s":           true,
 		"--body":       true,
 		"-b":           true,
+		"--help":       true,
+		"-h":           true,
 	}); err != nil {
 		return err
 	}
@@ -3816,7 +4082,7 @@ func runBug(args []string) error {
 		simple = true
 	}
 	if title == "" {
-		return errors.New("bug requires --title or description text")
+		return printUsageError(commands.CmdBug, errors.New("bug requires --title or description text"))
 	}
 
 	dataDir, err := ensureDataRoot()
@@ -3886,7 +4152,11 @@ func runBug(args []string) error {
 }
 
 func runFixed(args []string) error {
-	if err := validateAllowedFlags(args, map[string]bool{
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdFixed)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdFixed, args, map[string]bool{
 		"--title":       true,
 		"-T":            true,
 		"--description": true,
@@ -3895,6 +4165,8 @@ func runFixed(args []string) error {
 		"--tags":        true,
 		"--body":        true,
 		"-b":            true,
+		"--help":        true,
+		"-h":            true,
 	}); err != nil {
 		return err
 	}
@@ -3916,7 +4188,7 @@ func runFixed(args []string) error {
 		title = positionalTitle
 	}
 	if title == "" {
-		return errors.New("fixed requires --title or FIX_TEXT")
+		return printUsageError(commands.CmdFixed, errors.New("fixed requires --title or FIX_TEXT"))
 	}
 
 	description := strings.TrimSpace(parseOption(args, "--description", "--desc"))
@@ -5980,9 +6252,18 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			if milestoneTotal == 0 {
 				continue
 			}
-			milestoneLines = append(milestoneLines, fmt.Sprintf("%s (%d/%d tasks done)", styleSubHeader("  "+milestone.Name), milestoneDone, milestoneTotal))
+			milestoneLines = append(
+				milestoneLines,
+				fmt.Sprintf(
+					"%s (%s) (%d/%d tasks done)",
+					styleSubHeader("  "+milestone.Name),
+					styleSubHeader(milestone.ID),
+					milestoneDone,
+					milestoneTotal,
+				),
+			)
 		}
-		fmt.Printf("%s (%d/%d tasks done)\n", styleSuccess(phase.Name), stats.done, stats.total)
+		fmt.Printf("%s (%s) (%d/%d tasks done)\n", styleSuccess(phase.Name), styleSuccess(phase.ID), stats.done, stats.total)
 		limit := 5
 		for i, line := range milestoneLines {
 			if i >= limit {
@@ -6021,7 +6302,7 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			if containsString(criticalPath, bug.ID) {
 				critical = string(styleCritical("★ "))
 			}
-			fmt.Printf("%s%s%s: %s\n", prefix, icon, critical, styleSuccess(bug.ID))
+			fmt.Printf("%s%s %s%s: %s\n", prefix, icon, critical, styleSuccess(bug.ID), bug.Title)
 		}
 	}
 
@@ -6052,7 +6333,7 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 			if containsString(criticalPath, idea.ID) {
 				critical = string(styleCritical("★ "))
 			}
-			fmt.Printf("%s%s%s: %s\n", prefix, icon, critical, styleSuccess(idea.ID))
+			fmt.Printf("%s%s %s%s: %s\n", prefix, icon, critical, styleSuccess(idea.ID), idea.Title)
 		}
 	}
 	return nil
@@ -6453,10 +6734,16 @@ func runClaim(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	if err := validateAllowedFlags(args, map[string]bool{
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdClaim)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdClaim, args, map[string]bool{
 		"--agent":      true,
 		"--force":      true,
 		"--no-content": true,
+		"--help":       true,
+		"-h":           true,
 	}); err != nil {
 		return err
 	}
@@ -6467,7 +6754,7 @@ func runClaim(args []string) error {
 		"--no-content": false,
 	})
 	if len(taskIDs) == 0 {
-		return errors.New("claim requires at least one TASK_ID")
+		return printUsageError(commands.CmdClaim, errors.New("claim requires at least one TASK_ID"))
 	}
 	dataDir, err := ensureDataRoot()
 	if err != nil {
@@ -6488,7 +6775,7 @@ func runClaim(args []string) error {
 	hasContext := false
 	for _, id := range taskIDs {
 		if err := validateTaskID(id); err != nil {
-			return err
+			return printUsageError(commands.CmdClaim, err)
 		}
 		task := tree.FindTask(id)
 		if task == nil {
@@ -7111,8 +7398,19 @@ func runMove(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdMove)
+		return nil
+	}
 	dataDir, err := ensureDataRoot()
 	if err != nil {
+		return err
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdMove, args, map[string]bool{
+		"--to":   true,
+		"--help": true,
+		"-h":     true,
+	}); err != nil {
 		return err
 	}
 
@@ -7120,27 +7418,27 @@ func runMove(args []string) error {
 		"--to": true,
 	})
 	if source == "" {
-		return errors.New("move requires SOURCE_ID")
+		return printUsageError(commands.CmdMove, errors.New("move requires SOURCE_ID"))
 	}
 	if err := validateTaskID(source); err != nil {
-		return err
+		return printUsageError(commands.CmdMove, err)
 	}
 
 	dest := parseOption(args, "--to")
 	if dest == "" {
-		return errors.New("move requires --to DEST_ID")
+		return printUsageError(commands.CmdMove, errors.New("move requires --to DEST_ID"))
 	}
 	if err := validateTaskID(dest); err != nil {
-		return err
+		return printUsageError(commands.CmdMove, err)
 	}
 
 	sourcePath, err := models.ParseTaskPath(source)
 	if err != nil {
-		return fmt.Errorf("invalid task id: %s", source)
+		return printUsageError(commands.CmdMove, fmt.Errorf("invalid task id: %s", source))
 	}
 	destPath, err := models.ParseTaskPath(dest)
 	if err != nil {
-		return fmt.Errorf("invalid task id: %s", dest)
+		return printUsageError(commands.CmdMove, fmt.Errorf("invalid task id: %s", dest))
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -7394,7 +7692,7 @@ func runMove(args []string) error {
 		}
 
 	default:
-		return errors.New("invalid move: supported moves are task->epic, epic->milestone, milestone->phase")
+		return printUsageError(commands.CmdMove, errors.New("invalid move: supported moves are task->epic, epic->milestone, milestone->phase"))
 	}
 
 	if err := applyIdRemap(remap, dataDir); err != nil {
@@ -7553,13 +7851,20 @@ func runBlocked(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	if err := validateAllowedFlags(
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdBlocked)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(
+		commands.CmdBlocked,
 		args,
 		map[string]bool{
 			"--reason": true,
 			"-r":       true,
 			"--agent":  true,
 			"--grab":   true,
+			"--help":   true,
+			"-h":       true,
 		},
 	); err != nil {
 		return err
@@ -7573,7 +7878,7 @@ func runBlocked(args []string) error {
 	})
 	reason := strings.TrimSpace(parseOption(args, "--reason", "-r"))
 	if reason == "" {
-		return errors.New("blocked requires --reason")
+		return printUsageError(commands.CmdBlocked, errors.New("blocked requires --reason"))
 	}
 
 	if taskID == "" {
@@ -7594,7 +7899,7 @@ func runBlocked(args []string) error {
 		}
 	}
 	if err := validateTaskID(taskID); err != nil {
-		return err
+		return printUsageError(commands.CmdBlocked, err)
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -8118,7 +8423,7 @@ func parseFloatOptionWithDefault(args []string, fallback float64, keys ...string
 	}
 	value, err := strconv.ParseFloat(raw, 64)
 	if err != nil {
-		return 0, fmt.Errorf("invalid %s: %s", keyName, raw)
+		return 0, printUsageError(currentCommandForUsage, fmt.Errorf("invalid %s: %s", keyName, raw))
 	}
 	return value, nil
 }
@@ -8128,7 +8433,11 @@ func parseComplexityOption(args []string, names ...string) (models.Complexity, e
 	if strings.TrimSpace(raw) == "" {
 		return models.ComplexityMedium, nil
 	}
-	return models.ParseComplexity(raw)
+	value, err := models.ParseComplexity(raw)
+	if err != nil {
+		return models.ComplexityMedium, printUsageError(currentCommandForUsage, err)
+	}
+	return value, nil
 }
 
 func parsePriorityOption(args []string, names ...string) (models.Priority, error) {
@@ -8136,7 +8445,11 @@ func parsePriorityOption(args []string, names ...string) (models.Priority, error
 	if strings.TrimSpace(raw) == "" {
 		return models.PriorityMedium, nil
 	}
-	return models.ParsePriority(raw)
+	value, err := models.ParsePriority(raw)
+	if err != nil {
+		return models.PriorityMedium, printUsageError(currentCommandForUsage, err)
+	}
+	return value, nil
 }
 
 func parseCSV(raw string) []string {

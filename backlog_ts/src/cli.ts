@@ -905,7 +905,7 @@ async function cmdList(args: string[]): Promise<void> {
 
   for (const p of phasesToShow) {
     const stats = getPhaseStats(p);
-    console.log(`${pc.bold(p.name)} (${stats.done}/${stats.total} tasks done)`);
+    console.log(`${pc.bold(`${p.name} (${p.id})`)} (${stats.done}/${stats.total} tasks done)`);
 
     const milestonesToShow = unfinished ? p.milestones.filter((m) => hasUnfinishedEpics(m)) : p.milestones;
     const milestoneLimit = showAll ? milestonesToShow.length : 5;
@@ -917,7 +917,7 @@ async function cmdList(args: string[]): Promise<void> {
       const mStats = getMilestoneStats(m);
       const isLast = i === displayedMilestones.length - 1 && hiddenCount === 0;
       const prefix = isLast ? "└── " : "├── ";
-      console.log(`  ${prefix}${m.name} (${mStats.done}/${mStats.total} tasks done)`);
+      console.log(`  ${prefix}${m.name} (${m.id}) (${mStats.done}/${mStats.total} tasks done)`);
     }
 
     if (hiddenCount > 0) {

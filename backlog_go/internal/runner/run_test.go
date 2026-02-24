@@ -1172,11 +1172,63 @@ func TestRunListIncludesAuxItemsByDefault(t *testing.T) {
 	if err != nil {
 		t.Fatalf("run list = %v, expected nil", err)
 	}
+	if !strings.Contains(output, "Primary Phase (P1)") {
+		t.Fatalf("output = %q, expected phase name and ID", output)
+	}
+	if !strings.Contains(output, "Milestone One (P1.M1)") {
+		t.Fatalf("output = %q, expected milestone name and ID", output)
+	}
 	if !strings.Contains(output, "Bugs (0/1 done)") {
 		t.Fatalf("output = %q, expected bugs section", output)
 	}
+	if !strings.Contains(output, "B1: Root bug") {
+		t.Fatalf("output = %q, expected bug title in list output", output)
+	}
 	if !strings.Contains(output, "Ideas (0/1 done)") {
 		t.Fatalf("output = %q, expected ideas section", output)
+	}
+	if !strings.Contains(output, "I1: Root idea") {
+		t.Fatalf("output = %q, expected idea title in list output", output)
+	}
+}
+
+func TestRunListBugsAndIdeasFlags(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+
+	bugsOutput, err := runInDir(t, root, "list", "--bugs")
+	if err != nil {
+		t.Fatalf("run list --bugs = %v, expected nil", err)
+	}
+	if !strings.Contains(bugsOutput, "Bugs (0/1 done)") {
+		t.Fatalf("bugs output = %q, expected bugs section", bugsOutput)
+	}
+	if !strings.Contains(bugsOutput, "B1: Root bug") {
+		t.Fatalf("bugs output = %q, expected bug title", bugsOutput)
+	}
+	if strings.Contains(bugsOutput, "Ideas (") {
+		t.Fatalf("bugs output = %q, expected ideas section hidden", bugsOutput)
+	}
+	if strings.Contains(bugsOutput, "Primary Phase (P1)") {
+		t.Fatalf("bugs output = %q, expected normal phase section hidden", bugsOutput)
+	}
+
+	ideasOutput, err := runInDir(t, root, "list", "--ideas")
+	if err != nil {
+		t.Fatalf("run list --ideas = %v, expected nil", err)
+	}
+	if !strings.Contains(ideasOutput, "Ideas (0/1 done)") {
+		t.Fatalf("ideas output = %q, expected ideas section", ideasOutput)
+	}
+	if !strings.Contains(ideasOutput, "I1: Root idea") {
+		t.Fatalf("ideas output = %q, expected idea title", ideasOutput)
+	}
+	if strings.Contains(ideasOutput, "Bugs (") {
+		t.Fatalf("ideas output = %q, expected bugs section hidden", ideasOutput)
+	}
+	if strings.Contains(ideasOutput, "Primary Phase (P1)") {
+		t.Fatalf("ideas output = %q, expected normal phase section hidden", ideasOutput)
 	}
 }
 
