@@ -1,0 +1,19 @@
+---
+claimed_at: 2026-02-24T20:17:22.000Z
+claimed_by: cli-user
+completed_at: 2026-02-24T20:19:19.663Z
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B010
+priority: high
+started_at: 2026-02-24T20:17:22.000Z
+status: done
+tags: []
+title: "`bl show` has a bad help message. we need to audit all the commands'
+  help messages and improve them where they are missing. help messages should
+  always be to a high standard (there are some examples in the codebase)."
+duration_minutes: 1.96105
+---
+
+`bl show` has a bad help message. we need to audit all the commands' help messages and improve them where they are missing. help messages should always be to a high standard (there are some examples in the codebase).

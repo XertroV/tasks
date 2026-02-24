@@ -1,3 +1,5 @@
 ideas:
-- id: I001
-  file: I001-add-bl-fixed-as-an-easy-way-to.todo
+  - id: I001
+    file: I001-add-bl-fixed-as-an-easy-way-to.todo
+  - id: I002
+    file: I002-help.todo
