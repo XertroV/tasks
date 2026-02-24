@@ -467,6 +467,12 @@ func maybeHandleCommandHelp(command string, args []string) bool {
 	case commands.CmdSet:
 		printSetHelp()
 		return true
+	case commands.CmdList:
+		printListHelp()
+		return true
+	case commands.CmdLs:
+		printListHelp()
+		return true
 	default:
 		return false
 	}
@@ -659,6 +665,38 @@ func printSetHelp() {
 		[]string{
 			"backlog set P1.M1.E1.T001 --priority high --tags api,auth",
 			"backlog set P1.M1.E1.T001 --status blocked --reason \"waiting on backend\"",
+		},
+	)
+}
+
+func printListHelp() {
+	printCommandHelp(
+		"list",
+		"List tasks with filtering and scope controls.",
+		"backlog list [<SCOPE>] [options]",
+		[]string{
+			"--status              Filter by comma-separated status values",
+			"--critical            Show only critical path tasks",
+			"--available           Show all unblocked and available tasks",
+			"--complexity          Filter by complexity (low|medium|high|critical)",
+			"--priority            Filter by priority (low|medium|high|critical)",
+			"--progress            Show progress bars",
+			"--json                Output JSON",
+			"--all                 Show all milestones (no limit)",
+			"--unfinished          Show only unfinished items",
+			"--bugs                Show only bug tasks",
+			"--ideas               Show only idea tasks",
+			"--show-completed-aux  Include completed/cancelled/rejected bugs and ideas",
+			"--phase               Filter by phase ID",
+			"--milestone           Filter by milestone ID (e.g. M1)",
+			"--epic                Filter by epic ID",
+			"--help, -h           Show this help message",
+		},
+		[]string{
+			"backlog list",
+			"backlog list --json",
+			"backlog list P1.M1 --progress",
+			"backlog list --phase P1 --bugs",
 		},
 	)
 }
@@ -2295,10 +2333,19 @@ func parseIntOptionWithDefault(args []string, fallback int, keys ...string) (int
 }
 
 func runList(command string, args []string) error {
+	if parseFlag(args, "--help", "-h") {
+		printListHelp()
+		return nil
+	}
 	return runListCore(command, args)
 }
 
 func runListCore(command string, args []string) error {
+	printListUsageError := func(err error) error {
+		printListHelp()
+		return err
+	}
+
 	if err := validateAllowedFlags(
 		args,
 		map[string]bool{
@@ -2318,10 +2365,16 @@ func runListCore(command string, args []string) error {
 			"--phase":              true,
 			"--milestone":          true,
 			"--epic":               true,
+			"-h":                   true,
 			"--help":               true,
 		},
 	); err != nil {
-		return err
+		return printListUsageError(err)
+	}
+
+	if parseFlag(args, "--help", "-h") {
+		printListHelp()
+		return nil
 	}
 
 	dataDir, err := ensureDataRoot()
@@ -2342,7 +2395,7 @@ func runListCore(command string, args []string) error {
 		"--epic":       true,
 	})
 	if len(scopeArgs) > 1 {
-		return fmt.Errorf("%s supports at most one positional scope", command)
+		return printListUsageError(fmt.Errorf("%s supports at most one positional scope", command))
 	}
 
 	if parseFlag(args, "--critical") {
@@ -2368,7 +2421,7 @@ func runListCore(command string, args []string) error {
 	for _, item := range parseCSV(statusFilterRaw) {
 		status, err := models.ParseStatus(item)
 		if err != nil {
-			return err
+			return printListUsageError(err)
 		}
 		statusFilter = append(statusFilter, string(status))
 	}
@@ -2378,7 +2431,7 @@ func runListCore(command string, args []string) error {
 	if complexityRaw != "" {
 		value, err := models.ParseComplexity(complexityRaw)
 		if err != nil {
-			return err
+			return printListUsageError(err)
 		}
 		complexityFilter = value
 		hasComplexityFilter = true
@@ -2389,7 +2442,7 @@ func runListCore(command string, args []string) error {
 	if priorityRaw != "" {
 		value, err := models.ParsePriority(priorityRaw)
 		if err != nil {
-			return err
+			return printListUsageError(err)
 		}
 		priorityFilter = value
 		hasPriorityFilter = true

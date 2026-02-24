@@ -1180,6 +1180,41 @@ func TestRunListIncludesAuxItemsByDefault(t *testing.T) {
 	}
 }
 
+func TestRunListHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "list", "--help")
+	if err != nil {
+		t.Fatalf("run list --help = %v, expected nil", err)
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Command Help: backlog list",
+		"Usage:",
+		"backlog list [<SCOPE>] [options]",
+		"--status",
+	)
+}
+
+func TestRunLsHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "ls", "--help")
+	if err != nil {
+		t.Fatalf("run ls --help = %v, expected nil", err)
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Command Help: backlog list",
+		"Usage:",
+		"--help, -h",
+	)
+}
+
 func TestRunListRejectsUnknownFlag(t *testing.T) {
 	t.Parallel()
 
@@ -1191,6 +1226,23 @@ func TestRunListRejectsUnknownFlag(t *testing.T) {
 	if !strings.Contains(err.Error(), "unexpected flag: --unknown") {
 		t.Fatalf("err = %q, expected unexpected flag error", err)
 	}
+}
+
+func TestRunListIncorrectArgsPrintsHelpAndError(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "list", "--unknown")
+	if err == nil {
+		t.Fatalf("run list --unknown expected error")
+	}
+	assertContainsAll(t, output, "Command Help: backlog list", "Usage:", "unexpected flag: --unknown")
+
+	output, err = runInDir(t, root, "list", "P1.M1", "P1.M2")
+	if err == nil {
+		t.Fatalf("run list P1.M1 P1.M2 expected error")
+	}
+	assertContainsAll(t, output, "Command Help: backlog list", "Usage:", "supports at most one positional scope")
 }
 
 func TestRunListScopedMilestoneFiltersNestedItems(t *testing.T) {
