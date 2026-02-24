@@ -398,6 +398,19 @@ func TestRunBlockedAutoGrabAndUnclaimFromContext(t *testing.T) {
 	assertContainsAll(t, unclaimOut, "Unclaimed:")
 }
 
+func TestRunBlockedRejectsNoGrabFlag(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	_, err := runInDir(t, root, "blocked", "P1.M1.E1.T001", "--reason", "waiting", "--no-grab")
+	if err == nil {
+		t.Fatal("blocked --no-grab expected flag validation error")
+	}
+	if !strings.Contains(err.Error(), "unexpected flag: --no-grab") {
+		t.Fatalf("error = %q, expected unexpected-flag message", err)
+	}
+}
+
 func TestRunDoneSupportsMultipleTaskIDsAndVerifyFlag(t *testing.T) {
 	t.Parallel()
 

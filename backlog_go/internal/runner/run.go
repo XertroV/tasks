@@ -6795,22 +6795,20 @@ func runBlocked(args []string) error {
 	if err := validateAllowedFlags(
 		args,
 		map[string]bool{
-			"--reason":  true,
-			"-r":        true,
-			"--agent":   true,
-			"--grab":    true,
-			"--no-grab": true,
+			"--reason": true,
+			"-r":       true,
+			"--agent":  true,
+			"--grab":   true,
 		},
 	); err != nil {
 		return err
 	}
 
 	taskID := firstPositionalArg(args, map[string]bool{
-		"--reason":  true,
-		"-r":        true,
-		"--agent":   true,
-		"--grab":    true,
-		"--no-grab": false,
+		"--reason": true,
+		"-r":       true,
+		"--agent":  true,
+		"--grab":   true,
 	})
 	reason := strings.TrimSpace(parseOption(args, "--reason", "-r"))
 	if reason == "" {
@@ -6862,7 +6860,7 @@ func runBlocked(args []string) error {
 	}
 
 	fmt.Printf("Blocked: %s (%s)\n", task.ID, reason)
-	if parseFlag(args, "--no-grab") || !parseFlag(args, "--grab") {
+	if !parseFlag(args, "--grab") {
 		fmt.Println("Tip: Run `backlog grab` to claim the next available task.")
 		return nil
 	}
