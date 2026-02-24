@@ -231,7 +231,7 @@ func TestRunShowAuxiliaryAndErrorBranch(t *testing.T) {
 	assertContainsAll(t, ideaOut, "Idea instructions")
 
 	bugOut := mustRun(t, root, "show", "B1")
-	assertContainsAll(t, bugOut, "status=")
+	assertContainsAll(t, bugOut, "Status:", "Next:")
 
 	_, err := runInDir(t, root, "show", "B99")
 	if err == nil {
@@ -537,8 +537,23 @@ func TestRunnerIndexAndSliceHelpers(t *testing.T) {
 }
 
 func TestShowNotFoundPrefixedNumberAndUnfinishedFilter(t *testing.T) {
+	tree := models.TaskTree{
+		Phases: []models.Phase{
+			{
+				ID: "P1",
+				Milestones: []models.Milestone{
+					{
+						ID: "P1.M1",
+						Epics: []models.Epic{
+							{ID: "P1.M1.E1", Tasks: []models.Task{{ID: "P1.M1.E1.T001"}}},
+						},
+					},
+				},
+			},
+		},
+	}
 	output := captureStdout(t, func() {
-		err := showNotFound("Task", "P9.M1.E1.T001", "P9")
+		err := showNotFound(tree, "Task", "P9.M1.E1.T001", "P9")
 		if err == nil {
 			t.Fatal("showNotFound() expected non-nil error")
 		}

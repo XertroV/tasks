@@ -676,6 +676,28 @@ func TestRunAddHelpRendersCommandSpecificGuidance(t *testing.T) {
 	assertContainsAll(t, output, "Command Help: backlog add", "backlog add <EPIC_ID> --title <TITLE>", "--depends-on, -d")
 }
 
+func TestRunClaimHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "claim", "--help")
+	if err != nil {
+		t.Fatalf("run claim --help = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Command Help: backlog claim", "backlog claim <TASK_ID>", "--agent")
+}
+
+func TestRunShowMissingTaskSuggestsNearbyIDs(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "show", "P1.M1.E1.T999")
+	if err == nil {
+		t.Fatalf("run show missing task expected error")
+	}
+	assertContainsAll(t, output, "Did you mean:", "P1.M1.E1.T001")
+}
+
 func TestRunMoveTaskToEpicRenumbersID(t *testing.T) {
 	t.Parallel()
 

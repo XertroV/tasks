@@ -452,6 +452,21 @@ func maybeHandleCommandHelp(command string, args []string) bool {
 	case commands.CmdAddPhase:
 		printAddPhaseHelp()
 		return true
+	case commands.CmdClaim:
+		printClaimHelp()
+		return true
+	case commands.CmdDone:
+		printDoneHelp()
+		return true
+	case commands.CmdUpdate:
+		printUpdateHelp()
+		return true
+	case commands.CmdMove:
+		printMoveHelp()
+		return true
+	case commands.CmdSet:
+		printSetHelp()
+		return true
 	default:
 		return false
 	}
@@ -556,6 +571,113 @@ func printAddPhaseHelp() {
 			"backlog add-phase -T \"v2 Launch\" -w 6 -e 120 -p high",
 		},
 	)
+}
+
+func printClaimHelp() {
+	printCommandHelp(
+		"claim",
+		"Claim one or more tasks and mark them in progress.",
+		"backlog claim <TASK_ID> [TASK_ID ...] [options]",
+		[]string{
+			"--agent            Agent name (default: cli-user)",
+			"--force            Override existing claim owner",
+			"--no-content       Suppress task body preview",
+		},
+		[]string{
+			"backlog claim P1.M1.E1.T001",
+			"backlog claim P1.M1.E1.T001 P1.M1.E1.T002 --agent agent-a",
+		},
+	)
+}
+
+func printDoneHelp() {
+	printCommandHelp(
+		"done",
+		"Mark one or more tasks done (or set explicit status).",
+		"backlog done <TASK_ID> [TASK_ID ...] [options]",
+		[]string{
+			"--status           Target status (default: done)",
+			"--force            Allow transition even if status checks fail",
+			"--verify           Compatibility flag for workflow parity",
+		},
+		[]string{
+			"backlog done P1.M1.E1.T001",
+			"backlog done P1.M1.E1.T001 --status blocked --force",
+		},
+	)
+}
+
+func printUpdateHelp() {
+	printCommandHelp(
+		"update",
+		"Update task state and selected metadata in one command.",
+		"backlog update <TASK_ID> <STATUS> [options]",
+		[]string{
+			"--reason           Required for blocked/rejected/cancelled transitions",
+			"--title            Update title",
+			"--priority         low|medium|high|critical",
+			"--complexity       low|medium|high",
+			"--estimate         Numeric estimate hours",
+		},
+		[]string{
+			"backlog update P1.M1.E1.T001 blocked --reason \"waiting on API\"",
+			"backlog update P1.M1.E1.T001 in_progress --priority high",
+		},
+	)
+}
+
+func printMoveHelp() {
+	printCommandHelp(
+		"move",
+		"Move task/epic/milestone to a new parent and remap IDs safely.",
+		"backlog move <SOURCE_ID> --to <DEST_ID>",
+		[]string{
+			"--to               Destination parent ID (required)",
+		},
+		[]string{
+			"backlog move P1.M1.E1.T001 --to P1.M1.E2",
+			"backlog move P1.M1.E2 --to P1.M2",
+		},
+	)
+}
+
+func printSetHelp() {
+	printCommandHelp(
+		"set",
+		"Patch selected task properties without changing unrelated fields.",
+		"backlog set <TASK_ID> [property flags]",
+		[]string{
+			"--status           Target status",
+			"--priority         low|medium|high|critical",
+			"--complexity       low|medium|high",
+			"--estimate         Numeric estimate hours",
+			"--title            New title",
+			"--depends-on       Comma-separated dependency IDs",
+			"--tags             Comma-separated tags",
+			"--reason           Reason text for constrained transitions",
+		},
+		[]string{
+			"backlog set P1.M1.E1.T001 --priority high --tags api,auth",
+			"backlog set P1.M1.E1.T001 --status blocked --reason \"waiting on backend\"",
+		},
+	)
+}
+
+func printNextCommands(commands ...string) {
+	trimmed := []string{}
+	for _, command := range commands {
+		if strings.TrimSpace(command) == "" {
+			continue
+		}
+		trimmed = append(trimmed, command)
+	}
+	if len(trimmed) == 0 {
+		return
+	}
+	fmt.Printf("%s\n", styleSubHeader("Next:"))
+	for _, command := range trimmed {
+		fmt.Printf("  %s\n", styleSuccess(command))
+	}
 }
 
 func normalizeCommand(value string) string {
@@ -1043,6 +1165,11 @@ func runAdd(args []string) error {
 	if body == "" {
 		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
 	}
+	newTaskID := parsedEpicID.FullID() + "." + nextTaskID
+	printNextCommands(
+		"backlog show "+newTaskID,
+		"backlog claim "+newTaskID,
+	)
 	return nil
 }
 
@@ -1189,6 +1316,11 @@ func runAddEpic(args []string) error {
 	}
 
 	fmt.Printf("%s %s\n", styleSuccess("Created epic:"), styleSuccess(parsedMilestoneID.FullID()+"."+nextEpicID))
+	newEpicID := parsedMilestoneID.FullID() + "." + nextEpicID
+	printNextCommands(
+		"backlog show "+newEpicID,
+		"backlog add "+newEpicID+" --title \"<task title>\"",
+	)
 	return nil
 }
 
@@ -1321,6 +1453,11 @@ func runAddMilestone(args []string) error {
 	}
 
 	fmt.Printf("%s %s\n", styleSuccess("Created milestone:"), styleSuccess(fmt.Sprintf("%s.%s", phase.ID, nextMilestoneID)))
+	newMilestoneID := fmt.Sprintf("%s.%s", phase.ID, nextMilestoneID)
+	printNextCommands(
+		"backlog show "+newMilestoneID,
+		"backlog add-epic "+newMilestoneID+" --title \"<epic title>\"",
+	)
 	return nil
 }
 
@@ -1438,6 +1575,10 @@ func runAddPhase(args []string) error {
 		return err
 	}
 	fmt.Printf("%s %s\n", styleSuccess("Created phase:"), styleSuccess(nextPhaseID))
+	printNextCommands(
+		"backlog show "+nextPhaseID,
+		"backlog add-milestone "+nextPhaseID+" --title \"<milestone title>\"",
+	)
 	return nil
 }
 
@@ -1521,6 +1662,7 @@ func runSet(args []string) error {
 		return err
 	}
 	fmt.Printf("%s %s\n", styleSuccess("Updated:"), styleSuccess(task.ID))
+	printNextCommands("backlog show " + task.ID)
 	return nil
 }
 
@@ -1568,6 +1710,14 @@ func runUpdate(args []string) error {
 		return err
 	}
 	fmt.Printf("%s %s -> %s\n", styleSuccess("Updated:"), styleSuccess(task.ID), styleStatusText(string(task.Status)))
+	switch task.Status {
+	case models.StatusDone:
+		printNextCommands("backlog cycle")
+	case models.StatusBlocked:
+		printNextCommands("backlog why "+task.ID, "backlog blockers --suggest")
+	default:
+		printNextCommands("backlog show " + task.ID)
+	}
 	return nil
 }
 
@@ -2300,6 +2450,9 @@ func runListCore(command string, args []string) error {
 				scopeID = scope
 			}
 			fmt.Printf("%s %s\n", styleError("Phase not found:"), styleMuted(scopeID))
+			for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
+				fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
+			}
 			return nil
 		}
 		if scopeType == "milestone" {
@@ -2307,6 +2460,9 @@ func runListCore(command string, args []string) error {
 				scopeID = scope
 			}
 			fmt.Printf("%s %s\n", styleError("Milestone not found:"), styleMuted(scopeID))
+			for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
+				fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
+			}
 			return nil
 		}
 		if scopeType == "epic" {
@@ -2314,12 +2470,18 @@ func runListCore(command string, args []string) error {
 				scopeID = scope
 			}
 			fmt.Printf("%s %s\n", styleError("Epic not found:"), styleMuted(scopeID))
+			for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
+				fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
+			}
 			return nil
 		}
 		if strings.TrimSpace(scopeID) == "" {
 			scopeID = scope
 		}
 		fmt.Printf("%s %s\n", styleWarning("No list nodes found for path query:"), styleMuted(scopeID))
+		for _, candidate := range suggestItemIDs(tree, scopeID, "", 4) {
+			fmt.Printf("  %s %s\n", styleSubHeader("did-you-mean:"), styleSuccess(candidate))
+		}
 		return nil
 	}
 	if !scoped {
@@ -2417,7 +2579,7 @@ func runLsCore(args []string, dataDir string) error {
 	if phasePath.IsPhase() {
 		phase := tree.FindPhase(phasePath.FullID())
 		if phase == nil {
-			return fmt.Errorf("Phase not found: %s", scope)
+			return formatNotFoundError(tree, "Phase", scope, "")
 		}
 		if len(phase.Milestones) == 0 {
 			fmt.Printf("%s %s\n", styleWarning("Phase"), styleMuted(fmt.Sprintf("%s has no milestones.", scope)))
@@ -2442,7 +2604,12 @@ func runLsCore(args []string, dataDir string) error {
 	if phasePath.IsMilestone() {
 		milestone := findMilestone(tree, scope)
 		if milestone == nil {
-			return fmt.Errorf("Milestone not found: %s", scope)
+			parent := phasePath.Parent()
+			parentID := ""
+			if parent != nil {
+				parentID = parent.FullID()
+			}
+			return formatNotFoundError(tree, "Milestone", scope, parentID)
 		}
 		if len(milestone.Epics) == 0 {
 			fmt.Printf("%s %s\n", styleWarning("Milestone"), styleMuted(fmt.Sprintf("%s has no epics.", scope)))
@@ -2467,7 +2634,12 @@ func runLsCore(args []string, dataDir string) error {
 	if phasePath.IsEpic() {
 		epic := findEpic(tree, scope)
 		if epic == nil {
-			return fmt.Errorf("Epic not found: %s", scope)
+			parent := phasePath.Parent()
+			parentID := ""
+			if parent != nil {
+				parentID = parent.FullID()
+			}
+			return formatNotFoundError(tree, "Epic", scope, parentID)
 		}
 		if len(epic.Tasks) == 0 {
 			fmt.Printf("%s %s\n", styleWarning("Epic"), styleMuted(fmt.Sprintf("%s has no tasks.", scope)))
@@ -2487,7 +2659,12 @@ func runLsCore(args []string, dataDir string) error {
 
 	task := tree.FindTask(scope)
 	if task == nil {
-		return fmt.Errorf("Task not found: %s", scope)
+		parent := phasePath.Parent()
+		parentID := ""
+		if parent != nil {
+			parentID = parent.FullID()
+		}
+		return formatNotFoundError(tree, "Task", scope, parentID)
 	}
 	if err := printTaskSummary(task, dataDir); err != nil {
 		return err
@@ -2552,7 +2729,6 @@ func runShow(args []string) error {
 	if err != nil {
 		return err
 	}
-	loaderInstance := loader.New()
 
 	for idx, id := range ids {
 		if idx > 0 {
@@ -2570,15 +2746,12 @@ func runShow(args []string) error {
 		}
 		scopePath, err := models.ParseTaskPath(id)
 		if err != nil {
+			fmt.Printf("%s %s\n", styleError("Invalid path format:"), styleMuted(id))
+			printIDSuggestions(tree, id, "", 5)
 			return fmt.Errorf("Invalid path format: %s", id)
 		}
 
-		scopeTree, err := loaderInstance.LoadScope(id, "metadata", false, false, false)
-		if err != nil {
-			return fmt.Errorf("Invalid path format: %s", id)
-		}
-
-		if err := showScopedItem(scopeTree, id, &scopePath, dataDir); err != nil {
+		if err := showScopedItem(tree, id, &scopePath, dataDir); err != nil {
 			return err
 		}
 	}
@@ -5830,7 +6003,13 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 }
 
 func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir string) {
-	fmt.Printf("%s: %s\nstatus=%s estimate=%.2f\n", styleSuccess(task.ID), task.Title, styleStatusText(string(task.Status)), task.EstimateHours)
+	fmt.Printf("%s: %s\n", styleSuccess(task.ID), task.Title)
+	fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
+	fmt.Printf("%s: %.2fh\n", styleSubHeader("Estimate"), task.EstimateHours)
+	fmt.Printf("%s: %s\n", styleSubHeader("Priority"), styleMuted(string(task.Priority)))
+	if len(task.Tags) > 0 {
+		fmt.Printf("%s: %s\n", styleSubHeader("Tags"), strings.Join(task.Tags, ", "))
+	}
 	if showInstructions {
 		fmt.Println(styleWarning("Idea instructions: evaluate feasibility and create concrete tasks in backlog."))
 	}
@@ -5838,6 +6017,7 @@ func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir stri
 	if task.File != "" {
 		fmt.Printf("%s: %s\n", styleSubHeader("File"), file)
 	}
+	printNextCommands("backlog show "+task.ID, "backlog claim "+task.ID)
 }
 
 func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath, dataDir string) error {
@@ -5857,53 +6037,168 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 	case scopePath.IsPhase():
 		phase := tree.FindPhase(scopePath.FullID())
 		if phase == nil {
-			return showNotFound("Phase", id, scopeHint)
+			return showNotFound(tree, "Phase", id, scopeHint)
 		}
 		stats := getTaskStatsForPhase(*phase)
 		fmt.Printf("%s: %s\n", styleSuccess(phase.ID), styleSubHeader(phase.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(phase.Status)))
-		fmt.Printf("%s: %d / %d\n", styleSubHeader("Done"), stats.done, stats.total)
+		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		if len(phase.Milestones) > 0 {
+			fmt.Printf("%s\n", styleSubHeader("Milestones"))
+			limit := min(8, len(phase.Milestones))
+			for i := 0; i < limit; i++ {
+				milestone := phase.Milestones[i]
+				mStats := getTaskStatsForMilestone(milestone)
+				fmt.Printf("  %s %s (%d/%d)\n", auxStatusMarker(mStats.total, mStats.done, mStats.inProgress), styleSuccess(milestone.ID), mStats.done, mStats.total)
+			}
+			if len(phase.Milestones) > limit {
+				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(phase.Milestones)-limit)))
+			}
+		}
+		printNextCommands("backlog ls "+phase.ID, "backlog list --phase "+phase.ID)
 		return nil
 	case scopePath.IsMilestone():
 		milestone := findMilestone(tree, scopePath.FullID())
 		if milestone == nil {
-			return showNotFound("Milestone", id, scopeHint)
+			return showNotFound(tree, "Milestone", id, scopeHint)
 		}
 		stats := getTaskStatsForMilestone(*milestone)
 		fmt.Printf("%s: %s\n", styleSuccess(milestone.ID), styleSubHeader(milestone.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(milestone.Status)))
-		fmt.Printf("%s: %d / %d\n", styleSubHeader("Done"), stats.done, stats.total)
+		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		if len(milestone.Epics) > 0 {
+			fmt.Printf("%s\n", styleSubHeader("Epics"))
+			limit := min(8, len(milestone.Epics))
+			for i := 0; i < limit; i++ {
+				epic := milestone.Epics[i]
+				eStats := getTaskStatsForEpic(epic)
+				fmt.Printf("  %s %s (%d/%d)\n", auxStatusMarker(eStats.total, eStats.done, eStats.inProgress), styleSuccess(epic.ID), eStats.done, eStats.total)
+			}
+			if len(milestone.Epics) > limit {
+				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(milestone.Epics)-limit)))
+			}
+		}
+		printNextCommands("backlog ls "+milestone.ID, "backlog list --milestone "+milestone.ID)
 		return nil
 	case scopePath.IsEpic():
 		epic := findEpic(tree, scopePath.FullID())
 		if epic == nil {
-			return showNotFound("Epic", id, scopeHint)
+			return showNotFound(tree, "Epic", id, scopeHint)
 		}
 		stats := getTaskStatsForEpic(*epic)
 		fmt.Printf("%s: %s\n", styleSuccess(epic.ID), styleSubHeader(epic.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(epic.Status)))
-		fmt.Printf("%s: %d / %d\n", styleSubHeader("Done"), stats.done, stats.total)
+		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		if len(epic.Tasks) > 0 {
+			fmt.Printf("%s\n", styleSubHeader("Tasks"))
+			limit := min(10, len(epic.Tasks))
+			for i := 0; i < limit; i++ {
+				task := epic.Tasks[i]
+				fmt.Printf("  %s %s %s\n", statusIcon(task.Status), styleSuccess(task.ID), task.Title)
+			}
+			if len(epic.Tasks) > limit {
+				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(epic.Tasks)-limit)))
+			}
+		}
+		printNextCommands("backlog ls "+epic.ID, "backlog add "+epic.ID+" --title \"<task title>\"")
 		return nil
 	case scopePath.IsTask():
 		task := findTask(tree, scopePath.FullID())
 		if task == nil {
-			return showNotFound("Task", id, scopeHint)
+			return showNotFound(tree, "Task", id, scopeHint)
 		}
 		renderTaskDetail(*task, dataDir)
 		return nil
 	default:
-		return showNotFound("Task", id, scopeHint)
+		return showNotFound(tree, "Task", id, scopeHint)
 	}
 }
 
-func showNotFound(itemType, itemID, scopeHint string) error {
+func showNotFound(tree models.TaskTree, itemType, itemID, scopeHint string) error {
 	fmt.Printf("%s %s not found: %s\n", styleError("Error:"), styleSubHeader(itemType), itemID)
+	printIDSuggestions(tree, itemID, scopeHint, 5)
 	if scopeHint != "" {
 		fmt.Printf("%s Use 'backlog tree %s' to verify available IDs.\n", styleWarning("Tip:"), scopeHint)
 	} else {
 		fmt.Println(styleWarning("Tip: Use 'backlog tree' to list available IDs."))
 	}
 	return fmt.Errorf("%s not found", itemType)
+}
+
+func formatNotFoundError(tree models.TaskTree, itemType, itemID, scopeHint string) error {
+	base := fmt.Sprintf("%s not found: %s", itemType, itemID)
+	suggestions := suggestItemIDs(tree, itemID, scopeHint, 5)
+	if len(suggestions) == 0 {
+		return errors.New(base)
+	}
+	return fmt.Errorf("%s\nDid you mean: %s", base, strings.Join(suggestions, ", "))
+}
+
+func printIDSuggestions(tree models.TaskTree, query, scopeHint string, limit int) {
+	suggestions := suggestItemIDs(tree, query, scopeHint, limit)
+	if len(suggestions) == 0 {
+		return
+	}
+	fmt.Printf("%s\n", styleSubHeader("Did you mean:"))
+	for _, candidate := range suggestions {
+		fmt.Printf("  %s\n", styleSuccess(candidate))
+	}
+}
+
+func suggestItemIDs(tree models.TaskTree, query, scopeHint string, limit int) []string {
+	if limit <= 0 {
+		limit = 5
+	}
+	all := allTaskIDs(tree)
+	if len(all) == 0 {
+		return nil
+	}
+	query = strings.ToLower(strings.TrimSpace(query))
+	scopeHint = strings.TrimSpace(scopeHint)
+	seen := map[string]struct{}{}
+	out := []string{}
+	add := func(candidate string) {
+		if strings.TrimSpace(candidate) == "" {
+			return
+		}
+		if _, ok := seen[candidate]; ok {
+			return
+		}
+		seen[candidate] = struct{}{}
+		out = append(out, candidate)
+	}
+
+	if scopeHint != "" {
+		prefix := scopeHint + "."
+		for _, candidate := range all {
+			if strings.HasPrefix(candidate, prefix) {
+				add(candidate)
+				if len(out) >= limit {
+					return out
+				}
+			}
+		}
+	}
+
+	for _, candidate := range all {
+		lower := strings.ToLower(candidate)
+		if query != "" && (strings.HasPrefix(lower, query) || strings.HasPrefix(query, lower)) {
+			add(candidate)
+			if len(out) >= limit {
+				return out
+			}
+		}
+	}
+	for _, candidate := range all {
+		lower := strings.ToLower(candidate)
+		if query != "" && strings.Contains(lower, query) {
+			add(candidate)
+			if len(out) >= limit {
+				return out
+			}
+		}
+	}
+	return out
 }
 
 func phasePathFromID(raw string) *models.TaskPath {
@@ -6038,10 +6333,53 @@ func renderTaskDetail(task models.Task, dataDir string) {
 	fmt.Printf("%s: %.2f\n", styleSubHeader("Estimate"), task.EstimateHours)
 	fmt.Printf("%s: %s\n", styleSubHeader("Complexity"), task.Complexity)
 	fmt.Printf("%s: %s\n", styleSubHeader("Priority"), task.Priority)
+	if len(task.DependsOn) > 0 {
+		fmt.Printf("%s: %s\n", styleSubHeader("Depends on"), strings.Join(task.DependsOn, ", "))
+	}
+	if len(task.Tags) > 0 {
+		fmt.Printf("%s: %s\n", styleSubHeader("Tags"), strings.Join(task.Tags, ", "))
+	}
 	if task.ClaimedBy != "" {
 		fmt.Printf("%s: %s\n", styleSubHeader("Claimed by"), task.ClaimedBy)
 	}
+	if task.ClaimedAt != nil {
+		fmt.Printf("%s: %s\n", styleSubHeader("Claimed at"), task.ClaimedAt.Format(time.RFC3339))
+	}
+	if task.StartedAt != nil {
+		fmt.Printf("%s: %s\n", styleSubHeader("Started at"), task.StartedAt.Format(time.RFC3339))
+	}
+	if task.CompletedAt != nil {
+		fmt.Printf("%s: %s\n", styleSubHeader("Completed at"), task.CompletedAt.Format(time.RFC3339))
+	}
+	if task.DurationMinutes != nil {
+		fmt.Printf("%s: %d minutes\n", styleSubHeader("Duration"), int(*task.DurationMinutes))
+	}
 	fmt.Printf("%s: %s\n", styleSubHeader("File"), filepath.Join(dataDir, task.File))
+	_, body, err := readTodoFrontmatter(task.ID, task.File)
+	if err == nil {
+		body = strings.TrimSpace(body)
+		if body != "" {
+			lines := strings.Split(body, "\n")
+			fmt.Printf("%s\n", styleSubHeader("Preview"))
+			limit := min(8, len(lines))
+			for i := 0; i < limit; i++ {
+				fmt.Printf("  %s\n", lines[i])
+			}
+			if len(lines) > limit {
+				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-limit)))
+			}
+		}
+	}
+	switch task.Status {
+	case models.StatusPending:
+		printNextCommands("backlog claim "+task.ID, "backlog why "+task.ID)
+	case models.StatusInProgress:
+		printNextCommands("backlog done "+task.ID, "backlog blocked "+task.ID+" --reason \"<reason>\"")
+	case models.StatusBlocked:
+		printNextCommands("backlog why "+task.ID, "backlog blockers --suggest")
+	default:
+		printNextCommands("backlog show " + task.ID)
+	}
 }
 
 func statusIcon(status models.Status) string {
@@ -7000,6 +7338,10 @@ func runMove(args []string) error {
 	fmt.Printf("%s %s\n", styleSuccess("Moved:"), styleSuccess(source))
 	fmt.Printf("%s %s\n", styleSuccess("To:"), styleSuccess(dest))
 	fmt.Printf("%s %s\n", styleSuccess("New ID:"), styleSuccess(remap[source]))
+	printNextCommands(
+		"backlog show "+remap[source],
+		"backlog check",
+	)
 	return nil
 }
 
@@ -7134,6 +7476,10 @@ func runUnclaim(args []string) error {
 		return err
 	}
 	fmt.Printf("%s %s - %s\n", styleSuccess("Unclaimed:"), styleSuccess(task.ID), styleSuccess(task.Title))
+	printNextCommands(
+		"backlog grab",
+		"backlog show "+task.ID,
+	)
 	return nil
 }
 
@@ -7211,6 +7557,10 @@ func runBlocked(args []string) error {
 	fmt.Printf("%s %s (%s)\n", styleWarning("Blocked:"), styleSuccess(task.ID), styleWarning(reason))
 	if !parseFlag(args, "--grab") {
 		fmt.Println(styleWarning("Tip: Run `backlog grab` to claim the next available task."))
+		printNextCommands(
+			"backlog why "+task.ID,
+			"backlog blockers --suggest",
+		)
 		return nil
 	}
 
@@ -7245,6 +7595,7 @@ func runBlocked(args []string) error {
 	if err := grabTaskByID(tree, *calculator, next.ID, dataDirFromContext(), agent); err != nil {
 		return err
 	}
+	printNextCommands("backlog show " + next.ID)
 	return nil
 }
 

@@ -1,12 +1,18 @@
 ---
 complexity: medium
 depends_on: []
-estimate_hours: 1
+estimate_hours: 1.0
 id: B005
 priority: high
-status: pending
+status: done
 tags: []
-title: Aliases should not be listed on their own line in the default help output, they should be listed alongside the command they are an alias of. Saves tokens.
+title: Aliases should not be listed on their own line in the default help output,
+  they should be listed alongside the command they are an alias of. Saves tokens.
+claimed_by: cli-user
+claimed_at: '2026-02-24T18:05:58.958994+00:00'
+started_at: '2026-02-24T18:05:58.958994+00:00'
+completed_at: '2026-02-24T18:06:33.083287+00:00'
+duration_minutes: 0.5687380833333333
 ---
 
 Aliases should not be listed on their own line in the default help output, they should be listed alongside the command they are an alias of. Saves tokens.

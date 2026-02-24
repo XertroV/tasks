@@ -1799,6 +1799,10 @@ func runHandoff(args []string) error {
 	if notes != "" {
 		fmt.Printf("  %s %s\n", styleSubHeader("Notes:"), styleMuted(notes))
 	}
+	printNextCommands(
+		"backlog show "+task.ID,
+		"backlog work "+task.ID,
+	)
 	return nil
 }
 
