@@ -1597,7 +1597,7 @@ func TestRunListStatsCountCompletedTasksByDefault(t *testing.T) {
 	if !strings.Contains(output, "Primary Phase (P1) (1/4 tasks done)") {
 		t.Fatalf("output = %q, expected phase done count to include completed tasks", output)
 	}
-	if !strings.Contains(output, "Milestone One (P1.M1) (1/2 tasks done)") {
+	if !strings.Contains(output, "Milestone One (P1.M1) (1/3 tasks done)") {
 		t.Fatalf("output = %q, expected milestone one done count to include completed tasks", output)
 	}
 	if strings.Contains(output, "Primary Phase (P1) (0/4 tasks done)") {
@@ -1613,10 +1613,10 @@ func TestRunListScopedCountsIncludeCompletedTasks(t *testing.T) {
 	if err != nil {
 		t.Fatalf("run list P1.M1 = %v, expected nil", err)
 	}
-	if !strings.Contains(output, "Primary Phase (P1) (1/2 tasks done)") {
+	if !strings.Contains(output, "Primary Phase (P1) (1/3 tasks done)") {
 		t.Fatalf("output = %q, expected scoped phase done count to include completed tasks", output)
 	}
-	if !strings.Contains(output, "Milestone One (P1.M1) (1/2 tasks done)") {
+	if !strings.Contains(output, "Milestone One (P1.M1) (1/3 tasks done)") {
 		t.Fatalf("output = %q, expected milestone completion to include completed tasks", output)
 	}
 }
@@ -1945,11 +1945,11 @@ func TestRunListJSONMachineContract(t *testing.T) {
 		t.Fatalf("milestone M2 total = %d, expected 1", phase.Milestones[1].Stats["total"])
 	}
 
-	if len(payload.Tasks) != 3 {
-		t.Fatalf("tasks length = %d, expected 3", len(payload.Tasks))
+	if len(payload.Tasks) != 4 {
+		t.Fatalf("tasks length = %d, expected 4", len(payload.Tasks))
 	}
 	ids := listTaskIDs(payload.Tasks)
-	for _, id := range []string{"P1.M1.E1.T001", "P1.M1.E2.T001", "P1.M2.E1.T001"} {
+	for _, id := range []string{"P1.M1.E1.T001", "P1.M1.E1.T002", "P1.M1.E2.T001", "P1.M2.E1.T001"} {
 		if !ids[id] {
 			t.Fatalf("task list missing %s", id)
 		}
