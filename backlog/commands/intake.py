@@ -9,6 +9,16 @@ from ..data_dir import get_data_dir_name
 console = Console()
 
 
+def _print_next_commands(*commands):
+    """Print a short list of suggested next commands."""
+    filtered = [command.strip() for command in commands if command and command.strip()]
+    if not filtered:
+        return
+    console.print("[bold]Next:[/]")
+    for command in filtered:
+        console.print(f"  - {command}")
+
+
 @click.command()
 @click.argument("idea_words", nargs=-1, required=True)
 def idea(idea_words):
@@ -24,6 +34,14 @@ def idea(idea_words):
         console.print(f"\n[green]✓ Created idea:[/] {created.id}\n")
         console.print(f"  Title: {created.title}")
         console.print(f"\n[bold]File:[/] .tasks/{created.file}")
+        _print_next_commands(
+            "backlog show " + created.id,
+            "backlog add-phase --title \"<phase title>\"",
+            "backlog add-milestone <PHASE_ID> --title \"<milestone title>\"",
+            "backlog add-epic <MILESTONE_ID> --title \"<epic title>\"",
+            "backlog add <EPIC_ID> --title \"<task title>\"",
+            "backlog bug --title \"<bug title>\"",
+        )
         console.print(
             "[yellow]IMPORTANT:[/] This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.\n"
         )

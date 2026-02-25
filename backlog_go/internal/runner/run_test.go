@@ -45,6 +45,18 @@ func TestRunAddCommand(t *testing.T) {
 	if !strings.Contains(output, "Created task: P1.M1.E1.T001") {
 		t.Fatalf("output = %q, expected created task id", output)
 	}
+	if !strings.Contains(output, "File: .tasks/01-phase/01-ms/01-epic/T001-new-task.todo") {
+		t.Fatalf("output = %q, expected created task file path", output)
+	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+	if !strings.Contains(output, "backlog show P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected show next command", output)
+	}
+	if !strings.Contains(output, "backlog claim P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected claim next command", output)
+	}
 
 	index := readYAMLMap(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "index.yaml"))
 	tasks, ok := index["tasks"].([]interface{})
@@ -106,6 +118,18 @@ func TestRunAddEpicCommand(t *testing.T) {
 	if !strings.Contains(output, "Created epic: P1.M1.E2") {
 		t.Fatalf("output = %q, expected created epic id", output)
 	}
+	if !strings.Contains(output, "File: .tasks/01-phase/01-ms/02-second-epic/index.yaml") {
+		t.Fatalf("output = %q, expected created epic index path", output)
+	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+	if !strings.Contains(output, "backlog show P1.M1.E2") {
+		t.Fatalf("output = %q, expected show next command", output)
+	}
+	if !strings.Contains(output, "backlog add P1.M1.E2 --title") {
+		t.Fatalf("output = %q, expected add next command", output)
+	}
 
 	milestoneIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "index.yaml"))
 	epics, ok := milestoneIndex["epics"].([]interface{})
@@ -146,6 +170,18 @@ func TestRunAddMilestoneCommand(t *testing.T) {
 	}
 	if !strings.Contains(output, "Created milestone: P1.M2") {
 		t.Fatalf("output = %q, expected created milestone id", output)
+	}
+	if !strings.Contains(output, "File: .tasks/01-phase/02-second-milestone/index.yaml") {
+		t.Fatalf("output = %q, expected created milestone index path", output)
+	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+	if !strings.Contains(output, "backlog show P1.M2") {
+		t.Fatalf("output = %q, expected show next command", output)
+	}
+	if !strings.Contains(output, "backlog add-epic P1.M2 --title") {
+		t.Fatalf("output = %q, expected add-epic next command", output)
 	}
 
 	phaseIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "01-phase", "index.yaml"))
@@ -374,6 +410,12 @@ func TestRunIdeaCreatesPlanningIntake(t *testing.T) {
 	if !strings.Contains(output, "IMPORTANT: This intake tracks planning work") {
 		t.Fatalf("output = %q, expected planning guidance", output)
 	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+	if !strings.Contains(output, "backlog show I001") {
+		t.Fatalf("output = %q, expected show next command", output)
+	}
 
 	ideasIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "ideas", "index.yaml"))
 	entries, ok := ideasIndex["ideas"].([]interface{})
@@ -404,6 +446,18 @@ func TestRunBugSupportsPositionalTitleAndSimpleBody(t *testing.T) {
 	}
 	if !strings.Contains(output, "Created bug: B001") {
 		t.Fatalf("output = %q, expected created bug", output)
+	}
+	if !strings.Contains(output, "File: .tasks/bugs/B001-fix-flaky-integration-test.todo") {
+		t.Fatalf("output = %q, expected bug file path", output)
+	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+	if !strings.Contains(output, "backlog show B001") {
+		t.Fatalf("output = %q, expected show next command", output)
+	}
+	if !strings.Contains(output, "backlog claim B001") {
+		t.Fatalf("output = %q, expected claim next command", output)
 	}
 	if strings.Contains(output, "IMPORTANT: You MUST fill in the .todo file that was created.") {
 		t.Fatalf("output = %q, expected simple bug without template warning", output)
@@ -438,6 +492,40 @@ func TestRunBugTemplateWarnsWhenNotSimple(t *testing.T) {
 	}
 	if !strings.Contains(output, "IMPORTANT: You MUST fill in the .todo file that was created.") {
 		t.Fatalf("output = %q, expected template warning", output)
+	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+}
+
+func TestRunAddPhaseCommand(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	output, err := runInDir(
+		t,
+		root,
+		"add-phase",
+		"--title",
+		"Second Phase",
+	)
+	if err != nil {
+		t.Fatalf("run add-phase = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Created phase: P2") {
+		t.Fatalf("output = %q, expected created phase id", output)
+	}
+	if !strings.Contains(output, "File: .tasks/02-second-phase/index.yaml") {
+		t.Fatalf("output = %q, expected created phase index path", output)
+	}
+	if !strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected next commands", output)
+	}
+	if !strings.Contains(output, "backlog show P2") {
+		t.Fatalf("output = %q, expected show next command", output)
+	}
+	if !strings.Contains(output, "backlog add-milestone P2 --title") {
+		t.Fatalf("output = %q, expected add-milestone next command", output)
 	}
 }
 
@@ -1495,6 +1583,60 @@ func TestRunListScopedEpicFiltersTasksInJSON(t *testing.T) {
 	}
 	if strings.Contains(output, "P1.M1.E2.T001") {
 		t.Fatalf("output = %q, expected scoped task filtering by epic", output)
+	}
+}
+
+func TestRunListStatsCountCompletedTasksByDefault(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "list")
+	if err != nil {
+		t.Fatalf("run list = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Primary Phase (P1) (1/4 tasks done)") {
+		t.Fatalf("output = %q, expected phase done count to include completed tasks", output)
+	}
+	if !strings.Contains(output, "Milestone One (P1.M1) (1/2 tasks done)") {
+		t.Fatalf("output = %q, expected milestone one done count to include completed tasks", output)
+	}
+	if strings.Contains(output, "Primary Phase (P1) (0/4 tasks done)") {
+		t.Fatalf("output = %q, expected fixed completion counts, not 0/4", output)
+	}
+}
+
+func TestRunListScopedCountsIncludeCompletedTasks(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "list", "P1.M1")
+	if err != nil {
+		t.Fatalf("run list P1.M1 = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Primary Phase (P1) (1/2 tasks done)") {
+		t.Fatalf("output = %q, expected scoped phase done count to include completed tasks", output)
+	}
+	if !strings.Contains(output, "Milestone One (P1.M1) (1/2 tasks done)") {
+		t.Fatalf("output = %q, expected milestone completion to include completed tasks", output)
+	}
+}
+
+func TestRunListAllDoneShowsCompletedTotals(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "done", "", "")
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T002", "b", "done", "", "")
+
+	output, err := runInDir(t, root, "list", "P1.M1.E1")
+	if err != nil {
+		t.Fatalf("run list P1.M1.E1 = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Phase (P1) (2/2 tasks done)") {
+		t.Fatalf("output = %q, expected completed totals in scope", output)
+	}
+	if !strings.Contains(output, "Milestone (P1.M1) (2/2 tasks done)") {
+		t.Fatalf("output = %q, expected completed milestone totals in scope", output)
 	}
 }
 

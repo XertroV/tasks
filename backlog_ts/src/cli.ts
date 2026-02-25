@@ -2694,6 +2694,17 @@ function parseCsv(val: string | undefined): string[] {
   return val.split(",").map((x) => x.trim()).filter(Boolean);
 }
 
+function printNextCommands(commands: string[]): void {
+  const filtered = commands.map((command) => command.trim()).filter((command) => command.length > 0);
+  if (!filtered.length) {
+    return;
+  }
+  console.log("Next:");
+  for (const command of filtered) {
+    console.log(`  ${command}`);
+  }
+}
+
 async function readYamlObj(path: string): Promise<Record<string, unknown>> {
   return (parse(await Bun.file(path).text()) as Record<string, unknown>) ?? {};
 }
@@ -2773,9 +2784,14 @@ async function cmdAdd(args: string[]): Promise<void> {
   epicIndex.tasks = tasks;
   await writeYamlObj(epicIndexPath, epicIndex);
   console.log(`Created task: ${fullId}`);
+  console.log(`File: ${getDataDirName()}/${relFile}`);
   if (!bodyOpt) {
     console.log("IMPORTANT: You MUST fill in the .todo file that was created.");
   }
+  printNextCommands([
+    `backlog show ${fullId}`,
+    `backlog claim ${fullId}`,
+  ]);
 }
 
 async function cmdAddEpic(args: string[]): Promise<void> {
@@ -2839,6 +2855,11 @@ async function cmdAddEpic(args: string[]): Promise<void> {
   msIndex.epics = epics;
   await writeYamlObj(msIndexPath, msIndex);
   console.log(`Created epic: ${fullId}`);
+  console.log(`File: ${getDataDirName()}/${phase.path}/${milestone.path}/${dirName}/index.yaml`);
+  printNextCommands([
+    `backlog show ${fullId}`,
+    `backlog add ${fullId} --title "<task title>"`,
+  ]);
 }
 
 async function cmdAddMilestone(args: string[]): Promise<void> {
@@ -2897,6 +2918,11 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
   phaseIndex.milestones = milestones;
   await writeYamlObj(phaseIndexPath, phaseIndex);
   console.log(`Created milestone: ${fullId}`);
+  console.log(`File: ${getDataDirName()}/${phase.path}/${dirName}/index.yaml`);
+  printNextCommands([
+    `backlog show ${fullId}`,
+    `backlog add-epic ${fullId} --title "<epic title>"`,
+  ]);
 }
 
 async function cmdAddPhase(args: string[]): Promise<void> {
@@ -2946,6 +2972,11 @@ async function cmdAddPhase(args: string[]): Promise<void> {
   root.phases = phases;
   await writeYamlObj(rootIndexPath, root);
   console.log(`Created phase: ${phaseId}`);
+  console.log(`File: ${getDataDirName()}/${dirName}/index.yaml`);
+  printNextCommands([
+    `backlog show ${phaseId}`,
+    `backlog add-milestone ${phaseId} --title "<milestone title>"`,
+  ]);
 }
 
 async function cmdMove(args: string[]): Promise<void> {
@@ -3418,9 +3449,14 @@ async function cmdBug(args: string[]): Promise<void> {
     body,
   });
   console.log(`Created bug: ${bug.id}`);
+  console.log(`File: ${getDataDirName()}/${bug.file}`);
   if (!simple && !body) {
     console.log("IMPORTANT: You MUST fill in the .todo file that was created.");
   }
+  printNextCommands([
+    `backlog show ${bug.id}`,
+    `backlog claim ${bug.id}`,
+  ]);
 }
 
 async function cmdFixed(args: string[]): Promise<void> {
@@ -3480,6 +3516,14 @@ async function cmdIdea(args: string[]): Promise<void> {
   const idea = await loader.createIdea({ title });
   console.log(`Created idea: ${idea.id}`);
   console.log(`File: ${getDataDirName()}/${idea.file}`);
+  printNextCommands([
+    `backlog show ${idea.id}`,
+    "backlog add-phase --title \"<phase title>\"",
+    "backlog add-milestone <PHASE_ID> --title \"<milestone title>\"",
+    "backlog add-epic <MILESTONE_ID> --title \"<epic title>\"",
+    "backlog add <EPIC_ID> --title \"<task title>\"",
+    "backlog bug --title \"<bug title>\"",
+  ]);
   console.log("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.");
 }
 

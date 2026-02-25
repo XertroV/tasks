@@ -1746,6 +1746,9 @@ def test_idea_command_creates_planning_intake_todo(runner, tmp_tasks_dir):
 
     assert result.exit_code == 0
     assert "Created idea:" in result.output
+    assert "Next:" in result.output
+    assert "backlog add-phase" in result.output
+    assert "File: .tasks/ideas/" in result.output
 
     ideas_index_path = tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml"
     assert ideas_index_path.exists()
@@ -1956,6 +1959,11 @@ def test_lock_epic_blocks_add_and_unlock_restores_add(runner, tmp_tasks_dir_shor
     allowed_add = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Should Succeed"])
     assert allowed_add.exit_code == 0
     assert "Created task:" in allowed_add.output
+    assert "File:" in allowed_add.output
+    assert ".tasks/01-test-phase/01-test-milestone/01-test-epic/" in allowed_add.output
+    assert "Next:" in allowed_add.output
+    assert "backlog show P1.M1.E1.T001" in allowed_add.output
+    assert "backlog claim P1.M1.E1.T001" in allowed_add.output
 
 
 def test_lock_milestone_and_phase_blocks_higher_level_adds(runner, tmp_tasks_dir_short_ids):
@@ -1986,6 +1994,10 @@ def test_add_commands_accept_optional_descriptions(runner, tmp_tasks_dir):
         ["add-phase", "--title", "Second Phase", "--description", phase_description],
     )
     assert phase_result.exit_code == 0
+    assert "File: .tasks/02-second-phase/index.yaml" in phase_result.output
+    assert "Next:" in phase_result.output
+    assert "backlog show P2" in phase_result.output
+    assert "backlog add-milestone P2" in phase_result.output
     root_index = yaml.safe_load((tmp_tasks_dir / ".tasks" / "index.yaml").read_text())
     phase_entry = next(entry for entry in root_index["phases"] if entry["id"] == "P2")
     assert phase_entry["description"] == phase_description
@@ -1995,11 +2007,19 @@ def test_add_commands_accept_optional_descriptions(runner, tmp_tasks_dir):
         ["add-milestone", "P1", "--title", "Second Milestone", "--description", milestone_description],
     )
     assert milestone_result.exit_code == 0
+    assert "File: .tasks/01-test-phase/02-second-milestone/index.yaml" in milestone_result.output
+    assert "Next:" in milestone_result.output
+    assert "  - backlog show P1.M2" in milestone_result.output
+    assert "  - backlog add-epic P1.M2" in milestone_result.output
+
+    milestone_id = milestone_result.output.split("Created milestone: ", 1)[1].split("\n", 1)[0].strip()
     milestone_index = yaml.safe_load(
         (tmp_tasks_dir / ".tasks" / "01-test-phase" / "index.yaml").read_text()
     )
     milestone_entry = next(
-        entry for entry in milestone_index["milestones"] if entry["id"] == "M1"
+        entry
+        for entry in milestone_index["milestones"]
+        if entry.get("description") == milestone_description
     )
     assert milestone_entry["description"] == milestone_description
 
@@ -2008,10 +2028,19 @@ def test_add_commands_accept_optional_descriptions(runner, tmp_tasks_dir):
         ["add-epic", "P1.M1", "--title", "Second Epic", "--description", epic_description],
     )
     assert epic_result.exit_code == 0
+    assert "File: .tasks/01-test-phase/01-test-milestone/02-second-epic/index.yaml" in epic_result.output
+    assert "Next:" in epic_result.output
+    epic_id = epic_result.output.split("Created epic: ", 1)[1].split("\n", 1)[0].strip()
+    assert f"  - backlog show {epic_id}" in epic_result.output
+    assert (
+        f'  - backlog add {epic_id} --title "<task title>"' in epic_result.output
+    )
     epic_index = yaml.safe_load(
         (tmp_tasks_dir / ".tasks" / "01-test-phase" / "01-test-milestone" / "index.yaml").read_text()
     )
-    epic_entry = next(entry for entry in epic_index["epics"] if entry["id"] == "E1")
+    epic_entry = next(
+        entry for entry in epic_index["epics"] if entry.get("description") == epic_description
+    )
     assert epic_entry["description"] == epic_description
 
 

@@ -1115,6 +1115,16 @@ tags: []
     let p = run(["add", "P1.M1.E1", "--title", "New Task"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created task:");
+    const createdTaskMatch = p.stdout.toString().match(/Created task: ([A-Z0-9.]+)/);
+    const createdTaskId = createdTaskMatch?.[1];
+    expect(createdTaskMatch).toBeTruthy();
+    const shortTaskId = createdTaskId!.split(".").at(-1);
+    expect(p.stdout.toString()).toContain(
+      `File: .tasks/01-phase/01-ms/01-epic/${shortTaskId}-new-task.todo`,
+    );
+    expect(p.stdout.toString()).toContain("Next:");
+    expect(p.stdout.toString()).toContain(`backlog show ${createdTaskId}`);
+    expect(p.stdout.toString()).toContain(`backlog claim ${createdTaskId}`);
 
     p = run(
       ["add-epic", "P1.M1", "--title", "New Epic", "--description", epicDescription],
@@ -1122,6 +1132,12 @@ tags: []
     );
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created epic:");
+    expect(p.stdout.toString()).toContain(
+      "File: .tasks/01-phase/01-ms/02-new-epic/index.yaml",
+    );
+    expect(p.stdout.toString()).toContain("Next:");
+    expect(p.stdout.toString()).toContain("backlog show P1.M1.E2");
+    expect(p.stdout.toString()).toContain("backlog add P1.M1.E2 --title");
     const epicIndex = parse(
       readFileSync(
         join(root, ".tasks", "01-phase", "01-ms", "index.yaml"),
@@ -1149,6 +1165,12 @@ tags: []
     );
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created milestone:");
+    expect(p.stdout.toString()).toContain(
+      "File: .tasks/01-phase/02-new-milestone/index.yaml",
+    );
+    expect(p.stdout.toString()).toContain("Next:");
+    expect(p.stdout.toString()).toContain("backlog show P1.M2");
+    expect(p.stdout.toString()).toContain("backlog add-epic P1.M2 --title");
     const milestoneIndex = parse(
       readFileSync(join(root, ".tasks", "01-phase", "index.yaml"), "utf8"),
     ) as {
@@ -1166,6 +1188,10 @@ tags: []
     );
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created phase:");
+    expect(p.stdout.toString()).toContain("File: .tasks/02-new-phase/index.yaml");
+    expect(p.stdout.toString()).toContain("Next:");
+    expect(p.stdout.toString()).toContain("backlog show P2");
+    expect(p.stdout.toString()).toContain("backlog add-milestone P2 --title");
     const rootIndex = parse(
       readFileSync(join(root, ".tasks", "index.yaml"), "utf8"),
     ) as {
@@ -1269,6 +1295,9 @@ tags: []
     const p = run(["idea", "add integration tests using gpt-oss-120 via groq"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created idea:");
+    expect(p.stdout.toString()).toContain("File:");
+    expect(p.stdout.toString()).toContain("Next:");
+    expect(p.stdout.toString()).toContain("backlog add-phase");
 
     const indexText = readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8");
     expect(indexText).toContain("id: I001");
@@ -1289,6 +1318,10 @@ tags: []
     const out = p.stdout.toString();
     expect(out).toContain("Created bug:");
     expect(out).not.toContain("IMPORTANT");
+    expect(out).toContain("File:");
+    expect(out).toContain("Next:");
+    expect(out).toContain("backlog show B001");
+    expect(out).toContain("backlog claim B001");
 
     const bugsIndexText = readFileSync(join(root, ".tasks", "bugs", "index.yaml"), "utf8");
     const fileMatch = bugsIndexText.match(/file:\s*(\S+)/);

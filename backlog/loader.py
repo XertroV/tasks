@@ -1921,7 +1921,7 @@ TODO: Describe actual behavior
         max_num = 0
         for epic in epics:
             epic_id = epic.get("id", "")
-            match = re.match(r"E(\d+)", epic_id)
+            match = re.search(r"(?:^|\.)E(\d+)$", epic_id)
             if match:
                 num = int(match.group(1))
                 if num > max_num:
@@ -1951,7 +1951,7 @@ TODO: Describe actual behavior
         max_num = 0
         for milestone in milestones:
             milestone_id = milestone.get("id", "")
-            match = re.match(r"M(\d+)", milestone_id)
+            match = re.search(r"(?:^|\.)M(\d+)$", milestone_id)
             if match:
                 num = int(match.group(1))
                 if num > max_num:

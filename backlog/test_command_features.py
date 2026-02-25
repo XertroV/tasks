@@ -238,6 +238,10 @@ def test_bug_accepts_positional_description_as_simple_title(
     result = runner.invoke(cli, ["bug", "fix flaky integration test"])
     assert result.exit_code == 0
     assert "Created bug:" in result.output
+    assert "File: .tasks/bugs/B001-fix-flaky-integration-test.todo" in result.output
+    assert "Next:" in result.output
+    assert "backlog show B001" in result.output
+    assert "backlog claim B001" in result.output
     assert "IMPORTANT" not in result.output
 
     bugs_index_path = tmp_feature_tasks_dir / ".tasks" / "bugs" / "index.yaml"

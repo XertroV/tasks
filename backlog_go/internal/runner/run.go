@@ -1651,6 +1651,11 @@ func runAdd(args []string) error {
 	}
 
 	fmt.Printf("%s %s\n", styleSuccess("Created task:"), styleSuccess(parsedEpicID.FullID()+"."+nextTaskID))
+	relTaskPath, err := filepath.Rel(dataDir, taskPath)
+	if err != nil {
+		return fmt.Errorf("failed to compute task relative path: %w", err)
+	}
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(filepath.ToSlash(relTaskPath)))
 	if body == "" {
 		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
 	}
@@ -1806,6 +1811,8 @@ func runAddEpic(args []string) error {
 	}
 
 	fmt.Printf("%s %s\n", styleSuccess("Created epic:"), styleSuccess(parsedMilestoneID.FullID()+"."+nextEpicID))
+	epicRelPath := filepath.ToSlash(filepath.Join(phase.Path, milestone.Path, dirName, "index.yaml"))
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(epicRelPath))
 	newEpicID := parsedMilestoneID.FullID() + "." + nextEpicID
 	printNextCommands(
 		"backlog show "+newEpicID,
@@ -1944,6 +1951,8 @@ func runAddMilestone(args []string) error {
 	}
 
 	fmt.Printf("%s %s\n", styleSuccess("Created milestone:"), styleSuccess(fmt.Sprintf("%s.%s", phase.ID, nextMilestoneID)))
+	milestoneRelPath := filepath.ToSlash(filepath.Join(phase.Path, dirName, "index.yaml"))
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(milestoneRelPath))
 	newMilestoneID := fmt.Sprintf("%s.%s", phase.ID, nextMilestoneID)
 	printNextCommands(
 		"backlog show "+newMilestoneID,
@@ -2069,6 +2078,8 @@ func runAddPhase(args []string) error {
 		return err
 	}
 	fmt.Printf("%s %s\n", styleSuccess("Created phase:"), styleSuccess(nextPhaseID))
+	phaseRelPath := filepath.ToSlash(filepath.Join(phaseDirName, "index.yaml"))
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(phaseRelPath))
 	printNextCommands(
 		"backlog show "+nextPhaseID,
 		"backlog add-milestone "+nextPhaseID+" --title \"<milestone title>\"",
@@ -3040,9 +3051,6 @@ func runListCore(command string, args []string) error {
 			return false
 		}
 		if hasPriorityFilter && task.Priority != priorityFilter {
-			return false
-		}
-		if !showAll && !unfinished && isCompletedStatus(task.Status) {
 			return false
 		}
 		if scoped && !scopedTaskSetContains(task.ID, scopedTasks) {
@@ -4283,6 +4291,14 @@ func runIdea(args []string) error {
 	fmt.Printf("%s %s\n", styleSuccess("Created idea:"), styleSuccess(ideaID))
 	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(relFile))
 	fmt.Println(styleWarning("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands."))
+	printNextCommands(
+		"backlog show "+ideaID,
+		"backlog add-phase --title \"<phase title>\"",
+		"backlog add-milestone <PHASE_ID> --title \"<milestone title>\"",
+		"backlog add-epic <MILESTONE_ID> --title \"<epic title>\"",
+		"backlog add <EPIC_ID> --title \"<task title>\"",
+		"backlog bug --title \"<bug title>\"",
+	)
 	return nil
 }
 
@@ -4423,9 +4439,18 @@ func runBug(args []string) error {
 	}
 
 	fmt.Printf("%s %s\n", styleSuccess("Created bug:"), styleSuccess(bugID))
+	relBugPath, err := filepath.Rel(dataDir, filePath)
+	if err != nil {
+		return fmt.Errorf("failed to compute bug relative path: %w", err)
+	}
+	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(filepath.ToSlash(relBugPath)))
 	if !simple && strings.TrimSpace(body) == "" {
 		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
 	}
+	printNextCommands(
+		"backlog show "+bugID,
+		"backlog claim "+bugID,
+	)
 	return nil
 }
 
@@ -6589,11 +6614,11 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 		stats := parsePhaseTaskStats([]models.Task{})
 		for _, milestone := range phase.Milestones {
 			for _, epic := range milestone.Epics {
-				stats.total += len(epic.Tasks)
 				for _, task := range epic.Tasks {
 					if !taskMatches(task) {
 						continue
 					}
+					stats.total++
 					switch task.Status {
 					case models.StatusDone:
 						stats.done++

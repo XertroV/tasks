@@ -2274,6 +2274,16 @@ def _show_idea_instructions(idea):
     console.print("  6. Mark this idea as done when planning is complete")
 
 
+def _print_next_commands(*commands):
+    """Print a short list of suggested next commands."""
+    filtered = [command.strip() for command in commands if command and command.strip()]
+    if not filtered:
+        return
+    console.print("[bold]Next:[/]")
+    for command in filtered:
+        console.print(f"  - {command}")
+
+
 def _show_fixed_task(task):
     """Display fixed task summary."""
     console.print(f"{task.id}: {task.title}\nstatus={task.status.value} estimate={task.estimate_hours}")
@@ -3222,6 +3232,10 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
             console.print(
                 "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
             )
+        _print_next_commands(
+            f"backlog show {task.id}",
+            f"backlog claim {task.id}",
+        )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -3262,7 +3276,13 @@ def add_epic(milestone_id, title, estimate, description, complexity, depends_on)
         console.print(f"  Estimate: {epic.estimate_hours}h")
         tree = loader.load("metadata")
         display_epic = tree.find_epic(epic.id) or epic
-        console.print(f"\n[bold]Path:[/] {format_epic_path(tree, display_epic)}\n")
+        console.print(
+            f"\n[bold]File:[/] {format_epic_path(tree, display_epic)}/index.yaml\n"
+        )
+        _print_next_commands(
+            f"backlog show {epic.id}",
+            f"backlog add {epic.id} --title \"<task title>\"",
+        )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -3309,7 +3329,11 @@ def add_milestone(phase_id, title, estimate, complexity, depends_on, description
         tree = loader.load("metadata")
         display_milestone = tree.find_milestone(milestone.id) or milestone
         console.print(
-            f"\n[bold]Path:[/] {format_milestone_path(tree, display_milestone)}\n"
+            f"\n[bold]File:[/] {format_milestone_path(tree, display_milestone)}/index.yaml\n"
+        )
+        _print_next_commands(
+            f"backlog show {milestone.id}",
+            f"backlog add-epic {milestone.id} --title \"<epic title>\"",
         )
 
     except Exception as e:
@@ -3358,7 +3382,11 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
         console.print(f"  Title:    {phase.name}")
         console.print(f"  Weeks:    {phase.weeks}")
         console.print(f"  Estimate: {phase.estimate_hours}h")
-        console.print(f"\n[bold]Path:[/] {format_phase_path(phase)}\n")
+        console.print(f"\n[bold]File:[/] {format_phase_path(phase)}/index.yaml\n")
+        _print_next_commands(
+            f"backlog show {phase.id}",
+            f"backlog add-milestone {phase.id} --title \"<milestone title>\"",
+        )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -3459,6 +3487,10 @@ def bug(
             console.print(
                 "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
             )
+        _print_next_commands(
+            f"backlog show {created.id}",
+            f"backlog claim {created.id}",
+        )
 
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
