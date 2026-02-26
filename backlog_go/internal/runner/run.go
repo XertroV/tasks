@@ -1287,11 +1287,12 @@ func printTaskFileReadCommand(taskPath string, showPreview bool, previewLines in
 		return
 	}
 	quoted := shellQuotePath(taskPath)
+	command := "cat " + quoted
 	if showPreview && previewLines > 0 {
-		fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("cat %s | head -n %d && echo %q || echo \"error\"", quoted, previewLines, taskFileReadEOFMarker)))
-		return
+		command = command + fmt.Sprintf(" | head -n %d", previewLines)
 	}
-	fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("cat %s && echo %q || echo \"error\"", quoted, taskFileReadEOFMarker)))
+	fmt.Printf("  %s\n", styleSuccess(fmt.Sprintf("$ %s", command)))
+	fmt.Printf("  %s\n", styleMuted(taskFileReadEOFMarker))
 }
 
 func printTaskFileReadCommandsForTask(dataDir string, task models.Task, showPreview bool) {
@@ -5529,6 +5530,7 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	}
 
 	fmt.Printf("\n  %s\n", styleSubHeader("Task Body Preview"))
+	printTaskFileReadCommandsForTask(dataDir, task, true)
 	lines := strings.Split(body, "\n")
 	maxLines := min(12, len(lines))
 	for i := 0; i < maxLines; i++ {
@@ -5537,7 +5539,6 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	if len(lines) > maxLines {
 		fmt.Printf("    %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-maxLines)))
 	}
-	printTaskFileReadCommandsForTask(dataDir, task, true)
 	printClaimCompletionGuidance(task.ID)
 }
 
