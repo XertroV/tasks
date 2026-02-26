@@ -7515,7 +7515,9 @@ func renderTaskDetail(task models.Task, dataDir string) {
 	case models.StatusPending:
 		printNextCommands("backlog claim "+task.ID, "backlog why "+task.ID)
 	case models.StatusInProgress:
-		printNextCommands("backlog done "+task.ID, "backlog blocked "+task.ID+" --reason \"<reason>\"")
+		printClaimCompletionGuidance(task.ID)
+		fmt.Printf("  %s\n", styleSuccess("If this task becomes blocked:"))
+		fmt.Printf("  %s\n", styleSuccess("`bl blocked "+task.ID+" --reason \"<reason>\"`"))
 	case models.StatusBlocked:
 		printNextCommands("backlog why "+task.ID, "backlog blockers --suggest")
 	default:

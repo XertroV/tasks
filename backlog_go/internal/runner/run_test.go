@@ -1152,6 +1152,31 @@ func TestRunShowNoTaskFallsBackToCurrent(t *testing.T) {
 	}
 }
 
+func TestRunShowInProgressTaskRendersCompletionGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	if _, err := runInDir(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-snap"); err != nil {
+		t.Fatalf("run claim = %v, expected nil", err)
+	}
+	output, err := runInDir(t, root, "show", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "-----=====-----") {
+		t.Fatalf("show output = %q, expected bar separator", output)
+	}
+	if !strings.Contains(output, "When you complete this task, mark it done by either:") {
+		t.Fatalf("show output = %q, expected completion guidance", output)
+	}
+	if !strings.Contains(output, "bl cycle P1.M1.E1.T001") {
+		t.Fatalf("show output = %q, expected cycle guidance", output)
+	}
+	if !strings.Contains(output, "bl done P1.M1.E1.T001") {
+		t.Fatalf("show output = %q, expected done guidance", output)
+	}
+}
+
 func TestRunShowNoTaskCurrentTaskUnavailable(t *testing.T) {
 	t.Parallel()
 
