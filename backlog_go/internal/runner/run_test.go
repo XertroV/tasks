@@ -768,6 +768,12 @@ func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
 	if !strings.Contains(output, "bl done P1.M1.E1.T001") {
 		t.Fatalf("claim output = %q, expected done guidance", output)
 	}
+	if !strings.Contains(output, "If you claimed this by mistake, release it with:") {
+		t.Fatalf("claim output = %q, expected unclaim guidance", output)
+	}
+	if !strings.Contains(output, "bl unclaim P1.M1.E1.T001") {
+		t.Fatalf("claim output = %q, expected unclaim command", output)
+	}
 }
 
 func TestRunAddPhaseHelpRendersCommandSpecificGuidance(t *testing.T) {
@@ -1174,6 +1180,12 @@ func TestRunShowInProgressTaskRendersCompletionGuidance(t *testing.T) {
 	}
 	if !strings.Contains(output, "bl done P1.M1.E1.T001") {
 		t.Fatalf("show output = %q, expected done guidance", output)
+	}
+	if !strings.Contains(output, "If you claimed this by mistake, release it with:") {
+		t.Fatalf("show output = %q, expected unclaim guidance", output)
+	}
+	if !strings.Contains(output, "bl unclaim P1.M1.E1.T001") {
+		t.Fatalf("show output = %q, expected unclaim command", output)
 	}
 }
 

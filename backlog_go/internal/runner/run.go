@@ -5521,6 +5521,9 @@ func printClaimCompletionGuidance(taskID string) {
 	fmt.Printf("    %s\n", styleMuted("to mark done + claim next task in backlog (global),"))
 	fmt.Printf("  - %s\n", styleSuccess("`bl done "+taskID+"`"))
 	fmt.Printf("    %s\n", styleMuted("to mark as done and stop"))
+	fmt.Printf("  %s\n", styleSuccess("If you claimed this by mistake, release it with:"))
+	fmt.Printf("  %s\n", styleSuccess("`bl unclaim "+taskID+"`"))
+	fmt.Printf("    %s\n", styleMuted("to return it to pending"))
 }
 
 func isTaskOnCriticalPath(taskID string, criticalPath []string) bool {
