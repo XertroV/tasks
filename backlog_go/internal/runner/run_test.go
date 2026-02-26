@@ -1314,6 +1314,42 @@ func TestRunListBugsAndIdeasFlags(t *testing.T) {
 	}
 }
 
+func TestRunListListShortAliases(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+
+	availableOutput, err := runInDir(t, root, "list", "-a")
+	if err != nil {
+		t.Fatalf("run list -a = %v, expected nil", err)
+	}
+	if !strings.Contains(availableOutput, "Available Tasks (") {
+		t.Fatalf("available output = %q, expected available header", availableOutput)
+	}
+
+	bugsOutput, err := runInDir(t, root, "list", "-b")
+	if err != nil {
+		t.Fatalf("run list -b = %v, expected nil", err)
+	}
+	if !strings.Contains(bugsOutput, "Bugs (0/1 done)") {
+		t.Fatalf("bugs output = %q, expected bugs section", bugsOutput)
+	}
+	if strings.Contains(bugsOutput, "Ideas (") {
+		t.Fatalf("bugs output = %q, expected ideas section hidden", bugsOutput)
+	}
+
+	ideasOutput, err := runInDir(t, root, "list", "-i")
+	if err != nil {
+		t.Fatalf("run list -i = %v, expected nil", err)
+	}
+	if !strings.Contains(ideasOutput, "Ideas (0/1 done)") {
+		t.Fatalf("ideas output = %q, expected ideas section", ideasOutput)
+	}
+	if strings.Contains(ideasOutput, "Bugs (") {
+		t.Fatalf("ideas output = %q, expected bugs section hidden", ideasOutput)
+	}
+}
+
 func TestRunListBugsAndIdeasUseDependencyBlockedCheckbox(t *testing.T) {
 	t.Parallel()
 

@@ -1115,15 +1115,15 @@ func printListHelp() {
 		[]string{
 			"--status              Filter by comma-separated status values",
 			"--critical            Show only critical path tasks",
-			"--available           Show all unblocked and available tasks",
+			"--available, -a       Show all unblocked and available tasks",
 			"--complexity          Filter by complexity (low|medium|high|critical)",
 			"--priority            Filter by priority (low|medium|high|critical)",
 			"--progress            Show progress bars",
 			"--json                Output JSON",
 			"--all                 Show all milestones (no limit)",
 			"--unfinished          Show only unfinished items",
-			"--bugs                Show only bug tasks",
-			"--ideas               Show only idea tasks",
+			"--bugs, -b            Show only bug tasks",
+			"--ideas, -i           Show only idea tasks",
 			"--show-completed-aux  Include completed/cancelled/rejected bugs and ideas",
 			"--phase               Filter by phase ID",
 			"--milestone           Filter by milestone ID (e.g. M1)",
@@ -2860,6 +2860,7 @@ func runListCore(command string, args []string) error {
 			"--status":             true,
 			"--critical":           true,
 			"--available":          true,
+			"-a":                   true,
 			"--complexity":         true,
 			"--priority":           true,
 			"--progress":           true,
@@ -2867,7 +2868,9 @@ func runListCore(command string, args []string) error {
 			"--all":                true,
 			"--unfinished":         true,
 			"--bugs":               true,
+			"-b":                   true,
 			"--ideas":              true,
+			"-i":                   true,
 			"--show-completed":     true,
 			"--show-completed-aux": true,
 			"--phase":              true,
@@ -2911,9 +2914,9 @@ func runListCore(command string, args []string) error {
 	statusFilterRaw := parseOption(args, "--status")
 	showAll := parseFlag(args, "--all")
 	unfinished := parseFlag(args, "--unfinished")
-	bugsOnly := parseFlag(args, "--bugs")
-	ideasOnly := parseFlag(args, "--ideas")
-	availableOnly := parseFlag(args, "--available")
+	bugsOnly := parseFlag(args, "--bugs", "-b")
+	ideasOnly := parseFlag(args, "--ideas", "-i")
+	availableOnly := parseFlag(args, "--available", "-a")
 	showCompletedAux := parseFlag(args, "--show-completed-aux")
 	showProgress := parseFlag(args, "--progress")
 	phaseScope := parseOption(args, "--phase")

@@ -1842,6 +1842,28 @@ def test_list_bugs_and_ideas_flags(runner, tmp_tasks_dir):
     assert "Phase" not in ideas_only.output
 
 
+def test_list_bugs_and_ideas_short_aliases(runner, tmp_tasks_dir):
+    bug_result = runner.invoke(cli, ["bug", "--title", "critical bug", "--simple"])
+    assert bug_result.exit_code == 0
+
+    idea_result = runner.invoke(cli, ["idea", "future planning idea"])
+    assert idea_result.exit_code == 0
+
+    bugs_only = runner.invoke(cli, ["list", "-b"])
+    assert bugs_only.exit_code == 0
+    assert "Bugs" in bugs_only.output
+    assert "B001" in bugs_only.output
+    assert "Ideas" not in bugs_only.output
+    assert "Phase" not in bugs_only.output
+
+    ideas_only = runner.invoke(cli, ["list", "-i"])
+    assert ideas_only.exit_code == 0
+    assert "Ideas" in ideas_only.output
+    assert "I001" in ideas_only.output
+    assert "Bugs" not in ideas_only.output
+    assert "Phase" not in ideas_only.output
+
+
 def test_list_aux_fallback_title_from_filename(runner, tmp_tasks_dir):
     bug_result = runner.invoke(cli, ["bug", "--title", "critical bug", "--simple"])
     assert bug_result.exit_code == 0

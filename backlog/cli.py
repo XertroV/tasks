@@ -682,7 +682,7 @@ def _resolve_list_scope(tree, raw_scope):
 @click.option("--milestone", help="Filter by milestone ID (e.g., M1, M2)")
 @click.option("--epic", help="Filter by epic ID")
 @click.option("--critical", is_flag=True, help="Show only critical path tasks")
-@click.option("--available", is_flag=True, help="Show all unblocked/available tasks")
+@click.option("-a", "--available", is_flag=True, help="Show all unblocked/available tasks")
 @click.option(
     "--complexity",
     type=click.Choice(["low", "medium", "high", "critical"]),
@@ -697,8 +697,8 @@ def _resolve_list_scope(tree, raw_scope):
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
 @click.option("--all", "show_all", is_flag=True, help="Show all milestones (no limit)")
 @click.option("--unfinished", is_flag=True, help="Show only unfinished items")
-@click.option("--bugs", is_flag=True, help="Show only bug tasks")
-@click.option("--ideas", is_flag=True, help="Show only idea tasks")
+@click.option("-b", "--bugs", is_flag=True, help="Show only bug tasks")
+@click.option("-i", "--ideas", is_flag=True, help="Show only idea tasks")
 @click.option(
     "--show-completed-aux",
     is_flag=True,

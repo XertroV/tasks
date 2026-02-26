@@ -1449,6 +1449,37 @@ tags: []
     expect(ideasOut).not.toContain("Phase");
   });
 
+  test("list -a/-b/-i filter auxiliary sections", () => {
+    root = setupFixture();
+
+    let p = run(["bug", "--title", "critical bug", "--simple"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["idea", "future planning idea"], root);
+    expect(p.exitCode).toBe(0);
+
+    p = run(["list", "-b"], root);
+    expect(p.exitCode).toBe(0);
+    const bugsOut = p.stdout.toString();
+    expect(bugsOut).toContain("Bugs");
+    expect(bugsOut).toContain("B001");
+    expect(bugsOut).not.toContain("Ideas");
+    expect(bugsOut).not.toContain("Phase");
+
+    p = run(["list", "-i"], root);
+    expect(p.exitCode).toBe(0);
+    const ideasOut = p.stdout.toString();
+    expect(ideasOut).toContain("Ideas");
+    expect(ideasOut).toContain("I001");
+    expect(ideasOut).not.toContain("Bugs");
+    expect(ideasOut).not.toContain("Phase");
+
+    p = run(["list", "-a"], root);
+    expect(p.exitCode).toBe(0);
+    const availableOut = p.stdout.toString();
+    expect(availableOut).toContain("Available Tasks");
+  });
+
   test("list falls back to aux filename when title metadata is missing", () => {
     root = setupFixture();
 

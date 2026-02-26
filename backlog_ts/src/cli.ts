@@ -347,7 +347,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   help: { summary: "Show command overview and guidance.", usage: "backlog help [COMMAND]", options: [], examples: ["backlog help", "backlog help show"] },
   idea: { summary: "Capture an idea as planning intake.", usage: "backlog idea IDEA_TEXT", options: [], examples: ["backlog idea \"improve migration diagnostics\""] },
   init: { summary: "Initialize a new .backlog project.", usage: "backlog init --project NAME [--description TEXT] [--timeline-weeks N]", options: ["--project, -p", "--description, -d", "--timeline-weeks, -w"], examples: ["backlog init --project my-project"] },
-  list: { summary: "List tasks with filtering options.", usage: "backlog list [<SCOPE>] [options]", options: ["--status", "--critical", "--available", "--complexity", "--priority", "--progress", "--json", "--all", "--unfinished", "--bugs", "--ideas", "--show-completed-aux", "--phase", "--milestone", "--epic"], examples: ["backlog list", "backlog list P1.M1 --progress", "backlog list --json"] },
+  list: { summary: "List tasks with filtering options.", usage: "backlog list [<SCOPE>] [options]", options: ["--status", "--critical", "--available, -a", "--complexity", "--priority", "--progress", "--json", "--all", "--unfinished", "--bugs, -b", "--ideas, -i", "--show-completed-aux", "--phase", "--milestone", "--epic"], examples: ["backlog list", "backlog list P1.M1 --progress", "backlog list --json"] },
   lock: { summary: "Lock a phase/milestone/epic.", usage: "backlog lock <ITEM_ID>", options: [], examples: ["backlog lock P1.M1"] },
   log: { summary: "Show recent activity log.", usage: "backlog log [--limit N] [--json]", options: ["--limit", "--json"], examples: ["backlog log", "backlog log --limit 20 --json"] },
   migrate: { summary: "Migrate .tasks/ to .backlog/.", usage: "backlog migrate [--force] [--no-symlink]", options: ["--force", "--no-symlink"], examples: ["backlog migrate"] },
@@ -866,9 +866,9 @@ async function cmdList(args: string[]): Promise<void> {
   const statusFilter = parseOpt(args, "--status")?.split(",") ?? [];
   const showAll = parseFlag(args, "--all");
   const unfinished = parseFlag(args, "--unfinished");
-  const bugsOnly = parseFlag(args, "--bugs");
-  const ideasOnly = parseFlag(args, "--ideas");
-  const available = parseFlag(args, "--available");
+  const bugsOnly = parseFlag(args, "--bugs") || parseFlag(args, "-b");
+  const ideasOnly = parseFlag(args, "--ideas") || parseFlag(args, "-i");
+  const available = parseFlag(args, "--available") || parseFlag(args, "-a");
   const showCompletedAux = parseFlag(args, "--show-completed-aux");
   const showProgress = parseFlag(args, "--progress");
   const phase = parseOpt(args, "--phase");
