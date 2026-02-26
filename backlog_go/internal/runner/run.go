@@ -8170,12 +8170,50 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 		return
 	}
 
+	dataDir := dataDirFromContext()
+	dataDirBase := ".tasks"
+	if dataDir != "" {
+		dataDirBase = filepath.Base(dataDir)
+	}
+
+	printNextSteps := func(title, scopeType string, scopeName string, scopeID string, scopePath string, nextSteps ...string) {
+		fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
+		fmt.Printf("%s %s (%s)\n", styleSuccess(fmt.Sprintf("%s COMPLETE:", scopeType)), styleSubHeader(scopeName), styleSuccess(scopeID))
+		if scopePath != "" {
+			fmt.Printf("%s: %s\n", styleSubHeader("Path"), styleSuccess(scopePath))
+		}
+		fmt.Println(strings.Repeat("=", 60))
+		fmt.Println()
+		fmt.Println(styleSubHeader("NEXT_STEPS:"))
+		fmt.Println(styleSubHeader(title))
+		for i, step := range nextSteps {
+			fmt.Printf("  %d. %s\n", i+1, step)
+		}
+		fmt.Println()
+	}
+
 	if notice.EpicCompleted {
 		epic := findEpic(tree, task.EpicID)
 		if epic != nil {
-			fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
-			fmt.Printf("%s: %s (%s)\n", styleSuccess("EPIC COMPLETE"), styleSubHeader(epic.Name), styleSuccess(epic.ID))
-			fmt.Println(styleSubHeader("Review the completed epic."))
+			phase := tree.FindPhase(epic.PhaseID)
+			milestone := tree.FindMilestone(epic.MilestoneID)
+			epicPath := ".tasks"
+			if phase != nil && milestone != nil {
+				epicPath = filepath.Join(dataDirBase, phase.Path, milestone.Path, epic.Path)
+			} else if epic.Path != "" {
+				epicPath = filepath.Join(dataDirBase, epic.Path)
+			}
+			printNextSteps(
+				"Review the completed epic before moving on.",
+				"EPIC",
+				epic.Name,
+				epic.ID,
+				filepath.ToSlash(epicPath),
+				"Spawn a review subagent to verify implementation",
+				fmt.Sprintf("Check acceptance criteria in %s are met", filepath.ToSlash(epicPath)),
+				"Ensure integration between all tasks in the epic",
+				"Run liter (if available) and fix any warnings",
+			)
 			fmt.Println()
 		}
 	}
@@ -8183,9 +8221,22 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 	if notice.MilestoneCompleted {
 		milestone := findMilestone(tree, task.MilestoneID)
 		if milestone != nil && len(milestone.Epics) > 1 {
-			fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
-			fmt.Printf("%s: %s (%s)\n", styleSuccess("MILESTONE COMPLETE"), styleSubHeader(milestone.Name), styleSuccess(milestone.ID))
-			fmt.Println(styleSubHeader("Review the completed milestone."))
+			phase := tree.FindPhase(task.PhaseID)
+			milestonePath := "milestone"
+			if phase != nil {
+				milestonePath = filepath.ToSlash(filepath.Join(dataDirBase, phase.Path, milestone.Path))
+			}
+			printNextSteps(
+				"Review the completed milestone before moving on.",
+				"MILESTONE",
+				milestone.Name,
+				milestone.ID,
+				milestonePath,
+				"Spawn a comprehensive review subagent (in addition to the epic review agent)",
+				"Verify all epics integrate correctly together",
+				"Run full test suite",
+				"Run linter (if available) and fix any warnings",
+			)
 			fmt.Println()
 		}
 	}
@@ -8193,9 +8244,19 @@ func printCompletionNotice(tree models.TaskTree, task models.Task, notice comple
 	if notice.PhaseCompleted {
 		phase := tree.FindPhase(task.PhaseID)
 		if phase != nil {
-			fmt.Println(styleMuted("════════════════════════════════════════════════════════════════════"))
-			fmt.Printf("%s: %s (%s)\n", styleSuccess("PHASE COMPLETE"), styleSubHeader(phase.Name), styleSuccess(phase.ID))
-			fmt.Println(styleSubHeader("Review the completed phase."))
+			phasePath := "phase"
+			if phase.Path != "" {
+				phasePath = filepath.ToSlash(filepath.Join(dataDirBase, phase.Path))
+			}
+			printNextSteps(
+				"Review the completed phase before moving on.",
+				"PHASE",
+				phase.Name,
+				phase.ID,
+				phasePath,
+				"Run project-level verification checks",
+				"Confirm phase lock and mark follow-up items",
+			)
 			fmt.Println()
 		}
 	}

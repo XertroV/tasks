@@ -2702,6 +2702,45 @@ func TestRunDoneRejectsMissingTaskFile(t *testing.T) {
 	}
 }
 
+func TestRunDoneShowsDetailedEpicCompletionNotice(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "done", "", "")
+
+	output, err := runInDir(t, root, "done", "P1.M1.E1.T002")
+	if err != nil {
+		t.Fatalf("run done = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Completed: P1.M1.E1.T002 - b") {
+		t.Fatalf("output = %q, expected completed confirmation", output)
+	}
+	if !strings.Contains(output, "EPIC COMPLETE") {
+		t.Fatalf("output = %q, expected epic complete heading", output)
+	}
+	if !strings.Contains(output, "Path: .tasks/01-phase/01-ms/01-epic") {
+		t.Fatalf("output = %q, expected epic path", output)
+	}
+	if !strings.Contains(output, "NEXT_STEPS:") {
+		t.Fatalf("output = %q, expected NEXT_STEPS block", output)
+	}
+	if !strings.Contains(output, "Review the completed epic before moving on.") {
+		t.Fatalf("output = %q, expected epic review instruction", output)
+	}
+	if !strings.Contains(output, "Spawn a review subagent to verify implementation") {
+		t.Fatalf("output = %q, expected review subagent suggestion", output)
+	}
+	if !strings.Contains(output, "Check acceptance criteria in .tasks/01-phase/01-ms/01-epic are met") {
+		t.Fatalf("output = %q, expected acceptance criteria check", output)
+	}
+	if !strings.Contains(output, "Ensure integration between all tasks in the epic") {
+		t.Fatalf("output = %q, expected integration check", output)
+	}
+	if !strings.Contains(output, "Run liter (if available) and fix any warnings") {
+		t.Fatalf("output = %q, expected linter guidance", output)
+	}
+}
+
 func TestRunSearchAndWhyCommands(t *testing.T) {
 	t.Parallel()
 
