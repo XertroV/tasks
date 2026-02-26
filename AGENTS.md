@@ -5,7 +5,6 @@
 - python: `backlog`
 - typescript: `backlog_ts`
 
-
 ## Expectations
 
 - Keep files under 1000 LoC ideally; hard limit at 2000.
@@ -54,4 +53,3 @@ We are dogfooding!
 - Use `backlog handoff --to <agent> --notes "<context>"` for ownership transfer.
 - Use `backlog blockers --suggest` and `backlog why <task-id>` when sequencing is unclear.
 - Run `backlog dash` and `backlog report progress` for health checks.
-
