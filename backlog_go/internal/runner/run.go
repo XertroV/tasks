@@ -30,7 +30,7 @@ const (
 	previewBugFanoutCount    = 2
 	grabSiblingAdditionalMax = 4
 	grabBugAdditionalMax     = 2
-	taskFileReadPreviewLines  = 12
+	taskFileReadPreviewLines = 12
 	taskFileReadEOFMarker    = "-----== EOF ==-----"
 )
 
@@ -1292,12 +1292,16 @@ func printTaskFileReadCommand(taskPath string, showPreview bool, previewLines in
 		command = command + fmt.Sprintf(" | head -n %d", previewLines)
 	}
 	fmt.Printf("  %s\n", styleSuccess(fmt.Sprintf("$ %s", command)))
+}
+
+func printTaskFileReadEOF() {
 	fmt.Printf("  %s\n", styleMuted(taskFileReadEOFMarker))
 }
 
 func printTaskFileReadCommandsForTask(dataDir string, task models.Task, showPreview bool) {
 	taskPath := filepath.Join(dataDir, task.File)
 	printTaskFileReadCommand(taskPath, showPreview, taskFileReadPreviewLines)
+	printTaskFileReadEOF()
 }
 
 func normalizeCommand(value string) string {
@@ -4197,10 +4201,10 @@ func runAdminCheckFileSync(jsonOutput bool) error {
 	}
 	if jsonOutput {
 		payload := map[string]any{
-			"command":          "admin",
-			"action":           "check-file-sync",
-			"implemented":      true,
-			"message":          "admin check-file-sync completed",
+			"command":           "admin",
+			"action":            "check-file-sync",
+			"implemented":       true,
+			"message":           "admin check-file-sync completed",
 			"missing_task_ids":  missing,
 			"all_files_present": len(missing) == 0,
 			"guidance":          "Run 'backlog check' or open tasks to resolve missing files.",
@@ -4246,15 +4250,15 @@ func runAdminCheckIDs(jsonOutput bool) error {
 	issues := len(duplicates) + len(emptyIDs)
 	if jsonOutput {
 		payload := map[string]any{
-			"command":      "admin",
-			"action":       "check-ids",
-			"implemented":  true,
-			"message":      "admin check-ids completed",
-			"duplicates":   duplicates,
-			"missing_ids":  emptyIDs,
-			"issue_count":  issues,
-			"task_count":   len(seen),
-			"guidance":     "Resolve duplicated or missing IDs in index files before continuing.",
+			"command":     "admin",
+			"action":      "check-ids",
+			"implemented": true,
+			"message":     "admin check-ids completed",
+			"duplicates":  duplicates,
+			"missing_ids": emptyIDs,
+			"issue_count": issues,
+			"task_count":  len(seen),
+			"guidance":    "Resolve duplicated or missing IDs in index files before continuing.",
 		}
 		raw, err := json.MarshalIndent(payload, "", "  ")
 		if err != nil {
@@ -5530,7 +5534,8 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	}
 
 	fmt.Printf("\n  %s\n", styleSubHeader("Task Body Preview"))
-	printTaskFileReadCommandsForTask(dataDir, task, true)
+	taskPath := filepath.Join(dataDir, task.File)
+	printTaskFileReadCommand(taskPath, true, taskFileReadPreviewLines)
 	lines := strings.Split(body, "\n")
 	maxLines := min(12, len(lines))
 	for i := 0; i < maxLines; i++ {
@@ -5539,6 +5544,7 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	if len(lines) > maxLines {
 		fmt.Printf("    %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-maxLines)))
 	}
+	printTaskFileReadEOF()
 	printClaimCompletionGuidance(task.ID)
 }
 
@@ -5812,6 +5818,9 @@ func runGrab(args []string) error {
 		if parsed > 0 {
 			count = parsed
 		}
+	}
+	if single && len(taskIDs) == 0 {
+		fmt.Println(styleWarning("`--single` is less efficient for agent flow; it only claims one task at a time. Consider dropping `--single` and using default `backlog grab` to grab a few tasks at once."))
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)

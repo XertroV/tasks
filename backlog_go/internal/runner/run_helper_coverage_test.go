@@ -364,7 +364,13 @@ func TestRunGrabModesAndScope(t *testing.T) {
 
 	rootSingle := setupWorkflowFixture(t)
 	singleOut := mustRun(t, rootSingle, "grab", "--single")
-	assertContainsAll(t, singleOut, "Grabbed: P1.M1.E1.T001 - a")
+		assertContainsAll(
+			t,
+			singleOut,
+			"Grabbed: P1.M1.E1.T001 - a",
+			"it only claims one task at a time",
+			"Consider dropping `--single`",
+		)
 
 	rootScope := setupWorkflowFixture(t)
 	_, err = runInDir(t, rootScope, "grab", "--scope", "P9")
