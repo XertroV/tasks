@@ -759,8 +759,14 @@ func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
 	if !strings.Contains(output, "Task body preview suppressed via --no-content") {
 		t.Fatalf("claim output = %q, expected --no-content hint", output)
 	}
-	if !strings.Contains(output, "Next: backlog done P1.M1.E1.T001") {
-		t.Fatalf("claim output = %q, expected next-step guidance", output)
+	if !strings.Contains(output, "When you complete this task, mark it done by either:") {
+		t.Fatalf("claim output = %q, expected next-step guidance header", output)
+	}
+	if !strings.Contains(output, "bl cycle P1.M1.E1.T001") {
+		t.Fatalf("claim output = %q, expected cycle guidance", output)
+	}
+	if !strings.Contains(output, "bl done P1.M1.E1.T001") {
+		t.Fatalf("claim output = %q, expected done guidance", output)
 	}
 }
 

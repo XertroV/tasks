@@ -79,8 +79,9 @@ func TestSemanticSnapshotsForCriticalTextCommands(t *testing.T) {
 			anchors: []string{
 				"✓ Claimed",
 				"Task body preview suppressed via --no-content",
-				"Next:",
-				"backlog done P1.M1.E1.T001",
+				"When you complete this task, mark it done by either:",
+				"bl cycle P1.M1.E1.T001",
+				"bl done P1.M1.E1.T001",
 			},
 		},
 	}

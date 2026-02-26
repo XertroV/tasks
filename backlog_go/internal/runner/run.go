@@ -5485,20 +5485,20 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 
 	if !showContent {
 		fmt.Printf("  %s\n", styleMuted("Task body preview suppressed via --no-content"))
-		fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+		printClaimCompletionGuidance(task.ID)
 		return
 	}
 
 	_, body, err := readTodoFrontmatter(task.ID, task.File)
 	if err != nil {
 		fmt.Printf("  %s\n", styleWarning("Unable to preview task body."))
-		fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+		printClaimCompletionGuidance(task.ID)
 		return
 	}
 	body = strings.TrimSpace(body)
 	if body == "" {
 		fmt.Printf("  %s\n", styleMuted("Task body is empty."))
-		fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+		printClaimCompletionGuidance(task.ID)
 		return
 	}
 
@@ -5511,7 +5511,16 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	if len(lines) > maxLines {
 		fmt.Printf("    %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-maxLines)))
 	}
-	fmt.Printf("  %s backlog done %s\n", styleMuted("Next:"), styleSuccess(task.ID))
+	printClaimCompletionGuidance(task.ID)
+}
+
+func printClaimCompletionGuidance(taskID string) {
+	fmt.Printf("  %s\n", styleMuted("-----=====-----"))
+	fmt.Printf("  %s\n", styleSuccess("When you complete this task, mark it done by either:"))
+	fmt.Printf("  - %s\n", styleSuccess("`bl cycle "+taskID+"`"))
+	fmt.Printf("    %s\n", styleMuted("to mark done + claim next task in backlog (global),"))
+	fmt.Printf("  - %s\n", styleSuccess("`bl done "+taskID+"`"))
+	fmt.Printf("    %s\n", styleMuted("to mark as done and stop"))
 }
 
 func isTaskOnCriticalPath(taskID string, criticalPath []string) bool {
