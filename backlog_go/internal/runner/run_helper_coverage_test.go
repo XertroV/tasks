@@ -67,7 +67,7 @@ func TestRunCycleAutoGrabsNextTask(t *testing.T) {
 	_ = mustRun(t, root, "claim", "P1.M1.E1.T001")
 
 	output := mustRun(t, root, "cycle", "P1.M1.E1.T001")
-	assertContainsAll(t, output, "Completed: P1.M1.E1.T001 - a", "Grabbed: P1.M1.E1.T002 - b")
+	assertContainsAll(t, output, "Completed: P1.M1.E1.T001 - a", "Grabbed: P1.M1.E1.T002 - b", "/01-phase/01-ms/01-epic/T002-b.todo", "-----== EOF ==-----")
 
 	dataDir := filepath.Join(root, ".tasks")
 	currentTask, err := taskcontext.GetCurrentTask(dataDir)
@@ -344,7 +344,15 @@ func TestRunGrabModesAndScope(t *testing.T) {
 
 	rootExplicit := setupWorkflowFixture(t)
 	explicitOut := mustRun(t, rootExplicit, "grab", "P1.M1.E1.T001", "P1.M1.E1.T002", "--agent", "agent-x")
-	assertContainsAll(t, explicitOut, "✓ Claimed: P1.M1.E1.T001 - a", "✓ Claimed: P1.M1.E1.T002 - b")
+	assertContainsAll(
+		t,
+		explicitOut,
+		"✓ Claimed: P1.M1.E1.T001 - a",
+		"✓ Claimed: P1.M1.E1.T002 - b",
+		"/01-phase/01-ms/01-epic/T001-a.todo",
+		"/01-phase/01-ms/01-epic/T002-b.todo",
+		"-----== EOF ==-----",
+	)
 
 	ctx, err := taskcontext.LoadContext(filepath.Join(rootExplicit, ".tasks"))
 	if err != nil {
@@ -406,7 +414,7 @@ func TestRunBlockedAutoGrabAndUnclaimFromContext(t *testing.T) {
 	_ = mustRun(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-z")
 
 	blockedOut := mustRun(t, root, "blocked", "P1.M1.E1.T001", "--reason", "waiting", "--grab", "--agent", "agent-z")
-	assertContainsAll(t, blockedOut, "Blocked: P1.M1.E1.T001 (waiting)", "Grabbed:")
+	assertContainsAll(t, blockedOut, "Blocked: P1.M1.E1.T001 (waiting)", "Grabbed:", "-----== EOF ==-----")
 
 	unclaimOut := mustRun(t, root, "unclaim")
 	assertContainsAll(t, unclaimOut, "Unclaimed:")

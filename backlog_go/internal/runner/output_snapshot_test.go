@@ -79,6 +79,8 @@ func TestSemanticSnapshotsForCriticalTextCommands(t *testing.T) {
 			anchors: []string{
 				"✓ Claimed",
 				"Task body preview suppressed via --no-content",
+				"/01-phase/01-ms/01-epic/T001-a.todo",
+				"-----== EOF ==-----",
 				"When you complete this task, mark it done by either:",
 				"bl cycle P1.M1.E1.T001",
 				"bl done P1.M1.E1.T001",

@@ -30,6 +30,8 @@ const (
 	previewBugFanoutCount    = 2
 	grabSiblingAdditionalMax = 4
 	grabBugAdditionalMax     = 2
+	taskFileReadPreviewLines  = 12
+	taskFileReadEOFMarker    = "-----== EOF ==-----"
 )
 
 const migrationComment = "<!-- CLI migrated: 'tasks' -> 'backlog' (alias 'bl' also works). -->\n"
@@ -1273,6 +1275,28 @@ func printNextCommands(commands ...string) {
 	for _, command := range trimmed {
 		fmt.Printf("  %s\n", styleSuccess(command))
 	}
+}
+
+func shellQuotePath(raw string) string {
+	return strconv.Quote(raw)
+}
+
+func printTaskFileReadCommand(taskPath string, showPreview bool, previewLines int) {
+	taskPath = strings.TrimSpace(taskPath)
+	if taskPath == "" {
+		return
+	}
+	quoted := shellQuotePath(taskPath)
+	if showPreview && previewLines > 0 {
+		fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("cat %s | head -n %d && echo %q || echo \"error\"", quoted, previewLines, taskFileReadEOFMarker)))
+		return
+	}
+	fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("cat %s && echo %q || echo \"error\"", quoted, taskFileReadEOFMarker)))
+}
+
+func printTaskFileReadCommandsForTask(dataDir string, task models.Task, showPreview bool) {
+	taskPath := filepath.Join(dataDir, task.File)
+	printTaskFileReadCommand(taskPath, showPreview, taskFileReadPreviewLines)
 }
 
 func normalizeCommand(value string) string {
@@ -4523,10 +4547,9 @@ func runIdea(args []string) error {
 		"tags":           []string{"idea", "planning"},
 	}
 	body := fmt.Sprintf(
-		"\n# Idea Intake: %s\n\n## Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task \"%s\"` to decompose this idea into actionable work.\n- Confirm placement in the current `.tasks` hierarchy before creating work items.\n\n## Ingest Plan Into .tasks\n\n- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.\n- Create follow-up defects with `tasks bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete `.tasks` work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
+		"\n# Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task %s` to decompose this idea into actionable work.\n- Confirm placement in the current `.tasks` hierarchy before creating work items.\n\n## Ingest Plan Into .tasks\n\n- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.\n- Create follow-up defects with `tasks bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete `.tasks` work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
 		title,
-		title,
-		title,
+		ideaID,
 	)
 	if err := writeTodoWithFrontmatter(filePath, frontmatter, body); err != nil {
 		return err
@@ -5485,6 +5508,7 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 
 	if !showContent {
 		fmt.Printf("  %s\n", styleMuted("Task body preview suppressed via --no-content"))
+		printTaskFileReadCommandsForTask(dataDir, task, false)
 		printClaimCompletionGuidance(task.ID)
 		return
 	}
@@ -5492,12 +5516,14 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	_, body, err := readTodoFrontmatter(task.ID, task.File)
 	if err != nil {
 		fmt.Printf("  %s\n", styleWarning("Unable to preview task body."))
+		printTaskFileReadCommandsForTask(dataDir, task, false)
 		printClaimCompletionGuidance(task.ID)
 		return
 	}
 	body = strings.TrimSpace(body)
 	if body == "" {
 		fmt.Printf("  %s\n", styleMuted("Task body is empty."))
+		printTaskFileReadCommandsForTask(dataDir, task, false)
 		printClaimCompletionGuidance(task.ID)
 		return
 	}
@@ -5511,6 +5537,7 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 	if len(lines) > maxLines {
 		fmt.Printf("    %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-maxLines)))
 	}
+	printTaskFileReadCommandsForTask(dataDir, task, true)
 	printClaimCompletionGuidance(task.ID)
 }
 
@@ -5521,9 +5548,7 @@ func printClaimCompletionGuidance(taskID string) {
 	fmt.Printf("    %s\n", styleMuted("to mark done + claim next task in backlog (global),"))
 	fmt.Printf("  - %s\n", styleSuccess("`bl done "+taskID+"`"))
 	fmt.Printf("    %s\n", styleMuted("to mark as done and stop"))
-	fmt.Printf("  %s\n", styleSuccess("If you claimed this by mistake, release it with:"))
-	fmt.Printf("  %s\n", styleSuccess("`bl unclaim "+taskID+"`"))
-	fmt.Printf("    %s\n", styleMuted("to return it to pending"))
+	fmt.Printf("  %s\n", styleSuccess(fmt.Sprintf("To release this task: `bl unclaim %s`", taskID)))
 }
 
 func isTaskOnCriticalPath(taskID string, criticalPath []string) bool {
@@ -5826,9 +5851,12 @@ func runGrab(args []string) error {
 				renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
 			} else {
 				fmt.Printf("%s %s - %s\n", styleSuccess("✓ Claimed:"), task.ID, task.Title)
-				for _, detail := range formatTaskDetails(*task) {
-					fmt.Printf("  %s\n", detail)
+				if !noContent {
+					for _, detail := range formatTaskDetails(*task) {
+						fmt.Printf("  %s\n", detail)
+					}
 				}
+				printTaskFileReadCommandsForTask(dataDir, *task, !noContent)
 			}
 			claimed = append(claimed, *task)
 		}
@@ -5979,6 +6007,10 @@ func runGrab(args []string) error {
 				}
 			}
 		}
+		printTaskFileReadCommandsForTask(dataDir, *primary, !noContent)
+		for _, task := range additional {
+			printTaskFileReadCommandsForTask(dataDir, task, !noContent)
+		}
 		fmt.Printf("%s %s additional task(s): %s\n", styleSubHeader("Also grabbed"), styleSuccess(fmt.Sprintf("%d", len(additional))), styleMuted(strings.Join(additionalIDs, ", ")))
 		return nil
 	}
@@ -5992,6 +6024,7 @@ func runGrab(args []string) error {
 			fmt.Printf("  %s\n", detail)
 		}
 	}
+	printTaskFileReadCommandsForTask(dataDir, *primary, !noContent)
 	return nil
 }
 
@@ -7652,11 +7685,12 @@ func runClaim(args []string) error {
 			renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
 		} else {
 			fmt.Printf("%s %s - %s\n", styleSuccess("✓ Claimed:"), task.ID, task.Title)
-		}
-		if len(taskIDs) > 1 && !noContent {
-			for _, detail := range formatTaskDetails(*task) {
-				fmt.Printf("  %s\n", detail)
+			if !noContent {
+				for _, detail := range formatTaskDetails(*task) {
+					fmt.Printf("  %s\n", detail)
+				}
 			}
+			printTaskFileReadCommandsForTask(dataDir, *task, !noContent)
 		}
 	}
 	return nil
@@ -7950,6 +7984,10 @@ func grabTaskByID(tree models.TaskTree, calc critical_path.CriticalPathCalculato
 		}
 		fmt.Printf("%s %s - %s\n", styleSuccess("Grabbed:"), styleSuccess(primary.ID), styleSuccess(primary.Title))
 		fmt.Printf("%s %d additional task(s): %s\n", styleSuccess("Also grabbed"), len(additional), strings.Join(additionalIDs, ", "))
+		printTaskFileReadCommandsForTask(dataDir, *primary, true)
+		for _, task := range additional {
+			printTaskFileReadCommandsForTask(dataDir, task, true)
+		}
 		return nil
 	}
 
@@ -7957,6 +7995,7 @@ func grabTaskByID(tree models.TaskTree, calc critical_path.CriticalPathCalculato
 		return err
 	}
 	fmt.Printf("%s %s - %s\n", styleSuccess("Grabbed:"), styleSuccess(primary.ID), styleSuccess(primary.Title))
+	printTaskFileReadCommandsForTask(dataDir, *primary, true)
 	return nil
 }
 

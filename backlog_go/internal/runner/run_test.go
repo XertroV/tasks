@@ -759,6 +759,12 @@ func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
 	if !strings.Contains(output, "Task body preview suppressed via --no-content") {
 		t.Fatalf("claim output = %q, expected --no-content hint", output)
 	}
+	if !strings.Contains(output, "/01-phase/01-ms/01-epic/T001-a.todo") {
+		t.Fatalf("claim output = %q, expected task file hint command", output)
+	}
+	if !strings.Contains(output, "-----== EOF ==-----") {
+		t.Fatalf("claim output = %q, expected EOF marker", output)
+	}
 	if !strings.Contains(output, "When you complete this task, mark it done by either:") {
 		t.Fatalf("claim output = %q, expected next-step guidance header", output)
 	}
@@ -768,11 +774,8 @@ func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
 	if !strings.Contains(output, "bl done P1.M1.E1.T001") {
 		t.Fatalf("claim output = %q, expected done guidance", output)
 	}
-	if !strings.Contains(output, "If you claimed this by mistake, release it with:") {
+	if !strings.Contains(output, "To release this task: `bl unclaim P1.M1.E1.T001`") {
 		t.Fatalf("claim output = %q, expected unclaim guidance", output)
-	}
-	if !strings.Contains(output, "bl unclaim P1.M1.E1.T001") {
-		t.Fatalf("claim output = %q, expected unclaim command", output)
 	}
 }
 
@@ -1181,11 +1184,8 @@ func TestRunShowInProgressTaskRendersCompletionGuidance(t *testing.T) {
 	if !strings.Contains(output, "bl done P1.M1.E1.T001") {
 		t.Fatalf("show output = %q, expected done guidance", output)
 	}
-	if !strings.Contains(output, "If you claimed this by mistake, release it with:") {
+	if !strings.Contains(output, "To release this task: `bl unclaim P1.M1.E1.T001`") {
 		t.Fatalf("show output = %q, expected unclaim guidance", output)
-	}
-	if !strings.Contains(output, "bl unclaim P1.M1.E1.T001") {
-		t.Fatalf("show output = %q, expected unclaim command", output)
 	}
 }
 
