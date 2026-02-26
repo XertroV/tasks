@@ -1873,11 +1873,11 @@ tags: []
     expect(events[0].task_id).toBe("P1.M1.E1.T002");
     expect(events[0].event).toBe("started");
     expect(events[0].actor).toBe("agent-b");
-    expect(events[0].kind).toBe("updated");
+    expect(events[0].kind).toBe("started");
     expect(events[1].task_id).toBe("P1.M1.E1.T001");
     expect(events[1].event).toBe("completed");
     expect(events[1].actor).toBe("agent-a");
-    expect(events[1].kind).toBe("updated");
+    expect(events[1].kind).toBe("completed");
     expect(events.some((item: { event: string }) => item.event === "claimed")).toBeTrue();
 
     p = run(["log", "--limit", "2"], root);
@@ -1887,7 +1887,7 @@ tags: []
     expect(out).toContain("✓");
     expect(out).toContain("P1.M1.E1.T001");
     expect(out).toContain("agent-a");
-    expect(out).toContain("[updated]");
+    expect(out).toContain("[completed]");
   });
 
   test("log command includes added events without timestamps", () => {

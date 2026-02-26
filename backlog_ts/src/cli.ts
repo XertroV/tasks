@@ -454,7 +454,7 @@ function activityIcon(eventType: LogEventType): string {
 
 function activityKind(eventType: LogEventType): string {
   if (eventType === "added") return "created";
-  return "updated";
+  return eventType;
 }
 
 function collectActivity(tree: TaskTree): LogEvent[] {

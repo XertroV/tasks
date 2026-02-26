@@ -2181,8 +2181,8 @@ func TestRunLogJSONMachineContract(t *testing.T) {
 	if events[0].Event != "started" {
 		t.Fatalf("first event = %q, expected started", events[0].Event)
 	}
-	if events[0].Kind != "updated" {
-		t.Fatalf("first kind = %q, expected updated", events[0].Kind)
+	if events[0].Kind != "started" {
+		t.Fatalf("first kind = %q, expected started", events[0].Kind)
 	}
 	if events[0].Actor == nil || *events[0].Actor != "agent-b" {
 		t.Fatalf("first actor = %v, expected agent-b", events[0].Actor)
@@ -2194,8 +2194,8 @@ func TestRunLogJSONMachineContract(t *testing.T) {
 	if events[1].Event != "completed" {
 		t.Fatalf("second event = %q, expected completed", events[1].Event)
 	}
-	if events[1].Kind != "updated" {
-		t.Fatalf("second kind = %q, expected updated", events[1].Kind)
+	if events[1].Kind != "completed" {
+		t.Fatalf("second kind = %q, expected completed", events[1].Kind)
 	}
 	if events[1].Actor == nil || *events[1].Actor != "agent-a" {
 		t.Fatalf("second actor = %v, expected agent-a", events[1].Actor)

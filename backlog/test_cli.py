@@ -884,11 +884,11 @@ class TestLogCommand:
         assert payload[0]["task_id"] == "P1.M1.E1.T002"
         assert payload[0]["event"] == "started"
         assert payload[0]["actor"] == "agent-b"
-        assert payload[0]["kind"] == "updated"
+        assert payload[0]["kind"] == "started"
         assert payload[1]["task_id"] == "P1.M1.E1.T001"
         assert payload[1]["event"] == "completed"
         assert payload[1]["actor"] == "agent-a"
-        assert payload[1]["kind"] == "updated"
+        assert payload[1]["kind"] == "completed"
         assert any(item["event"] == "claimed" for item in payload)
 
     def test_log_command_pretty_output(self, runner, tmp_tasks_dir):

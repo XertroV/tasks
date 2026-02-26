@@ -325,7 +325,7 @@ def _activity_kind(event_name: str) -> str:
     """Classify an event for user-facing readability."""
     if event_name == "added":
         return "created"
-    return "updated"
+    return event_name
 
 
 def _format_ms(ms: float) -> str:

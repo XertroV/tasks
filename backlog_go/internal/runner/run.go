@@ -3488,7 +3488,7 @@ func logEventKind(eventType string) string {
 	if eventType == "added" {
 		return "created"
 	}
-	return "updated"
+	return eventType
 }
 
 func logEventIcon(eventType string) string {
