@@ -134,6 +134,7 @@ func printUsageError(command string, err error) error {
 	if err != nil {
 		fmt.Printf("%s\n", styleError(err.Error()))
 	}
+	printCommandRecoveryHint()
 	return err
 }
 
@@ -797,12 +798,17 @@ func Run(rawArgs ...string) error {
 		return nil
 	}
 
-	command := normalizeCommand(args[0])
+	normalized := normalizeCommand(args[0])
+	command, aliasUsed := resolveCommandAlias(normalized)
 	payload := args[1:]
 	currentCommandForUsage = command
+	if aliasUsed {
+		fmt.Printf("%s %s -> %s\n", styleMuted("Alias:"), styleSuccess(normalized), styleSuccess(command))
+	}
 
 	if !root.IsKnownCommand(command) {
-		return fmt.Errorf("unknown command: %s", command)
+		printUnknownCommandSuggestion(normalized, root.Commands())
+		return fmt.Errorf("unknown command: %s", normalized)
 	}
 	if maybeHandleCommandHelp(command, payload) {
 		return nil
@@ -904,6 +910,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdMigrate:
 		return runMigrate(payload)
 	default:
+		printCommandNotImplemented(command)
 		return fmt.Errorf("command not implemented: %s", command)
 	}
 }
@@ -914,6 +921,117 @@ func maybeHandleCommandHelp(command string, args []string) bool {
 	}
 	printUsageForCommand(command)
 	return true
+}
+
+func resolveCommandAlias(command string) (string, bool) {
+	switch command {
+	case commands.CmdGrants:
+		return commands.CmdGrab, true
+	case commands.CmdSprint:
+		return commands.CmdGrab, true
+	default:
+		return command, false
+	}
+}
+
+func printUnknownCommandSuggestion(raw string, known []string) {
+	fmt.Printf("%s %s\n", styleError("Unknown command:"), styleWarning(raw))
+	suggestions := suggestCommands(raw, known, 4)
+	if len(suggestions) > 0 {
+		fmt.Printf("%s\n", styleSubHeader("Did you mean:"))
+		for _, suggestion := range suggestions {
+			fmt.Printf("  %s\n", styleSuccess(suggestion))
+		}
+	}
+	fmt.Println(styleMuted("Run 'backlog --help' for available commands."))
+	printCommandRecoveryHint()
+}
+
+func printCommandRecoveryHint() {
+	fmt.Println(styleMuted("If command parsing fails, run 'backlog cycle' once to recover."))
+}
+
+func suggestCommands(raw string, candidates []string, limit int) []string {
+	target := strings.ToLower(strings.TrimSpace(raw))
+	if target == "" {
+		return nil
+	}
+
+	type suggestion struct {
+		command string
+		score   int
+	}
+	candidateScores := make([]suggestion, 0, len(candidates))
+	for _, candidate := range candidates {
+		candidate = normalizeCommand(candidate)
+		if candidate == "" {
+			continue
+		}
+		switch {
+		case strings.HasPrefix(candidate, target), strings.HasPrefix(target, candidate):
+			candidateScores = append(candidateScores, suggestion{command: candidate, score: 0})
+		case strings.Contains(candidate, target), strings.Contains(target, candidate):
+			candidateScores = append(candidateScores, suggestion{command: candidate, score: 1})
+		default:
+			distance := commandDistance(candidate, target)
+			if distance > 3 {
+				continue
+			}
+			candidateScores = append(candidateScores, suggestion{command: candidate, score: distance + 1})
+		}
+	}
+
+	sort.Slice(candidateScores, func(i, j int) bool {
+		if candidateScores[i].score == candidateScores[j].score {
+			return candidateScores[i].command < candidateScores[j].command
+		}
+		return candidateScores[i].score < candidateScores[j].score
+	})
+
+	if len(candidateScores) > limit {
+		candidateScores = candidateScores[:limit]
+	}
+	out := make([]string, 0, len(candidateScores))
+	for _, suggestion := range candidateScores {
+		out = append(out, suggestion.command)
+	}
+	return out
+}
+
+func commandDistance(a, b string) int {
+	if a == b {
+		return 0
+	}
+	if len(a) == 0 {
+		return len(b)
+	}
+	if len(b) == 0 {
+		return len(a)
+	}
+	cache := make([][]int, len(a)+1)
+	for i := range cache {
+		cache[i] = make([]int, len(b)+1)
+	}
+	for i := 0; i <= len(a); i++ {
+		cache[i][0] = i
+	}
+	for j := 0; j <= len(b); j++ {
+		cache[0][j] = j
+	}
+	for i := 1; i <= len(a); i++ {
+		for j := 1; j <= len(b); j++ {
+			cost := 1
+			if a[i-1] == b[j-1] {
+				cost = 0
+			}
+			cache[i][j] = min3(
+				cache[i-1][j]+1,
+				cache[i][j-1]+1,
+				cache[i-1][j-1]+cost,
+			)
+		}
+	}
+	return cache[len(a)][len(b)]
 }
 
 func printCommandHelp(command, summary, usage string, options []string, examples []string) {
@@ -2801,21 +2919,29 @@ func parseOptionWithPresence(args []string, key string) (string, bool) {
 }
 
 func parseFlag(args []string, flags ...string) bool {
+	found := false
 	for _, arg := range args {
 		for _, key := range flags {
 			if arg == key {
-				return true
+				found = true
+				continue
 			}
 			if strings.HasPrefix(arg, key+"=") {
-				value := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(arg, key+"=")))
-				if value == "" {
+				rawValue := strings.TrimSpace(strings.ToLower(strings.TrimPrefix(arg, key+"=")))
+				if rawValue == "" {
+					found = true
 					continue
 				}
-				return value == "1" || value == "true" || value == "yes" || value == "on"
+				parsed, err := parseBooleanFlag(rawValue, key)
+				if err != nil {
+					found = true
+					continue
+				}
+				found = parsed
 			}
 		}
 	}
-	return false
+	return found
 }
 
 func parseIntOptionWithDefault(args []string, fallback int, keys ...string) (int, error) {
@@ -3978,11 +4104,30 @@ func runAdmin(args []string) error {
 	if err := validateAllowedFlags(args, map[string]bool{"--help": true, "--json": true}); err != nil {
 		return err
 	}
+	positional := positionalArgs(args, map[string]bool{"--json": true})
 	if parseFlag(args, "--help") {
-		fmt.Println(styleSubHeader("Usage: backlog admin"))
+		printUsageForCommand(commands.CmdAdmin)
 		fmt.Println(styleWarning("The admin command is not implemented in the Go client."))
+		fmt.Println(styleMuted("Available checks: check-file-sync, check-ids"))
 		return nil
 	}
+
+	if len(positional) > 1 {
+		return fmt.Errorf("admin accepts at most one action: check-file-sync | check-ids")
+	}
+
+	if len(positional) == 1 {
+		action := normalizeCommand(positional[0])
+		switch action {
+		case "check-file-sync":
+			return runAdminCheckFileSync(parseFlag(args, "--json"))
+		case "check-ids":
+			return runAdminCheckIDs(parseFlag(args, "--json"))
+		default:
+			return fmt.Errorf("unknown admin action: %s", action)
+		}
+	}
+
 	if parseFlag(args, "--json") {
 		payload := adminJSONPayload{
 			Command:     "admin",
@@ -3998,7 +4143,114 @@ func runAdmin(args []string) error {
 		return nil
 	}
 	fmt.Println(styleWarning("admin command is not implemented in the Go client."))
+	fmt.Println(styleMuted("Available checks: check-file-sync, check-ids"))
+	fmt.Println(styleMuted("Use `backlog admin check-file-sync` or `backlog admin check-ids` for available checks."))
+	fmt.Println(styleMuted("Use `backlog admin --json` for machine-readable status."))
 	fmt.Println(styleMuted("Use `backlog dash` to inspect current project status."))
+	return nil
+}
+
+func runAdminCheckFileSync(jsonOutput bool) error {
+	tree, err := loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return err
+	}
+	missing := []string{}
+	for _, task := range findAllTasksInTree(tree) {
+		if strings.TrimSpace(task.File) == "" {
+			missing = append(missing, task.ID+" (missing path)")
+			continue
+		}
+		taskPath := filepath.Join(dataDir, task.File)
+		if _, err := os.Stat(taskPath); err != nil {
+			missing = append(missing, task.ID)
+		}
+	}
+	if jsonOutput {
+		payload := map[string]any{
+			"command":          "admin",
+			"action":           "check-file-sync",
+			"implemented":      true,
+			"message":          "admin check-file-sync completed",
+			"missing_task_ids":  missing,
+			"all_files_present": len(missing) == 0,
+			"guidance":          "Run 'backlog check' or open tasks to resolve missing files.",
+		}
+		raw, err := json.MarshalIndent(payload, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(raw))
+		return nil
+	}
+	if len(missing) == 0 {
+		fmt.Println(styleSuccess("All referenced task files are present."))
+		return nil
+	}
+	fmt.Printf("%s %d task file(s) missing from disk.\n", styleWarning("Issue:"), len(missing))
+	for _, taskID := range missing {
+		fmt.Printf("  - %s\n", styleWarning(taskID))
+	}
+	return nil
+}
+
+func runAdminCheckIDs(jsonOutput bool) error {
+	tree, err := loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+	seen := map[string]bool{}
+	duplicates := []string{}
+	emptyIDs := []string{}
+	for _, task := range findAllTasksInTree(tree) {
+		id := strings.TrimSpace(task.ID)
+		if id == "" {
+			emptyIDs = append(emptyIDs, "<missing-id>")
+			continue
+		}
+		if seen[id] {
+			duplicates = append(duplicates, id)
+			continue
+		}
+		seen[id] = true
+	}
+	issues := len(duplicates) + len(emptyIDs)
+	if jsonOutput {
+		payload := map[string]any{
+			"command":      "admin",
+			"action":       "check-ids",
+			"implemented":  true,
+			"message":      "admin check-ids completed",
+			"duplicates":   duplicates,
+			"missing_ids":  emptyIDs,
+			"issue_count":  issues,
+			"task_count":   len(seen),
+			"guidance":     "Resolve duplicated or missing IDs in index files before continuing.",
+		}
+		raw, err := json.MarshalIndent(payload, "", "  ")
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(raw))
+		return nil
+	}
+	if issues == 0 {
+		fmt.Println(styleSuccess("Task IDs are consistent and unique."))
+		return nil
+	}
+	if len(duplicates) > 0 {
+		fmt.Printf("%s duplicate task IDs detected:\n", styleWarning("Issue:"))
+		for _, value := range duplicates {
+			fmt.Printf("  - %s\n", styleWarning(value))
+		}
+	}
+	if len(emptyIDs) > 0 {
+		fmt.Printf("%s missing task IDs detected (%d).\n", styleWarning("Issue:"), len(emptyIDs))
+	}
 	return nil
 }
 
@@ -5898,9 +6150,18 @@ func validateAllowedFlags(args []string, allowed map[string]bool) error {
 		if arg == "--" {
 			break
 		}
-		flag, _ := splitOption(arg)
+		flag, hasValue := splitOption(arg)
+		if flag == "" {
+			continue
+		}
 		if !allowed[flag] {
 			return fmt.Errorf("unexpected flag: %s", flag)
+		}
+		if hasValue {
+			rawValue := strings.TrimSpace(strings.TrimPrefix(arg, flag+"="))
+			if rawValue == "" {
+				return fmt.Errorf("missing value for %s", flag)
+			}
 		}
 	}
 	return nil
@@ -7284,6 +7545,10 @@ func min(a, b int) int {
 	return b
 }
 
+func min3(a, b, c int) int {
+	return min(min(a, b), c)
+}
+
 func runClaim(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
@@ -8641,6 +8906,7 @@ func runDone(args []string) error {
 
 func printCommandNotImplemented(name string) error {
 	fmt.Printf("%s command is not implemented yet\n", name)
+	fmt.Printf("%s %s\n", styleMuted("Tip:"), styleSuccess("Run 'backlog --help' to see supported commands."))
 	return nil
 }
 

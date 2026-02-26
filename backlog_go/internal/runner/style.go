@@ -80,10 +80,12 @@ func parseCommandColorFlag(arg string) (bool, int32, error) {
 
 func parseBooleanFlag(value, flag string) (bool, error) {
 	switch strings.ToLower(strings.TrimSpace(value)) {
-	case "1", "true", "t", "yes", "on":
+	case "1", "true", "t", "yes", "on", "y":
 		return true, nil
-	case "0", "false", "f", "no", "off":
+	case "0", "false", "f", "no", "off", "n":
 		return false, nil
+	case "":
+		return false, fmt.Errorf("expected value for %s", flag)
 	default:
 		return false, fmt.Errorf("invalid value for %s: %s", flag, value)
 	}

@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+// BuildVersion can be injected at build time with:
+//   go build -ldflags "-X github.com/XertroV/tasks/backlog_go/cmd.BuildVersion=<version>"
+var BuildVersion = "0.1.0"
+
 // RootCommand captures shared CLI metadata and the supported command list.
 type RootCommand struct {
 	name                string
@@ -76,10 +80,18 @@ func NewRootCommand() *RootCommand {
 
 	return &RootCommand{
 		name:                "backlog",
-		version:             "0.1.0",
+		version:             resolveBuildVersion(),
 		commands:            commands,
 		commandDescriptions: descriptions,
 	}
+}
+
+func resolveBuildVersion() string {
+	version := strings.TrimSpace(BuildVersion)
+	if version == "" {
+		return "0.1.0"
+	}
+	return version
 }
 
 func (r *RootCommand) Name() string {
