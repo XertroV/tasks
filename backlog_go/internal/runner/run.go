@@ -6020,6 +6020,13 @@ func resolveListScope(tree models.TaskTree, rawScope string, scopeType string) (
 		return resolveListScopeByEpic(tree, rawScope)
 	}
 
+	parsedQuery, parseErr := models.ParsePathQuery(rawScope)
+	if parseErr == nil {
+		if filtered := filterPhasesByPathQuery(tree.Phases, parsedQuery); len(filtered) > 0 {
+			return resolveListScopeByPathQuery(tree, parsedQuery)
+		}
+	}
+
 	taskPath, err := models.ParseTaskPath(rawScope)
 	if err != nil {
 		if phase := tree.FindPhase(rawScope); phase != nil {
@@ -6048,6 +6055,19 @@ func resolveListScope(tree models.TaskTree, rawScope string, scopeType string) (
 	default:
 		return nil, nil, 0, rawScope
 	}
+}
+
+func resolveListScopeByPathQuery(tree models.TaskTree, query models.PathQuery) ([]models.Phase, []string, int, string) {
+	filteredPhases := filterPhasesByPathQuery(tree.Phases, query)
+	if len(filteredPhases) == 0 {
+		return nil, nil, len(query.Segments), query.Raw
+	}
+
+	filteredTaskIDs := []string{}
+	for _, phase := range filteredPhases {
+		filteredTaskIDs = append(filteredTaskIDs, collectPhaseTaskIDs(phase)...)
+	}
+	return filteredPhases, filteredTaskIDs, len(query.Segments), query.Raw
 }
 
 func resolveListScopeByPhase(tree models.TaskTree, rawScope string) ([]models.Phase, []string, int, string) {
@@ -6606,7 +6626,7 @@ func renderListJSON(tree models.TaskTree, scoped bool, scopedPhases []models.Pha
 	return nil
 }
 
-func renderListText(command string, tree models.TaskTree, scoped bool, scopedPhases []models.Phase, scopedTasks []string, _ string, _ int, taskMatches func(models.Task) bool, criticalPath []string, showAll bool, availableTaskIDs map[string]struct{}) error {
+func renderListText(command string, tree models.TaskTree, scoped bool, scopedPhases []models.Phase, scopedTasks []string, _ string, scopeDepth int, taskMatches func(models.Task) bool, criticalPath []string, showAll bool, availableTaskIDs map[string]struct{}) error {
 	_ = showAll
 	fmt.Printf("%s %s\n", styleSubHeader("Critical Path:"), strings.Join(criticalPath[:min(len(criticalPath), 10)], " -> "))
 
@@ -6614,6 +6634,16 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 	if scoped {
 		phases = scopedPhases
 	}
+	if scoped && scopeDepth > 0 {
+		scopedMaxDepth := min(4, scopeDepth+2)
+		for _, phase := range phases {
+			for _, line := range renderListScopePhase(phase, taskMatches, criticalPath, availableTaskIDs, scopedMaxDepth, 1) {
+				fmt.Println(line)
+			}
+		}
+		return nil
+	}
+
 	for _, phase := range phases {
 		stats := parsePhaseTaskStats([]models.Task{})
 		for _, milestone := range phase.Milestones {
@@ -6677,7 +6707,6 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 		}
 		fmt.Println()
 	}
-
 	bugs := []models.Task{}
 	for _, bug := range tree.Bugs {
 		if bug.ID == "" {
@@ -6740,6 +6769,102 @@ func renderListText(command string, tree models.TaskTree, scoped bool, scopedPha
 		}
 	}
 	return nil
+}
+
+func collectFilteredMilestoneTasks(milestone models.Milestone, taskMatches func(models.Task) bool) []models.Task {
+	filtered := []models.Task{}
+	for _, epic := range milestone.Epics {
+		filtered = append(filtered, collectFilteredEpicTasks(epic, taskMatches)...)
+	}
+	return filtered
+}
+
+func collectFilteredEpicTasks(epic models.Epic, taskMatches func(models.Task) bool) []models.Task {
+	out := []models.Task{}
+	for _, task := range epic.Tasks {
+		if taskMatches(task) {
+			out = append(out, task)
+		}
+	}
+	return out
+}
+
+func renderListScopePhase(phase models.Phase, taskMatches func(models.Task) bool, criticalPath []string, availableTaskIDs map[string]struct{}, maxDepth int, currentDepth int) []string {
+	lines := []string{}
+	phaseTasks := []models.Task{}
+	for _, milestone := range phase.Milestones {
+		phaseTasks = append(phaseTasks, collectFilteredMilestoneTasks(milestone, taskMatches)...)
+	}
+	stats := parsePhaseTaskStats(phaseTasks)
+	if stats.total == 0 {
+		return lines
+	}
+
+	lines = append(
+		lines,
+		fmt.Sprintf("%s (%s) (%d/%d tasks done)", styleSuccess(phase.Name), styleSuccess(phase.ID), stats.done, stats.total),
+	)
+	if currentDepth >= maxDepth {
+		return lines
+	}
+
+	for _, milestone := range phase.Milestones {
+		lines = append(lines, renderListScopeMilestone(milestone, taskMatches, criticalPath, availableTaskIDs, maxDepth, currentDepth+1, "  ")...)
+	}
+	return lines
+}
+
+func renderListScopeMilestone(milestone models.Milestone, taskMatches func(models.Task) bool, criticalPath []string, availableTaskIDs map[string]struct{}, maxDepth int, currentDepth int, prefix string) []string {
+	_ = criticalPath
+	_ = availableTaskIDs
+	lines := []string{}
+	milestoneTasks := collectFilteredMilestoneTasks(milestone, taskMatches)
+	stats := parsePhaseTaskStats(milestoneTasks)
+	if stats.total == 0 {
+		return lines
+	}
+	lines = append(
+		lines,
+		fmt.Sprintf(
+			"%s%s (%s) (%d/%d tasks done)",
+			prefix,
+			styleSubHeader(milestone.Name),
+			styleSubHeader(milestone.ID),
+			stats.done,
+			stats.total,
+		),
+	)
+	if currentDepth >= maxDepth {
+		return lines
+	}
+
+	nextPrefix := prefix + "  "
+	for _, epic := range milestone.Epics {
+		lines = append(lines, renderListScopeEpic(epic, taskMatches, criticalPath, availableTaskIDs, maxDepth, currentDepth+1, nextPrefix)...)
+	}
+	return lines
+}
+
+func renderListScopeEpic(epic models.Epic, taskMatches func(models.Task) bool, criticalPath []string, availableTaskIDs map[string]struct{}, maxDepth int, currentDepth int, prefix string) []string {
+	lines := []string{}
+	epicTasks := collectFilteredEpicTasks(epic, taskMatches)
+	stats := parsePhaseTaskStats(epicTasks)
+	if stats.total == 0 {
+		return lines
+	}
+	lines = append(
+		lines,
+		fmt.Sprintf("%s%s (%s) (%d/%d tasks done)", prefix, styleSubHeader(epic.Name), styleSubHeader(epic.ID), stats.done, stats.total),
+	)
+	if currentDepth >= maxDepth {
+		return lines
+	}
+
+	taskPrefix := prefix + "  "
+	for _, task := range epicTasks {
+		lines = append(lines, fmt.Sprintf("%s%s", taskPrefix, formatTaskSummary(task, criticalPath, availableTaskIDs)))
+	}
+	return lines
 }
 
 func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir string) {

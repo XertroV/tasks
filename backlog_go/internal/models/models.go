@@ -347,15 +347,23 @@ func ParsePathQuery(query string) (PathQuery, error) {
 	if len(segments) < 1 || len(segments) > 4 {
 		return PathQuery{}, fmt.Errorf("invalid path query format: %s (must be 1-4 dot-separated segments)", query)
 	}
-	for _, segment := range segments {
+	for i, segment := range segments {
 		if segment == "" {
 			return PathQuery{}, fmt.Errorf("invalid path query format: %s", query)
 		}
-		if strings.Count(segment, "*") > 1 {
-			return PathQuery{}, fmt.Errorf("invalid wildcard in path query: %s", query)
-		}
-		if strings.Contains(segment, "*") && !strings.HasSuffix(segment, "*") {
-			return PathQuery{}, fmt.Errorf("invalid wildcard in path query segment '%s': %s", segment, query)
+		if strings.Contains(segment, "*") {
+			if segment == "*" {
+				continue
+			}
+			if segment == "**" {
+				if i != len(segments)-1 {
+					return PathQuery{}, fmt.Errorf("invalid wildcard in path query segment '%s': %s", segment, query)
+				}
+				continue
+			}
+			if strings.Count(segment, "*") != 1 || !strings.HasSuffix(segment, "*") {
+				return PathQuery{}, fmt.Errorf("invalid wildcard in path query segment '%s': %s", segment, query)
+			}
 		}
 	}
 	return PathQuery{Raw: raw, Segments: segments}, nil
@@ -377,6 +385,9 @@ func (p PathQuery) Matches(candidate string) bool {
 		return false
 	}
 	for i, pattern := range p.Segments {
+		if pattern == "**" {
+			return true
+		}
 		if !p.matchesSegment(pattern, candidateParts[i]) {
 			return false
 		}

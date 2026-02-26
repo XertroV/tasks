@@ -1586,6 +1586,63 @@ func TestRunListScopedEpicFiltersTasksInJSON(t *testing.T) {
 	}
 }
 
+func TestRunListScopedWildcardScopeMatchesAllMilestones(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "list", "P1.*")
+	if err != nil {
+		t.Fatalf("run list P1.* = %v, expected nil", err)
+	}
+	if strings.Contains(output, "No list nodes found for path query") {
+		t.Fatalf("output = %q, expected scoped wildcard match", output)
+	}
+	if !strings.Contains(output, "Milestone One (P1.M1)") {
+		t.Fatalf("output = %q, expected milestone one in wildcard scope output", output)
+	}
+	if !strings.Contains(output, "Milestone Two (P1.M2)") {
+		t.Fatalf("output = %q, expected milestone two in wildcard scope output", output)
+	}
+}
+
+func TestRunListScopedRecursiveWildcardScopeMatchesNestedItems(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "list", "P1.**")
+	if err != nil {
+		t.Fatalf("run list P1.** = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Milestone One (P1.M1)") {
+		t.Fatalf("output = %q, expected milestone one in recursive wildcard scope output", output)
+	}
+	if !strings.Contains(output, "Milestone Two (P1.M2)") {
+		t.Fatalf("output = %q, expected milestone two in recursive wildcard scope output", output)
+	}
+	if !strings.Contains(output, "Milestone Two Epic") {
+		t.Fatalf("output = %q, expected nested epic from milestone two in recursive wildcard scope output", output)
+	}
+}
+
+func TestRunListScopedDepthIncludesEpicAndTaskLevel(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "list", "P1.M1")
+	if err != nil {
+		t.Fatalf("run list P1.M1 = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Milestone One") {
+		t.Fatalf("output = %q, expected milestone in scoped output", output)
+	}
+	if !strings.Contains(output, "Epic One") {
+		t.Fatalf("output = %q, expected epic level in scoped output", output)
+	}
+	if !strings.Contains(output, "Epic One Task") {
+		t.Fatalf("output = %q, expected task lines in scoped output", output)
+	}
+}
+
 func TestRunListStatsCountCompletedTasksByDefault(t *testing.T) {
 	t.Parallel()
 

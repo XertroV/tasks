@@ -36,8 +36,14 @@ func TestPathQueryParseValidation(t *testing.T) {
 	if _, err := ParsePathQuery("P1.M1.*"); err != nil {
 		t.Fatalf("ParsePathQuery() = %v, expected success", err)
 	}
+	if _, err := ParsePathQuery("P1.**"); err != nil {
+		t.Fatalf("ParsePathQuery() = %v, expected success", err)
+	}
 	if _, err := ParsePathQuery("P1..M1"); err == nil {
 		t.Fatalf("ParsePathQuery(\"P1..M1\") should fail")
+	}
+	if _, err := ParsePathQuery("P1.**.M1"); err == nil {
+		t.Fatalf("ParsePathQuery(\"P1.**.M1\") should fail")
 	}
 }
 
@@ -259,6 +265,16 @@ func TestPathQueryMatchingAndTaskHelpers(t *testing.T) {
 	}
 	if !query.Matches("P1.M1.E2.T001") {
 		t.Fatalf("expected query to match child path")
+	}
+	allQuery, err := ParsePathQuery("P1.**")
+	if err != nil {
+		t.Fatalf("ParsePathQuery() = %v", err)
+	}
+	if !allQuery.Matches("P1.M2.E1.T001") {
+		t.Fatalf("expected recursive wildcard query to match descendant path")
+	}
+	if allQuery.Matches("P1") {
+		t.Fatalf("expected recursive wildcard query not to match exact scope node")
 	}
 	if query.Matches("P2.M1.E2.T001") {
 		t.Fatalf("query should not match wrong phase")
