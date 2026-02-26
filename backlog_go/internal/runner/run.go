@@ -3582,7 +3582,11 @@ func logEventActor(task models.Task) *string {
 }
 
 func runTree(args []string) error {
-	if err := validateAllowedFlags(args, map[string]bool{"--json": true, "--unfinished": true, "--show-completed-aux": true, "--details": true, "--depth": true}); err != nil {
+	if err := validateAllowedFlagsForUsage(
+		commands.CmdTree,
+		args,
+		map[string]bool{"--json": true, "--unfinished": true, "--show-completed-aux": true, "--details": true, "--depth": true},
+	); err != nil {
 		return err
 	}
 
@@ -3601,14 +3605,14 @@ func runTree(args []string) error {
 
 	pathArgs := positionalArgs(args, map[string]bool{"--depth": true})
 	if len(pathArgs) > 1 {
-		return errors.New("tree accepts at most one path query")
+		return printUsageError(commands.CmdTree, fmt.Errorf("tree accepts at most one path query"))
 	}
 
 	var pathQuery *models.PathQuery
 	if len(pathArgs) == 1 {
 		parsed, err := models.ParsePathQuery(pathArgs[0])
 		if err != nil {
-			return err
+			return printUsageError(commands.CmdTree, err)
 		}
 		pathQuery = &parsed
 	}

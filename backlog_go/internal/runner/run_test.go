@@ -2283,6 +2283,22 @@ func TestRunTreePathQueryNoMatchStillPrintsNoMatchMessageWhenAuxExists(t *testin
 	}
 }
 
+func TestRunTreeRejectsMultiplePathQueries(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	output, err := runInDir(t, root, "tree", "P1.M1", "P1.M1.E1")
+	if err == nil {
+		t.Fatalf("run tree P1.M1 P1.M1.E1 expected error")
+	}
+	if !strings.Contains(output, "Command Help: backlog tree") {
+		t.Fatalf("output = %q, expected tree usage guidance", output)
+	}
+	if !strings.Contains(err.Error(), "tree accepts at most one path query") {
+		t.Fatalf("err = %q, expected too many path queries error", err)
+	}
+}
+
 func TestRunTreePathQueryJSONExcludesAuxItems(t *testing.T) {
 	t.Parallel()
 

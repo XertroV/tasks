@@ -377,9 +377,18 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
 
 function maybePrintCommandHelp(command: string, args: string[]): boolean {
   if (!parseFlag(args, "--help", "-h")) return false;
+  printCommandHelpForCommand(command);
+  return true;
+}
+
+function printCommandHelpForCommand(command: string): void {
   const normalized = helpAliases[command] ?? command;
   const spec = commandHelpSpecs[normalized];
-  if (!spec) return false;
+  if (!spec) {
+    console.log(`\nCommand Help: backlog ${normalized}`);
+    console.log(`Usage: backlog ${normalized}`);
+    return;
+  }
 
   console.log(`\nCommand Help: backlog ${normalized}`);
   console.log(spec.summary);
@@ -393,7 +402,6 @@ function maybePrintCommandHelp(command: string, args: string[]): boolean {
     for (const example of spec.examples) console.log(`  ${example}`);
   }
   console.log("\nTip: Use `backlog list` or `backlog tree` to find valid IDs.");
-  return true;
 }
 
 // Helper functions for filtering and stats
@@ -1416,20 +1424,24 @@ async function cmdTree(args: string[]): Promise<void> {
   const depthStr = parseOpt(args, "--depth");
   const maxDepth = depthStr ? Number(depthStr) : 4;
   const depthValueIndex = args.findIndex((arg) => arg === "--depth");
-  const pathQueryText = args.find(
-    (arg, index) => {
-      if (arg.startsWith("-")) return false;
-      if (depthValueIndex >= 0 && (index === depthValueIndex || index === depthValueIndex + 1)) {
-        return false;
-      }
-      return true;
-    },
-  );
+  const pathQueryTexts = args.filter((arg, index) => {
+    if (arg.startsWith("-")) return false;
+    if (depthValueIndex >= 0 && (index === depthValueIndex || index === depthValueIndex + 1)) {
+      return false;
+    }
+    return true;
+  });
+  if (pathQueryTexts.length > 1) {
+    printCommandHelpForCommand("tree");
+    textError("tree accepts at most one path query");
+  }
+  const pathQueryText = pathQueryTexts[0];
   let pathQuery: PathQuery | undefined;
   if (pathQueryText) {
     try {
       pathQuery = PathQuery.parse(pathQueryText);
     } catch (error) {
+      printCommandHelpForCommand("tree");
       textError((error as Error).message);
     }
   }

@@ -1764,6 +1764,15 @@ tags: []
     expect(p.stdout.toString()).toContain("No tree nodes found for path query: P9");
   });
 
+  test("tree rejects multiple path query arguments with command help", () => {
+    root = setupFixture();
+    const p = run(["tree", "P1.M1", "P1.M1.E1"], root);
+    expect(p.exitCode).not.toBe(0);
+    const output = `${p.stdout.toString()}${p.stderr.toString()}`;
+    expect(output).toContain("Command Help: backlog tree");
+    expect(output).toContain("tree accepts at most one path query");
+  });
+
   test("tree path query with no match returns empty json phases", () => {
     root = setupFixture();
     let p = run(["tree", "P9", "--json"], root);
