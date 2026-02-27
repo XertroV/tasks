@@ -305,6 +305,43 @@ describe("native cli", () => {
     const rootIndex = readFileSync(join(root, ".tasks", "index.yaml"), "utf8");
     expect(rootIndex).toContain("critical_path:");
     expect(rootIndex).toContain("next_available:");
+    const rootParsed = parse(rootIndex) as Record<string, any>;
+    expect(rootParsed.stats).toBeDefined();
+    expect(rootParsed.stats?.total_tasks).toBe(2);
+    expect(rootParsed.stats?.done).toBe(1);
+    expect(rootParsed.stats?.in_progress).toBe(0);
+    expect(rootParsed.stats?.blocked).toBe(1);
+
+    const phaseIndex = parse(
+      readFileSync(join(root, ".tasks", "01-phase", "index.yaml"), "utf8"),
+    ) as Record<string, any>;
+    expect(phaseIndex.stats).toBeDefined();
+    expect(phaseIndex.stats?.total_tasks).toBe(2);
+    expect(phaseIndex.stats?.done).toBe(1);
+    expect(phaseIndex.stats?.pending).toBe(0);
+    expect(phaseIndex.stats?.blocked).toBe(1);
+
+    const milestoneIndex = parse(
+      readFileSync(join(root, ".tasks", "01-phase", "01-ms", "index.yaml"), "utf8"),
+    ) as Record<string, any>;
+    expect(milestoneIndex.stats).toBeDefined();
+    expect(milestoneIndex.stats?.total_tasks).toBe(2);
+    expect(milestoneIndex.stats?.done).toBe(1);
+    expect(milestoneIndex.stats?.pending).toBe(0);
+    expect(milestoneIndex.stats?.blocked).toBe(1);
+
+    const epicIndex = parse(
+      readFileSync(
+        join(root, ".tasks", "01-phase", "01-ms", "01-epic", "index.yaml"),
+        "utf8",
+      ),
+    ) as Record<string, any>;
+    expect(epicIndex.stats).toBeDefined();
+    expect(epicIndex.stats?.total).toBe(2);
+    expect(epicIndex.stats?.done).toBe(1);
+    expect(epicIndex.stats?.in_progress).toBe(0);
+    expect(epicIndex.stats?.blocked).toBe(1);
+    expect(epicIndex.stats?.pending).toBe(0);
   });
 
   test("claim accepts multiple task ids", () => {

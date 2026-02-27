@@ -6312,6 +6312,14 @@ type taskStats struct {
 	blocked    int
 }
 
+type syncTaskStats struct {
+	done       int
+	total      int
+	inProgress int
+	blocked    int
+	pending    int
+}
+
 func allTaskIDs(tree models.TaskTree) []string {
 	ids := []string{}
 	for _, phase := range tree.Phases {
@@ -6367,6 +6375,114 @@ func isBugLikeID(value string) bool {
 
 func isIdeaLikeID(value string) bool {
 	return regexp.MustCompile(`^I\d+$`).MatchString(value)
+}
+
+func collectSyncTaskStats(tasks []models.Task) syncTaskStats {
+	stats := syncTaskStats{}
+	for _, task := range tasks {
+		stats.total++
+		switch task.Status {
+		case models.StatusDone:
+			stats.done++
+		case models.StatusInProgress:
+			stats.inProgress++
+		case models.StatusBlocked:
+			stats.blocked++
+		default:
+			stats.pending++
+		}
+	}
+	return stats
+}
+
+func getSyncTaskStatsForPhase(phase models.Phase) syncTaskStats {
+	tasks := []models.Task{}
+	for _, milestone := range phase.Milestones {
+		for _, epic := range milestone.Epics {
+			tasks = append(tasks, epic.Tasks...)
+		}
+	}
+	return collectSyncTaskStats(tasks)
+}
+
+func getSyncTaskStatsForMilestone(milestone models.Milestone) syncTaskStats {
+	tasks := []models.Task{}
+	for _, epic := range milestone.Epics {
+		tasks = append(tasks, epic.Tasks...)
+	}
+	return collectSyncTaskStats(tasks)
+}
+
+func getSyncTaskStatsForEpic(epic models.Epic) syncTaskStats {
+	return collectSyncTaskStats(epic.Tasks)
+}
+
+func syncTaskStatsPayloadWithTotalTasks(stats syncTaskStats) map[string]interface{} {
+	return map[string]interface{}{
+		"total_tasks": stats.total,
+		"done":        stats.done,
+		"in_progress": stats.inProgress,
+		"blocked":     stats.blocked,
+		"pending":     stats.pending,
+	}
+}
+
+func syncTaskStatsPayload(stats syncTaskStats) map[string]interface{} {
+	return map[string]interface{}{
+		"total":       stats.total,
+		"done":        stats.done,
+		"in_progress": stats.inProgress,
+		"blocked":     stats.blocked,
+		"pending":     stats.pending,
+	}
+}
+
+func writeSyncDerivedStats(dataDir string, tree models.TaskTree) error {
+	for _, phase := range tree.Phases {
+		phaseIndexPath := filepath.Join(dataDir, phase.Path, "index.yaml")
+		phaseIndex, err := readYAMLMapFile(phaseIndexPath)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return err
+		}
+		phaseIndex["stats"] = syncTaskStatsPayloadWithTotalTasks(getSyncTaskStatsForPhase(phase))
+		if err := writeYAMLMapFile(phaseIndexPath, phaseIndex); err != nil {
+			return err
+		}
+
+		for _, milestone := range phase.Milestones {
+			milestoneIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, "index.yaml")
+			milestoneIndex, err := readYAMLMapFile(milestoneIndexPath)
+			if err != nil {
+				if os.IsNotExist(err) {
+					continue
+				}
+				return err
+			}
+			milestoneIndex["stats"] = syncTaskStatsPayloadWithTotalTasks(getSyncTaskStatsForMilestone(milestone))
+			if err := writeYAMLMapFile(milestoneIndexPath, milestoneIndex); err != nil {
+				return err
+			}
+
+			for _, epic := range milestone.Epics {
+				epicIndexPath := filepath.Join(dataDir, phase.Path, milestone.Path, epic.Path, "index.yaml")
+				epicIndex, err := readYAMLMapFile(epicIndexPath)
+				if err != nil {
+					if os.IsNotExist(err) {
+						continue
+					}
+					return err
+				}
+				epicIndex["stats"] = syncTaskStatsPayload(getSyncTaskStatsForEpic(epic))
+				if err := writeYAMLMapFile(epicIndexPath, epicIndex); err != nil {
+					return err
+				}
+			}
+		}
+	}
+	return nil
 }
 
 func parsePhaseTaskStats(items []models.Task) taskStats {
@@ -8857,6 +8973,9 @@ func runSync() error {
 		"pending":     pendingTasks,
 	}
 	if err := writeYAMLMapFile(rootPath, root); err != nil {
+		return err
+	}
+	if err := writeSyncDerivedStats(dataDir, tree); err != nil {
 		return err
 	}
 	fmt.Println(styleSuccess("Synced"))

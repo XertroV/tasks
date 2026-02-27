@@ -232,6 +232,75 @@ def test_data_summary_json_reports_status_counts(runner, tmp_feature_tasks_dir):
     assert payload["overall"]["blocked"] == 1
 
 
+def test_sync_writes_stats_to_nested_indexes(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["sync"])
+    assert result.exit_code == 0
+    assert "Synchronized task tree" in result.output
+
+    root_index = yaml.safe_load((tmp_feature_tasks_dir / ".tasks" / "index.yaml").read_text())
+    assert root_index["stats"]["total_tasks"] == 5
+    assert root_index["stats"]["done"] == 1
+    assert root_index["stats"]["in_progress"] == 1
+    assert root_index["stats"]["blocked"] == 1
+    assert root_index["stats"]["pending"] == 2
+
+    phase_index = yaml.safe_load(
+        (tmp_feature_tasks_dir / ".tasks" / "01-phase-one" / "index.yaml").read_text()
+    )
+    assert phase_index["stats"]["total_tasks"] == 5
+    assert phase_index["stats"]["done"] == 1
+    assert phase_index["stats"]["in_progress"] == 1
+    assert phase_index["stats"]["blocked"] == 1
+    assert phase_index["stats"]["pending"] == 2
+
+    milestone_index = yaml.safe_load(
+        (
+            tmp_feature_tasks_dir
+            / ".tasks"
+            / "01-phase-one"
+            / "01-milestone-one"
+            / "index.yaml"
+        ).read_text()
+    )
+    assert milestone_index["stats"]["total_tasks"] == 5
+    assert milestone_index["stats"]["done"] == 1
+    assert milestone_index["stats"]["in_progress"] == 1
+    assert milestone_index["stats"]["blocked"] == 1
+    assert milestone_index["stats"]["pending"] == 2
+
+    epic_one_index = yaml.safe_load(
+        (
+            tmp_feature_tasks_dir
+            / ".tasks"
+            / "01-phase-one"
+            / "01-milestone-one"
+            / "01-core-epic"
+            / "index.yaml"
+        ).read_text()
+    )
+    assert epic_one_index["stats"]["total"] == 2
+    assert epic_one_index["stats"]["done"] == 1
+    assert epic_one_index["stats"]["in_progress"] == 1
+    assert epic_one_index["stats"]["blocked"] == 0
+    assert epic_one_index["stats"]["pending"] == 0
+
+    epic_two_index = yaml.safe_load(
+        (
+            tmp_feature_tasks_dir
+            / ".tasks"
+            / "01-phase-one"
+            / "01-milestone-one"
+            / "02-feature-epic"
+            / "index.yaml"
+        ).read_text()
+    )
+    assert epic_two_index["stats"]["total"] == 3
+    assert epic_two_index["stats"]["done"] == 0
+    assert epic_two_index["stats"]["in_progress"] == 0
+    assert epic_two_index["stats"]["blocked"] == 1
+    assert epic_two_index["stats"]["pending"] == 2
+
+
 def test_bug_accepts_positional_description_as_simple_title(
     runner, tmp_feature_tasks_dir
 ):

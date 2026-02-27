@@ -1798,6 +1798,40 @@ function taskCount(tasks: Array<{ status: Status }>): {
   );
 }
 
+function taskSyncStats(tasks: Array<{ status: Status }>): {
+  total_tasks: number;
+  done: number;
+  in_progress: number;
+  blocked: number;
+  pending: number;
+} {
+  const counts = taskCount(tasks);
+  return {
+    total_tasks: counts.total,
+    done: counts.done,
+    in_progress: counts.inProgress,
+    blocked: counts.blocked,
+    pending: counts.pending,
+  };
+}
+
+function epicSyncStats(epic: Epic): {
+  total: number;
+  done: number;
+  in_progress: number;
+  blocked: number;
+  pending: number;
+} {
+  const counts = taskCount(epic.tasks);
+  return {
+    total: counts.total,
+    done: counts.done,
+    in_progress: counts.inProgress,
+    blocked: counts.blocked,
+    pending: counts.pending,
+  };
+}
+
 function findMilestoneByScope(tree: TaskTree, scopeId: string): Milestone | undefined {
   const direct = findMilestone(tree, scopeId);
   if (direct) return direct;
@@ -2589,7 +2623,8 @@ async function cmdSync(): Promise<void> {
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
   const { criticalPath, nextAvailable } = calc.calculate();
 
-  const rootPath = join(getDataDirName(), "index.yaml");
+  const dataDir = getDataDirName();
+  const rootPath = join(dataDir, "index.yaml");
   const root = parse(readFileSync(rootPath, "utf8")) as Record<string, unknown>;
   root.critical_path = criticalPath;
   root.next_available = nextAvailable ?? null;
@@ -2601,6 +2636,46 @@ async function cmdSync(): Promise<void> {
     pending: getAllTasks(tree).filter((t) => t.status === Status.PENDING).length,
   };
   Bun.write(rootPath, stringify(root));
+
+  for (const phase of tree.phases) {
+    const phaseIndexPath = join(dataDir, phase.path, "index.yaml");
+    if (!existsSync(phaseIndexPath)) {
+      continue;
+    }
+    const phaseIndex = (parse(await Bun.file(phaseIndexPath).text()) as Record<string, unknown>) ?? {};
+    phaseIndex.stats = taskSyncStats(phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks)));
+    Bun.write(phaseIndexPath, stringify(phaseIndex));
+
+    for (const milestone of phase.milestones) {
+      const milestoneIndexPath = join(dataDir, phase.path, milestone.path, "index.yaml");
+      if (existsSync(milestoneIndexPath)) {
+        const milestoneIndex = (parse(
+          await Bun.file(milestoneIndexPath).text(),
+        ) as Record<string, unknown>) ?? {};
+        milestoneIndex.stats = taskSyncStats(
+          milestone.epics.flatMap((epic) => epic.tasks),
+        );
+        Bun.write(milestoneIndexPath, stringify(milestoneIndex));
+      }
+
+      for (const epic of milestone.epics) {
+        const epicIndexPath = join(
+          dataDir,
+          phase.path,
+          milestone.path,
+          epic.path,
+          "index.yaml",
+        );
+        if (!existsSync(epicIndexPath)) {
+          continue;
+        }
+        const epicIndex = (parse(await Bun.file(epicIndexPath).text()) as Record<string, unknown>) ?? {};
+        epicIndex.stats = epicSyncStats(epic);
+        Bun.write(epicIndexPath, stringify(epicIndex));
+      }
+    }
+  }
+
   console.log("Synced");
 }
 

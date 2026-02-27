@@ -1245,6 +1245,45 @@ func TestRunSyncWritesDerivedStats(t *testing.T) {
 	if _, ok := rootIndex["critical_path"]; !ok {
 		t.Fatalf("root stats missing critical_path")
 	}
+
+	phaseIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "01-phase", "index.yaml"))
+	phaseStats, ok := phaseIndex["stats"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("phase stats missing or invalid: %#v", phaseIndex["stats"])
+	}
+	if asInt(phaseStats["total_tasks"]) != 2 {
+		t.Fatalf("phase stats expected 2 tasks, got %v", phaseStats["total_tasks"])
+	}
+	if asInt(phaseStats["done"]) != 0 {
+		t.Fatalf("phase stats expected 0 done, got %v", phaseStats["done"])
+	}
+	if asInt(phaseStats["pending"]) != 2 {
+		t.Fatalf("phase stats expected 2 pending, got %v", phaseStats["pending"])
+	}
+
+	milestoneIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "index.yaml"))
+	milestoneStats, ok := milestoneIndex["stats"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("milestone stats missing or invalid: %#v", milestoneIndex["stats"])
+	}
+	if asInt(milestoneStats["total_tasks"]) != 2 {
+		t.Fatalf("milestone stats expected 2 tasks, got %v", milestoneStats["total_tasks"])
+	}
+	if asInt(milestoneStats["pending"]) != 2 {
+		t.Fatalf("milestone stats expected 2 pending, got %v", milestoneStats["pending"])
+	}
+
+	epicIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "index.yaml"))
+	epicStatsRaw, ok := epicIndex["stats"].(map[string]interface{})
+	if !ok {
+		t.Fatalf("epic stats missing or invalid: %#v", epicIndex["stats"])
+	}
+	if asInt(epicStatsRaw["total"]) != 2 {
+		t.Fatalf("epic stats expected 2 tasks, got %v", epicStatsRaw["total"])
+	}
+	if asInt(epicStatsRaw["pending"]) != 2 {
+		t.Fatalf("epic stats expected 2 pending, got %v", epicStatsRaw["pending"])
+	}
 }
 
 func TestFilterTasksByIDs(t *testing.T) {

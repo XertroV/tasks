@@ -872,6 +872,34 @@ func assertSyncStateParity(t *testing.T, goRoot, pyRoot, tsRoot string) {
 	if _, ok := tsIndex["stats"].(map[string]interface{}); !ok {
 		t.Fatalf("sync state missing typescript stats")
 	}
+
+	checkStats := func(name string, payload map[string]interface{}, requireTotalTasks bool) {
+		stats, ok := payload["stats"].(map[string]interface{})
+		if !ok {
+			t.Fatalf("sync state missing %s stats", name)
+		}
+		totalKey := "total"
+		if requireTotalTasks {
+			totalKey = "total_tasks"
+		}
+		for _, key := range []string{totalKey, "done", "in_progress", "blocked", "pending"} {
+			switch stats[key].(type) {
+			case int, int32, int64, float64:
+			default:
+				t.Fatalf("sync stats for %s missing or invalid key %s: %#v", name, key, stats)
+			}
+		}
+	}
+
+	checkPathSyncStats := func(path string, requireTotalTasks bool) {
+		checkStats(path+" phase", readYAMLMapForTest(t, filepath.Join(goRoot, ".tasks", path)), requireTotalTasks)
+		checkStats(path+" phase", readYAMLMapForTest(t, filepath.Join(pyRoot, ".tasks", path)), requireTotalTasks)
+		checkStats(path+" phase", readYAMLMapForTest(t, filepath.Join(tsRoot, ".tasks", path)), requireTotalTasks)
+	}
+
+	checkPathSyncStats(filepath.Join("01-phase", "index.yaml"), true)
+	checkPathSyncStats(filepath.Join("01-phase", "01-ms", "index.yaml"), true)
+	checkPathSyncStats(filepath.Join("01-phase", "01-ms", "01-epic", "index.yaml"), false)
 }
 
 func assertCommandStateParity(t *testing.T, command []string, goRoot, pyRoot, tsRoot string) {

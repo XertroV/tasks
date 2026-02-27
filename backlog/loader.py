@@ -1006,10 +1006,30 @@ class TaskLoader:
                 if milestone_index_path.exists():
                     milestone_index = self._load_yaml(milestone_index_path)
                     milestone_index["stats"] = milestone.stats
-
                     with open(milestone_index_path, "w") as f:
                         yaml.dump(
                             milestone_index,
+                            f,
+                            default_flow_style=False,
+                            sort_keys=False,
+                        )
+
+                # Update epic indices
+                for epic in milestone.epics:
+                    epic_index_path = (
+                        self.tasks_dir
+                        / phase.path
+                        / milestone.path
+                        / epic.path
+                        / "index.yaml"
+                    )
+                    if not epic_index_path.exists():
+                        continue
+                    epic_index = self._load_yaml(epic_index_path)
+                    epic_index["stats"] = epic.stats
+                    with open(epic_index_path, "w") as f:
+                        yaml.dump(
+                            epic_index,
                             f,
                             default_flow_style=False,
                             sort_keys=False,
