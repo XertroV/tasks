@@ -53,6 +53,7 @@ PREVIEW_DISPLAY_LIMIT = 5
 PREVIEW_GRAB_FOLLOW_COUNT = 4
 PREVIEW_AUX_LIMIT = 5
 PREVIEW_BUG_FANOUT_COUNT = 2
+BACKLOG_VERSION = "0.1.0"
 
 AGENTS_SNIPPETS = {
     "short": """# AGENTS.md (Short)
@@ -456,7 +457,7 @@ def _print_benchmark(benchmark: dict, top_n: int, output_json: bool) -> None:
 
 
 @click.group(invoke_without_command=True, cls=BacklogGroup)
-@click.version_option(version="0.1.0")
+@click.version_option(version=BACKLOG_VERSION)
 @click.pass_context
 def cli(ctx):
     """The Backlogs - CLI for project backlog management."""
@@ -477,8 +478,14 @@ def cli(ctx):
 
                     line = _strip_ansi(line)
                 print(line)
-            print()
+        print()
         click.echo(ctx.get_help())
+
+
+@cli.command()
+def version():
+    """Show CLI version."""
+    click.echo(f"backlog version {BACKLOG_VERSION}")
 
 
 @cli.command()
@@ -2698,7 +2705,7 @@ def claim(task_ids, agent, force, no_content):
                     "[yellow]Warning:[/] claim only works with task IDs."
                 )
                 console.print(
-                    f"[yellow]Outputting `show` command instead: `backlog show {task_id}`[/]"
+                    f"[yellow]Showing `backlog show {task_id}` for context.[/]"
                 )
                 show((task_id,))
                 continue
@@ -2708,7 +2715,7 @@ def claim(task_ids, agent, force, no_content):
                     "[yellow]Warning:[/] claim only works with task IDs."
                 )
                 console.print(
-                    f"[yellow]Outputting `show` command instead: `backlog show {task_id}`[/]"
+                    f"[yellow]Showing `backlog show {task_id}` for context.[/]"
                 )
                 show((task_id,))
                 continue

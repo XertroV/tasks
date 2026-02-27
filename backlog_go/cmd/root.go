@@ -9,7 +9,8 @@ import (
 )
 
 // BuildVersion can be injected at build time with:
-//   go build -ldflags "-X github.com/XertroV/tasks/backlog_go/cmd.BuildVersion=<version>"
+//
+//	go build -ldflags "-X github.com/XertroV/tasks/backlog_go/cmd.BuildVersion=<version>"
 var BuildVersion = "0.1.0"
 
 // RootCommand captures shared CLI metadata and the supported command list.
@@ -56,6 +57,7 @@ func NewRootCommand() *RootCommand {
 		commands.CmdReport,
 		commands.CmdReportAlias,
 		commands.CmdSchema,
+		commands.CmdVelocity,
 		commands.CmdSkills,
 		commands.CmdSearch,
 		commands.CmdSession,
@@ -231,6 +233,7 @@ func defaultCommandDescriptions() map[string]string {
 		commands.CmdPreview:       "Preview upcoming work with grab suggestions.",
 		commands.CmdReport:        "Generate reports (progress/velocity/accuracy).",
 		commands.CmdReportAlias:   "Alias for report.",
+		commands.CmdVelocity:      "Generate a velocity report.",
 		commands.CmdSchema:        "Show file schema information.",
 		commands.CmdSearch:        "Search tasks by pattern.",
 		commands.CmdSession:       "Manage agent sessions.",

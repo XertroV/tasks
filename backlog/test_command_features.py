@@ -499,11 +499,21 @@ def test_velocity_hidden_alias_matches_report_velocity_json(
     assert alias_payload["daily_data"] == report_payload["daily_data"]
 
 
-def test_velocity_hidden_alias_not_listed_in_help(runner, tmp_feature_tasks_dir):
+def test_velocity_alias_is_listed_in_help(runner, tmp_feature_tasks_dir):
     result = runner.invoke(cli, ["--help"])
 
     assert result.exit_code == 0
-    assert "\n  velocity" not in result.output
+    assert "\n  velocity" in result.output
+
+
+def test_version_command_outputs_version(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["version"])
+    assert result.exit_code == 0
+    assert "backlog version 0.1.0" in result.output
+
+    extra_arg_result = runner.invoke(cli, ["version", "P1.M1.E1.T001"])
+    assert extra_arg_result.exit_code != 0
+    assert "Usage:" in extra_arg_result.output
 
 
 def test_timeline_alias_is_shown_inline_in_help(runner, tmp_feature_tasks_dir):
@@ -567,7 +577,9 @@ def test_all_commands_have_non_thin_help(runner, tmp_feature_tasks_dir):
         "skip",
         "sync",
         "timeline",
+        "velocity",
         "tree",
+        "version",
         "unclaim",
         "unclaim-stale",
         "undone",

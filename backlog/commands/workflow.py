@@ -871,9 +871,10 @@ def cycle(task_id, agent, no_content):
 
 
 @click.command()
-@click.argument("task_id", required=False)
+@click.argument("task_ids", nargs=-1)
+@click.option("--agent", help="Agent session ID (uses config default if not set)")
 @click.option("--clear", "clear_ctx", is_flag=True, help="Clear current working task")
-def work(task_id, clear_ctx):
+def work(task_ids, agent, clear_ctx):
     """Set or show the current working task.
 
     Without arguments, shows the current working task.
@@ -881,11 +882,24 @@ def work(task_id, clear_ctx):
     With --clear, clears the working task context.
     """
     try:
+        if not agent:
+            agent = get_default_agent()
+
         if clear_ctx:
+            if task_ids:
+                console.print(
+                    "[red]Error:[/] work --clear does not accept a TASK_ID argument"
+                )
+                raise click.Abort()
             clear_context()
             console.print("[green]✓ Cleared working task context.[/]")
             return
 
+        if len(task_ids) > 1:
+            console.print("[red]Error:[/] work accepts at most one TASK_ID")
+            raise click.Abort()
+
+        task_id = task_ids[0] if task_ids else None
         if task_id:
             # Set working task
             loader = TaskLoader()
@@ -896,7 +910,7 @@ def work(task_id, clear_ctx):
                 console.print(f"[red]Error:[/] Task not found: {task_id}")
                 raise click.Abort()
 
-            set_current_task(task_id)
+            set_current_task(task_id, agent)
             console.print(f"\n[green]✓ Working task set:[/] {task.id} - {task.title}\n")
             console.print(f"  Status:     {task.status.value}")
             console.print(f"  Estimate:   {task.estimate_hours} hours")

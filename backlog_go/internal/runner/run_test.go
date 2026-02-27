@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"sync"
 	"testing"
@@ -735,6 +736,9 @@ func TestRunClaimScopeFallsBackToShow(t *testing.T) {
 		"backlog show P1.M1",
 		"P1.M1",
 	)
+	if strings.Contains(output, "Next:") {
+		t.Fatalf("output = %q, expected no Next guidance for claim fallback", output)
+	}
 }
 
 func TestRunGrabExplicitDoneTaskShowsCompletionTimestamp(t *testing.T) {
@@ -794,6 +798,66 @@ func TestRunClaimSingleTaskRendersDetailCard(t *testing.T) {
 	if !strings.Contains(output, "To release this task: `bl unclaim P1.M1.E1.T001`") {
 		t.Fatalf("claim output = %q, expected unclaim guidance", output)
 	}
+}
+
+func TestRunWorkAcceptsAgentAndSetsContext(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "work", "--agent", "agent-a", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run work --agent = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Working task set:", "P1.M1.E1.T001")
+
+	context, err := taskcontext.LoadContext(filepath.Join(root, ".tasks"))
+	if err != nil {
+		t.Fatalf("load context = %v, expected nil", err)
+	}
+	if context.Agent != "agent-a" {
+		t.Fatalf("context.agent = %q, expected agent-a", context.Agent)
+	}
+	if context.CurrentTask != "P1.M1.E1.T001" {
+		t.Fatalf("context.current_task = %q, expected P1.M1.E1.T001", context.CurrentTask)
+	}
+}
+
+func TestRunWorkRejectsMultipleTaskIDs(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "work", "P1.M1.E1.T001", "P1.M1.E1.T002")
+	if err == nil {
+		t.Fatalf("run work with multiple task ids expected error")
+	}
+	assertContainsAll(t, output, "Command Help: backlog work", "work accepts at most one TASK_ID")
+}
+
+func TestRunVersionPrintsVersionOutput(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "version")
+	if err != nil {
+		t.Fatalf("run version = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "backlog version", "0.1.0")
+}
+
+func TestRunVersionRejectsPositionalArguments(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "version", "P1.M1.E1.T001")
+	if err == nil {
+		t.Fatalf("run version with positional arg expected error")
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Command Help: backlog version",
+		"version accepts no TASK_ID arguments",
+	)
 }
 
 func TestRunAddPhaseHelpRendersCommandSpecificGuidance(t *testing.T) {
@@ -1591,7 +1655,8 @@ func TestRunAllCommandsHelpIsNotThin(t *testing.T) {
 		"blocked", "blockers", "bug", "check", "claim", "cycle", "dash", "data", "done", "fixed",
 		"grab", "handoff", "help", "idea", "init", "list", "lock", "log", "migrate", "move", "next",
 		"preview", "report", "schema", "search", "session", "set", "show", "skills", "skip", "sync",
-		"timeline", "tree", "unclaim", "unclaim-stale", "undone", "unlock", "update", "version", "why",
+		"timeline", "tree", "unclaim", "unclaim-stale", "undone", "unlock", "update", "velocity",
+		"version", "why",
 		"work",
 	}
 	for _, command := range commandsToCheck {
@@ -2900,6 +2965,42 @@ func TestRunReportVelocityAndEstimateAccuracyJSONContracts(t *testing.T) {
 	decodeJSONPayload(t, accuracyOutput, &accuracyPayload)
 	if _, ok := accuracyPayload["tasks_analyzed"]; !ok {
 		t.Fatalf("estimate-accuracy payload missing tasks_analyzed: %#v", accuracyPayload)
+	}
+}
+
+func TestRunVelocityCommandMatchesReportVelocityJSON(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	doneAt := time.Now().UTC().Format(time.RFC3339)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"done",
+		"",
+		"",
+		time.Now().Add(-30*time.Minute).UTC().Format(time.RFC3339),
+		doneAt,
+	)
+	setTaskDurationMinutes(t, root, "P1.M1.E1.T001", 30)
+
+	reportVelocityOutput, err := runInDir(t, root, "report", "velocity", "--json")
+	if err != nil {
+		t.Fatalf("run report velocity --json = %v, expected nil", err)
+	}
+	velocityOutput, err := runInDir(t, root, "velocity", "--json")
+	if err != nil {
+		t.Fatalf("run velocity --json = %v, expected nil", err)
+	}
+
+	var reportVelocityPayload map[string]interface{}
+	decodeJSONPayload(t, reportVelocityOutput, &reportVelocityPayload)
+	var velocityPayload map[string]interface{}
+	decodeJSONPayload(t, velocityOutput, &velocityPayload)
+	if !reflect.DeepEqual(reportVelocityPayload, velocityPayload) {
+		t.Fatalf("velocity output mismatch: report=%v velocity=%v", reportVelocityPayload, velocityPayload)
 	}
 }
 

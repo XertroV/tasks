@@ -12,7 +12,7 @@ export const KNOWN_COMMANDS = [
   "unclaim-stale", "add", "add-epic", "add-milestone", "add-phase", "move", "idea", "bug",
   "fixed",
   "blocked", "skip", "unclaim", "handoff", "why", "dash", "search", "blockers",
-  "timeline", "tl", "session", "report", "data", "schema", "skills", "migrate",
+  "timeline", "tl", "session", "report", "velocity", "data", "schema", "skills", "version", "migrate",
 ];
 
 export function getDataDir(): string {

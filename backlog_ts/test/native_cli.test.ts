@@ -341,7 +341,7 @@ describe("native cli", () => {
     expect(p.exitCode).toBe(0);
     const out = p.stdout.toString();
     expect(out).toContain("Warning: claim only works with task IDs.");
-    expect(out).toContain("Outputting `show` command instead: `backlog show P1.M1`");
+    expect(out).toContain("Showing `backlog show P1.M1` for context.");
     expect(out).toContain("P1.M1");
   });
 
@@ -612,6 +612,29 @@ describe("native cli", () => {
     p = run(["work", "--clear"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Cleared working task context.");
+
+    p = run(["work", "P1.M1.E1.T001", "P1.M1.E1.T002"], root);
+    expect(p.exitCode).toBe(1);
+    const tooManyWork = `${p.stdout.toString()}${p.stderr.toString()}`;
+    expect(tooManyWork).toContain("work accepts at most one TASK_ID");
+
+    p = run(["work", "P1.M1.E1.T001", "--clear"], root);
+    expect(p.exitCode).toBe(1);
+    const clearWithTask = `${p.stdout.toString()}${p.stderr.toString()}`;
+    expect(clearWithTask).toContain("work --clear does not accept a TASK_ID");
+  });
+
+  test("version command prints and rejects positional arguments", () => {
+    root = setupFixture();
+    let p = run(["version"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("backlog version 0.1.0");
+
+    p = run(["version", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(1);
+    const versionWithArg = `${p.stdout.toString()}${p.stderr.toString()}`;
+    expect(versionWithArg).toContain("Command Help: backlog version");
+    expect(versionWithArg).toContain("version accepts no TASK_ID arguments");
   });
 
   test("blocked without --grab keeps task pending", () => {
@@ -933,10 +956,10 @@ tags: []
 
     p = run(["report", "velocity", "--days", "7", "--format", "json"], root);
     expect(p.exitCode).toBe(0);
-    const velocity = JSON.parse(p.stdout.toString());
-    expect(velocity.days_analyzed).toBe(7);
-    expect(Array.isArray(velocity.daily_data)).toBeTrue();
-    expect(velocity.daily_data.length).toBe(2);
+    const reportVelocity = JSON.parse(p.stdout.toString());
+    expect(reportVelocity.days_analyzed).toBe(7);
+    expect(Array.isArray(reportVelocity.daily_data)).toBeTrue();
+    expect(reportVelocity.daily_data.length).toBe(2);
 
     p = run(["report", "estimate-accuracy", "--format", "json"], root);
     expect(p.exitCode).toBe(0);
@@ -961,6 +984,11 @@ tags: []
     const velocityAlias = JSON.parse(p.stdout.toString());
     expect(velocityAlias.days_analyzed).toBe(7);
     expect(velocityAlias.daily_data.length).toBe(2);
+
+    p = run(["velocity", "--days", "7", "--format", "json"], root);
+    expect(p.exitCode).toBe(0);
+    const velocityCommand = JSON.parse(p.stdout.toString());
+    expect(velocityCommand).toEqual(reportVelocity);
   });
 
   test("timeline and schema commands", () => {
@@ -1015,6 +1043,7 @@ tags: []
     const commands = [
       "howto", "ls", "list", "tree", "show", "next", "preview", "claim", "grab", "done", "undone",
       "cycle", "dash", "update", "set", "work", "unclaim", "blocked", "bug", "idea", "fixed", "search",
+      "version",
       "check", "init", "add", "add-epic", "add-milestone", "add-phase", "lock", "unlock", "move", "session",
       "data", "report", "timeline", "schema", "blockers", "skills", "agents", "log", "migrate", "benchmark",
     ];

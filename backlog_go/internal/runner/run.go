@@ -521,6 +521,19 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 			"backlog version",
 		},
 	},
+	"velocity": {
+		summary: "Generate velocity report data.",
+		usage:   "backlog velocity [--days N] [--json] [--format {json,table}]",
+		options: []string{
+			"--days",
+			"--json",
+			"--format",
+		},
+		examples: []string{
+			"backlog velocity",
+			"backlog velocity --days 30 --json",
+		},
+	},
 	"skills": {
 		summary: "Install backlog skills for supported clients.",
 		usage:   "backlog skills install <SKILL> [--client codex|claude] [--artifact skills|commands] [--dry-run] [--json]",
@@ -795,7 +808,7 @@ func Run(rawArgs ...string) error {
 		fmt.Println(styleHeader(root.Usage()))
 		return nil
 	}
-	if len(args) == 1 && (args[0] == "-v" || args[0] == "--version" || args[0] == commands.CmdVersion) {
+	if len(args) == 1 && (args[0] == "-v" || args[0] == "--version") {
 		fmt.Printf("%s version %s\n", styleSuccess(root.Name()), root.Version())
 		return nil
 	}
@@ -836,7 +849,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdList, commands.CmdLs:
 		return runList(command, payload)
 	case commands.CmdShow:
-		return runShow(payload)
+		return runShow(payload, true)
 	case commands.CmdGrab:
 		return runGrab(payload)
 	case commands.CmdNext:
@@ -861,6 +874,8 @@ func Run(rawArgs ...string) error {
 		return runSession(payload)
 	case commands.CmdReport, commands.CmdReportAlias:
 		return runReport(payload)
+	case commands.CmdVelocity:
+		return runVelocity(payload)
 	case commands.CmdTimeline, commands.CmdTimelineAlias:
 		return runTimeline(payload)
 	case commands.CmdAdmin:
@@ -881,6 +896,8 @@ func Run(rawArgs ...string) error {
 		return runCycle(payload)
 	case commands.CmdWork:
 		return runWork(payload)
+	case commands.CmdVersion:
+		return runVersion(payload)
 	case commands.CmdSkip:
 		return runSkip(payload)
 	case commands.CmdHandoff:
@@ -3443,7 +3460,7 @@ func warnMissingTaskFiles(tree models.TaskTree, dataDir string) {
 	fmt.Println()
 }
 
-func runShow(args []string) error {
+func runShow(args []string, showNext bool) error {
 	dataDir, err := ensureDataRoot()
 	if err != nil {
 		return err
@@ -3485,7 +3502,7 @@ func runShow(args []string) error {
 			if err != nil {
 				return err
 			}
-			renderBugOrIdeaDetail(*auxTask, isIdeaLikeID(id) && auxTask.Status == models.StatusPending, dataDir)
+			renderBugOrIdeaDetail(*auxTask, isIdeaLikeID(id) && auxTask.Status == models.StatusPending, dataDir, showNext)
 			continue
 		}
 		scopePath, err := models.ParseTaskPath(id)
@@ -3495,7 +3512,7 @@ func runShow(args []string) error {
 			return fmt.Errorf("Invalid path format: %s", id)
 		}
 
-		if err := showScopedItem(tree, id, &scopePath, dataDir); err != nil {
+		if err := showScopedItem(tree, id, &scopePath, dataDir, showNext); err != nil {
 			return err
 		}
 	}
@@ -7186,7 +7203,7 @@ func renderListScopeEpic(epic models.Epic, taskMatches func(models.Task) bool, c
 	return lines
 }
 
-func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir string) {
+func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir string, showNext bool) {
 	fmt.Printf("%s: %s\n", styleSuccess(task.ID), task.Title)
 	fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
 	fmt.Printf("%s: %.2fh\n", styleSubHeader("Estimate"), task.EstimateHours)
@@ -7201,10 +7218,12 @@ func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir stri
 	if task.File != "" {
 		fmt.Printf("%s: %s\n", styleSubHeader("File"), file)
 	}
-	printNextCommands("backlog show "+task.ID, "backlog claim "+task.ID)
+	if showNext {
+		printNextCommands("backlog show "+task.ID, "backlog claim "+task.ID)
+	}
 }
 
-func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath, dataDir string) error {
+func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath, dataDir string, showNext bool) error {
 	calculator := critical_path.NewCriticalPathCalculator(tree, map[string]float64{})
 	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 
@@ -7242,7 +7261,9 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(phase.Milestones)-limit)))
 			}
 		}
-		printNextCommands("backlog ls "+phase.ID, "backlog list --phase "+phase.ID)
+		if showNext {
+			printNextCommands("backlog ls "+phase.ID, "backlog list --phase "+phase.ID)
+		}
 		return nil
 	case scopePath.IsMilestone():
 		milestone := findMilestone(tree, scopePath.FullID())
@@ -7265,7 +7286,9 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(milestone.Epics)-limit)))
 			}
 		}
-		printNextCommands("backlog ls "+milestone.ID, "backlog list --milestone "+milestone.ID)
+		if showNext {
+			printNextCommands("backlog ls "+milestone.ID, "backlog list --milestone "+milestone.ID)
+		}
 		return nil
 	case scopePath.IsEpic():
 		epic := findEpic(tree, scopePath.FullID())
@@ -7287,14 +7310,16 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... and %d more", len(epic.Tasks)-limit)))
 			}
 		}
-		printNextCommands("backlog ls "+epic.ID, "backlog add "+epic.ID+" --title \"<task title>\"")
+		if showNext {
+			printNextCommands("backlog ls "+epic.ID, "backlog add "+epic.ID+" --title \"<task title>\"")
+		}
 		return nil
 	case scopePath.IsTask():
 		task := findTask(tree, scopePath.FullID())
 		if task == nil {
 			return showNotFound(tree, "Task", id, scopeHint)
 		}
-		renderTaskDetail(*task, dataDir)
+		renderTaskDetail(*task, dataDir, showNext)
 		return nil
 	default:
 		return showNotFound(tree, "Task", id, scopeHint)
@@ -7513,7 +7538,7 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 	return nil
 }
 
-func renderTaskDetail(task models.Task, dataDir string) {
+func renderTaskDetail(task models.Task, dataDir string, showNext bool) {
 	fmt.Printf("%s: %s\n", styleSuccess("Task"), task.ID)
 	fmt.Printf("%s: %s\n", styleSubHeader("Title"), task.Title)
 	fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
@@ -7559,15 +7584,21 @@ func renderTaskDetail(task models.Task, dataDir string) {
 	}
 	switch task.Status {
 	case models.StatusPending:
-		printNextCommands("backlog claim "+task.ID, "backlog why "+task.ID)
+		if showNext {
+			printNextCommands("backlog claim "+task.ID, "backlog why "+task.ID)
+		}
 	case models.StatusInProgress:
 		printClaimCompletionGuidance(task.ID)
 		fmt.Printf("  %s\n", styleSuccess("If this task becomes blocked:"))
 		fmt.Printf("  %s\n", styleSuccess("`bl blocked "+task.ID+" --reason \"<reason>\"`"))
 	case models.StatusBlocked:
-		printNextCommands("backlog why "+task.ID, "backlog blockers --suggest")
+		if showNext {
+			printNextCommands("backlog why "+task.ID, "backlog blockers --suggest")
+		}
 	default:
-		printNextCommands("backlog show " + task.ID)
+		if showNext {
+			printNextCommands("backlog show " + task.ID)
+		}
 	}
 }
 
@@ -7704,8 +7735,8 @@ func runClaim(args []string) error {
 			continue
 		}
 		fmt.Println(styleWarning("Warning: claim only works with task IDs."))
-		fmt.Printf("Outputting `show` command instead: `backlog show %s`\n", id)
-		if err := runShow([]string{id}); err != nil {
+		fmt.Printf("Showing `backlog show %s` for context.\n", id)
+		if err := runShow([]string{id}, false); err != nil {
 			return err
 		}
 	}
@@ -8272,6 +8303,18 @@ func runWork(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
+	if err := validateAllowedFlagsForUsage(commands.CmdWork, args, map[string]bool{
+		"--agent": true,
+		"--clear": true,
+		"--help":  true,
+		"-h":      true,
+	}); err != nil {
+		return err
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdWork)
+		return nil
+	}
 
 	dataDir, err := ensureDataRoot()
 	if err != nil {
@@ -8279,6 +8322,11 @@ func runWork(args []string) error {
 	}
 	clearContext := parseFlag(args, "--clear")
 	if clearContext {
+		if len(positionalArgs(args, map[string]bool{
+			"--agent": true,
+		})) > 0 {
+			return printUsageError(commands.CmdWork, errors.New("work --clear does not accept a TASK_ID"))
+		}
 		if err := taskcontext.ClearContext(dataDir); err != nil {
 			return err
 		}
@@ -8286,14 +8334,19 @@ func runWork(args []string) error {
 		return nil
 	}
 
-	targetTask := ""
-	for _, arg := range args {
-		if strings.HasPrefix(arg, "-") {
-			continue
-		}
-		targetTask = arg
-		break
+	targetTasks := positionalArgs(args, map[string]bool{
+		"--agent": true,
+	})
+	if len(targetTasks) > 1 {
+		return printUsageError(commands.CmdWork, errors.New("work accepts at most one TASK_ID"))
 	}
+
+	targetTask := ""
+	if len(targetTasks) == 1 {
+		targetTask = targetTasks[0]
+	}
+
+	agent := strings.TrimSpace(parseOption(args, "--agent"))
 
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
@@ -8302,13 +8355,13 @@ func runWork(args []string) error {
 
 	if targetTask != "" {
 		if err := validateTaskID(targetTask); err != nil {
-			return err
+			return printUsageError(commands.CmdWork, err)
 		}
 		task := tree.FindTask(targetTask)
 		if task == nil {
 			return fmt.Errorf("Task not found: %s", targetTask)
 		}
-		if err := taskcontext.SetCurrentTask(dataDir, task.ID, ""); err != nil {
+		if err := taskcontext.SetCurrentTask(dataDir, task.ID, agent); err != nil {
 			return err
 		}
 		fmt.Printf("%s %s - %s\n", styleSuccess("Working task set:"), styleSuccess(task.ID), task.Title)
@@ -8341,6 +8394,30 @@ func runWork(args []string) error {
 	fmt.Printf("%s %.2f hours\n", styleSubHeader("Estimate:"), task.EstimateHours)
 	fmt.Printf("%s %s\n", styleSubHeader("File:"), filepath.Join(dataDir, task.File))
 	return nil
+}
+
+func runVersion(args []string) error {
+	if err := validateAllowedFlagsForUsage(commands.CmdVersion, args, map[string]bool{
+		"--help": true,
+		"-h":     true,
+	}); err != nil {
+		return err
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdVersion)
+		return nil
+	}
+	if len(positionalArgs(args, nil)) > 0 {
+		return printUsageError(commands.CmdVersion, errors.New("version accepts no TASK_ID arguments"))
+	}
+
+	root := cmd.NewRootCommand()
+	fmt.Printf("%s version %s\n", styleSuccess(root.Name()), root.Version())
+	return nil
+}
+
+func runVelocity(args []string) error {
+	return runReportVelocity(args)
 }
 
 func runMove(args []string) error {

@@ -124,6 +124,49 @@ export function parseOpts(args: string[], name: string): string[] {
   return out;
 }
 
+type FlagMode = "boolean" | "value";
+
+function positionalArgsForCommand(
+  args: string[],
+  flags: Record<string, FlagMode>,
+  commandForUsage?: string,
+): string[] {
+  const positional: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) continue;
+    if (arg === "--") {
+      positional.push(...args.slice(i + 1));
+      break;
+    }
+
+    if (!arg.startsWith("-")) {
+      positional.push(arg);
+      continue;
+    }
+
+    const idx = arg.indexOf("=");
+    const flag = idx === -1 ? arg : arg.slice(0, idx);
+    const mode = flags[flag];
+    if (!mode) {
+      if (commandForUsage) {
+        printCommandHelpForCommand(commandForUsage);
+      }
+      textError(`unexpected flag: ${arg}`);
+    }
+
+    if (mode === "value" && idx === -1) {
+      i += 1;
+    } else if (mode === "boolean" && idx !== -1) {
+      if (commandForUsage) {
+        printCommandHelpForCommand(commandForUsage);
+      }
+      textError(`unexpected flag: ${arg}`);
+    }
+  }
+  return positional;
+}
+
 function parseNegatedFlag(args: string[], name: string, defaultValue: boolean): boolean {
   const yesIndex = args.indexOf(`--${name}`);
   const noIndex = args.indexOf(`--no-${name}`);
@@ -294,6 +337,7 @@ Commands:
   session         Manage agent sessions
   data            Export/summarize task data
   report          Generate reports (progress, velocity, estimates) [alias: r]
+  version         Show CLI version
   timeline        Display an ASCII Gantt chart of the project timeline (alias: tl)
   schema          Show file schema information
   blockers        Show blocking tasks
@@ -355,6 +399,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   next: { summary: "Get next available task on critical path.", usage: "backlog next [--json]", options: ["--json"], examples: ["backlog next", "backlog next --json"] },
   preview: { summary: "Show upcoming work preview with grab suggestions.", usage: "backlog preview [--json]", options: ["--json"], examples: ["backlog preview", "backlog preview --json"] },
   report: { summary: "Generate reports (progress, velocity, estimates).", usage: "backlog report [progress|velocity|estimate-accuracy|p|v|ea] [--json] [--format json|table]", options: ["progress|velocity|estimate-accuracy", "--json", "--format"], examples: ["backlog report progress", "backlog r v --json"] },
+  velocity: { summary: "Generate the velocity report.", usage: "backlog velocity [--json] [--format json|table] [--days DAYS]", options: ["--json", "--format", "--days"], examples: ["backlog velocity --days 14", "backlog velocity --json"] },
   schema: { summary: "Show file schema information.", usage: "backlog schema [--json] [--compact]", options: ["--json", "--compact"], examples: ["backlog schema", "backlog schema --json"] },
   search: { summary: "Search tasks by pattern.", usage: "backlog search <PATTERN> [options]", options: ["--status", "--tags", "--complexity", "--priority", "--limit", "--json"], examples: ["backlog search auth", "backlog search --status pending --limit 5 auth"] },
   session: { summary: "Manage agent sessions.", usage: "backlog session <start|heartbeat|list|end|clean> [--agent AGENT] [--timeout MINUTES]", options: ["start", "heartbeat", "list", "end", "clean"], examples: ["backlog session start --agent agent-a", "backlog session list"] },
@@ -1973,7 +2018,7 @@ async function cmdClaim(args: string[]): Promise<void> {
     const task = findClaimableTask(tree, taskId);
     if (!task) {
       console.log(pc.yellow("Warning: claim only works with task IDs."));
-      console.log(pc.yellow(`Outputting \`show\` command instead: \`backlog show ${taskId}\``));
+      console.log(pc.yellow(`Showing \`backlog show ${taskId}\` for context.`));
       await cmdShow([taskId]);
       continue;
     }
@@ -2315,8 +2360,31 @@ async function cmdSet(args: string[]): Promise<void> {
 }
 
 async function cmdWork(args: string[]): Promise<void> {
+  const commandArgs = positionalArgsForCommand(
+    args,
+    {
+      "--agent": "value",
+      "--clear": "boolean",
+      "--help": "boolean",
+      "-h": "boolean",
+    },
+    "work",
+  );
   const clear = parseFlag(args, "--clear");
-  const taskId = args.find((a) => !a.startsWith("-"));
+  const taskId = commandArgs[0];
+  if (clear && commandArgs.length > 0) {
+    printCommandHelpForCommand("work");
+    textError("work --clear does not accept a TASK_ID");
+  }
+  if (commandArgs.length > 1) {
+    printCommandHelpForCommand("work");
+    textError("work accepts at most one TASK_ID");
+  }
+
+  if (parseFlag(args, "--help", "-h")) {
+    printCommandHelpForCommand("work");
+    return;
+  }
   if (clear) {
     await clearContext();
     console.log("Cleared working task context.");
@@ -2327,9 +2395,12 @@ async function cmdWork(args: string[]): Promise<void> {
   const tree = await loader.load("metadata");
 
   if (taskId) {
+    const agent = parseOpt(args, "--agent")
+      ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string)
+      ?? "cli-user";
     const task = findTask(tree, taskId);
     if (!task) textError(`Task not found: ${taskId}`);
-    await setCurrentTask(taskId);
+    await setCurrentTask(taskId, agent);
     console.log(`Working task set: ${task.id} - ${task.title}`);
     return;
   }
@@ -2351,6 +2422,26 @@ async function cmdWork(args: string[]): Promise<void> {
   console.log(`Status: ${task.status}`);
   console.log(`Estimate: ${task.estimateHours} hours`);
   console.log(`File: ${getDataDirName()}/${task.file}`);
+}
+
+async function cmdVersion(args: string[]): Promise<void> {
+  const positional = positionalArgsForCommand(
+    args,
+    {
+      "--help": "boolean",
+      "-h": "boolean",
+    },
+    "version",
+  );
+  if (parseFlag(args, "--help", "-h")) {
+    printCommandHelpForCommand("version");
+    return;
+  }
+  if (positional.length > 0) {
+    printCommandHelpForCommand("version");
+    textError("version accepts no TASK_ID arguments");
+  }
+  console.log("backlog version 0.1.0");
 }
 
 async function cmdUnclaim(args: string[]): Promise<void> {
@@ -3655,8 +3746,18 @@ async function main(): Promise<void> {
     case "report":
       await cmdReport(rest);
       return;
+    case "velocity":
+      if (parseFlag(rest, "--help", "-h")) {
+        printCommandHelpForCommand("velocity");
+        return;
+      }
+      await cmdReport(["velocity", ...rest]);
+      return;
     case "r":
       await cmdReport(rest);
+      return;
+    case "version":
+      await cmdVersion(rest);
       return;
     case "timeline":
       await cmdTimeline(rest);

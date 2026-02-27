@@ -392,7 +392,7 @@ class TestClaimCommand:
 
         assert result.exit_code == 0
         assert "Warning: claim only works with task IDs." in result.output
-        assert "Outputting `show` command instead: `backlog show B001`" in result.output
+        assert "Showing `backlog show B001` for context." in result.output
         assert "Task: B001" in result.output
         assert "Title: Critical Bug" in result.output
         assert "status: pending" in bug_file.read_text()

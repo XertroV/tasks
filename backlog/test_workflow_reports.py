@@ -8,7 +8,7 @@ import yaml
 from click.testing import CliRunner
 
 from backlog.cli import cli
-from backlog.helpers import get_current_task_id, set_current_task
+from backlog.helpers import get_current_task_id, load_context, set_current_task
 from backlog.loader import TaskLoader
 from backlog.models import Status
 
@@ -232,6 +232,33 @@ def test_work_set_show_clear(runner, tmp_workflow_reports_dir):
     clear_res = runner.invoke(cli, ["work", "--clear"])
     assert clear_res.exit_code == 0
     assert "Cleared working task context" in clear_res.output
+
+
+def test_work_rejects_multiple_task_ids(runner, tmp_workflow_reports_dir):
+    result = runner.invoke(
+        cli, ["work", "P1.M1.E1.T001", "P1.M1.E1.T002"]
+    )
+    assert result.exit_code != 0
+    assert "work accepts at most one TASK_ID" in result.output
+
+
+def test_work_rejects_task_id_with_clear(runner, tmp_workflow_reports_dir):
+    result = runner.invoke(
+        cli, ["work", "P1.M1.E1.T001", "--clear"]
+    )
+    assert result.exit_code != 0
+    assert "work --clear does not accept a TASK_ID argument" in result.output
+
+
+def test_work_supports_agent_option(runner, tmp_workflow_reports_dir):
+    result = runner.invoke(
+        cli, ["work", "P1.M1.E1.T001", "--agent", "agent-bot"]
+    )
+    assert result.exit_code == 0
+    assert "Working task set" in result.output
+
+    ctx = load_context()
+    assert ctx.get("agent") == "agent-bot"
 
 
 def test_blocked_defaults_to_no_auto_grab_and_hints(runner, tmp_workflow_reports_dir):

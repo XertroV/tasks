@@ -60,4 +60,5 @@ const (
 	CmdVersion       = "version"
 	CmdSprint        = "sprint"
 	CmdUnknown       = "unknown"
+	CmdVelocity      = "velocity"
 )

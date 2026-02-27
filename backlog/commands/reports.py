@@ -1114,7 +1114,7 @@ def velocity_short_alias(days, output_format):
     ctx.invoke(velocity, days=days, output_format=output_format)
 
 
-@click.command("velocity", hidden=True)
+@click.command("velocity")
 @click.option("--days", default=14, help="Number of days to analyze")
 @click.option(
     "--format", "output_format", type=click.Choice(["text", "json"]), default="text"
