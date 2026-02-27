@@ -9,5 +9,3 @@ bugs:
     - file: B008-go-client-list-is-not-as-usefu.todo
     - file: B009-go-client-bl-ls-should-accept.todo
     - file: B010-bl-show-has-a-bad-help-message.todo
-    - file: B011-go-client-should-have-the-pret.todo
-    - file: B012-go-client-show-doesn-t-print-o.todo
