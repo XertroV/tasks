@@ -389,7 +389,7 @@ func TestRunParityUXSemanticAnchors(t *testing.T) {
 			if impl.result.Code != 0 {
 				t.Fatalf("%s expected zero exit for %q", impl.name, strings.Join(command, " "))
 			}
-			assertContainsAllFragments(t, impl.name, impl.result.Stdout, "claim only works with tasks", "show P1.M1")
+			assertContainsAllFragments(t, impl.name, impl.result.Stdout, "claim only works with task IDs.", "show P1.M1")
 		}
 	})
 

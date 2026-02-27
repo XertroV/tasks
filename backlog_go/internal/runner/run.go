@@ -7685,7 +7685,7 @@ func runClaim(args []string) error {
 			return printUsageError(commands.CmdClaim, err)
 		}
 		task := tree.FindTask(id)
-		isPrimaryTask := task != nil && !isBugLikeID(task.ID) && !isIdeaLikeID(task.ID)
+		isPrimaryTask := task != nil
 		if isPrimaryTask {
 			taskFilePath, err := resolveTaskFilePath(task.File)
 			if err != nil {

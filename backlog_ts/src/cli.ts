@@ -1775,7 +1775,6 @@ function showNotFound(itemType: string, itemId: string, scopeHint?: string): nev
 function findClaimableTask(tree: TaskTree, id: string): Task | undefined {
   const task = findTask(tree, id);
   if (!task) return undefined;
-  if (isBugId(task.id) || isIdeaId(task.id)) return undefined;
   return task;
 }
 

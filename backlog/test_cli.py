@@ -386,16 +386,38 @@ class TestClaimCommand:
 
     def test_claim_non_task_id_falls_back_to_show(self, runner, tmp_tasks_dir):
         """claiming non-task IDs should render show output instead."""
+        result = runner.invoke(cli, ["claim", "P1", "--agent=test-agent"])
+
+        assert result.exit_code == 0
+        assert "Warning: claim only works with task IDs." in result.output
+        assert "Showing `backlog show P1` for context." in result.output
+        assert "P1" in result.output
+
+    def test_claim_accepts_bug_ids(self, runner, tmp_tasks_dir):
+        """claim should work with bug IDs."""
         bug_file = create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
 
         result = runner.invoke(cli, ["claim", "B001", "--agent=test-agent"])
 
         assert result.exit_code == 0
-        assert "Warning: claim only works with task IDs." in result.output
-        assert "Showing `backlog show B001` for context." in result.output
-        assert "Task: B001" in result.output
-        assert "Title: Critical Bug" in result.output
-        assert "status: pending" in bug_file.read_text()
+        assert "✓ Claimed: B001 - Critical Bug" in result.output
+        assert "status: in_progress" in bug_file.read_text()
+
+    def test_claim_accepts_idea_ids(self, runner, tmp_tasks_dir):
+        """claim should work with idea IDs."""
+        idea_result = runner.invoke(cli, ["idea", "Add onboarding docs"])
+        assert idea_result.exit_code == 0
+
+        ideas_index = yaml.safe_load(
+            (tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml").read_text()
+        )
+        idea_entry = ideas_index["ideas"][0]
+        idea_file = tmp_tasks_dir / ".tasks" / "ideas" / idea_entry["file"]
+
+        result = runner.invoke(cli, ["claim", idea_entry["id"], "--agent=test-agent"])
+        assert result.exit_code == 0
+        assert f"✓ Claimed: {idea_entry['id']} - Add onboarding docs" in result.output
+        assert "status: in_progress" in idea_file.read_text()
 
     def test_claim_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
         """claim should warn when a task entry exists but its file is missing."""

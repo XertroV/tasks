@@ -741,6 +741,53 @@ func TestRunClaimScopeFallsBackToShow(t *testing.T) {
 	}
 }
 
+func TestRunClaimAuxiliaryTaskIds(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	if _, err := runInDir(t, root, "bug", "Critical", "bug", "requires", "triage"); err != nil {
+		t.Fatalf("run bug = %v, expected nil", err)
+	}
+	if _, err := runInDir(t, root, "idea", "Improve", "planning", "pipeline"); err != nil {
+		t.Fatalf("run idea = %v, expected nil", err)
+	}
+
+	output, err := runInDir(t, root, "claim", "B001", "--agent", "agent-z")
+	if err != nil {
+		t.Fatalf("run claim B001 = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "✓ Claimed B001")
+
+	bugsIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "bugs", "index.yaml"))
+	bugs, ok := bugsIndex["bugs"].([]interface{})
+	if !ok || len(bugs) != 1 {
+		t.Fatalf("bugs index = %#v, expected one bug", bugsIndex["bugs"])
+	}
+	bugEntry := bugs[0].(map[string]interface{})
+	bugFile := filepath.Join(root, ".tasks", "bugs", asString(bugEntry["file"]))
+	bugTaskFile := readFile(t, bugFile)
+	assertContainsAll(t, bugTaskFile, "id: B001", "status: in_progress")
+
+	ideasIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "ideas", "index.yaml"))
+	ideas, ok := ideasIndex["ideas"].([]interface{})
+	if !ok || len(ideas) != 1 {
+		t.Fatalf("ideas index = %#v, expected one idea", ideasIndex["ideas"])
+	}
+	ideaEntry := ideas[0].(map[string]interface{})
+	ideaID := asString(ideaEntry["id"])
+
+	output, err = runInDir(t, root, "claim", ideaID, "--agent", "agent-z")
+	if err != nil {
+		t.Fatalf("run claim %s = %v, expected nil", ideaID, err)
+	}
+	assertContainsAll(t, output, fmt.Sprintf("✓ Claimed %s", ideaID))
+
+	ideaFile := filepath.Join(root, ".tasks", "ideas", asString(ideaEntry["file"]))
+	ideaTaskFile := readFile(t, ideaFile)
+	assertContainsAll(t, ideaTaskFile, fmt.Sprintf("id: %s", ideaID), "status: in_progress")
+}
+
 func TestRunGrabExplicitDoneTaskShowsCompletionTimestamp(t *testing.T) {
 	t.Parallel()
 
@@ -2789,6 +2836,7 @@ func TestRunDoneShowsDetailedEpicCompletionNotice(t *testing.T) {
 
 	root := setupWorkflowFixture(t)
 	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "done", "", "")
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T002", "b", "in_progress", "", "")
 
 	output, err := runInDir(t, root, "done", "P1.M1.E1.T002")
 	if err != nil {

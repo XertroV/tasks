@@ -2710,16 +2710,6 @@ def claim(task_ids, agent, force, no_content):
                 show((task_id,))
                 continue
 
-            if is_bug_id(task.id) or is_idea_id(task.id):
-                console.print(
-                    "[yellow]Warning:[/] claim only works with task IDs."
-                )
-                console.print(
-                    f"[yellow]Showing `backlog show {task_id}` for context.[/]"
-                )
-                show((task_id,))
-                continue
-
             if _warn_missing_task_file(task):
                 console.print(
                     f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."

@@ -345,6 +345,36 @@ describe("native cli", () => {
     expect(out).toContain("P1.M1");
   });
 
+  test("claim can claim bug ids", () => {
+    root = setupFixture(true);
+
+    const p = run(["claim", "B001", "--agent", "agent-z"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Claimed: B001");
+
+    const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
+    expect(readFileSync(bugPath, "utf8")).toContain("status: in_progress");
+  });
+
+  test("claim can claim idea ids", () => {
+    root = setupFixture();
+    const idea = run(["idea", "capture planning backlog"], root);
+    expect(idea.exitCode).toBe(0);
+
+    const ideasIndex = parse(readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8")) as {
+      ideas: { id: string; file: string }[];
+    };
+    const ideaId = ideasIndex.ideas[0]!.id;
+    const ideaFile = join(root, ".tasks", "ideas", ideasIndex.ideas[0]!.file);
+
+    const p = run(["claim", ideaId, "--agent", "agent-z"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain(`Claimed: ${ideaId}`);
+    expect(readFileSync(ideaFile, "utf8")).toContain("status: in_progress");
+  });
+
   test("done refuses to complete a non-in-progress task", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
