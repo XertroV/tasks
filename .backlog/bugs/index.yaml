@@ -11,3 +11,4 @@ bugs:
     - file: B010-bl-show-has-a-bad-help-message.todo
     - file: B011-go-client-should-have-the-pret.todo
     - file: B012-go-client-show-doesn-t-print-o.todo
+    - file: B013-the-feature-to-remember-the-la.todo

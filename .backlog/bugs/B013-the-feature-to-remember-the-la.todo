@@ -1,0 +1,14 @@
+---
+completed_at: null
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B013
+priority: high
+started_at: null
+status: done
+tags: []
+title: The feature to remember the last workspace you visited and suggest it to you via the 'last' button nedt to 'select a workspace' does not work for in_progress workspaces, but does work for pending. it should work for in_progress workspaces too (should work for any workspace)
+---
+
+The feature to remember the last workspace you visited and suggest it to you via the 'last' button nedt to 'select a workspace' does not work for in_progress workspaces, but does work for pending. it should work for in_progress workspaces too (should work for any workspace)
