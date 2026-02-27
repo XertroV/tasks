@@ -3093,7 +3093,19 @@ func TestRunTimelineTextRendersLegendAndGrouping(t *testing.T) {
 	if err != nil {
 		t.Fatalf("run timeline = %v, expected nil", err)
 	}
-	assertContainsAll(t, output, "Project Timeline", "Legend:", "grouped by")
+	assertContainsAll(t, output, "Project Timeline", "Legend:", "grouped by", "│")
+}
+
+func TestRunTimelineSupportsWeeksAndWidth(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "timeline", "--weeks", "4", "--width", "18", "--show-done")
+	if err != nil {
+		t.Fatalf("run timeline --weeks --width = %v, expected nil", err)
+	}
+
+	assertContainsAll(t, output, "4 weeks", "width 18", "Week 0", "Week 4", "Progress:")
 }
 
 func TestRunReportProgressJSONContract(t *testing.T) {

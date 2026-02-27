@@ -176,10 +176,12 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"timeline": {
 		summary: "Display timeline view with optional grouping.",
-		usage:   "backlog timeline [--scope SCOPE ...] [--group-by phase|milestone|epic|status] [--show-done] [--json]",
+		usage:   "backlog timeline [--scope SCOPE ...] [--weeks N] [--group-by phase|milestone|epic|status] [--show-done] [--width N] [--json]",
 		options: []string{
 			"--scope",
 			"--group-by",
+			"--weeks, -w",
+			"--width",
 			"--show-done",
 			"--json",
 		},

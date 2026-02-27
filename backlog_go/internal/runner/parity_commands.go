@@ -428,7 +428,10 @@ func runTimeline(args []string) error {
 	}
 	allowed := map[string]bool{
 		"--scope":     true,
+		"--weeks":     true,
+		"-w":          true,
 		"--group-by":  true,
+		"--width":     true,
 		"--show-done": true,
 		"--json":      true,
 		"--help":      true,
@@ -458,6 +461,20 @@ func runTimeline(args []string) error {
 		return printUsageError(commands.CmdTimeline, fmt.Errorf("invalid --group-by value: %s", groupBy))
 	}
 	showDone := parseFlag(args, "--show-done")
+	weeks, err := parseIntOptionWithDefault(args, 0, "--weeks", "-w")
+	if err != nil {
+		return err
+	}
+	if weeks < 0 {
+		return printUsageError(commands.CmdTimeline, errors.New("invalid --weeks: must be >= 0"))
+	}
+	width, err := parseIntOptionWithDefault(args, 40, "--width")
+	if err != nil {
+		return err
+	}
+	if width <= 0 {
+		return printUsageError(commands.CmdTimeline, errors.New("invalid --width: must be > 0"))
+	}
 
 	tree, err := loader.New().Load("metadata", true, true)
 	if err != nil {
@@ -488,6 +505,10 @@ func runTimeline(args []string) error {
 		return err
 	}
 	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
+	criticalTaskIDs := map[string]struct{}{}
+	for _, taskID := range criticalPath {
+		criticalTaskIDs[taskID] = struct{}{}
+	}
 
 	tasks := findAllTasksInTree(tree)
 	filtered := []models.Task{}
@@ -514,14 +535,35 @@ func runTimeline(args []string) error {
 		return nil
 	}
 
+	taskWindows := calculateTimelineTaskWindows(filtered, tree)
+	totalHours := 0.0
+	for _, window := range taskWindows {
+		if window.end > totalHours {
+			totalHours = window.end
+		}
+	}
+	if totalHours <= 0 {
+		totalHours = 1.0
+	}
+	if weeks == 0 {
+		weeks = timelineAutoWeeks(totalHours, tree.TimelineWeeks)
+	}
+	if weeks <= 0 {
+		weeks = 1
+	}
+
 	groups := map[string][]models.Task{}
 	order := []string{}
+	groupLabels := map[string]string{}
+	groupHours := map[string]float64{}
 	for _, task := range filtered {
 		key := timelineGroupKey(task, groupBy)
 		if _, ok := groups[key]; !ok {
 			order = append(order, key)
+			groupLabels[key] = timelineGroupLabel(task, tree, groupBy)
 		}
 		groups[key] = append(groups[key], task)
+		groupHours[key] += task.EstimateHours
 	}
 	sort.Strings(order)
 
@@ -545,25 +587,75 @@ func runTimeline(args []string) error {
 		return nil
 	}
 
-	fmt.Printf("\n%s (%s)\n", styleHeader("Project Timeline"), styleMuted("grouped by "+groupBy))
+	fmt.Printf(
+		"\n%s (%s)\n",
+		styleHeader("Project Timeline"),
+		styleMuted(fmt.Sprintf("%d weeks · width %d", weeks, width)),
+	)
 	if len(scopes) > 0 {
 		fmt.Printf("%s %s\n", styleSubHeader("Scope:"), styleSuccess(strings.Join(scopes, ", ")))
 	}
-	fmt.Printf("%s\n\n", styleMuted("Legend: ★ critical path, status icon indicates task state"))
+	fmt.Printf("%s\n", styleSubHeader(fmt.Sprintf("grouped by %s", groupBy)))
+	fmt.Printf(
+		"%s\n\n",
+		styleMuted(
+			"Legend: " +
+				styleSuccess("█") + " done, " +
+				styleWarning("▓") + " in progress, " +
+				styleError("▒") + " blocked, " +
+				styleSubHeader("░") + " pending, " +
+				styleCritical("★") + " critical",
+		),
+	)
 	for _, key := range order {
-		fmt.Printf("%s (%d)\n", styleSubHeader(key), len(groups[key]))
+		fmt.Printf(
+			"%s (%d tasks · %.1fh)\n",
+			styleSubHeader(groupLabels[key]),
+			len(groups[key]),
+			groupHours[key],
+		)
 		items := groups[key]
 		sort.Slice(items, func(i, j int) bool {
-			return items[i].ID < items[j].ID
+			left := taskWindows[items[i].ID]
+			right := taskWindows[items[j].ID]
+			if left.start == right.start {
+				return items[i].ID < items[j].ID
+			}
+			return left.start < right.start
 		})
 		for _, task := range items {
-			fmt.Println(formatTaskSummary(task, criticalPath, availableTaskIDs))
-			for _, detail := range formatTaskDetails(task) {
-				fmt.Printf("    %s\n", detail)
-			}
+			fmt.Println(renderTimelineTaskRow(task, taskWindows[task.ID], totalHours, width, criticalTaskIDs, availableTaskIDs))
 		}
 		fmt.Println("")
 	}
+
+	doneTasks := 0
+	criticalTasksVisible := 0
+	for _, task := range filtered {
+		if task.Status == models.StatusDone {
+			doneTasks++
+		}
+		if _, ok := criticalTaskIDs[task.ID]; ok {
+			criticalTasksVisible++
+		}
+	}
+
+	renderTimelineWeekAxis(timelineBarPrefixWidth(), width, weeks)
+	fmt.Printf(
+		"%s %d/%d tasks (%0.0f%%)\n",
+		styleMuted("Progress:"),
+		doneTasks,
+		len(filtered),
+		percent(doneTasks, len(filtered)),
+	)
+	fmt.Printf(
+		"%s %d/%d visible tasks\n",
+		styleMuted("Critical path tasks:"),
+		criticalTasksVisible,
+		len(filtered),
+	)
+	fmt.Printf("%s %.1fh total span\n", styleMuted("Estimated window:"), totalHours)
+	fmt.Println()
 	return nil
 }
 
@@ -2258,6 +2350,363 @@ func timelineGroupKey(task models.Task, groupBy string) string {
 		}
 	}
 	return "unknown"
+}
+
+func renderTimelineTaskRow(
+	task models.Task,
+	position timelineTaskWindow,
+	totalHours float64,
+	width int,
+	criticalTaskIDs map[string]struct{},
+	availableTaskIDs map[string]struct{},
+) string {
+	status := timelineStatusSymbol(task, availableTaskIDs)
+	critical := " "
+	if _, isCritical := criticalTaskIDs[task.ID]; isCritical {
+		critical = timelineCriticalMarker
+	}
+	bar := renderTimelineBar(position, totalHours, width, task.Status)
+	return fmt.Sprintf(
+		"  %s %s %s %s %s",
+		timelinePadText(status, timelineStatusWidth),
+		timelinePadText(critical, timelineCriticalWidth),
+		timelinePadText(task.ID, timelineTaskIDWidth),
+		timelinePadText(task.Title, timelineTaskTitleWidth),
+		bar,
+	)
+}
+
+func renderTimelineBar(
+	position timelineTaskWindow,
+	totalHours float64,
+	width int,
+	status models.Status,
+) string {
+	if totalHours <= 0 {
+		totalHours = 1.0
+	}
+	if width <= 0 {
+		width = 1
+	}
+	start := int((position.start / totalHours) * float64(width))
+	end := int((position.end / totalHours) * float64(width))
+	if start < 0 {
+		start = 0
+	}
+	if start > width {
+		start = width
+	}
+	if end < start {
+		end = start
+	}
+	if end > width {
+		end = width
+	}
+	if end-start < 1 {
+		end = start + 1
+	}
+	if end > width {
+		end = width
+	}
+	fill := timelineBarFill(status)
+	return "│" + strings.Repeat(" ", start) + strings.Repeat(fill, end-start) + strings.Repeat(" ", width-end) + "│"
+}
+
+func renderTimelineWeekAxis(prefixLen, width, weeks int) {
+	if width <= 0 || weeks <= 0 {
+		return
+	}
+	prefix := strings.Repeat(" ", prefixLen)
+	border := fmt.Sprintf("%s└%s┘", prefix, strings.Repeat("─", width))
+	axisLen := prefixLen + width + 2
+	scale := float64(width - 1)
+	if scale <= 0 {
+		scale = 1
+	}
+	ticks := make([]rune, axisLen)
+	for i := range ticks {
+		ticks[i] = ' '
+	}
+	labels := make([]rune, axisLen)
+	for i := range labels {
+		labels[i] = ' '
+	}
+	for week := 0; week <= weeks; week++ {
+		pos := int((float64(week) / float64(weeks)) * scale)
+		tickPos := prefixLen + 1 + pos
+		if tickPos >= 0 && tickPos < len(ticks) {
+			ticks[tickPos] = '│'
+		}
+	}
+
+	labelDensity := max(1, weeks / 4)
+	marked := make([]bool, axisLen)
+	for week := 0; week <= weeks; week += labelDensity {
+		if week != 0 && week != weeks && week+labelDensity > weeks {
+			continue
+		}
+		label := fmt.Sprintf("Week %d", week)
+		labelRunes := []rune(label)
+		pos := int((float64(week) / float64(weeks)) * scale)
+		labelStart := prefixLen + 1 + pos - (len(labelRunes) / 2)
+		labelEnd := labelStart + len(labelRunes)
+		if labelEnd > len(labels) {
+			labelStart = len(labels) - len(labelRunes)
+			labelEnd = len(labels)
+		}
+		if labelStart < 0 {
+			labelStart = 0
+		}
+		overlap := false
+		for i := labelStart; i < labelEnd; i++ {
+			if marked[i] {
+				overlap = true
+				break
+			}
+		}
+		if overlap {
+			continue
+		}
+		copy(labels[labelStart:labelEnd], labelRunes)
+		for i := labelStart; i < labelEnd; i++ {
+			marked[i] = true
+		}
+	}
+	fmt.Println(border)
+	fmt.Println(string(ticks))
+	fmt.Println(string(labels))
+}
+
+func timelinePadText(text string, width int) string {
+	runes := []rune(strings.TrimSpace(text))
+	if width <= 0 {
+		return ""
+	}
+	if len(runes) > width {
+		if width == 1 {
+			return "…"
+		}
+		return string(runes[:width-1]) + "…"
+	}
+	return string(runes) + strings.Repeat(" ", width-len(runes))
+}
+
+func calculateTimelineTaskWindows(tasks []models.Task, tree models.TaskTree) map[string]timelineTaskWindow {
+	taskByID := map[string]models.Task{}
+	for _, task := range tasks {
+		if strings.TrimSpace(task.ID) != "" {
+			taskByID[task.ID] = task
+		}
+	}
+	positions := map[string]timelineTaskWindow{}
+	inFlight := map[string]bool{}
+
+	var walk func(task models.Task) float64
+	walk = func(task models.Task) float64 {
+		if cached, ok := positions[task.ID]; ok {
+			return cached.end
+		}
+		if inFlight[task.ID] {
+			window := timelineTaskWindow{
+				start: 0,
+				end:   durationHours(task.EstimateHours),
+			}
+			positions[task.ID] = window
+			return window.end
+		}
+		inFlight[task.ID] = true
+
+		maxStart := 0.0
+		for _, dep := range task.DependsOn {
+			depID, ok := timelineDependencyTaskID(dep, tasks, tree)
+			if !ok {
+				continue
+			}
+			depTask, ok := taskByID[depID]
+			if !ok {
+				continue
+			}
+			depEnd := walk(depTask)
+			if depEnd > maxStart {
+				maxStart = depEnd
+			}
+		}
+
+		if len(task.DependsOn) == 0 {
+			if prevID, ok := timelinePreviousTaskInEpic(task, taskByID, tree); ok {
+				prevTask, exists := taskByID[prevID]
+				if exists {
+					prevEnd := walk(prevTask)
+					if prevEnd > maxStart {
+						maxStart = prevEnd
+					}
+				}
+			}
+		}
+
+		start := maxStart
+		end := start + durationHours(task.EstimateHours)
+		positions[task.ID] = timelineTaskWindow{start: start, end: end}
+		inFlight[task.ID] = false
+		return end
+	}
+
+	for _, task := range tasks {
+		walk(task)
+	}
+	return positions
+}
+
+func timelineDependencyTaskID(candidate string, tasks []models.Task, tree models.TaskTree) (string, bool) {
+	target := strings.TrimSpace(candidate)
+	if target == "" {
+		return "", false
+	}
+	for _, task := range tasks {
+		if task.ID == target {
+			return task.ID, true
+		}
+	}
+	for _, task := range tasks {
+		if tree.IDsMatch(task.ID, target) || tree.IDsMatch(target, task.ID) {
+			return task.ID, true
+		}
+	}
+	return "", false
+}
+
+func timelinePreviousTaskInEpic(task models.Task, filtered map[string]models.Task, tree models.TaskTree) (string, bool) {
+	if strings.TrimSpace(task.EpicID) == "" {
+		return "", false
+	}
+	epic := findEpic(tree, task.EpicID)
+	if epic == nil {
+		return "", false
+	}
+
+	target := strings.TrimSpace(task.ID)
+	for i, sibling := range epic.Tasks {
+		if sibling.ID == target || tree.IDsMatch(sibling.ID, target) || tree.IDsMatch(target, sibling.ID) {
+			if i == 0 {
+				return "", false
+			}
+			prev := epic.Tasks[i-1]
+			if _, ok := filtered[prev.ID]; ok {
+				return prev.ID, true
+			}
+			return "", false
+		}
+	}
+	return "", false
+}
+
+func timelineAutoWeeks(totalHours float64, configured int) int {
+	if configured > 0 {
+		return configured
+	}
+	if totalHours <= 0 {
+		return 4
+	}
+	weeks := int(totalHours/40.0) + 2
+	if weeks < 4 {
+		weeks = 4
+	}
+	return weeks
+}
+
+func timelineStatusSymbol(task models.Task, availableTaskIDs map[string]struct{}) string {
+	if task.Status == models.StatusPending && strings.TrimSpace(task.ClaimedBy) == "" && len(availableTaskIDs) > 0 {
+		if _, available := availableTaskIDs[task.ID]; !available {
+			return "[~]"
+		}
+	}
+	switch task.Status {
+	case models.StatusDone:
+		return "✓"
+	case models.StatusInProgress:
+		return "→"
+	case models.StatusBlocked:
+		return "✗"
+	case models.StatusPending:
+		return "[ ]"
+	default:
+		return "?"
+	}
+}
+
+func timelineBarFill(status models.Status) string {
+	switch status {
+	case models.StatusDone:
+		return styleSuccess("█")
+	case models.StatusInProgress:
+		return styleWarning("▓")
+	case models.StatusBlocked:
+		return styleError("▒")
+	case models.StatusPending:
+		return styleSubHeader("░")
+	default:
+		return styleMuted("░")
+	}
+}
+
+func timelineGroupLabel(task models.Task, tree models.TaskTree, groupBy string) string {
+	switch strings.ToLower(strings.TrimSpace(groupBy)) {
+	case "phase":
+		if task.PhaseID == "" {
+			return "unknown"
+		}
+		if phase := tree.FindPhase(task.PhaseID); phase != nil && strings.TrimSpace(phase.Name) != "" {
+			return fmt.Sprintf("%s: %s", task.PhaseID, phase.Name)
+		}
+		return task.PhaseID
+	case "epic":
+		if task.EpicID == "" {
+			return "unknown"
+		}
+		if epic := tree.FindEpic(task.EpicID); epic != nil && strings.TrimSpace(epic.Name) != "" {
+			return fmt.Sprintf("%s: %s", task.EpicID, epic.Name)
+		}
+		return task.EpicID
+	case "milestone":
+		if task.MilestoneID == "" {
+			return "unknown"
+		}
+		if milestone := findMilestone(tree, task.MilestoneID); milestone != nil && strings.TrimSpace(milestone.Name) != "" {
+			return fmt.Sprintf("%s: %s", task.MilestoneID, milestone.Name)
+		}
+		return task.MilestoneID
+	case "status":
+		return string(task.Status)
+	default:
+		return "All"
+	}
+}
+
+func timelineBarPrefixWidth() int {
+	return 2 + timelineStatusWidth + 1 + timelineCriticalWidth + 1 + timelineTaskIDWidth + 1 + timelineTaskTitleWidth + 1
+}
+
+func durationHours(value float64) float64 {
+	if value < 0 {
+		return 0
+	}
+	if value == 0 {
+		return 1
+	}
+	return value
+}
+
+const (
+	timelineCriticalMarker = "★"
+	timelineCriticalWidth  = 2
+	timelineStatusWidth    = 4
+	timelineTaskIDWidth    = 18
+	timelineTaskTitleWidth = 28
+)
+
+type timelineTaskWindow struct {
+	start float64
+	end   float64
 }
 
 type statusCounts struct {
