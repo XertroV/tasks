@@ -210,6 +210,9 @@ def _warn_missing_task_file(task) -> bool:
     return True
 
 
+SHOW_TASK_PREVIEW_LINES = 12
+
+
 def _warn_missing_task_files(tree, limit: int = 5) -> int:
     """Warn when list output includes tasks with missing files."""
     from .data_dir import get_data_dir_name
@@ -2031,8 +2034,9 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
 
 
 @cli.command()
+@click.option("--long", "show_long", is_flag=True, help="Show the entire task file body.")
 @click.argument("path_ids", nargs=-1)
-def show(path_ids):
+def show(path_ids, show_long):
     """Show detailed information for phases, milestones, epics, or tasks.
 
     PATH_IDS can be one or more IDs like P1, P1.M01, P1.M01.E1, P1.M01.E1.T001.
@@ -2099,18 +2103,26 @@ def show(path_ids):
                     if not aux_task:
                         console.print(f"[red]Error:[/] Task not found: {path_id}")
                         raise click.Abort()
-                    _show_task(tree, path_id)
+                    console.print(
+                        f"{aux_task.id}: {aux_task.title}\nstatus={aux_task.status.value} "
+                        f"estimate={aux_task.estimate_hours}"
+                    )
                     if is_idea_id(path_id) and aux_task.status == Status.PENDING:
                         _show_idea_instructions(aux_task)
                 continue
 
             task_path = TaskPath.parse(path_id)
-            scope_tree = loader.load_scope(
-                task_path,
-                mode="metadata",
-                include_bugs=False,
-                include_ideas=False,
-            )
+            if task_path.is_task:
+                if tree is None:
+                    tree = loader.load("metadata")
+                scope_tree = tree
+            else:
+                scope_tree = loader.load_scope(
+                    task_path,
+                    mode="metadata",
+                    include_bugs=False,
+                    include_ideas=False,
+                )
             parent_path = task_path.parent()
             parent = parent_path.full_id if parent_path else None
 
@@ -2133,7 +2145,7 @@ def show(path_ids):
                 task = scope_tree.find_task(path_id)
                 if not task:
                     show_not_found("Task", path_id, parent)
-                _show_task(scope_tree, path_id)
+                _show_task(scope_tree, path_id, show_long)
 
     except ValueError as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -2225,7 +2237,7 @@ def _show_epic(tree, epic_id):
     console.print()
 
 
-def _show_task(tree, task_id):
+def _show_task(tree, task_id, show_long=False):
     """Display task details."""
     task = tree.find_task(task_id)
     if not task:
@@ -2253,10 +2265,24 @@ def _show_task(tree, task_id):
     if task_file.exists():
         with open(task_file) as f:
             content = f.read()
-        if "## Requirements" in content:
-            req_section = content.split("## Requirements")[1].split("##")[0]
-            console.print("[bold]Requirements:[/]")
-            console.print(req_section.strip())
+        parts = content.split("---\n")
+        body = ""
+        if len(parts) >= 3:
+            body = parts[2]
+        else:
+            body = content
+        lines = body.strip().splitlines()
+        if lines:
+            console.print("[bold]Body:[/]")
+            if show_long:
+                for line in lines:
+                    console.print(f"  {line}")
+            else:
+                preview_count = min(SHOW_TASK_PREVIEW_LINES, len(lines))
+                for line in lines[:preview_count]:
+                    console.print(f"  {line}")
+                if len(lines) > preview_count:
+                    console.print(f"[dim]  ... ({len(lines) - preview_count} more lines)[/]")
     else:
         _warn_missing_task_file(task)
 
