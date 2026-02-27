@@ -720,6 +720,23 @@ func TestRunClaimDoneTaskShowsCompletionTimestamp(t *testing.T) {
 	}
 }
 
+func TestRunClaimScopeFallsBackToShow(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	output, err := runInDir(t, root, "claim", "P1.M1")
+	if err != nil {
+		t.Fatalf("run claim = %v, expected nil", err)
+	}
+	assertContainsAll(t,
+		output,
+		"Warning: claim only works with task IDs.",
+		"backlog show P1.M1",
+		"P1.M1",
+	)
+}
+
 func TestRunGrabExplicitDoneTaskShowsCompletionTimestamp(t *testing.T) {
 	t.Parallel()
 

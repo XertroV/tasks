@@ -7654,53 +7654,59 @@ func runClaim(args []string) error {
 			return printUsageError(commands.CmdClaim, err)
 		}
 		task := tree.FindTask(id)
-		if task == nil {
-			return fmt.Errorf("Task not found: %s", id)
-		}
-		taskFilePath, err := resolveTaskFilePath(task.File)
-		if err != nil {
-			return err
-		}
-		if _, err := os.Stat(taskFilePath); err != nil {
-			return fmt.Errorf("Cannot claim %s because the task file is missing.", task.ID)
-		}
-		if task.Status == models.StatusDone {
-			return claimDoneError(*task)
-		}
-		if task.ClaimedBy != "" && !force {
-			return fmt.Errorf("Task %s is already claimed by %s", task.ID, task.ClaimedBy)
-		}
-		if task.Status != models.StatusPending {
-			return fmt.Errorf("Cannot claim task %s: task is %s, not pending", task.ID, task.Status)
-		}
-
-		task.Status = models.StatusInProgress
-		task.ClaimedBy = agent
-		now := time.Now().UTC()
-		task.ClaimedAt = &now
-		task.StartedAt = &now
-
-		if err := saveTaskState(*task, tree); err != nil {
-			return err
-		}
-
-		if !hasContext {
-			if err := taskcontext.SetCurrentTask(dataDir, task.ID, agent); err != nil {
+		isPrimaryTask := task != nil && !isBugLikeID(task.ID) && !isIdeaLikeID(task.ID)
+		if isPrimaryTask {
+			taskFilePath, err := resolveTaskFilePath(task.File)
+			if err != nil {
 				return err
 			}
-			hasContext = true
-		}
-
-		if len(taskIDs) == 1 {
-			renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
-		} else {
-			fmt.Printf("%s %s - %s\n", styleSuccess("✓ Claimed:"), task.ID, task.Title)
-			if !noContent {
-				for _, detail := range formatTaskDetails(*task) {
-					fmt.Printf("  %s\n", detail)
-				}
+			if _, err := os.Stat(taskFilePath); err != nil {
+				return fmt.Errorf("Cannot claim %s because the task file is missing.", task.ID)
 			}
-			printTaskFileReadCommandsForTask(dataDir, *task, !noContent)
+			if task.Status == models.StatusDone {
+				return claimDoneError(*task)
+			}
+			if task.ClaimedBy != "" && !force {
+				return fmt.Errorf("Task %s is already claimed by %s", task.ID, task.ClaimedBy)
+			}
+			if task.Status != models.StatusPending {
+				return fmt.Errorf("Cannot claim task %s: task is %s, not pending", task.ID, task.Status)
+			}
+
+			task.Status = models.StatusInProgress
+			task.ClaimedBy = agent
+			now := time.Now().UTC()
+			task.ClaimedAt = &now
+			task.StartedAt = &now
+
+			if err := saveTaskState(*task, tree); err != nil {
+				return err
+			}
+
+			if !hasContext {
+				if err := taskcontext.SetCurrentTask(dataDir, task.ID, agent); err != nil {
+					return err
+				}
+				hasContext = true
+			}
+
+			if len(taskIDs) == 1 {
+				renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
+			} else {
+				fmt.Printf("%s %s - %s\n", styleSuccess("✓ Claimed:"), task.ID, task.Title)
+				if !noContent {
+					for _, detail := range formatTaskDetails(*task) {
+						fmt.Printf("  %s\n", detail)
+					}
+				}
+				printTaskFileReadCommandsForTask(dataDir, *task, !noContent)
+			}
+			continue
+		}
+		fmt.Println(styleWarning("Warning: claim only works with task IDs."))
+		fmt.Printf("Outputting `show` command instead: `backlog show %s`\n", id)
+		if err := runShow([]string{id}); err != nil {
+			return err
 		}
 	}
 	return nil

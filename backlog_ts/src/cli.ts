@@ -1727,6 +1727,13 @@ function showNotFound(itemType: string, itemId: string, scopeHint?: string): nev
   process.exit(1);
 }
 
+function findClaimableTask(tree: TaskTree, id: string): Task | undefined {
+  const task = findTask(tree, id);
+  if (!task) return undefined;
+  if (isBugId(task.id) || isIdeaId(task.id)) return undefined;
+  return task;
+}
+
 function taskCount(tasks: Array<{ status: Status }>): {
   done: number;
   inProgress: number;
@@ -1963,8 +1970,13 @@ async function cmdClaim(args: string[]): Promise<void> {
   const showDetails = taskIds.length === 1;
   let hasSetCurrent = false;
   for (const taskId of taskIds) {
-    const task = findTask(tree, taskId);
-    if (!task) textError(`Task not found: ${taskId}`);
+    const task = findClaimableTask(tree, taskId);
+    if (!task) {
+      console.log(pc.yellow("Warning: claim only works with task IDs."));
+      console.log(pc.yellow(`Outputting \`show\` command instead: \`backlog show ${taskId}\``));
+      await cmdShow([taskId]);
+      continue;
+    }
     if (isTaskFileMissing(task)) textError(`Cannot claim ${task.id} because the task file is missing.`);
 
     try {

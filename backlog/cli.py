@@ -2694,8 +2694,24 @@ def claim(task_ids, agent, force, no_content):
             task = tree.find_task(task_id)
 
             if not task:
-                console.print(f"[red]Error:[/] Task not found: {task_id}")
-                raise click.Abort()
+                console.print(
+                    "[yellow]Warning:[/] claim only works with task IDs."
+                )
+                console.print(
+                    f"[yellow]Outputting `show` command instead: `backlog show {task_id}`[/]"
+                )
+                show((task_id,))
+                continue
+
+            if is_bug_id(task.id) or is_idea_id(task.id):
+                console.print(
+                    "[yellow]Warning:[/] claim only works with task IDs."
+                )
+                console.print(
+                    f"[yellow]Outputting `show` command instead: `backlog show {task_id}`[/]"
+                )
+                show((task_id,))
+                continue
 
             if _warn_missing_task_file(task):
                 console.print(

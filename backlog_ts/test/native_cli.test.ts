@@ -334,6 +334,17 @@ describe("native cli", () => {
     expect(taskTwo).toContain("status: in_progress");
   });
 
+  test("claiming scoped ids falls back to show output", () => {
+    root = setupFixture();
+    const p = run(["claim", "P1.M1", "--agent", "agent-z"], root);
+
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Warning: claim only works with task IDs.");
+    expect(out).toContain("Outputting `show` command instead: `backlog show P1.M1`");
+    expect(out).toContain("P1.M1");
+  });
+
   test("done refuses to complete a non-in-progress task", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
@@ -701,7 +712,7 @@ describe("native cli", () => {
     p = run(["bug", "--title", "bug three", "--simple"], root);
     expect(p.exitCode).toBe(0);
 
-    p = run(["claim", "B001", "--agent", "agent-cycle"], root);
+    p = run(["grab", "B001", "--agent", "agent-cycle", "--no-content"], root);
     expect(p.exitCode).toBe(0);
     p = run(["cycle", "B001", "--agent", "agent-cycle", "--no-content"], root);
     expect(p.exitCode).toBe(0);

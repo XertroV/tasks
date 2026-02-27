@@ -384,6 +384,19 @@ class TestClaimCommand:
         assert "status: in_progress" in task_one.read_text()
         assert "status: in_progress" in task_two.read_text()
 
+    def test_claim_non_task_id_falls_back_to_show(self, runner, tmp_tasks_dir):
+        """claiming non-task IDs should render show output instead."""
+        bug_file = create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+
+        result = runner.invoke(cli, ["claim", "B001", "--agent=test-agent"])
+
+        assert result.exit_code == 0
+        assert "Warning: claim only works with task IDs." in result.output
+        assert "Outputting `show` command instead: `backlog show B001`" in result.output
+        assert "Task: B001" in result.output
+        assert "Title: Critical Bug" in result.output
+        assert "status: pending" in bug_file.read_text()
+
     def test_claim_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
         """claim should warn when a task entry exists but its file is missing."""
         task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")

@@ -358,6 +358,41 @@ func TestRunParityUXSemanticAnchors(t *testing.T) {
 		}
 	})
 
+	t.Run("claim-scope-falls-back-to-show", func(t *testing.T) {
+		goRoot := t.TempDir()
+		pyRoot := t.TempDir()
+		tsRoot := t.TempDir()
+
+		copyFixture(t, template, filepath.Join(goRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(pyRoot, ".tasks"))
+		copyFixture(t, template, filepath.Join(tsRoot, ".tasks"))
+
+		command := []string{"claim", "P1.M1"}
+		goResult := runGoCommandInDir(t, goRoot, command...)
+		pyResult, runErr := runCommand(pythonBinary, []string{filepath.Join(projectRoot, "backlog.py")}, command, pyRoot)
+		if runErr != nil {
+			t.Fatalf("python %s = %v", strings.Join(command, " "), runErr)
+		}
+		tsResult, runErr := runCommand(bunBinary, []string{tsBundle}, command, tsRoot)
+		if runErr != nil {
+			t.Fatalf("bun %s %s = %v", tsBundle, strings.Join(command, " "), runErr)
+		}
+
+		for _, impl := range []struct {
+			name   string
+			result parityCommandResult
+		}{
+			{name: "go", result: goResult},
+			{name: "python", result: pyResult},
+			{name: "typescript", result: tsResult},
+		} {
+			if impl.result.Code != 0 {
+				t.Fatalf("%s expected zero exit for %q", impl.name, strings.Join(command, " "))
+			}
+			assertContainsAllFragments(t, impl.name, impl.result.Stdout, "claim only works with tasks", "show P1.M1")
+		}
+	})
+
 	t.Run("help-mentions-core-commands-and-alias-discoverability", func(t *testing.T) {
 		goRoot := t.TempDir()
 		pyRoot := t.TempDir()
