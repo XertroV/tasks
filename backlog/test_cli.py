@@ -2187,6 +2187,30 @@ def test_show_fixed_task(runner, tmp_tasks_dir):
     assert "status=done" in result.output
 
 
+def test_show_task_preview_uses_default_line_limit(runner, tmp_tasks_dir):
+    """show should display only a preview of task body by default."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+    result = runner.invoke(cli, ["show", "P1.M1.E1.T001"])
+    assert result.exit_code == 0
+    assert "Body:" in result.output
+    assert "# Test Task" in result.output
+    assert "- Acceptance criterion 2" not in result.output
+    assert "... (2 more lines)" in result.output
+
+
+def test_show_task_long_prints_entire_body(runner, tmp_tasks_dir):
+    """show --long should print the full task body."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+    result = runner.invoke(cli, ["show", "P1.M1.E1.T001", "--long"])
+    assert result.exit_code == 0
+    assert "Body:" in result.output
+    assert "# Test Task" in result.output
+    assert "- Acceptance criterion 2" in result.output
+    assert "... (2 more lines)" not in result.output
+
+
 def test_show_phase_not_found_shows_tree_hint(runner, tmp_tasks_dir):
     """show should show a tree hint when a phase is not found."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")

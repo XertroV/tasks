@@ -227,7 +227,7 @@ func defaultCommandDescriptions() map[string]string {
 		commands.CmdLock:          "Lock a phase/milestone/epic.",
 		commands.CmdLog:           "Show recent activity events.",
 		commands.CmdLs:            "Alias of list for scoped summaries.",
-		commands.CmdMigrate:       "Migrate .tasks/ data to .backlog/ layout.",
+		commands.CmdMigrate:       "Migrate .backlog/ data to .backlog/ layout.",
 		commands.CmdMove:          "Move a task/epic/milestone to a new parent.",
 		commands.CmdNext:          "Show next available task on critical path.",
 		commands.CmdPreview:       "Preview upcoming work with grab suggestions.",

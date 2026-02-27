@@ -287,8 +287,9 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"show": {
 		summary: "Show detailed information for one or more backlog IDs.",
-		usage:   "backlog show [PATH_ID ...]",
+		usage:   "backlog show [PATH_ID ...] [--long]",
 		options: []string{
+			"--long",
 			"PATH_ID supports phase/milestone/epic/task IDs (for example P1, P1.M1, P1.M1.E1, P1.M1.E1.T001)",
 			"When omitted, falls back to current working task",
 		},
@@ -849,7 +850,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdList, commands.CmdLs:
 		return runList(command, payload)
 	case commands.CmdShow:
-		return runShow(payload, true)
+		return runShow(payload, true, parseFlag(payload, "--long"))
 	case commands.CmdGrab:
 		return runGrab(payload)
 	case commands.CmdNext:
@@ -3526,19 +3527,15 @@ func warnMissingTaskFiles(tree models.TaskTree, dataDir string) {
 	fmt.Println()
 }
 
-func runShow(args []string, showNext bool) error {
+func runShow(args []string, showNext bool, showLong bool) error {
 	dataDir, err := ensureDataRoot()
 	if err != nil {
 		return err
 	}
-	for _, raw := range args {
-		if strings.HasPrefix(raw, "--") {
-			if err := validateScopeOrID(raw); err != nil {
-				return err
-			}
-		}
+	if err := validateAllowedFlagsForUsage(commands.CmdShow, args, map[string]bool{"--long": true}); err != nil {
+		return err
 	}
-	ids := positionalArgs(args, map[string]bool{})
+	ids := positionalArgs(args, map[string]bool{"--long": true})
 	if len(ids) == 0 {
 		ctx, err := taskcontext.GetCurrentTask(dataDir)
 		if err != nil {
@@ -3578,7 +3575,7 @@ func runShow(args []string, showNext bool) error {
 			return fmt.Errorf("Invalid path format: %s", id)
 		}
 
-		if err := showScopedItem(tree, id, &scopePath, dataDir, showNext); err != nil {
+		if err := showScopedItem(tree, id, &scopePath, dataDir, showNext, showLong); err != nil {
 			return err
 		}
 	}
@@ -4635,7 +4632,7 @@ func runIdea(args []string) error {
 		"tags":           []string{"idea", "planning"},
 	}
 	body := fmt.Sprintf(
-		"\n# Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task %s` to decompose this idea into actionable work.\n- Confirm placement in the current `.tasks` hierarchy before creating work items.\n\n## Ingest Plan Into .tasks\n\n- Create implementation items with `tasks add` and related hierarchy commands (`tasks add-epic`, `tasks add-milestone`, `tasks add-phase`) as needed.\n- Create follow-up defects with `tasks bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete `.tasks` work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
+		"\n# Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task %s` to decompose this idea into actionable work.\n- Confirm placement in the current backlog hierarchy before creating work items.\n\n## Ingest Plan Into backlog\n\n- Create implementation items with `backlog add` and related hierarchy commands (`backlog add-epic`, `backlog add-milestone`, `backlog add-phase`) as needed.\n- Create follow-up defects with `backlog bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete backlog work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
 		title,
 		ideaID,
 	)
@@ -7405,7 +7402,14 @@ func renderBugOrIdeaDetail(task models.Task, showInstructions bool, dataDir stri
 	}
 }
 
-func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath, dataDir string, showNext bool) error {
+func showScopedItem(
+	tree models.TaskTree,
+	id string,
+	scopePath *models.TaskPath,
+	dataDir string,
+	showNext bool,
+	showLong bool,
+) error {
 	calculator := critical_path.NewCriticalPathCalculator(tree, map[string]float64{})
 	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 
@@ -7501,7 +7505,7 @@ func showScopedItem(tree models.TaskTree, id string, scopePath *models.TaskPath,
 		if task == nil {
 			return showNotFound(tree, "Task", id, scopeHint)
 		}
-		renderTaskDetail(*task, dataDir, showNext)
+		renderTaskDetail(*task, dataDir, showNext, showLong)
 		return nil
 	default:
 		return showNotFound(tree, "Task", id, scopeHint)
@@ -7720,7 +7724,7 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 	return nil
 }
 
-func renderTaskDetail(task models.Task, dataDir string, showNext bool) {
+func renderTaskDetail(task models.Task, dataDir string, showNext bool, showLong bool) {
 	fmt.Printf("%s: %s\n", styleSuccess("Task"), task.ID)
 	fmt.Printf("%s: %s\n", styleSubHeader("Title"), task.Title)
 	fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
@@ -7755,11 +7759,14 @@ func renderTaskDetail(task models.Task, dataDir string, showNext bool) {
 		if body != "" {
 			lines := strings.Split(body, "\n")
 			fmt.Printf("%s\n", styleSubHeader("Preview"))
-			limit := min(8, len(lines))
+			limit := len(lines)
+			if !showLong {
+				limit = min(taskFileReadPreviewLines, len(lines))
+			}
 			for i := 0; i < limit; i++ {
 				fmt.Printf("  %s\n", lines[i])
 			}
-			if len(lines) > limit {
+			if !showLong && len(lines) > limit {
 				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-limit)))
 			}
 		}
@@ -7918,7 +7925,7 @@ func runClaim(args []string) error {
 		}
 		fmt.Println(styleWarning("Warning: claim only works with task IDs."))
 		fmt.Printf("Showing `backlog show %s` for context.\n", id)
-		if err := runShow([]string{id}, false); err != nil {
+		if err := runShow([]string{id}, false, false); err != nil {
 			return err
 		}
 	}

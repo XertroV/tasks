@@ -1102,7 +1102,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     const out = p.stdout.toString();
     expect(out).toContain("Command Help: backlog show");
-    expect(out).toContain("Usage: backlog show [PATH_ID ...]");
+    expect(out).toContain("Usage: backlog show [PATH_ID ...] [--long]");
   });
 
   test("all commands provide non-thin --help output", () => {
@@ -2045,6 +2045,74 @@ tags: []
     expect(p.exitCode).not.toBe(0);
     expect(output).toContain("Task not found: P1.M1.E1.T999");
     expect(output).toContain("Tip: Use 'backlog tree P1.M1.E1' to verify available IDs.");
+  });
+
+  test("show task previews body and truncates by default", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const content = readFileSync(taskPath, "utf8");
+    const markerIndex = content.indexOf("---\n", 4);
+    expect(markerIndex).toBeGreaterThanOrEqual(0);
+    const frontmatterBlock = content.slice(0, markerIndex + 4);
+    const previewBody = [
+      "# A",
+      "",
+      "Line 1",
+      "Line 2",
+      "Line 3",
+      "Line 4",
+      "Line 5",
+      "Line 6",
+      "Line 7",
+      "Line 8",
+      "Line 9",
+      "Line 10",
+      "Line 11",
+      "Line 12",
+    ].join("\n");
+    writeFileSync(taskPath, `${frontmatterBlock}${previewBody}\n`);
+
+    const p = run(["show", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    const output = p.stdout.toString();
+    expect(output).toContain("Body:");
+    expect(output).toContain("Line 10");
+    expect(output).not.toContain("Line 11");
+    expect(output).toContain("  ... (2 more lines)");
+  });
+
+  test("show --long prints the entire task body", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const content = readFileSync(taskPath, "utf8");
+    const markerIndex = content.indexOf("---\n", 4);
+    expect(markerIndex).toBeGreaterThanOrEqual(0);
+    const frontmatterBlock = content.slice(0, markerIndex + 4);
+    const previewBody = [
+      "# A",
+      "",
+      "Line 1",
+      "Line 2",
+      "Line 3",
+      "Line 4",
+      "Line 5",
+      "Line 6",
+      "Line 7",
+      "Line 8",
+      "Line 9",
+      "Line 10",
+      "Line 11",
+      "Line 12",
+    ].join("\n");
+    writeFileSync(taskPath, `${frontmatterBlock}${previewBody}\n`);
+
+    const p = run(["show", "P1.M1.E1.T001", "--long"], root);
+    expect(p.exitCode).toBe(0);
+    const output = p.stdout.toString();
+    expect(output).toContain("Body:");
+    expect(output).toContain("Line 11");
+    expect(output).toContain("Line 12");
+    expect(output).not.toContain("  ... (2 more lines)");
   });
 
   test("show on non-pending idea hides Instructions section", () => {
