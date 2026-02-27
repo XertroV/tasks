@@ -1937,6 +1937,29 @@ func TestRunLsAcceptsMultipleScopesAndFailsStrictly(t *testing.T) {
 	}
 }
 
+func TestRunLsRootIncludesBugsIdeasAndFixesSummaries(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+	if _, err := runInDir(t, root, "fixed", "--title", "restore stale auth token", "--at", "2026-02-20T12:00:00Z"); err != nil {
+		t.Fatalf("run fixed = %v, expected nil", err)
+	}
+
+	output, err := runInDir(t, root, "ls")
+	if err != nil {
+		t.Fatalf("run ls = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Bugs (0/1)") {
+		t.Fatalf("output = %q, expected bug summary", output)
+	}
+	if !strings.Contains(output, "Ideas (0/1)") {
+		t.Fatalf("output = %q, expected idea summary", output)
+	}
+	if !strings.Contains(output, "Fixes (1/1)") {
+		t.Fatalf("output = %q, expected fixed summary", output)
+	}
+}
+
 func TestRunListWarnsMissingTaskFiles(t *testing.T) {
 	t.Parallel()
 
@@ -2963,7 +2986,7 @@ func TestRunReportProgressTextRendersSections(t *testing.T) {
 	if err != nil {
 		t.Fatalf("run report progress = %v, expected nil", err)
 	}
-	assertContainsAll(t, output, "Progress Report", "Overall", "Auxiliary", "Phases")
+	assertContainsAll(t, output, "Progress Report", "Overall", "Auxiliary", "Phases", "All Bugs", "All Ideas")
 }
 
 func TestRunListAvailableTextRendersHeaderAndLegend(t *testing.T) {

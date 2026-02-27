@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B012
+priority: high
+status: pending
+tags: []
+title: 'go client: show doesn''t print out file contents or preview at all -- is that expected?'
+---
+
+go client: show doesn't print out file contents or preview at all -- is that expected?

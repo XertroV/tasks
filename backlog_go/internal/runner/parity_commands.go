@@ -835,21 +835,31 @@ func runReportProgress(args []string) error {
 	fmt.Printf("  %s: %d tasks | ~%.1fh remaining\n", styleSubHeader("Total"), payload.Overall.Total, payload.Overall.RemainingHours)
 
 	fmt.Printf("\n%s\n", styleSubHeader("Auxiliary"))
-	fmt.Printf("  %s Bugs: %s %5.1f%% (%d/%d)  ~%.1fh remaining\n",
-		auxStatusMarker(payload.Auxiliary.Bugs.Total, payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.InProgress),
+	bugsPct := percent(payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.Total)
+	fmt.Printf("  %s %s All Bugs\n", auxStatusMarker(payload.Auxiliary.Bugs.Total, payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.InProgress), styleSubHeader("Bugs"))
+	fmt.Printf("      %s %5.1f%% (%d/%d)",
 		styleProgressBar(payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.Total),
-		percent(payload.Auxiliary.Bugs.Done, payload.Auxiliary.Bugs.Total),
+		bugsPct,
 		payload.Auxiliary.Bugs.Done,
 		payload.Auxiliary.Bugs.Total,
-		payload.Auxiliary.Bugs.RemainingHours,
 	)
-	fmt.Printf("  %s Ideas: %s %5.1f%% (%d/%d)\n",
-		auxStatusMarker(payload.Auxiliary.Ideas.Total, payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.InProgress),
+	if payload.Auxiliary.Bugs.RemainingHours > 0 {
+		fmt.Printf("  ~%.1fh remaining", payload.Auxiliary.Bugs.RemainingHours)
+	}
+	fmt.Println("")
+
+	ideasPct := percent(payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.Total)
+	fmt.Printf("  %s %s All Ideas\n", auxStatusMarker(payload.Auxiliary.Ideas.Total, payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.InProgress), styleSubHeader("Ideas"))
+	fmt.Printf("      %s %5.1f%% (%d/%d)",
 		styleProgressBar(payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.Total),
-		percent(payload.Auxiliary.Ideas.Done, payload.Auxiliary.Ideas.Total),
+		ideasPct,
 		payload.Auxiliary.Ideas.Done,
 		payload.Auxiliary.Ideas.Total,
 	)
+	if payload.Auxiliary.Ideas.RemainingHours > 0 {
+		fmt.Printf("  ~%.1fh remaining", payload.Auxiliary.Ideas.RemainingHours)
+	}
+	fmt.Println("")
 
 	fmt.Printf("\n%s\n", styleSubHeader("Phases"))
 	fmt.Printf("%s\n", styleMuted("Legend: ✓ complete | → in progress | · pending"))
