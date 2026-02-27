@@ -2133,14 +2133,26 @@ def show(path_ids, show_long):
                 _show_phase(scope_tree, path_id)
             elif task_path.is_milestone:
                 milestone = scope_tree.find_milestone(path_id)
+                display_tree = scope_tree
+                if not milestone:
+                    if tree is None:
+                        tree = loader.load("metadata")
+                    display_tree = tree
+                    milestone = display_tree.find_milestone(path_id)
                 if not milestone:
                     show_not_found("Milestone", path_id, parent)
-                _show_milestone(scope_tree, path_id)
+                _show_milestone(display_tree, milestone.id)
             elif task_path.is_epic:
                 epic = scope_tree.find_epic(path_id)
+                display_tree = scope_tree
+                if not epic:
+                    if tree is None:
+                        tree = loader.load("metadata")
+                    display_tree = tree
+                    epic = display_tree.find_epic(path_id)
                 if not epic:
                     show_not_found("Epic", path_id, parent)
-                _show_epic(scope_tree, path_id)
+                _show_epic(display_tree, epic.id)
             else:
                 task = scope_tree.find_task(path_id)
                 if not task:
@@ -2150,6 +2162,10 @@ def show(path_ids, show_long):
     except ValueError as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
+
+
+def _sum_task_estimate_hours(tasks):
+    return sum(task.estimate_hours for task in tasks)
 
 
 def _show_phase(tree, phase_id):
@@ -2166,6 +2182,9 @@ def _show_phase(tree, phase_id):
     console.print(f"[bold]Weeks:[/] {phase.weeks}")
     console.print(f"[bold]Estimate:[/] {phase.estimate_hours} hours")
     console.print(f"[bold]Priority:[/] {phase.priority.value}")
+    console.print(
+        f"[bold]Total Duration:[/] {_sum_task_estimate_hours(task for milestone in phase.milestones for epic in milestone.epics for task in epic.tasks):.2f} hours"
+    )
     console.print(
         f"\n[bold]Progress:[/] {stats['done']}/{stats['total_tasks']} tasks done"
     )
@@ -2193,6 +2212,9 @@ def _show_milestone(tree, milestone_id):
     console.print(f"[bold]Status:[/] {milestone.status.value}")
     console.print(f"[bold]Estimate:[/] {milestone.estimate_hours} hours")
     console.print(
+        f"[bold]Total Duration:[/] {_sum_task_estimate_hours(task for epic in milestone.epics for task in epic.tasks):.2f} hours"
+    )
+    console.print(
         f"\n[bold]Progress:[/] {stats['done']}/{stats['total_tasks']} tasks done"
     )
 
@@ -2218,6 +2240,9 @@ def _show_epic(tree, epic_id):
     console.print(f"[bold]Path:[/] {format_epic_path(tree, epic)}")
     console.print(f"[bold]Status:[/] {epic.status.value}")
     console.print(f"[bold]Estimate:[/] {epic.estimate_hours} hours")
+    console.print(
+        f"[bold]Total Duration:[/] {_sum_task_estimate_hours(epic.tasks):.2f} hours"
+    )
     console.print(f"\n[bold]Progress:[/] {stats['done']}/{stats['total']} tasks done")
 
     console.print(f"\n[bold]Tasks ({len(epic.tasks)}):[/]")

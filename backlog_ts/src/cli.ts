@@ -637,8 +637,16 @@ function calculateTaskStats(tasks: Task[]): { done: number; total: number } {
   };
 }
 
+function calculateTaskEstimateHours(tasks: Task[]): number {
+  return tasks.reduce((acc, task) => acc + task.estimateHours, 0);
+}
+
 function getEpicStats(epic: Epic): { done: number; total: number } {
   return calculateTaskStats(epic.tasks);
+}
+
+function getEpicTotalEstimateHours(epic: Epic): number {
+  return calculateTaskEstimateHours(epic.tasks);
 }
 
 function getMilestoneStats(milestone: Milestone): { done: number; total: number } {
@@ -646,9 +654,27 @@ function getMilestoneStats(milestone: Milestone): { done: number; total: number 
   return calculateTaskStats(tasks);
 }
 
+function getMilestoneTotalEstimateHours(milestone: Milestone): number {
+  const tasks = milestone.epics.flatMap((e) => e.tasks);
+  return calculateTaskEstimateHours(tasks);
+}
+
 function getPhaseStats(phase: Phase): { done: number; total: number } {
   const tasks = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
   return calculateTaskStats(tasks);
+}
+
+function getPhaseTotalEstimateHours(phase: Phase): number {
+  const tasks = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
+  return calculateTaskEstimateHours(tasks);
+}
+
+function findMilestoneByScopedId(scopeTree: TaskTree, id: string): Milestone | undefined {
+  return findMilestone(scopeTree, id);
+}
+
+function findEpicByScopedId(scopeTree: TaskTree, id: string): Epic | undefined {
+  return findEpic(scopeTree, id);
 }
 
 function makeProgressBar(done: number, total: number, width = 20): string {
@@ -1704,6 +1730,7 @@ async function cmdShow(args: string[]): Promise<void> {
   );
   const loader = new TaskLoader();
   let tree: TaskTree | undefined = undefined;
+  let fullTree: TaskTree | undefined = undefined;
   let idList = ids;
   if (!ids.length) {
     const current = await getCurrentTaskId();
@@ -1746,23 +1773,27 @@ async function cmdShow(args: string[]): Promise<void> {
     const scopeTree = path.isTask
       ? (tree ?? (tree = await loader.load("metadata", false, false)))
       : await loader.loadScope(id, "metadata", false, false, false);
+    const searchTree = fullTree ?? (fullTree = await loader.load("metadata", false, false));
 
     if (path.isPhase) {
       const phase = findPhase(scopeTree, id);
       if (!phase) showNotFound("Phase", id, scopeHint);
       console.log(`${phase.id} ${phase.name}`);
+      console.log(`Total Duration: ${getPhaseTotalEstimateHours(phase).toFixed(2)}h`);
       continue;
     }
     if (path.isMilestone) {
-      const m = findMilestone(scopeTree, id);
+      const m = findMilestoneByScopedId(searchTree, id);
       if (!m) showNotFound("Milestone", id, scopeHint);
       console.log(`${m.id} ${m.name}`);
+      console.log(`Total Duration: ${getMilestoneTotalEstimateHours(m).toFixed(2)}h`);
       continue;
     }
     if (path.isEpic) {
-      const e = findEpic(scopeTree, id);
+      const e = findEpicByScopedId(searchTree, id);
       if (!e) showNotFound("Epic", id, scopeHint);
       console.log(`${e.id} ${e.name}`);
+      console.log(`Total Duration: ${getEpicTotalEstimateHours(e).toFixed(2)}h`);
       continue;
     }
     const t = findTask(scopeTree, id);

@@ -1451,6 +1451,54 @@ func TestRunShowTaskLongPrintsFullBody(t *testing.T) {
 	}
 }
 
+func TestRunShowPhaseDisplaysTotalDuration(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "show", "P1")
+	if err != nil {
+		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Total Duration:") {
+		t.Fatalf("show output = %q, expected total duration label", output)
+	}
+	if !strings.Contains(output, "2.00h") {
+		t.Fatalf("show output = %q, expected 2.00h total duration", output)
+	}
+}
+
+func TestRunShowMilestoneDisplaysTotalDuration(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "show", "P1.M1")
+	if err != nil {
+		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Total Duration:") {
+		t.Fatalf("show output = %q, expected total duration label", output)
+	}
+	if !strings.Contains(output, "2.00h") {
+		t.Fatalf("show output = %q, expected 2.00h total duration", output)
+	}
+}
+
+func TestRunShowEpicDisplaysTotalDuration(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "show", "P1.M1.E1")
+	if err != nil {
+		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Total Duration:") {
+		t.Fatalf("show output = %q, expected total duration label", output)
+	}
+	if !strings.Contains(output, "2.00h") {
+		t.Fatalf("show output = %q, expected 2.00h total duration", output)
+	}
+}
+
 func TestRunShowNoTaskCurrentTaskUnavailable(t *testing.T) {
 	t.Parallel()
 

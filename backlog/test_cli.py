@@ -2211,6 +2211,39 @@ def test_show_task_long_prints_entire_body(runner, tmp_tasks_dir):
     assert "... (2 more lines)" not in result.output
 
 
+def test_show_phase_displays_total_duration(runner, tmp_tasks_dir):
+    """show on a phase should include total task duration."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task Two")
+
+    result = runner.invoke(cli, ["show", "P1"])
+    assert result.exit_code == 0
+    assert "Total Duration:" in result.output
+    assert "4.00 hours" in result.output
+
+
+def test_show_milestone_displays_total_duration(runner, tmp_tasks_dir):
+    """show on a milestone should include total task duration."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task Two")
+
+    result = runner.invoke(cli, ["show", "P1.M1"])
+    assert result.exit_code == 0
+    assert "Total Duration:" in result.output
+    assert "4.00 hours" in result.output
+
+
+def test_show_epic_displays_total_duration(runner, tmp_tasks_dir):
+    """show on an epic should include total task duration."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task Two")
+
+    result = runner.invoke(cli, ["show", "P1.M1.E1"])
+    assert result.exit_code == 0
+    assert "Total Duration:" in result.output
+    assert "4.00 hours" in result.output
+
+
 def test_show_phase_not_found_shows_tree_hint(runner, tmp_tasks_dir):
     """show should show a tree hint when a phase is not found."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")

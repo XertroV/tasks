@@ -6309,6 +6309,7 @@ type taskStats struct {
 	total      int
 	inProgress int
 	blocked    int
+	totalHours float64
 }
 
 type syncTaskStats struct {
@@ -6496,6 +6497,7 @@ func parsePhaseTaskStats(items []models.Task) taskStats {
 		case models.StatusBlocked:
 			stats.blocked++
 		}
+		stats.totalHours += task.EstimateHours
 	}
 	return stats
 }
@@ -7437,6 +7439,7 @@ func showScopedItem(
 		fmt.Printf("%s: %s\n", styleSuccess(phase.ID), styleSubHeader(phase.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(phase.Status)))
 		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		fmt.Printf("%s: %.2fh\n", styleSubHeader("Total Duration"), stats.totalHours)
 		if len(phase.Milestones) > 0 {
 			fmt.Printf("%s\n", styleSubHeader("Milestones"))
 			limit := min(8, len(phase.Milestones))
@@ -7462,6 +7465,7 @@ func showScopedItem(
 		fmt.Printf("%s: %s\n", styleSuccess(milestone.ID), styleSubHeader(milestone.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(milestone.Status)))
 		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		fmt.Printf("%s: %.2fh\n", styleSubHeader("Total Duration"), stats.totalHours)
 		if len(milestone.Epics) > 0 {
 			fmt.Printf("%s\n", styleSubHeader("Epics"))
 			limit := min(8, len(milestone.Epics))
@@ -7487,6 +7491,7 @@ func showScopedItem(
 		fmt.Printf("%s: %s\n", styleSuccess(epic.ID), styleSubHeader(epic.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(epic.Status)))
 		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		fmt.Printf("%s: %.2fh\n", styleSubHeader("Total Duration"), stats.totalHours)
 		if len(epic.Tasks) > 0 {
 			fmt.Printf("%s\n", styleSubHeader("Tasks"))
 			limit := min(10, len(epic.Tasks))

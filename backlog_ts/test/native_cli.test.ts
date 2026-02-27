@@ -2047,6 +2047,27 @@ tags: []
     expect(output).toContain("Tip: Use 'backlog tree P1.M1.E1' to verify available IDs.");
   });
 
+  test("show phase displays total duration", () => {
+    root = setupFixture();
+    const p = run(["show", "P1"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Total Duration: 3.00h");
+  });
+
+  test("show milestone displays total duration", () => {
+    root = setupFixture();
+    const p = run(["show", "P1.M1"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Total Duration: 3.00h");
+  });
+
+  test("show epic displays total duration", () => {
+    root = setupFixture();
+    const p = run(["show", "P1.M1.E1"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Total Duration: 3.00h");
+  });
+
   test("show task previews body and truncates by default", () => {
     root = setupFixture();
     const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
