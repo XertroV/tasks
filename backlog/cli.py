@@ -2402,20 +2402,30 @@ def ls(scopes):
     """
     try:
         loader = TaskLoader()
-        tree = loader.load("metadata", include_bugs=False, include_ideas=False)
+        include_aux_items = not bool(scopes)
+        tree = loader.load(
+            "metadata", include_bugs=include_aux_items, include_ideas=include_aux_items
+        )
 
         if not scopes:
             if not tree.phases:
                 console.print("No phases found.")
-                return
-            for phase in tree.phases:
-                stats = phase.stats
-                console.print(
-                    f"{phase.id}: {phase.name} "
-                    f"[{phase.status.value}] "
-                    f"{stats['done']}/{stats['total_tasks']} tasks done "
-                    f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
-                )
+            else:
+                for phase in tree.phases:
+                    stats = phase.stats
+                    console.print(
+                        f"{phase.id}: {phase.name} "
+                        f"[{phase.status.value}] "
+                        f"{stats['done']}/{stats['total_tasks']} tasks done "
+                        f"(in_progress={stats['in_progress']}, blocked={stats['blocked']})"
+                    )
+
+            bugs_done = sum(1 for bug in tree.bugs if bug.status == Status.DONE)
+            ideas_done = sum(1 for idea in tree.ideas if idea.status == Status.DONE)
+            fixes_done, fixes_total = _summarize_fixed_tasks(loader)
+            console.print(f"Bugs ({bugs_done}/{len(tree.bugs)})")
+            console.print(f"Ideas ({ideas_done}/{len(tree.ideas)})")
+            console.print(f"Fixes ({fixes_done}/{fixes_total})")
             return
 
         for scope in scopes:
@@ -2461,6 +2471,58 @@ def _show_ls_task_summary(task):
         console.print("  (unavailable)")
     console.print(f"Body length: {len(body)}")
     console.print(f"Run 'backlog show {task.id}' for full details.")
+
+
+def _summarize_fixed_tasks(loader):
+    """Summarize fixed tasks as a done/total count."""
+    fixes_index_path = loader.tasks_dir / "fixes" / "index.yaml"
+    if not fixes_index_path.exists():
+        return (0, 0)
+
+    try:
+        raw_index = yaml.safe_load(fixes_index_path.read_text()) or {}
+        raw_fixes = raw_index.get("fixes") if isinstance(raw_index, dict) else None
+        if not isinstance(raw_fixes, type([])):
+            return (0, 0)
+    except Exception:
+        return (0, 0)
+
+    done = 0
+    total = 0
+    for entry in raw_fixes:
+        if not isinstance(entry, dict):
+            continue
+        relative_file = str(entry.get("file", "")).strip()
+        if not relative_file:
+            continue
+
+        fix_path = loader.tasks_dir / "fixes" / relative_file
+        if not fix_path.exists():
+            continue
+
+        try:
+            fix_content = fix_path.read_text()
+            parts = fix_content.split("---\n", 2)
+            if len(parts) < 3:
+                continue
+            frontmatter = yaml.safe_load(parts[1]) or {}
+        except Exception:
+            continue
+        if not isinstance(frontmatter, dict):
+            continue
+
+        total += 1
+        status = (
+            str(frontmatter.get("status", ""))
+            .strip()
+            .lower()
+            .replace("-", "_")
+            .replace(" ", "_")
+        )
+        if status in {"done", "complete", "completed"}:
+            done += 1
+
+    return (done, total)
 
 
 # ============================================================================

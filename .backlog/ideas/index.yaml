@@ -7,6 +7,6 @@ ideas:
       file: I002-help.todo
       id: I002
       priority: medium
-      status: in_progress
+      status: done
       tags: []
       title: --help

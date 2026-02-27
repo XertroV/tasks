@@ -2039,6 +2039,32 @@ tags: []
     expect(out).toContain("0/2 tasks done");
   });
 
+  test("ls root includes bug, idea, and fixed summaries", () => {
+    root = setupFixture();
+    let p = run(["bug", "restore integration auth state"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(["idea", "plan cache invalidation"], root);
+    expect(p.exitCode).toBe(0);
+    p = run(
+      [
+        "fixed",
+        "--title",
+        "restore stale auth token",
+        "--at",
+        "2026-02-20T12:00:00Z",
+        "--body",
+        "Added regression guard.",
+      ],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+
+    const out = run(["ls"], root).stdout.toString();
+    expect(out).toContain("Bugs (0/1)");
+    expect(out).toContain("Ideas (0/1)");
+    expect(out).toContain("Fixes (1/1)");
+  });
+
   test("ls lists milestones for a phase", () => {
     root = setupFixture();
     const out = run(["ls", "P1"], root).stdout.toString();

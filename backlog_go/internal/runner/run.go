@@ -3252,13 +3252,58 @@ func runListCore(command string, args []string) error {
 	return renderListText(command, tree, scoped, scopedPhases, scopedTasks, scopeType, scopeDepth, taskMatches, criticalPath, showAll, availableTaskIDs)
 }
 
+func summarizeFixes(dataDir string) (int, int, error) {
+	fixesDir := filepath.Join(dataDir, "fixes")
+	indexPath := filepath.Join(fixesDir, "index.yaml")
+	index, err := readYAMLMapFile(indexPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return 0, 0, nil
+		}
+		return 0, 0, err
+	}
+
+	rawFixes, ok := index["fixes"].([]interface{})
+	if !ok {
+		return 0, 0, nil
+	}
+
+	total := 0
+	done := 0
+	for _, rawFix := range rawFixes {
+		entry, ok := rawFix.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		file := strings.TrimSpace(asString(entry["file"]))
+		if file == "" {
+			continue
+		}
+
+		fixPath := filepath.Join(fixesDir, file)
+		frontmatter, _, err := readTodoFrontmatter("", fixPath)
+		if err != nil {
+			continue
+		}
+
+		total++
+		status, err := models.ParseStatus(asString(frontmatter["status"]))
+		if err == nil && status == models.StatusDone {
+			done++
+		}
+	}
+
+	return done, total, nil
+}
+
 func runLsCore(args []string, dataDir string) error {
 	if err := validateAllowedFlags(args, map[string]bool{}); err != nil {
 		return err
 	}
 
 	positional := positionalArgs(args, map[string]bool{})
-	tree, err := loader.New().Load("metadata", false, false)
+	includeAux := len(positional) == 0
+	tree, err := loader.New().Load("metadata", includeAux, includeAux)
 	if err != nil {
 		return err
 	}
@@ -3266,21 +3311,42 @@ func runLsCore(args []string, dataDir string) error {
 	if len(positional) == 0 {
 		if len(tree.Phases) == 0 {
 			fmt.Println(styleWarning("No phases found."))
-			return nil
+		} else {
+			for _, phase := range tree.Phases {
+				stats := getTaskStatsForPhase(phase)
+				fmt.Printf(
+					"%s: %s [%s] %d/%d tasks done (in_progress=%d, blocked=%d)\n",
+					phase.ID,
+					styleSubHeader(phase.Name),
+					styleStatusText(string(phase.Status)),
+					stats.done,
+					stats.total,
+					stats.inProgress,
+					stats.blocked,
+				)
+			}
 		}
-		for _, phase := range tree.Phases {
-			stats := getTaskStatsForPhase(phase)
-			fmt.Printf(
-				"%s: %s [%s] %d/%d tasks done (in_progress=%d, blocked=%d)\n",
-				phase.ID,
-				styleSubHeader(phase.Name),
-				styleStatusText(string(phase.Status)),
-				stats.done,
-				stats.total,
-				stats.inProgress,
-				stats.blocked,
-			)
+
+		bugsDone := 0
+		for _, bug := range tree.Bugs {
+			if bug.Status == models.StatusDone {
+				bugsDone++
+			}
 		}
+		ideasDone := 0
+		for _, idea := range tree.Ideas {
+			if idea.Status == models.StatusDone {
+				ideasDone++
+			}
+		}
+		fixesDone, fixesTotal, err := summarizeFixes(dataDir)
+		if err != nil {
+			return err
+		}
+
+		fmt.Printf("Bugs (%d/%d)\n", bugsDone, len(tree.Bugs))
+		fmt.Printf("Ideas (%d/%d)\n", ideasDone, len(tree.Ideas))
+		fmt.Printf("Fixes (%d/%d)\n", fixesDone, fixesTotal)
 		return nil
 	}
 

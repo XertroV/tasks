@@ -1867,37 +1867,103 @@ function printCompletionNotices(
 
 function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; body: string } {
   const taskPath = taskFilePath(task);
-  if (isTaskFileMissing(task)) {
+  return parseTodoFrontmatter(taskPath);
+}
+
+function parseTodoFrontmatter(taskPath: string): { frontmatter: Record<string, unknown>; body: string } {
+  if (!existsSync(taskPath)) {
     return { frontmatter: {}, body: "" };
   }
   const content = readFileSync(taskPath, "utf8");
   const parts = content.split("---\n");
   if (parts.length >= 3) {
-    return {
-      frontmatter: (parse(parts[1] ?? "") as Record<string, unknown>) ?? {},
-      body: parts.slice(2).join("---\n"),
-    };
+    try {
+      return {
+        frontmatter: (parse(parts[1] ?? "") as Record<string, unknown>) ?? {},
+        body: parts.slice(2).join("---\n"),
+      };
+    } catch {
+      return { frontmatter: {}, body: "" };
+    }
   }
   return { frontmatter: {}, body: content };
+}
+
+async function summarizeFixes(): Promise<{ done: number; total: number }> {
+  const fixesPath = join(getDataDirName(), "fixes", "index.yaml");
+  if (!existsSync(fixesPath)) {
+    return { done: 0, total: 0 };
+  }
+
+  const raw = parse(readFileSync(fixesPath, "utf8"));
+  if (typeof raw !== "object" || raw === null) {
+    return { done: 0, total: 0 };
+  }
+
+  const rawFixes = (raw as Record<string, unknown>).fixes;
+  const fixes = Array.isArray(rawFixes) ? rawFixes : [];
+  let done = 0;
+  let total = 0;
+
+  for (const rawFix of fixes) {
+    if (!rawFix || typeof rawFix !== "object") {
+      continue;
+    }
+    const fix = rawFix as Record<string, unknown>;
+    const relativeFile = String(fix.file ?? "").trim();
+    if (!relativeFile) {
+      continue;
+    }
+
+    const fixPath = join(getDataDirName(), "fixes", relativeFile);
+    if (!existsSync(fixPath)) {
+      continue;
+    }
+
+    const { frontmatter } = parseTodoFrontmatter(fixPath);
+    if (!frontmatter || Object.keys(frontmatter).length === 0) {
+      continue;
+    }
+
+    total += 1;
+    const status = String(frontmatter.status ?? "")
+      .trim()
+      .toLowerCase()
+      .replace("-", "_")
+      .replace(" ", "_");
+    if (status === "done" || status === "complete" || status === "completed") {
+      done += 1;
+    }
+  }
+
+  return { done, total };
 }
 
 async function cmdLs(args: string[]): Promise<void> {
   const scopes = listScopeArgs(args);
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata", false, false);
+  const includeAux = scopes.length === 0;
+  const tree = await loader.load("metadata", includeAux, includeAux);
 
   if (!scopes.length) {
     if (!tree.phases.length) {
       console.log("No phases found.");
-      return;
+    } else {
+      for (const phase of tree.phases) {
+        const phaseTasks = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
+        const stats = taskCount(phaseTasks);
+        console.log(
+          `${phase.id}: ${phase.name} [${phase.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
+        );
+      }
     }
-    for (const phase of tree.phases) {
-      const phaseTasks = phase.milestones.flatMap((m) => m.epics.flatMap((e) => e.tasks));
-      const stats = taskCount(phaseTasks);
-      console.log(
-        `${phase.id}: ${phase.name} [${phase.status}] ${stats.done}/${stats.total} tasks done (in_progress=${stats.inProgress}, blocked=${stats.blocked})`,
-      );
-    }
+
+    const bugsDone = taskCount(tree.bugs ?? []).done;
+    const ideasDone = taskCount(tree.ideas ?? []).done;
+    const { done: fixesDone, total: fixesTotal } = await summarizeFixes();
+    console.log(`Bugs (${bugsDone}/${(tree.bugs ?? []).length})`);
+    console.log(`Ideas (${ideasDone}/${(tree.ideas ?? []).length})`);
+    console.log(`Fixes (${fixesDone}/${fixesTotal})`);
     return;
   }
 

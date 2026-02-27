@@ -446,6 +446,32 @@ class TestLsCommand:
         assert "P1: Test Phase" in result.output
         assert "0/1 tasks done" in result.output
 
+    def test_ls_root_prints_bug_idea_and_fixed_summaries(self, runner, tmp_tasks_dir):
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+        create_bug_file(tmp_tasks_dir, "B001", "Root bug")
+        result = runner.invoke(cli, ["idea", "capture planning idea"])
+        assert result.exit_code == 0
+        result = runner.invoke(
+            cli,
+            [
+                "fixed",
+                "--title",
+                "restore service health check",
+                "--at",
+                "2026-02-20T12:00:00Z",
+                "--body",
+                "Added guard against stale session cache.",
+            ],
+        )
+        assert result.exit_code == 0
+
+        result = runner.invoke(cli, ["ls"])
+
+        assert result.exit_code == 0
+        assert "Bugs (0/1)" in result.output
+        assert "Ideas (0/1)" in result.output
+        assert "Fixes (1/1)" in result.output
+
     def test_ls_phase_lists_milestones(self, runner, tmp_tasks_dir):
         create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
 
