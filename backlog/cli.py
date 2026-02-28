@@ -583,12 +583,21 @@ def init(project, description, timeline_weeks):
     help="Maximum number of log entries to show",
 )
 @click.option("--json", "output_json", is_flag=True, help="Output as JSON")
-def log(limit, output_json):
+@click.option("-b", "--bugs", is_flag=True, help="Show only bug tasks")
+@click.option("-i", "--ideas", is_flag=True, help="Show only idea tasks")
+def log(limit, output_json, bugs, ideas):
     """Show recent activity for tasks in a git-log style list."""
     try:
         loader = TaskLoader()
-        tree = loader.load("metadata", include_bugs=False, include_ideas=False)
-        events = _activity_events(tree)[:limit]
+        include_normal = not (bugs or ideas)
+        include_bugs = bugs or include_normal
+        include_ideas = ideas or include_normal
+        tree = loader.load("metadata", include_bugs=include_bugs, include_ideas=include_ideas)
+        events = [event for event in _activity_events(tree) if (
+            (is_bug_id(event["task_id"]) and include_bugs and not include_normal) or
+            (is_idea_id(event["task_id"]) and include_ideas and not include_normal) or
+            ((not is_bug_id(event["task_id"]) and not is_idea_id(event["task_id"]) and include_normal))
+        )][:limit]
 
         if output_json:
             json_out = []

@@ -394,7 +394,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   init: { summary: "Initialize a new .backlog project.", usage: "backlog init --project NAME [--description TEXT] [--timeline-weeks N]", options: ["--project, -p", "--description, -d", "--timeline-weeks, -w"], examples: ["backlog init --project my-project"] },
   list: { summary: "List tasks with filtering options.", usage: "backlog list [<SCOPE>] [options]", options: ["--status", "--critical", "--available, -a", "--complexity", "--priority", "--progress", "--json", "--all", "--unfinished", "--bugs, -b", "--ideas, -i", "--show-completed-aux", "--phase", "--milestone", "--epic"], examples: ["backlog list", "backlog list P1.M1 --progress", "backlog list --json"] },
   lock: { summary: "Lock a phase/milestone/epic.", usage: "backlog lock <ITEM_ID>", options: [], examples: ["backlog lock P1.M1"] },
-  log: { summary: "Show recent activity log.", usage: "backlog log [--limit N] [--json]", options: ["--limit", "--json"], examples: ["backlog log", "backlog log --limit 20 --json"] },
+  log: { summary: "Show recent activity log.", usage: "backlog log [--bugs, -b] [--ideas, -i] [--limit N] [--json]", options: ["--bugs, -b", "--ideas, -i", "--limit", "--json"], examples: ["backlog log", "backlog log --bugs --ideas --limit 20 --json"] },
   migrate: { summary: "Migrate .tasks/ to .backlog/.", usage: "backlog migrate [--force] [--no-symlink]", options: ["--force", "--no-symlink"], examples: ["backlog migrate"] },
   move: { summary: "Move task/epic/milestone to new parent.", usage: "backlog move <SOURCE_ID> --to <DEST_ID>", options: ["--to"], examples: ["backlog move P1.M1.E1.T001 --to P1.M1.E2"] },
   next: { summary: "Get next available task on critical path.", usage: "backlog next [--json]", options: ["--json"], examples: ["backlog next", "backlog next --json"] },
@@ -1217,15 +1217,32 @@ async function cmdList(args: string[]): Promise<void> {
 
 async function cmdLog(args: string[]): Promise<void> {
   const limitOpt = parseOpt(args, "--limit");
+  const bugsOnly = parseFlag(args, "--bugs") || parseFlag(args, "-b");
+  const ideasOnly = parseFlag(args, "--ideas") || parseFlag(args, "-i");
   const outputJson = parseFlag(args, "--json");
+  const includeNormal = !bugsOnly && !ideasOnly;
+  const includeBugs = bugsOnly || !includeNormal;
+  const includeIdeas = ideasOnly || !includeNormal;
   const limit = limitOpt ? Number(limitOpt) : 20;
   if (!Number.isInteger(limit) || limit <= 0) {
     textError("--limit must be a positive integer");
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata", false, false);
-  const events = collectActivity(tree).slice(0, limit);
+  const tree = await loader.load("metadata", includeBugs, includeIdeas);
+  const events = collectActivity(tree)
+    .filter((event) => {
+      const isBug = isBugId(event.taskId);
+      const isIdea = isIdeaId(event.taskId);
+      if (isBug) {
+        return includeBugs && !includeNormal;
+      }
+      if (isIdea) {
+        return includeIdeas && !includeNormal;
+      }
+      return includeNormal;
+    })
+    .slice(0, limit);
 
   if (outputJson) {
     jsonOut(

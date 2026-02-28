@@ -466,8 +466,10 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"log": {
 		summary: "Show recent activity log entries.",
-		usage:   "backlog log [--limit N] [--json]",
+		usage:   "backlog log [--bugs, -b] [--ideas, -i] [--limit N] [--json]",
 		options: []string{
+			"--bugs, -b",
+			"--ideas, -i",
 			"--limit",
 			"--json",
 		},
@@ -3660,9 +3662,22 @@ func runLog(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
-	if err := validateAllowedFlags(args, map[string]bool{"--limit": true, "--json": true}); err != nil {
+	if err := validateAllowedFlags(args, map[string]bool{
+		"--limit": true,
+		"--json":  true,
+		"--bugs":  true,
+		"-b":      true,
+		"--ideas": true,
+		"-i":      true,
+	}); err != nil {
 		return err
 	}
+
+	bugsOnly := parseFlag(args, "--bugs", "-b")
+	ideasOnly := parseFlag(args, "--ideas", "-i")
+	includeNormal := !bugsOnly && !ideasOnly
+	includeBugs := bugsOnly || (!bugsOnly && !ideasOnly)
+	includeIdeas := ideasOnly || (!bugsOnly && !ideasOnly)
 
 	limit, err := parseIntOptionWithDefault(args, 20, "--limit")
 	if err != nil {
@@ -3672,12 +3687,12 @@ func runLog(args []string) error {
 		return fmt.Errorf("--limit must be a positive integer")
 	}
 
-	tree, err := loader.New().Load("metadata", false, false)
+	tree, err := loader.New().Load("metadata", includeBugs, includeIdeas)
 	if err != nil {
 		return err
 	}
 
-	events := collectLogEvents(tree)
+	events := collectLogEvents(tree, includeNormal, includeBugs, includeIdeas)
 	if len(events) > limit {
 		events = events[:limit]
 	}
@@ -3753,9 +3768,23 @@ func formatRelativeTime(ts time.Time) string {
 	return fmt.Sprintf("%dw ago", days/7)
 }
 
-func collectLogEvents(tree models.TaskTree) []logEvent {
+func shouldIncludeLogEvent(taskID string, includeNormal bool, includeBugs bool, includeIdeas bool) bool {
+	if isBugLikeID(taskID) {
+		return includeBugs && !includeNormal
+	}
+	if isIdeaLikeID(taskID) {
+		return includeIdeas && !includeNormal
+	}
+	return includeNormal
+}
+
+func collectLogEvents(tree models.TaskTree, includeNormal bool, includeBugs bool, includeIdeas bool) []logEvent {
 	events := []logEvent{}
 	for _, task := range findAllTasksInTree(tree) {
+		if !shouldIncludeLogEvent(task.ID, includeNormal, includeBugs, includeIdeas) {
+			continue
+		}
+
 		taskFile, err := resolveTaskFilePath(task.File)
 		if err != nil {
 			taskFile = ""

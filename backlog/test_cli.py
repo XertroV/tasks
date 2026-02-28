@@ -996,6 +996,65 @@ class TestLogCommand:
         assert entry["actor"] is None
         assert "timestamp" in entry
 
+    def test_log_command_filters_only_bugs(self, runner, tmp_tasks_dir):
+        """log --bugs should only return bug events."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="done",
+        )
+        create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+        idea_result = runner.invoke(cli, ["idea", "Capture planning idea"])
+        assert idea_result.exit_code == 0
+
+        result = runner.invoke(cli, ["log", "--json", "--bugs"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert len(payload) == 1
+        assert payload[0]["task_id"] == "B001"
+        assert payload[0]["event"] == "added"
+
+    def test_log_command_filters_only_ideas(self, runner, tmp_tasks_dir):
+        """log --ideas should only return idea events."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="in_progress",
+        )
+        create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+        idea_result = runner.invoke(cli, ["idea", "Capture next idea"])
+        assert idea_result.exit_code == 0
+
+        result = runner.invoke(cli, ["log", "--json", "--ideas"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        assert len(payload) == 1
+        assert payload[0]["task_id"] == "I001"
+        assert payload[0]["event"] == "added"
+
+    def test_log_command_filters_bugs_and_ideas_together(self, runner, tmp_tasks_dir):
+        """log --bugs --ideas should return only bug and idea events."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="pending",
+        )
+        create_bug_file(tmp_tasks_dir, "B001", "Critical Bug")
+        create_bug_file(tmp_tasks_dir, "B002", "Follow-up Bug")
+        idea_result = runner.invoke(cli, ["idea", "Capture planning idea"])
+        assert idea_result.exit_code == 0
+
+        result = runner.invoke(cli, ["log", "--json", "--bugs", "--ideas"])
+
+        assert result.exit_code == 0
+        payload = json.loads(result.output)
+        task_ids = {item["task_id"] for item in payload}
+        assert task_ids == {"B001", "B002", "I001"}
 
 class TestCycleCommand:
     """Tests for the cycle command."""

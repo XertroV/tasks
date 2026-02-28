@@ -2011,6 +2011,46 @@ tags: []
     expect(events.every((event: { timestamp: string }) => typeof event.timestamp === "string")).toBeTrue();
   });
 
+  test("log command filters only bugs", () => {
+    root = setupFixture(true);
+
+    let p = run(["log", "--json", "--bugs"], root);
+    expect(p.exitCode).toBe(0);
+    const events = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(events)).toBeTrue();
+    expect(events).toHaveLength(1);
+    expect(events[0].task_id).toBe("B001");
+    expect(events[0].event).toBe("added");
+  });
+
+  test("log command filters only ideas", () => {
+    root = setupFixture();
+    const idea = run(["idea", "refactor startup"], root);
+    expect(idea.exitCode).toBe(0);
+
+    const p = run(["log", "--json", "--ideas"], root);
+    expect(p.exitCode).toBe(0);
+    const events = JSON.parse(p.stdout.toString());
+    expect(Array.isArray(events)).toBeTrue();
+    expect(events).toHaveLength(1);
+    expect(events[0].task_id).toBe("I001");
+    expect(events[0].event).toBe("added");
+  });
+
+  test("log command can show bugs and ideas together", () => {
+    root = setupFixture(true);
+    const idea = run(["idea", "capture future direction"], root);
+    expect(idea.exitCode).toBe(0);
+
+    const p = run(["log", "--json", "--bugs", "--ideas"], root);
+    expect(p.exitCode).toBe(0);
+    const events = JSON.parse(p.stdout.toString());
+    expect(events).toHaveLength(2);
+    const taskIds = new Set(events.map((event: { task_id: string }) => event.task_id));
+    expect(taskIds.has("B001")).toBeTrue();
+    expect(taskIds.has("I001")).toBeTrue();
+  });
+
   test("show on pending idea displays Instructions section", () => {
     root = setupFixture();
     let p = run(["idea", "refactor auth module"], root);

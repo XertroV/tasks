@@ -432,8 +432,8 @@ func TestRunIdeaCreatesPlanningIntake(t *testing.T) {
 	if !strings.Contains(content, "id: I001") {
 		t.Fatalf("idea file = %q, expected I001 frontmatter", content)
 	}
-	if !strings.Contains(content, "tasks bug") {
-		t.Fatalf("idea file = %q, expected bug follow-up guidance", content)
+	if !strings.Contains(content, "Created Work Items") {
+		t.Fatalf("idea file = %q, expected work item follow-up guidance", content)
 	}
 }
 
@@ -2623,6 +2623,89 @@ func TestRunLogJSONIncludesAddedEvents(t *testing.T) {
 		if event.Actor != nil {
 			t.Fatalf("actor = %v, expected nil", event.Actor)
 		}
+	}
+}
+
+func TestRunLogJSONFiltersBugsOnly(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+
+	payloadRaw, err := runInDir(t, root, "log", "--json", "--bugs")
+	if err != nil {
+		t.Fatalf("run log --json --bugs = %v, expected nil", err)
+	}
+	events := []cliLogJSONEvent{}
+	decodeJSONPayload(t, payloadRaw, &events)
+
+	if len(events) != 1 {
+		t.Fatalf("len(events) = %d, expected 1", len(events))
+	}
+	if events[0].TaskID != "B1" {
+		t.Fatalf("task_id = %q, expected B1", events[0].TaskID)
+	}
+	if events[0].Event != "added" {
+		t.Fatalf("event = %q, expected added", events[0].Event)
+	}
+}
+
+func TestRunLogJSONFiltersIdeasOnly(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+
+	payloadRaw, err := runInDir(t, root, "log", "--json", "--ideas")
+	if err != nil {
+		t.Fatalf("run log --json --ideas = %v, expected nil", err)
+	}
+	events := []cliLogJSONEvent{}
+	decodeJSONPayload(t, payloadRaw, &events)
+
+	if len(events) != 1 {
+		t.Fatalf("len(events) = %d, expected 1", len(events))
+	}
+	if events[0].TaskID != "I1" {
+		t.Fatalf("task_id = %q, expected I1", events[0].TaskID)
+	}
+	if events[0].Event != "added" {
+		t.Fatalf("event = %q, expected added", events[0].Event)
+	}
+}
+
+func TestRunLogJSONFiltersBugsAndIdeasTogether(t *testing.T) {
+	t.Parallel()
+
+	root := setupListAuxAndScopeFixture(t)
+
+	payloadRaw, err := runInDir(t, root, "log", "--json", "--bugs", "--ideas")
+	if err != nil {
+		t.Fatalf("run log --json --bugs --ideas = %v, expected nil", err)
+	}
+	events := []cliLogJSONEvent{}
+	decodeJSONPayload(t, payloadRaw, &events)
+
+	if len(events) != 2 {
+		t.Fatalf("len(events) = %d, expected 2", len(events))
+	}
+
+	foundBug := false
+	foundIdea := false
+	for _, event := range events {
+		if event.TaskID == "B1" {
+			foundBug = true
+		}
+		if event.TaskID == "I1" {
+			foundIdea = true
+		}
+		if strings.HasPrefix(event.TaskID, "P1.") {
+			t.Fatalf("task_id = %q, expected aux task only", event.TaskID)
+		}
+	}
+	if !foundBug {
+		t.Fatalf("expected bug event in filtered output")
+	}
+	if !foundIdea {
+		t.Fatalf("expected idea event in filtered output")
 	}
 }
 
