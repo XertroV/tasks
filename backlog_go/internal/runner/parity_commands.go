@@ -954,7 +954,7 @@ func runReportProgress(args []string) error {
 	fmt.Println("")
 
 	fmt.Printf("\n%s\n", styleSubHeader("Phases"))
-	fmt.Printf("%s\n", styleMuted("Legend: ✓ complete | → in progress | · pending"))
+	fmt.Printf("%s\n", styleMuted("Legend: ✓ complete | → in progress | ▒ blocked | · pending"))
 	visible := 0
 	for _, phase := range payload.Phases {
 		if !showAll && phase.Total > 0 && phase.Done == phase.Total {
@@ -967,7 +967,7 @@ func runReportProgress(args []string) error {
 			phase.Name,
 		)
 		fmt.Printf("      %s %5.1f%% (%d/%d) | active %d | blocked %d | ~%.1fh\n",
-			styleProgressBar(phase.Done, phase.Total),
+			styleProgressBarWithStatus(phase.Done, phase.InProgress, phase.Blocked, phase.Total),
 			phase.PercentDone,
 			phase.Done,
 			phase.Total,

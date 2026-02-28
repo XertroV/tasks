@@ -3266,6 +3266,25 @@ func TestRunReportProgressTextRendersSections(t *testing.T) {
 	assertContainsAll(t, output, "Progress Report", "Overall", "Auxiliary", "Phases", "All Bugs", "All Ideas")
 }
 
+func TestRunReportProgressShowsInProgressAndBlockedBarSegments(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "in_progress", "", "")
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T002", "b", "blocked", "", "")
+
+	output, err := runInDir(t, root, "report", "progress", "--by-phase")
+	if err != nil {
+		t.Fatalf("run report progress = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "▓") {
+		t.Fatalf("report output missing in-progress segment: %q", output)
+	}
+	if !strings.Contains(output, "▒") {
+		t.Fatalf("report output missing blocked segment: %q", output)
+	}
+}
+
 func TestRunListAvailableTextRendersHeaderAndLegend(t *testing.T) {
 	t.Parallel()
 

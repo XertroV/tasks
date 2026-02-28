@@ -4192,7 +4192,7 @@ func runDash(args []string) error {
 	fmt.Printf("  Total: %s %5.1f%% (%d/%d)\n", makeProgressBar(dashboardDone, dashboardTasks), totalPct, dashboardDone, dashboardTasks)
 
 	for _, phase := range phases {
-		fmt.Printf("  %s: %s %5.1f%% (%d/%d)\n", styleSuccess(phase.ID), makeProgressBar(phase.Done, phase.Total), phase.PercentComplete, phase.Done, phase.Total)
+		fmt.Printf("  %s: %s %5.1f%% (%d/%d)\n", styleSuccess(phase.ID), makeProgressBarWithStatus(phase.Done, phase.InProgress, phase.Blocked, phase.Total), phase.PercentComplete, phase.Done, phase.Total)
 	}
 	if len(completedPhases) > 0 {
 		fmt.Printf("  %s: %s\n", styleSubHeader("Completed Phases"), strings.Join(completedPhases, ", "))
@@ -5238,6 +5238,10 @@ func staleClaims(tasks []models.Task, warnAfterMinutes int, errorAfterMinutes in
 
 func makeProgressBar(done, total int) string {
 	return styleProgressBar(done, total)
+}
+
+func makeProgressBarWithStatus(done, inProgress, blocked, total int) string {
+	return styleProgressBarWithStatus(done, inProgress, blocked, total)
 }
 
 func filterPhasesByPathQuery(phases []models.Phase, query models.PathQuery) []models.Phase {
@@ -7467,7 +7471,7 @@ func showScopedItem(
 		stats := getTaskStatsForPhase(*phase)
 		fmt.Printf("%s: %s\n", styleSuccess(phase.ID), styleSubHeader(phase.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(phase.Status)))
-		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), makeProgressBarWithStatus(stats.done, stats.inProgress, stats.blocked, stats.total), stats.done, stats.total)
 		fmt.Printf("%s: %.2fh\n", styleSubHeader("Total Duration"), stats.totalHours)
 		if len(phase.Milestones) > 0 {
 			fmt.Printf("%s\n", styleSubHeader("Milestones"))
@@ -7493,7 +7497,7 @@ func showScopedItem(
 		stats := getTaskStatsForMilestone(*milestone)
 		fmt.Printf("%s: %s\n", styleSuccess(milestone.ID), styleSubHeader(milestone.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(milestone.Status)))
-		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), makeProgressBarWithStatus(stats.done, stats.inProgress, stats.blocked, stats.total), stats.done, stats.total)
 		fmt.Printf("%s: %.2fh\n", styleSubHeader("Total Duration"), stats.totalHours)
 		if len(milestone.Epics) > 0 {
 			fmt.Printf("%s\n", styleSubHeader("Epics"))
@@ -7519,7 +7523,7 @@ func showScopedItem(
 		stats := getTaskStatsForEpic(*epic)
 		fmt.Printf("%s: %s\n", styleSuccess(epic.ID), styleSubHeader(epic.Name))
 		fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(epic.Status)))
-		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), styleProgressBar(stats.done, stats.total), stats.done, stats.total)
+		fmt.Printf("%s: %s %d/%d\n", styleSubHeader("Progress"), makeProgressBarWithStatus(stats.done, stats.inProgress, stats.blocked, stats.total), stats.done, stats.total)
 		fmt.Printf("%s: %.2fh\n", styleSubHeader("Total Duration"), stats.totalHours)
 		if len(epic.Tasks) > 0 {
 			fmt.Printf("%s\n", styleSubHeader("Tasks"))

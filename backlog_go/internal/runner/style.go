@@ -3,6 +3,7 @@ package runner
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"sync/atomic"
@@ -242,18 +243,135 @@ func logEventIconStyled(eventType string) string {
 }
 
 func styleProgressBar(done, total int) string {
+	return styleProgressBarWithStatus(done, 0, 0, total)
+}
+
+func styleProgressBarWithStatus(done, inProgress, blocked, total int) string {
 	const width = 20
 	if total <= 0 {
 		return styleMuted(strings.Repeat("░", width))
 	}
-	filled := int((float64(done) / float64(total)) * width)
-	if filled < 0 {
-		filled = 0
+
+	done = maxInt(done, 0)
+	inProgress = maxInt(inProgress, 0)
+	blocked = maxInt(blocked, 0)
+	if done > total {
+		done = total
 	}
-	if filled > width {
-		filled = width
+	if inProgress > total {
+		inProgress = total
 	}
-	filledBar := strings.Repeat("█", filled)
-	emptyBar := strings.Repeat("░", width-filled)
-	return styleSuccess(filledBar) + styleMuted(emptyBar)
+	if blocked > total {
+		blocked = total
+	}
+
+	allocated := done + inProgress + blocked
+	if allocated > total {
+		overflow := allocated - total
+		if blocked >= overflow {
+			blocked -= overflow
+			overflow = 0
+		} else {
+			overflow -= blocked
+			blocked = 0
+		}
+
+		if overflow > 0 {
+			if inProgress >= overflow {
+				inProgress -= overflow
+				overflow = 0
+			} else {
+				overflow -= inProgress
+				inProgress = 0
+			}
+		}
+
+		if overflow > 0 && done >= overflow {
+			done -= overflow
+		}
+	}
+
+	pending := total - done - inProgress - blocked
+	if pending < 0 {
+		pending = 0
+	}
+
+	widths := progressBarWidths(barWidthByStatus{
+		done:       done,
+		inProgress: inProgress,
+		blocked:    blocked,
+		pending:    pending,
+	}, total, width)
+
+	return styleSuccess(strings.Repeat("█", widths.done)) +
+		styleWarning(strings.Repeat("▓", widths.inProgress)) +
+		styleError(strings.Repeat("▒", widths.blocked)) +
+		styleMuted(strings.Repeat("░", widths.pending))
+}
+
+type barWidthByStatus struct {
+	done       int
+	inProgress int
+	blocked    int
+	pending    int
+}
+
+func progressBarWidths(stats barWidthByStatus, total int, width int) barWidthByStatus {
+	if total <= 0 || width <= 0 {
+		return barWidthByStatus{}
+	}
+
+	counts := []int{stats.done, stats.inProgress, stats.blocked, stats.pending}
+	allocated := make([]int, len(counts))
+	remainders := []struct {
+		idx int
+		rem int
+	}{
+		{idx: 0},
+		{idx: 1},
+		{idx: 2},
+		{idx: 3},
+	}
+
+	used := 0
+	for i, count := range counts {
+		if count <= 0 {
+			continue
+		}
+		numerator := int64(count) * int64(width)
+		allocated[i] = int(numerator / int64(total))
+		remainders[i].rem = int(numerator % int64(total))
+		used += allocated[i]
+	}
+
+	remaining := width - used
+	if remaining <= 0 {
+		return barWidthByStatus{done: allocated[0], inProgress: allocated[1], blocked: allocated[2], pending: allocated[3]}
+	}
+
+	sort.SliceStable(remainders, func(i, j int) bool {
+		if remainders[i].rem == remainders[j].rem {
+			return remainders[i].idx < remainders[j].idx
+		}
+		return remainders[i].rem > remainders[j].rem
+	})
+
+	for remaining > 0 {
+		for _, rem := range remainders {
+			if remaining == 0 {
+				break
+			}
+			allocated[rem.idx]++
+			remaining--
+		}
+	}
+
+	return barWidthByStatus{done: allocated[0], inProgress: allocated[1], blocked: allocated[2], pending: allocated[3]}
+}
+
+func maxInt(value, fallback int) int {
+	if value > fallback {
+		return value
+	}
+	return fallback
 }

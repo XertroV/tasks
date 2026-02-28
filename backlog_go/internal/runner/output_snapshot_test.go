@@ -59,7 +59,7 @@ func TestSemanticSnapshotsForCriticalTextCommands(t *testing.T) {
 				"Overall",
 				"Auxiliary",
 				"Phases",
-				"Legend: ✓ complete | → in progress | · pending",
+				"Legend: ✓ complete | → in progress | ▒ blocked | · pending",
 				"Active milestones",
 				"Active epics",
 			},
