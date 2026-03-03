@@ -968,6 +968,41 @@ func TestRunClaimHelpRendersCommandSpecificGuidance(t *testing.T) {
 	assertContainsAll(t, output, "Command Help: backlog claim", "backlog claim <TASK_ID>", "--agent")
 }
 
+func TestRunCIHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "ci", "--help")
+	if err != nil {
+		t.Fatalf("run ci --help = %v, expected nil", err)
+	}
+	assertContainsAll(t, output, "Command Help: backlog ci", "Usage: backlog ci validate-ids <TASK_ID ...>")
+}
+
+func TestRunCIValidateIDsAcceptsShorthandIDs(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	_, err := runInDir(t, root, "ci", "validate-ids", "B020", "E1.T02", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run ci validate-ids = %v, expected nil", err)
+	}
+}
+
+func TestRunCIValidateIDsRejectsMalformedID(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "ci", "validate-ids", "B020", "not-an-id", "E1.T02")
+	if err == nil {
+		t.Fatalf("run ci validate-ids expected error")
+	}
+	if !strings.Contains(err.Error(), "malformed task id: not-an-id") {
+		t.Fatalf("err = %q, expected malformed task id error", err)
+	}
+	assertContainsAll(t, output, "Command Help: backlog ci", "Usage:")
+}
+
 func TestRunShowMissingTaskSuggestsNearbyIDs(t *testing.T) {
 	t.Parallel()
 
@@ -1883,7 +1918,7 @@ func TestRunAllCommandsHelpIsNotThin(t *testing.T) {
 		"howto", "add", "add-epic", "add-milestone", "add-phase", "admin", "agents", "benchmark",
 		"blocked", "blockers", "bug", "check", "claim", "cycle", "dash", "data", "done", "fixed",
 		"grab", "handoff", "help", "idea", "init", "list", "lock", "log", "migrate", "move", "next",
-		"preview", "report", "schema", "search", "session", "set", "show", "skills", "skip", "sync",
+		"preview", "ci", "report", "schema", "search", "session", "set", "show", "skills", "skip", "sync",
 		"timeline", "tree", "unclaim", "unclaim-stale", "undone", "unlock", "update", "velocity",
 		"version", "why",
 		"work",

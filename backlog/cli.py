@@ -28,6 +28,7 @@ from .helpers import (
     set_multi_task_context,
     get_all_tasks,
     is_bug_id,
+    is_task_id,
     is_idea_id,
     is_fixed_id,
     task_file_path,
@@ -489,6 +490,23 @@ def cli(ctx):
 def version():
     """Show CLI version."""
     click.echo(f"backlog version {BACKLOG_VERSION}")
+
+
+@cli.group()
+def ci():
+    """CI-focused helpers for automation workflows."""
+
+
+@ci.command("validate-ids")
+@click.argument("task_ids", nargs=-1)
+def validate_ids(task_ids):
+    """Validate task IDs for automation tooling."""
+    if not task_ids:
+        raise click.UsageError("validate-ids requires at least one TASK_ID")
+
+    invalid_ids = [task_id for task_id in task_ids if not is_task_id(task_id)]
+    if invalid_ids:
+        raise click.ClickException(f"Invalid task ID: {invalid_ids[0]}")
 
 
 @cli.command()

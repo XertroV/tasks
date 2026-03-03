@@ -5,7 +5,7 @@ from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-from .models import Epic, Milestone, Phase, PathQuery, Status, Task, TaskTree
+from .models import Epic, Milestone, Phase, PathQuery, Status, Task, TaskPath, TaskTree
 from .time_utils import utc_now, utc_now_iso, to_utc
 from .data_dir import BACKLOG_DIR, get_data_dir_name
 
@@ -338,6 +338,21 @@ def is_fixed_id(task_id: str) -> bool:
     import re
 
     return bool(re.match(r"^F\d+$", task_id))
+
+
+def is_task_id(task_id: str) -> bool:
+    """Check if an ID is in a format accepted by the CI validator."""
+    import re
+
+    if is_bug_id(task_id) or is_idea_id(task_id) or is_fixed_id(task_id):
+        return True
+    if task_id.startswith("P"):
+        try:
+            TaskPath.parse(task_id)
+            return True
+        except ValueError:
+            return False
+    return bool(re.match(r"^E\d+\.T\d+$", task_id))
 
 
 def get_all_tasks(tree) -> List[Task]:

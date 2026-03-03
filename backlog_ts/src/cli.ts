@@ -21,6 +21,7 @@ import {
   isBugId,
   isIdeaId,
   isFixedId,
+  isValidTaskId,
   isTaskFileMissing,
   loadConfig,
   loadContext,
@@ -325,6 +326,7 @@ Commands:
   bug             Create a new bug report
   idea            Capture an idea as planning intake
   fixed           Capture an ad-hoc completed fix note
+  ci              Validate task IDs for CI workflows
   search          Search tasks by pattern
   check           Check task tree consistency
   init            Initialize a new .backlog project
@@ -385,6 +387,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   cycle: { summary: "Complete current task and grab next.", usage: "backlog cycle [--agent AGENT] [--json] [--no-content]", options: ["--agent", "--json", "--no-content"], examples: ["backlog cycle", "backlog cycle --agent agent-a"] },
   dash: { summary: "Show quick dashboard of project status.", usage: "backlog dash [--json]", options: ["--json"], examples: ["backlog dash", "backlog dash --json"] },
   data: { summary: "Export/summarize task data.", usage: "backlog data <summary|export> [--format json|yaml] [--scope SCOPE] [--include-content]", options: ["--format", "--scope", "--include-content"], examples: ["backlog data summary --format json"] },
+  ci: { summary: "Validate task IDs for CI workflows.", usage: "backlog ci validate-ids <TASK_ID...>", options: ["--help"], examples: ["backlog ci validate-ids B020 E1.T02", "backlog ci validate-ids P1.M1.E1.T001"] },
   done: { summary: "Mark task as complete.", usage: "backlog done <TASK_ID> [TASK_ID ...] [--status STATUS] [--force] [--verify]", options: ["--status", "--force", "--verify"], examples: ["backlog done P1.M1.E1.T001"] },
   fixed: { summary: "Capture an ad-hoc completed fix note.", usage: "backlog fixed [--title <TITLE> | FIX_TEXT] [--description DESC] [--at ISO8601]", options: ["--title, -T", "--description", "--at", "--tags", "--body, -b"], examples: ["backlog fixed \"Prevented deadlock in worker loop\""] },
   grab: { summary: "Auto-claim next task (or claim IDs).", usage: "backlog grab [TASK_ID ...] [--agent AGENT] [--single] [--json] [--no-content]", options: ["--agent", "--single", "--json", "--no-content"], examples: ["backlog grab", "backlog grab --single"] },
@@ -2598,6 +2601,42 @@ async function cmdWork(args: string[]): Promise<void> {
   console.log(`File: ${getDataDirName()}/${task.file}`);
 }
 
+async function cmdCI(args: string[]): Promise<void> {
+  const commandArgs = positionalArgsForCommand(
+    args,
+    {
+      "--help": "boolean",
+      "-h": "boolean",
+    },
+    "ci",
+  );
+  if (parseFlag(args, "--help", "-h")) {
+    printCommandHelpForCommand("ci");
+    return;
+  }
+  if (commandArgs.length === 0) {
+    printCommandHelpForCommand("ci");
+    textError("ci requires an action: validate-ids");
+  }
+
+  const action = commandArgs[0] ?? "";
+  if (action !== "validate-ids") {
+    printCommandHelpForCommand("ci");
+    textError(`unknown ci action: ${action}`);
+  }
+
+  const ids = commandArgs.slice(1);
+  if (ids.length === 0) {
+    printCommandHelpForCommand("ci");
+    textError("validate-ids requires at least one TASK_ID");
+  }
+  for (const id of ids) {
+    if (!isValidTaskId(id)) {
+      textError(`Invalid TASK_ID: ${id}`);
+    }
+  }
+}
+
 async function cmdVersion(args: string[]): Promise<void> {
   const positional = positionalArgsForCommand(
     args,
@@ -3997,6 +4036,9 @@ async function main(): Promise<void> {
       return;
     case "howto":
       await cmdHowto(rest);
+      return;
+    case "ci":
+      await cmdCI(rest);
       return;
     case "add":
       await cmdAdd(rest);

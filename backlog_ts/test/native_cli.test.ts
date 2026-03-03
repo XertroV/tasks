@@ -1105,12 +1105,26 @@ tags: []
     expect(out).toContain("Usage: backlog show [PATH_ID ...] [--long]");
   });
 
+  test("ci validate-ids validates shorthand IDs", () => {
+    root = setupFixture();
+    const p = run(["ci", "validate-ids", "B020", "E1.T02", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+  });
+
+  test("ci validate-ids rejects malformed ids", () => {
+    root = setupFixture();
+    const p = run(["ci", "validate-ids", "B020", "not-an-id"], root);
+    expect(p.exitCode).not.toBe(0);
+    const out = p.stdout.toString() + p.stderr.toString();
+    expect(out).toContain("Invalid TASK_ID: not-an-id");
+  });
+
   test("all commands provide non-thin --help output", () => {
     root = setupFixture();
     const commands = [
       "howto", "ls", "list", "tree", "show", "next", "preview", "claim", "grab", "done", "undone",
       "cycle", "dash", "update", "set", "work", "unclaim", "blocked", "bug", "idea", "fixed", "search",
-      "version",
+      "version", "ci",
       "check", "init", "add", "add-epic", "add-milestone", "add-phase", "lock", "unlock", "move", "session",
       "data", "report", "timeline", "schema", "blockers", "skills", "agents", "log", "migrate", "benchmark",
     ];

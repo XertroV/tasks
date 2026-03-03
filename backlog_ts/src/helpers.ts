@@ -3,7 +3,7 @@ import { unlink } from "node:fs/promises";
 import { readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { parse, stringify } from "yaml";
-import type { Epic, Milestone, PathQuery, Phase, Task, TaskTree } from "./models";
+import { TaskPath, type Epic, type Milestone, type PathQuery, type Phase, type Task, type TaskTree } from "./models";
 import { getDataDir, getDataDirName } from "./data_dir";
 
 export function getAllTasks(tree: TaskTree): Task[] {
@@ -24,6 +24,21 @@ export function isIdeaId(id: string): boolean {
 
 export function isFixedId(id: string): boolean {
   return /^F\d+$/.test(id);
+}
+
+export function isValidTaskId(id: string): boolean {
+  if (isBugId(id) || isIdeaId(id) || isFixedId(id)) {
+    return true;
+  }
+  if (id.startsWith("P")) {
+    try {
+      TaskPath.parse(id);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  return /^E\d+\.T\d+$/.test(id);
 }
 
 export function findTask(tree: TaskTree, id: string): Task | undefined {

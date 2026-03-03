@@ -389,6 +389,17 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 			"backlog admin check-ids --json",
 		},
 	},
+	"ci": {
+		summary: "CI-focused validation helpers for automation.",
+		usage:   "backlog ci validate-ids <TASK_ID ...>",
+		options: []string{
+			"--help",
+		},
+		examples: []string{
+			"backlog ci validate-ids B020 E1.T02",
+			"backlog ci validate-ids P1.M1.E1.T001",
+		},
+	},
 	"agents": {
 		summary: "Print AGENTS.md snippets for workflow guidance.",
 		usage:   "backlog agents [short|medium|full] [--json]",
@@ -885,6 +896,8 @@ func Run(rawArgs ...string) error {
 		return runTimeline(payload)
 	case commands.CmdAdmin:
 		return runAdmin(payload)
+	case commands.CmdCI:
+		return runCI(payload)
 	case commands.CmdHowto:
 		return runHowto(payload)
 	case commands.CmdAgents:
@@ -4287,6 +4300,41 @@ func runAdmin(args []string) error {
 	fmt.Println(styleMuted("Use `backlog admin check-file-sync` or `backlog admin check-ids` for available checks."))
 	fmt.Println(styleMuted("Use `backlog admin --json` for machine-readable status."))
 	fmt.Println(styleMuted("Use `backlog dash` to inspect current project status."))
+	return nil
+}
+
+func runCI(args []string) error {
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdCI)
+		return nil
+	}
+	if err := validateAllowedFlags(args, map[string]bool{"--help": true, "-h": true}); err != nil {
+		return printUsageError(commands.CmdCI, err)
+	}
+
+	action := firstPositionalArg(args, map[string]bool{"--help": false, "-h": false})
+	if action == "" {
+		return printUsageError(commands.CmdCI, errors.New("ci requires an action"))
+	}
+	switch normalizeCommand(action) {
+	case "validate-ids":
+		return runCIValidateIDs(args)
+	default:
+		return printUsageError(commands.CmdCI, fmt.Errorf("unknown ci action: %s", action))
+	}
+}
+
+func runCIValidateIDs(args []string) error {
+	ids := positionalArgs(args, map[string]bool{"--help": false, "-h": false})
+	if len(ids) <= 1 {
+		return printUsageError(commands.CmdCI, errors.New("validate-ids requires at least one TASK_ID"))
+	}
+	ids = ids[1:] // skip action
+	for _, id := range ids {
+		if err := validateTaskIDForCI(id); err != nil {
+			return printUsageError(commands.CmdCI, err)
+		}
+	}
 	return nil
 }
 
@@ -9573,6 +9621,8 @@ func validateScopeOrID(value string) error {
 }
 
 var taskIDRe = regexp.MustCompile(`^(?:P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?)?|[BI]\d+)$`)
+var taskIDShorthandForCIRe = regexp.MustCompile(`^E\d+\.T\d+$`)
+var auxTaskIDForCIRe = regexp.MustCompile(`^[BIF]\d+$`)
 
 func validateTaskID(raw string) error {
 	if raw == "" {
@@ -9585,6 +9635,22 @@ func validateTaskID(raw string) error {
 		return nil
 	}
 	if taskIDRe.MatchString(raw) {
+		return nil
+	}
+	return fmt.Errorf("malformed task id: %s", raw)
+}
+
+func validateTaskIDForCI(raw string) error {
+	if raw == "" {
+		return errors.New("id is required")
+	}
+	if strings.HasPrefix(raw, "P") {
+		if _, err := models.ParseTaskPath(raw); err != nil {
+			return fmt.Errorf("malformed task id: %s", raw)
+		}
+		return nil
+	}
+	if auxTaskIDForCIRe.MatchString(raw) || taskIDShorthandForCIRe.MatchString(raw) {
 		return nil
 	}
 	return fmt.Errorf("malformed task id: %s", raw)

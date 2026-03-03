@@ -43,6 +43,7 @@ const (
 	CmdGrant         = CmdGrab
 	CmdGrants        = "grants"
 	CmdClaim         = "claim"
+	CmdCI            = "ci"
 	CmdDone          = "done"
 	CmdCycle         = "cycle"
 	CmdWork          = "work"
