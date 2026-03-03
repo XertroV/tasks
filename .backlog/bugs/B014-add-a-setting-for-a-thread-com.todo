@@ -1,0 +1,14 @@
+---
+completed_at: null
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B014
+priority: high
+started_at: null
+status: done
+tags: []
+title: 'Add a setting for a thread: compact_at token count. This will let us use shorter contexts than required which is good for like agents we want to be around and have some history, but which we don''t want to spend a lot of money on. e.g., a task that takes a bug or idea and and calls a planning agent with more details (eg requirements to update the api and different Ui spots)'
+---
+
+Add a setting for a thread: compact_at token count. This will let us use shorter contexts than required which is good for like agents we want to be around and have some history, but which we don't want to spend a lot of money on. e.g., a task that takes a bug or idea and and calls a planning agent with more details (eg requirements to update the api and different Ui spots)
