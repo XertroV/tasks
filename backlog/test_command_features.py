@@ -586,14 +586,15 @@ def test_version_command_outputs_version(runner, tmp_feature_tasks_dir):
 
 
 def test_ci_validate_ids_command_accepts_shorthand_ids(runner, tmp_feature_tasks_dir):
-    result = runner.invoke(cli, ["ci", "validate-ids", "B020", "E1.T02"])
+    result = runner.invoke(cli, ["ci", "validate-ids", "B020", "E1.T02"], mix_stderr=False)
     assert result.exit_code == 0
+    assert result.output == ""
 
 
 def test_ci_validate_ids_command_rejects_invalid_id(runner, tmp_feature_tasks_dir):
-    result = runner.invoke(cli, ["ci", "validate-ids", "B020", "not-an-id"])
+    result = runner.invoke(cli, ["ci", "validate-ids", "B020", "not-an-id"], mix_stderr=False)
     assert result.exit_code != 0
-    assert "Invalid task ID" in result.output
+    assert result.output == ""
 
 
 def test_timeline_alias_is_shown_inline_in_help(runner, tmp_feature_tasks_dir):

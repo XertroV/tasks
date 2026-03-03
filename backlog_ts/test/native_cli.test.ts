@@ -1109,6 +1109,7 @@ tags: []
     root = setupFixture();
     const p = run(["ci", "validate-ids", "B020", "E1.T02", "P1.M1.E1.T001"], root);
     expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe("");
   });
 
   test("ci validate-ids rejects malformed ids", () => {
@@ -1116,6 +1117,7 @@ tags: []
     const p = run(["ci", "validate-ids", "B020", "not-an-id"], root);
     expect(p.exitCode).not.toBe(0);
     const out = p.stdout.toString() + p.stderr.toString();
+    expect(p.stdout.toString()).toBe("");
     expect(out).toContain("Invalid TASK_ID: not-an-id");
   });
 

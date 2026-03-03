@@ -4309,30 +4309,30 @@ func runCI(args []string) error {
 		return nil
 	}
 	if err := validateAllowedFlags(args, map[string]bool{"--help": true, "-h": true}); err != nil {
-		return printUsageError(commands.CmdCI, err)
+		return err
 	}
 
 	action := firstPositionalArg(args, map[string]bool{"--help": false, "-h": false})
 	if action == "" {
-		return printUsageError(commands.CmdCI, errors.New("ci requires an action"))
+		return errors.New("ci requires an action")
 	}
 	switch normalizeCommand(action) {
 	case "validate-ids":
 		return runCIValidateIDs(args)
 	default:
-		return printUsageError(commands.CmdCI, fmt.Errorf("unknown ci action: %s", action))
+		return fmt.Errorf("unknown ci action: %s", action)
 	}
 }
 
 func runCIValidateIDs(args []string) error {
 	ids := positionalArgs(args, map[string]bool{"--help": false, "-h": false})
-	if len(ids) <= 1 {
-		return printUsageError(commands.CmdCI, errors.New("validate-ids requires at least one TASK_ID"))
+	if len(ids) < 2 {
+		return errors.New("validate-ids requires at least one TASK_ID")
 	}
 	ids = ids[1:] // skip action
 	for _, id := range ids {
 		if err := validateTaskIDForCI(id); err != nil {
-			return printUsageError(commands.CmdCI, err)
+			return err
 		}
 	}
 	return nil

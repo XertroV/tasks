@@ -2602,32 +2602,31 @@ async function cmdWork(args: string[]): Promise<void> {
 }
 
 async function cmdCI(args: string[]): Promise<void> {
-  const commandArgs = positionalArgsForCommand(
-    args,
-    {
-      "--help": "boolean",
-      "-h": "boolean",
-    },
-    "ci",
-  );
   if (parseFlag(args, "--help", "-h")) {
     printCommandHelpForCommand("ci");
     return;
   }
+
+  const commandArgs: string[] = [];
+  for (const arg of args) {
+    if (arg === "--help" || arg === "-h") continue;
+    if (arg.startsWith("-")) {
+      textError(`unexpected flag: ${arg}`);
+    }
+    commandArgs.push(arg);
+  }
+
   if (commandArgs.length === 0) {
-    printCommandHelpForCommand("ci");
     textError("ci requires an action: validate-ids");
   }
 
   const action = commandArgs[0] ?? "";
   if (action !== "validate-ids") {
-    printCommandHelpForCommand("ci");
     textError(`unknown ci action: ${action}`);
   }
 
   const ids = commandArgs.slice(1);
   if (ids.length === 0) {
-    printCommandHelpForCommand("ci");
     textError("validate-ids requires at least one TASK_ID");
   }
   for (const id of ids) {

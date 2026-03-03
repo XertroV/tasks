@@ -983,9 +983,12 @@ func TestRunCIValidateIDsAcceptsShorthandIDs(t *testing.T) {
 	t.Parallel()
 
 	root := t.TempDir()
-	_, err := runInDir(t, root, "ci", "validate-ids", "B020", "E1.T02", "P1.M1.E1.T001")
+	output, err := runInDir(t, root, "ci", "validate-ids", "B020", "E1.T02", "P1.M1.E1.T001")
 	if err != nil {
 		t.Fatalf("run ci validate-ids = %v, expected nil", err)
+	}
+	if output != "" {
+		t.Fatalf("output = %q, expected empty", output)
 	}
 }
 
@@ -1000,7 +1003,7 @@ func TestRunCIValidateIDsRejectsMalformedID(t *testing.T) {
 	if !strings.Contains(err.Error(), "malformed task id: not-an-id") {
 		t.Fatalf("err = %q, expected malformed task id error", err)
 	}
-	assertContainsAll(t, output, "Command Help: backlog ci", "Usage:")
+	assertContainsAll(t, output, "malformed task id: not-an-id")
 }
 
 func TestRunShowMissingTaskSuggestsNearbyIDs(t *testing.T) {
