@@ -430,6 +430,27 @@ function maybePrintCommandHelp(command: string, args: string[]): boolean {
   return true;
 }
 
+function runHelp(rest: string[]): void {
+  const command = rest.find((arg) => arg && !arg.startsWith("-"));
+  if (command) {
+    const normalized = helpAliases[command] ?? command;
+    if (!commandHelpSpecs[normalized]) {
+      textError(`Unknown command: ${command}`);
+    }
+    printCommandHelpForCommand(normalized);
+    return;
+  }
+  if (parseFlag(rest, "--help", "-h")) {
+    printCommandHelpForCommand("help");
+    return;
+  }
+  if (rest.length > 0) {
+    const unknown = rest.find((arg) => arg.startsWith("-"));
+    textError(`Unknown flag: ${unknown ?? rest[0]}`);
+  }
+  usage();
+}
+
 function printCommandHelpForCommand(command: string): void {
   const normalized = helpAliases[command] ?? command;
   const spec = commandHelpSpecs[normalized];
@@ -3914,7 +3935,7 @@ async function main(): Promise<void> {
   const cmd = args[0];
   const rest = args.slice(1);
 
-  if (!cmd || cmd === "--help" || cmd === "help") {
+  if (!cmd || cmd === "--help") {
     usage();
     return;
   }
@@ -3938,6 +3959,9 @@ async function main(): Promise<void> {
       return;
     case "log":
       await cmdLog(rest);
+      return;
+    case "help":
+      runHelp(rest);
       return;
     case "tree":
       await cmdTree(rest);

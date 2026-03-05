@@ -492,6 +492,29 @@ def version():
     click.echo(f"backlog version {BACKLOG_VERSION}")
 
 
+HELP_COMMAND_ALIASES = {"ls": "list", "r": "report", "tl": "timeline"}
+
+
+@cli.command(name="help")
+@click.argument("command_name", required=False)
+@click.pass_context
+def help_command(ctx, command_name):
+    """Show command overview and command-specific guidance."""
+    parent_ctx = ctx.parent or ctx
+
+    if command_name is None:
+        click.echo(parent_ctx.get_help())
+        return
+
+    command_name = HELP_COMMAND_ALIASES.get(command_name, command_name)
+    command = parent_ctx.command.get_command(parent_ctx, command_name)
+    if command is None:
+        raise click.ClickException(f"Unknown command: {command_name}")
+
+    with click.Context(command, info_name=command_name, parent=parent_ctx) as sub_ctx:
+        click.echo(command.get_help(sub_ctx))
+
+
 @cli.group()
 def ci():
     """CI-focused helpers for automation workflows."""

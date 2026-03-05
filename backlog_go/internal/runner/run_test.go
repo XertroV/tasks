@@ -979,6 +979,23 @@ func TestRunCIHelpRendersCommandSpecificGuidance(t *testing.T) {
 	assertContainsAll(t, output, "Command Help: backlog ci", "Usage: backlog ci validate-ids <TASK_ID ...>")
 }
 
+func TestRunHelpSyncRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	output, err := runInDir(t, root, "help", "sync")
+	if err != nil {
+		t.Fatalf("run help sync = %v, expected nil", err)
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Command Help: backlog sync",
+		"Usage: backlog sync",
+		"Recalculate derived metadata in index files.",
+	)
+}
+
 func TestRunCIValidateIDsAcceptsShorthandIDs(t *testing.T) {
 	t.Parallel()
 

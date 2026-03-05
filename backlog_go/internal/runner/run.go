@@ -912,6 +912,8 @@ func Run(rawArgs ...string) error {
 		return runBlocked(payload)
 	case commands.CmdCycle:
 		return runCycle(payload)
+	case commands.CmdHelp:
+		return runHelp(payload)
 	case commands.CmdWork:
 		return runWork(payload)
 	case commands.CmdVersion:
@@ -952,7 +954,73 @@ func Run(rawArgs ...string) error {
 	}
 }
 
+func runHelp(args []string) error {
+	if len(args) == 0 {
+		root := cmd.NewRootCommand()
+		fmt.Println(styleHeader(root.Usage()))
+		return nil
+	}
+
+	target := ""
+	for _, arg := range args {
+		if !strings.HasPrefix(arg, "-") {
+			target = normalizeCommand(arg)
+			break
+		}
+	}
+
+	if parseFlag(args, "--help", "-h") {
+		if target != "" {
+			root := cmd.NewRootCommand()
+			normalized := target
+			switch normalized {
+			case commands.CmdLs:
+				normalized = commands.CmdList
+			case commands.CmdReportAlias:
+				normalized = commands.CmdReport
+			case commands.CmdTimelineAlias:
+				normalized = commands.CmdTimeline
+			}
+			if !root.IsKnownCommand(normalized) {
+				printUnknownCommandSuggestion(target, root.Commands())
+				return fmt.Errorf("unknown command: %s", target)
+			}
+			printUsageForCommand(normalized)
+			return nil
+		}
+		printUsageForCommand(commands.CmdHelp)
+		return nil
+	}
+
+	if target == "" {
+		root := cmd.NewRootCommand()
+		fmt.Println(styleHeader(root.Usage()))
+		return nil
+	}
+
+	root := cmd.NewRootCommand()
+	normalized := target
+	switch normalized {
+	case commands.CmdLs:
+		normalized = commands.CmdList
+	case commands.CmdReportAlias:
+		normalized = commands.CmdReport
+	case commands.CmdTimelineAlias:
+		normalized = commands.CmdTimeline
+	}
+	if !root.IsKnownCommand(normalized) {
+		printUnknownCommandSuggestion(target, root.Commands())
+		return fmt.Errorf("unknown command: %s", target)
+	}
+
+	printUsageForCommand(normalized)
+	return nil
+}
+
 func maybeHandleCommandHelp(command string, args []string) bool {
+	if command == commands.CmdHelp {
+		return false
+	}
 	if !parseFlag(args, "--help", "-h") {
 		return false
 	}
