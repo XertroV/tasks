@@ -1840,6 +1840,7 @@ async function cmdShow(args: string[]): Promise<void> {
     const t = findTask(scopeTree, id);
     if (!t) showNotFound("Task", id, scopeHint);
     console.log(`${t.id}: ${t.title}\nstatus=${t.status} estimate=${t.estimateHours}`);
+    renderTaskDependencyOverview(t, fullTree ?? scopeTree);
     const { body } = parseTodoFrontmatter(taskFilePath(t));
     const bodyLines = body.trim().split("\n");
     if (bodyLines.length > 0 && bodyLines[0] !== "") {
@@ -1858,6 +1859,45 @@ async function cmdShow(args: string[]): Promise<void> {
         }
       }
     }
+  }
+}
+
+function dependencyMarker(status?: Status): string {
+  if (!status) {
+    return pc.red("?");
+  }
+  return status === Status.DONE ? pc.green("✓") : pc.red("✗");
+}
+
+function renderTaskDependencyOverview(task: Task, tree: TaskTree): void {
+  let rendered = false;
+
+  if (task.dependsOn.length > 0) {
+    console.log(pc.bold("Explicit dependencies:"));
+    for (const depId of task.dependsOn) {
+      const dep = findTask(tree, depId);
+      if (dep) {
+        console.log(`  ${dependencyMarker(dep.status)} ${dep.id} - ${dep.title} (${dep.status})`);
+      } else {
+        console.log(`  ${pc.red("?")} ${depId} (not found)`);
+      }
+    }
+    rendered = true;
+  } else if (task.epicId) {
+    const epic = findEpic(tree, task.epicId);
+    if (epic) {
+      const taskIndex = epic.tasks.findIndex((candidate) => candidate.id === task.id);
+      if (taskIndex > 0) {
+        const prevTask = epic.tasks[taskIndex - 1];
+        console.log(pc.bold("Implicit dependency (previous in epic):"));
+        console.log(`  ${dependencyMarker(prevTask.status)} ${prevTask.id} - ${prevTask.title} (${prevTask.status})`);
+        rendered = true;
+      }
+    }
+  }
+
+  if (rendered) {
+    console.log(pc.dim("Legend: ✓ done | ✗ not done | ? not found"));
   }
 }
 

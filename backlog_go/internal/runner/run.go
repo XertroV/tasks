@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"os/exec"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -855,7 +856,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdDash:
 		return runDash(payload)
 	case commands.CmdAdd:
-		return runAdd(payload)
+		return runWithAutoCommit("add", payload, runAdd)
 	case commands.CmdAddEpic:
 		return runAddEpic(payload)
 	case commands.CmdAddMilestone:
@@ -941,9 +942,9 @@ func Run(rawArgs ...string) error {
 	case commands.CmdUnlock:
 		return runLock(payload, false)
 	case commands.CmdIdea:
-		return runIdea(payload)
+		return runWithAutoCommit("idea", payload, runIdea)
 	case commands.CmdBug:
-		return runBug(payload)
+		return runWithAutoCommit("bug", payload, runBug)
 	case commands.CmdFixed:
 		return runFixed(payload)
 	case commands.CmdMigrate:
@@ -952,6 +953,229 @@ func Run(rawArgs ...string) error {
 		printCommandNotImplemented(command)
 		return fmt.Errorf("command not implemented: %s", command)
 	}
+}
+
+const (
+	autoCommitAddPrefix  = "bl add"
+	autoCommitBugPrefix  = "bl bug"
+	autoCommitIdeaPrefix = "bl idea"
+)
+
+type gitAutoCommitContext struct {
+	hasStaged      bool
+	preStatus      map[string]string
+	canAmendBlAdd  bool
+	prevAddUnpushed bool
+}
+
+func runWithAutoCommit(command string, args []string, handler func([]string) error) error {
+	context, err := captureAutoCommitContext()
+	if err != nil {
+		context = nil
+	}
+
+	if err := handler(args); err != nil {
+		return err
+	}
+
+	if context == nil || context.hasStaged {
+		return nil
+	}
+
+	if err := executeAutoCommit(command, context); err != nil {
+		fmt.Printf("%s: %s\n", styleWarning("Auto-commit skipped"), err)
+	}
+	return nil
+}
+
+func captureAutoCommitContext() (*gitAutoCommitContext, error) {
+	preStatus, err := gitStatusSnapshot()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := &gitAutoCommitContext{
+		hasStaged: hasStagedChanges(preStatus),
+		preStatus: preStatus,
+	}
+
+	if ctx.hasStaged {
+		return ctx, nil
+	}
+
+	ctx.canAmendBlAdd = isPreviousCommitFromBlAdd()
+	ctx.prevAddUnpushed = isPreviousCommitUnpushed()
+	return ctx, nil
+}
+
+func executeAutoCommit(command string, context *gitAutoCommitContext) error {
+	postStatus, err := gitStatusSnapshot()
+	if err != nil {
+		return err
+	}
+
+	changedFiles := changedTrackedPaths(context.preStatus, postStatus)
+	if len(changedFiles) == 0 {
+		return nil
+	}
+
+	if err := gitAddPaths(changedFiles); err != nil {
+		return err
+	}
+
+	if command == "add" && context.canAmendBlAdd && context.prevAddUnpushed {
+		if err := gitAmendCommit(); err == nil {
+			return nil
+		}
+	}
+
+	return gitCommit(autoCommitMessage(command))
+}
+
+func autoCommitMessage(command string) string {
+	switch command {
+	case "add":
+		return "bl add"
+	case "bug":
+		return "bl bug"
+	case "idea":
+		return "bl idea"
+	default:
+		return fmt.Sprintf("backlog %s", command)
+	}
+}
+
+func isPreviousCommitFromBlAdd() bool {
+	message, err := gitLatestCommitMessage()
+	if err != nil {
+		return false
+	}
+	return strings.HasPrefix(message, autoCommitAddPrefix)
+}
+
+func isPreviousCommitUnpushed() bool {
+	if _, err := gitCommand("rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"); err != nil {
+		return true
+	}
+
+	aheadRaw, err := gitCommand("rev-list", "--count", "@{u}..HEAD")
+	if err != nil {
+		return false
+	}
+	ahead, err := strconv.Atoi(strings.TrimSpace(aheadRaw))
+	if err != nil {
+		return false
+	}
+	return ahead > 0
+}
+
+func gitLatestCommitMessage() (string, error) {
+	message, err := gitCommand("log", "-1", "--pretty=%B")
+	if err != nil {
+		return "", err
+	}
+	firstLine := strings.SplitN(strings.TrimSpace(message), "\n", 2)[0]
+	return firstLine, nil
+}
+
+func changedTrackedPaths(before, after map[string]string) []string {
+	paths := make(map[string]struct{})
+	for path, afterStatus := range after {
+		beforeStatus, ok := before[path]
+		if !ok || beforeStatus != afterStatus {
+			paths[path] = struct{}{}
+		}
+	}
+	for path := range before {
+		if _, ok := after[path]; !ok {
+			paths[path] = struct{}{}
+		}
+	}
+	result := make([]string, 0, len(paths))
+	for path := range paths {
+		result = append(result, path)
+	}
+	return result
+}
+
+func hasStagedChanges(status map[string]string) bool {
+	for _, state := range status {
+		if len(state) < 2 {
+			continue
+		}
+		if state[0] != ' ' && state[0] != '?' {
+			return true
+		}
+	}
+	return false
+}
+
+func gitStatusSnapshot() (map[string]string, error) {
+	statusText, err := gitCommand("status", "--porcelain=v1")
+	if err != nil {
+		return nil, err
+	}
+	statusMap := map[string]string{}
+	for _, line := range strings.Split(strings.TrimSpace(statusText), "\n") {
+		if line == "" {
+			continue
+		}
+		if len(line) < 3 {
+			continue
+		}
+		if len(line) >= 3 {
+			status := line[0:2]
+			path := strings.TrimSpace(line[3:])
+			if path == "" {
+				continue
+			}
+			if strings.HasPrefix(status, "R") {
+				parts := strings.SplitN(path, " -> ", 2)
+				if len(parts) == 2 {
+					statusMap[parts[1]] = status
+					continue
+				}
+			}
+			statusMap[path] = status
+		}
+	}
+	return statusMap, nil
+}
+
+func gitAddPaths(paths []string) error {
+	if len(paths) == 0 {
+		return nil
+	}
+	args := []string{"add", "--"}
+	args = append(args, paths...)
+	_, err := gitCommand(args...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func gitCommit(message string) error {
+	_, err := gitCommand("commit", "-m", message)
+	return err
+}
+
+func gitAmendCommit() error {
+	_, err := gitCommand("commit", "--amend", "--no-edit")
+	return err
+}
+
+func gitCommand(args ...string) (string, error) {
+	cmd := exec.Command("git", args...)
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		trimmed := strings.TrimSpace(string(output))
+		if trimmed == "" {
+			trimmed = err.Error()
+		}
+		return "", fmt.Errorf("%s", trimmed)
+	}
+	return strings.TrimSpace(string(output)), nil
 }
 
 func runHelp(args []string) error {
@@ -7661,7 +7885,7 @@ func showScopedItem(
 		if task == nil {
 			return showNotFound(tree, "Task", id, scopeHint)
 		}
-		renderTaskDetail(*task, dataDir, showNext, showLong)
+		renderTaskDetail(*task, dataDir, showNext, showLong, tree)
 		return nil
 	default:
 		return showNotFound(tree, "Task", id, scopeHint)
@@ -7880,15 +8104,72 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 	return nil
 }
 
-func renderTaskDetail(task models.Task, dataDir string, showNext bool, showLong bool) {
+func implicitDependencyID(task models.Task, tree models.TaskTree) *models.Task {
+	if len(task.DependsOn) > 0 || strings.TrimSpace(task.EpicID) == "" {
+		return nil
+	}
+
+	epic := tree.FindEpic(task.EpicID)
+	if epic == nil {
+		return nil
+	}
+
+	for idx := range epic.Tasks {
+		if epic.Tasks[idx].ID == task.ID {
+			if idx == 0 {
+				return nil
+			}
+			return &epic.Tasks[idx-1]
+		}
+	}
+	return nil
+}
+
+func renderTaskDependencySummary(task models.Task, tree models.TaskTree) bool {
+	if len(task.DependsOn) > 0 {
+		fmt.Printf("%s\n", styleSubHeader("Explicit dependencies:"))
+		for _, depID := range task.DependsOn {
+			depTask := tree.FindTask(depID)
+			if depTask == nil {
+				fmt.Printf("  %s %s (%s)\n", styleError("?"), styleSuccess(depID), styleError("not found"))
+				continue
+			}
+
+			marker := styleError("✗")
+			if depTask.Status == models.StatusDone {
+				marker = styleSuccess("✓")
+			}
+			fmt.Printf("  %s %s (%s)\n", marker, styleSuccess(depTask.ID), styleStatusText(string(depTask.Status)))
+		}
+		fmt.Printf("%s\n", styleMuted("Legend: ✓ done | ✗ not done | ? not found"))
+		return true
+	}
+
+	prevTask := implicitDependencyID(task, tree)
+	if prevTask == nil {
+		return false
+	}
+
+	marker := styleError("✗")
+	if prevTask.Status == models.StatusDone {
+		marker = styleSuccess("✓")
+	}
+
+	fmt.Printf("%s\n", styleSubHeader("Implicit dependency (previous in epic):"))
+	fmt.Printf("  %s %s (%s)\n", marker, styleSuccess(prevTask.ID), styleStatusText(string(prevTask.Status)))
+	fmt.Printf("%s\n", styleMuted("Legend: ✓ done | ✗ not done | ? not found"))
+	return true
+}
+
+func renderTaskDetail(task models.Task, dataDir string, showNext bool, showLong bool, tree models.TaskTree) {
 	fmt.Printf("%s: %s\n", styleSuccess("Task"), task.ID)
 	fmt.Printf("%s: %s\n", styleSubHeader("Title"), task.Title)
 	fmt.Printf("%s: %s\n", styleSubHeader("Status"), styleStatusText(string(task.Status)))
 	fmt.Printf("%s: %.2f\n", styleSubHeader("Estimate"), task.EstimateHours)
 	fmt.Printf("%s: %s\n", styleSubHeader("Complexity"), task.Complexity)
 	fmt.Printf("%s: %s\n", styleSubHeader("Priority"), task.Priority)
-	if len(task.DependsOn) > 0 {
-		fmt.Printf("%s: %s\n", styleSubHeader("Depends on"), strings.Join(task.DependsOn, ", "))
+	if renderTaskDependencySummary(task, tree) {
+		fmt.Println()
 	}
 	if len(task.Tags) > 0 {
 		fmt.Printf("%s: %s\n", styleSubHeader("Tags"), strings.Join(task.Tags, ", "))

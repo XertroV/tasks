@@ -2218,6 +2218,48 @@ def _sum_task_estimate_hours(tasks):
     return sum(task.estimate_hours for task in tasks)
 
 
+def _dependency_icon(task_status: Status) -> str:
+    if task_status == Status.DONE:
+        return "[green]✓[/]"
+    return "[red]✗[/]"
+
+
+def _show_dependency_details(tree, task):
+    """Display explicit or implicit task dependencies for show output."""
+    rendered = False
+
+    if task.depends_on:
+        console.print("[bold]Explicit dependencies:[/]")
+        for dep_id in task.depends_on:
+            dep = tree.find_task(dep_id)
+            if dep:
+                console.print(
+                    f"  {_dependency_icon(dep.status)} {dep.id} - {dep.title} ({dep.status.value})"
+                )
+            else:
+                console.print(f"  [red]?[/] {dep_id} (not found)")
+        rendered = True
+    elif task.epic_id:
+        epic = tree.find_epic(task.epic_id)
+        if epic:
+            task_index = None
+            for idx, epic_task in enumerate(epic.tasks):
+                if epic_task.id == task.id:
+                    task_index = idx
+                    break
+
+            if task_index and task_index > 0:
+                prev_task = epic.tasks[task_index - 1]
+                console.print("[bold]Implicit dependency (previous in epic):[/]")
+                console.print(
+                    f"  {_dependency_icon(prev_task.status)} {prev_task.id} - {prev_task.title} ({prev_task.status.value})"
+                )
+                rendered = True
+
+    if rendered:
+        console.print("[dim]Legend: ✓ done | ✗ not done | ? not found[/]")
+
+
 def _show_phase(tree, phase_id):
     """Display phase details."""
     phase = tree.find_phase(phase_id)
@@ -2333,6 +2375,8 @@ def _show_task(tree, task_id, show_long=False):
             console.print(
                 f"[bold]Claimed at:[/] {task.claimed_at.isoformat()} ({age:.1f}h ago)"
             )
+
+    _show_dependency_details(tree, task)
 
     console.print(f"\n[bold]File:[/] .tasks/{task.file}\n")
 

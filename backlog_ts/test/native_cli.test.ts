@@ -2131,6 +2131,38 @@ tags: []
     expect(output).toContain("Tip: Use 'backlog tree P1.M1.E1' to verify available IDs.");
   });
 
+  test("show displays explicit dependencies with legend", () => {
+    root = setupFixture();
+    const task1Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(task1Path, (frontmatter) => {
+      frontmatter.status = "done";
+    });
+
+    const p = run(["show", "P1.M1.E1.T002"], root);
+    expect(p.exitCode).toBe(0);
+    const output = p.stdout.toString();
+    expect(output).toContain("Explicit dependencies:");
+    expect(output).toContain("✓ P1.M1.E1.T001");
+    expect(output).toContain("Legend: ✓ done | ✗ not done | ? not found");
+    expect(output).not.toContain("Implicit dependency");
+  });
+
+  test("show displays implicit previous-task dependency with legend", () => {
+    root = setupFixture();
+    const task2Path = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    updateTodoFrontmatter(task2Path, (frontmatter) => {
+      frontmatter.depends_on = [];
+    });
+
+    const p = run(["show", "P1.M1.E1.T002"], root);
+    expect(p.exitCode).toBe(0);
+    const output = p.stdout.toString();
+    expect(output).toContain("Implicit dependency (previous in epic):");
+    expect(output).toContain("✗ P1.M1.E1.T001");
+    expect(output).toContain("Legend: ✓ done | ✗ not done | ? not found");
+    expect(output).not.toContain("Explicit dependencies:");
+  });
+
   test("show phase displays total duration", () => {
     root = setupFixture();
     const p = run(["show", "P1"], root);

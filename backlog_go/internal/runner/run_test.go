@@ -1506,6 +1506,55 @@ func TestRunShowTaskLongPrintsFullBody(t *testing.T) {
 	}
 }
 
+func TestRunShowTaskDisplaysExplicitDependencies(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "done", "", "")
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	output, err := runInDir(t, root, "show", "P1.M1.E1.T002")
+	if err != nil {
+		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Explicit dependencies:") {
+		t.Fatalf("show output = %q, expected explicit dependency section", output)
+	}
+	if !strings.Contains(output, "✓ P1.M1.E1.T001") {
+		t.Fatalf("show output = %q, expected explicit dependency marker line", output)
+	}
+	if !strings.Contains(output, "Legend: ✓ done | ✗ not done | ? not found") {
+		t.Fatalf("show output = %q, expected dependency legend", output)
+	}
+	if strings.Contains(output, "Implicit dependency") {
+		t.Fatalf("show output = %q, expected no implicit dependency section", output)
+	}
+}
+
+func TestRunShowTaskDisplaysImplicitDependencyWhenNoExplicit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{})
+
+	output, err := runInDir(t, root, "show", "P1.M1.E1.T002")
+	if err != nil {
+		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Implicit dependency (previous in epic):") {
+		t.Fatalf("show output = %q, expected implicit dependency section", output)
+	}
+	if !strings.Contains(output, "✗ P1.M1.E1.T001") {
+		t.Fatalf("show output = %q, expected implicit dependency marker line", output)
+	}
+	if !strings.Contains(output, "Legend: ✓ done | ✗ not done | ? not found") {
+		t.Fatalf("show output = %q, expected dependency legend", output)
+	}
+	if strings.Contains(output, "Explicit dependencies:") {
+		t.Fatalf("show output = %q, expected no explicit dependency section", output)
+	}
+}
+
 func TestRunShowPhaseDisplaysTotalDuration(t *testing.T) {
 	t.Parallel()
 

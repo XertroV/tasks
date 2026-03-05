@@ -2270,6 +2270,37 @@ def test_show_task_long_prints_entire_body(runner, tmp_tasks_dir):
     assert "... (2 more lines)" not in result.output
 
 
+def test_show_task_displays_explicit_dependencies(runner, tmp_tasks_dir):
+    """show should label explicit dependencies in task output."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Setup task", status="done")
+    create_task_file(
+        tmp_tasks_dir,
+        "P1.M1.E1.T002",
+        "Dependent task",
+        depends_on=["P1.M1.E1.T001"],
+    )
+
+    result = runner.invoke(cli, ["show", "P1.M1.E1.T002"])
+    assert result.exit_code == 0
+    assert "Explicit dependencies:" in result.output
+    assert "✓ P1.M1.E1.T001" in result.output
+    assert "Legend: ✓ done | ✗ not done | ? not found" in result.output
+    assert "Implicit dependency" not in result.output
+
+
+def test_show_task_displays_implicit_dependency_when_no_explicit(runner, tmp_tasks_dir):
+    """show should label implicit previous-task dependency when explicit deps are absent."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Setup task")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Dependent task", depends_on=[])
+
+    result = runner.invoke(cli, ["show", "P1.M1.E1.T002"])
+    assert result.exit_code == 0
+    assert "Implicit dependency (previous in epic):" in result.output
+    assert "P1.M1.E1.T001" in result.output
+    assert "Explicit dependencies:" not in result.output
+    assert "Legend: ✓ done | ✗ not done | ? not found" in result.output
+
+
 def test_show_phase_displays_total_duration(runner, tmp_tasks_dir):
     """show on a phase should include total task duration."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
