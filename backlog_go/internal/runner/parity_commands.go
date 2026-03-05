@@ -1972,9 +1972,17 @@ func runCheck(args []string) error {
 
 	calculator := critical_path.NewCriticalPathCalculator(tree, map[string]float64{})
 	if _, _, err := calculator.Calculate(); err != nil {
+		location := ""
+		issueCode := "dependency_graph"
+		var cycleErr *critical_path.DependencyCycleError
+		if errors.As(err, &cycleErr) {
+			issueCode = "task_dependency_cycle"
+			location = "task_dependencies"
+		}
 		report.Errors = append(report.Errors, checkIssue{
-			Code:    "dependency_graph",
-			Message: err.Error(),
+			Code:     issueCode,
+			Message:  err.Error(),
+			Location: location,
 		})
 	}
 

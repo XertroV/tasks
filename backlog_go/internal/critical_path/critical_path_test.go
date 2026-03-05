@@ -2,6 +2,7 @@ package critical_path
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/XertroV/tasks/backlog_go/internal/models"
@@ -99,6 +100,16 @@ func TestCalculateRejectsDependencyCycle(t *testing.T) {
 	_, _, err := calc.Calculate()
 	if err == nil {
 		t.Fatal("Calculate() expected error for dependency cycle")
+	}
+	cycleErr, ok := err.(*DependencyCycleError)
+	if !ok {
+		t.Fatalf("Calculate() expected *DependencyCycleError, got %T", err)
+	}
+	if !strings.Contains(cycleErr.Error(), "task dependency cycle detected:") {
+		t.Fatalf("Calculate() unexpected cycle error message: %q", cycleErr.Error())
+	}
+	if !strings.Contains(cycleErr.Error(), "P1.M1.E1.T001") || !strings.Contains(cycleErr.Error(), "P1.M1.E1.T002") {
+		t.Fatalf("Calculate() cycle path should mention both tasks: %q", cycleErr.Error())
 	}
 }
 

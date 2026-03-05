@@ -24,6 +24,17 @@ var defaultComplexityMultipliers = map[string]float64{
 	"critical": 2,
 }
 
+type DependencyCycleError struct {
+	Cycle []string
+}
+
+func (e *DependencyCycleError) Error() string {
+	if len(e.Cycle) == 0 {
+		return "dependency graph contains cycle(s): could not perform topological sort"
+	}
+	return "task dependency cycle detected: " + strings.Join(e.Cycle, " → ")
+}
+
 type TaskWeightProvider map[string]float64
 
 type WhyDependency struct {
@@ -254,6 +265,9 @@ func (c *CriticalPathCalculator) Calculate() ([]string, string, error) {
 func (g *dependencyGraph) longestPath() ([]string, error) {
 	order := topologicalSort(g)
 	if len(order) != len(g.nodeWeights) {
+		if cycle, ok := g.findAnyCycle(); ok {
+			return nil, &DependencyCycleError{Cycle: cycle}
+		}
 		return nil, errors.New("dependency graph contains cycle(s): could not perform topological sort")
 	}
 
@@ -300,6 +314,49 @@ func (g *dependencyGraph) longestPath() ([]string, error) {
 	}
 
 	return path, nil
+}
+
+func (g *dependencyGraph) findAnyCycle() ([]string, bool) {
+	state := map[string]int{} // 0 = unvisited, 1 = visiting, 2 = done
+	stack := make([]string, 0, len(g.order))
+	position := map[string]int{}
+
+	var dfs func(string) ([]string, bool)
+	dfs = func(node string) ([]string, bool) {
+		state[node] = 1
+		position[node] = len(stack)
+		stack = append(stack, node)
+
+		for _, next := range mapToSortedSlice(g.edges[node]) {
+			if state[next] == 1 {
+				start := position[next]
+				cycle := append([]string{}, stack[start:]...)
+				cycle = append(cycle, next)
+				return cycle, true
+			}
+			if state[next] == 0 {
+				if cycle, found := dfs(next); found {
+					return cycle, true
+				}
+			}
+		}
+
+		stack = stack[:len(stack)-1]
+		delete(position, node)
+		state[node] = 2
+		return nil, false
+	}
+
+	for _, node := range g.order {
+		if state[node] != 0 {
+			continue
+		}
+		if cycle, found := dfs(node); found {
+			return cycle, true
+		}
+	}
+
+	return nil, false
 }
 
 func topologicalSort(graph *dependencyGraph) []string {

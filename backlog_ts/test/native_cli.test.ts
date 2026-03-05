@@ -938,6 +938,24 @@ tags: []
     expect(p.stdout.toString()).toContain("E2");
   });
 
+  test("check reports task dependency cycle", () => {
+    root = setupFixture();
+    const task1 = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const task2 = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    updateTodoFrontmatter(task1, (frontmatter) => {
+      frontmatter.depends_on = ["P1.M1.E1.T002"];
+    });
+    updateTodoFrontmatter(task2, (frontmatter) => {
+      frontmatter.depends_on = ["P1.M1.E1.T001"];
+    });
+
+    const p = run(["check"], root);
+    expect(p.exitCode).toBe(1);
+    expect(p.stdout.toString()).toContain("task_dependency_cycle");
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T002");
+  });
+
   test("check command warns on uninitialized todo files", () => {
     root = setupFixture();
     const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");

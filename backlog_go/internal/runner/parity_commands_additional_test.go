@@ -315,6 +315,25 @@ func TestRunCheckReportsMissingTaskFileAsError(t *testing.T) {
 	}
 }
 
+func TestRunCheckReportsTaskDependencyCycle(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T001", []string{"P1.M1.E1.T002"})
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	output, err := runInDir(t, root, "check")
+	if err == nil {
+		t.Fatalf("run check expected non-nil error for dependency cycle")
+	}
+	if !strings.Contains(output, "task_dependency_cycle") {
+		t.Fatalf("check output = %q, expected task_dependency_cycle", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") || !strings.Contains(output, "P1.M1.E1.T002") {
+		t.Fatalf("check output = %q, expected task IDs in cycle message", output)
+	}
+}
+
 func TestRunTimelineNoTasksWhenDoneHidden(t *testing.T) {
 	t.Parallel()
 

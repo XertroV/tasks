@@ -275,6 +275,8 @@ def test_check_detects_task_dependency_cycle(tmp_path, monkeypatch):
 
     assert result.exit_code == 1
     assert "task_dependency_cycle" in result.output
+    assert "P1.M1.E1.T001" in result.output
+    assert "P1.M1.E1.T002" in result.output
 
 
 def test_check_warnings_do_not_fail_unless_strict(tmp_path, monkeypatch):
