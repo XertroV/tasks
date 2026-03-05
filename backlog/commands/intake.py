@@ -5,6 +5,7 @@ from rich.console import Console
 
 from ..loader import TaskLoader
 from ..data_dir import get_data_dir_name
+from ..autocommit import run_with_auto_commit
 
 console = Console()
 
@@ -23,7 +24,7 @@ def _print_next_commands(*commands):
 @click.argument("idea_words", nargs=-1, required=True)
 def idea(idea_words):
     """Capture an idea as a planning intake .todo."""
-    try:
+    def _run() -> None:
         title = " ".join(idea_words).strip()
         if not title:
             raise ValueError("idea requires a non-empty idea description")
@@ -46,6 +47,12 @@ def idea(idea_words):
             "[yellow]IMPORTANT:[/] This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.\n"
         )
 
+    try:
+        run_with_auto_commit(
+            "idea",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
+        )
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()

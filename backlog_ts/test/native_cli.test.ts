@@ -88,6 +88,34 @@ function updateTodoFrontmatter(taskPath: string, mutate: (frontmatter: Record<st
   writeFileSync(taskPath, `---\n${stringify(frontmatter)}---\n${body}`);
 }
 
+function runGit(cwd: string, ...args: string[]): string {
+  const result = Bun.spawnSync(["git", ...args], {
+    cwd,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (result.exitCode !== 0) {
+    throw new Error(result.stderr.toString() || result.stdout.toString() || `git ${args.join(" ")} failed`);
+  }
+  return result.stdout.toString().trim();
+}
+
+function initializeTestGitRepo(cwd: string): void {
+  runGit(cwd, "init", "-q");
+  runGit(cwd, "config", "user.name", "backlog-tests");
+  runGit(cwd, "config", "user.email", "backlog-tests@example.com");
+  runGit(cwd, "add", ".tasks");
+  runGit(cwd, "commit", "-m", "baseline");
+}
+
+function gitCommitCount(cwd: string): number {
+  const count = Number.parseInt(runGit(cwd, "rev-list", "--count", "HEAD"), 10);
+  if (Number.isNaN(count)) {
+    throw new Error("git rev-list --count HEAD did not return a number");
+  }
+  return count;
+}
+
 describe("native cli", () => {
   test("list/next/show json and text", () => {
     root = setupFixture();
@@ -1460,6 +1488,73 @@ tags: []
     expect(ideaText).toContain("Run `/plan-task");
     expect(ideaText).toContain("tasks add");
     expect(ideaText).toContain("tasks bug");
+  });
+
+  test("add auto-commits created task when no staged files exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["add", "P1.M1.E1", "--title", "auto-commit task"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created task: P1.M1.E1.T003");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl add");
+    expect(runGit(root, "status", "--short")).toBe("");
+  });
+
+  test("add skips auto-commit if staged files already exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["add", "P1.M1.E1", "--title", "skip commit"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created task: P1.M1.E1.T003");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
+  test("add amends prior local bl add commit when unpushed", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+
+    let p = run(["add", "P1.M1.E1", "--title", "first auto task"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created task: P1.M1.E1.T003");
+    const commitCountAfterFirst = gitCommitCount(root);
+
+    p = run(["add", "P1.M1.E1", "--title", "second auto task"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created task: P1.M1.E1.T004");
+    expect(gitCommitCount(root)).toBe(commitCountAfterFirst);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl add");
+  });
+
+  test("bug auto-commits created bug when no staged files exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["bug", "--title", "Auto commit bug"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created bug: B001");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl bug");
+  });
+
+  test("idea auto-commits created idea when no staged files exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["idea", "auto commit idea"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created idea: I001");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl idea");
   });
 
   test("bug accepts positional description as simple title", () => {

@@ -4,6 +4,7 @@ import pytest
 import json
 import yaml
 import os
+import subprocess
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 from click.testing import CliRunner
@@ -310,6 +311,32 @@ def create_bug_file(tasks_dir, bug_id, title, status="pending", depends_on=None)
         yaml.dump(bug_index, f)
 
     return bug_file
+
+
+def run_git(tasks_dir, *args):
+    """Run a git command in a backlog fixture directory."""
+    result = subprocess.run(["git", *args], cwd=str(tasks_dir), capture_output=True, text=True)
+    if result.returncode != 0:
+        message = (result.stdout + result.stderr).strip()
+        raise RuntimeError(message or f"git command failed: {' '.join(args)}")
+    return (result.stdout or "").strip()
+
+
+def initialize_test_git_repo(tasks_dir):
+    """Initialize a temporary git repo with current fixture files committed."""
+    run_git(tasks_dir, "init", "-q")
+    run_git(tasks_dir, "config", "user.name", "backlog-tests")
+    run_git(tasks_dir, "config", "user.email", "backlog@tests.local")
+    run_git(tasks_dir, "add", ".tasks")
+    run_git(tasks_dir, "commit", "-m", "baseline")
+
+
+def git_commit_count(tasks_dir):
+    """Return the current commit count for the repo."""
+    try:
+        return int(run_git(tasks_dir, "rev-list", "--count", "HEAD"))
+    except ValueError as exc:
+        raise AssertionError(f"invalid git commit count output: {run_git(tasks_dir, 'rev-list', '--count', 'HEAD')}") from exc
 
 
 class TestClaimCommand:
@@ -1901,6 +1928,82 @@ def test_idea_command_increments_idea_ids(runner, tmp_tasks_dir):
     ideas_index = yaml.safe_load(ideas_index_path.read_text())
     ids = [entry["id"] for entry in ideas_index["ideas"]]
     assert ids == ["I001", "I002"]
+
+
+def test_add_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
+    """add should auto-commit the created files when no staged files exist."""
+    initialize_test_git_repo(tmp_tasks_dir)
+    initial_commits = git_commit_count(tmp_tasks_dir)
+
+    result = runner.invoke(
+        cli, ["add", "P1.M1.E1", "--title", "Auto commit task"]
+    )
+    assert result.exit_code == 0
+    assert "Created task: P1.M1.E1.T001" in result.output
+    assert "File: .tasks/01-test-phase/01-test-milestone/01-test-epic/T001-auto-commit-task.todo" in result.output
+
+    assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl add"
+    assert run_git(tmp_tasks_dir, "status", "--short") == ""
+
+
+def test_add_command_skips_auto_commit_if_staged_files_exist(runner, tmp_tasks_dir):
+    """add should not auto-commit when there are staged files before the command."""
+    initialize_test_git_repo(tmp_tasks_dir)
+    (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+    run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+    initial_commits = git_commit_count(tmp_tasks_dir)
+    result = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Should remain staged"])
+    assert result.exit_code == 0
+    assert "Created task: P1.M1.E1.T001" in result.output
+
+    assert git_commit_count(tmp_tasks_dir) == initial_commits
+    assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
+
+def test_add_command_amends_previous_unpushed_bl_add_commit(runner, tmp_tasks_dir):
+    """Subsequent add should amend the previous local bl add commit when possible."""
+    initialize_test_git_repo(tmp_tasks_dir)
+
+    first = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "First auto commit task"])
+    assert first.exit_code == 0
+    assert "Created task: P1.M1.E1.T001" in first.output
+
+    commits_after_first = git_commit_count(tmp_tasks_dir)
+
+    second = runner.invoke(cli, ["add", "P1.M1.E1", "--title", "Second auto commit task"])
+    assert second.exit_code == 0
+    assert "Created task: P1.M1.E1.T002" in second.output
+
+    assert git_commit_count(tmp_tasks_dir) == commits_after_first
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl add"
+
+
+def test_bug_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
+    """bug should auto-commit created bug files when no staged files exist."""
+    initialize_test_git_repo(tmp_tasks_dir)
+    initial_commits = git_commit_count(tmp_tasks_dir)
+
+    result = runner.invoke(cli, ["bug", "--title", "Bug auto commit"])
+    assert result.exit_code == 0
+    assert "Created bug: B001" in result.output
+
+    assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl bug"
+
+
+def test_idea_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
+    """idea should auto-commit created idea files when no staged files exist."""
+    initialize_test_git_repo(tmp_tasks_dir)
+    initial_commits = git_commit_count(tmp_tasks_dir)
+
+    result = runner.invoke(cli, ["idea", "capture planning idea"])
+    assert result.exit_code == 0
+    assert "Created idea: I001" in result.output
+
+    assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl idea"
 
 
 def test_list_and_next_include_ideas(runner, tmp_tasks_dir):

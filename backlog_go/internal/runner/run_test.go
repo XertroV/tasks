@@ -6,8 +6,10 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
 	"testing"
@@ -496,6 +498,158 @@ func TestRunBugTemplateWarnsWhenNotSimple(t *testing.T) {
 	}
 	if !strings.Contains(output, "Next:") {
 		t.Fatalf("output = %q, expected next commands", output)
+	}
+}
+
+func TestRunAddAutoCommitCreatesBlAddCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(
+		t,
+		root,
+		"add",
+		"P1.M1.E1",
+		"--title",
+		"Auto commit task",
+	)
+	if err != nil {
+		t.Fatalf("run add = %v", err)
+	}
+	if !strings.Contains(output, "Created task: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected created task", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl add" {
+		t.Fatalf("latest commit = %q, expected bl add", message)
+	}
+}
+
+func TestRunAddAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(
+		t,
+		root,
+		"add",
+		"P1.M1.E1",
+		"--title",
+		"Should stay staged",
+	)
+	if err != nil {
+		t.Fatalf("run add = %v", err)
+	}
+	if !strings.Contains(output, "Created task: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected created task", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
+	}
+}
+
+func TestRunAddAutoCommitAmendsUnpushedBlAdd(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	initializeTestGitRepo(t, root)
+
+	output, err := runInDir(
+		t,
+		root,
+		"add",
+		"P1.M1.E1",
+		"--title",
+		"First auto commit task",
+	)
+	if err != nil {
+		t.Fatalf("first add = %v", err)
+	}
+	if !strings.Contains(output, "Created task: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected created first task", output)
+	}
+
+	commitCount := gitCommitCount(t, root)
+	output, err = runInDir(
+		t,
+		root,
+		"add",
+		"P1.M1.E1",
+		"--title",
+		"Second auto commit task",
+	)
+	if err != nil {
+		t.Fatalf("second add = %v", err)
+	}
+	if !strings.Contains(output, "Created task: P1.M1.E1.T002") {
+		t.Fatalf("output = %q, expected created second task", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl add" {
+		t.Fatalf("latest commit = %q, expected bl add", message)
+	}
+}
+
+func TestRunBugAutoCommitCreatesBlBugCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "bug", "root bug title")
+	if err != nil {
+		t.Fatalf("run bug = %v", err)
+	}
+	if !strings.Contains(output, "Created bug: B001") {
+		t.Fatalf("output = %q, expected created bug", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl bug" {
+		t.Fatalf("latest commit = %q, expected bl bug", message)
+	}
+}
+
+func TestRunIdeaAutoCommitCreatesBlIdeaCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "idea", "capture planning idea")
+	if err != nil {
+		t.Fatalf("run idea = %v", err)
+	}
+	if !strings.Contains(output, "Created idea: I001") {
+		t.Fatalf("output = %q, expected created idea", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl idea" {
+		t.Fatalf("latest commit = %q, expected bl idea", message)
 	}
 }
 
@@ -4154,6 +4308,36 @@ func writeTaskFileWithStatus(t *testing.T, root, relativePath, taskID, title, st
 	if err := os.WriteFile(fullPath, []byte(strings.Join(content, "\n")), 0o644); err != nil {
 		t.Fatalf("write task file %s: %v", fullPath, err)
 	}
+}
+
+func initializeTestGitRepo(t *testing.T, root string) {
+	t.Helper()
+	runGit(t, root, "init", "-q")
+	runGit(t, root, "config", "user.name", "backlog-ci")
+	runGit(t, root, "config", "user.email", "ci@backlog.local")
+	runGit(t, root, "add", ".tasks")
+	runGit(t, root, "commit", "-m", "baseline")
+}
+
+func runGit(t *testing.T, root string, args ...string) string {
+	t.Helper()
+	cmd := exec.Command("git", args...)
+	cmd.Dir = root
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		t.Fatalf("git %s failed: %s", strings.Join(args, " "), strings.TrimSpace(string(output)))
+	}
+	return strings.TrimSpace(string(output))
+}
+
+func gitCommitCount(t *testing.T, root string) int {
+	t.Helper()
+	countText := runGit(t, root, "rev-list", "--count", "HEAD")
+	count, err := strconv.Atoi(countText)
+	if err != nil {
+		t.Fatalf("parse commit count: %q", countText)
+	}
+	return count
 }
 
 func setupAddFixture(t *testing.T) string {

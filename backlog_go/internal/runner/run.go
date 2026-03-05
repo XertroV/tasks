@@ -1116,7 +1116,8 @@ func gitStatusSnapshot() (map[string]string, error) {
 		return nil, err
 	}
 	statusMap := map[string]string{}
-	for _, line := range strings.Split(strings.TrimSpace(statusText), "\n") {
+	for _, rawLine := range strings.Split(strings.TrimRight(statusText, "\r\n"), "\n") {
+		line := strings.TrimRight(rawLine, "\r")
 		if line == "" {
 			continue
 		}
@@ -1125,7 +1126,7 @@ func gitStatusSnapshot() (map[string]string, error) {
 		}
 		if len(line) >= 3 {
 			status := line[0:2]
-			path := strings.TrimSpace(line[3:])
+			path := strings.TrimRight(line[3:], "\r")
 			if path == "" {
 				continue
 			}
@@ -1175,7 +1176,7 @@ func gitCommand(args ...string) (string, error) {
 		}
 		return "", fmt.Errorf("%s", trimmed)
 	}
-	return strings.TrimSpace(string(output)), nil
+	return strings.TrimRight(string(output), "\r\n"), nil
 }
 
 func runHelp(args []string) error {

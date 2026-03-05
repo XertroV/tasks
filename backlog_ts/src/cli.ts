@@ -126,6 +126,178 @@ export function parseOpts(args: string[], name: string): string[] {
   return out;
 }
 
+type AutoCommitContext = {
+  hasStaged: boolean;
+  preStatus: Map<string, string>;
+  canAmendBlAdd: boolean;
+  prevAddUnpushed: boolean;
+};
+
+function gitRun(args: string[]): string {
+  const output = Bun.spawnSync(["git", ...args], {
+    cwd: process.cwd(),
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const stdout = output.stdout.toString();
+  const stderr = output.stderr.toString();
+  if (output.exitCode !== 0) {
+    throw new Error((stderr || stdout || "git command failed").trim());
+  }
+  return stdout.replace(/[\r\n]+$/g, "");
+}
+
+function gitStatusSnapshot(): Map<string, string> {
+  const statusText = gitRun(["status", "--porcelain=v1"]);
+  const status = new Map<string, string>();
+  for (const rawLine of statusText.split("\n")) {
+    const line = rawLine.endsWith("\r") ? rawLine.slice(0, -1) : rawLine;
+    if (line.length < 3) {
+      continue;
+    }
+    const state = line.slice(0, 2);
+    let path = line.slice(3);
+    if (!path) {
+      continue;
+    }
+    if (state.startsWith("R")) {
+      const parts = path.split(" -> ");
+      if (parts.length === 2) {
+        path = parts[1];
+      }
+    }
+    status.set(path, state);
+  }
+  return status;
+}
+
+function hasStagedChanges(status: Map<string, string>): boolean {
+  for (const state of status.values()) {
+    if (state.length > 0 && state[0] !== " " && state[0] !== "?") {
+      return true;
+    }
+  }
+  return false;
+}
+
+function changedTrackedPaths(before: Map<string, string>, after: Map<string, string>): string[] {
+  const paths = new Set<string>();
+  for (const [path, afterState] of after.entries()) {
+    const beforeState = before.get(path);
+    if (beforeState === undefined || beforeState !== afterState) {
+      paths.add(path);
+    }
+  }
+  for (const path of before.keys()) {
+    if (!after.has(path)) {
+      paths.add(path);
+    }
+  }
+  return Array.from(paths);
+}
+
+function autoCommitMessage(command: string): string {
+  if (command === "add") return "bl add";
+  if (command === "bug") return "bl bug";
+  if (command === "idea") return "bl idea";
+  return `backlog ${command}`;
+}
+
+function isPreviousCommitFromBlAdd(): boolean {
+  const message = gitRun(["log", "-1", "--pretty=%B"]);
+  if (!message) {
+    return false;
+  }
+  return message.split("\n", 1)[0].startsWith("bl add");
+}
+
+function isPreviousCommitUnpushed(): boolean {
+  try {
+    gitRun(["rev-parse", "--abbrev-ref", "--symbolic-full-name", "@{upstream}"]);
+  } catch {
+    return true;
+  }
+
+  const aheadRaw = gitRun(["rev-list", "--count", "@{u}..HEAD"]);
+  const ahead = Number.parseInt(aheadRaw, 10);
+  if (Number.isNaN(ahead)) {
+    return false;
+  }
+  return ahead > 0;
+}
+
+function gitAddPaths(paths: string[]): void {
+  if (!paths.length) {
+    return;
+  }
+  gitRun(["add", "--", ...paths]);
+}
+
+function gitCommit(message: string): void {
+  gitRun(["commit", "-m", message]);
+}
+
+function gitAmendNoEdit(): void {
+  gitRun(["commit", "--amend", "--no-edit"]);
+}
+
+function captureAutoCommitContext(): AutoCommitContext {
+  const preStatus = gitStatusSnapshot();
+  const context: AutoCommitContext = {
+    hasStaged: hasStagedChanges(preStatus),
+    preStatus,
+    canAmendBlAdd: false,
+    prevAddUnpushed: false,
+  };
+  if (!context.hasStaged) {
+    context.canAmendBlAdd = isPreviousCommitFromBlAdd();
+    context.prevAddUnpushed = isPreviousCommitUnpushed();
+  }
+  return context;
+}
+
+async function executeAutoCommit(command: string, context: AutoCommitContext): Promise<void> {
+  const postStatus = gitStatusSnapshot();
+  const changed = changedTrackedPaths(context.preStatus, postStatus);
+  if (!changed.length) {
+    return;
+  }
+
+  gitAddPaths(changed);
+
+  if (command === "add" && context.canAmendBlAdd && context.prevAddUnpushed) {
+    try {
+      gitAmendNoEdit();
+      return;
+    } catch {
+      // Fall back to creating a new commit if amend fails.
+    }
+  }
+
+  gitCommit(autoCommitMessage(command));
+}
+
+async function runWithAutoCommit(command: string, action: () => Promise<void>): Promise<void> {
+  let context: AutoCommitContext | null = null;
+  try {
+    context = captureAutoCommitContext();
+  } catch {
+    context = null;
+  }
+
+  await action();
+
+  if (!context || context.hasStaged) {
+    return;
+  }
+
+  try {
+    await executeAutoCommit(command, context);
+  } catch (err) {
+    console.log(`Warning: Auto-commit skipped: ${(err as Error).toString()}`);
+  }
+}
+
 type FlagMode = "boolean" | "value";
 
 function positionalArgsForCommand(
@@ -4104,7 +4276,7 @@ async function main(): Promise<void> {
       await cmdCI(rest);
       return;
     case "add":
-      await cmdAdd(rest);
+      await runWithAutoCommit("add", () => cmdAdd(rest));
       return;
     case "add-epic":
       await cmdAddEpic(rest);
@@ -4125,13 +4297,13 @@ async function main(): Promise<void> {
       await cmdMove(rest);
       return;
     case "bug":
-      await cmdBug(rest);
+      await runWithAutoCommit("bug", () => cmdBug(rest));
       return;
     case "fixed":
       await cmdFixed(rest);
       return;
     case "idea":
-      await cmdIdea(rest);
+      await runWithAutoCommit("idea", () => cmdIdea(rest));
       return;
     case "migrate":
       await cmdMigrate(rest);

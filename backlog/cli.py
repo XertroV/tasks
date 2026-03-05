@@ -42,6 +42,7 @@ from .helpers import (
     format_epic_path,
     filter_tree_by_path_query,
 )
+from .autocommit import run_with_auto_commit
 from .commands.generated_backlog_howto import (
     BACKLOG_HOWTO_SKILL_MD,
     BACKLOG_HOWTO_SKILL_VERSION,
@@ -3426,7 +3427,8 @@ def move_item(source_id, dest_id):
 )
 def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
     """Add a new task to an epic."""
-    try:
+
+    def _run() -> None:
         loader = TaskLoader()
 
         depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
@@ -3447,7 +3449,7 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
         console.print(f"\n[green]✓ Created task:[/] {task.id}\n")
         console.print(f"  Title:      {task.title}")
         console.print(f"  Estimate:   {task.estimate_hours}h")
-        console.print(f"\n[bold]File:[/] .tasks/{task.file}")
+        click.echo(f"\nFile: .tasks/{task.file}")
         if not body:
             console.print(
                 "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
@@ -3456,7 +3458,12 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
             f"backlog show {task.id}",
             f"backlog claim {task.id}",
         )
-
+    try:
+        run_with_auto_commit(
+            "add",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
+        )
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
@@ -3670,27 +3677,30 @@ def bug(
     bug_words, title, estimate, complexity, priority, depends_on, tags, simple, body
 ):
     """Create a new bug report."""
-    try:
+
+    def _run() -> None:
         loader = TaskLoader()
 
         positional_title = " ".join(bug_words).strip()
-        if not title and positional_title:
-            title = positional_title
-            simple = True
-        if not title:
+        is_simple = simple
+        bug_title = title
+        if not bug_title and positional_title:
+            bug_title = positional_title
+            is_simple = True
+        if not bug_title:
             raise ValueError("bug requires --title or description text")
 
         depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
         tags_list = [t.strip() for t in tags.split(",") if t.strip()]
 
         bug_data = {
-            "title": title,
+            "title": bug_title,
             "estimate_hours": estimate,
             "complexity": complexity,
             "priority": priority,
             "depends_on": depends_list,
             "tags": tags_list,
-            "simple": simple,
+            "simple": is_simple,
             "body": body if body else None,
         }
 
@@ -3702,8 +3712,8 @@ def bug(
         console.print(f"  Estimate: {created.estimate_hours}h")
         from .data_dir import get_data_dir_name
 
-        console.print(f"\n[bold]File:[/] {get_data_dir_name()}/{created.file}")
-        if not simple and not body:
+        click.echo(f"\nFile: {get_data_dir_name()}/{created.file}")
+        if not is_simple and not body:
             console.print(
                 "[yellow]IMPORTANT:[/] You MUST fill in the .todo file that was created.\n"
             )
@@ -3711,7 +3721,12 @@ def bug(
             f"backlog show {created.id}",
             f"backlog claim {created.id}",
         )
-
+    try:
+        run_with_auto_commit(
+            "bug",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
+        )
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
