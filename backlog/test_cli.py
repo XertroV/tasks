@@ -1916,6 +1916,12 @@ def test_idea_command_creates_planning_intake_todo(runner, tmp_tasks_dir):
     assert "tasks bug" in content
 
 
+def test_idea_command_rejects_single_word_title(runner, tmp_tasks_dir):
+    result = runner.invoke(cli, ["idea", "idea"])
+    assert result.exit_code != 0
+    assert "at least two words" in result.output
+
+
 def test_idea_command_increments_idea_ids(runner, tmp_tasks_dir):
     """idea IDs should increment sequentially in .tasks/ideas/."""
     first = runner.invoke(cli, ["idea", "first idea"])

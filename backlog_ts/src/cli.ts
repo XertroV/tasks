@@ -415,6 +415,15 @@ function listScopeArgs(args: string[]): string[] {
   return scopes;
 }
 
+function validateAtLeastTwoWords(command: string, title: string | null | undefined): void {
+  if (!title) {
+    textError(`${command} requires at least two words`);
+  }
+  if (title.trim().split(/\s+/).filter(Boolean).length < 2) {
+    textError(`${command} requires at least two words`);
+  }
+}
+
 function collectTaskIdsFromPhases(phases: Phase[]): Set<string> {
   const ids = new Set<string>();
   for (const phase of phases) {
@@ -4072,6 +4081,7 @@ async function cmdBug(args: string[]): Promise<AutoCommitMetadata> {
     simple = true;
   }
   if (!title) textError("bug requires --title or description text");
+  validateAtLeastTwoWords("bug", title);
 
   const loader = new TaskLoader();
   const bug = await loader.createBug({
@@ -4129,6 +4139,7 @@ async function cmdFixed(args: string[]): Promise<void> {
     title = positionalTitle;
   }
   if (!title) textError("fixed requires --title or FIX_TEXT");
+  validateAtLeastTwoWords("fixed", title);
 
   const loader = new TaskLoader();
   const fixed = await loader.createFixed({
@@ -4148,6 +4159,7 @@ async function cmdFixed(args: string[]): Promise<void> {
 async function cmdIdea(args: string[]): Promise<AutoCommitMetadata> {
   const title = args.join(" ").trim();
   if (!title) textError("idea requires IDEA_TEXT");
+  validateAtLeastTwoWords("idea", title);
 
   const loader = new TaskLoader();
   const idea = await loader.createIdea({ title });

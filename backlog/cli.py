@@ -234,6 +234,11 @@ def _warn_missing_task_files(tree, limit: int = 5) -> int:
     return len(missing_tasks)
 
 
+def _require_at_least_two_words(text: str, context: str) -> None:
+    if len(text.split()) < 2:
+        raise ValueError(f"{context} requires at least two words")
+
+
 def _format_relative_age(timestamp) -> str:
     """Format a timestamp as a short relative age string."""
     delta = utc_now() - to_utc(timestamp)
@@ -3693,6 +3698,7 @@ def bug(
             is_simple = True
         if not bug_title:
             raise ValueError("bug requires --title or description text")
+        _require_at_least_two_words(bug_title, "bug")
 
         depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
         tags_list = [t.strip() for t in tags.split(",") if t.strip()]

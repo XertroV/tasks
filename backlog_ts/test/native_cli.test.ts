@@ -1557,6 +1557,13 @@ tags: []
     expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl idea I001: auto commit idea");
   });
 
+  test("idea rejects single-word title", () => {
+    root = setupFixture();
+    const p = run(["idea", "plan"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("at least two words");
+  });
+
   test("bug accepts positional description as simple title", () => {
     root = setupFixture();
     const p = run(["bug", "fix flaky integration test"], root);
@@ -1576,6 +1583,20 @@ tags: []
     const bugText = readFileSync(join(root, ".tasks", "bugs", fileMatch![1]!), "utf8");
     expect(bugText).toContain("title: fix flaky integration test");
     expect(bugText).not.toContain("## Steps to Reproduce");
+  });
+
+  test("bug rejects single-word positional title", () => {
+    root = setupFixture();
+    const p = run(["bug", "list"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("at least two words");
+  });
+
+  test("bug rejects single-word --title", () => {
+    root = setupFixture();
+    const p = run(["bug", "--title", "fix"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("at least two words");
   });
 
   test("grab prioritizes normal tasks over ideas", () => {
@@ -2496,6 +2517,24 @@ tags: []
     expect(fixText).toContain("- auth");
     expect(fixText).toContain("- hotfix");
     expect(fixText).toContain("Added regression guard for token refresh.");
+  });
+
+  test("fixed rejects single-word title", () => {
+    root = setupFixture();
+    const result = run(["fixed", "patch"], root);
+    expect(result.exitCode).toBe(1);
+    expect(`${result.stdout.toString()}${result.stderr.toString()}`).toContain(
+      "at least two words",
+    );
+  });
+
+  test("fixed rejects single-word --title", () => {
+    root = setupFixture();
+    const result = run(["fixed", "--title", "fix"], root);
+    expect(result.exitCode).toBe(1);
+    expect(`${result.stdout.toString()}${result.stderr.toString()}`).toContain(
+      "at least two words",
+    );
   });
 
   test("show displays fixed task details", () => {

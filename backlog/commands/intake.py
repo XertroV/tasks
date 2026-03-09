@@ -10,6 +10,11 @@ from ..autocommit import run_with_auto_commit
 console = Console()
 
 
+def _require_at_least_two_words(text: str, context: str) -> None:
+    if len(text.split()) < 2:
+        raise ValueError(f"{context} requires at least two words")
+
+
 def _print_next_commands(*commands):
     """Print a short list of suggested next commands."""
     filtered = [command.strip() for command in commands if command and command.strip()]
@@ -28,6 +33,7 @@ def idea(idea_words):
         title = " ".join(idea_words).strip()
         if not title:
             raise ValueError("idea requires a non-empty idea description")
+        _require_at_least_two_words(title, "idea")
 
         loader = TaskLoader()
         created = loader.create_idea({"title": title})
@@ -82,6 +88,7 @@ def fixed(fixed_words, title, description, at, tags, body):
 
         if not title:
             raise ValueError("fixed requires --title or FIX_TEXT")
+        _require_at_least_two_words(title, "fixed")
 
         if not description:
             description = title

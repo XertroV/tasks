@@ -482,6 +482,28 @@ func TestRunBugSupportsPositionalTitleAndSimpleBody(t *testing.T) {
 	}
 }
 
+func TestRunBugRejectsSingleWordPositionalTitle(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	if _, err := runInDir(t, root, "bug", "list"); err == nil {
+		t.Fatal("run bug expected one-word positional validation error")
+	} else if !strings.Contains(err.Error(), "bug requires at least two words") {
+		t.Fatalf("error = %q, expected bug one-word validation", err)
+	}
+}
+
+func TestRunBugRejectsSingleWordTitleFlag(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	if _, err := runInDir(t, root, "bug", "--title", "fix"); err == nil {
+		t.Fatal("run bug expected one-word flag validation error")
+	} else if !strings.Contains(err.Error(), "bug requires at least two words") {
+		t.Fatalf("error = %q, expected bug one-word validation", err)
+	}
+}
+
 func TestRunBugTemplateWarnsWhenNotSimple(t *testing.T) {
 	t.Parallel()
 
@@ -498,6 +520,17 @@ func TestRunBugTemplateWarnsWhenNotSimple(t *testing.T) {
 	}
 	if !strings.Contains(output, "Next:") {
 		t.Fatalf("output = %q, expected next commands", output)
+	}
+}
+
+func TestRunIdeaRejectsSingleWordTitle(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	if _, err := runInDir(t, root, "idea", "plan"); err == nil {
+		t.Fatal("run idea expected one-word validation error")
+	} else if !strings.Contains(err.Error(), "idea requires at least two words") {
+		t.Fatalf("error = %q, expected idea one-word validation", err)
 	}
 }
 
@@ -650,6 +683,28 @@ func TestRunIdeaAutoCommitCreatesBlIdeaCommit(t *testing.T) {
 	}
 	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl idea I001: capture planning idea" {
 		t.Fatalf("latest commit = %q, expected %q", message, "bl idea I001: capture planning idea")
+	}
+}
+
+func TestRunFixedRejectsSingleWordTitle(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	if _, err := runInDir(t, root, "fixed", "patch"); err == nil {
+		t.Fatal("run fixed expected positional one-word validation error")
+	} else if !strings.Contains(err.Error(), "fixed requires at least two words") {
+		t.Fatalf("error = %q, expected fixed one-word validation", err)
+	}
+}
+
+func TestRunFixedRejectsSingleWordTitleFlag(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	if _, err := runInDir(t, root, "fixed", "--title", "fix"); err == nil {
+		t.Fatal("run fixed expected flag-based one-word validation error")
+	} else if !strings.Contains(err.Error(), "fixed requires at least two words") {
+		t.Fatalf("error = %q, expected fixed one-word validation", err)
 	}
 }
 

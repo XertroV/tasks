@@ -5014,6 +5014,9 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 	if title == "" {
 		return printUsageError(commands.CmdIdea, errors.New("idea requires IDEA_TEXT"))
 	}
+	if err := validateAtLeastTwoWords(commands.CmdIdea, title); err != nil {
+		return err
+	}
 
 	dataDir, err := ensureDataRoot()
 	if err != nil {
@@ -5163,6 +5166,9 @@ func runBug(args []string, metadata *gitAutoCommitMetadata) error {
 	if title == "" {
 		return printUsageError(commands.CmdBug, errors.New("bug requires --title or description text"))
 	}
+	if err := validateAtLeastTwoWords(commands.CmdBug, title); err != nil {
+		return err
+	}
 
 	dataDir, err := ensureDataRoot()
 	if err != nil {
@@ -5281,6 +5287,9 @@ func runFixed(args []string) error {
 	}
 	if title == "" {
 		return printUsageError(commands.CmdFixed, errors.New("fixed requires --title or FIX_TEXT"))
+	}
+	if err := validateAtLeastTwoWords(commands.CmdFixed, title); err != nil {
+		return err
 	}
 
 	description := strings.TrimSpace(parseOption(args, "--description", "--desc"))
@@ -6700,6 +6709,13 @@ func positionalArgs(args []string, valueTakingFlags map[string]bool) []string {
 		}
 	}
 	return out
+}
+
+func validateAtLeastTwoWords(command string, title string) error {
+	if len(strings.Fields(strings.TrimSpace(title))) < 2 {
+		return printUsageError(command, errors.New(command+" requires at least two words"))
+	}
+	return nil
 }
 
 func validateAllowedFlags(args []string, allowed map[string]bool) error {

@@ -322,6 +322,18 @@ def test_bug_accepts_positional_description_as_simple_title(
     assert "## Steps to Reproduce" not in bug_content
 
 
+def test_bug_rejects_single_word_positional_title(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["bug", "list"])
+    assert result.exit_code != 0
+    assert "at least two words" in result.output
+
+
+def test_bug_rejects_single_word_title_flag(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["bug", "--title", "fix"])
+    assert result.exit_code != 0
+    assert "at least two words" in result.output
+
+
 def test_fixed_command_captures_metadata(runner, tmp_feature_tasks_dir):
     result = runner.invoke(
         cli,
@@ -371,6 +383,18 @@ def test_fixed_command_captures_metadata(runner, tmp_feature_tasks_dir):
     assert fm["tags"] == ["auth", "hotfix"]
     assert "Added regression guard for token refresh." in content
     assert fixes_index["fixes"][0]["file"] == "2026-02/F001-restore-stale-auth-token.todo"
+
+
+def test_fixed_rejects_single_word_input(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["fixed", "fix"])
+    assert result.exit_code != 0
+    assert "at least two words" in result.output
+
+
+def test_fixed_rejects_single_word_title_flag(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, ["fixed", "--title", "fix"])
+    assert result.exit_code != 0
+    assert "at least two words" in result.output
 
 
 def test_grab_prioritizes_normal_tasks_over_ideas(runner, tmp_feature_tasks_dir):
