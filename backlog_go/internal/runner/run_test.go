@@ -4434,7 +4434,12 @@ func runInDir(t *testing.T, dir string, args ...string) (string, error) {
 		t.Fatalf("failed to restore cwd: %v", cherr)
 	}
 
-	return outBuf.String() + errBuf.String(), runErr
+	output := outBuf.String() + errBuf.String()
+	if runErr != nil && !strings.Contains(output, runErr.Error()) && strings.TrimSpace(output) == "" {
+		output += runErr.Error()
+		output += "\n"
+	}
+	return output, runErr
 }
 
 func readYAMLMap(t *testing.T, path string) map[string]interface{} {

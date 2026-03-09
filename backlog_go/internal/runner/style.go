@@ -249,7 +249,7 @@ func styleProgressBar(done, total int) string {
 func styleProgressBarWithStatus(done, inProgress, blocked, total int) string {
 	const width = 20
 	if total <= 0 {
-		return styleMuted(strings.Repeat("░", width))
+		return strings.Repeat("░", width)
 	}
 
 	done = maxInt(done, 0)

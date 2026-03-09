@@ -23,7 +23,7 @@ func TestStyleProgressBarWithStatusDistributesByStatus(t *testing.T) {
 
 func TestStyleProgressBarWithStatusZeroTotal(t *testing.T) {
 	bar := styleProgressBarWithStatus(1, 1, 1, 0)
-	if bar != "░░░░░░░░░░░░░░░░░░░░░░" {
+	if bar != strings.Repeat("░", 20) {
 		t.Fatalf("unexpected zero-total bar: %q", bar)
 	}
 }
