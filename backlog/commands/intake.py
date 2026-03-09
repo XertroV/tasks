@@ -24,13 +24,15 @@ def _print_next_commands(*commands):
 @click.argument("idea_words", nargs=-1, required=True)
 def idea(idea_words):
     """Capture an idea as a planning intake .todo."""
-    def _run() -> None:
+    def _run() -> tuple[str, str] | None:
         title = " ".join(idea_words).strip()
         if not title:
             raise ValueError("idea requires a non-empty idea description")
 
         loader = TaskLoader()
         created = loader.create_idea({"title": title})
+
+        metadata = (created.id, created.title)
 
         console.print(f"\n[green]✓ Created idea:[/] {created.id}\n")
         console.print(f"  Title: {created.title}")
@@ -46,6 +48,8 @@ def idea(idea_words):
         console.print(
             "[yellow]IMPORTANT:[/] This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.\n"
         )
+
+        return metadata
 
     try:
         run_with_auto_commit(

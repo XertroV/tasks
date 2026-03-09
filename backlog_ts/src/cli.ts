@@ -133,6 +133,11 @@ type AutoCommitContext = {
   prevAddUnpushed: boolean;
 };
 
+type AutoCommitMetadata = {
+  id: string;
+  title: string;
+};
+
 function gitRun(args: string[]): string {
   const output = Bun.spawnSync(["git", ...args], {
     cwd: process.cwd(),
@@ -196,10 +201,32 @@ function changedTrackedPaths(before: Map<string, string>, after: Map<string, str
   return Array.from(paths);
 }
 
-function autoCommitMessage(command: string): string {
-  if (command === "add") return "bl add";
-  if (command === "bug") return "bl bug";
-  if (command === "idea") return "bl idea";
+function normalizeAutoCommitMetadata(value: string): string {
+  return value.replace(/\r/g, " ").replace(/\n/g, " ").trim().split(/\s+/).join(" ");
+}
+
+function formatAutoCommitMessage(prefix: string, metadata: AutoCommitMetadata): string {
+  const id = normalizeAutoCommitMetadata(metadata.id);
+  const title = normalizeAutoCommitMetadata(metadata.title);
+  if (id && title) return `${prefix} ${id}: ${title}`;
+  if (id) return `${prefix} ${id}`;
+  if (title) return `${prefix} ${title}`;
+  return prefix;
+}
+
+function autoCommitMessage(command: string, metadata: AutoCommitMetadata | null): string {
+  if (command === "add") {
+    if (!metadata?.id) return "bl add";
+    return formatAutoCommitMessage("bl add", metadata);
+  }
+  if (command === "bug") {
+    if (!metadata?.id) return "bl bug";
+    return formatAutoCommitMessage("bl bug", metadata);
+  }
+  if (command === "idea") {
+    if (!metadata?.id) return "bl idea";
+    return formatAutoCommitMessage("bl idea", metadata);
+  }
   return `backlog ${command}`;
 }
 
@@ -256,7 +283,11 @@ function captureAutoCommitContext(): AutoCommitContext {
   return context;
 }
 
-async function executeAutoCommit(command: string, context: AutoCommitContext): Promise<void> {
+async function executeAutoCommit(
+  command: string,
+  context: AutoCommitContext,
+  metadata: AutoCommitMetadata | null,
+): Promise<void> {
   const postStatus = gitStatusSnapshot();
   const changed = changedTrackedPaths(context.preStatus, postStatus);
   if (!changed.length) {
@@ -274,10 +305,13 @@ async function executeAutoCommit(command: string, context: AutoCommitContext): P
     }
   }
 
-  gitCommit(autoCommitMessage(command));
+  gitCommit(autoCommitMessage(command, metadata));
 }
 
-async function runWithAutoCommit(command: string, action: () => Promise<void>): Promise<void> {
+async function runWithAutoCommit(
+  command: string,
+  action: () => Promise<AutoCommitMetadata>,
+): Promise<void> {
   let context: AutoCommitContext | null = null;
   try {
     context = captureAutoCommitContext();
@@ -285,14 +319,14 @@ async function runWithAutoCommit(command: string, action: () => Promise<void>): 
     context = null;
   }
 
-  await action();
+  const metadata = await action();
 
   if (!context || context.hasStaged) {
     return;
   }
 
   try {
-    await executeAutoCommit(command, context);
+    await executeAutoCommit(command, context, metadata);
   } catch (err) {
     console.log(`Warning: Auto-commit skipped: ${(err as Error).toString()}`);
   }
@@ -3315,7 +3349,7 @@ async function writeYamlObj(path: string, value: Record<string, unknown>): Promi
   await Bun.write(path, stringify(value));
 }
 
-async function cmdAdd(args: string[]): Promise<void> {
+async function cmdAdd(args: string[]): Promise<AutoCommitMetadata> {
   const epicId = args.find((a) => !a.startsWith("-"));
   if (!epicId) textError("add requires EPIC_ID");
   const title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
@@ -3393,6 +3427,7 @@ async function cmdAdd(args: string[]): Promise<void> {
     `backlog show ${fullId}`,
     `backlog claim ${fullId}`,
   ]);
+  return { id: fullId, title };
 }
 
 async function cmdAddEpic(args: string[]): Promise<void> {
@@ -3995,7 +4030,7 @@ async function cmdInit(args: string[]): Promise<void> {
   console.log(`Initialized project "${project}" in ${BACKLOG_DIR}/`);
 }
 
-async function cmdBug(args: string[]): Promise<void> {
+async function cmdBug(args: string[]): Promise<AutoCommitMetadata> {
   let title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
   const optionNamesWithValue = new Set([
     "--title",
@@ -4058,6 +4093,7 @@ async function cmdBug(args: string[]): Promise<void> {
     `backlog show ${bug.id}`,
     `backlog claim ${bug.id}`,
   ]);
+  return bug;
 }
 
 async function cmdFixed(args: string[]): Promise<void> {
@@ -4109,7 +4145,7 @@ async function cmdFixed(args: string[]): Promise<void> {
   }
 }
 
-async function cmdIdea(args: string[]): Promise<void> {
+async function cmdIdea(args: string[]): Promise<AutoCommitMetadata> {
   const title = args.join(" ").trim();
   if (!title) textError("idea requires IDEA_TEXT");
 
@@ -4126,6 +4162,7 @@ async function cmdIdea(args: string[]): Promise<void> {
     "backlog bug --title \"<bug title>\"",
   ]);
   console.log("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands.");
+  return idea;
 }
 
 async function cmdMigrate(args: string[]): Promise<void> {

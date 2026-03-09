@@ -1499,7 +1499,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created task: P1.M1.E1.T003");
     expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
-    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl add");
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl add P1.M1.E1.T003: auto-commit task");
     expect(runGit(root, "status", "--short")).toBe("");
   });
 
@@ -1530,7 +1530,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created task: P1.M1.E1.T004");
     expect(gitCommitCount(root)).toBe(commitCountAfterFirst);
-    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl add");
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl add P1.M1.E1.T003: first auto task");
   });
 
   test("bug auto-commits created bug when no staged files exist", () => {
@@ -1542,7 +1542,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created bug: B001");
     expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
-    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl bug");
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl bug B001: Auto commit bug");
   });
 
   test("idea auto-commits created idea when no staged files exist", () => {
@@ -1554,7 +1554,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Created idea: I001");
     expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
-    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl idea");
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl idea I001: auto commit idea");
   });
 
   test("bug accepts positional description as simple title", () => {

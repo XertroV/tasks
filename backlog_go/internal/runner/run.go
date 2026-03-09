@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"os/exec"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"sort"
@@ -962,19 +962,28 @@ const (
 )
 
 type gitAutoCommitContext struct {
-	hasStaged      bool
-	preStatus      map[string]string
-	canAmendBlAdd  bool
+	hasStaged       bool
+	preStatus       map[string]string
+	canAmendBlAdd   bool
 	prevAddUnpushed bool
 }
 
-func runWithAutoCommit(command string, args []string, handler func([]string) error) error {
+type gitAutoCommitMetadata struct {
+	id    string
+	title string
+}
+
+type gitAutoCommitHandler func([]string, *gitAutoCommitMetadata) error
+
+func runWithAutoCommit(command string, args []string, handler gitAutoCommitHandler) error {
 	context, err := captureAutoCommitContext()
 	if err != nil {
 		context = nil
 	}
+	metadata := gitAutoCommitMetadata{}
 
-	if err := handler(args); err != nil {
+	err = handler(args, &metadata)
+	if err != nil {
 		return err
 	}
 
@@ -982,7 +991,7 @@ func runWithAutoCommit(command string, args []string, handler func([]string) err
 		return nil
 	}
 
-	if err := executeAutoCommit(command, context); err != nil {
+	if err := executeAutoCommit(command, context, metadata); err != nil {
 		fmt.Printf("%s: %s\n", styleWarning("Auto-commit skipped"), err)
 	}
 	return nil
@@ -1008,7 +1017,7 @@ func captureAutoCommitContext() (*gitAutoCommitContext, error) {
 	return ctx, nil
 }
 
-func executeAutoCommit(command string, context *gitAutoCommitContext) error {
+func executeAutoCommit(command string, context *gitAutoCommitContext, metadata gitAutoCommitMetadata) error {
 	postStatus, err := gitStatusSnapshot()
 	if err != nil {
 		return err
@@ -1029,17 +1038,46 @@ func executeAutoCommit(command string, context *gitAutoCommitContext) error {
 		}
 	}
 
-	return gitCommit(autoCommitMessage(command))
+	return gitCommit(autoCommitMessage(command, metadata))
 }
 
-func autoCommitMessage(command string) string {
+func normalizeAutoCommitMetadata(value string) string {
+	return strings.Join(strings.Fields(strings.ReplaceAll(strings.ReplaceAll(value, "\r", " "), "\n", " ")), " ")
+}
+
+func formatAutoCommitMessage(prefix string, metadata gitAutoCommitMetadata) string {
+	id := normalizeAutoCommitMetadata(metadata.id)
+	title := normalizeAutoCommitMetadata(metadata.title)
+	if id != "" && title != "" {
+		return fmt.Sprintf("%s %s: %s", prefix, id, title)
+	}
+	if id != "" {
+		return fmt.Sprintf("%s %s", prefix, id)
+	}
+	if title != "" {
+		return fmt.Sprintf("%s %s", prefix, title)
+	}
+	return prefix
+}
+
+func autoCommitMessage(command string, metadata gitAutoCommitMetadata) string {
+	id := strings.TrimSpace(metadata.id)
 	switch command {
 	case "add":
-		return "bl add"
+		if id == "" {
+			return autoCommitAddPrefix
+		}
+		return formatAutoCommitMessage(autoCommitAddPrefix, metadata)
 	case "bug":
-		return "bl bug"
+		if id == "" {
+			return autoCommitBugPrefix
+		}
+		return formatAutoCommitMessage(autoCommitBugPrefix, metadata)
 	case "idea":
-		return "bl idea"
+		if id == "" {
+			return autoCommitIdeaPrefix
+		}
+		return formatAutoCommitMessage(autoCommitIdeaPrefix, metadata)
 	default:
 		return fmt.Sprintf("backlog %s", command)
 	}
@@ -1952,7 +1990,7 @@ func parseInit(args []string) (initOptions, error) {
 	return opts, nil
 }
 
-func runAdd(args []string) error {
+func runAdd(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -2125,7 +2163,8 @@ func runAdd(args []string) error {
 		return err
 	}
 
-	fmt.Printf("%s %s\n", styleSuccess("Created task:"), styleSuccess(parsedEpicID.FullID()+"."+nextTaskID))
+	newTaskID := parsedEpicID.FullID() + "." + nextTaskID
+	fmt.Printf("%s %s\n", styleSuccess("Created task:"), styleSuccess(newTaskID))
 	relTaskPath, err := filepath.Rel(dataDir, taskPath)
 	if err != nil {
 		return fmt.Errorf("failed to compute task relative path: %w", err)
@@ -2134,7 +2173,10 @@ func runAdd(args []string) error {
 	if body == "" {
 		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
 	}
-	newTaskID := parsedEpicID.FullID() + "." + nextTaskID
+	*metadata = gitAutoCommitMetadata{
+		id:    newTaskID,
+		title: title,
+	}
 	printNextCommands(
 		"backlog show "+newTaskID,
 		"backlog claim "+newTaskID,
@@ -4956,7 +4998,7 @@ func runLock(args []string, locked bool) error {
 	return nil
 }
 
-func runIdea(args []string) error {
+func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 	if parseFlag(args, "--help", "-h") {
 		printUsageForCommand(commands.CmdIdea)
 		return nil
@@ -5029,6 +5071,10 @@ func runIdea(args []string) error {
 
 	fmt.Printf("%s %s\n", styleSuccess("Created idea:"), styleSuccess(ideaID))
 	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(relFile))
+	*metadata = gitAutoCommitMetadata{
+		id:    ideaID,
+		title: title,
+	}
 	fmt.Println(styleWarning("IMPORTANT: This intake tracks planning work; run `/plan-task` on the idea and ingest resulting items with tasks commands."))
 	printNextCommands(
 		"backlog show "+ideaID,
@@ -5041,7 +5087,7 @@ func runIdea(args []string) error {
 	return nil
 }
 
-func runBug(args []string) error {
+func runBug(args []string, metadata *gitAutoCommitMetadata) error {
 	if parseFlag(args, "--help", "-h") {
 		printUsageForCommand(commands.CmdBug)
 		return nil
@@ -5185,6 +5231,10 @@ func runBug(args []string) error {
 	fmt.Printf("%s %s/%s\n", styleSubHeader("File:"), styleMuted(filepath.Base(dataDir)), styleMuted(filepath.ToSlash(relBugPath)))
 	if !simple && strings.TrimSpace(body) == "" {
 		fmt.Println(styleWarning("IMPORTANT: You MUST fill in the .todo file that was created."))
+	}
+	*metadata = gitAutoCommitMetadata{
+		id:    bugID,
+		title: title,
 	}
 	printNextCommands(
 		"backlog show "+bugID,

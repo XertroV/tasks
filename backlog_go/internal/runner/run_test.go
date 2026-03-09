@@ -525,8 +525,8 @@ func TestRunAddAutoCommitCreatesBlAddCommit(t *testing.T) {
 	if gitCommitCount(t, root) != commitCount+1 {
 		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
 	}
-	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl add" {
-		t.Fatalf("latest commit = %q, expected bl add", message)
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl add P1.M1.E1.T001: Auto commit task" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl add P1.M1.E1.T001: Auto commit task")
 	}
 }
 
@@ -604,8 +604,8 @@ func TestRunAddAutoCommitAmendsUnpushedBlAdd(t *testing.T) {
 	if gitCommitCount(t, root) != commitCount {
 		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
 	}
-	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl add" {
-		t.Fatalf("latest commit = %q, expected bl add", message)
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl add P1.M1.E1.T001: First auto commit task" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl add P1.M1.E1.T001: First auto commit task")
 	}
 }
 
@@ -626,8 +626,8 @@ func TestRunBugAutoCommitCreatesBlBugCommit(t *testing.T) {
 	if gitCommitCount(t, root) != commitCount+1 {
 		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
 	}
-	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl bug" {
-		t.Fatalf("latest commit = %q, expected bl bug", message)
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl bug B001: root bug title" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl bug B001: root bug title")
 	}
 }
 
@@ -648,8 +648,8 @@ func TestRunIdeaAutoCommitCreatesBlIdeaCommit(t *testing.T) {
 	if gitCommitCount(t, root) != commitCount+1 {
 		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
 	}
-	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl idea" {
-		t.Fatalf("latest commit = %q, expected bl idea", message)
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl idea I001: capture planning idea" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl idea I001: capture planning idea")
 	}
 }
 

@@ -63,14 +63,34 @@ def _changed_tracked_paths(before: Dict[str, str], after: Dict[str, str]) -> lis
     return sorted(paths)
 
 
-def _auto_commit_message(command: str) -> str:
+def _normalize_message_fragment(value: Optional[str]) -> str:
+    if not value:
+        return ""
+    return " ".join((value or "").replace("\r", " ").replace("\n", " ").split())
+
+
+def _auto_commit_message(command: str, metadata: tuple[str, str] | None = None) -> str:
+    prefix = "backlog " + command
     if command == "add":
-        return "bl add"
-    if command == "bug":
-        return "bl bug"
-    if command == "idea":
-        return "bl idea"
-    return f"backlog {command}"
+        prefix = "bl add"
+    elif command == "bug":
+        prefix = "bl bug"
+    elif command == "idea":
+        prefix = "bl idea"
+
+    if metadata is None:
+        return prefix
+
+    item_id, item_title = metadata
+    item_id = _normalize_message_fragment(item_id)
+    item_title = _normalize_message_fragment(item_title)
+    if item_id and item_title:
+        return f"{prefix} {item_id}: {item_title}"
+    if item_id:
+        return f"{prefix} {item_id}"
+    if item_title:
+        return f"{prefix} {item_title}"
+    return prefix
 
 
 def _is_previous_commit_from_bl_add(cwd: Optional[Path | str] = None) -> bool:
@@ -130,7 +150,12 @@ def _capture_auto_commit_context(cwd: Optional[Path | str] = None) -> _AutoCommi
     return context
 
 
-def _execute_auto_commit(command: str, context: _AutoCommitContext, cwd: Optional[Path | str] = None) -> None:
+def _execute_auto_commit(
+    command: str,
+    context: _AutoCommitContext,
+    metadata: tuple[str, str] | None = None,
+    cwd: Optional[Path | str] = None,
+) -> None:
     post_status = _git_status_snapshot(cwd)
     changed_files = _changed_tracked_paths(context.pre_status, post_status)
     if not changed_files:
@@ -145,12 +170,12 @@ def _execute_auto_commit(command: str, context: _AutoCommitContext, cwd: Optiona
         except Exception:
             pass
 
-    _git_commit(_auto_commit_message(command), cwd)
+    _git_commit(_auto_commit_message(command, metadata), cwd)
 
 
 def run_with_auto_commit(
     command: str,
-    action: Callable[[], None],
+    action: Callable[[], tuple[str, str] | None],
     warn: Callable[[str], None] | None = None,
     cwd: Optional[Path | str] = None,
 ) -> None:
@@ -166,13 +191,13 @@ def run_with_auto_commit(
     except Exception:
         context = None
 
-    action()
+    metadata = action()
 
     if context is None or context.has_staged:
         return
 
     try:
-        _execute_auto_commit(command, context, cwd)
+        _execute_auto_commit(command, context, metadata, cwd)
     except Exception as err:
         if warn is not None:
             warn(f"Auto-commit skipped: {err}")

@@ -1943,7 +1943,7 @@ def test_add_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
     assert "File: .tasks/01-test-phase/01-test-milestone/01-test-epic/T001-auto-commit-task.todo" in result.output
 
     assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
-    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl add"
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl add P1.M1.E1.T001: Auto commit task"
     assert run_git(tmp_tasks_dir, "status", "--short") == ""
 
 
@@ -1977,7 +1977,7 @@ def test_add_command_amends_previous_unpushed_bl_add_commit(runner, tmp_tasks_di
     assert "Created task: P1.M1.E1.T002" in second.output
 
     assert git_commit_count(tmp_tasks_dir) == commits_after_first
-    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl add"
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl add P1.M1.E1.T001: First auto commit task"
 
 
 def test_bug_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
@@ -1990,7 +1990,7 @@ def test_bug_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
     assert "Created bug: B001" in result.output
 
     assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
-    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl bug"
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl bug B001: Bug auto commit"
 
 
 def test_idea_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
@@ -2003,7 +2003,7 @@ def test_idea_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
     assert "Created idea: I001" in result.output
 
     assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
-    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl idea"
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl idea I001: capture planning idea"
 
 
 def test_list_and_next_include_ideas(runner, tmp_tasks_dir):

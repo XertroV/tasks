@@ -3428,7 +3428,7 @@ def move_item(source_id, dest_id):
 def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
     """Add a new task to an epic."""
 
-    def _run() -> None:
+    def _run() -> tuple[str, str] | None:
         loader = TaskLoader()
 
         depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
@@ -3446,6 +3446,8 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
 
         task = loader.create_task(epic_id, task_data)
 
+        metadata = (task.id, task.title)
+
         console.print(f"\n[green]✓ Created task:[/] {task.id}\n")
         console.print(f"  Title:      {task.title}")
         console.print(f"  Estimate:   {task.estimate_hours}h")
@@ -3458,6 +3460,8 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
             f"backlog show {task.id}",
             f"backlog claim {task.id}",
         )
+
+        return metadata
     try:
         run_with_auto_commit(
             "add",
@@ -3678,7 +3682,7 @@ def bug(
 ):
     """Create a new bug report."""
 
-    def _run() -> None:
+    def _run() -> tuple[str, str] | None:
         loader = TaskLoader()
 
         positional_title = " ".join(bug_words).strip()
@@ -3705,6 +3709,7 @@ def bug(
         }
 
         created = loader.create_bug(bug_data)
+        metadata = (created.id, created.title)
 
         console.print(f"\n[green]✓ Created bug:[/] {created.id}\n")
         console.print(f"  Title:    {created.title}")
@@ -3721,6 +3726,8 @@ def bug(
             f"backlog show {created.id}",
             f"backlog claim {created.id}",
         )
+
+        return metadata
     try:
         run_with_auto_commit(
             "bug",
