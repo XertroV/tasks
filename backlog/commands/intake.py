@@ -26,17 +26,53 @@ def _print_next_commands(*commands):
 
 
 @click.command()
-@click.argument("idea_words", nargs=-1, required=True)
-def idea(idea_words):
+@click.argument("idea_words", nargs=-1, required=False)
+@click.option("--title", "-T", required=False, help="Idea title")
+@click.option("--estimate", "-e", default=10.0, type=float, help="Hours estimate")
+@click.option(
+    "--complexity",
+    "-c",
+    default="medium",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+)
+@click.option(
+    "--priority",
+    "-p",
+    default="medium",
+    type=click.Choice(["low", "medium", "high", "critical"]),
+)
+@click.option("--depends-on", "-d", default="", help="Comma-separated task IDs")
+@click.option("--tags", default="", help="Comma-separated tags")
+@click.option("--simple", "-s", is_flag=True, help="Simple idea intake (no template body)")
+@click.option(
+    "--body", "-b", default="", help="Body content for the idea (replaces default template)"
+)
+def idea(idea_words, title, estimate, complexity, priority, depends_on, tags, simple, body):
     """Capture an idea as a planning intake .todo."""
     def _run() -> tuple[str, str] | None:
-        title = " ".join(idea_words).strip()
-        if not title:
-            raise ValueError("idea requires a non-empty idea description")
-        _require_at_least_two_words(title, "idea")
+        idea_title = title or " ".join(idea_words).strip()
+        if not idea_title:
+            raise ValueError("idea requires --title or IDEA_TEXT")
+        _require_at_least_two_words(idea_title, "idea")
+
+        depends_on_list = [item.strip() for item in depends_on.split(",") if item.strip()]
+        raw_tags = (tags or "").strip()
+        tags_list = [tag.strip() for tag in raw_tags.split(",") if tag.strip()] if raw_tags else []
 
         loader = TaskLoader()
-        created = loader.create_idea({"title": title})
+        idea_payload: dict = {
+            "title": idea_title,
+            "estimate_hours": estimate,
+            "complexity": complexity,
+            "priority": priority,
+            "depends_on": depends_on_list,
+            "simple": simple,
+            "body": body,
+        }
+        if raw_tags:
+            idea_payload["tags"] = tags_list
+
+        created = loader.create_idea(idea_payload)
 
         metadata = (created.id, created.title)
 

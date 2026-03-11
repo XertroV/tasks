@@ -1490,6 +1490,44 @@ tags: []
     expect(ideaText).toContain("tasks bug");
   });
 
+  test("idea command accepts body metadata flags", () => {
+    root = setupFixture();
+    const p = run(
+      [
+        "idea",
+        "--title",
+        "capture onboarding flow",
+        "--estimate",
+        "12",
+        "--priority",
+        "high",
+        "--depends-on",
+        "I100",
+        "--tags",
+        "research,ux",
+        "--body",
+        "Custom idea body",
+      ],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Created idea: I001");
+
+    const indexText = readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8");
+    expect(indexText).toContain("id: I001");
+    const fileMatch = indexText.match(/file:\s*(\S+)/);
+    expect(fileMatch).toBeTruthy();
+
+    const ideaText = readFileSync(join(root, ".tasks", "ideas", fileMatch![1]!), "utf8");
+    expect(ideaText).toContain("estimate_hours: 12");
+    expect(ideaText).toContain("priority: high");
+    expect(ideaText).toContain("- I100");
+    expect(ideaText).toContain("- research");
+    expect(ideaText).toContain("- ux");
+    expect(ideaText).toContain("Custom idea body");
+    expect(ideaText).not.toContain("Created Work Items");
+  });
+
   test("add auto-commits created task when no staged files exist", () => {
     root = setupFixture();
     initializeTestGitRepo(root);

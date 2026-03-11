@@ -1032,7 +1032,7 @@ export class TaskLoader {
     };
   }
 
-  async createIdea(data: { title: string; estimate?: number; complexity?: string; priority?: string; dependsOn?: string[]; tags?: string[] }): Promise<import("./models").Task> {
+  async createIdea(data: { title: string; estimate?: number; complexity?: string; priority?: string; dependsOn?: string[]; tags?: string[]; simple?: boolean; body?: string }): Promise<import("./models").Task> {
     const ideasDir = join(this.tasksDir, "ideas");
     await mkdir(ideasDir, { recursive: true });
     const indexPath = join(ideasDir, "index.yaml");
@@ -1068,7 +1068,11 @@ export class TaskLoader {
       tags: data.tags ?? ["idea", "planning"],
     };
 
-    const body = `
+    const body = typeof data.body === "string" && data.body.trim().length > 0
+      ? data.body
+      : data.simple
+        ? `\n${data.title}\n`
+        : `
 # Idea Intake: ${data.title}
 
 ## Original Idea

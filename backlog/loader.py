@@ -1420,7 +1420,13 @@ TODO: Describe actual behavior
             "tags": idea_data.get("tags", ["idea", "planning"]),
         }
 
-        body = f"""
+        body = str(idea_data.get("body") or "").strip()
+        if body:
+            rendered_body = body
+        elif idea_data.get("simple"):
+            rendered_body = f"\n{idea_data['title']}\n"
+        else:
+            rendered_body = f"""
 # Idea Intake: {idea_data["title"]}
 
 ## Original Idea
@@ -1454,7 +1460,7 @@ TODO: Describe actual behavior
             f.write("---\n")
             yaml.dump(frontmatter, f, default_flow_style=False, sort_keys=False)
             f.write("---\n")
-            f.write(body)
+            f.write(rendered_body)
 
         if index_path.exists():
             idx = self._load_yaml(index_path)

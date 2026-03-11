@@ -1916,6 +1916,47 @@ def test_idea_command_creates_planning_intake_todo(runner, tmp_tasks_dir):
     assert "tasks bug" in content
 
 
+def test_idea_command_accepts_body_and_metadata_flags(runner, tmp_tasks_dir):
+    result = runner.invoke(
+        cli,
+        [
+            "idea",
+            "--title",
+            "capture onboarding friction",
+            "--estimate",
+            "16",
+            "--priority",
+            "high",
+            "--depends-on",
+            "I001",
+            "--tags",
+            "research,ux",
+            "--body",
+            "Custom idea body content",
+            "--simple",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert "Created idea:" in result.output
+
+    ideas_index_path = tmp_tasks_dir / ".tasks" / "ideas" / "index.yaml"
+    ideas_index = yaml.safe_load(ideas_index_path.read_text())
+    assert ideas_index["ideas"][0]["id"] == "I001"
+    idea_file = tmp_tasks_dir / ".tasks" / "ideas" / ideas_index["ideas"][0]["file"]
+    content = idea_file.read_text()
+
+    assert "estimate_hours: 16.0" in content
+    assert "priority: high" in content
+    assert "depends_on:" in content
+    assert "I001" in content
+    assert "tags:" in content
+    assert "research" in content
+    assert "ux" in content
+    assert "Custom idea body content" in content
+    assert "Created Work Items" not in content
+
+
 def test_idea_command_rejects_single_word_title(runner, tmp_tasks_dir):
     result = runner.invoke(cli, ["idea", "idea"])
     assert result.exit_code != 0

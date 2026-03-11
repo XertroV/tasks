@@ -608,7 +608,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   grab: { summary: "Auto-claim next task (or claim IDs).", usage: "backlog grab [TASK_ID ...] [--agent AGENT] [--single] [--json] [--no-content]", options: ["--agent", "--single", "--json", "--no-content"], examples: ["backlog grab", "backlog grab --single"] },
   handoff: { summary: "Transfer task ownership to another agent.", usage: "backlog handoff <TASK_ID> --to AGENT [--notes \"...\"] [--force]", options: ["--to", "--notes", "--force"], examples: ["backlog handoff P1.M1.E1.T001 --to agent-b --notes \"taking over\""] },
   help: { summary: "Show command overview and guidance.", usage: "backlog help [COMMAND]", options: [], examples: ["backlog help", "backlog help show"] },
-  idea: { summary: "Capture an idea as planning intake.", usage: "backlog idea IDEA_TEXT", options: [], examples: ["backlog idea \"improve migration diagnostics\""] },
+  idea: { summary: "Capture an idea as planning intake.", usage: "backlog idea [--title <TITLE> | IDEA_TEXT] [options]", options: ["--title, -T", "--estimate, -e", "--complexity, -c", "--priority, -p", "--depends-on, -d", "--tags", "--simple, -s", "--body, -b"], examples: ["backlog idea \"improve migration diagnostics\"", "backlog idea --title \"Improve docs flow\" --simple"] },
   init: { summary: "Initialize a new .backlog project.", usage: "backlog init --project NAME [--description TEXT] [--timeline-weeks N]", options: ["--project, -p", "--description, -d", "--timeline-weeks, -w"], examples: ["backlog init --project my-project"] },
   list: { summary: "List tasks with filtering options.", usage: "backlog list [<SCOPE>] [options]", options: ["--status", "--critical", "--available, -a", "--complexity", "--priority", "--progress", "--json", "--all", "--unfinished", "--bugs, -b", "--ideas, -i", "--show-completed-aux", "--phase", "--milestone", "--epic"], examples: ["backlog list", "backlog list P1.M1 --progress", "backlog list --json"] },
   lock: { summary: "Lock a phase/milestone/epic.", usage: "backlog lock <ITEM_ID>", options: [], examples: ["backlog lock P1.M1"] },
@@ -3367,7 +3367,8 @@ async function cmdAdd(args: string[]): Promise<AutoCommitMetadata> {
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
-  const tags = parseCsv(parseOpt(args, "--tags"));
+  const rawTags = parseOpt(args, "--tags");
+  const tags = rawTags === undefined ? undefined : parseCsv(rawTags);
   const bodyOpt = parseOpt(args, "--body") ?? parseOpt(args, "-b");
 
   const loader = new TaskLoader();
@@ -4072,13 +4073,13 @@ async function cmdBug(args: string[]): Promise<AutoCommitMetadata> {
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "1");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
-  const tags = parseCsv(parseOpt(args, "--tags"));
+  const rawTags = parseOpt(args, "--tags");
+  const tags = rawTags === undefined ? undefined : parseCsv(rawTags);
   let simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
   const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
 
   if (!title && positionalTitle) {
     title = positionalTitle;
-    simple = true;
   }
   if (!title) textError("bug requires --title or description text");
   validateAtLeastTwoWords("bug", title);
@@ -4089,8 +4090,7 @@ async function cmdBug(args: string[]): Promise<AutoCommitMetadata> {
     priority,
     estimate,
     complexity,
-    dependsOn,
-    tags,
+    ...(rawTags !== undefined ? { tags } : {}),
     simple,
     body,
   });
@@ -4157,12 +4157,60 @@ async function cmdFixed(args: string[]): Promise<void> {
 }
 
 async function cmdIdea(args: string[]): Promise<AutoCommitMetadata> {
-  const title = args.join(" ").trim();
-  if (!title) textError("idea requires IDEA_TEXT");
+  let title = parseOpt(args, "--title") ?? parseOpt(args, "-T");
+  const optionNamesWithValue = new Set([
+    "--title",
+    "-T",
+    "--priority",
+    "-p",
+    "--estimate",
+    "-e",
+    "--complexity",
+    "-c",
+    "--depends-on",
+    "-d",
+    "--tags",
+    "--body",
+    "-b",
+  ]);
+  const ideaWords: string[] = [];
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i]!;
+    if (optionNamesWithValue.has(arg)) {
+      i += 1;
+      continue;
+    }
+    if (arg.startsWith("-")) continue;
+    ideaWords.push(arg);
+  }
+  const positionalTitle = ideaWords.join(" ").trim();
+
+  const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "10");
+  const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
+  const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
+  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const rawTags = parseOpt(args, "--tags");
+  const tags = rawTags === undefined ? undefined : parseCsv(rawTags);
+  let simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
+  const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
+
+  if (!title && positionalTitle) {
+    title = positionalTitle;
+  }
+  if (!title) textError("idea requires --title or IDEA_TEXT");
   validateAtLeastTwoWords("idea", title);
 
   const loader = new TaskLoader();
-  const idea = await loader.createIdea({ title });
+  const idea = await loader.createIdea({
+    title,
+    estimate,
+    complexity,
+    priority,
+    dependsOn,
+    ...(rawTags !== undefined ? { tags } : {}),
+    simple,
+    body,
+  });
   console.log(`Created idea: ${idea.id}`);
   console.log(`File: ${getDataDirName()}/${idea.file}`);
   printNextCommands([

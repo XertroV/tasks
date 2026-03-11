@@ -232,8 +232,18 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"idea": {
 		summary:  "Create a new planning idea.",
-		usage:    "backlog idea IDEA_TEXT",
-		examples: []string{"backlog idea \"Reduce setup friction in onboarding\""},
+		usage:    "backlog idea [--title <TITLE> | IDEA_TEXT] [options]",
+		options: []string{
+			"--title, -T",
+			"--estimate, -e",
+			"--complexity, -c",
+			"--priority, -p",
+			"--depends-on, -d",
+			"--tags",
+			"--simple, -s",
+			"--body, -b",
+		},
+		examples: []string{"backlog idea \"Reduce setup friction in onboarding\"", "backlog idea --title \"Improve docs flow\" --simple"},
 	},
 	"bug": {
 		summary: "Create a bug item for tracking and resolution.",
@@ -2049,7 +2059,11 @@ func runAdd(args []string, metadata *gitAutoCommitMetadata) error {
 		return err
 	}
 	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
-	tags := parseCSV(parseOption(args, "--tags"))
+	rawTags := strings.TrimSpace(parseOption(args, "--tags"))
+	tags := []string{"idea", "planning"}
+	if rawTags != "" {
+		tags = parseCSV(rawTags)
+	}
 	body := parseOption(args, "--body", "-b")
 
 	parsedEpicID, err := models.ParseTaskPath(epicID)
@@ -5004,15 +5018,77 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 		return nil
 	}
 	if err := validateAllowedFlagsForUsage(commands.CmdIdea, args, map[string]bool{
-		"--help": true,
-		"-h":     true,
+		"--title":      true,
+		"-T":          true,
+		"--estimate":   true,
+		"-e":           true,
+		"--complexity": true,
+		"-c":           true,
+		"--priority":   true,
+		"-p":           true,
+		"--depends-on": true,
+		"-d":           true,
+		"--tags":       true,
+		"--simple":     true,
+		"-s":           true,
+		"--body":       true,
+		"-b":           true,
+		"--help":       true,
+		"-h":           true,
 	}); err != nil {
 		return err
 	}
 
-	title := strings.TrimSpace(strings.Join(args, " "))
+	title := strings.TrimSpace(parseOption(args, "--title", "-T"))
+	optionNamesWithValue := map[string]bool{
+		"--title":      true,
+		"-T":          true,
+		"--priority":   true,
+		"-p":           true,
+		"--estimate":   true,
+		"-e":           true,
+		"--complexity": true,
+		"-c":           true,
+		"--depends-on": true,
+		"-d":           true,
+		"--tags":       true,
+		"--body":       true,
+		"-b":           true,
+	}
+	positional := positionalArgs(args, optionNamesWithValue)
+	positionalTitle := strings.TrimSpace(strings.Join(positional, " "))
+
+	estimate, err := parseFloatOptionWithDefault(args, 10, "--estimate", "-e")
+	if err != nil {
+		return err
+	}
+	complexity, err := parseComplexityOption(args, "--complexity", "-c")
+	if err != nil {
+		return err
+	}
+
+	priority := models.PriorityMedium
+	if rawPriority := strings.TrimSpace(parseOption(args, "--priority", "-p")); rawPriority != "" {
+		parsedPriority, err := models.ParsePriority(rawPriority)
+		if err != nil {
+			return err
+		}
+		priority = parsedPriority
+	}
+
+	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	tags := []string{"idea", "planning"}
+	if rawTags, hasTags := parseOptionWithPresence(args, "--tags"); hasTags {
+		tags = parseCSV(rawTags)
+	}
+	simple := parseFlag(args, "--simple", "-s")
+	body := parseOption(args, "--body", "-b")
+
+	if title == "" && positionalTitle != "" {
+		title = positionalTitle
+	}
 	if title == "" {
-		return printUsageError(commands.CmdIdea, errors.New("idea requires IDEA_TEXT"))
+		return printUsageError(commands.CmdIdea, errors.New("idea requires --title or IDEA_TEXT"))
 	}
 	if err := validateAtLeastTwoWords(commands.CmdIdea, title); err != nil {
 		return err
@@ -5038,22 +5114,30 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 	relFile := filepath.ToSlash(filepath.Join("ideas", filename))
 	filePath := filepath.Join(ideasDir, filename)
 
+	bodyText := strings.TrimSpace(body)
+	if bodyText == "" {
+		if simple {
+			bodyText = fmt.Sprintf("\n%s\n", title)
+		} else {
+			bodyText = fmt.Sprintf(
+				"\n# Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task %s` to decompose this idea into actionable work.\n- Confirm placement in the current backlog hierarchy before creating work items.\n\n## Ingest Plan Into backlog\n\n- Create implementation items with `backlog add` and related hierarchy commands (`backlog add-epic`, `backlog add-milestone`, `backlog add-phase`) as needed.\n- Create follow-up defects with `backlog bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete backlog work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
+				title,
+				ideaID,
+			)
+		}
+	}
+
 	frontmatter := map[string]interface{}{
 		"id":             ideaID,
 		"title":          title,
 		"status":         "pending",
-		"estimate_hours": 10.0,
-		"complexity":     "medium",
-		"priority":       "medium",
-		"depends_on":     []string{},
-		"tags":           []string{"idea", "planning"},
+		"estimate_hours":  estimate,
+		"complexity":     string(complexity),
+		"priority":       string(priority),
+		"depends_on":     dependsOn,
+		"tags":           tags,
 	}
-	body := fmt.Sprintf(
-		"\n# Original Idea\n\n%s\n\n## Planning Task (Equivalent of /plan-task)\n\n- Run `/plan-task %s` to decompose this idea into actionable work.\n- Confirm placement in the current backlog hierarchy before creating work items.\n\n## Ingest Plan Into backlog\n\n- Create implementation items with `backlog add` and related hierarchy commands (`backlog add-epic`, `backlog add-milestone`, `backlog add-phase`) as needed.\n- Create follow-up defects with `backlog bug` when bug-style work is identified.\n- Record all created IDs below and wire dependencies.\n\n## Created Work Items\n\n- Add created task IDs\n- Add created bug IDs (if any)\n\n## Completion Criteria\n\n- Idea has been decomposed into concrete backlog work items.\n- New items include clear acceptance criteria and dependencies.\n- This idea intake is updated with created IDs and marked done.\n",
-		title,
-		ideaID,
-	)
-	if err := writeTodoWithFrontmatter(filePath, frontmatter, body); err != nil {
+	if err := writeTodoWithFrontmatter(filePath, frontmatter, bodyText); err != nil {
 		return err
 	}
 

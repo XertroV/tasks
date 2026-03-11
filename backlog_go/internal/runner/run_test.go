@@ -439,6 +439,66 @@ func TestRunIdeaCreatesPlanningIntake(t *testing.T) {
 	}
 }
 
+func TestRunIdeaSupportsBodyAndMetadataFlags(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	output, err := runInDir(
+		t,
+		root,
+		"idea",
+		"--title",
+		"capture onboarding friction",
+		"--estimate",
+		"16",
+		"--priority",
+		"high",
+		"--depends-on",
+		"I001",
+		"--tags",
+		"research,ux",
+		"--body",
+		"Custom idea body content",
+		"--simple",
+	)
+	if err != nil {
+		t.Fatalf("run idea with metadata = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Created idea: I001") {
+		t.Fatalf("output = %q, expected created idea id", output)
+	}
+
+	ideasIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "ideas", "index.yaml"))
+	entries, ok := ideasIndex["ideas"].([]interface{})
+	if !ok || len(entries) != 1 {
+		t.Fatalf("ideas index = %#v, expected one idea entry", ideasIndex["ideas"])
+	}
+	entry := entries[0].(map[string]interface{})
+	ideaFile := filepath.Join(root, ".tasks", "ideas", asString(entry["file"]))
+	content := readFile(t, ideaFile)
+	if !strings.Contains(content, "id: I001") {
+		t.Fatalf("idea file = %q, expected id frontmatter", content)
+	}
+	if !strings.Contains(content, "estimate_hours: 16") {
+		t.Fatalf("idea file = %q, expected overridden estimate", content)
+	}
+	if !strings.Contains(content, "priority: high") {
+		t.Fatalf("idea file = %q, expected overridden priority", content)
+	}
+	if !strings.Contains(content, "depends_on:\n    - I001") {
+		t.Fatalf("idea file = %q, expected depends_on override", content)
+	}
+	if !strings.Contains(content, "tags:\n    - research\n    - ux") {
+		t.Fatalf("idea file = %q, expected tags override", content)
+	}
+	if !strings.Contains(content, "Custom idea body content") {
+		t.Fatalf("idea file = %q, expected custom body", content)
+	}
+	if strings.Contains(content, "Created Work Items") {
+		t.Fatalf("idea file = %q, should not include template when --body provided", content)
+	}
+}
+
 func TestRunBugSupportsPositionalTitleAndSimpleBody(t *testing.T) {
 	t.Parallel()
 
