@@ -2143,6 +2143,80 @@ def test_idea_command_accepts_body_and_metadata_flags(runner, tmp_tasks_dir):
     assert "Created Work Items" not in content
 
 
+def test_idea_command_rejects_invalid_dependency_id(runner, tmp_tasks_dir):
+    result = runner.invoke(
+        cli,
+        [
+            "idea",
+            "--title",
+            "bad depends on",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
+
+
+def test_add_command_rejects_invalid_dependency_id(runner, tmp_tasks_dir):
+    result = runner.invoke(
+        cli,
+        [
+            "add",
+            "P1.M1.E1",
+            "--title",
+            "bad depends on",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
+
+
+def test_add_epic_milestone_and_phase_reject_invalid_dependency_id(runner, tmp_tasks_dir):
+    result = runner.invoke(
+        cli,
+        [
+            "add-epic",
+            "P1.M1",
+            "--title",
+            "bad depends on",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
+
+    result = runner.invoke(
+        cli,
+        [
+            "add-milestone",
+            "P1",
+            "--title",
+            "bad depends on",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
+
+    result = runner.invoke(
+        cli,
+        [
+            "add-phase",
+            "--title",
+            "bad depends on",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
+
+
 def test_idea_command_rejects_single_word_title(runner, tmp_tasks_dir):
     result = runner.invoke(cli, ["idea", "idea"])
     assert result.exit_code != 0
@@ -2224,6 +2298,21 @@ def test_bug_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
 
     assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
     assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl bug B001: Bug auto commit"
+
+
+def test_bug_command_rejects_invalid_dependency_id(runner, tmp_tasks_dir):
+    result = runner.invoke(
+        cli,
+        [
+            "bug",
+            "--title",
+            "bad depends on",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
 
 
 def test_idea_command_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
@@ -2411,6 +2500,21 @@ def test_set_updates_multiple_fields(runner, tmp_tasks_dir):
     assert "- P1.M1.E1.T002" in content
     assert "- bugfix" in content
     assert "- urgent" in content
+
+
+def test_set_rejects_invalid_dependency_id(runner, tmp_tasks_dir):
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original")
+    result = runner.invoke(
+        cli,
+        [
+            "set",
+            "P1.M1.E1.T001",
+            "--depends-on",
+            "not a task id",
+        ],
+    )
+    assert result.exit_code != 0
+    assert "invalid dependency id" in result.output
 
 
 def test_set_requires_at_least_one_property(runner, tmp_tasks_dir):

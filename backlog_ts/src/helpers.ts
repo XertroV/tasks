@@ -41,6 +41,23 @@ export function isValidTaskId(id: string): boolean {
   return /^E\d+\.T\d+$/.test(id);
 }
 
+const DEPENDENCY_ID_RE =
+  /^(?:[BEI]\d+|P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?)?|M\d+|E\d+|T\d+)$/;
+
+export function parseDependencyIds(raw: string | undefined): string[] {
+  if (!raw) return [];
+  const out: string[] = [];
+  for (const part of raw.split(",")) {
+    const value = part.trim();
+    if (!value) continue;
+    if (!DEPENDENCY_ID_RE.test(value)) {
+      throw new Error(`invalid dependency id: ${value}`);
+    }
+    out.push(value);
+  }
+  return out;
+}
+
 export function findTask(tree: TaskTree, id: string): Task | undefined {
   return getAllTasks(tree).find((t) => t.id === id);
 }

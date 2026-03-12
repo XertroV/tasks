@@ -6,6 +6,7 @@ from rich.console import Console
 from ..loader import TaskLoader
 from ..data_dir import get_data_dir_name
 from ..autocommit import run_with_auto_commit
+from ..helpers import parse_dependency_ids
 
 console = Console()
 
@@ -55,7 +56,7 @@ def idea(idea_words, title, estimate, complexity, priority, depends_on, tags, si
             raise ValueError("idea requires --title or IDEA_TEXT")
         _require_at_least_two_words(idea_title, "idea")
 
-        depends_on_list = [item.strip() for item in depends_on.split(",") if item.strip()]
+        depends_on_list = parse_dependency_ids(depends_on)
         raw_tags = (tags or "").strip()
         tags_list = [tag.strip() for tag in raw_tags.split(",") if tag.strip()] if raw_tags else []
 

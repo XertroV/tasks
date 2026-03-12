@@ -682,6 +682,13 @@ describe("native cli", () => {
     expect(todo).toContain("- urgent");
   });
 
+  test("set rejects invalid dependency id", () => {
+    root = setupFixture();
+    const p = run(["set", "P1.M1.E1.T001", "--depends-on", "not a task id"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
+  });
+
   test("set requires at least one field", () => {
     root = setupFixture();
     const p = run(["set", "P1.M1.E1.T001"], root);
@@ -1380,6 +1387,33 @@ tags: []
     expect(addedPhase?.description).toBe(phaseDescription);
   });
 
+  test("add/add-epic/add-milestone/add-phase reject invalid dependency ids", () => {
+    root = setupFixture();
+
+    let p = run(["add", "P1.M1.E1", "--title", "Bad dependency", "--depends-on", "not a task id"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
+
+    p = run(["add-epic", "P1.M1", "--title", "Bad dependency", "--depends-on", "not a task id"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
+
+    p = run([
+      "add-milestone",
+      "P1",
+      "--title",
+      "Bad dependency",
+      "--depends-on",
+      "not a task id",
+    ], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
+
+    p = run(["add-phase", "--title", "Bad dependency", "--depends-on", "not a task id"], root);
+    expect(p.exitCode).toBe(1);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
+  });
+
   test("lock/unlock gates add commands for epic, milestone, and phase", () => {
     root = setupFixture();
 
@@ -1528,6 +1562,23 @@ tags: []
     expect(ideaText).not.toContain("Created Work Items");
   });
 
+  test("idea command rejects invalid dependency id", () => {
+    root = setupFixture();
+
+    const p = run(
+      [
+        "idea",
+        "--title",
+        "Bad depends on idea",
+        "--depends-on",
+        "not a task id",
+      ],
+      root,
+    );
+    expect(p.exitCode).not.toBe(0);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
+  });
+
   test("add auto-commits created task when no staged files exist", () => {
     root = setupFixture();
     initializeTestGitRepo(root);
@@ -1581,6 +1632,23 @@ tags: []
     expect(p.stdout.toString()).toContain("Created bug: B001");
     expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
     expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl bug B001: Auto commit bug");
+  });
+
+  test("bug command rejects invalid dependency id", () => {
+    root = setupFixture();
+
+    const p = run(
+      [
+        "bug",
+        "--title",
+        "Bad depends on bug",
+        "--depends-on",
+        "not a task id",
+      ],
+      root,
+    );
+    expect(p.exitCode).not.toBe(0);
+    expect(`${p.stdout.toString()}${p.stderr.toString()}`).toContain("invalid dependency id");
   });
 
   test("idea auto-commits created idea when no staged files exist", () => {

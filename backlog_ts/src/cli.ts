@@ -19,6 +19,7 @@ import {
   getCurrentTaskId,
   getStaleSessions,
   isBugId,
+  parseDependencyIds,
   isIdeaId,
   isFixedId,
   isValidTaskId,
@@ -2838,7 +2839,7 @@ async function cmdSet(args: string[]): Promise<void> {
   if (estimate !== undefined) task.estimateHours = estimate;
   if (complexity !== undefined) task.complexity = complexity as Complexity;
   if (priority !== undefined) task.priority = priority as Priority;
-  if (dependsOnText !== undefined) task.dependsOn = parseCsv(dependsOnText);
+  if (dependsOnText !== undefined) task.dependsOn = parseDependencyList(dependsOnText);
   if (tagsText !== undefined) task.tags = parseCsv(tagsText);
 
   try {
@@ -3383,6 +3384,15 @@ function parseCsv(val: string | undefined): string[] {
   return val.split(",").map((x) => x.trim()).filter(Boolean);
 }
 
+function parseDependencyList(raw: string | undefined): string[] {
+  try {
+    return parseDependencyIds(raw);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    textError(message);
+  }
+}
+
 function printNextCommands(commands: string[]): void {
   const filtered = commands.map((command) => command.trim()).filter((command) => command.length > 0);
   if (!filtered.length) {
@@ -3411,7 +3421,7 @@ async function cmdAdd(args: string[]): Promise<AutoCommitMetadata> {
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "1");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
-  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const dependsOn = parseDependencyList(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const rawTags = parseOpt(args, "--tags");
   const tags = rawTags === undefined ? undefined : parseCsv(rawTags);
   const bodyOpt = parseOpt(args, "--body") ?? parseOpt(args, "-b");
@@ -3492,7 +3502,7 @@ async function cmdAddEpic(args: string[]): Promise<void> {
   if (!title) textError("add-epic requires --title");
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "4");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
-  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const dependsOn = parseDependencyList(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const description = parseOpt(args, "--description") ?? "";
 
   const loader = new TaskLoader();
@@ -3560,7 +3570,7 @@ async function cmdAddMilestone(args: string[]): Promise<void> {
   if (!title) textError("add-milestone requires --title");
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "8");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
-  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const dependsOn = parseDependencyList(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const description = parseOpt(args, "--description") ?? "";
 
   const loader = new TaskLoader();
@@ -3622,7 +3632,7 @@ async function cmdAddPhase(args: string[]): Promise<void> {
   const weeks = Number(parseOpt(args, "--weeks") ?? "2");
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "40");
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
-  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const dependsOn = parseDependencyList(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const description = parseOpt(args, "--description") ?? "";
 
   const rootIndexPath = join(getDataDirName(), "index.yaml");
@@ -4117,7 +4127,7 @@ async function cmdBug(args: string[]): Promise<AutoCommitMetadata> {
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "high";
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "1");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
-  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const dependsOn = parseDependencyList(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const rawTags = parseOpt(args, "--tags");
   const tags = rawTags === undefined ? undefined : parseCsv(rawTags);
   let simple = parseFlag(args, "--simple") || parseFlag(args, "-s");
@@ -4135,6 +4145,7 @@ async function cmdBug(args: string[]): Promise<AutoCommitMetadata> {
     priority,
     estimate,
     complexity,
+    dependsOn,
     ...(rawTags !== undefined ? { tags } : {}),
     simple,
     body,
@@ -4233,7 +4244,7 @@ async function cmdIdea(args: string[]): Promise<AutoCommitMetadata> {
   const estimate = Number(parseOpt(args, "--estimate") ?? parseOpt(args, "-e") ?? "10");
   const complexity = parseOpt(args, "--complexity") ?? parseOpt(args, "-c") ?? "medium";
   const priority = parseOpt(args, "--priority") ?? parseOpt(args, "-p") ?? "medium";
-  const dependsOn = parseCsv(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
+  const dependsOn = parseDependencyList(parseOpt(args, "--depends-on") ?? parseOpt(args, "-d"));
   const rawTags = parseOpt(args, "--tags");
   const tags = rawTags === undefined ? undefined : parseCsv(rawTags);
   let simple = parseFlag(args, "--simple") || parseFlag(args, "-s");

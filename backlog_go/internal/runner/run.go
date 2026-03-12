@@ -2088,7 +2088,10 @@ func runAdd(args []string, metadata *gitAutoCommitMetadata) error {
 	if err != nil {
 		return err
 	}
-	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	dependsOn, err := parseDependencyIDs(parseOption(args, "--depends-on", "-d"))
+	if err != nil {
+		return err
+	}
 	rawTags := strings.TrimSpace(parseOption(args, "--tags"))
 	tags := []string{"idea", "planning"}
 	if rawTags != "" {
@@ -2280,7 +2283,10 @@ func runAddEpic(args []string) error {
 	if err != nil {
 		return err
 	}
-	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	dependsOn, err := parseDependencyIDs(parseOption(args, "--depends-on", "-d"))
+	if err != nil {
+		return err
+	}
 	description := parseOption(args, "--description")
 
 	parsedMilestoneID, err := models.ParseTaskPath(milestoneID)
@@ -2434,7 +2440,10 @@ func runAddMilestone(args []string) error {
 	if err != nil {
 		return err
 	}
-	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	dependsOn, err := parseDependencyIDs(parseOption(args, "--depends-on", "-d"))
+	if err != nil {
+		return err
+	}
 	description := parseOption(args, "--description")
 
 	parsedPhaseID, err := models.ParseTaskPath(phaseID)
@@ -2573,7 +2582,10 @@ func runAddPhase(args []string) error {
 	if err != nil {
 		return err
 	}
-	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	dependsOn, err := parseDependencyIDs(parseOption(args, "--depends-on", "-d"))
+	if err != nil {
+		return err
+	}
 	description := parseOption(args, "--description")
 
 	dataDir, err := ensureDataRoot()
@@ -2738,7 +2750,11 @@ func runSet(args []string) error {
 		task.Title = title
 	}
 	if hasDependsOn {
-		task.DependsOn = parseCSV(dependsOnRaw)
+		dependsOn, err := parseDependencyIDs(dependsOnRaw)
+		if err != nil {
+			return printUsageError(commands.CmdSet, err)
+		}
+		task.DependsOn = dependsOn
 	}
 	if hasTags {
 		task.Tags = parseCSV(tagsRaw)
@@ -5116,7 +5132,10 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 		priority = parsedPriority
 	}
 
-	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	dependsOn, err := parseDependencyIDs(parseOption(args, "--depends-on", "-d"))
+	if err != nil {
+		return err
+	}
 	tags := []string{"idea", "planning"}
 	if rawTags, hasTags := parseOptionWithPresence(args, "--tags"); hasTags {
 		tags = parseCSV(rawTags)
@@ -5278,7 +5297,10 @@ func runBug(args []string, metadata *gitAutoCommitMetadata) error {
 		priority = parsedPriority
 	}
 
-	dependsOn := parseCSV(parseOption(args, "--depends-on", "-d"))
+	dependsOn, err := parseDependencyIDs(parseOption(args, "--depends-on", "-d"))
+	if err != nil {
+		return err
+	}
 	tags := parseCSV(parseOption(args, "--tags"))
 	simple := parseFlag(args, "--simple", "-s")
 	body := parseOption(args, "--body", "-b")
@@ -10181,6 +10203,7 @@ func validateScopeOrID(value string) error {
 }
 
 var taskIDRe = regexp.MustCompile(`^(?:P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?)?|[BI]\d+)$`)
+var dependencyIDRe = regexp.MustCompile(`^(?:[BEI]\d+|P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?)?|M\d+|E\d+|T\d+)$`)
 var taskIDShorthandForCIRe = regexp.MustCompile(`^E\d+\.T\d+$`)
 var auxTaskIDForCIRe = regexp.MustCompile(`^[BIF]\d+$`)
 
@@ -10369,6 +10392,22 @@ func parseCSV(raw string) []string {
 		out = append(out, value)
 	}
 	return out
+}
+
+func parseDependencyIDs(raw string) ([]string, error) {
+	ids := parseCSV(raw)
+	if len(ids) == 0 {
+		return []string{}, nil
+	}
+
+	out := make([]string, 0, len(ids))
+	for _, id := range ids {
+		if !dependencyIDRe.MatchString(id) {
+			return nil, fmt.Errorf("invalid dependency id: %s", id)
+		}
+		out = append(out, id)
+	}
+	return out, nil
 }
 
 func appendToList(data map[string]interface{}, key string, item map[string]interface{}) {

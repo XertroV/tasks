@@ -4,6 +4,7 @@ import yaml
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, List, Dict, Any
+import re
 
 from .models import Epic, Milestone, Phase, PathQuery, Status, Task, TaskPath, TaskTree
 from .time_utils import utc_now, utc_now_iso, to_utc
@@ -355,6 +356,19 @@ def is_task_id(task_id: str) -> bool:
     return bool(re.match(r"^E\d+\.T\d+$", task_id))
 
 
+def parse_dependency_ids(raw: str) -> List[str]:
+    """Parse comma-separated dependency IDs and validate the accepted formats."""
+    out: List[str] = []
+    for item in raw.split(","):
+        value = item.strip()
+        if not value:
+            continue
+        if not DEPENDENCY_ID_RE.match(value):
+            raise ValueError(f"invalid dependency id: {value}")
+        out.append(value)
+    return out
+
+
 def get_all_tasks(tree) -> List[Task]:
     """Get all tasks from tree as a flat list."""
     tasks = []
@@ -586,3 +600,7 @@ def print_completion_notices(console, tree, task) -> Dict[str, bool]:
         console.print()
 
     return result
+
+DEPENDENCY_ID_RE = re.compile(
+    r"^(?:[BEI]\d+|P\d+(?:\.M\d+(?:\.E\d+(?:\.T\d+)?)?)?|M\d+|E\d+|T\d+)$"
+)

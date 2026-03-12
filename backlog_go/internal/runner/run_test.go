@@ -84,6 +84,19 @@ func TestRunAddCommand(t *testing.T) {
 	}
 }
 
+func TestRunAddCommandRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	_, err := runInDir(t, root, "add", "P1.M1.E1", "--title", "Bad depends", "--depends-on", "not a task id")
+	if err == nil {
+		t.Fatalf("run add expected dependency validation error")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
+	}
+}
+
 func TestRunAddRejectsLockedEpic(t *testing.T) {
 	t.Parallel()
 
@@ -154,6 +167,28 @@ func TestRunAddEpicCommand(t *testing.T) {
 	}
 }
 
+func TestRunAddEpicCommandRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	_, err := runInDir(
+		t,
+		root,
+		"add-epic",
+		"P1.M1",
+		"--title",
+		"Bad depends",
+		"--depends-on",
+		"not a task id",
+	)
+	if err == nil {
+		t.Fatalf("run add-epic expected dependency validation error")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
+	}
+}
+
 func TestRunAddMilestoneCommand(t *testing.T) {
 	t.Parallel()
 
@@ -198,6 +233,28 @@ func TestRunAddMilestoneCommand(t *testing.T) {
 	}
 	if added["description"] != "Milestone description" {
 		t.Fatalf("added milestone description = %v, expected provided description", added["description"])
+	}
+}
+
+func TestRunAddMilestoneCommandRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	_, err := runInDir(
+		t,
+		root,
+		"add-milestone",
+		"P1",
+		"--title",
+		"Bad depends",
+		"--depends-on",
+		"not a task id",
+	)
+	if err == nil {
+		t.Fatalf("run add-milestone expected dependency validation error")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
 	}
 }
 
@@ -583,6 +640,27 @@ func TestRunBugTemplateWarnsWhenNotSimple(t *testing.T) {
 	}
 }
 
+func TestRunBugRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	_, err := runInDir(
+		t,
+		root,
+		"bug",
+		"--title",
+		"bad depends",
+		"--depends-on",
+		"not a task id",
+	)
+	if err == nil {
+		t.Fatal("run bug expected invalid dependency id")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
+	}
+}
+
 func TestRunIdeaRejectsSingleWordTitle(t *testing.T) {
 	t.Parallel()
 
@@ -591,6 +669,27 @@ func TestRunIdeaRejectsSingleWordTitle(t *testing.T) {
 		t.Fatal("run idea expected one-word validation error")
 	} else if !strings.Contains(err.Error(), "idea requires at least two words") {
 		t.Fatalf("error = %q, expected idea one-word validation", err)
+	}
+}
+
+func TestRunIdeaRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	_, err := runInDir(
+		t,
+		root,
+		"idea",
+		"--title",
+		"bad depends",
+		"--depends-on",
+		"not a task id",
+	)
+	if err == nil {
+		t.Fatal("run idea expected invalid dependency id")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
 	}
 }
 
@@ -912,6 +1011,40 @@ func TestRunAddPhaseCommand(t *testing.T) {
 	}
 	if !strings.Contains(output, "backlog add-milestone P2 --title") {
 		t.Fatalf("output = %q, expected add-milestone next command", output)
+	}
+}
+
+func TestRunAddPhaseCommandRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	_, err := runInDir(
+		t,
+		root,
+		"add-phase",
+		"--title",
+		"Bad depends",
+		"--depends-on",
+		"not a task id",
+	)
+	if err == nil {
+		t.Fatalf("run add-phase expected dependency validation error")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
+	}
+}
+
+func TestRunSetCommandRejectsInvalidDependencyID(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	_, err := runInDir(t, root, "set", "P1.M1.E1.T001", "--depends-on", "not a task id")
+	if err == nil {
+		t.Fatal("run set expected invalid dependency id")
+	}
+	if !strings.Contains(err.Error(), "invalid dependency id") {
+		t.Fatalf("error = %q, expected invalid dependency id", err)
 	}
 }
 

@@ -41,6 +41,7 @@ from .helpers import (
     format_milestone_path,
     format_epic_path,
     filter_tree_by_path_query,
+    parse_dependency_ids,
 )
 from .autocommit import run_with_auto_commit
 from .commands.generated_backlog_howto import (
@@ -3237,7 +3238,7 @@ def set(
         if priority is not None:
             task.priority = Priority(priority)
         if depends_on is not None:
-            task.depends_on = [d.strip() for d in depends_on.split(",") if d.strip()]
+            task.depends_on = parse_dependency_ids(depends_on)
         if tags is not None:
             task.tags = [t.strip() for t in tags.split(",") if t.strip()]
         if status_value is not None:
@@ -3256,6 +3257,9 @@ def set(
         )
         console.print(f"  Tags: {', '.join(task.tags) if task.tags else '-'}")
 
+    except ValueError as e:
+        console.print(f"[red]Error:[/] {e}")
+        raise click.Abort()
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
         raise click.Abort()
@@ -3474,7 +3478,7 @@ def add(epic_id, title, estimate, complexity, priority, depends_on, tags, body):
     def _run() -> tuple[str, str] | None:
         loader = TaskLoader()
 
-        depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
+        depends_list = parse_dependency_ids(depends_on)
         tags_list = [t.strip() for t in tags.split(",") if t.strip()]
 
         task_data = {
@@ -3533,7 +3537,7 @@ def add_epic(milestone_id, title, estimate, description, complexity, depends_on)
     try:
         loader = TaskLoader()
 
-        depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
+        depends_list = parse_dependency_ids(depends_on)
 
         epic_data = {
             "name": title,
@@ -3585,7 +3589,7 @@ def add_milestone(phase_id, title, estimate, complexity, depends_on, description
     try:
         loader = TaskLoader()
 
-        depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
+        depends_list = parse_dependency_ids(depends_on)
 
         milestone_data = {
             "name": title,
@@ -3639,7 +3643,7 @@ def add_phase(title, weeks, estimate, priority, depends_on, description):
     try:
         loader = TaskLoader()
 
-        depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
+        depends_list = parse_dependency_ids(depends_on)
 
         phase_data = {
             "name": title,
@@ -3738,7 +3742,7 @@ def bug(
             raise ValueError("bug requires --title or description text")
         _require_at_least_two_words(bug_title, "bug")
 
-        depends_list = [d.strip() for d in depends_on.split(",") if d.strip()]
+        depends_list = parse_dependency_ids(depends_on)
         tags_list = [t.strip() for t in tags.split(",") if t.strip()]
 
         bug_data = {
