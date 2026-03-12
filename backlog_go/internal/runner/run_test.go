@@ -746,6 +746,122 @@ func TestRunIdeaAutoCommitCreatesBlIdeaCommit(t *testing.T) {
 	}
 }
 
+func TestRunClaimAutoCommitCreatesBlClaimCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "claim", "P1.M1.E1.T001", "--agent", "agent-x")
+	if err != nil {
+		t.Fatalf("run claim = %v", err)
+	}
+	if !strings.Contains(output, "✓ Claimed") {
+		t.Fatalf("output = %q, expected claim confirmation", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl claim P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl claim P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunClaimAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "claim", "P1.M1.E1.T002", "--agent", "agent-x")
+	if err != nil {
+		t.Fatalf("run claim = %v", err)
+	}
+	if !strings.Contains(output, "✓ Claimed") {
+		t.Fatalf("output = %q, expected claim confirmation", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
+	}
+}
+
+func TestRunGrabAutoCommitCreatesBlGrabCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(
+		t,
+		root,
+		"grab",
+		"--single",
+		"--agent",
+		"agent-x",
+		"--no-content",
+	)
+	if err != nil {
+		t.Fatalf("run grab = %v", err)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected grabbed task", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl grab P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl grab P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunGrabAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(
+		t,
+		root,
+		"grab",
+		"--single",
+		"--agent",
+		"agent-x",
+		"--no-content",
+	)
+	if err != nil {
+		t.Fatalf("run grab = %v", err)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected attempted grab task", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
+	}
+}
+
 func TestRunFixedRejectsSingleWordTitle(t *testing.T) {
 	t.Parallel()
 
@@ -1460,6 +1576,58 @@ func TestRunUnclaimRejectsUnclaimedPendingTask(t *testing.T) {
 	}
 	if !strings.Contains(output, "Task is not in progress: pending") {
 		t.Fatalf("output = %q, expected not-in-progress message", output)
+	}
+}
+
+func TestRunUnclaimAutoCommitCreatesBlUnclaimCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "in_progress", "agent-x", "2026-01-01T00:00:00Z")
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "unclaim", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run unclaim = %v", err)
+	}
+	if !strings.Contains(output, "Unclaimed: P1.M1.E1.T001 - a") {
+		t.Fatalf("output = %q, expected unclaim output", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl unclaim P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl unclaim P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunUnclaimAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "in_progress", "agent-x", "2026-01-01T00:00:00Z")
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "unclaim", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run unclaim = %v", err)
+	}
+	if !strings.Contains(output, "Unclaimed: P1.M1.E1.T001 - a") {
+		t.Fatalf("output = %q, expected unclaim output", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
 	}
 }
 
@@ -3529,6 +3697,130 @@ func TestRunDoneShowsDetailedEpicCompletionNotice(t *testing.T) {
 	}
 	if !strings.Contains(output, "Run liter (if available) and fix any warnings") {
 		t.Fatalf("output = %q, expected linter guidance", output)
+	}
+}
+
+func TestRunDoneAutoCommitCreatesBlDoneCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "in_progress", "agent-x", "2026-01-01T00:00:00Z")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "done", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run done = %v", err)
+	}
+	if !strings.Contains(output, "Completed: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected completion output", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl done P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl done P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunDoneAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "in_progress", "agent-x", "2026-01-01T00:00:00Z")
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "done", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run done = %v", err)
+	}
+	if !strings.Contains(output, "Completed: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected completion output", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
+	}
+}
+
+func TestRunUndoneAutoCommitCreatesBlUndoneCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"done",
+		"",
+		"",
+		"",
+		"2026-01-01T00:30:00Z",
+	)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "undone", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run undone = %v", err)
+	}
+	if !strings.Contains(output, "Marked not done: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected undone output", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl undone P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl undone P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunUndoneAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	writeWorkflowTaskFileWithTimes(
+		t,
+		root,
+		"P1.M1.E1.T001",
+		"a",
+		"done",
+		"",
+		"",
+		"",
+		"2026-01-01T00:30:00Z",
+	)
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "undone", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run undone = %v", err)
+	}
+	if !strings.Contains(output, "Marked not done: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected undone output", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
 	}
 }
 

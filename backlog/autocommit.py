@@ -77,6 +77,16 @@ def _auto_commit_message(command: str, metadata: tuple[str, str] | None = None) 
         prefix = "bl bug"
     elif command == "idea":
         prefix = "bl idea"
+    elif command == "claim":
+        prefix = "bl claim"
+    elif command == "grab":
+        prefix = "bl grab"
+    elif command == "done":
+        prefix = "bl done"
+    elif command == "unclaim":
+        prefix = "bl unclaim"
+    elif command == "undone":
+        prefix = "bl undone"
 
     if metadata is None:
         return prefix

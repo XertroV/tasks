@@ -2907,54 +2907,68 @@ def claim(task_ids, agent, force, no_content):
         # Use config default if agent not specified
         if not agent:
             agent = get_default_agent()
-        loader = TaskLoader()
-        tree = loader.load("metadata")
-        show_details = len(task_ids) == 1
-        for task_id in task_ids:
-            task = tree.find_task(task_id)
 
-            if not task:
-                console.print(
-                    "[yellow]Warning:[/] claim only works with task IDs."
-                )
-                console.print(
-                    f"[yellow]Showing `backlog show {task_id}` for context.[/]"
-                )
-                show((task_id,))
-                continue
+        metadata: tuple[str, str] | None = None
 
-            if _warn_missing_task_file(task):
-                console.print(
-                    f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."
-                )
-                raise click.Abort()
+        def _run() -> tuple[str, str] | None:
+            nonlocal metadata
+            loader = TaskLoader()
+            tree = loader.load("metadata")
+            show_details = len(task_ids) == 1
+            for task_id in task_ids:
+                task = tree.find_task(task_id)
 
-            claim_task(task, agent, force)
-            loader.save_task(task)
+                if not task:
+                    console.print(
+                        "[yellow]Warning:[/] claim only works with task IDs."
+                    )
+                    console.print(
+                        f"[yellow]Showing `backlog show {task_id}` for context.[/]"
+                    )
+                    show((task_id,))
+                    continue
 
-            console.print(f"\n[green]✓ Claimed:[/] {task.id} - {task.title}")
+                if _warn_missing_task_file(task):
+                    console.print(
+                        f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."
+                    )
+                    raise click.Abort()
 
-            if not show_details:
-                continue
+                claim_task(task, agent, force)
+                loader.save_task(task)
+                if metadata is None:
+                    metadata = (task.id, task.title)
 
-            console.print(f"  Agent:      {agent}")
-            console.print(f"  Claimed at: {task.claimed_at.isoformat()}")
-            console.print(f"  Estimate:   {task.estimate_hours} hours\n")
+                console.print(f"\n[green]✓ Claimed:[/] {task.id} - {task.title}")
 
-            console.print(f"[bold]File:[/] .tasks/{task.file}\n")
+                if not show_details:
+                    continue
 
-            if not no_content:
-                task_file = task_file_path(task)
-                if task_file.exists():
-                    with open(task_file) as f:
-                        content = f.read()
-                    console.print("─" * 50)
-                    console.print(content)
-                    console.print("─" * 50 + "\n")
-                else:
-                    _warn_missing_task_file(task)
+                console.print(f"  Agent:      {agent}")
+                console.print(f"  Claimed at: {task.claimed_at.isoformat()}")
+                console.print(f"  Estimate:   {task.estimate_hours} hours\n")
 
-            console.print(f"[dim]Mark done:[/] 'backlog done {task.id}'\n")
+                console.print(f"[bold]File:[/] .tasks/{task.file}\n")
+
+                if not no_content:
+                    task_file = task_file_path(task)
+                    if task_file.exists():
+                        with open(task_file) as f:
+                            content = f.read()
+                        console.print("─" * 50)
+                        console.print(content)
+                        console.print("─" * 50 + "\n")
+                    else:
+                        _warn_missing_task_file(task)
+
+                console.print(f"[dim]Mark done:[/] 'backlog done {task.id}'\n")
+            return metadata
+
+        run_with_auto_commit(
+            "claim",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
+        )
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
@@ -2990,91 +3004,104 @@ def done(task_ids, verify, force):
                 raise click.Abort()
             task_ids = (task_id,)
 
-        loader = TaskLoader()
-        tree = loader.load("metadata")
-        config = load_config()
+        metadata: tuple[str, str] | None = None
 
-        for task_id in task_ids:
-            task = tree.find_task(task_id)
+        def _run() -> tuple[str, str] | None:
+            nonlocal metadata
+            loader = TaskLoader()
+            tree = loader.load("metadata")
+            config = load_config()
 
-            if not task:
-                console.print(f"[red]Error:[/] Task not found: {task_id}")
-                raise click.Abort()
+            for task_id in task_ids:
+                task = tree.find_task(task_id)
 
-            if task.status == Status.DONE:
-                console.print(f"[yellow]⚠ Already done:[/] {task.id} - {task.title}")
-                continue
+                if not task:
+                    console.print(f"[red]Error:[/] Task not found: {task_id}")
+                    raise click.Abort()
 
-            # Calculate duration
-            duration = None
-            if task.started_at:
-                started = to_utc(task.started_at)
-                duration = (utc_now() - started).total_seconds() / 60
-                task.duration_minutes = duration
+                if task.status == Status.DONE:
+                    console.print(f"[yellow]⚠ Already done:[/] {task.id} - {task.title}")
+                    continue
 
-            complete_task(task, force=force)
-            loader.save_task(task)
+                # Calculate duration
+                duration = None
+                if task.started_at:
+                    started = to_utc(task.started_at)
+                    duration = (utc_now() - started).total_seconds() / 60
+                    task.duration_minutes = duration
 
-            console.print(f"\n[green]✓ Completed:[/] {task.id} - {task.title}\n")
-            if duration:
-                console.print(f"  Duration: {int(duration)} minutes\n")
+                complete_task(task, force=force)
+                loader.save_task(task)
+                if metadata is None:
+                    metadata = (task.id, task.title)
 
-            # Show unblocked tasks
-            calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-            critical_path, _ = calc.calculate()
-            unblocked = find_newly_unblocked(tree, calc, task_id)
+                console.print(f"\n[green]✓ Completed:[/] {task.id} - {task.title}\n")
+                if duration:
+                    console.print(f"  Duration: {int(duration)} minutes\n")
 
-            if unblocked:
-                console.print(f"[cyan]Unblocked {len(unblocked)} task(s):[/]")
-                for t in unblocked:
-                    crit = " [yellow]★[/]" if t.id in critical_path else ""
-                    console.print(f"  → {t.id}: {t.title}{crit}")
+                # Show unblocked tasks
+                calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
+                critical_path, _ = calc.calculate()
+                unblocked = find_newly_unblocked(tree, calc, task_id)
 
-                # Suggest next task
-                on_crit = [t for t in unblocked if t.id in critical_path]
-                if on_crit:
+                if unblocked:
+                    console.print(f"[cyan]Unblocked {len(unblocked)} task(s):[/]")
+                    for t in unblocked:
+                        crit = " [yellow]★[/]" if t.id in critical_path else ""
+                        console.print(f"  → {t.id}: {t.title}{crit}")
+
+                    # Suggest next task
+                    on_crit = [t for t in unblocked if t.id in critical_path]
+                    if on_crit:
+                        console.print(
+                            f"\n[dim]Claim next:[/] 'backlog grab' or 'backlog cycle'\n"
+                        )
+
+                if task.epic_id:
+                    completion_status = loader.set_item_done(task.id)
+                else:
+                    completion_status = {
+                        "epic_completed": False,
+                        "milestone_completed": False,
+                        "phase_completed": False,
+                        "phase_locked": False,
+                    }
+                # Check epic/milestone/phase completion and print review instructions
+                _completion_status = print_completion_notices(console, tree, task)
+
+                # Handle multi-task context
+                agent = get_default_agent()
+                primary, additional = get_all_current_tasks(agent)
+
+                if primary == task_id and additional:
+                    # Primary completed, promote first additional to primary
                     console.print(
-                        f"\n[dim]Claim next:[/] 'backlog grab' or 'backlog cycle'\n"
+                        "\n[yellow]Primary task completed. Additional tasks still active.[/]"
                     )
+                    new_primary = additional[0]
+                    new_additional = additional[1:]
 
-            if task.epic_id:
-                completion_status = loader.set_item_done(task.id)
-            else:
-                completion_status = {
-                    "epic_completed": False,
-                    "milestone_completed": False,
-                    "phase_completed": False,
-                    "phase_locked": False,
-                }
+                    if new_additional:
+                        set_multi_task_context(agent, new_primary, new_additional)
+                    else:
+                        set_current_task(new_primary, agent)
 
-            # Check epic/milestone/phase completion and print review instructions
-            _completion_status = print_completion_notices(console, tree, task)
+                    console.print(f"[bold]New primary task:[/] {new_primary}\n")
+                elif task_id in additional:
+                    # Additional task completed, remove from list
+                    new_additional = [t for t in additional if t != task_id]
+                    if new_additional:
+                        set_multi_task_context(agent, primary, new_additional)
+                    else:
+                        set_current_task(primary, agent)
 
-            # Handle multi-task context
-            agent = get_default_agent()
-            primary, additional = get_all_current_tasks(agent)
+            return metadata
 
-            if primary == task_id and additional:
-                # Primary completed, promote first additional to primary
-                console.print(
-                    "\n[yellow]Primary task completed. Additional tasks still active.[/]"
-                )
-                new_primary = additional[0]
-                new_additional = additional[1:]
-
-                if new_additional:
-                    set_multi_task_context(agent, new_primary, new_additional)
-                else:
-                    set_current_task(new_primary, agent)
-
-                console.print(f"[bold]New primary task:[/] {new_primary}\n")
-            elif task_id in additional:
-                # Additional task completed, remove from list
-                new_additional = [t for t in additional if t != task_id]
-                if new_additional:
-                    set_multi_task_context(agent, primary, new_additional)
-                else:
-                    set_current_task(primary, agent)
+        run_with_auto_commit(
+            "done",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
+        )
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
@@ -3086,11 +3113,22 @@ def done(task_ids, verify, force):
 def undone(item_id):
     """Mark a task/epic/milestone/phase as not done (pending)."""
     try:
-        loader = TaskLoader()
-        result = loader.set_item_not_done(item_id)
-        console.print(
-            f"\n[green]✓ Marked not done:[/] {result['item_id']}\n"
-            f"  Reset tasks: {result['updated_tasks']}\n"
+        def _run() -> tuple[str, str] | None:
+            loader = TaskLoader()
+            tree = loader.load("metadata")
+            result = loader.set_item_not_done(item_id)
+            console.print(
+                f"\n[green]✓ Marked not done:[/] {result['item_id']}\n"
+                f"  Reset tasks: {result['updated_tasks']}\n"
+            )
+            task = tree.find_task(result["item_id"])
+            title = task.title if task else ""
+            return (result["item_id"], title)
+
+        run_with_auto_commit(
+            "undone",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
         )
     except Exception as e:
         console.print(f"[red]Error:[/] {str(e)}")

@@ -460,6 +460,35 @@ class TestClaimCommand:
             in result.output
         )
 
+    def test_claim_auto_commits_when_no_staged_files(self, runner, tmp_tasks_dir):
+        """claim should auto-commit task updates when no staged files exist."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        initialize_test_git_repo(tmp_tasks_dir)
+        initial_commits = git_commit_count(tmp_tasks_dir)
+
+        result = runner.invoke(cli, ["claim", "P1.M1.E1.T001", "--agent=test-agent"])
+
+        assert result.exit_code == 0
+        assert "✓ Claimed: P1.M1.E1.T001" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+        assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl claim P1.M1.E1.T001: Test Task"
+        assert run_git(tmp_tasks_dir, "status", "--short") == ""
+
+    def test_claim_auto_commit_skips_when_staged_files_exist(self, runner, tmp_tasks_dir):
+        """claim should skip auto-commit when staged files already exist."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        initialize_test_git_repo(tmp_tasks_dir)
+        (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+        run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(cli, ["claim", "P1.M1.E1.T001", "--agent=test-agent"])
+
+        assert result.exit_code == 0
+        assert "✓ Claimed: P1.M1.E1.T001" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits
+        assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
 
 class TestLsCommand:
     """Tests for the ls command."""
@@ -640,6 +669,39 @@ class TestGrabCommand:
         assert "ADDITIONAL #1: B003" in result.output
         assert "ADDITIONAL #2: B002" in result.output
 
+    def test_grab_auto_commits_when_no_staged_files(self, runner, tmp_tasks_dir):
+        """grab should auto-commit claimed task updates when no staged files exist."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task Two")
+        initialize_test_git_repo(tmp_tasks_dir)
+        initial_commits = git_commit_count(tmp_tasks_dir)
+
+        result = runner.invoke(
+            cli, ["grab", "--single", "--agent=test-agent", "--no-content"]
+        )
+
+        assert result.exit_code == 0
+        assert "P1.M1.E1.T001" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+        assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl grab P1.M1.E1.T001: Task One"
+
+    def test_grab_auto_commit_skips_when_staged_files_exist(self, runner, tmp_tasks_dir):
+        """grab should skip auto-commit when staged files already exist."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task One")
+        initialize_test_git_repo(tmp_tasks_dir)
+        (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+        run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(
+            cli, ["grab", "--single", "--agent=test-agent", "--no-content"]
+        )
+
+        assert result.exit_code == 0
+        assert "P1.M1.E1.T001" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits
+        assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
 
 class TestDoneCommand:
     """Tests for the done command."""
@@ -757,6 +819,48 @@ class TestDoneCommand:
         assert "status: done" in t002.read_text()
         assert "status: done" in bug_file.read_text()
 
+    def test_done_auto_commits_when_no_staged_files(self, runner, tmp_tasks_dir):
+        """done should auto-commit task updates when no staged files exist."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Test Task",
+            status="in_progress",
+            claimed_by="test-agent",
+            claimed_at=datetime.now(timezone.utc) - timedelta(minutes=12),
+        )
+        initialize_test_git_repo(tmp_tasks_dir)
+        initial_commits = git_commit_count(tmp_tasks_dir)
+
+        result = runner.invoke(cli, ["done", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+        assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl done P1.M1.E1.T001: Test Task"
+
+    def test_done_auto_commit_skips_when_staged_files_exist(self, runner, tmp_tasks_dir):
+        """done should skip auto-commit when staged files already exist."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Test Task",
+            status="in_progress",
+            claimed_by="test-agent",
+            claimed_at=datetime.now(timezone.utc) - timedelta(minutes=12),
+        )
+        initialize_test_git_repo(tmp_tasks_dir)
+        (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+        run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(cli, ["done", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Completed" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits
+        assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
     def test_undone_resets_single_task(self, runner, tmp_tasks_dir):
         create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task", status="done")
         result = runner.invoke(cli, ["undone", "P1.M1.E1.T001"])
@@ -810,6 +914,88 @@ class TestDoneCommand:
             / "01-test-epic"
             / "T002-test-task.todo"
         ).read_text()
+
+    def test_undone_auto_commits_when_no_staged_files(self, runner, tmp_tasks_dir):
+        """undone should auto-commit reset updates when no staged files exist."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Test Task",
+            status="done",
+            completed_at=datetime.now(timezone.utc),
+        )
+        initialize_test_git_repo(tmp_tasks_dir)
+        initial_commits = git_commit_count(tmp_tasks_dir)
+
+        result = runner.invoke(cli, ["undone", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Marked not done" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+        assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl undone P1.M1.E1.T001: Test Task"
+
+    def test_undone_auto_commit_skips_when_staged_files_exist(self, runner, tmp_tasks_dir):
+        """undone should skip auto-commit when staged files already exist."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Test Task",
+            status="done",
+            completed_at=datetime.now(timezone.utc),
+        )
+        initialize_test_git_repo(tmp_tasks_dir)
+        (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+        run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(cli, ["undone", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Marked not done" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits
+        assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
+    def test_unclaim_auto_commits_when_no_staged_files(self, runner, tmp_tasks_dir):
+        """unclaim should auto-commit task resets when no staged files exist."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="in_progress",
+            claimed_by="test-agent",
+            claimed_at=datetime.now(timezone.utc) - timedelta(minutes=10),
+        )
+        initialize_test_git_repo(tmp_tasks_dir)
+        initial_commits = git_commit_count(tmp_tasks_dir)
+
+        result = runner.invoke(cli, ["unclaim", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Unclaimed: P1.M1.E1.T001 - Task One" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+        assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl unclaim P1.M1.E1.T001: Task One"
+
+    def test_unclaim_auto_commit_skips_when_staged_files_exist(self, runner, tmp_tasks_dir):
+        """unclaim should skip auto-commit when staged files already exist."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            status="in_progress",
+            claimed_by="test-agent",
+            claimed_at=datetime.now(timezone.utc) - timedelta(minutes=10),
+        )
+        initialize_test_git_repo(tmp_tasks_dir)
+        (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+        run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(cli, ["unclaim", "P1.M1.E1.T001"])
+
+        assert result.exit_code == 0
+        assert "Unclaimed: P1.M1.E1.T001 - Task One" in result.output
+        assert git_commit_count(tmp_tasks_dir) == initial_commits
+        assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
 
 
 class TestNextCommand:

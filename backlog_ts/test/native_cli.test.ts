@@ -1595,6 +1595,184 @@ tags: []
     expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl idea I001: auto commit idea");
   });
 
+  test("claim auto-commits claimed task when no staged files exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-ts"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Claimed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl claim P1.M1.E1.T001: A");
+    expect(runGit(root, "status", "--short")).toBe("");
+  });
+
+  test("claim auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-ts"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("✓ Claimed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
+  test("grab auto-commits grabbed task when no staged files exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(
+      ["grab", "--single", "--agent", "agent-ts", "--no-content"],
+      root,
+    );
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl grab P1.M1.E1.T001: A");
+  });
+
+  test("grab auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["grab", "--single", "--agent", "agent-ts", "--no-content"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("P1.M1.E1.T001");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
+  test("done auto-commits completed task when no staged files exist", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-ts";
+      frontmatter.claimed_at = new Date().toISOString();
+      frontmatter.started_at = new Date().toISOString();
+    });
+
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl done P1.M1.E1.T001: A");
+  });
+
+  test("done auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-ts";
+      frontmatter.claimed_at = new Date().toISOString();
+      frontmatter.started_at = new Date().toISOString();
+    });
+
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["done", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Completed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
+  test("undone auto-commits reset task when no staged files exist", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.status = "done";
+      frontmatter.completed_at = "2026-01-01T00:00:00.000Z";
+    });
+
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["undone", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Marked not done:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl undone P1.M1.E1.T001: A");
+  });
+
+  test("undone auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.status = "done";
+      frontmatter.completed_at = "2026-01-01T00:00:00.000Z";
+    });
+
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["undone", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Marked not done:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
+  test("unclaim auto-commits reset task when no staged files exist", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-ts";
+      frontmatter.claimed_at = "2026-01-01T00:00:00.000Z";
+      frontmatter.started_at = "2026-01-01T00:00:00.000Z";
+    });
+
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["unclaim", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Unclaimed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl unclaim P1.M1.E1.T001: A");
+  });
+
+  test("unclaim auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    updateTodoFrontmatter(taskPath, (frontmatter) => {
+      frontmatter.status = "in_progress";
+      frontmatter.claimed_by = "agent-ts";
+      frontmatter.claimed_at = "2026-01-01T00:00:00.000Z";
+      frontmatter.started_at = "2026-01-01T00:00:00.000Z";
+    });
+
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["unclaim", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Unclaimed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
   test("idea rejects single-word title", () => {
     root = setupFixture();
     const p = run(["idea", "plan"], root);

@@ -878,7 +878,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdShow:
 		return runShow(payload, true, parseFlag(payload, "--long"))
 	case commands.CmdGrab:
-		return runGrab(payload)
+		return runWithAutoCommit("grab", payload, runGrab)
 	case commands.CmdNext:
 		return runNext(payload)
 	case commands.CmdPreview:
@@ -914,11 +914,11 @@ func Run(rawArgs ...string) error {
 	case commands.CmdAgents:
 		return runAgents(payload)
 	case commands.CmdClaim:
-		return runClaim(payload)
+		return runWithAutoCommit("claim", payload, runClaim)
 	case commands.CmdDone:
-		return runDone(payload)
+		return runWithAutoCommit("done", payload, runDone)
 	case commands.CmdUnclaim:
-		return runUnclaim(payload)
+		return runWithAutoCommit("unclaim", payload, runUnclaim)
 	case commands.CmdBlocked:
 		return runBlocked(payload)
 	case commands.CmdCycle:
@@ -940,7 +940,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdUpdate:
 		return runUpdate(payload)
 	case commands.CmdUndone:
-		return runUndone(payload)
+		return runWithAutoCommit("undone", payload, runUndone)
 	case commands.CmdBenchmark:
 		return runBenchmark(payload)
 	case commands.CmdSync:
@@ -966,9 +966,14 @@ func Run(rawArgs ...string) error {
 }
 
 const (
-	autoCommitAddPrefix  = "bl add"
-	autoCommitBugPrefix  = "bl bug"
-	autoCommitIdeaPrefix = "bl idea"
+	autoCommitAddPrefix    = "bl add"
+	autoCommitBugPrefix    = "bl bug"
+	autoCommitIdeaPrefix   = "bl idea"
+	autoCommitClaimPrefix  = "bl claim"
+	autoCommitGrabPrefix   = "bl grab"
+	autoCommitDonePrefix   = "bl done"
+	autoCommitUnclaimPrefix = "bl unclaim"
+	autoCommitUndonePrefix = "bl undone"
 )
 
 type gitAutoCommitContext struct {
@@ -1088,6 +1093,31 @@ func autoCommitMessage(command string, metadata gitAutoCommitMetadata) string {
 			return autoCommitIdeaPrefix
 		}
 		return formatAutoCommitMessage(autoCommitIdeaPrefix, metadata)
+	case "claim":
+		if id == "" {
+			return autoCommitClaimPrefix
+		}
+		return formatAutoCommitMessage(autoCommitClaimPrefix, metadata)
+	case "grab":
+		if id == "" {
+			return autoCommitGrabPrefix
+		}
+		return formatAutoCommitMessage(autoCommitGrabPrefix, metadata)
+	case "done":
+		if id == "" {
+			return autoCommitDonePrefix
+		}
+		return formatAutoCommitMessage(autoCommitDonePrefix, metadata)
+	case "unclaim":
+		if id == "" {
+			return autoCommitUnclaimPrefix
+		}
+		return formatAutoCommitMessage(autoCommitUnclaimPrefix, metadata)
+	case "undone":
+		if id == "" {
+			return autoCommitUndonePrefix
+		}
+		return formatAutoCommitMessage(autoCommitUndonePrefix, metadata)
 	default:
 		return fmt.Sprintf("backlog %s", command)
 	}
@@ -2797,7 +2827,7 @@ func runUpdate(args []string) error {
 	return nil
 }
 
-func runUndone(args []string) error {
+func runUndone(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -2819,6 +2849,10 @@ func runUndone(args []string) error {
 		if err := saveTaskState(*task, tree); err != nil {
 			return err
 		}
+		if metadata.id == "" {
+			metadata.id = task.ID
+			metadata.title = task.Title
+		}
 		fmt.Printf("%s %s\n", styleWarning("Marked not done:"), styleSuccess(task.ID))
 		fmt.Printf("%s 1\n", styleWarning("Reset tasks:"))
 		return nil
@@ -2831,10 +2865,16 @@ func runUndone(args []string) error {
 
 	switch path.Depth() {
 	case 1:
+		metadata.id = path.FullID()
+		metadata.title = ""
 		return setPhaseNotDone(path, tree)
 	case 2:
+		metadata.id = path.FullID()
+		metadata.title = ""
 		return setMilestoneNotDone(path, tree)
 	case 3:
+		metadata.id = path.FullID()
+		metadata.title = ""
 		return setEpicNotDone(path, tree)
 	default:
 		return errors.New("undone supports only task, phase, milestone, or epic IDs")
@@ -6354,7 +6394,7 @@ func taskFileExists(raw string) bool {
 	return err == nil
 }
 
-func runGrab(args []string) error {
+func runGrab(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -6456,6 +6496,10 @@ func runGrab(args []string) error {
 			if err := claimTaskInTree(task, agent, time.Now().UTC(), tree); err != nil {
 				return err
 			}
+			if metadata.id == "" {
+				metadata.id = task.ID
+				metadata.title = task.Title
+			}
 			if len(taskIDs) == 1 {
 				renderTaskActionCard("✓ Claimed", *task, agent, dataDir, !noContent)
 			} else {
@@ -6552,6 +6596,10 @@ func runGrab(args []string) error {
 	}
 	if err := claimTaskInTree(primary, agent, time.Now().UTC(), tree); err != nil {
 		return err
+	}
+	if metadata.id == "" {
+		metadata.id = primary.ID
+		metadata.title = primary.Title
 	}
 
 	additional := []models.Task{}
@@ -8414,7 +8462,7 @@ func min3(a, b, c int) int {
 	return min(min(a, b), c)
 }
 
-func runClaim(args []string) error {
+func runClaim(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -8489,6 +8537,10 @@ func runClaim(args []string) error {
 
 			if err := saveTaskState(*task, tree); err != nil {
 				return err
+			}
+			if metadata.id == "" {
+				metadata.id = task.ID
+				metadata.title = task.Title
 			}
 
 			if !hasContext {
@@ -9577,7 +9629,7 @@ func runSync() error {
 	return nil
 }
 
-func runUnclaim(args []string) error {
+func runUnclaim(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -9637,6 +9689,10 @@ func runUnclaim(args []string) error {
 
 	if err := saveTaskState(*task, tree); err != nil {
 		return err
+	}
+	if metadata.id == "" {
+		metadata.id = task.ID
+		metadata.title = task.Title
 	}
 	dataDir, err := ensureDataRoot()
 	if err != nil {
@@ -9776,7 +9832,7 @@ func runBlocked(args []string) error {
 	return nil
 }
 
-func runDone(args []string) error {
+func runDone(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -9867,6 +9923,10 @@ func runDone(args []string) error {
 		}
 		if err := saveTaskState(*task, tree); err != nil {
 			return err
+		}
+		if metadata.id == "" {
+			metadata.id = task.ID
+			metadata.title = task.Title
 		}
 
 		if status == models.StatusDone {

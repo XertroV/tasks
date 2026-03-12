@@ -227,6 +227,26 @@ function autoCommitMessage(command: string, metadata: AutoCommitMetadata | null)
     if (!metadata?.id) return "bl idea";
     return formatAutoCommitMessage("bl idea", metadata);
   }
+  if (command === "claim") {
+    if (!metadata?.id) return "bl claim";
+    return formatAutoCommitMessage("bl claim", metadata);
+  }
+  if (command === "grab") {
+    if (!metadata?.id) return "bl grab";
+    return formatAutoCommitMessage("bl grab", metadata);
+  }
+  if (command === "done") {
+    if (!metadata?.id) return "bl done";
+    return formatAutoCommitMessage("bl done", metadata);
+  }
+  if (command === "unclaim") {
+    if (!metadata?.id) return "bl unclaim";
+    return formatAutoCommitMessage("bl unclaim", metadata);
+  }
+  if (command === "undone") {
+    if (!metadata?.id) return "bl undone";
+    return formatAutoCommitMessage("bl undone", metadata);
+  }
   return `backlog ${command}`;
 }
 
@@ -2448,7 +2468,7 @@ function showIdeaInstructions(idea: Task): void {
   console.log(`  6. Mark this idea as done when planning is complete`);
 }
 
-async function cmdClaim(args: string[]): Promise<void> {
+async function cmdClaim(args: string[]): Promise<AutoCommitMetadata> {
   const taskIds: string[] = [];
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i]!;
@@ -2466,6 +2486,7 @@ async function cmdClaim(args: string[]): Promise<void> {
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
   const showDetails = taskIds.length === 1;
+  let metadata: AutoCommitMetadata | null = null;
   let hasSetCurrent = false;
   for (const taskId of taskIds) {
     const task = findClaimableTask(tree, taskId);
@@ -2480,6 +2501,9 @@ async function cmdClaim(args: string[]): Promise<void> {
     try {
       claimTask(task, agent, force);
       await loader.saveTask(task);
+      if (!metadata) {
+        metadata = { id: task.id, title: task.title };
+      }
       if (!hasSetCurrent) {
         await setCurrentTask(task.id, agent);
         hasSetCurrent = true;
@@ -2497,13 +2521,16 @@ async function cmdClaim(args: string[]): Promise<void> {
       throw e;
     }
   }
+
+  return metadata ?? { id: "", title: "" };
 }
 
-async function cmdGrab(args: string[]): Promise<void> {
+async function cmdGrab(args: string[]): Promise<AutoCommitMetadata> {
   const agent = parseOpt(args, "--agent") ?? ((loadConfig().agent as Record<string, unknown>)?.default_agent as string) ?? "cli-user";
   const scopes = parseOpts(args, "--scope").map((s) => s.trim()).filter((s) => s.length > 0);
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
+  let metadata: AutoCommitMetadata | null = null;
 
   // Check for positional task IDs (excluding option values)
   const taskIds: string[] = [];
@@ -2527,6 +2554,9 @@ async function cmdGrab(args: string[]): Promise<void> {
       try {
         claimTask(task, agent, false);
         await loader.saveTask(task);
+        if (!metadata) {
+          metadata = { id: task.id, title: task.title };
+        }
         claimedTasks.push(task);
         console.log(`${pc.green("✓ Claimed:")} ${task.id} - ${task.title}`);
       } catch (e) {
@@ -2542,7 +2572,7 @@ async function cmdGrab(args: string[]): Promise<void> {
       await setCurrentTask(primary.id, agent);
       console.log(`\n${pc.bold("Working on:")} ${primary.id}`);
     }
-    return;
+    return metadata ?? { id: "", title: "" };
   }
 
   if (scopes.length > 0) {
@@ -2555,7 +2585,7 @@ async function cmdGrab(args: string[]): Promise<void> {
   const { criticalPath, nextAvailable } = calc.calculate();
   if (!nextAvailable) {
     console.log("No available tasks found.");
-    return;
+    return metadata ?? { id: "", title: "" };
   }
   let selectedTaskId = nextAvailable;
   if (scopes.length > 0) {
@@ -2564,7 +2594,7 @@ async function cmdGrab(args: string[]): Promise<void> {
     const prioritized = calc.prioritizeTaskIds(filtered, criticalPath);
     if (!prioritized.length) {
       console.log(`No available tasks in scope '${scopes.join(", ")}'`);
-      return;
+      return metadata ?? { id: "", title: "" };
     }
     selectedTaskId = prioritized[0]!;
   }
@@ -2575,6 +2605,9 @@ async function cmdGrab(args: string[]): Promise<void> {
 
   claimTask(task, agent, false);
   await loader.saveTask(task);
+  if (!metadata) {
+    metadata = { id: task.id, title: task.title };
+  }
   await setCurrentTask(task.id, agent);
   console.log(`Grabbed: ${task.id} - ${task.title}`);
 
@@ -2595,9 +2628,11 @@ async function cmdGrab(args: string[]): Promise<void> {
       console.log(`Mark each done individually: ${[task, ...additionalBugs].map((b) => `backlog done ${b.id}`).join(" | ")}`);
     }
   }
+
+  return metadata ?? { id: "", title: "" };
 }
 
-async function cmdDone(args: string[]): Promise<void> {
+async function cmdDone(args: string[]): Promise<AutoCommitMetadata> {
   const taskIds = args.filter((a) => !a.startsWith("-"));
   const force = parseFlag(args, "--force");
   if (taskIds.length === 0) {
@@ -2608,6 +2643,7 @@ async function cmdDone(args: string[]): Promise<void> {
 
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
+  let metadata: AutoCommitMetadata | null = null;
 
   try {
     for (const taskId of taskIds) {
@@ -2618,6 +2654,9 @@ async function cmdDone(args: string[]): Promise<void> {
       }
       completeTask(task, force);
       await loader.saveTask(task);
+      if (!metadata) {
+        metadata = { id: task.id, title: task.title };
+      }
       console.log(`Completed: ${task.id}`);
 
       const completionStatus = await loader.setItemDone(task.id);
@@ -2631,16 +2670,21 @@ async function cmdDone(args: string[]): Promise<void> {
     }
     throw e;
   }
+
+  return metadata ?? { id: "", title: "" };
 }
 
-async function cmdUndone(args: string[]): Promise<void> {
+async function cmdUndone(args: string[]): Promise<AutoCommitMetadata> {
   const itemId = args.find((a) => !a.startsWith("-"));
   if (!itemId) textError("undone requires ITEM_ID");
 
   const loader = new TaskLoader();
+  const tree = await loader.load("metadata");
+  const task = findTask(tree, itemId);
   const result = await loader.setItemNotDone(itemId);
   console.log(`Marked not done: ${result.item_id}`);
   console.log(`Reset tasks: ${result.updated_tasks}`);
+  return { id: result.item_id, title: task ? task.title : "" };
 }
 
 async function cmdCycle(args: string[]): Promise<void> {
@@ -2932,7 +2976,7 @@ async function cmdVersion(args: string[]): Promise<void> {
   console.log("backlog version 0.1.0");
 }
 
-async function cmdUnclaim(args: string[]): Promise<void> {
+async function cmdUnclaim(args: string[]): Promise<AutoCommitMetadata> {
   let taskId = args.find((a) => !a.startsWith("-"));
   if (!taskId) taskId = await getCurrentTaskId();
   if (!taskId) textError("No task ID provided and no current working task set.");
@@ -2943,13 +2987,13 @@ async function cmdUnclaim(args: string[]): Promise<void> {
   if (!task) textError(`Task not found: ${taskId}`);
   if (task.status !== Status.IN_PROGRESS && task.status !== Status.PENDING) {
     console.log(`Task is not in progress: ${task.status}`);
-    return;
+    return { id: "", title: "" };
   }
   if (task.status === Status.IN_PROGRESS) {
     updateStatus(task, Status.PENDING, "unclaim");
   } else if (!task.claimedBy && !task.claimedAt) {
     console.log(`Task is not in progress: ${task.status}`);
-    return;
+    return { id: "", title: "" };
   } else {
     task.claimedBy = undefined;
     task.claimedAt = undefined;
@@ -2957,6 +3001,7 @@ async function cmdUnclaim(args: string[]): Promise<void> {
   await loader.saveTask(task);
   await clearContext();
   console.log(`Unclaimed: ${task.id} - ${task.title}`);
+  return { id: task.id, title: task.title };
 }
 
 async function cmdBlocked(args: string[]): Promise<void> {
@@ -4285,16 +4330,16 @@ async function main(): Promise<void> {
       await cmdShow(rest);
       return;
     case "claim":
-      await cmdClaim(rest);
+      await runWithAutoCommit("claim", () => cmdClaim(rest));
       return;
     case "grab":
-      await cmdGrab(rest);
+      await runWithAutoCommit("grab", () => cmdGrab(rest));
       return;
     case "done":
-      await cmdDone(rest);
+      await runWithAutoCommit("done", () => cmdDone(rest));
       return;
     case "undone":
-      await cmdUndone(rest);
+      await runWithAutoCommit("undone", () => cmdUndone(rest));
       return;
     case "cycle":
       await cmdCycle(rest);
@@ -4312,7 +4357,7 @@ async function main(): Promise<void> {
       await cmdWork(rest);
       return;
     case "unclaim":
-      await cmdUnclaim(rest);
+      await runWithAutoCommit("unclaim", () => cmdUnclaim(rest));
       return;
     case "blocked":
       await cmdBlocked(rest);

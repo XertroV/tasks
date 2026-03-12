@@ -10,6 +10,7 @@ from ..loader import TaskLoader
 from ..critical_path import CriticalPathCalculator
 from ..time_utils import utc_now, to_utc
 from ..status import claim_task, complete_task, update_status, StatusError
+from ..autocommit import run_with_auto_commit
 from ..helpers import (
     load_context,
     save_context,
@@ -593,80 +594,95 @@ def grab(task_ids, agent, scopes, no_content, multi, single, siblings, count):
         loader = TaskLoader()
         tree = loader.load("metadata")
         config = load_config()
+        metadata = None
 
-        if task_ids:
-            claimed_tasks = []
-            for tid in task_ids:
-                task = tree.find_task(tid)
-                if not task:
-                    console.print(f"[red]Error:[/] Task not found: {tid}")
-                    raise click.Abort()
-                if is_task_file_missing(task):
-                    console.print(
-                        f"[red]Error:[/] Cannot claim {tid} because the task file is missing."
+        def _run() -> tuple[str, str] | None:
+            nonlocal metadata
+            if task_ids:
+                claimed_tasks = []
+                for tid in task_ids:
+                    task = tree.find_task(tid)
+                    if not task:
+                        console.print(f"[red]Error:[/] Task not found: {tid}")
+                        raise click.Abort()
+                    if is_task_file_missing(task):
+                        console.print(
+                            f"[red]Error:[/] Cannot claim {tid} because the task file is missing."
+                        )
+                        raise click.Abort()
+                    claim_task(task, agent, force=False)
+                    loader.save_task(task)
+                    claimed_tasks.append(task)
+                    if metadata is None:
+                        metadata = (task.id, task.title)
+                    console.print(f"[green]✓ Claimed:[/] {task.id} - {task.title}")
+
+                if claimed_tasks:
+                    primary = claimed_tasks[0]
+                    additional = (
+                        [t.id for t in claimed_tasks[1:]] if len(claimed_tasks) > 1 else []
                     )
-                    raise click.Abort()
-                claim_task(task, agent, force=False)
-                loader.save_task(task)
-                claimed_tasks.append(task)
-                console.print(f"[green]✓ Claimed:[/] {task.id} - {task.title}")
+                    set_current_task(agent, primary.id)
+                    if additional:
+                        set_multi_task_context(agent, primary.id, additional)
+                    start_session(agent, primary.id)
+                    console.print(f"\n[bold]Working on:[/] {primary.id}")
+                return metadata
 
-            if claimed_tasks:
-                primary = claimed_tasks[0]
-                additional = (
-                    [t.id for t in claimed_tasks[1:]] if len(claimed_tasks) > 1 else []
-                )
-                set_current_task(agent, primary.id)
-                if additional:
-                    set_multi_task_context(agent, primary.id, additional)
-                start_session(agent, primary.id)
-                console.print(f"\n[bold]Working on:[/] {primary.id}")
-            return
+            if scopes:
+                all_scope_matches = {
+                    t.id
+                    for t in get_all_tasks(tree)
+                    if any(t.id.startswith(scope) for scope in scopes)
+                }
+                for scope in scopes:
+                    if not (
+                        tree.find_phase(scope)
+                        or tree.find_milestone(scope)
+                        or tree.find_epic(scope)
+                        or any(task_id.startswith(scope) for task_id in all_scope_matches)
+                    ):
+                        console.print(f"[red]Error:[/] No list nodes found for path query: {scope}")
+                        raise click.Abort()
 
-        if scopes:
-            all_scope_matches = {
-                t.id
-                for t in get_all_tasks(tree)
-                if any(t.id.startswith(scope) for scope in scopes)
-            }
-            for scope in scopes:
-                if not (
-                    tree.find_phase(scope)
-                    or tree.find_milestone(scope)
-                    or tree.find_epic(scope)
-                    or any(task_id.startswith(scope) for task_id in all_scope_matches)
-                ):
-                    console.print(f"[red]Error:[/] No list nodes found for path query: {scope}")
-                    raise click.Abort()
+            calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
+            _, next_available = _select_next_available_task_id(
+                tree,
+                calc,
+                loader,
+                config,
+                agent,
+                scopes=scopes,
+                no_available_message="No available tasks found.",
+                show_in_progress=True,
+            )
+            if not next_available:
+                return metadata
 
-        calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-        _, next_available = _select_next_available_task_id(
-            tree,
-            calc,
-            loader,
-            config,
-            agent,
-            scopes=scopes,
-            no_available_message="No available tasks found.",
-            show_in_progress=True,
+            claimed_task = _claim_and_display_batch(
+                tree,
+                loader,
+                calc,
+                next_available,
+                agent,
+                no_content=no_content,
+                multi=multi,
+                single=single,
+                siblings=siblings,
+                count=count,
+            )
+            if not claimed_task:
+                return metadata
+
+            if metadata is None:
+                metadata = (claimed_task.id, claimed_task.title)
+            return metadata
+
+        run_with_auto_commit(
+            "grab",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
         )
-        if not next_available:
-            return
-
-        claimed_task = _claim_and_display_batch(
-            tree,
-            loader,
-            calc,
-            next_available,
-            agent,
-            no_content=no_content,
-            multi=multi,
-            single=single,
-            siblings=siblings,
-            count=count,
-        )
-        if not claimed_task:
-            return
 
     except StatusError as e:
         console.print(f"[red]Error:[/] {str(e)}")
@@ -1191,14 +1207,22 @@ def unclaim(task_id, agent):
             console.print(f"[red]Error:[/] Task not found: {task_id}")
             raise click.Abort()
 
-        if not _reset_task_to_pending(task, loader):
-            console.print(f"[yellow]Task is not in progress:[/] {task.status.value}")
-            return
+        def _run() -> tuple[str, str] | None:
+            if not _reset_task_to_pending(task, loader):
+                console.print(f"[yellow]Task is not in progress:[/] {task.status.value}")
+                return None
 
-        console.print(f"\n[cyan]↩ Unclaimed:[/] {task.id} - {task.title}")
-        console.print(f"  Status: set to pending (unclaimed)\n")
+            console.print(f"\n[cyan]↩ Unclaimed:[/] {task.id} - {task.title}")
+            console.print(f"  Status: set to pending (unclaimed)\n")
 
-        clear_context()
+            clear_context()
+            return (task.id, task.title)
+
+        run_with_auto_commit(
+            "unclaim",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
+        )
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
