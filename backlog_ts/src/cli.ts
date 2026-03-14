@@ -643,7 +643,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   schema: { summary: "Show file schema information.", usage: "backlog schema [--json] [--compact]", options: ["--json", "--compact"], examples: ["backlog schema", "backlog schema --json"] },
   search: { summary: "Search tasks by pattern.", usage: "backlog search <PATTERN> [options]", options: ["--status", "--tags", "--complexity", "--priority", "--limit", "--json"], examples: ["backlog search auth", "backlog search --status pending --limit 5 auth"] },
   session: { summary: "Manage agent sessions.", usage: "backlog session <start|heartbeat|list|end|clean> [--agent AGENT] [--timeout MINUTES]", options: ["start", "heartbeat", "list", "end", "clean"], examples: ["backlog session start --agent agent-a", "backlog session list"] },
-  set: { summary: "Set task properties (status/priority/etc).", usage: "backlog set <TASK_ID> [property flags]", options: ["--status", "--priority", "--complexity", "--estimate", "--title", "--depends-on", "--tags", "--reason"], examples: ["backlog set P1.M1.E1.T001 --priority high --tags api,auth"] },
+  set: { summary: "Set task properties (status/priority/etc).", usage: "backlog set <TASK_ID> [property flags]", options: ["--status", "--priority", "--complexity", "--estimate", "--title", "--depends-on", "--tags", "--reason", "--body, -b"], examples: ["backlog set P1.M1.E1.T001 --priority high --tags api,auth"] },
   show: { summary: "Show detailed info for task/phase/milestone/epic.", usage: "backlog show [PATH_ID ...] [--long]", options: ["--long"], examples: ["backlog show P1.M1.E1.T001", "backlog show P1.M1 P2.M1.E3", "backlog show", "backlog show P1.M1.E1.T001 --long"] },
   skills: { summary: "Install skill files.", usage: "backlog skills install <SKILL> [--client codex|claude] [--artifact skills|commands] [--dry-run] [--json]", options: ["--client", "--artifact", "--dry-run", "--json"], examples: ["backlog skills install plan-task --client=codex --artifact=skills"] },
   skip: { summary: "Skip current task and move on.", usage: "backlog skip <TASK_ID> [--agent AGENT] [--no-grab]", options: ["--agent", "--no-grab"], examples: ["backlog skip P1.M1.E1.T001 --agent agent-a"] },
@@ -2804,8 +2804,18 @@ async function cmdSet(args: string[]): Promise<void> {
   const dependsOnText = parseOpt(args, "--depends-on");
   const tagsText = parseOpt(args, "--tags");
   const reason = parseOpt(args, "--reason");
+  const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
 
-  const hasAny = [statusValue, priority, complexity, estimateText, title, dependsOnText, tagsText].some((v) => v !== undefined);
+  const hasAny = [
+    statusValue,
+    priority,
+    complexity,
+    estimateText,
+    title,
+    dependsOnText,
+    tagsText,
+    body,
+  ].some((v) => v !== undefined);
   if (!hasAny) textError("set requires at least one property flag");
 
   const allowedPriority = new Set(Object.values(Priority));
@@ -2846,7 +2856,11 @@ async function cmdSet(args: string[]): Promise<void> {
     if (statusValue !== undefined) {
       updateStatus(task, statusValue as Status, reason);
     }
-    await loader.saveTask(task);
+    if (body !== undefined) {
+      await loader.saveTask(task, body);
+    } else {
+      await loader.saveTask(task);
+    }
     console.log(`Updated: ${task.id}`);
   } catch (e) {
     if (e instanceof StatusError) {

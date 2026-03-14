@@ -930,13 +930,13 @@ class TaskLoader:
                 expanded.append(dep)
         return expanded
 
-    def save_task(self, task: Task) -> None:
+    def save_task(self, task: Task, body: Optional[str] = None) -> None:
         """Save task updates to its .todo file."""
         task_file = self.tasks_dir / task.file
 
         # Load existing file
         if task_file.exists():
-            frontmatter, body = self._parse_todo_file(task_file)
+            frontmatter, existing_body = self._parse_todo_file(task_file)
         else:
             raise FileNotFoundError(f"Task file not found: {task_file}")
 
@@ -964,6 +964,9 @@ class TaskLoader:
             del frontmatter["reason"]
         if task.duration_minutes is not None:
             frontmatter["duration_minutes"] = task.duration_minutes
+
+        if body is None:
+            body = existing_body
 
         # Write back
         with open(task_file, "w") as f:

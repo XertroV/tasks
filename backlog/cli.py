@@ -3197,6 +3197,7 @@ def update(task_id, new_status, reason):
 @click.option(
     "--reason", help="Reason for status change (required for blocked/rejected)"
 )
+@click.option("--body", "-b", default=None, help="Custom body content (replaces task body)")
 def set(
     task_id,
     status_value,
@@ -3207,6 +3208,7 @@ def set(
     depends_on,
     tags,
     reason,
+    body,
 ):
     """Set task properties (status, priority, complexity, estimate, title, deps, tags)."""
     try:
@@ -3218,6 +3220,7 @@ def set(
             and title is None
             and depends_on is None
             and tags is None
+            and body is None
         ):
             raise click.ClickException("set requires at least one property flag")
 
@@ -3244,7 +3247,10 @@ def set(
         if status_value is not None:
             update_status(task, Status(status_value), reason)
 
-        loader.save_task(task)
+        if body is not None:
+            loader.save_task(task, body=body)
+        else:
+            loader.save_task(task)
 
         console.print(f"\n[green]✓ Updated:[/] {task.id}\n")
         console.print(f"  Title: {task.title}")

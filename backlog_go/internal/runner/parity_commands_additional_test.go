@@ -94,6 +94,8 @@ func TestRunSetUpdatesMultipleFields(t *testing.T) {
 		"blocked",
 		"--reason",
 		"waiting",
+		"--body",
+		"custom body for set",
 	)
 	if err != nil {
 		t.Fatalf("run set = %v, expected nil", err)
@@ -110,6 +112,7 @@ func TestRunSetUpdatesMultipleFields(t *testing.T) {
 		"priority: high",
 		"estimate_hours: 3",
 		"reason: waiting",
+		"custom body for set",
 	} {
 		if !strings.Contains(taskText, expected) {
 			t.Fatalf("task text missing %q: %q", expected, taskText)

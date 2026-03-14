@@ -2479,6 +2479,8 @@ def test_set_updates_multiple_fields(runner, tmp_tasks_dir):
             "B060,P1.M1.E1.T002",
             "--tags",
             "bugfix,urgent",
+            "--body",
+            "Updated body content",
         ],
     )
 
@@ -2500,6 +2502,8 @@ def test_set_updates_multiple_fields(runner, tmp_tasks_dir):
     assert "- P1.M1.E1.T002" in content
     assert "- bugfix" in content
     assert "- urgent" in content
+    assert "Updated body content" in content
+    assert "## Requirements" not in content
 
 
 def test_set_rejects_invalid_dependency_id(runner, tmp_tasks_dir):

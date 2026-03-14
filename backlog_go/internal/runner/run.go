@@ -1625,6 +1625,7 @@ func printSetHelp() {
 			"--depends-on       Comma-separated dependency IDs",
 			"--tags             Comma-separated tags",
 			"--reason           Reason text for constrained transitions",
+			"--body, -b         Replace task body content",
 		},
 		[]string{
 			"backlog set P1.M1.E1.T001 --priority high --tags api,auth",
@@ -2678,6 +2679,8 @@ func runSet(args []string) error {
 		"--depends-on": true,
 		"--tags":       true,
 		"--reason":     true,
+		"--body":       true,
+		"-b":           true,
 		"--help":       true,
 		"-h":           true,
 	}
@@ -2694,6 +2697,8 @@ func runSet(args []string) error {
 		"--depends-on": true,
 		"--tags":       true,
 		"--reason":     true,
+		"--body":       true,
+		"-b":           true,
 	})
 	if taskID == "" {
 		return printUsageError(commands.CmdSet, errors.New("set requires TASK_ID"))
@@ -2710,8 +2715,12 @@ func runSet(args []string) error {
 	dependsOnRaw, hasDependsOn := parseOptionWithPresence(args, "--depends-on")
 	tagsRaw, hasTags := parseOptionWithPresence(args, "--tags")
 	reason := parseOption(args, "--reason")
+	body, hasBody := parseOptionWithPresence(args, "--body")
+	if !hasBody {
+		body, hasBody = parseOptionWithPresence(args, "-b")
+	}
 
-	hasAny := hasStatus || hasPriority || hasComplexity || hasEstimate || hasTitle || hasDependsOn || hasTags
+	hasAny := hasStatus || hasPriority || hasComplexity || hasEstimate || hasTitle || hasDependsOn || hasTags || hasBody
 	if !hasAny {
 		return printUsageError(commands.CmdSet, errors.New("set requires at least one property flag"))
 	}
@@ -2769,7 +2778,11 @@ func runSet(args []string) error {
 		}
 	}
 
-	if err := saveTaskState(*task, tree); err != nil {
+	if hasBody {
+		if err := saveTaskState(*task, tree, body); err != nil {
+			return err
+		}
+	} else if err := saveTaskState(*task, tree); err != nil {
 		return err
 	}
 	fmt.Printf("%s %s\n", styleSuccess("Updated:"), styleSuccess(task.ID))
@@ -3172,7 +3185,7 @@ func applyTaskStatusTransition(task *models.Task, nextStatus models.Status, reas
 	return nil
 }
 
-func saveTaskState(task models.Task, tree models.TaskTree) error {
+func saveTaskState(task models.Task, tree models.TaskTree, bodyOverride ...string) error {
 	if task.File == "" {
 		return fmt.Errorf("Task %s has no file path", task.ID)
 	}
@@ -3213,6 +3226,9 @@ func saveTaskState(task models.Task, tree models.TaskTree) error {
 		frontmatter["duration_minutes"] = *task.DurationMinutes
 	} else {
 		delete(frontmatter, "duration_minutes")
+	}
+	if len(bodyOverride) > 0 {
+		body = bodyOverride[0]
 	}
 
 	serialized, err := yaml.Marshal(frontmatter)

@@ -668,6 +668,8 @@ describe("native cli", () => {
       "B060,P1.M1.E1.T002",
       "--tags",
       "bugfix,urgent",
+      "--body",
+      "# Updated body content\nline 2",
     ], root);
     expect(p.exitCode).toBe(0);
 
@@ -680,6 +682,8 @@ describe("native cli", () => {
     expect(todo).toContain("- P1.M1.E1.T002");
     expect(todo).toContain("- bugfix");
     expect(todo).toContain("- urgent");
+    expect(todo).toContain("Updated body content");
+    expect(todo).not.toContain("## Requirements");
   });
 
   test("set rejects invalid dependency id", () => {

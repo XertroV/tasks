@@ -690,10 +690,10 @@ export class TaskLoader {
     }
   }
 
-  async saveTask(task: Task): Promise<void> {
+  async saveTask(task: Task, body?: string): Promise<void> {
     const filePath = join(this.tasksDir, task.file);
     const existing = await readFile(filePath, "utf8");
-    const { frontmatter, body } = parseTodo(existing);
+    const { frontmatter, body: existingBody } = parseTodo(existing);
     frontmatter.title = task.title;
     frontmatter.status = task.status;
     frontmatter.estimate_hours = task.estimateHours;
@@ -711,7 +711,7 @@ export class TaskLoader {
       delete frontmatter.reason;
     }
     if (task.durationMinutes !== undefined) frontmatter.duration_minutes = task.durationMinutes;
-    await writeFile(filePath, `---\n${stringify(frontmatter)}---\n${body}`);
+    await writeFile(filePath, `---\n${stringify(frontmatter)}---\n${body ?? existingBody}`);
   }
 
   private async loadTodoFrontmatter(
