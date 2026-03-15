@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B016
+priority: high
+status: pending
+tags: []
+title: add `bl edit TASKID` command that opens the relevant file in $EDITOR
+---
+
+add `bl edit TASKID` command that opens the relevant file in $EDITOR
