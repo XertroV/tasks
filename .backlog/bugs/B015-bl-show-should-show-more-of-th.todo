@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B015
+priority: high
+status: pending
+tags: []
+title: bl show should show more of the file and include a filesize/linecount
+---
+
+bl show should show more of the file and include a filesize/linecount
