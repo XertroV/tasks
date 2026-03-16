@@ -1,8 +1,10 @@
 """CLI commands for backlog management."""
 
 import copy
+import os
 import click
 import json
+import subprocess
 import yaml
 from pathlib import Path
 from builtins import next as builtin_next
@@ -2976,6 +2978,53 @@ def claim(task_ids, agent, force, no_content):
 
     except StatusError as e:
         console.print(json.dumps(e.to_dict(), indent=2))
+        raise click.Abort()
+
+
+@cli.command(name="edit")
+@click.argument("task_ids", nargs=-1, required=False)
+def edit(task_ids):
+    """Open a task todo file in your editor."""
+    if len(task_ids) != 1:
+        console.print("[red]Error:[/] edit requires exactly one TASK_ID")
+        raise click.Abort()
+
+    task_id = task_ids[0]
+    if not is_task_id(task_id) and not is_bug_id(task_id) and not is_idea_id(task_id) and not is_fixed_id(task_id):
+        console.print("[red]Error:[/] malformed task id")
+        raise click.Abort()
+
+    editor = os.environ.get("VISUAL", "").strip() or os.environ.get("EDITOR", "").strip()
+    if not editor:
+        console.print("[red]Error:[/] No editor configured. Set EDITOR or VISUAL.")
+        raise click.Abort()
+
+    loader = TaskLoader()
+    tree = loader.load("metadata")
+    task = tree.find_task(task_id)
+    if not task:
+        console.print("[yellow]Warning:[/] edit only works with task IDs.")
+        console.print(f"[yellow]Showing `backlog show {task_id}` for context.[/]")
+        show((task_id,))
+        return
+
+    if _warn_missing_task_file(task):
+        console.print(f"[red]Error:[/] Cannot edit {task.id} because the task file is missing.")
+        raise click.Abort()
+
+    task_file = task_file_path(task)
+    editor_parts = editor.split()
+    if not editor_parts:
+        console.print("[red]Error:[/] No editor configured. Set EDITOR or VISUAL.")
+        raise click.Abort()
+
+    command = editor_parts[0]
+    args = editor_parts[1:] + [str(task_file)]
+
+    try:
+        subprocess.run([command] + args, check=True)
+    except (subprocess.CalledProcessError, FileNotFoundError) as e:
+        console.print(f"[red]Error:[/] {str(e)}")
         raise click.Abort()
 
 

@@ -490,6 +490,84 @@ class TestClaimCommand:
         assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
 
 
+class TestEditCommand:
+    """Tests for the edit command."""
+
+    def test_edit_requires_single_task_id(self, runner, tmp_tasks_dir):
+        """edit should require exactly one TASK_ID."""
+        no_id = runner.invoke(cli, ["edit"])
+        assert no_id.exit_code != 0
+        assert "edit requires exactly one TASK_ID" in no_id.output
+
+        too_many = runner.invoke(
+            cli,
+            ["edit", "P1.M1.E1.T001", "P1.M1.E1.T002"],
+        )
+        assert too_many.exit_code != 0
+        assert "edit requires exactly one TASK_ID" in too_many.output
+
+    def test_edit_shows_help(self, runner, tmp_tasks_dir):
+        """edit should include command help text."""
+        result = runner.invoke(cli, ["edit", "--help"])
+
+        assert result.exit_code == 0
+        assert "Usage: backlog edit" in result.output or "Usage: " in result.output
+        assert "TASK_ID" in result.output
+
+    def test_edit_non_task_id_falls_back_to_show(self, runner, tmp_tasks_dir):
+        """edit should fall back to show for scoped IDs."""
+        result = runner.invoke(cli, ["edit", "P1"])
+
+        assert result.exit_code == 0
+        assert "Warning: edit only works with task IDs." in result.output
+        assert "Showing `backlog show P1` for context." in result.output
+        assert "P1" in result.output
+
+    def test_edit_warns_when_task_file_missing(self, runner, tmp_tasks_dir):
+        """edit should fail when task file is missing."""
+        task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        task_file.unlink()
+
+        result = runner.invoke(cli, ["edit", "P1.M1.E1.T001"])
+
+        assert result.exit_code != 0
+        assert (
+            "Cannot edit P1.M1.E1.T001 because the task file is missing."
+            in result.output
+        )
+
+    def test_edit_needs_editor_configured(self, runner, tmp_tasks_dir):
+        """edit should fail with a clear message when no editor is configured."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+        result = runner.invoke(
+            cli,
+            ["edit", "P1.M1.E1.T001"],
+            env={"EDITOR": "", "VISUAL": ""},
+        )
+
+        assert result.exit_code != 0
+        assert "No editor configured. Set EDITOR or VISUAL." in result.output
+
+    def test_edit_launches_configured_editor(self, runner, tmp_tasks_dir):
+        """edit should pass the task file to the configured editor."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        editor = tmp_tasks_dir / "editor.sh"
+        editor.write_text("#!/bin/sh\necho \"$1\" > editor-called.txt\n")
+        editor.chmod(0o755)
+        marker = tmp_tasks_dir / "editor-called.txt"
+
+        result = runner.invoke(
+            cli,
+            ["edit", "P1.M1.E1.T001"],
+            env={"VISUAL": str(editor)},
+        )
+
+        assert result.exit_code == 0
+        assert marker.exists()
+        assert "T001" in marker.read_text()
+
+
 class TestLsCommand:
     """Tests for the ls command."""
 

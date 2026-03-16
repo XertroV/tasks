@@ -48,6 +48,7 @@ KNOWN_COMMANDS = [
     "session",
     "report",
     "data",
+    "edit",
     "schema",
     "skills",
     "migrate",

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -438,6 +438,69 @@ describe("native cli", () => {
     const out = p.stdout.toString();
     expect(out).toContain(`Claimed: ${ideaId}`);
     expect(readFileSync(ideaFile, "utf8")).toContain("status: in_progress");
+  });
+
+  test("edit --help renders command-specific guidance", () => {
+    root = setupFixture();
+
+    const p = run(["edit", "--help"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Command Help: backlog edit");
+    expect(out).toContain("Usage: backlog edit <TASK_ID>");
+  });
+
+  test("edit requires exactly one task id", () => {
+    root = setupFixture();
+
+    let p = run(["edit"], root);
+    expect(p.exitCode).not.toBe(0);
+    expect(p.stdout.toString() + p.stderr.toString()).toContain("edit requires exactly one TASK_ID");
+
+    p = run(["edit", "P1.M1.E1.T001", "P1.M1.E1.T002"], root);
+    expect(p.exitCode).not.toBe(0);
+    expect(p.stdout.toString() + p.stderr.toString()).toContain("edit requires exactly one TASK_ID");
+  });
+
+  test("edit falls back to show for scoped IDs", () => {
+    root = setupFixture();
+
+    const p = run(["edit", "P1"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Warning: edit only works with task IDs.");
+    expect(out).toContain("Showing `backlog show P1` for context.");
+    expect(out).toContain("P1");
+  });
+
+  test("edit fails when task file is missing", () => {
+    root = setupFixture();
+    const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    rmSync(todoPath);
+
+    const p = run(["edit", "P1.M1.E1.T001"], root);
+    expect(p.exitCode).not.toBe(0);
+    expect(p.stdout.toString() + p.stderr.toString()).toContain("Cannot edit P1.M1.E1.T001 because the task file is missing.");
+  });
+
+  test("edit needs editor configured", () => {
+    root = setupFixture();
+
+    const p = run(["edit", "P1.M1.E1.T001"], root, { EDITOR: "", VISUAL: "" });
+    expect(p.exitCode).not.toBe(0);
+    expect(p.stdout.toString() + p.stderr.toString()).toContain("No editor configured. Set EDITOR or VISUAL.");
+  });
+
+  test("edit launches configured editor", () => {
+    root = setupFixture();
+    const editor = join(root, "editor.sh");
+    writeFileSync(editor, "#!/bin/sh\necho \"$1\" > editor-called.txt\n");
+    chmodSync(editor, 0o755);
+
+    const p = run(["edit", "P1.M1.E1.T001"], root, { VISUAL: editor });
+    expect(p.exitCode).toBe(0);
+    const called = readFileSync(join(root, "editor-called.txt"), "utf8");
+    expect(called).toContain("T001-a.todo");
   });
 
   test("done refuses to complete a non-in-progress task", () => {
@@ -1192,7 +1255,7 @@ tags: []
     root = setupFixture();
     const commands = [
       "howto", "ls", "list", "tree", "show", "next", "preview", "claim", "grab", "done", "undone",
-      "cycle", "dash", "update", "set", "work", "unclaim", "blocked", "bug", "idea", "fixed", "search",
+      "cycle", "dash", "edit", "update", "set", "work", "unclaim", "blocked", "bug", "idea", "fixed", "search",
       "version", "ci",
       "check", "init", "add", "add-epic", "add-milestone", "add-phase", "lock", "unlock", "move", "session",
       "data", "report", "timeline", "schema", "blockers", "skills", "agents", "log", "migrate", "benchmark",

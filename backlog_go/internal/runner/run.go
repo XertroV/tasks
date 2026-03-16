@@ -80,6 +80,7 @@ var migrationKnownCommands = []string{
 	"report",
 	"data",
 	"schema",
+	"edit",
 	"howto",
 	"skills",
 	"migrate",
@@ -205,6 +206,11 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 		summary:  "Summarize or export task data.",
 		usage:    "backlog data <summary|export> [--format json|yaml] [--scope SCOPE ...] [--include-content]",
 		examples: []string{"backlog data summary --format json", "backlog data export --scope P1.M1 --format yaml"},
+	},
+	"edit": {
+		summary:  "Open a task todo file in your editor.",
+		usage:    "backlog edit <TASK_ID>",
+		examples: []string{"backlog edit P1.M1.E1.T001"},
 	},
 	"schema": {
 		summary:  "Print backlog file format schema.",
@@ -916,6 +922,8 @@ func Run(rawArgs ...string) error {
 		return runAgents(payload)
 	case commands.CmdClaim:
 		return runWithAutoCommit("claim", payload, runClaim)
+	case commands.CmdEdit:
+		return runEdit(payload)
 	case commands.CmdDone:
 		return runWithAutoCommit("done", payload, runDone)
 	case commands.CmdUnclaim:
@@ -2056,7 +2064,8 @@ func parseInit(args []string) (initOptions, error) {
 }
 
 func runAdd(args []string, metadata *gitAutoCommitMetadata) error {
-	if _, err := ensureDataRoot(); err != nil {
+	dataDir, err := ensureDataRoot()
+	if err != nil {
 		return err
 	}
 	if parseFlag(args, "--help", "-h") {
@@ -2167,8 +2176,7 @@ func runAdd(args []string, metadata *gitAutoCommitMetadata) error {
 		)
 	}
 
-	dataDir, err := ensureDataRoot()
-	if err != nil {
+	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
 	shortTaskIDs := make([]string, 0, len(epic.Tasks))
@@ -8637,6 +8645,78 @@ func runClaim(args []string, metadata *gitAutoCommitMetadata) error {
 		}
 	}
 	return nil
+}
+
+func runEdit(args []string) error {
+	if _, err := ensureDataRoot(); err != nil {
+		return err
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdEdit)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdEdit, args, map[string]bool{
+		"--help": true,
+		"-h":     true,
+	}); err != nil {
+		return err
+	}
+
+	taskIDs := positionalArgs(args, map[string]bool{
+		"--help": true,
+		"-h":     true,
+	})
+	if len(taskIDs) == 0 || len(taskIDs) > 1 {
+		return printUsageError(commands.CmdEdit, errors.New("edit requires exactly one TASK_ID"))
+	}
+
+	taskID := taskIDs[0]
+	if err := validateTaskID(taskID); err != nil {
+		return printUsageError(commands.CmdEdit, err)
+	}
+
+	tree, err := loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+	task := tree.FindTask(taskID)
+	if task == nil {
+		fmt.Println(styleWarning("Warning: edit only works with task IDs."))
+		fmt.Printf("Showing `backlog show %s` for context.\n", taskID)
+		if err := runShow([]string{taskID}, false, false); err != nil {
+			return err
+		}
+		return nil
+	}
+
+	taskFilePath, err := resolveTaskFilePath(task.File)
+	if err != nil {
+		return err
+	}
+	if _, err := os.Stat(taskFilePath); err != nil {
+		return fmt.Errorf("Cannot edit %s because the task file is missing.", task.ID)
+	}
+
+	editor := strings.TrimSpace(os.Getenv("VISUAL"))
+	if editor == "" {
+		editor = strings.TrimSpace(os.Getenv("EDITOR"))
+	}
+	if editor == "" {
+		return fmt.Errorf("No editor configured. Set EDITOR or VISUAL.")
+	}
+
+	editorParts := strings.Fields(editor)
+	if len(editorParts) == 0 {
+		return fmt.Errorf("No editor configured. Set EDITOR or VISUAL.")
+	}
+	command := editorParts[0]
+	commandArgs := append(editorParts[1:], taskFilePath)
+
+	editCmd := exec.Command(command, commandArgs...)
+	editCmd.Stdin = os.Stdin
+	editCmd.Stdout = os.Stdout
+	editCmd.Stderr = os.Stderr
+	return editCmd.Run()
 }
 
 func claimDoneError(task models.Task) error {

@@ -549,6 +549,7 @@ Commands:
   next            Get next available task on critical path
   preview         Show upcoming work preview with grab suggestions
   claim           Claim specific task ID(s)
+  edit            Open a task todo file in your editor
   grab            Auto-claim next task (or claim IDs)
   done            Mark task as complete
   undone          Mark task/epic/milestone/phase as not done
@@ -620,6 +621,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   bug: { summary: "Create a new bug report.", usage: "backlog bug [--title <TITLE> | BUG_TEXT] [options]", options: ["--title, -T", "--estimate, -e", "--complexity, -c", "--priority, -p", "--depends-on, -d", "--tags", "--simple, -s", "--body, -b"], examples: ["backlog bug \"Crash when opening report\""] },
   check: { summary: "Check task tree consistency.", usage: "backlog check [--json] [--strict]", options: ["--json", "--strict"], examples: ["backlog check", "backlog check --strict"] },
   claim: { summary: "Claim specific task ID(s).", usage: "backlog claim <TASK_ID> [TASK_ID ...] [--agent AGENT] [--force] [--no-content]", options: ["--agent", "--force", "--no-content"], examples: ["backlog claim P1.M1.E1.T001", "backlog claim P1.M1.E1.T001 P1.M1.E1.T002 --agent agent-a"] },
+  edit: { summary: "Open a task todo file in your editor.", usage: "backlog edit <TASK_ID>", options: [], examples: ["backlog edit P1.M1.E1.T001"] },
   cycle: { summary: "Complete current task and grab next.", usage: "backlog cycle [--agent AGENT] [--json] [--no-content]", options: ["--agent", "--json", "--no-content"], examples: ["backlog cycle", "backlog cycle --agent agent-a"] },
   dash: { summary: "Show quick dashboard of project status.", usage: "backlog dash [--json]", options: ["--json"], examples: ["backlog dash", "backlog dash --json"] },
   data: { summary: "Export/summarize task data.", usage: "backlog data <summary|export> [--format json|yaml] [--scope SCOPE] [--include-content]", options: ["--format", "--scope", "--include-content"], examples: ["backlog data summary --format json"] },
@@ -3031,6 +3033,71 @@ async function cmdUnclaim(args: string[]): Promise<AutoCommitMetadata> {
   return { id: task.id, title: task.title };
 }
 
+async function cmdEdit(args: string[]): Promise<void> {
+  if (parseFlag(args, "--help", "-h")) {
+    printCommandHelpForCommand("edit");
+    return;
+  }
+
+  const taskIds = positionalArgsForCommand(
+    args,
+    {
+      "--help": "boolean",
+      "-h": "boolean",
+    },
+    "edit",
+  );
+  if (taskIds.length !== 1) textError("edit requires exactly one TASK_ID");
+
+  const taskId = taskIds[0];
+  if (!taskId || !isValidTaskId(taskId)) {
+    textError(`malformed task id: ${taskId}`);
+  }
+
+  const loader = new TaskLoader();
+  const tree = await loader.load("metadata");
+  const task = findTask(tree, taskId);
+  if (!task) {
+    console.log(pc.yellow("Warning: edit only works with task IDs."));
+    console.log(pc.yellow(`Showing \`backlog show ${taskId}\` for context.`));
+    await cmdShow([taskId]);
+    return;
+  }
+
+  if (isTaskFileMissing(task)) textError(`Cannot edit ${task.id} because the task file is missing.`);
+
+  const editor = process.env.VISUAL?.trim() || process.env.EDITOR?.trim();
+  if (!editor) {
+    textError("No editor configured. Set EDITOR or VISUAL.");
+  }
+
+  const editorParts = editor.split(/\s+/).filter(Boolean);
+  if (editorParts.length === 0) {
+    textError("No editor configured. Set EDITOR or VISUAL.");
+  }
+
+  const editorCommand = editorParts[0];
+  if (!editorCommand) {
+    textError("No editor configured. Set EDITOR or VISUAL.");
+  }
+
+  const commandArgs = [...editorParts.slice(1), taskFilePath(task)];
+  let result: ReturnType<typeof Bun.spawnSync>;
+  try {
+    result = Bun.spawnSync([editorCommand, ...commandArgs], {
+      stdout: "inherit",
+      stderr: "inherit",
+      stdin: "inherit",
+    });
+  } catch (error) {
+    textError(`${error}`);
+  }
+
+  if (result.exitCode !== 0) {
+    textError(`editor exited with status ${result.exitCode}`);
+  }
+}
+
 async function cmdBlocked(args: string[]): Promise<void> {
   const grab = parseFlag(args, "--grab");
   let taskId = args.find((a) => !a.startsWith("-"));
@@ -4368,6 +4435,9 @@ async function main(): Promise<void> {
       return;
     case "claim":
       await runWithAutoCommit("claim", () => cmdClaim(rest));
+      return;
+    case "edit":
+      await cmdEdit(rest);
       return;
     case "grab":
       await runWithAutoCommit("grab", () => cmdGrab(rest));

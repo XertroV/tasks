@@ -1259,6 +1259,103 @@ func TestRunClaimScopeFallsBackToShow(t *testing.T) {
 	}
 }
 
+func TestRunEditRequiresSingleTaskID(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	_, err := runInDir(t, root, "edit")
+	if err == nil {
+		t.Fatalf("run edit without ids expected error")
+	}
+	if !strings.Contains(err.Error(), "edit requires exactly one TASK_ID") {
+		t.Fatalf("error = %q, expected single-task requirement", err)
+	}
+
+	_, err = runInDir(t, root, "edit", "P1.M1.E1.T001", "P1.M1.E1.T002")
+	if err == nil {
+		t.Fatalf("run edit with multiple ids expected error")
+	}
+	if !strings.Contains(err.Error(), "edit requires exactly one TASK_ID") {
+		t.Fatalf("error = %q, expected single-task requirement", err)
+	}
+}
+
+func TestRunEditScopeFallsBackToShow(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	output, err := runInDir(t, root, "edit", "P1")
+	if err != nil {
+		t.Fatalf("run edit = %v, expected nil", err)
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Warning: edit only works with task IDs.",
+		"Showing `backlog show P1` for context.",
+		"P1",
+	)
+}
+
+func TestRunEditRejectsMissingTaskFile(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	setTaskTodoFilePath(t, root, "P1.M1.E1.T001", filepath.Join("01-phase", "01-ms", "01-epic", "missing.todo"))
+
+	output, err := runInDir(t, root, "edit", "P1.M1.E1.T001")
+	if err == nil {
+		t.Fatalf("run edit expected error for missing todo file")
+	}
+	if !strings.Contains(output, "Cannot edit P1.M1.E1.T001 because the task file is missing.") {
+		t.Fatalf("output = %q, expected missing file message", output)
+	}
+}
+
+func TestRunEditWithoutEditorErrors(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	_, err := runInDirWithEnv(t, root, map[string]string{"VISUAL": "", "EDITOR": ""}, "edit", "P1.M1.E1.T001")
+	if err == nil {
+		t.Fatalf("run edit without editor expected error")
+	}
+	if !strings.Contains(err.Error(), "No editor configured. Set EDITOR or VISUAL.") {
+		t.Fatalf("error = %q, expected editor configuration error", err)
+	}
+}
+
+func TestRunEditLaunchesConfiguredEditor(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	editorPath := filepath.Join(root, "bin", "backlog-edit-test-editor.sh")
+	if err := os.MkdirAll(filepath.Dir(editorPath), 0o755); err != nil {
+		t.Fatalf("make editor dir = %v", err)
+	}
+	editorScript := "#!/bin/sh\necho \"$1\" > .editor-called\n"
+	if err := os.WriteFile(editorPath, []byte(editorScript), 0o755); err != nil {
+		t.Fatalf("write editor script = %v", err)
+	}
+
+	_, err := runInDirWithEnv(t, root, map[string]string{"VISUAL": editorPath}, "edit", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run edit with editor = %v", err)
+	}
+
+	invoked, readErr := os.ReadFile(filepath.Join(root, ".editor-called"))
+	if readErr != nil {
+		t.Fatalf("read editor output: %v", readErr)
+	}
+	if !strings.Contains(string(invoked), filepath.Join(".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo")) {
+		t.Fatalf("editor was not passed task path: %q", string(invoked))
+	}
+}
+
 func TestRunClaimAuxiliaryTaskIds(t *testing.T) {
 	t.Parallel()
 
@@ -1484,6 +1581,22 @@ func TestRunClaimHelpRendersCommandSpecificGuidance(t *testing.T) {
 		t.Fatalf("run claim --help = %v, expected nil", err)
 	}
 	assertContainsAll(t, output, "Command Help: backlog claim", "backlog claim <TASK_ID>", "--agent")
+}
+
+func TestRunEditHelpRendersCommandSpecificGuidance(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "edit", "--help")
+	if err != nil {
+		t.Fatalf("run edit --help = %v", err)
+	}
+	assertContainsAll(
+		t,
+		output,
+		"Command Help: backlog edit",
+		"Usage: backlog edit <TASK_ID>",
+	)
 }
 
 func TestRunCIHelpRendersCommandSpecificGuidance(t *testing.T) {
@@ -2575,7 +2688,7 @@ func TestRunAllCommandsHelpIsNotThin(t *testing.T) {
 	root := t.TempDir()
 	commandsToCheck := []string{
 		"howto", "add", "add-epic", "add-milestone", "add-phase", "admin", "agents", "benchmark",
-		"blocked", "blockers", "bug", "check", "claim", "cycle", "dash", "data", "done", "fixed",
+		"blocked", "blockers", "bug", "check", "claim", "cycle", "dash", "data", "edit", "done", "fixed",
 		"grab", "handoff", "help", "idea", "init", "list", "lock", "log", "migrate", "move", "next",
 		"preview", "ci", "report", "schema", "search", "session", "set", "show", "skills", "skip", "sync",
 		"timeline", "tree", "unclaim", "unclaim-stale", "undone", "unlock", "update", "velocity",
@@ -4945,6 +5058,11 @@ func setupAddFixture(t *testing.T) string {
 
 func runInDir(t *testing.T, dir string, args ...string) (string, error) {
 	t.Helper()
+	return runInDirWithEnv(t, dir, nil, args...)
+}
+
+func runInDirWithEnv(t *testing.T, dir string, env map[string]string, args ...string) (string, error) {
+	t.Helper()
 	runInDirMu.Lock()
 	defer runInDirMu.Unlock()
 
@@ -4955,6 +5073,36 @@ func runInDir(t *testing.T, dir string, args ...string) (string, error) {
 	if err := os.Chdir(dir); err != nil {
 		t.Fatalf("failed to chdir to fixture: %v", err)
 	}
+
+	oldEnv := []struct {
+		name  string
+		value string
+		ok    bool
+	}{}
+	for name, value := range env {
+		oldValue, ok := os.LookupEnv(name)
+		oldEnv = append(oldEnv, struct {
+			name  string
+			value string
+			ok    bool
+		}{name: name, value: oldValue, ok: ok})
+		if err := os.Setenv(name, value); err != nil {
+			t.Fatalf("failed to set env %s=%s: %v", name, value, err)
+		}
+	}
+	defer func() {
+		for _, item := range oldEnv {
+			if item.ok {
+				if err := os.Setenv(item.name, item.value); err != nil {
+					t.Fatalf("failed to restore env %s=%s: %v", item.name, item.value, err)
+				}
+			} else {
+				if err := os.Unsetenv(item.name); err != nil {
+					t.Fatalf("failed to clear env %s: %v", item.name, err)
+				}
+			}
+		}
+	}()
 
 	outPipeR, outPipeW, err := os.Pipe()
 	if err != nil {
