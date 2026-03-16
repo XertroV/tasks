@@ -16,3 +16,4 @@ bugs:
     - file: B015-bl-show-should-show-more-of-th.todo
     - file: B016-add-bl-edit-taskid-command-tha.todo
     - file: B017-add-a-way-to-modify-existing-t.todo
+    - file: B018-bl-edit-x-should-autocommit-af.todo
