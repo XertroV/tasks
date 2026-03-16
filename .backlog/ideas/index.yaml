@@ -12,3 +12,5 @@ ideas:
       title: --help
     - file: I003-add-support-repo-level-config.todo
       id: I003
+    - file: I004-warn-when-an-invalid-file-is-d.todo
+      id: I004
