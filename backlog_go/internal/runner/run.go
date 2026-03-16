@@ -945,7 +945,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdUnclaimStale:
 		return runUnclaimStale(payload)
 	case commands.CmdSet:
-		return runSet(payload)
+		return runWithAutoCommit("set", payload, runSet)
 	case commands.CmdUpdate:
 		return runUpdate(payload)
 	case commands.CmdUndone:
@@ -983,6 +983,7 @@ const (
 	autoCommitDonePrefix   = "bl done"
 	autoCommitUnclaimPrefix = "bl unclaim"
 	autoCommitUndonePrefix = "bl undone"
+	autoCommitSetPrefix    = "bl set"
 )
 
 type gitAutoCommitContext struct {
@@ -1127,6 +1128,11 @@ func autoCommitMessage(command string, metadata gitAutoCommitMetadata) string {
 			return autoCommitUndonePrefix
 		}
 		return formatAutoCommitMessage(autoCommitUndonePrefix, metadata)
+	case "set":
+		if id == "" {
+			return autoCommitSetPrefix
+		}
+		return formatAutoCommitMessage(autoCommitSetPrefix, metadata)
 	default:
 		return fmt.Sprintf("backlog %s", command)
 	}
@@ -1635,6 +1641,7 @@ func printSetHelp() {
 			"--tags             Comma-separated tags",
 			"--reason           Reason text for constrained transitions",
 			"--body, -b         Replace task body content",
+			"--append-body      Append to existing task body content",
 		},
 		[]string{
 			"backlog set P1.M1.E1.T001 --priority high --tags api,auth",
@@ -2693,7 +2700,7 @@ func runAddPhase(args []string) error {
 	return nil
 }
 
-func runSet(args []string) error {
+func runSet(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -2713,6 +2720,7 @@ func runSet(args []string) error {
 		"--reason":     true,
 		"--body":       true,
 		"-b":           true,
+		"--append-body": true,
 		"--help":       true,
 		"-h":           true,
 	}
@@ -2731,6 +2739,7 @@ func runSet(args []string) error {
 		"--reason":     true,
 		"--body":       true,
 		"-b":           true,
+		"--append-body": true,
 	})
 	if taskID == "" {
 		return printUsageError(commands.CmdSet, errors.New("set requires TASK_ID"))
@@ -2751,8 +2760,12 @@ func runSet(args []string) error {
 	if !hasBody {
 		body, hasBody = parseOptionWithPresence(args, "-b")
 	}
+	_, hasAppendBody := parseOptionWithPresence(args, "--append-body")
+	if hasAppendBody && !hasBody {
+		return printUsageError(commands.CmdSet, errors.New("--append-body requires --body"))
+	}
 
-	hasAny := hasStatus || hasPriority || hasComplexity || hasEstimate || hasTitle || hasDependsOn || hasTags || hasBody
+	hasAny := hasStatus || hasPriority || hasComplexity || hasEstimate || hasTitle || hasDependsOn || hasTags || hasBody || hasAppendBody
 	if !hasAny {
 		return printUsageError(commands.CmdSet, errors.New("set requires at least one property flag"))
 	}
@@ -2765,7 +2778,6 @@ func runSet(args []string) error {
 	if task == nil {
 		return fmt.Errorf("Task not found: %s", taskID)
 	}
-
 	if hasPriority {
 		priority, err := models.ParsePriority(priorityRaw)
 		if err != nil {
@@ -2810,8 +2822,30 @@ func runSet(args []string) error {
 		}
 	}
 
+	bodyToWrite := body
+	if hasBody && hasAppendBody {
+		_, existingBody, err := readTodoFrontmatter(task.ID, task.File)
+		if err != nil {
+			return printUsageError(commands.CmdSet, err)
+		}
+		if existingBody == "" {
+			bodyToWrite = body
+		} else if strings.HasSuffix(existingBody, "\n\n") {
+			bodyToWrite = existingBody + body
+		} else if strings.HasSuffix(existingBody, "\n") {
+			bodyToWrite = existingBody + "\n" + body
+		} else {
+			bodyToWrite = existingBody + "\n\n" + body
+		}
+	}
+
+	if metadata != nil && metadata.id == "" {
+		metadata.id = task.ID
+		metadata.title = task.Title
+	}
+
 	if hasBody {
-		if err := saveTaskState(*task, tree, body); err != nil {
+		if err := saveTaskState(*task, tree, bodyToWrite); err != nil {
 			return err
 		}
 	} else if err := saveTaskState(*task, tree); err != nil {

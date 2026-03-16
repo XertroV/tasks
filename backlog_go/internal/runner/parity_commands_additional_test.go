@@ -133,6 +133,48 @@ func TestRunSetRequiresPropertyFlag(t *testing.T) {
 	}
 }
 
+func TestRunSetAppendsBodyWhenAppendBodyFlagSet(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	output, err := runInDir(t, root, "set", "P1.M1.E1.T001", "--body", "first body for set")
+	if err != nil {
+		t.Fatalf("run set = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Updated: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected set confirmation", output)
+	}
+
+	output, err = runInDir(
+		t,
+		root,
+		"set",
+		"P1.M1.E1.T001",
+		"--body",
+		"appended body for set",
+		"--append-body",
+	)
+	if err != nil {
+		t.Fatalf("run set append = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Updated: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected append set confirmation", output)
+	}
+
+	taskText := readFile(t, filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"))
+	if !strings.Contains(taskText, "first body for set") {
+		t.Fatalf("task text missing first body content: %q", taskText)
+	}
+	if !strings.Contains(taskText, "appended body for set") {
+		t.Fatalf("task text missing appended body content: %q", taskText)
+	}
+	if firstIdx := strings.Index(taskText, "first body for set"); firstIdx < 0 {
+		t.Fatalf("task text missing first body content")
+	} else if secondIdx := strings.Index(taskText, "appended body for set"); secondIdx < 0 || secondIdx <= firstIdx {
+		t.Fatalf("appended body content expected after first body content")
+	}
+}
+
 func TestRunUndoneResetsEpicAndTasks(t *testing.T) {
 	t.Parallel()
 

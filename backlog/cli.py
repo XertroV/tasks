@@ -3250,6 +3250,11 @@ def update(task_id, new_status, reason):
     "--reason", help="Reason for status change (required for blocked/rejected)"
 )
 @click.option("--body", "-b", default=None, help="Custom body content (replaces task body)")
+@click.option(
+    "--append-body",
+    is_flag=True,
+    help="Append provided body to existing task body (requires --body)",
+)
 def set(
     task_id,
     status_value,
@@ -3261,9 +3266,12 @@ def set(
     tags,
     reason,
     body,
+    append_body,
 ):
     """Set task properties (status, priority, complexity, estimate, title, deps, tags)."""
     try:
+        if append_body and body is None:
+            raise click.ClickException("--append-body requires --body")
         if (
             status_value is None
             and priority is None
@@ -3273,47 +3281,60 @@ def set(
             and depends_on is None
             and tags is None
             and body is None
+            and not append_body
         ):
             raise click.ClickException("set requires at least one property flag")
+        metadata: tuple[str, str] | None = None
 
-        loader = TaskLoader()
-        tree = loader.load("metadata")
-        task = tree.find_task(task_id)
+        def _run() -> tuple[str, str] | None:
+            nonlocal metadata
+            loader = TaskLoader()
+            tree = loader.load("metadata")
+            task = tree.find_task(task_id)
 
-        if not task:
-            console.print(f"[red]Error:[/] Task not found: {task_id}")
-            raise click.Abort()
+            if not task:
+                console.print(f"[red]Error:[/] Task not found: {task_id}")
+                raise click.Abort()
 
-        if title is not None:
-            task.title = title
-        if estimate is not None:
-            task.estimate_hours = estimate
-        if complexity is not None:
-            task.complexity = Complexity(complexity)
-        if priority is not None:
-            task.priority = Priority(priority)
-        if depends_on is not None:
-            task.depends_on = parse_dependency_ids(depends_on)
-        if tags is not None:
-            task.tags = [t.strip() for t in tags.split(",") if t.strip()]
-        if status_value is not None:
-            update_status(task, Status(status_value), reason)
+            if title is not None:
+                task.title = title
+            if estimate is not None:
+                task.estimate_hours = estimate
+            if complexity is not None:
+                task.complexity = Complexity(complexity)
+            if priority is not None:
+                task.priority = Priority(priority)
+            if depends_on is not None:
+                task.depends_on = parse_dependency_ids(depends_on)
+            if tags is not None:
+                task.tags = [t.strip() for t in tags.split(",") if t.strip()]
+            if status_value is not None:
+                update_status(task, Status(status_value), reason)
 
-        if body is not None:
-            loader.save_task(task, body=body)
-        else:
-            loader.save_task(task)
+            if body is not None:
+                loader.save_task(task, body=body, append_body=append_body)
+            else:
+                loader.save_task(task)
 
-        console.print(f"\n[green]✓ Updated:[/] {task.id}\n")
-        console.print(f"  Title: {task.title}")
-        console.print(f"  Status: {task.status.value}")
-        console.print(f"  Estimate: {task.estimate_hours}")
-        console.print(f"  Complexity: {task.complexity.value}")
-        console.print(f"  Priority: {task.priority.value}")
-        console.print(
-            f"  Depends on: {', '.join(task.depends_on) if task.depends_on else '-'}"
+            metadata = (task.id, task.title)
+
+            console.print(f"\n[green]✓ Updated:[/] {task.id}\n")
+            console.print(f"  Title: {task.title}")
+            console.print(f"  Status: {task.status.value}")
+            console.print(f"  Estimate: {task.estimate_hours}")
+            console.print(f"  Complexity: {task.complexity.value}")
+            console.print(f"  Priority: {task.priority.value}")
+            console.print(
+                f"  Depends on: {', '.join(task.depends_on) if task.depends_on else '-'}"
+            )
+            console.print(f"  Tags: {', '.join(task.tags) if task.tags else '-'}")
+            return metadata
+
+        run_with_auto_commit(
+            "set",
+            _run,
+            warn=lambda msg: console.print(f"[yellow]Warning:[/] {msg}"),
         )
-        console.print(f"  Tags: {', '.join(task.tags) if task.tags else '-'}")
 
     except ValueError as e:
         console.print(f"[red]Error:[/] {e}")

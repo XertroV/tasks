@@ -248,6 +248,10 @@ function autoCommitMessage(command: string, metadata: AutoCommitMetadata | null)
     if (!metadata?.id) return "bl undone";
     return formatAutoCommitMessage("bl undone", metadata);
   }
+  if (command === "set") {
+    if (!metadata?.id) return "bl set";
+    return formatAutoCommitMessage("bl set", metadata);
+  }
   return `backlog ${command}`;
 }
 
@@ -645,7 +649,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   schema: { summary: "Show file schema information.", usage: "backlog schema [--json] [--compact]", options: ["--json", "--compact"], examples: ["backlog schema", "backlog schema --json"] },
   search: { summary: "Search tasks by pattern.", usage: "backlog search <PATTERN> [options]", options: ["--status", "--tags", "--complexity", "--priority", "--limit", "--json"], examples: ["backlog search auth", "backlog search --status pending --limit 5 auth"] },
   session: { summary: "Manage agent sessions.", usage: "backlog session <start|heartbeat|list|end|clean> [--agent AGENT] [--timeout MINUTES]", options: ["start", "heartbeat", "list", "end", "clean"], examples: ["backlog session start --agent agent-a", "backlog session list"] },
-  set: { summary: "Set task properties (status/priority/etc).", usage: "backlog set <TASK_ID> [property flags]", options: ["--status", "--priority", "--complexity", "--estimate", "--title", "--depends-on", "--tags", "--reason", "--body, -b"], examples: ["backlog set P1.M1.E1.T001 --priority high --tags api,auth"] },
+  set: { summary: "Set task properties (status/priority/etc).", usage: "backlog set <TASK_ID> [property flags]", options: ["--status", "--priority", "--complexity", "--estimate", "--title", "--depends-on", "--tags", "--reason", "--body, -b", "--append-body"], examples: ["backlog set P1.M1.E1.T001 --priority high --tags api,auth", "backlog set P1.M1.E1.T001 --body \"seed\" --append-body"] },
   show: { summary: "Show detailed info for task/phase/milestone/epic.", usage: "backlog show [PATH_ID ...] [--long]", options: ["--long"], examples: ["backlog show P1.M1.E1.T001", "backlog show P1.M1 P2.M1.E3", "backlog show", "backlog show P1.M1.E1.T001 --long"] },
   skills: { summary: "Install skill files.", usage: "backlog skills install <SKILL> [--client codex|claude] [--artifact skills|commands] [--dry-run] [--json]", options: ["--client", "--artifact", "--dry-run", "--json"], examples: ["backlog skills install plan-task --client=codex --artifact=skills"] },
   skip: { summary: "Skip current task and move on.", usage: "backlog skip <TASK_ID> [--agent AGENT] [--no-grab]", options: ["--agent", "--no-grab"], examples: ["backlog skip P1.M1.E1.T001 --agent agent-a"] },
@@ -2806,7 +2810,7 @@ async function cmdUpdate(args: string[]): Promise<void> {
   }
 }
 
-async function cmdSet(args: string[]): Promise<void> {
+async function cmdSet(args: string[]): Promise<AutoCommitMetadata> {
   const taskId = args.find((a) => !a.startsWith("-"));
   if (!taskId) textError("set requires TASK_ID");
 
@@ -2819,6 +2823,7 @@ async function cmdSet(args: string[]): Promise<void> {
   const tagsText = parseOpt(args, "--tags");
   const reason = parseOpt(args, "--reason");
   const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
+  const appendBody = parseFlag(args, "--append-body");
 
   const hasAny = [
     statusValue,
@@ -2829,7 +2834,11 @@ async function cmdSet(args: string[]): Promise<void> {
     dependsOnText,
     tagsText,
     body,
+    appendBody,
   ].some((v) => v !== undefined);
+  if (appendBody && body === undefined) {
+    textError("--append-body requires --body");
+  }
   if (!hasAny) textError("set requires at least one property flag");
 
   const allowedPriority = new Set(Object.values(Priority));
@@ -2871,7 +2880,7 @@ async function cmdSet(args: string[]): Promise<void> {
       updateStatus(task, statusValue as Status, reason);
     }
     if (body !== undefined) {
-      await loader.saveTask(task, body);
+      await loader.saveTask(task, body, appendBody);
     } else {
       await loader.saveTask(task);
     }
@@ -2883,6 +2892,9 @@ async function cmdSet(args: string[]): Promise<void> {
     }
     throw e;
   }
+
+  const metadata: AutoCommitMetadata = { id: task.id, title: task.title };
+  return metadata;
 }
 
 async function cmdWork(args: string[]): Promise<void> {
@@ -4458,7 +4470,7 @@ async function main(): Promise<void> {
       await cmdUpdate(rest);
       return;
     case "set":
-      await cmdSet(rest);
+      await runWithAutoCommit("set", () => cmdSet(rest));
       return;
     case "work":
       await cmdWork(rest);

@@ -87,6 +87,8 @@ def _auto_commit_message(command: str, metadata: tuple[str, str] | None = None) 
         prefix = "bl unclaim"
     elif command == "undone":
         prefix = "bl undone"
+    elif command == "set":
+        prefix = "bl set"
 
     if metadata is None:
         return prefix

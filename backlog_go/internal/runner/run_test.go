@@ -1048,6 +1048,56 @@ func TestRunSetCommandRejectsInvalidDependencyID(t *testing.T) {
 	}
 }
 
+func TestRunSetAutoCommitCreatesBlSetCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "set", "P1.M1.E1.T001", "--priority", "high")
+	if err != nil {
+		t.Fatalf("run set = %v", err)
+	}
+	if !strings.Contains(output, "Updated: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected set confirmation", output)
+	}
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl set P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl set P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunSetAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("seed\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	output, err := runInDir(t, root, "set", "P1.M1.E1.T001", "--priority", "critical")
+	if err != nil {
+		t.Fatalf("run set = %v", err)
+	}
+	if !strings.Contains(output, "Updated: P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected set confirmation", output)
+	}
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
+	}
+}
+
 func TestRunFixedCapturesMetadataAndIndex(t *testing.T) {
 	t.Parallel()
 

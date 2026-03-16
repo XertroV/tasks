@@ -749,6 +749,31 @@ describe("native cli", () => {
     expect(todo).not.toContain("## Requirements");
   });
 
+  test("set appends body with --append-body", () => {
+    root = setupFixture();
+    const first = run(["set", "P1.M1.E1.T001", "--body", "first body"], root);
+    expect(first.exitCode).toBe(0);
+    expect(first.stdout.toString()).toContain("Updated: P1.M1.E1.T001");
+
+    const second = run([
+      "set",
+      "P1.M1.E1.T001",
+      "--body",
+      "appended body",
+      "--append-body",
+    ], root);
+    expect(second.exitCode).toBe(0);
+    expect(second.stdout.toString()).toContain("Updated: P1.M1.E1.T001");
+
+    const todo = readFileSync(
+      join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo"),
+      "utf8",
+    );
+    expect(todo).toContain("first body");
+    expect(todo).toContain("appended body");
+    expect(todo.indexOf("appended body")).toBeGreaterThan(todo.indexOf("first body"));
+  });
+
   test("set rejects invalid dependency id", () => {
     root = setupFixture();
     const p = run(["set", "P1.M1.E1.T001", "--depends-on", "not a task id"], root);
@@ -1824,6 +1849,32 @@ tags: []
     const p = run(["done", "P1.M1.E1.T001"], root);
     expect(p.exitCode).toBe(0);
     expect(p.stdout.toString()).toContain("Completed:");
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
+  test("set auto-commits updated task when no staged files exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["set", "P1.M1.E1.T001", "--priority", "critical"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Updated: P1.M1.E1.T001");
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl set P1.M1.E1.T001: A");
+  });
+
+  test("set auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["set", "P1.M1.E1.T001", "--priority", "high"], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Updated: P1.M1.E1.T001");
     expect(gitCommitCount(root)).toBe(initialCommitCount);
     expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
   });

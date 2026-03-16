@@ -930,7 +930,9 @@ class TaskLoader:
                 expanded.append(dep)
         return expanded
 
-    def save_task(self, task: Task, body: Optional[str] = None) -> None:
+    def save_task(
+        self, task: Task, body: Optional[str] = None, append_body: bool = False
+    ) -> None:
         """Save task updates to its .todo file."""
         task_file = self.tasks_dir / task.file
 
@@ -967,6 +969,14 @@ class TaskLoader:
 
         if body is None:
             body = existing_body
+        elif append_body:
+            if existing_body:
+                if existing_body.endswith("\n\n"):
+                    body = existing_body + body
+                elif existing_body.endswith("\n"):
+                    body = existing_body + "\n" + body
+                else:
+                    body = existing_body + "\n\n" + body
 
         # Write back
         with open(task_file, "w") as f:

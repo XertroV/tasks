@@ -2606,6 +2606,83 @@ def test_set_requires_at_least_one_property(runner, tmp_tasks_dir):
     assert "set requires at least one property flag" in result.output
 
 
+def test_set_appends_body_when_append_body_flag_set(runner, tmp_tasks_dir):
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original body")
+
+    result = runner.invoke(
+        cli,
+        [
+            "set",
+            "P1.M1.E1.T001",
+            "--body",
+            "Existing details",
+            "--append-body",
+        ],
+    )
+    assert result.exit_code == 0
+
+    task_file = (
+        tmp_tasks_dir
+        / ".tasks"
+        / "01-test-phase"
+        / "01-test-milestone"
+        / "01-test-epic"
+        / "T001-test-task.todo"
+    )
+    content = task_file.read_text()
+    assert "Existing details" in content
+    assert "# A" in content
+
+
+def test_set_auto_commits_when_no_staged_files(runner, tmp_tasks_dir):
+    initialize_test_git_repo(tmp_tasks_dir)
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original body")
+    initial_commit_count = git_commit_count(tmp_tasks_dir)
+
+    result = runner.invoke(
+        cli,
+        [
+            "set",
+            "P1.M1.E1.T001",
+            "--title",
+            "Appended Update",
+            "--body",
+            "Appended body",
+            "--append-body",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Updated: P1.M1.E1.T001" in result.output
+
+    assert git_commit_count(tmp_tasks_dir) == initial_commit_count + 1
+    assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl set P1.M1.E1.T001: Appended Update"
+    assert run_git(tmp_tasks_dir, "status", "--short") == ""
+
+
+def test_set_auto_commit_skips_when_staged_files_exist(runner, tmp_tasks_dir):
+    initialize_test_git_repo(tmp_tasks_dir)
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Original body")
+    (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+    run_git(tmp_tasks_dir, "add", "staged-change.txt")
+    initial_commit_count = git_commit_count(tmp_tasks_dir)
+
+    result = runner.invoke(
+        cli,
+        [
+            "set",
+            "P1.M1.E1.T001",
+            "--body",
+            "Appended body",
+            "--append-body",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "Updated: P1.M1.E1.T001" in result.output
+
+    assert git_commit_count(tmp_tasks_dir) == initial_commit_count
+    assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
+
 def test_lock_epic_blocks_add_and_unlock_restores_add(runner, tmp_tasks_dir_short_ids):
     lock_result = runner.invoke(cli, ["lock", "P1.M1.E1"])
     assert lock_result.exit_code == 0
