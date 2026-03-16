@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B017
+priority: high
+status: pending
+tags: []
+title: Add a way to modify existing tasks by appending to their (most common case and can be done automatically). Results should be autocommitted
+---
+
+Add a way to modify existing tasks by appending to their (most common case and can be done automatically). Results should be autocommitted
