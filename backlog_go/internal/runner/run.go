@@ -238,8 +238,8 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 		examples: []string{"backlog check", "backlog check --strict"},
 	},
 	"idea": {
-		summary:  "Create a new planning idea.",
-		usage:    "backlog idea [--title <TITLE> | IDEA_TEXT] [options]",
+		summary: "Create a new planning idea.",
+		usage:   "backlog idea [--title <TITLE> | IDEA_TEXT] [options]",
 		options: []string{
 			"--title, -T",
 			"--estimate, -e",
@@ -923,7 +923,7 @@ func Run(rawArgs ...string) error {
 	case commands.CmdClaim:
 		return runWithAutoCommit("claim", payload, runClaim)
 	case commands.CmdEdit:
-		return runEdit(payload)
+		return runWithAutoCommit("edit", payload, runEdit)
 	case commands.CmdDone:
 		return runWithAutoCommit("done", payload, runDone)
 	case commands.CmdUnclaim:
@@ -975,15 +975,16 @@ func Run(rawArgs ...string) error {
 }
 
 const (
-	autoCommitAddPrefix    = "bl add"
-	autoCommitBugPrefix    = "bl bug"
-	autoCommitIdeaPrefix   = "bl idea"
-	autoCommitClaimPrefix  = "bl claim"
-	autoCommitGrabPrefix   = "bl grab"
-	autoCommitDonePrefix   = "bl done"
+	autoCommitAddPrefix     = "bl add"
+	autoCommitBugPrefix     = "bl bug"
+	autoCommitIdeaPrefix    = "bl idea"
+	autoCommitClaimPrefix   = "bl claim"
+	autoCommitGrabPrefix    = "bl grab"
+	autoCommitDonePrefix    = "bl done"
 	autoCommitUnclaimPrefix = "bl unclaim"
-	autoCommitUndonePrefix = "bl undone"
-	autoCommitSetPrefix    = "bl set"
+	autoCommitUndonePrefix  = "bl undone"
+	autoCommitSetPrefix     = "bl set"
+	autoCommitEditPrefix    = "bl edit"
 )
 
 type gitAutoCommitContext struct {
@@ -1133,6 +1134,11 @@ func autoCommitMessage(command string, metadata gitAutoCommitMetadata) string {
 			return autoCommitSetPrefix
 		}
 		return formatAutoCommitMessage(autoCommitSetPrefix, metadata)
+	case "edit":
+		if id == "" {
+			return autoCommitEditPrefix
+		}
+		return formatAutoCommitMessage(autoCommitEditPrefix, metadata)
 	default:
 		return fmt.Sprintf("backlog %s", command)
 	}
@@ -2710,35 +2716,35 @@ func runSet(args []string, metadata *gitAutoCommitMetadata) error {
 	}
 
 	allowed := map[string]bool{
-		"--status":     true,
-		"--priority":   true,
-		"--complexity": true,
-		"--estimate":   true,
-		"--title":      true,
-		"--depends-on": true,
-		"--tags":       true,
-		"--reason":     true,
-		"--body":       true,
-		"-b":           true,
+		"--status":      true,
+		"--priority":    true,
+		"--complexity":  true,
+		"--estimate":    true,
+		"--title":       true,
+		"--depends-on":  true,
+		"--tags":        true,
+		"--reason":      true,
+		"--body":        true,
+		"-b":            true,
 		"--append-body": true,
-		"--help":       true,
-		"-h":           true,
+		"--help":        true,
+		"-h":            true,
 	}
 	if err := validateAllowedFlagsForUsage(commands.CmdSet, args, allowed); err != nil {
 		return err
 	}
 
 	taskID := firstPositionalArg(args, map[string]bool{
-		"--status":     true,
-		"--priority":   true,
-		"--complexity": true,
-		"--estimate":   true,
-		"--title":      true,
-		"--depends-on": true,
-		"--tags":       true,
-		"--reason":     true,
-		"--body":       true,
-		"-b":           true,
+		"--status":      true,
+		"--priority":    true,
+		"--complexity":  true,
+		"--estimate":    true,
+		"--title":       true,
+		"--depends-on":  true,
+		"--tags":        true,
+		"--reason":      true,
+		"--body":        true,
+		"-b":            true,
 		"--append-body": true,
 	})
 	if taskID == "" {
@@ -5157,7 +5163,7 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 	}
 	if err := validateAllowedFlagsForUsage(commands.CmdIdea, args, map[string]bool{
 		"--title":      true,
-		"-T":          true,
+		"-T":           true,
 		"--estimate":   true,
 		"-e":           true,
 		"--complexity": true,
@@ -5180,7 +5186,7 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 	title := strings.TrimSpace(parseOption(args, "--title", "-T"))
 	optionNamesWithValue := map[string]bool{
 		"--title":      true,
-		"-T":          true,
+		"-T":           true,
 		"--priority":   true,
 		"-p":           true,
 		"--estimate":   true,
@@ -5272,7 +5278,7 @@ func runIdea(args []string, metadata *gitAutoCommitMetadata) error {
 		"id":             ideaID,
 		"title":          title,
 		"status":         "pending",
-		"estimate_hours":  estimate,
+		"estimate_hours": estimate,
 		"complexity":     string(complexity),
 		"priority":       string(priority),
 		"depends_on":     dependsOn,
@@ -8681,7 +8687,7 @@ func runClaim(args []string, metadata *gitAutoCommitMetadata) error {
 	return nil
 }
 
-func runEdit(args []string) error {
+func runEdit(args []string, metadata *gitAutoCommitMetadata) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
 	}
@@ -8750,7 +8756,13 @@ func runEdit(args []string) error {
 	editCmd.Stdin = os.Stdin
 	editCmd.Stdout = os.Stdout
 	editCmd.Stderr = os.Stderr
-	return editCmd.Run()
+	if err := editCmd.Run(); err != nil {
+		return err
+	}
+
+	metadata.id = task.ID
+	metadata.title = task.Title
+	return nil
 }
 
 func claimDoneError(task models.Task) error {

@@ -503,6 +503,38 @@ describe("native cli", () => {
     expect(called).toContain("T001-a.todo");
   });
 
+  test("edit auto-commits updated task when no staged files exist", () => {
+    root = setupFixture();
+    const editor = join(root, "editor.sh");
+    writeFileSync(editor, "#!/bin/sh\necho \"edited\" >> \"$1\"\n");
+    chmodSync(editor, 0o755);
+
+    initializeTestGitRepo(root);
+    const initialCommitCount = gitCommitCount(root);
+
+    const p = run(["edit", "P1.M1.E1.T001"], root, { VISUAL: editor });
+    expect(p.exitCode).toBe(0);
+    expect(gitCommitCount(root)).toBe(initialCommitCount + 1);
+    expect(runGit(root, "log", "-1", "--pretty=%B")).toBe("bl edit P1.M1.E1.T001: A");
+  });
+
+  test("edit auto-commit skips when staged files already exist", () => {
+    root = setupFixture();
+    const editor = join(root, "editor.sh");
+    writeFileSync(editor, "#!/bin/sh\necho \"edited\" >> \"$1\"\n");
+    chmodSync(editor, 0o755);
+
+    initializeTestGitRepo(root);
+    writeFileSync(join(root, "staged-change.txt"), "staged\n");
+    runGit(root, "add", "staged-change.txt");
+
+    const initialCommitCount = gitCommitCount(root);
+    const p = run(["edit", "P1.M1.E1.T001"], root, { VISUAL: editor });
+    expect(p.exitCode).toBe(0);
+    expect(gitCommitCount(root)).toBe(initialCommitCount);
+    expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
+  });
+
   test("done refuses to complete a non-in-progress task", () => {
     root = setupFixture();
     const todoPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");

@@ -73,6 +73,8 @@ def _auto_commit_message(command: str, metadata: tuple[str, str] | None = None) 
     prefix = "backlog " + command
     if command == "add":
         prefix = "bl add"
+    elif command == "edit":
+        prefix = "bl edit"
     elif command == "bug":
         prefix = "bl bug"
     elif command == "idea":

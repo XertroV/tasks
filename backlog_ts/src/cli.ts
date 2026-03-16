@@ -252,6 +252,10 @@ function autoCommitMessage(command: string, metadata: AutoCommitMetadata | null)
     if (!metadata?.id) return "bl set";
     return formatAutoCommitMessage("bl set", metadata);
   }
+  if (command === "edit") {
+    if (!metadata?.id) return "bl edit";
+    return formatAutoCommitMessage("bl edit", metadata);
+  }
   return `backlog ${command}`;
 }
 
@@ -3045,10 +3049,10 @@ async function cmdUnclaim(args: string[]): Promise<AutoCommitMetadata> {
   return { id: task.id, title: task.title };
 }
 
-async function cmdEdit(args: string[]): Promise<void> {
+async function cmdEdit(args: string[]): Promise<AutoCommitMetadata> {
   if (parseFlag(args, "--help", "-h")) {
     printCommandHelpForCommand("edit");
-    return;
+    return { id: "", title: "" };
   }
 
   const taskIds = positionalArgsForCommand(
@@ -3073,7 +3077,7 @@ async function cmdEdit(args: string[]): Promise<void> {
     console.log(pc.yellow("Warning: edit only works with task IDs."));
     console.log(pc.yellow(`Showing \`backlog show ${taskId}\` for context.`));
     await cmdShow([taskId]);
-    return;
+    return { id: "", title: "" };
   }
 
   if (isTaskFileMissing(task)) textError(`Cannot edit ${task.id} because the task file is missing.`);
@@ -3108,6 +3112,8 @@ async function cmdEdit(args: string[]): Promise<void> {
   if (result.exitCode !== 0) {
     textError(`editor exited with status ${result.exitCode}`);
   }
+
+  return { id: task.id, title: task.title };
 }
 
 async function cmdBlocked(args: string[]): Promise<void> {
@@ -4449,7 +4455,7 @@ async function main(): Promise<void> {
       await runWithAutoCommit("claim", () => cmdClaim(rest));
       return;
     case "edit":
-      await cmdEdit(rest);
+      await runWithAutoCommit("edit", () => cmdEdit(rest));
       return;
     case "grab":
       await runWithAutoCommit("grab", () => cmdGrab(rest));

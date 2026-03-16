@@ -567,6 +567,46 @@ class TestEditCommand:
         assert marker.exists()
         assert "T001" in marker.read_text()
 
+    def test_edit_auto_commit_creates_bl_edit_commit(self, runner, tmp_tasks_dir):
+        """edit should auto-commit updated task file when no staged files exist."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        editor = tmp_tasks_dir / "editor.sh"
+        editor.write_text("#!/bin/sh\necho \"edited\" >> \"$1\"\n")
+        editor.chmod(0o755)
+        initialize_test_git_repo(tmp_tasks_dir)
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(
+            cli,
+            ["edit", "P1.M1.E1.T001"],
+            env={"VISUAL": str(editor)},
+        )
+
+        assert result.exit_code == 0
+        assert git_commit_count(tmp_tasks_dir) == initial_commits + 1
+        assert run_git(tmp_tasks_dir, "log", "-1", "--pretty=%B") == "bl edit P1.M1.E1.T001: Test Task"
+
+    def test_edit_auto_commit_skips_when_staged_files_exist(self, runner, tmp_tasks_dir):
+        """edit should skip auto-commit when staged files already exist."""
+        create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+        editor = tmp_tasks_dir / "editor.sh"
+        editor.write_text("#!/bin/sh\necho \"edited\" >> \"$1\"\n")
+        editor.chmod(0o755)
+        initialize_test_git_repo(tmp_tasks_dir)
+        (tmp_tasks_dir / "staged-change.txt").write_text("staged\n")
+        run_git(tmp_tasks_dir, "add", "staged-change.txt")
+
+        initial_commits = git_commit_count(tmp_tasks_dir)
+        result = runner.invoke(
+            cli,
+            ["edit", "P1.M1.E1.T001"],
+            env={"VISUAL": str(editor)},
+        )
+
+        assert result.exit_code == 0
+        assert git_commit_count(tmp_tasks_dir) == initial_commits
+        assert "A  staged-change.txt" in run_git(tmp_tasks_dir, "status", "--short")
+
 
 class TestLsCommand:
     """Tests for the ls command."""

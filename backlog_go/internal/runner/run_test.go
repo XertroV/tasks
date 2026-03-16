@@ -1406,6 +1406,69 @@ func TestRunEditLaunchesConfiguredEditor(t *testing.T) {
 	}
 }
 
+func TestRunEditAutoCommitCreatesBlEditCommit(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	editorPath := filepath.Join(root, "bin", "backlog-edit-test-editor.sh")
+	if err := os.MkdirAll(filepath.Dir(editorPath), 0o755); err != nil {
+		t.Fatalf("make editor dir = %v", err)
+	}
+	editorScript := "#!/bin/sh\necho \"edited\" >> \"$1\"\n"
+	if err := os.WriteFile(editorPath, []byte(editorScript), 0o755); err != nil {
+		t.Fatalf("write editor script = %v", err)
+	}
+
+	initializeTestGitRepo(t, root)
+	commitCount := gitCommitCount(t, root)
+	if _, err := runInDirWithEnv(t, root, map[string]string{"VISUAL": editorPath}, "edit", "P1.M1.E1.T001"); err != nil {
+		t.Fatalf("run edit = %v", err)
+	}
+
+	if gitCommitCount(t, root) != commitCount+1 {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount+1)
+	}
+	if message := strings.TrimSpace(runGit(t, root, "log", "-1", "--pretty=%B")); message != "bl edit P1.M1.E1.T001: a" {
+		t.Fatalf("latest commit = %q, expected %q", message, "bl edit P1.M1.E1.T001: a")
+	}
+}
+
+func TestRunEditAutoCommitSkipsWhenStagedChangesExist(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	editorPath := filepath.Join(root, "bin", "backlog-edit-test-editor.sh")
+	if err := os.MkdirAll(filepath.Dir(editorPath), 0o755); err != nil {
+		t.Fatalf("make editor dir = %v", err)
+	}
+	editorScript := "#!/bin/sh\necho \"edited\" >> \"$1\"\n"
+	if err := os.WriteFile(editorPath, []byte(editorScript), 0o755); err != nil {
+		t.Fatalf("write editor script = %v", err)
+	}
+
+	initializeTestGitRepo(t, root)
+
+	stagedPath := filepath.Join(root, "staged-change.txt")
+	if err := os.WriteFile(stagedPath, []byte("staged\n"), 0o644); err != nil {
+		t.Fatalf("write staged file: %v", err)
+	}
+	runGit(t, root, "add", "staged-change.txt")
+
+	commitCount := gitCommitCount(t, root)
+	if _, err := runInDirWithEnv(t, root, map[string]string{"VISUAL": editorPath}, "edit", "P1.M1.E1.T001"); err != nil {
+		t.Fatalf("run edit = %v", err)
+	}
+
+	if gitCommitCount(t, root) != commitCount {
+		t.Fatalf("commit count = %d, expected %d", gitCommitCount(t, root), commitCount)
+	}
+	if status := runGit(t, root, "status", "--short"); !strings.Contains(status, "A  staged-change.txt") {
+		t.Fatalf("status = %q, expected staged change to be preserved", status)
+	}
+}
+
 func TestRunClaimAuxiliaryTaskIds(t *testing.T) {
 	t.Parallel()
 
