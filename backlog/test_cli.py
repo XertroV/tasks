@@ -2692,26 +2692,40 @@ def test_show_fixed_task(runner, tmp_tasks_dir):
 
 def test_show_task_preview_uses_default_line_limit(runner, tmp_tasks_dir):
     """show should display only a preview of task body by default."""
-    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+    task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+    task_file_relative = task_file.relative_to(tmp_tasks_dir)
 
     result = runner.invoke(cli, ["show", "P1.M1.E1.T001"])
     assert result.exit_code == 0
+    file_contents = task_file.read_text()
+    assert (
+        f"File stats: {task_file.stat().st_size} bytes, {len(file_contents.splitlines())} lines"
+        in result.output
+    )
     assert "Body:" in result.output
     assert "# Test Task" in result.output
     assert "- Acceptance criterion 2" not in result.output
     assert "... (2 more lines)" in result.output
+    assert "To view the full file, run: cat" in result.output
+    assert str(task_file_relative) in result.output
 
 
 def test_show_task_long_prints_entire_body(runner, tmp_tasks_dir):
     """show --long should print the full task body."""
-    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+    task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
 
     result = runner.invoke(cli, ["show", "P1.M1.E1.T001", "--long"])
     assert result.exit_code == 0
+    file_contents = task_file.read_text()
+    assert (
+        f"File stats: {task_file.stat().st_size} bytes, {len(file_contents.splitlines())} lines"
+        in result.output
+    )
     assert "Body:" in result.output
     assert "# Test Task" in result.output
     assert "- Acceptance criterion 2" in result.output
     assert "... (2 more lines)" not in result.output
+    assert "To view the full file, run: cat" not in result.output
 
 
 def test_show_task_displays_explicit_dependencies(runner, tmp_tasks_dir):

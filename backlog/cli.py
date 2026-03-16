@@ -2385,12 +2385,14 @@ def _show_task(tree, task_id, show_long=False):
 
     _show_dependency_details(tree, task)
 
-    console.print(f"\n[bold]File:[/] .tasks/{task.file}\n")
+    console.print(f"\n[bold]File:[/] .tasks/{task.file}")
 
     task_file = task_file_path(task)
     if task_file.exists():
-        with open(task_file) as f:
-            content = f.read()
+        content = task_file.read_text()
+        console.print(
+            f"[bold]File stats:[/] {task_file.stat().st_size} bytes, {len(content.splitlines())} lines\n"
+        )
         parts = content.split("---\n")
         body = ""
         if len(parts) >= 3:
@@ -2409,6 +2411,7 @@ def _show_task(tree, task_id, show_long=False):
                     console.print(f"  {line}")
                 if len(lines) > preview_count:
                     console.print(f"[dim]  ... ({len(lines) - preview_count} more lines)[/]")
+                    console.print(f"[dim]To view the full file, run: cat {task_file}[/]")
     else:
         _warn_missing_task_file(task)
 

@@ -1,6 +1,7 @@
 package runner
 
 import (
+	"bufio"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1709,6 +1710,29 @@ func printTaskFileReadCommandsForTask(dataDir string, task models.Task, showPrev
 	taskPath := filepath.Join(dataDir, task.File)
 	printTaskFileReadCommand(taskPath, showPreview, taskFileReadPreviewLines)
 	printTaskFileReadEOF()
+}
+
+func taskFileStats(taskFilePath string) (int64, int, error) {
+	f, err := os.Open(taskFilePath)
+	if err != nil {
+		return 0, 0, err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return 0, 0, err
+	}
+
+	lineCount := 0
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		lineCount++
+	}
+	if err := scanner.Err(); err != nil {
+		return info.Size(), lineCount, err
+	}
+	return info.Size(), lineCount, nil
 }
 
 func normalizeCommand(value string) string {
@@ -8426,7 +8450,11 @@ func renderTaskDetail(task models.Task, dataDir string, showNext bool, showLong 
 	if task.DurationMinutes != nil {
 		fmt.Printf("%s: %d minutes\n", styleSubHeader("Duration"), int(*task.DurationMinutes))
 	}
-	fmt.Printf("%s: %s\n", styleSubHeader("File"), filepath.Join(dataDir, task.File))
+	filePath := filepath.Join(dataDir, task.File)
+	fmt.Printf("%s: %s\n", styleSubHeader("File"), filePath)
+	if fileSize, fileLines, err := taskFileStats(filePath); err == nil {
+		fmt.Printf("%s: %d bytes, %d lines\n", styleSubHeader("File stats"), fileSize, fileLines)
+	}
 	_, body, err := readTodoFrontmatter(task.ID, task.File)
 	if err == nil {
 		body = strings.TrimSpace(body)
@@ -8442,6 +8470,7 @@ func renderTaskDetail(task models.Task, dataDir string, showNext bool, showLong 
 			}
 			if !showLong && len(lines) > limit {
 				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-limit)))
+				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("To view the full file, run: cat %s", filePath)))
 			}
 		}
 	}

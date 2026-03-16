@@ -2591,6 +2591,7 @@ tags: []
   test("show task previews body and truncates by default", () => {
     root = setupFixture();
     const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const relativeTaskPath = taskPath.replace(`${root}/`, "");
     const content = readFileSync(taskPath, "utf8");
     const markerIndex = content.indexOf("---\n", 4);
     expect(markerIndex).toBeGreaterThanOrEqual(0);
@@ -2612,14 +2613,20 @@ tags: []
       "Line 12",
     ].join("\n");
     writeFileSync(taskPath, `${frontmatterBlock}${previewBody}\n`);
+    const taskContent = readFileSync(taskPath, "utf8");
+    const taskLineCount =
+      taskContent === "" ? 0 : taskContent.replace(/\r?\n$/, "").split(/\r?\n/).length;
+    const taskSize = Buffer.byteLength(taskContent, "utf8");
 
     const p = run(["show", "P1.M1.E1.T001"], root);
     expect(p.exitCode).toBe(0);
     const output = p.stdout.toString();
+    expect(output).toContain(`File stats: ${taskSize} bytes, ${taskLineCount} lines`);
     expect(output).toContain("Body:");
     expect(output).toContain("Line 10");
     expect(output).not.toContain("Line 11");
     expect(output).toContain("  ... (2 more lines)");
+    expect(output).toContain(`To view the full file, run: cat ${relativeTaskPath}`);
   });
 
   test("show --long prints the entire task body", () => {
@@ -2646,14 +2653,20 @@ tags: []
       "Line 12",
     ].join("\n");
     writeFileSync(taskPath, `${frontmatterBlock}${previewBody}\n`);
+    const taskContent = readFileSync(taskPath, "utf8");
+    const taskLineCount =
+      taskContent === "" ? 0 : taskContent.replace(/\r?\n$/, "").split(/\r?\n/).length;
+    const taskSize = Buffer.byteLength(taskContent, "utf8");
 
     const p = run(["show", "P1.M1.E1.T001", "--long"], root);
     expect(p.exitCode).toBe(0);
     const output = p.stdout.toString();
+    expect(output).toContain(`File stats: ${taskSize} bytes, ${taskLineCount} lines`);
     expect(output).toContain("Body:");
     expect(output).toContain("Line 11");
     expect(output).toContain("Line 12");
     expect(output).not.toContain("  ... (2 more lines)");
+    expect(output).not.toContain("To view the full file, run: cat");
   });
 
   test("show on non-pending idea hides Instructions section", () => {

@@ -2077,7 +2077,18 @@ async function cmdShow(args: string[]): Promise<void> {
     if (!t) showNotFound("Task", id, scopeHint);
     console.log(`${t.id}: ${t.title}\nstatus=${t.status} estimate=${t.estimateHours}`);
     renderTaskDependencyOverview(t, fullTree ?? scopeTree);
-    const { body } = parseTodoFrontmatter(taskFilePath(t));
+    const taskFile = taskFilePath(t);
+    const taskFilePathData = existsSync(taskFile) ? readFileSync(taskFile, "utf8") : null;
+    if (taskFilePathData !== null) {
+      const taskFileLineCount =
+        taskFilePathData === "" ? 0 : taskFilePathData.replace(/\r?\n$/, "").split(/\r?\n/).length;
+      const taskFileSize = statSync(taskFile).size;
+      console.log(`File: ${taskFile}`);
+      console.log(`File stats: ${taskFileSize} bytes, ${taskFileLineCount} lines`);
+    } else {
+      console.log(`File: ${taskFile}`);
+    }
+    const { body } = parseTodoFrontmatter(taskFile);
     const bodyLines = body.trim().split("\n");
     if (bodyLines.length > 0 && bodyLines[0] !== "") {
       console.log(pc.bold("Body:"));
@@ -2092,6 +2103,7 @@ async function cmdShow(args: string[]): Promise<void> {
         }
         if (bodyLines.length > limit) {
           console.log(pc.dim(`  ... (${bodyLines.length - limit} more lines)`));
+          console.log(pc.dim(`To view the full file, run: cat ${taskFile}`));
         }
       }
     }

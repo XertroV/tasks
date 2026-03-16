@@ -2014,10 +2014,17 @@ func TestRunShowTaskPreviewUsesLineLimitByDefault(t *testing.T) {
 	if err := os.WriteFile(taskPath, []byte(strings.Join(content, "\n")), 0o644); err != nil {
 		t.Fatalf("write task file: %v", err)
 	}
+	info, err := os.Stat(taskPath)
+	if err != nil {
+		t.Fatalf("stat task file: %v", err)
+	}
 
 	output, err := runInDir(t, root, "show", "P1.M1.E1.T001")
 	if err != nil {
 		t.Fatalf("run show = %v, expected nil", err)
+	}
+	if !strings.Contains(output, fmt.Sprintf("File stats: %d bytes, %d lines", info.Size(), len(content))) {
+		t.Fatalf("show output = %q, expected file stats line", output)
 	}
 	if !strings.Contains(output, "line-12") {
 		t.Fatalf("show output = %q, expected preview line-12", output)
@@ -2027,6 +2034,9 @@ func TestRunShowTaskPreviewUsesLineLimitByDefault(t *testing.T) {
 	}
 	if !strings.Contains(output, "... (1 more lines)") {
 		t.Fatalf("show output = %q, expected truncated line count message", output)
+	}
+	if !strings.Contains(output, "To view the full file, run: cat ") {
+		t.Fatalf("show output = %q, expected file preview hint", output)
 	}
 }
 
@@ -2063,16 +2073,26 @@ func TestRunShowTaskLongPrintsFullBody(t *testing.T) {
 	if err := os.WriteFile(taskPath, []byte(strings.Join(content, "\n")), 0o644); err != nil {
 		t.Fatalf("write task file: %v", err)
 	}
+	info, err := os.Stat(taskPath)
+	if err != nil {
+		t.Fatalf("stat task file: %v", err)
+	}
 
 	output, err := runInDir(t, root, "show", "P1.M1.E1.T001", "--long")
 	if err != nil {
 		t.Fatalf("run show --long = %v, expected nil", err)
+	}
+	if !strings.Contains(output, fmt.Sprintf("File stats: %d bytes, %d lines", info.Size(), len(content))) {
+		t.Fatalf("show output = %q, expected file stats line", output)
 	}
 	if !strings.Contains(output, "line-13") {
 		t.Fatalf("show output = %q, expected full body line-13", output)
 	}
 	if strings.Contains(output, "... (1 more line)") {
 		t.Fatalf("show output = %q, unexpected truncation with --long", output)
+	}
+	if strings.Contains(output, "To view the full file, run: cat ") {
+		t.Fatalf("show output = %q, unexpected file preview hint", output)
 	}
 }
 
