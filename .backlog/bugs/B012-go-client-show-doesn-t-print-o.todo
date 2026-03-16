@@ -1,10 +1,12 @@
 ---
+completed_at: null
 complexity: medium
 depends_on: []
 estimate_hours: 1
 id: B012
 priority: high
-status: pending
+started_at: null
+status: done
 tags: []
 title: 'go client: show doesn''t print out file contents or preview at all -- is that expected?'
 ---
