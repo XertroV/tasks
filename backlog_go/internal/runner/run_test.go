@@ -36,6 +36,87 @@ func TestRunReturnsNil(t *testing.T) {
 	}
 }
 
+func TestRunNoArgsShowsUsage(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	output, err := runInDir(t, root)
+	if err != nil {
+		t.Fatalf("run no args = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Usage:") {
+		t.Fatalf("output = %q, expected usage line", output)
+	}
+}
+
+func TestRenderStack2Deterministic(t *testing.T) {
+	t.Parallel()
+
+	linesA := renderStack2(80, 3, false)
+	linesB := renderStack2(80, 3, false)
+	if !reflect.DeepEqual(linesA, linesB) {
+		t.Fatalf("renderStack2 output should be deterministic: %#v != %#v", linesA, linesB)
+	}
+	if len(linesA) < 10 {
+		t.Fatalf("renderStack2 output should contain multiple lines: %d", len(linesA))
+	}
+}
+
+func TestRenderStack2SupportsNoColor(t *testing.T) {
+	t.Parallel()
+
+	lines := renderStack2(80, 3, false)
+	for _, line := range lines {
+		if strings.Contains(line, "\x1b[") {
+			t.Fatalf("expected plain line without ansi escape: %q", line)
+		}
+	}
+}
+
+func TestRenderStack2SupportsColor(t *testing.T) {
+	t.Parallel()
+
+	lines := renderStack2(80, 3, true)
+	hasColor := false
+	for _, line := range lines {
+		if strings.Contains(line, "\x1b[") {
+			hasColor = true
+			break
+		}
+	}
+	if !hasColor {
+		t.Fatal("expected at least one ansi escape in color logo output")
+	}
+}
+
+func TestRenderStack2Seed3PlainMatchesPython(t *testing.T) {
+	t.Parallel()
+
+	lines := renderStack2(80, 3, false)
+	if len(lines) != len(startupLogoPythonStack2Plain) {
+		t.Fatalf("renderStack2 line count = %d, expected %d", len(lines), len(startupLogoPythonStack2Plain))
+	}
+	for i := range startupLogoPythonStack2Plain {
+		if lines[i] != startupLogoPythonStack2Plain[i] {
+			t.Fatalf("plain line %d mismatch:\nexpected %q\ngot      %q", i+1, startupLogoPythonStack2Plain[i], lines[i])
+		}
+	}
+}
+
+func TestRenderStack2Seed3ColorMatchesPython(t *testing.T) {
+	t.Parallel()
+
+	lines := renderStack2(80, 3, true)
+	if len(lines) != len(startupLogoPythonStack2Color) {
+		t.Fatalf("renderStack2 color line count = %d, expected %d", len(lines), len(startupLogoPythonStack2Color))
+	}
+	for i := range startupLogoPythonStack2Color {
+		if lines[i] != startupLogoPythonStack2Color[i] {
+			t.Fatalf("color line %d mismatch:\nexpected %q\ngot      %q", i+1, startupLogoPythonStack2Color[i], lines[i])
+		}
+	}
+}
+
 func TestRunAddCommand(t *testing.T) {
 	t.Parallel()
 

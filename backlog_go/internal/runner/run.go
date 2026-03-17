@@ -825,6 +825,14 @@ func Run(rawArgs ...string) error {
 	if len(rawArgs) == 0 {
 		rawArgs = os.Args[1:]
 	}
+	filteredArgs := make([]string, 0, len(rawArgs))
+	for _, arg := range rawArgs {
+		if strings.HasPrefix(arg, "-test.") {
+			continue
+		}
+		filteredArgs = append(filteredArgs, arg)
+	}
+	rawArgs = filteredArgs
 	args := make([]string, len(rawArgs))
 	copy(args, rawArgs)
 	filtered, err := parseCommandColorFlags(args)
@@ -835,6 +843,8 @@ func Run(rawArgs ...string) error {
 
 	root := cmd.NewRootCommand()
 	if len(args) == 0 {
+		printStartupLogo(3, shouldUseColor())
+		fmt.Println()
 		fmt.Println(styleHeader(root.Usage()))
 		return nil
 	}
