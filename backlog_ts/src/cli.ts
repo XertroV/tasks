@@ -50,6 +50,7 @@ import { claimTask, completeTask, StatusError, updateStatus } from "./status";
 import { utcNow } from "./time";
 import { runChecks } from "./check";
 import { BACKLOG_DIR, getDataDirName } from "./data_dir";
+import { logoShouldUseColor, renderStartupLogo, startupLogoWidth } from "./logo";
 import {
   BACKLOG_HOWTO_SKILL_MD,
   BACKLOG_HOWTO_SKILL_VERSION,
@@ -2829,17 +2830,16 @@ async function cmdSet(args: string[]): Promise<AutoCommitMetadata> {
   const body = parseOpt(args, "--body") ?? parseOpt(args, "-b");
   const appendBody = parseFlag(args, "--append-body");
 
-  const hasAny = [
-    statusValue,
-    priority,
-    complexity,
-    estimateText,
-    title,
-    dependsOnText,
-    tagsText,
-    body,
-    appendBody,
-  ].some((v) => v !== undefined);
+  const hasAny =
+    statusValue !== undefined ||
+    priority !== undefined ||
+    complexity !== undefined ||
+    estimateText !== undefined ||
+    title !== undefined ||
+    dependsOnText !== undefined ||
+    tagsText !== undefined ||
+    body !== undefined ||
+    appendBody;
   if (appendBody && body === undefined) {
     textError("--append-body requires --body");
   }
@@ -4412,6 +4412,15 @@ async function main(): Promise<void> {
   const rest = args.slice(1);
 
   if (!cmd || cmd === "--help") {
+    if (process.stdout.isTTY) {
+      const lines = renderStartupLogo(startupLogoWidth(), 3, logoShouldUseColor());
+      for (const line of lines) {
+        console.log(line);
+      }
+      console.log("");
+    } else {
+      console.log("");
+    }
     usage();
     return;
   }

@@ -617,6 +617,13 @@ def test_help_sync_renders_command_help(runner, tmp_feature_tasks_dir):
     assert "Recalculate statistics and critical path." in result.output
 
 
+def test_no_args_shows_usage_help(runner, tmp_feature_tasks_dir):
+    result = runner.invoke(cli, [])
+    assert result.exit_code == 0
+    assert "Usage:" in result.output
+    assert "Commands:" in result.output
+
+
 def test_ci_validate_ids_command_accepts_shorthand_ids(runner, tmp_feature_tasks_dir):
     result = runner.invoke(cli, ["ci", "validate-ids", "B020", "E1.T02"], mix_stderr=False)
     assert result.exit_code == 0

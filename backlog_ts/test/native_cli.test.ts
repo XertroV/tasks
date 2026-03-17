@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse, stringify } from "yaml";
+import { renderStartupLogo, stripAnsiCodes } from "../src/logo";
 
 let oldCwd = process.cwd();
 let root = "";
@@ -117,6 +118,26 @@ function gitCommitCount(cwd: string): number {
 }
 
 describe("native cli", () => {
+  test("no args renders usage help", () => {
+    root = setupFixture();
+    const p = run([], root);
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toContain("Usage: backlog <command> [options]");
+  });
+
+  test("renderStartupLogo is deterministic and supports no-color output", () => {
+    const first = renderStartupLogo(80, 3, true);
+    const second = renderStartupLogo(80, 3, true);
+    expect(first).toEqual(second);
+    expect(first.some((line) => line.includes("\x1b["))).toBeTrue();
+
+    const plain = renderStartupLogo(80, 3, false);
+    expect(plain).toEqual(renderStartupLogo(80, 3, false));
+    for (const line of plain) {
+      expect(stripAnsiCodes(line)).toBe(line);
+    }
+  });
+
   test("list/next/show json and text", () => {
     root = setupFixture();
     const list = run(["list", "--json"], root);
