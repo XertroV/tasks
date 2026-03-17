@@ -1,0 +1,12 @@
+---
+complexity: medium
+depends_on: []
+estimate_hours: 1
+id: B019
+priority: high
+status: pending
+tags: []
+title: backlogs logo doesnt render right in go
+---
+
+backlogs logo doesnt render right in go
