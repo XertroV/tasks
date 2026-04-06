@@ -215,6 +215,68 @@ def _warn_missing_task_file(task) -> bool:
     return True
 
 
+def _warn_task_file_issues(task) -> bool:
+    """Warn for task file parse or id-mismatch issues."""
+    from .data_dir import get_data_dir_name
+
+    task_file = task_file_path(task)
+    if not task_file.exists():
+        console.print(
+            f"[yellow]Warning:[/] Task file missing for {task.id}: {get_data_dir_name()}/{task.file}"
+        )
+        return True
+
+    try:
+        content = task_file.read_text()
+    except OSError as exc:
+        console.print(
+            f"[yellow]Warning:[/] Task file for {task.id} is not readable: {exc}"
+        )
+        return False
+
+    lines = content.splitlines()
+    if not lines or lines[0].strip() != "---":
+        console.print(
+            f"[yellow]Warning:[/] Invalid frontmatter format in {task.id}: missing opening `---` marker."
+        )
+        return False
+
+    end_index = -1
+    for idx in range(1, len(lines)):
+        if lines[idx].strip() == "---":
+            end_index = idx
+            break
+
+    if end_index < 0:
+        console.print(
+            f"[yellow]Warning:[/] Invalid frontmatter format in {task.id}: missing closing `---` marker."
+        )
+        return False
+
+    frontmatter_raw = "\n".join(lines[1:end_index]).strip()
+    if not frontmatter_raw:
+        return False
+
+    try:
+        frontmatter = yaml.safe_load(frontmatter_raw)
+    except Exception as exc:
+        console.print(f"[yellow]Warning:[/] Invalid task file YAML in {task.id}: {exc}")
+        return False
+
+    if not isinstance(frontmatter, dict):
+        console.print(
+            f"[yellow]Warning:[/] Invalid frontmatter in {task.id}: expected a mapping."
+        )
+        return False
+
+    file_id = str(frontmatter.get("id", "")).strip()
+    if file_id and file_id != str(task.id):
+        console.print(
+            f"[yellow]Warning:[/] Frontmatter ID mismatch in {task.id}: {file_id}"
+        )
+    return False
+
+
 SHOW_TASK_PREVIEW_LINES = 12
 
 
@@ -2390,32 +2452,32 @@ def _show_task(tree, task_id, show_long=False):
     console.print(f"\n[bold]File:[/] .tasks/{task.file}")
 
     task_file = task_file_path(task)
-    if task_file.exists():
-        content = task_file.read_text()
-        console.print(
-            f"[bold]File stats:[/] {task_file.stat().st_size} bytes, {len(content.splitlines())} lines\n"
-        )
-        parts = content.split("---\n")
-        body = ""
-        if len(parts) >= 3:
-            body = parts[2]
-        else:
-            body = content
-        lines = body.strip().splitlines()
-        if lines:
-            console.print("[bold]Body:[/]")
-            if show_long:
-                for line in lines:
-                    console.print(f"  {line}")
-            else:
-                preview_count = min(SHOW_TASK_PREVIEW_LINES, len(lines))
-                for line in lines[:preview_count]:
-                    console.print(f"  {line}")
-                if len(lines) > preview_count:
-                    console.print(f"[dim]  ... ({len(lines) - preview_count} more lines)[/]")
-                    console.print(f"[dim]To view the full file, run: cat {task_file}[/]")
+    if _warn_task_file_issues(task):
+        return
+
+    content = task_file.read_text()
+    console.print(
+        f"[bold]File stats:[/] {task_file.stat().st_size} bytes, {len(content.splitlines())} lines\n"
+    )
+    parts = content.split("---\n")
+    body = ""
+    if len(parts) >= 3:
+        body = parts[2]
     else:
-        _warn_missing_task_file(task)
+        body = content
+    lines = body.strip().splitlines()
+    if lines:
+        console.print("[bold]Body:[/]")
+        if show_long:
+            for line in lines:
+                console.print(f"  {line}")
+        else:
+            preview_count = min(SHOW_TASK_PREVIEW_LINES, len(lines))
+            for line in lines[:preview_count]:
+                console.print(f"  {line}")
+            if len(lines) > preview_count:
+                console.print(f"[dim]  ... ({len(lines) - preview_count} more lines)[/]")
+                console.print(f"[dim]To view the full file, run: cat {task_file}[/]")
 
 
 def _show_idea_instructions(idea):
@@ -2933,8 +2995,7 @@ def claim(task_ids, agent, force, no_content):
                     )
                     show((task_id,))
                     continue
-
-                if _warn_missing_task_file(task):
+                if _warn_task_file_issues(task):
                     console.print(
                         f"[red]Error:[/] Cannot claim {task.id} because the task file is missing."
                     )
@@ -2965,7 +3026,7 @@ def claim(task_ids, agent, force, no_content):
                         console.print(content)
                         console.print("─" * 50 + "\n")
                     else:
-                        _warn_missing_task_file(task)
+                        _warn_task_file_issues(task)
 
                 console.print(f"[dim]Mark done:[/] 'backlog done {task.id}'\n")
             return metadata

@@ -2840,9 +2840,16 @@ func runSet(args []string, metadata *gitAutoCommitMetadata) error {
 
 	bodyToWrite := body
 	if hasBody && hasAppendBody {
-		_, existingBody, err := readTodoFrontmatter(task.ID, task.File)
+		_, existingBody, warnings, missing, err := readTodoFrontmatter(task.ID, task.File)
 		if err != nil {
 			return printUsageError(commands.CmdSet, err)
+		}
+		printTodoFileWarnings(warnings)
+		if missing {
+			return printUsageError(
+				commands.CmdSet,
+				fmt.Errorf("Cannot append body for %s because the task file is missing.", task.ID),
+			)
 		}
 		if existingBody == "" {
 			bodyToWrite = body
@@ -3276,10 +3283,14 @@ func saveTaskState(task models.Task, tree models.TaskTree, bodyOverride ...strin
 		return err
 	}
 
-	frontmatter, body, err := readTodoFrontmatter(task.ID, taskPath)
+	frontmatter, body, warnings, missing, err := readTodoFrontmatter(task.ID, taskPath)
 	if err != nil {
 		return err
 	}
+	if missing {
+		return fmt.Errorf("Task file missing for %s: %s", task.ID, taskPath)
+	}
+	printTodoFileWarnings(warnings)
 	frontmatter["title"] = task.Title
 	frontmatter["status"] = string(task.Status)
 	frontmatter["estimate_hours"] = task.EstimateHours
@@ -3323,22 +3334,32 @@ func saveTaskState(task models.Task, tree models.TaskTree, bodyOverride ...strin
 	return writeTaskIndex(task, tree)
 }
 
-func readTodoFrontmatter(taskID, taskFile string) (map[string]interface{}, string, error) {
+func readTodoFrontmatter(taskID, taskFile string) (map[string]interface{}, string, []string, bool, error) {
 	taskFilePath := taskFile
 	if !filepath.IsAbs(taskFilePath) {
 		dataDir, err := ensureDataRoot()
 		if err != nil {
-			return nil, "", err
+			return map[string]interface{}{}, "", nil, false, err
 		}
 		taskFilePath = filepath.Join(dataDir, taskFilePath)
 	}
 	raw, err := os.ReadFile(taskFilePath)
 	if err != nil {
-		return nil, "", err
+		if os.IsNotExist(err) {
+			return map[string]interface{}{}, "", []string{
+				fmt.Sprintf("Task file missing for %s: %s", taskID, taskFilePath),
+			}, true, nil
+		}
+		return map[string]interface{}{}, "", []string{
+			fmt.Sprintf("Task file for %s is not readable: %s", taskID, err),
+		}, false, nil
 	}
+
+	warnings := []string{}
 	lines := strings.Split(string(raw), "\n")
 	if len(lines) == 0 || strings.TrimSpace(lines[0]) != "---" {
-		return nil, "", fmt.Errorf("missing frontmatter: %s", taskID)
+		warnings = append(warnings, fmt.Sprintf("Invalid frontmatter format in %s: missing opening `---` marker.", taskID))
+		return map[string]interface{}{}, string(raw), warnings, false, nil
 	}
 	end := -1
 	for i := 1; i < len(lines); i++ {
@@ -3348,7 +3369,8 @@ func readTodoFrontmatter(taskID, taskFile string) (map[string]interface{}, strin
 		}
 	}
 	if end < 0 {
-		return nil, "", fmt.Errorf("invalid frontmatter in %s", taskID)
+		warnings = append(warnings, fmt.Sprintf("Invalid frontmatter format in %s: missing closing `---` marker.", taskID))
+		return map[string]interface{}{}, string(raw), warnings, false, nil
 	}
 	frontmatterText := strings.TrimSpace(strings.Join(lines[1:end], "\n"))
 	body := ""
@@ -3358,11 +3380,33 @@ func readTodoFrontmatter(taskID, taskFile string) (map[string]interface{}, strin
 
 	frontmatter := map[string]interface{}{}
 	if frontmatterText != "" {
-		if err := yaml.Unmarshal([]byte(frontmatterText), &frontmatter); err != nil {
-			return nil, "", err
+		parsed := map[string]interface{}{}
+		if err := yaml.Unmarshal([]byte(frontmatterText), &parsed); err != nil {
+			warnings = append(warnings, fmt.Sprintf("Invalid task file YAML in %s: %s", taskID, err))
+			return map[string]interface{}{}, body, warnings, false, nil
+		}
+		frontmatter = parsed
+	} else if taskID == "" {
+		frontmatter = map[string]interface{}{}
+	}
+
+	// If frontmatter has an id field, it should match the task identifier when known.
+	if taskID != "" {
+		parsedID := asString(frontmatter["id"])
+		if parsedID != "" && strings.TrimSpace(parsedID) != strings.TrimSpace(taskID) {
+			warnings = append(warnings, fmt.Sprintf("Frontmatter ID mismatch in %s: %s", taskID, parsedID))
 		}
 	}
-	return frontmatter, body, nil
+	return frontmatter, body, warnings, false, nil
+}
+
+func printTodoFileWarnings(warnings []string) {
+	for _, warning := range warnings {
+		if strings.TrimSpace(warning) == "" {
+			continue
+		}
+		fmt.Printf("%s %s\n", styleWarning("Warning:"), styleMuted(warning))
+	}
 }
 
 func writeTaskIndex(task models.Task, tree models.TaskTree) error {
@@ -3802,8 +3846,8 @@ func summarizeFixes(dataDir string) (int, int, error) {
 		}
 
 		fixPath := filepath.Join(fixesDir, file)
-		frontmatter, _, err := readTodoFrontmatter("", fixPath)
-		if err != nil {
+		frontmatter, _, warnings, _, err := readTodoFrontmatter("", fixPath)
+		if err != nil || (len(frontmatter) == 0 && len(warnings) > 0) {
 			continue
 		}
 
@@ -6277,8 +6321,15 @@ func renderTaskActionCard(action string, task models.Task, agent, dataDir string
 		return
 	}
 
-	_, body, err := readTodoFrontmatter(task.ID, task.File)
+	_, body, warnings, missing, err := readTodoFrontmatter(task.ID, task.File)
 	if err != nil {
+		fmt.Printf("  %s\n", styleWarning("Unable to preview task body."))
+		printTaskFileReadCommandsForTask(dataDir, task, false)
+		printClaimCompletionGuidance(task.ID)
+		return
+	}
+	printTodoFileWarnings(warnings)
+	if missing {
 		fmt.Printf("  %s\n", styleWarning("Unable to preview task body."))
 		printTaskFileReadCommandsForTask(dataDir, task, false)
 		printClaimCompletionGuidance(task.ID)
@@ -8396,8 +8447,11 @@ func findNormalTasksInTree(tree models.TaskTree) []models.Task {
 
 func printTaskSummary(task *models.Task, dataDir string) error {
 	taskPath := filepath.Join(dataDir, task.File)
-	frontmatter, body, err := readTodoFrontmatter(task.ID, task.File)
+	frontmatter, body, warnings, missing, err := readTodoFrontmatter(task.ID, task.File)
 	if err != nil {
+		return err
+	}
+	if missing {
 		fmt.Println(styleError("Task file missing"))
 		fmt.Printf("%s: %s - %s\n", styleError("Task file missing"), styleSuccess(task.ID), task.Title)
 		fmt.Printf("%s\n", styleSubHeader("Frontmatter:"))
@@ -8407,6 +8461,7 @@ func printTaskSummary(task *models.Task, dataDir string) error {
 		}
 		return nil
 	}
+	printTodoFileWarnings(warnings)
 	fmt.Printf("%s: %s - %s\n", styleSuccess("Task"), styleSuccess(task.ID), task.Title)
 	fmt.Printf("%s\n", styleSubHeader("Frontmatter:"))
 	if len(frontmatter) > 0 {
@@ -8513,22 +8568,25 @@ func renderTaskDetail(task models.Task, dataDir string, showNext bool, showLong 
 	if fileSize, fileLines, err := taskFileStats(filePath); err == nil {
 		fmt.Printf("%s: %d bytes, %d lines\n", styleSubHeader("File stats"), fileSize, fileLines)
 	}
-	_, body, err := readTodoFrontmatter(task.ID, task.File)
+	_, body, warnings, missing, err := readTodoFrontmatter(task.ID, task.File)
 	if err == nil {
-		body = strings.TrimSpace(body)
-		if body != "" {
-			lines := strings.Split(body, "\n")
-			fmt.Printf("%s\n", styleSubHeader("Preview"))
-			limit := len(lines)
-			if !showLong {
-				limit = min(taskFileReadPreviewLines, len(lines))
-			}
-			for i := 0; i < limit; i++ {
-				fmt.Printf("  %s\n", lines[i])
-			}
-			if !showLong && len(lines) > limit {
-				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-limit)))
-				fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("To view the full file, run: cat %s", filePath)))
+		printTodoFileWarnings(warnings)
+		if !missing {
+			body = strings.TrimSpace(body)
+			if body != "" {
+				lines := strings.Split(body, "\n")
+				fmt.Printf("%s\n", styleSubHeader("Preview"))
+				limit := len(lines)
+				if !showLong {
+					limit = min(taskFileReadPreviewLines, len(lines))
+				}
+				for i := 0; i < limit; i++ {
+					fmt.Printf("  %s\n", lines[i])
+				}
+				if !showLong && len(lines) > limit {
+					fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("... (%d more lines)", len(lines)-limit)))
+					fmt.Printf("  %s\n", styleMuted(fmt.Sprintf("To view the full file, run: cat %s", filePath)))
+				}
 			}
 		}
 	}
@@ -8641,7 +8699,12 @@ func runClaim(args []string, metadata *gitAutoCommitMetadata) error {
 			if err != nil {
 				return err
 			}
-			if _, err := os.Stat(taskFilePath); err != nil {
+			_, _, warnings, missing, err := readTodoFrontmatter(task.ID, taskFilePath)
+			if err != nil {
+				return err
+			}
+			printTodoFileWarnings(warnings)
+			if missing {
 				return fmt.Errorf("Cannot claim %s because the task file is missing.", task.ID)
 			}
 			if task.Status == models.StatusDone {

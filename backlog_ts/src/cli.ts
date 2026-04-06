@@ -2099,7 +2099,11 @@ async function cmdShow(args: string[]): Promise<void> {
     } else {
       console.log(`File: ${taskFile}`);
     }
-    const { body } = parseTodoFrontmatter(taskFile);
+    const { warnings, missing: isMissing, body } = parseTodoFrontmatter(taskFile, t.id);
+    printTodoFileWarnings(warnings);
+    if (isMissing) {
+      continue;
+    }
     const bodyLines = body.trim().split("\n");
     if (bodyLines.length > 0 && bodyLines[0] !== "") {
       console.log(pc.bold("Body:"));
@@ -2302,23 +2306,115 @@ function parseTodoForLs(task: Task): { frontmatter: Record<string, unknown>; bod
   return parseTodoFrontmatter(taskPath);
 }
 
-function parseTodoFrontmatter(taskPath: string): { frontmatter: Record<string, unknown>; body: string } {
-  if (!existsSync(taskPath)) {
-    return { frontmatter: {}, body: "" };
+type TodoFileParseResult = {
+  frontmatter: Record<string, unknown>;
+  body: string;
+  warnings: string[];
+  missing: boolean;
+};
+
+function printTodoFileWarnings(warnings: string[]): void {
+  for (const warning of warnings) {
+    console.log(pc.yellow(`Warning: ${warning}`));
   }
-  const content = readFileSync(taskPath, "utf8");
-  const parts = content.split("---\n");
-  if (parts.length >= 3) {
-    try {
-      return {
-        frontmatter: (parse(parts[1] ?? "") as Record<string, unknown>) ?? {},
-        body: parts.slice(2).join("---\n"),
-      };
-    } catch {
-      return { frontmatter: {}, body: "" };
+}
+
+function parseTodoFrontmatter(taskPath: string, taskId = ""): TodoFileParseResult {
+  if (!existsSync(taskPath)) {
+    const warningTarget = taskId || taskPath;
+    return {
+      frontmatter: {},
+      body: "",
+      warnings: [`Task file missing for ${warningTarget}: ${taskPath}`],
+      missing: true,
+    };
+  }
+  let content = "";
+  try {
+    content = readFileSync(taskPath, "utf8");
+  } catch (error) {
+    const warningTarget = taskId || taskPath;
+    return {
+      frontmatter: {},
+      body: "",
+      warnings: [`Task file for ${warningTarget} is not readable: ${String(error)}`],
+      missing: false,
+    };
+  }
+
+  const lines = content.split("\n");
+  if (lines.length === 0 || lines[0]?.trim() !== "---") {
+    return {
+      frontmatter: {},
+      body: content,
+      warnings: [
+        `Invalid frontmatter format in ${taskId || "task file"}: missing opening \`---\` marker.`,
+      ],
+      missing: false,
+    };
+  }
+
+  let closingIndex = -1;
+  for (let i = 1; i < lines.length; i += 1) {
+    if (lines[i]?.trim() === "---") {
+      closingIndex = i;
+      break;
     }
   }
-  return { frontmatter: {}, body: content };
+  if (closingIndex < 0) {
+    return {
+      frontmatter: {},
+      body: content,
+      warnings: [
+        `Invalid frontmatter format in ${taskId || "task file"}: missing closing \`---\` marker.`,
+      ],
+      missing: false,
+    };
+  }
+
+  const body = lines.slice(closingIndex + 1).join("\n");
+  const frontmatterText = lines.slice(1, closingIndex).join("\n").trim();
+
+  if (!frontmatterText) {
+    return { frontmatter: {}, body, warnings: [], missing: false };
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = parse(frontmatterText);
+  } catch (error) {
+    return {
+      frontmatter: {},
+      body,
+      warnings: [
+        `Invalid task file YAML in ${taskId || "task file"}: ${String(error)}`,
+      ],
+      missing: false,
+    };
+  }
+
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+    return {
+      frontmatter: {},
+      body,
+      warnings: [`Invalid frontmatter in ${taskId || "task file"}: expected a mapping.`],
+      missing: false,
+    };
+  }
+
+  const frontmatter = parsed as Record<string, unknown>;
+  const frontmatterId = String(frontmatter.id ?? "").trim();
+  const warnings = [] as string[];
+  if (taskId && frontmatterId && frontmatterId !== taskId) {
+    warnings.push(`Frontmatter ID mismatch in ${taskId}: ${frontmatterId}`);
+  }
+
+  return {
+    frontmatter: frontmatter,
+    body,
+    warnings,
+    missing: false,
+  };
 }
 
 async function summarizeFixes(): Promise<{ done: number; total: number }> {
@@ -2520,7 +2616,12 @@ async function cmdClaim(args: string[]): Promise<AutoCommitMetadata> {
       await cmdShow([taskId]);
       continue;
     }
-    if (isTaskFileMissing(task)) textError(`Cannot claim ${task.id} because the task file is missing.`);
+    const taskPath = taskFilePath(task);
+    const { warnings, missing: isMissing } = parseTodoFrontmatter(taskPath, task.id);
+    printTodoFileWarnings(warnings);
+    if (isMissing) {
+      textError(`Cannot claim ${task.id} because the task file is missing.`);
+    }
 
     try {
       claimTask(task, agent, force);
