@@ -2458,6 +2458,73 @@ func TestRunShowTaskAllPrintsCompleteTaskFile(t *testing.T) {
 	}
 }
 
+func TestRunCatSingleTaskPrintsCompleteTaskFile(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	taskPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo")
+
+	output, err := runInDir(t, root, "cat", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run cat = %v, expected nil", err)
+	}
+	if output != readFile(t, taskPath) {
+		t.Fatalf("cat output mismatch:\nexpected %q\ngot      %q", readFile(t, taskPath), output)
+	}
+}
+
+func TestRunCatMultipleTasksPrintsHeadersBetweenFiles(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	firstPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo")
+	secondPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo")
+
+	output, err := runInDir(t, root, "cat", "P1.M1.E1.T001", "P1.M1.E1.T002")
+	if err != nil {
+		t.Fatalf("run cat = %v, expected nil", err)
+	}
+
+	expected := readFile(t, firstPath) +
+		"\n-------------------- [ P1.M1.E1.T002 ] --------------------\n" +
+		readFile(t, secondPath)
+	if output != expected {
+		t.Fatalf("cat output mismatch:\nexpected %q\ngot      %q", expected, output)
+	}
+}
+
+func TestRunCatMissingTaskShowsTreeHint(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	output, err := runInDir(t, root, "cat", "P1.M1.E1.T999")
+	if err == nil {
+		t.Fatalf("run cat expected missing task error")
+	}
+	combined := output + err.Error()
+	if !strings.Contains(combined, "Task not found") || !strings.Contains(combined, "P1.M1.E1.T999") {
+		t.Fatalf("cat output/error = %q / %q, expected missing task message", output, err)
+	}
+	if !strings.Contains(combined, "Use 'backlog tree P1.M1.E1' to verify available IDs.") {
+		t.Fatalf("cat output/error = %q / %q, expected scoped tree hint", output, err)
+	}
+}
+
+func TestRunCatHelpShowsUsage(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+
+	output, err := runInDir(t, root, "cat", "--help")
+	if err != nil {
+		t.Fatalf("run cat --help = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Command Help: backlog cat") || !strings.Contains(output, "Usage: backlog cat <TASK_ID ...>") {
+		t.Fatalf("cat help output = %q, expected command-specific usage", output)
+	}
+}
+
 func TestRunShowTaskDisplaysExplicitDependencies(t *testing.T) {
 	t.Parallel()
 

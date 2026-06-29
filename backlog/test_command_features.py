@@ -669,6 +669,7 @@ def test_all_commands_have_non_thin_help(runner, tmp_feature_tasks_dir):
         "blocked",
         "blockers",
         "bug",
+        "cat",
         "check",
         "claim",
         "cycle",

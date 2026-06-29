@@ -2154,6 +2154,94 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_queri
 # ============================================================================
 
 
+def _task_file_header(task_id: str) -> str:
+    return f"{'-' * 20} [ {task_id} ] {'-' * 20}"
+
+
+def _show_not_found(item_type: str, item_id: str, scope_hint: str | None = None) -> None:
+    console.print(f"[red]Error:[/] {item_type} not found: {item_id}")
+    if scope_hint:
+        console.print(
+            f"[yellow]Tip:[/] Use 'backlog tree {scope_hint}' to verify available IDs."
+        )
+    else:
+        console.print("[yellow]Tip:[/] Use 'backlog tree' to list available IDs.")
+    raise click.Abort()
+
+
+def _find_cat_task(loader: TaskLoader, tree, task_id: str):
+    if is_bug_id(task_id) or is_idea_id(task_id):
+        if tree is None:
+            tree = loader.load("metadata")
+        task = builtin_next(
+            (
+                item
+                for item in [
+                    *getattr(tree, "bugs", []),
+                    *getattr(tree, "ideas", []),
+                ]
+                if item.id == task_id
+            ),
+            None,
+        )
+        if not task:
+            _show_not_found("Task", task_id, None)
+        return task, tree
+
+    if is_fixed_id(task_id):
+        task = loader.find_fixed_task(task_id)
+        if not task:
+            _show_not_found("Task", task_id, None)
+        return task, tree
+
+    task_path = TaskPath.parse(task_id)
+    parent_path = task_path.parent()
+    parent = parent_path.full_id if parent_path else None
+    if not task_path.is_task:
+        _show_not_found("Task", task_id, parent)
+
+    if tree is None:
+        tree = loader.load("metadata")
+    task = tree.find_task(task_id)
+    if not task:
+        _show_not_found("Task", task_id, parent)
+    return task, tree
+
+
+def _write_task_file_contents(tasks) -> None:
+    for index, task in enumerate(tasks):
+        if index > 0:
+            click.echo(f"\n{_task_file_header(task.id)}")
+        task_file = task_file_path(task)
+        if _warn_task_file_issues(task):
+            raise click.Abort()
+        click.echo(task_file.read_text(), nl=False)
+
+
+@cli.command(name="cat")
+@click.argument("task_ids", nargs=-1, required=True)
+def cat_command(task_ids):
+    """Print complete raw .todo task file contents.
+
+    TASK_IDS can be one or more task IDs like P1.M01.E1.T001.
+
+    Examples:
+        backlog cat P1.M2.E1.T001
+        backlog cat P1.M2.E1.T001 P1.M2.E1.T002
+    """
+    try:
+        loader = TaskLoader()
+        tree = None
+        tasks = []
+        for task_id in task_ids:
+            task, tree = _find_cat_task(loader, tree, task_id)
+            tasks.append(task)
+        _write_task_file_contents(tasks)
+    except ValueError as e:
+        console.print(f"[red]Error:[/] {str(e)}")
+        raise click.Abort()
+
+
 @cli.command()
 @click.option("--all", "show_all", is_flag=True, help="Show the full .todo file (frontmatter and body).")
 @click.option("--long", "show_long", is_flag=True, help="Show the entire task file body.")
@@ -2169,16 +2257,6 @@ def show(path_ids, show_long, show_all):
         backlog show P1.M2 P4.M1.E2
         backlog show              # Shows current working task
     """
-    def show_not_found(item_type: str, item_id: str, scope_hint: str | None = None) -> None:
-        console.print(f"[red]Error:[/] {item_type} not found: {item_id}")
-        if scope_hint:
-            console.print(
-                f"[yellow]Tip:[/] Use 'backlog tree {scope_hint}' to verify available IDs."
-            )
-        else:
-            console.print("[yellow]Tip:[/] Use 'backlog tree' to list available IDs.")
-        raise click.Abort()
-
     try:
         # Use current task from context if no path_ids provided
         if not path_ids:
@@ -2251,7 +2329,7 @@ def show(path_ids, show_long, show_all):
             if task_path.is_phase:
                 phase = scope_tree.find_phase(path_id)
                 if not phase:
-                    show_not_found("Phase", path_id, None)
+                    _show_not_found("Phase", path_id, None)
                 _show_phase(scope_tree, path_id)
             elif task_path.is_milestone:
                 milestone = scope_tree.find_milestone(path_id)
@@ -2262,7 +2340,7 @@ def show(path_ids, show_long, show_all):
                     display_tree = tree
                     milestone = display_tree.find_milestone(path_id)
                 if not milestone:
-                    show_not_found("Milestone", path_id, parent)
+                    _show_not_found("Milestone", path_id, parent)
                 _show_milestone(display_tree, milestone.id)
             elif task_path.is_epic:
                 epic = scope_tree.find_epic(path_id)
@@ -2273,12 +2351,12 @@ def show(path_ids, show_long, show_all):
                     display_tree = tree
                     epic = display_tree.find_epic(path_id)
                 if not epic:
-                    show_not_found("Epic", path_id, parent)
+                    _show_not_found("Epic", path_id, parent)
                 _show_epic(display_tree, epic.id)
             else:
                 task = scope_tree.find_task(path_id)
                 if not task:
-                    show_not_found("Task", path_id, parent)
+                    _show_not_found("Task", path_id, parent)
                 _show_task(scope_tree, path_id, show_long, show_all)
 
     except ValueError as e:

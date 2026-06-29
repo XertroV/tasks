@@ -555,6 +555,7 @@ Commands:
   list            List tasks with filtering options
   tree            Display full hierarchical tree
   show            Show detailed info for a task/phase/milestone/epic
+  cat             Print complete raw task file contents
   next            Get next available task on critical path
   preview         Show upcoming work preview with grab suggestions
   claim           Claim specific task ID(s)
@@ -660,6 +661,15 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
     usage: "backlog show [PATH_ID ...] [--long] [--all]",
     options: ["--long", "--all"],
     examples: ["backlog show P1.M1.E1.T001", "backlog show P1.M1 P2.M1.E3", "backlog show", "backlog show P1.M1.E1.T001 --long", "backlog show P1.M1.E1.T001 --all"],
+  },
+  cat: {
+    summary: "Print complete raw task file contents.",
+    usage: "backlog cat <TASK_ID ...>",
+    options: [
+      "TASK_ID supports task IDs such as P1.M1.E1.T001",
+      "Pass multiple task IDs to print files separated by headers",
+    ],
+    examples: ["backlog cat P1.M1.E1.T001", "backlog cat P1.M1.E1.T001 P1.M1.E1.T002"],
   },
   skills: { summary: "Install skill files.", usage: "backlog skills install <SKILL> [--client codex|claude] [--artifact skills|commands] [--dry-run] [--json]", options: ["--client", "--artifact", "--dry-run", "--json"], examples: ["backlog skills install plan-task --client=codex --artifact=skills"] },
   skip: { summary: "Skip current task and move on.", usage: "backlog skip <TASK_ID> [--agent AGENT] [--no-grab]", options: ["--agent", "--no-grab"], examples: ["backlog skip P1.M1.E1.T001 --agent agent-a"] },
@@ -2144,6 +2154,53 @@ async function cmdShow(args: string[]): Promise<void> {
         }
       }
     }
+  }
+}
+
+function taskFileHeader(taskId: string): string {
+  return `${"-".repeat(20)} [ ${taskId} ] ${"-".repeat(20)}`;
+}
+
+async function cmdCat(args: string[]): Promise<void> {
+  const ids = positionalArgsForCommand(args, {}, "cat");
+  if (ids.length === 0) {
+    textError("cat requires at least one TASK_ID");
+  }
+
+  const loader = new TaskLoader();
+  const tree = await loader.load("metadata", false, false);
+
+  for (const [index, id] of ids.entries()) {
+    const parsedScope = (() => {
+      try {
+        return TaskPath.parse(id);
+      } catch (_error) {
+        return null;
+      }
+    })();
+    const scopeHint = parsedScope ? parsedScope.parent()?.fullId : undefined;
+
+    if (!parsedScope && !isBugId(id) && !isIdeaId(id) && !isFixedId(id)) {
+      textError(`Invalid path format: ${id}`);
+    }
+    if (parsedScope && !parsedScope.isTask) {
+      showNotFound("Task", id, scopeHint);
+    }
+
+    const task = isFixedId(id)
+      ? await loader.findFixedTask(id)
+      : findTask(tree, id);
+    if (!task) showNotFound("Task", id, scopeHint);
+
+    const filePath = taskFilePath(task);
+    if (!existsSync(filePath)) {
+      textError(`Task file missing for ${task.id}: ${filePath}`);
+    }
+
+    if (index > 0) {
+      process.stdout.write(`\n${taskFileHeader(task.id)}\n`);
+    }
+    process.stdout.write(readFileSync(filePath, "utf8"));
   }
 }
 
@@ -4582,6 +4639,9 @@ async function main(): Promise<void> {
       return;
     case "show":
       await cmdShow(rest);
+      return;
+    case "cat":
+      await cmdCat(rest);
       return;
     case "claim":
       await runWithAutoCommit("claim", () => cmdClaim(rest));

@@ -2954,6 +2954,52 @@ def test_show_task_all_prints_entire_task_file(runner, tmp_tasks_dir):
     assert "To view the full file, run: cat" not in result.output
 
 
+def test_cat_single_task_prints_complete_task_file(runner, tmp_tasks_dir):
+    """cat should print the raw .todo task file contents."""
+    task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+    result = runner.invoke(cli, ["cat", "P1.M1.E1.T001"])
+
+    assert result.exit_code == 0
+    assert result.output == task_file.read_text()
+
+
+def test_cat_multiple_tasks_prints_headers_between_files(runner, tmp_tasks_dir):
+    """cat should separate multiple task files with one blank line and a header."""
+    first_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "First Task")
+    second_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Second Task")
+
+    result = runner.invoke(cli, ["cat", "P1.M1.E1.T001", "P1.M1.E1.T002"])
+
+    expected = (
+        first_file.read_text()
+        + "\n-------------------- [ P1.M1.E1.T002 ] --------------------\n"
+        + second_file.read_text()
+    )
+    assert result.exit_code == 0
+    assert result.output == expected
+
+
+def test_cat_task_not_found_shows_tree_hint(runner, tmp_tasks_dir):
+    """cat should use show-style not-found guidance for missing tasks."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+
+    result = runner.invoke(cli, ["cat", "P1.M1.E1.T999"])
+
+    assert result.exit_code != 0
+    assert "Task not found: P1.M1.E1.T999" in result.output
+    assert "Tip: Use 'backlog tree P1.M1.E1' to verify available IDs." in result.output
+
+
+def test_cat_help_shows_usage(runner, tmp_tasks_dir):
+    """cat should include command-specific help text."""
+    result = runner.invoke(cli, ["cat", "--help"])
+
+    assert result.exit_code == 0
+    assert "Usage:" in result.output
+    assert "cat" in result.output
+
+
 def test_show_task_displays_explicit_dependencies(runner, tmp_tasks_dir):
     """show should label explicit dependencies in task output."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Setup task", status="done")

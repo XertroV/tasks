@@ -48,6 +48,7 @@ var migrationKnownCommands = []string{
 	"list",
 	"ls",
 	"show",
+	"cat",
 	"next",
 	"claim",
 	"grab",
@@ -318,6 +319,18 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 			"backlog show P1.M1.E1.T001",
 			"backlog show P1.M1 P2.M1.E3",
 			"backlog show",
+		},
+	},
+	"cat": {
+		summary: "Print complete raw task file contents.",
+		usage:   "backlog cat <TASK_ID ...>",
+		options: []string{
+			"TASK_ID supports task IDs such as P1.M1.E1.T001",
+			"Pass multiple task IDs to print files separated by headers",
+		},
+		examples: []string{
+			"backlog cat P1.M1.E1.T001",
+			"backlog cat P1.M1.E1.T001 P1.M1.E1.T002",
 		},
 	},
 	"tree": {
@@ -901,6 +914,8 @@ func Run(rawArgs ...string) error {
 			parseFlag(payload, "--long"),
 			parseFlag(payload, "--all"),
 		)
+	case commands.CmdCat:
+		return runCat(payload)
 	case commands.CmdGrab:
 		return runWithAutoCommit("grab", payload, runGrab)
 	case commands.CmdNext:
@@ -4155,6 +4170,72 @@ func runShow(args []string, showNext bool, showLong bool, showAll bool) error {
 		if err := showScopedItem(tree, id, &scopePath, dataDir, showNext, showLong, showAll); err != nil {
 			return err
 		}
+	}
+
+	return nil
+}
+
+func taskFileHeader(taskID string) string {
+	return fmt.Sprintf("%s [ %s ] %s", strings.Repeat("-", 20), taskID, strings.Repeat("-", 20))
+}
+
+func runCat(args []string) error {
+	if _, err := ensureDataRoot(); err != nil {
+		return err
+	}
+	if parseFlag(args, "--help", "-h") {
+		printUsageForCommand(commands.CmdCat)
+		return nil
+	}
+	if err := validateAllowedFlagsForUsage(commands.CmdCat, args, map[string]bool{}); err != nil {
+		return err
+	}
+	ids := positionalArgs(args, map[string]bool{})
+	if len(ids) == 0 {
+		return printUsageError(commands.CmdCat, errors.New("cat requires at least one TASK_ID"))
+	}
+
+	tree, err := loader.New().Load("metadata", true, true)
+	if err != nil {
+		return err
+	}
+
+	for index, id := range ids {
+		scopePath, parseErr := models.ParseTaskPath(id)
+		if parseErr != nil && !isBugLikeID(id) && !isIdeaLikeID(id) {
+			fmt.Printf("%s %s\n", styleError("Invalid path format:"), styleMuted(id))
+			printIDSuggestions(tree, id, "", 5)
+			return fmt.Errorf("Invalid path format: %s", id)
+		}
+		scopeHint := ""
+		if parseErr == nil {
+			parent := scopePath.Parent()
+			if parent != nil {
+				scopeHint = parent.FullID()
+			}
+			if !scopePath.IsTask() {
+				return showNotFound(tree, "Task", id, scopeHint)
+			}
+		}
+
+		task := findTask(tree, id)
+		if task == nil {
+			return showNotFound(tree, "Task", id, scopeHint)
+		}
+		taskPath, err := resolveTaskFilePath(task.File)
+		if err != nil {
+			return err
+		}
+		raw, err := os.ReadFile(taskPath)
+		if err != nil {
+			return err
+		}
+
+		if index > 0 {
+			fmt.Println()
+			fmt.Println(taskFileHeader(task.ID))
+		}
+		fmt.Print(string(raw))
 	}
 
 	return nil

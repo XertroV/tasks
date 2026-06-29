@@ -30,6 +30,7 @@ const (
 	CmdNext          = "next"
 	CmdPreview       = "preview"
 	CmdShow          = "show"
+	CmdCat           = "cat"
 	CmdAdd           = "add"
 	CmdAddEpic       = "add-epic"
 	CmdAddMilestone  = "add-milestone"

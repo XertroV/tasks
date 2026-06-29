@@ -1303,6 +1303,15 @@ tags: []
     expect(out).toContain("Usage: backlog show [PATH_ID ...] [--long] [--all]");
   });
 
+  test("cat --help renders command-specific guidance", () => {
+    root = setupFixture();
+    const p = run(["cat", "--help"], root);
+    expect(p.exitCode).toBe(0);
+    const out = p.stdout.toString();
+    expect(out).toContain("Command Help: backlog cat");
+    expect(out).toContain("Usage: backlog cat <TASK_ID ...>");
+  });
+
   test("help sync renders sync command guidance", () => {
     root = setupFixture();
     const p = run(["help", "sync"], root);
@@ -1332,7 +1341,7 @@ tags: []
   test("all commands provide non-thin --help output", () => {
     root = setupFixture();
     const commands = [
-      "howto", "ls", "list", "tree", "show", "next", "preview", "claim", "grab", "done", "undone",
+      "howto", "ls", "list", "tree", "show", "cat", "next", "preview", "claim", "grab", "done", "undone",
       "cycle", "dash", "edit", "update", "set", "work", "unclaim", "blocked", "bug", "idea", "fixed", "search",
       "version", "ci",
       "check", "init", "add", "add-epic", "add-milestone", "add-phase", "lock", "unlock", "move", "session",
@@ -1346,7 +1355,7 @@ tags: []
       expect(out).toContain("Usage");
       expect(out).not.toBe(`Usage: backlog ${command}\n`);
     }
-  });
+  }, 20000);
 
   test("howto prints agent guidance in text and json", () => {
     root = setupFixture();
@@ -2873,6 +2882,42 @@ tags: []
     expect(output).not.toContain("  ... (2 more lines)");
     expect(output).not.toContain("To view the full file, run: cat");
     expect(output).not.toContain("Body:");
+  });
+
+  test("cat prints a single complete task file", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+
+    const p = run(["cat", "P1.M1.E1.T001"], root);
+
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(readFileSync(taskPath, "utf8"));
+  });
+
+  test("cat prints multiple task files with fancy headers between files", () => {
+    root = setupFixture();
+    const firstPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const secondPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+
+    const p = run(["cat", "P1.M1.E1.T001", "P1.M1.E1.T002"], root);
+
+    const expected = [
+      readFileSync(firstPath, "utf8"),
+      "-------------------- [ P1.M1.E1.T002 ] --------------------\n" + readFileSync(secondPath, "utf8"),
+    ].join("\n");
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(expected);
+  });
+
+  test("cat missing task includes scoped tree hint", () => {
+    root = setupFixture();
+
+    const p = run(["cat", "P1.M1.E1.T999"], root);
+
+    const out = p.stdout.toString() + p.stderr.toString();
+    expect(p.exitCode).not.toBe(0);
+    expect(out).toContain("Task not found: P1.M1.E1.T999");
+    expect(out).toContain("Tip: Use 'backlog tree P1.M1.E1' to verify available IDs.");
   });
 
   test("show on non-pending idea hides Instructions section", () => {
