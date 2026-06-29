@@ -2,6 +2,7 @@ package runner
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -4179,6 +4180,136 @@ func taskFileHeader(taskID string) string {
 	return fmt.Sprintf("%s [ %s ] %s", strings.Repeat("-", 20), taskID, strings.Repeat("-", 20))
 }
 
+func separatorPadding(previous []byte) string {
+	if bytes.HasSuffix(previous, []byte("\n\n")) {
+		return ""
+	}
+	if bytes.HasSuffix(previous, []byte("\n")) {
+		return "\n"
+	}
+	return "\n\n"
+}
+
+func findFixedTaskByID(fixedID string) (*models.Task, error) {
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return nil, err
+	}
+	fixesDir := filepath.Join(dataDir, "fixes")
+	indexPath := filepath.Join(fixesDir, "index.yaml")
+	index, err := readYAMLMapFile(indexPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	for _, raw := range asSlice(index["fixes"]) {
+		entry, ok := raw.(map[string]interface{})
+		if !ok || asString(entry["id"]) != fixedID {
+			continue
+		}
+		filename := asString(entry["file"])
+		if filename == "" {
+			return nil, nil
+		}
+		fixPath := filepath.Join(fixesDir, filename)
+		if _, err := os.Stat(fixPath); err != nil {
+			if os.IsNotExist(err) {
+				return nil, nil
+			}
+			return nil, err
+		}
+		return &models.Task{
+			ID:   fixedID,
+			File: filepath.ToSlash(filepath.Join("fixes", filename)),
+		}, nil
+	}
+	return nil, nil
+}
+
+func findIndexEntryByID(index map[string]interface{}, key string, ids ...string) (map[string]interface{}, bool) {
+	for _, raw := range asSlice(index[key]) {
+		entry, ok := raw.(map[string]interface{})
+		if !ok {
+			continue
+		}
+		entryID := asString(entry["id"])
+		for _, id := range ids {
+			if id != "" && entryID == id {
+				return entry, true
+			}
+		}
+	}
+	return nil, false
+}
+
+func findCatNormalTaskByID(taskID string) (*models.Task, error) {
+	taskPath, err := models.ParseTaskPath(taskID)
+	if err != nil {
+		return nil, err
+	}
+	if !taskPath.IsTask() {
+		return nil, nil
+	}
+
+	dataDir, err := ensureDataRoot()
+	if err != nil {
+		return nil, err
+	}
+	rootIndex, err := readYAMLMapFile(filepath.Join(dataDir, "index.yaml"))
+	if err != nil {
+		return nil, err
+	}
+	phaseEntry, ok := findIndexEntryByID(rootIndex, "phases", taskPath.Phase)
+	if !ok {
+		return nil, nil
+	}
+	phaseDir := filepath.Join(dataDir, asString(phaseEntry["path"]))
+
+	phaseIndex, err := readYAMLMapFile(filepath.Join(phaseDir, "index.yaml"))
+	if err != nil {
+		return nil, err
+	}
+	milestoneEntry, ok := findIndexEntryByID(phaseIndex, "milestones", taskPath.MilestoneID(), taskPath.Milestone)
+	if !ok {
+		return nil, nil
+	}
+	milestoneDir := filepath.Join(phaseDir, asString(milestoneEntry["path"]))
+
+	milestoneIndex, err := readYAMLMapFile(filepath.Join(milestoneDir, "index.yaml"))
+	if err != nil {
+		return nil, err
+	}
+	epicEntry, ok := findIndexEntryByID(milestoneIndex, "epics", taskPath.EpicID(), taskPath.Epic)
+	if !ok {
+		return nil, nil
+	}
+	epicDir := filepath.Join(milestoneDir, asString(epicEntry["path"]))
+
+	epicIndex, err := readYAMLMapFile(filepath.Join(epicDir, "index.yaml"))
+	if err != nil {
+		return nil, err
+	}
+	taskEntry, ok := findIndexEntryByID(epicIndex, "tasks", taskPath.TaskID(), taskPath.Task)
+	if !ok {
+		return nil, nil
+	}
+	filename := asString(taskEntry["file"])
+	if filename == "" {
+		return nil, nil
+	}
+	relativeFile, err := filepath.Rel(dataDir, filepath.Join(epicDir, filename))
+	if err != nil {
+		return nil, err
+	}
+	return &models.Task{
+		ID:   taskID,
+		File: filepath.ToSlash(relativeFile),
+	}, nil
+}
+
 func runCat(args []string) error {
 	if _, err := ensureDataRoot(); err != nil {
 		return err
@@ -4195,14 +4326,27 @@ func runCat(args []string) error {
 		return printUsageError(commands.CmdCat, errors.New("cat requires at least one TASK_ID"))
 	}
 
-	tree, err := loader.New().Load("metadata", true, true)
-	if err != nil {
-		return err
+	var tree *models.TaskTree
+	loadTree := func() (models.TaskTree, error) {
+		if tree != nil {
+			return *tree, nil
+		}
+		loaded, err := loader.New().Load("metadata", true, true)
+		if err != nil {
+			return models.TaskTree{}, err
+		}
+		tree = &loaded
+		return loaded, nil
 	}
 
+	var previousRaw []byte
 	for index, id := range ids {
 		scopePath, parseErr := models.ParseTaskPath(id)
-		if parseErr != nil && !isBugLikeID(id) && !isIdeaLikeID(id) {
+		if parseErr != nil && !isBugLikeID(id) && !isIdeaLikeID(id) && !isFixedLikeID(id) {
+			tree, err := loadTree()
+			if err != nil {
+				return err
+			}
 			fmt.Printf("%s %s\n", styleError("Invalid path format:"), styleMuted(id))
 			printIDSuggestions(tree, id, "", 5)
 			return fmt.Errorf("Invalid path format: %s", id)
@@ -4214,12 +4358,38 @@ func runCat(args []string) error {
 				scopeHint = parent.FullID()
 			}
 			if !scopePath.IsTask() {
+				tree, err := loadTree()
+				if err != nil {
+					return err
+				}
 				return showNotFound(tree, "Task", id, scopeHint)
 			}
 		}
 
-		task := findTask(tree, id)
+		var task *models.Task
+		var err error
+		if isFixedLikeID(id) {
+			task, err = findFixedTaskByID(id)
+			if err != nil {
+				return err
+			}
+		} else if isBugLikeID(id) || isIdeaLikeID(id) {
+			tree, err := loadTree()
+			if err != nil {
+				return err
+			}
+			task = findTask(tree, id)
+		} else {
+			task, err = findCatNormalTaskByID(id)
+			if err != nil {
+				return err
+			}
+		}
 		if task == nil {
+			tree, err := loadTree()
+			if err != nil {
+				return err
+			}
 			return showNotFound(tree, "Task", id, scopeHint)
 		}
 		taskPath, err := resolveTaskFilePath(task.File)
@@ -4232,10 +4402,11 @@ func runCat(args []string) error {
 		}
 
 		if index > 0 {
-			fmt.Println()
+			fmt.Print(separatorPadding(previousRaw))
 			fmt.Println(taskFileHeader(task.ID))
 		}
 		fmt.Print(string(raw))
+		previousRaw = raw
 	}
 
 	return nil
@@ -7216,6 +7387,10 @@ func isBugLikeID(value string) bool {
 
 func isIdeaLikeID(value string) bool {
 	return regexp.MustCompile(`^I\d+$`).MatchString(value)
+}
+
+func isFixedLikeID(value string) bool {
+	return regexp.MustCompile(`^F\d+$`).MatchString(value)
 }
 
 func collectSyncTaskStats(tasks []models.Task) syncTaskStats {

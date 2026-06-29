@@ -7,6 +7,7 @@ import json
 import subprocess
 import yaml
 from pathlib import Path
+from types import SimpleNamespace
 from builtins import next as builtin_next
 from datetime import datetime, timezone
 from rich.console import Console
@@ -2169,6 +2170,84 @@ def _show_not_found(item_type: str, item_id: str, scope_hint: str | None = None)
     raise click.Abort()
 
 
+def _find_cat_fixed_task(fixed_id: str):
+    index_path = Path(get_data_dir_name()) / "fixes" / "index.yaml"
+    if not index_path.exists():
+        return None
+
+    index = yaml.safe_load(index_path.read_text()) or {}
+    for entry in index.get("fixes", []):
+        if not isinstance(entry, dict):
+            continue
+        if str(entry.get("id", "")) != fixed_id:
+            continue
+        filename = str(entry.get("file", ""))
+        if not filename:
+            return None
+        return SimpleNamespace(id=fixed_id, file=str(Path("fixes") / filename))
+    return None
+
+
+def _entry_matches_id(entry, *ids: str | None) -> bool:
+    entry_id = str(entry.get("id", ""))
+    return any(candidate and entry_id == candidate for candidate in ids)
+
+
+def _find_index_entry(index_path: Path, key: str, *ids: str | None):
+    if not index_path.exists():
+        return None
+    index = yaml.safe_load(index_path.read_text()) or {}
+    for entry in index.get(key, []):
+        if isinstance(entry, dict) and _entry_matches_id(entry, *ids):
+            return entry
+    return None
+
+
+def _find_cat_normal_task(task_id: str):
+    task_path = TaskPath.parse(task_id)
+    if not task_path.is_task:
+        parent_path = task_path.parent()
+        _show_not_found("Task", task_id, parent_path.full_id if parent_path else None)
+
+    data_dir = Path(get_data_dir_name())
+    phase = _find_index_entry(data_dir / "index.yaml", "phases", task_path.phase)
+    if not phase:
+        return None
+    phase_dir = data_dir / str(phase.get("path", ""))
+
+    milestone = _find_index_entry(
+        phase_dir / "index.yaml",
+        "milestones",
+        task_path.milestone_id,
+        task_path.milestone,
+    )
+    if not milestone:
+        return None
+    milestone_dir = phase_dir / str(milestone.get("path", ""))
+
+    epic = _find_index_entry(
+        milestone_dir / "index.yaml",
+        "epics",
+        task_path.epic_id,
+        task_path.epic,
+    )
+    if not epic:
+        return None
+    epic_dir = milestone_dir / str(epic.get("path", ""))
+
+    task = _find_index_entry(
+        epic_dir / "index.yaml",
+        "tasks",
+        task_path.task_id,
+        task_path.task,
+    )
+    if not task or not task.get("file"):
+        return None
+
+    relative_file = epic_dir.relative_to(data_dir) / str(task["file"])
+    return SimpleNamespace(id=task_id, file=str(relative_file))
+
+
 def _find_cat_task(loader: TaskLoader, tree, task_id: str):
     if is_bug_id(task_id) or is_idea_id(task_id):
         if tree is None:
@@ -2189,33 +2268,46 @@ def _find_cat_task(loader: TaskLoader, tree, task_id: str):
         return task, tree
 
     if is_fixed_id(task_id):
-        task = loader.find_fixed_task(task_id)
+        task = _find_cat_fixed_task(task_id)
         if not task:
             _show_not_found("Task", task_id, None)
         return task, tree
 
-    task_path = TaskPath.parse(task_id)
-    parent_path = task_path.parent()
-    parent = parent_path.full_id if parent_path else None
-    if not task_path.is_task:
-        _show_not_found("Task", task_id, parent)
-
-    if tree is None:
-        tree = loader.load("metadata")
-    task = tree.find_task(task_id)
+    task = _find_cat_normal_task(task_id)
     if not task:
+        task_path = TaskPath.parse(task_id)
+        parent_path = task_path.parent()
+        parent = parent_path.full_id if parent_path else None
         _show_not_found("Task", task_id, parent)
     return task, tree
 
 
+def _separator_padding(previous_content: bytes) -> bytes:
+    if previous_content.endswith(b"\n\n"):
+        return b""
+    if previous_content.endswith(b"\n"):
+        return b"\n"
+    return b"\n\n"
+
+
 def _write_task_file_contents(tasks) -> None:
+    stdout = click.get_binary_stream("stdout")
+    previous_content = b""
     for index, task in enumerate(tasks):
-        if index > 0:
-            click.echo(f"\n{_task_file_header(task.id)}")
         task_file = task_file_path(task)
-        if _warn_task_file_issues(task):
+        if not task_file.exists():
+            console.print(f"[yellow]Warning:[/] Task file missing for {task.id}: {task_file}")
             raise click.Abort()
-        click.echo(task_file.read_text(), nl=False)
+        try:
+            content = task_file.read_bytes()
+        except OSError as exc:
+            console.print(f"[yellow]Warning:[/] Task file for {task.id} is not readable: {exc}")
+            raise click.Abort()
+        if index > 0:
+            stdout.write(_separator_padding(previous_content))
+            stdout.write(f"{_task_file_header(task.id)}\n".encode())
+        stdout.write(content)
+        previous_content = content
 
 
 @cli.command(name="cat")

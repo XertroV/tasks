@@ -2909,6 +2909,85 @@ tags: []
     expect(p.stdout.toString()).toBe(expected);
   });
 
+  test("cat preserves a blank line before headers after files without trailing newlines", () => {
+    root = setupFixture();
+    const firstPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const secondPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    const firstRaw = readFileSync(firstPath, "utf8").replace(/\n+$/, "");
+    writeFileSync(firstPath, firstRaw);
+
+    const p = run(["cat", "P1.M1.E1.T001", "P1.M1.E1.T002"], root);
+
+    const expected =
+      firstRaw +
+      "\n\n-------------------- [ P1.M1.E1.T002 ] --------------------\n" +
+      readFileSync(secondPath, "utf8");
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(expected);
+  });
+
+  test("cat prints malformed normal task file verbatim", () => {
+    root = setupFixture();
+    const taskPath = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const raw = "---\n:\n---\n# Raw\n";
+    writeFileSync(taskPath, raw);
+
+    const p = run(["cat", "P1.M1.E1.T001"], root);
+
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(raw);
+  });
+
+  test("cat prints auxiliary bug task file", () => {
+    root = setupFixture(true);
+    const bugPath = join(root, ".tasks", "bugs", "B001-critical-bug.todo");
+
+    const p = run(["cat", "B001"], root);
+
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(readFileSync(bugPath, "utf8"));
+  });
+
+  test("cat prints auxiliary idea task file", () => {
+    root = setupFixture();
+    const created = run(["idea", "capture planning backlog"], root);
+    expect(created.exitCode).toBe(0);
+    const ideasIndex = parse(readFileSync(join(root, ".tasks", "ideas", "index.yaml"), "utf8")) as {
+      ideas: { id: string; file: string }[];
+    };
+    const idea = ideasIndex.ideas[0]!;
+    const ideaPath = join(root, ".tasks", "ideas", idea.file);
+
+    const p = run(["cat", idea.id], root);
+
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(readFileSync(ideaPath, "utf8"));
+  });
+
+  test("cat prints malformed fixed task file verbatim", () => {
+    root = setupFixture();
+    const fixesDir = join(root, ".tasks", "fixes", "2026-02");
+    mkdirSync(fixesDir, { recursive: true });
+    writeFileSync(
+      join(root, ".tasks", "fixes", "index.yaml"),
+      stringify({
+        fixes: [
+          {
+            id: "F001",
+            file: "2026-02/F001-ship-patch.todo",
+          },
+        ],
+      }),
+    );
+    const raw = "---\n:\n---\n# Ship patch\nRaw body survives.\n";
+    writeFileSync(join(fixesDir, "F001-ship-patch.todo"), raw);
+
+    const p = run(["cat", "F001"], root);
+
+    expect(p.exitCode).toBe(0);
+    expect(p.stdout.toString()).toBe(raw);
+  });
+
   test("cat missing task includes scoped tree hint", () => {
     root = setupFixture();
 

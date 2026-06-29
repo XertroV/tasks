@@ -2161,6 +2161,38 @@ function taskFileHeader(taskId: string): string {
   return `${"-".repeat(20)} [ ${taskId} ] ${"-".repeat(20)}`;
 }
 
+type CatTaskRef = Pick<Task, "id" | "file">;
+
+function findCatFixedTask(fixedTaskId: string): CatTaskRef | undefined {
+  const indexPath = join(getDataDirName(), "fixes", "index.yaml");
+  if (!existsSync(indexPath)) return undefined;
+
+  const index = parse(readFileSync(indexPath, "utf8")) as { fixes?: unknown };
+  const fixes = Array.isArray(index.fixes) ? index.fixes : [];
+  for (const item of fixes) {
+    if (typeof item !== "object" || item === null) continue;
+    const entry = item as { id?: unknown; file?: unknown };
+    if (String(entry.id ?? "") !== fixedTaskId) continue;
+    if (!entry.file) return undefined;
+    return {
+      id: fixedTaskId,
+      file: join("fixes", String(entry.file)),
+    };
+  }
+  return undefined;
+}
+
+function catTaskFilePath(task: CatTaskRef): string {
+  return join(getDataDirName(), task.file);
+}
+
+function separatorPadding(previousContent: Buffer): string {
+  const raw = previousContent.toString("utf8");
+  if (raw.endsWith("\n\n")) return "";
+  if (raw.endsWith("\n")) return "\n";
+  return "\n\n";
+}
+
 async function cmdCat(args: string[]): Promise<void> {
   const ids = positionalArgsForCommand(args, {}, "cat");
   if (ids.length === 0) {
@@ -2168,7 +2200,8 @@ async function cmdCat(args: string[]): Promise<void> {
   }
 
   const loader = new TaskLoader();
-  const tree = await loader.load("metadata", false, false);
+  const tree = await loader.load("metadata", true, true);
+  let previousContent = Buffer.alloc(0);
 
   for (const [index, id] of ids.entries()) {
     const parsedScope = (() => {
@@ -2183,24 +2216,27 @@ async function cmdCat(args: string[]): Promise<void> {
     if (!parsedScope && !isBugId(id) && !isIdeaId(id) && !isFixedId(id)) {
       textError(`Invalid path format: ${id}`);
     }
-    if (parsedScope && !parsedScope.isTask) {
+    if (parsedScope && !parsedScope.isTask && !isBugId(id) && !isIdeaId(id) && !isFixedId(id)) {
       showNotFound("Task", id, scopeHint);
     }
 
     const task = isFixedId(id)
-      ? await loader.findFixedTask(id)
+      ? findCatFixedTask(id)
       : findTask(tree, id);
     if (!task) showNotFound("Task", id, scopeHint);
 
-    const filePath = taskFilePath(task);
+    const filePath = catTaskFilePath(task);
     if (!existsSync(filePath)) {
       textError(`Task file missing for ${task.id}: ${filePath}`);
     }
 
     if (index > 0) {
-      process.stdout.write(`\n${taskFileHeader(task.id)}\n`);
+      process.stdout.write(separatorPadding(previousContent));
+      process.stdout.write(`${taskFileHeader(task.id)}\n`);
     }
-    process.stdout.write(readFileSync(filePath, "utf8"));
+    const content = readFileSync(filePath);
+    process.stdout.write(content);
+    previousContent = content;
   }
 }
 

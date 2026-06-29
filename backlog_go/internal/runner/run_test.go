@@ -2493,6 +2493,108 @@ func TestRunCatMultipleTasksPrintsHeadersBetweenFiles(t *testing.T) {
 	}
 }
 
+func TestRunCatMultipleTasksAddsBlankLineAfterFileWithoutTrailingNewline(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	firstPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo")
+	secondPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo")
+	firstRaw := strings.TrimRight(readFile(t, firstPath), "\n")
+	if err := os.WriteFile(firstPath, []byte(firstRaw), 0o644); err != nil {
+		t.Fatalf("write first task without trailing newline: %v", err)
+	}
+
+	output, err := runInDir(t, root, "cat", "P1.M1.E1.T001", "P1.M1.E1.T002")
+	if err != nil {
+		t.Fatalf("run cat = %v, expected nil", err)
+	}
+
+	expected := firstRaw +
+		"\n\n-------------------- [ P1.M1.E1.T002 ] --------------------\n" +
+		readFile(t, secondPath)
+	if output != expected {
+		t.Fatalf("cat output mismatch:\nexpected %q\ngot      %q", expected, output)
+	}
+}
+
+func TestRunCatMalformedNormalTaskPrintsRawFile(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	taskPath := filepath.Join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo")
+	rawContent := "---\n:\n---\n# Raw\n"
+	if err := os.WriteFile(taskPath, []byte(rawContent), 0o644); err != nil {
+		t.Fatalf("write malformed normal task: %v", err)
+	}
+
+	output, err := runInDir(t, root, "cat", "P1.M1.E1.T001")
+	if err != nil {
+		t.Fatalf("run cat malformed normal task = %v, expected nil", err)
+	}
+	if output != rawContent {
+		t.Fatalf("cat malformed normal output mismatch:\nexpected %q\ngot      %q", rawContent, output)
+	}
+}
+
+func TestRunCatFixedTaskPrintsCompleteTaskFile(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	if _, err := runInDir(
+		t,
+		root,
+		"fixed",
+		"--title",
+		"ship patch",
+		"--at",
+		"2026-02-01T12:34:56Z",
+		"--body",
+		"patched and verified",
+	); err != nil {
+		t.Fatalf("run fixed = %v, expected nil", err)
+	}
+	fixesIndex := readYAMLMap(t, filepath.Join(root, ".tasks", "fixes", "index.yaml"))
+	entries := fixesIndex["fixes"].([]interface{})
+	entry := entries[0].(map[string]interface{})
+	fixPath := filepath.Join(root, ".tasks", "fixes", asString(entry["file"]))
+
+	output, err := runInDir(t, root, "cat", "F001")
+	if err != nil {
+		t.Fatalf("run cat fixed = %v, expected nil", err)
+	}
+	if output != readFile(t, fixPath) {
+		t.Fatalf("cat fixed output mismatch:\nexpected %q\ngot      %q", readFile(t, fixPath), output)
+	}
+}
+
+func TestRunCatMalformedFixedTaskPrintsRawFile(t *testing.T) {
+	t.Parallel()
+
+	root := setupAddFixture(t)
+	fixesDir := filepath.Join(root, ".tasks", "fixes")
+	fixPath := filepath.Join(fixesDir, "2026-02", "F001-ship-patch.todo")
+	rawContent := "---\n:\n---\n# Ship patch\nRaw body survives.\n"
+	indexContent := "fixes:\n  - id: F001\n    file: 2026-02/F001-ship-patch.todo\n"
+
+	if err := os.MkdirAll(filepath.Dir(fixPath), 0o755); err != nil {
+		t.Fatalf("create malformed fixed task dir: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(fixesDir, "index.yaml"), []byte(indexContent), 0o644); err != nil {
+		t.Fatalf("write fixes index: %v", err)
+	}
+	if err := os.WriteFile(fixPath, []byte(rawContent), 0o644); err != nil {
+		t.Fatalf("write malformed fixed task: %v", err)
+	}
+
+	output, err := runInDir(t, root, "cat", "F001")
+	if err != nil {
+		t.Fatalf("run cat malformed fixed = %v, expected nil", err)
+	}
+	if output != rawContent {
+		t.Fatalf("cat malformed fixed output mismatch:\nexpected %q\ngot      %q", rawContent, output)
+	}
+}
+
 func TestRunCatMissingTaskShowsTreeHint(t *testing.T) {
 	t.Parallel()
 
@@ -3004,7 +3106,7 @@ func TestRunAllCommandsHelpIsNotThin(t *testing.T) {
 	root := t.TempDir()
 	commandsToCheck := []string{
 		"howto", "add", "add-epic", "add-milestone", "add-phase", "admin", "agents", "benchmark",
-		"blocked", "blockers", "bug", "check", "claim", "cycle", "dash", "data", "edit", "done", "fixed",
+		"blocked", "blockers", "bug", "cat", "check", "claim", "cycle", "dash", "data", "edit", "done", "fixed",
 		"grab", "handoff", "help", "idea", "init", "list", "lock", "log", "migrate", "move", "next",
 		"preview", "ci", "report", "schema", "search", "session", "set", "show", "skills", "skip", "sync",
 		"timeline", "tree", "unclaim", "unclaim-stale", "undone", "unlock", "update", "velocity",

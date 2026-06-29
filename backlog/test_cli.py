@@ -2980,6 +2980,65 @@ def test_cat_multiple_tasks_prints_headers_between_files(runner, tmp_tasks_dir):
     assert result.output == expected
 
 
+def test_cat_multiple_tasks_adds_blank_line_after_file_without_trailing_newline(
+    runner, tmp_tasks_dir
+):
+    """cat should keep one blank line before headers even without a final newline."""
+    first_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "First Task")
+    second_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Second Task")
+    first_raw = first_file.read_text().rstrip("\n")
+    first_file.write_text(first_raw)
+
+    result = runner.invoke(cli, ["cat", "P1.M1.E1.T001", "P1.M1.E1.T002"])
+
+    expected = (
+        first_raw
+        + "\n\n-------------------- [ P1.M1.E1.T002 ] --------------------\n"
+        + second_file.read_text()
+    )
+    assert result.exit_code == 0
+    assert result.output == expected
+
+
+def test_cat_prints_malformed_resolved_task_file_verbatim(runner, tmp_tasks_dir):
+    """cat should not validate or warn about frontmatter for resolved files."""
+    task_file = create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
+    raw = "---\n:\n---\n# Raw\n"
+    task_file.write_text(raw)
+
+    result = runner.invoke(cli, ["cat", "P1.M1.E1.T001"])
+
+    assert result.exit_code == 0
+    assert result.output == raw
+
+
+def test_cat_prints_malformed_fixed_task_file_verbatim(runner, tmp_tasks_dir):
+    """cat should resolve fixed tasks from the index without parsing their frontmatter."""
+    fixes_dir = tmp_tasks_dir / ".tasks" / "fixes" / "2026-02"
+    fixes_dir.mkdir(parents=True)
+    index_path = tmp_tasks_dir / ".tasks" / "fixes" / "index.yaml"
+    index_path.write_text(
+        yaml.dump(
+            {
+                "fixes": [
+                    {
+                        "id": "F001",
+                        "file": "2026-02/F001-ship-patch.todo",
+                    }
+                ]
+            }
+        )
+    )
+    raw = "---\n:\n---\n# Ship patch\nRaw body survives.\n"
+    fixed_file = fixes_dir / "F001-ship-patch.todo"
+    fixed_file.write_text(raw)
+
+    result = runner.invoke(cli, ["cat", "F001"])
+
+    assert result.exit_code == 0
+    assert result.output == raw
+
+
 def test_cat_task_not_found_shows_tree_hint(runner, tmp_tasks_dir):
     """cat should use show-style not-found guidance for missing tasks."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Test Task")
