@@ -321,7 +321,7 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 	},
 	"tree": {
 		summary: "Display the hierarchical backlog tree.",
-		usage:   "backlog tree [PATH_QUERY] [--json] [--unfinished] [--show-completed-aux] [--details] [--depth N]",
+		usage:   "backlog tree [PATH_QUERY ...] [--json] [--unfinished] [--show-completed-aux] [--details] [--depth N]",
 		options: []string{
 			"--json",
 			"--unfinished",
@@ -332,6 +332,7 @@ var commandUsageFallbacks = map[string]commandUsageSpec{
 		examples: []string{
 			"backlog tree",
 			"backlog tree P1.M1 --details",
+			"backlog tree P1.M1 P2.M2 --depth 3",
 			"backlog tree --unfinished --json",
 		},
 	},
@@ -4433,17 +4434,13 @@ func runTree(args []string) error {
 	showDetails := parseFlag(args, "--details")
 
 	pathArgs := positionalArgs(args, map[string]bool{"--depth": true})
-	if len(pathArgs) > 1 {
-		return printUsageError(commands.CmdTree, fmt.Errorf("tree accepts at most one path query"))
-	}
-
-	var pathQuery *models.PathQuery
-	if len(pathArgs) == 1 {
-		parsed, err := models.ParsePathQuery(pathArgs[0])
+	pathQueries := []models.PathQuery{}
+	for _, pathArg := range pathArgs {
+		parsed, err := models.ParsePathQuery(pathArg)
 		if err != nil {
 			return printUsageError(commands.CmdTree, err)
 		}
-		pathQuery = &parsed
+		pathQueries = append(pathQueries, parsed)
 	}
 
 	tree, err := loader.New().Load("metadata", true, true)
@@ -4458,11 +4455,15 @@ func runTree(args []string) error {
 		return err
 	}
 	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
-	isScopedPathQuery := pathQuery != nil
+	isScopedPathQuery := len(pathQueries) > 0
 
 	filteredPhases := tree.Phases
-	if pathQuery != nil {
-		filteredPhases = filterPhasesByPathQuery(tree.Phases, *pathQuery)
+	if len(pathQueries) > 0 {
+		scopedPhaseSets := make([][]models.Phase, 0, len(pathQueries))
+		for _, pathQuery := range pathQueries {
+			scopedPhaseSets = append(scopedPhaseSets, filterPhasesByPathQuery(tree.Phases, pathQuery))
+		}
+		filteredPhases = mergeScopedPhases(scopedPhaseSets)
 	}
 
 	if outputJSON {
@@ -4518,8 +4519,12 @@ func runTree(args []string) error {
 		}
 	}
 
-	if pathQuery != nil && len(filteredPhases) == 0 {
-		fmt.Printf("%s: %s\n", styleError("No tree nodes found for path query"), pathQuery.Raw)
+	if len(pathQueries) > 0 && len(filteredPhases) == 0 {
+		rawQueries := make([]string, 0, len(pathQueries))
+		for _, query := range pathQueries {
+			rawQueries = append(rawQueries, query.Raw)
+		}
+		fmt.Printf("%s: %s\n", styleError("No tree nodes found for path query"), strings.Join(rawQueries, ", "))
 	}
 
 	if len(bugsToShow) > 0 {

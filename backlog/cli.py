@@ -2008,14 +2008,14 @@ def _render_phase(
     default=4,
     help="Limit tree expansion depth (1=phases, 2=milestones, 3=epics, 4=tasks)",
 )
-@click.argument("path_query", required=False)
-def tree(output_json, unfinished, show_completed_aux, details, depth, path_query):
+@click.argument("path_queries", nargs=-1)
+def tree(output_json, unfinished, show_completed_aux, details, depth, path_queries):
     """Display full hierarchical tree of phases, milestones, epics, and tasks."""
     try:
         loader = TaskLoader()
         tree_data = loader.load("metadata", include_bugs=True, include_ideas=True)
-        parsed_query = PathQuery.parse(path_query) if path_query else None
-        is_scoped_query = parsed_query is not None
+        parsed_queries = [PathQuery.parse(query) for query in path_queries]
+        is_scoped_query = len(parsed_queries) > 0
         config = load_config()
 
         calc = CriticalPathCalculator(tree_data, config["complexity_multipliers"])
@@ -2023,11 +2023,11 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
         tree_data.critical_path = critical_path
         tree_data.next_available = next_available
 
-        phases_to_show = (
-            filter_tree_by_path_query(tree_data, parsed_query)
-            if parsed_query
-            else tree_data.phases
-        )
+        if parsed_queries:
+            scoped_slices = [filter_tree_by_path_query(tree_data, parsed_query) for parsed_query in parsed_queries]
+            phases_to_show = _merge_scoped_phases(scoped_slices)
+        else:
+            phases_to_show = tree_data.phases
 
         if output_json:
             if unfinished:
@@ -2122,8 +2122,8 @@ def tree(output_json, unfinished, show_completed_aux, details, depth, path_query
             for line in lines:
                 console.print(line)
 
-        if path_query and not phases_to_show:
-            console.print(f"No tree nodes found for path query: {path_query}")
+        if parsed_queries and not phases_to_show:
+            console.print("No tree nodes found for path query: " + ", ".join(path_queries))
 
         # Render auxiliary sections
         if has_bugs:

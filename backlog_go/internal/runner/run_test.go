@@ -3837,19 +3837,25 @@ func TestRunTreePathQueryNoMatchStillPrintsNoMatchMessageWhenAuxExists(t *testin
 	}
 }
 
-func TestRunTreeRejectsMultiplePathQueries(t *testing.T) {
+func TestRunTreeAcceptsMultiplePathQueries(t *testing.T) {
 	t.Parallel()
 
 	root := setupListAuxAndScopeFixture(t)
-	output, err := runInDir(t, root, "tree", "P1.M1", "P1.M1.E1")
-	if err == nil {
-		t.Fatalf("run tree P1.M1 P1.M1.E1 expected error")
+	output, err := runInDir(t, root, "tree", "P1.M1.E1", "P1.M2.E1")
+	if err != nil {
+		t.Fatalf("run tree P1.M1.E1 P1.M2.E1 = %v, expected nil", err)
 	}
-	if !strings.Contains(output, "Command Help: backlog tree") {
-		t.Fatalf("output = %q, expected tree usage guidance", output)
+	if strings.Contains(output, "No tree nodes found for path query") {
+		t.Fatalf("output = %q, expected matches for multi-query run", output)
 	}
-	if !strings.Contains(err.Error(), "tree accepts at most one path query") {
-		t.Fatalf("err = %q, expected too many path queries error", err)
+	if !strings.Contains(output, "P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected P1.M1.E1.T001", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T002") {
+		t.Fatalf("output = %q, expected P1.M1.E1.T002", output)
+	}
+	if !strings.Contains(output, "P1.M2.E1.T001") {
+		t.Fatalf("output = %q, expected P1.M2.E1.T001", output)
 	}
 }
 

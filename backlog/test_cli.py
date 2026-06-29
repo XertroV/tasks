@@ -2139,6 +2139,18 @@ def test_tree_path_query_with_wildcard_includes_descendants(runner, tmp_tasks_di
     assert "P1.M1.E1.T002" in result.output
 
 
+def test_tree_multiple_path_queries_union_scopes(runner, tmp_tasks_dir):
+    """Tree path queries should combine matching nodes from multiple queries."""
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")
+    create_task_file(tmp_tasks_dir, "P1.M1.E1.T002", "Task 2", status="pending")
+
+    result = runner.invoke(cli, ["tree", "P1.M1.E1.T001", "P1.M1.E1.T002"])
+    assert result.exit_code == 0
+    assert "P1.M1.E1.T001" in result.output
+    assert "P1.M1.E1.T002" in result.output
+    assert "No tree nodes found for path query" not in result.output
+
+
 def test_tree_path_query_no_match_shows_message(runner, tmp_tasks_dir):
     """Tree path query should report no matching nodes when query doesn't match."""
     create_task_file(tmp_tasks_dir, "P1.M1.E1.T001", "Task 1", status="pending")

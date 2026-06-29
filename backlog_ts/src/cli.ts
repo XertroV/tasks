@@ -660,7 +660,7 @@ const commandHelpSpecs: Record<string, CommandHelpSpec> = {
   skip: { summary: "Skip current task and move on.", usage: "backlog skip <TASK_ID> [--agent AGENT] [--no-grab]", options: ["--agent", "--no-grab"], examples: ["backlog skip P1.M1.E1.T001 --agent agent-a"] },
   sync: { summary: "Sync derived metadata in index files.", usage: "backlog sync", options: [], examples: ["backlog sync"] },
   timeline: { summary: "Display an ASCII Gantt chart of the project timeline.", usage: "backlog timeline [--scope SCOPE] [--group-by phase|milestone|epic|status] [--show-done] [--json]", options: ["--scope", "--group-by", "--show-done", "--json"], examples: ["backlog timeline", "backlog timeline --group-by milestone"] },
-  tree: { summary: "Display full hierarchical task tree.", usage: "backlog tree [PATH_QUERY] [--json] [--unfinished] [--show-completed-aux] [--details] [--depth N]", options: ["--json", "--unfinished", "--show-completed-aux", "--details", "--depth"], examples: ["backlog tree", "backlog tree P1.M1 --details"] },
+  tree: { summary: "Display full hierarchical task tree.", usage: "backlog tree [PATH_QUERY ...] [--json] [--unfinished] [--show-completed-aux] [--details] [--depth N]", options: ["--json", "--unfinished", "--show-completed-aux", "--details", "--depth"], examples: ["backlog tree", "backlog tree P1.M1 --details", "backlog tree P1.M1 P1.M2.E1 --depth 3"] },
   unclaim: { summary: "Release a claimed task.", usage: "backlog unclaim <TASK_ID> [--agent AGENT]", options: ["--agent"], examples: ["backlog unclaim P1.M1.E1.T001"] },
   "unclaim-stale": { summary: "Release stale claims older than threshold.", usage: "backlog unclaim-stale [--threshold MINUTES] [--dry-run]", options: ["--threshold", "--dry-run"], examples: ["backlog unclaim-stale --threshold 120"] },
   undone: { summary: "Mark task/epic/milestone/phase as not done.", usage: "backlog undone <ITEM_ID>", options: [], examples: ["backlog undone P1.M1.E1.T001"] },
@@ -1791,21 +1791,16 @@ async function cmdTree(args: string[]): Promise<void> {
     }
     return true;
   });
-  if (pathQueryTexts.length > 1) {
-    printCommandHelpForCommand("tree");
-    textError("tree accepts at most one path query");
-  }
-  const pathQueryText = pathQueryTexts[0];
-  let pathQuery: PathQuery | undefined;
-  if (pathQueryText) {
+  let pathQueries: PathQuery[] = [];
+  for (const pathQueryText of pathQueryTexts) {
     try {
-      pathQuery = PathQuery.parse(pathQueryText);
+      pathQueries.push(PathQuery.parse(pathQueryText));
     } catch (error) {
       printCommandHelpForCommand("tree");
       textError((error as Error).message);
     }
   }
-  const isScopedPathQuery = pathQuery !== undefined;
+  const isScopedPathQuery = pathQueries.length > 0;
 
   const loader = new TaskLoader();
   const tree = await loader.load("metadata");
@@ -1814,7 +1809,14 @@ async function cmdTree(args: string[]): Promise<void> {
   const { criticalPath, nextAvailable } = calc.calculate();
   tree.criticalPath = criticalPath;
   tree.nextAvailable = nextAvailable;
-  let phasesToShow = pathQuery ? filterTreeByPathQuery(tree.phases, pathQuery) : tree.phases;
+  let phasesToShow = tree.phases;
+  if (isScopedPathQuery) {
+    const scopedSlices: Phase[][] = [];
+    for (const pathQuery of pathQueries) {
+      scopedSlices.push(filterTreeByPathQuery(tree.phases, pathQuery));
+    }
+    phasesToShow = mergeScopedPhases(scopedSlices);
+  }
 
   if (outputJson) {
     if (unfinished) {
@@ -1895,9 +1897,10 @@ async function cmdTree(args: string[]): Promise<void> {
     }
   }
 
-  if (pathQuery && phasesToShow.length === 0) {
+  if (isScopedPathQuery && phasesToShow.length === 0) {
+    const queryText = pathQueries.map((query) => query.raw).join(", ");
     console.log(
-      pc.yellow(`No tree nodes found for path query: ${pathQueryText ?? ""}`),
+      pc.yellow(`No tree nodes found for path query: ${queryText}`),
     );
   }
 }
