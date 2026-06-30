@@ -5,7 +5,7 @@ description: Backlog manual and overview for idea intake, task workflows, common
 
 # Backlog How-To
 
-Skill-Version: 2026-02-23T09:36:08Z
+Skill-Version: 2026-06-30T03:33:19Z
 
 Use this skill as an overview/manual for daily backlog operation.
 
@@ -15,10 +15,19 @@ Use this skill as an overview/manual for daily backlog operation.
 - Use when converting a rough idea into actionable backlog work.
 - Use when coordinating claims, blockers, handoffs, and completion loops.
 
+## Most Important
+
+The two most important commands to remember:
+
+1. Before starting work: backlog claim TASK_ID — claim the task you are about to work on.
+2. When finished: backlog done TASK_ID — mark the task complete.
+
+Always claim before you start, and done when you finish.
+
 ## Core Work Loop
 
 1. Claim work:
-   backlog grab
+   backlog claim TASK_ID
 2. Read details:
    backlog show
 3. Set active context when needed:
