@@ -113,6 +113,53 @@ func TestCalculateRejectsDependencyCycle(t *testing.T) {
 	}
 }
 
+func TestFindAnyCycleDistinguishesExplicitAndHierarchyCycles(t *testing.T) {
+	t.Parallel()
+
+	tree := models.TaskTree{
+		Phases: []models.Phase{
+			{
+				ID:         "P1",
+				DependsOn:  []string{"P2"},
+				Milestones: []models.Milestone{{ID: "P1.M1", Epics: []models.Epic{{ID: "P1.M1.E1", Tasks: []models.Task{taskFromID(t, "P1.M1.E1.T001", 1, nil)}}}}},
+			},
+			{
+				ID:         "P2",
+				DependsOn:  []string{"P1"},
+				Milestones: []models.Milestone{{ID: "P2.M1", Epics: []models.Epic{{ID: "P2.M1.E1", Tasks: []models.Task{taskFromID(t, "P2.M1.E1.T001", 1, nil)}}}}},
+			},
+		},
+	}
+
+	calc := NewCriticalPathCalculator(tree, nil)
+	explicitCycle, err := calc.FindAnyCycle(true)
+	if err != nil {
+		t.Fatalf("FindAnyCycle(true) returned error: %v", err)
+	}
+	if len(explicitCycle) != 0 {
+		t.Fatalf("FindAnyCycle(true) = %v, expected no explicit cycle", explicitCycle)
+	}
+
+	fullCycle, err := calc.FindAnyCycle(false)
+	if err != nil {
+		t.Fatalf("FindAnyCycle(false) returned error: %v", err)
+	}
+	if len(fullCycle) == 0 {
+		t.Fatal("FindAnyCycle(false) expected a hierarchy cycle")
+	}
+	if fullCycle[0] != "P1.M1.E1.T001" || fullCycle[len(fullCycle)-1] != "P1.M1.E1.T001" {
+		t.Fatalf("FindAnyCycle(false) = %v, expected cycle chain to close on the first task", fullCycle)
+	}
+
+	criticalPath, _, err := calc.CalculateForTaskDependencies()
+	if err != nil {
+		t.Fatalf("CalculateForTaskDependencies() returned error: %v", err)
+	}
+	if len(criticalPath) != 1 || criticalPath[0] != "P1.M1.E1.T001" {
+		t.Fatalf("CalculateForTaskDependencies() = %v, expected deterministic single-node path", criticalPath)
+	}
+}
+
 func TestFindAllAvailableRespectsEpicMilestoneAndPhaseDependencies(t *testing.T) {
 	t.Parallel()
 

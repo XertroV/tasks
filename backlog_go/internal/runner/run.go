@@ -3754,9 +3754,12 @@ func runListCore(command string, args []string) error {
 		warnMissingTaskFiles(tree, dataDir)
 	}
 	calculator := critical_path.NewCriticalPathCalculator(tree, map[string]float64{})
-	criticalPath, nextAvailable, err := calculator.Calculate()
+	criticalPath, nextAvailable, err := calculator.CalculateForTaskDependencies()
 	if err != nil {
 		return err
+	}
+	if !outputJSON {
+		warnNonTaskCycle(calculator)
 	}
 	availableTaskIDs := taskIDSet(calculator.FindAllAvailable())
 	_ = nextAvailable
@@ -4112,6 +4115,16 @@ func warnMissingTaskFiles(tree models.TaskTree, dataDir string) {
 		fmt.Printf("  %s %d more\n", styleWarning("... and"), len(missing)-warningLimit)
 	}
 	fmt.Println()
+}
+
+func warnNonTaskCycle(calc *critical_path.CriticalPathCalculator) {
+	cycle, err := calc.FindAnyCycle(false)
+	if err != nil {
+		return
+	}
+	if len(cycle) > 0 {
+		fmt.Printf("%s non-task dependency cycle detected: %s\n", styleWarning("Warning:"), strings.Join(cycle, " -> "))
+	}
 }
 
 func runShow(args []string, showNext bool, showLong bool, showAll bool) error {
@@ -10126,10 +10139,11 @@ func runSync() error {
 	}
 	cfg := map[string]float64{}
 	calculator := critical_path.NewCriticalPathCalculator(tree, cfg)
-	criticalPath, nextAvailable, err := calculator.Calculate()
+	criticalPath, nextAvailable, err := calculator.CalculateForTaskDependencies()
 	if err != nil {
 		return err
 	}
+	warnNonTaskCycle(calculator)
 
 	allTasks := tree.AllTasks()
 	totalTasks := 0

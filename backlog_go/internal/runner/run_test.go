@@ -2218,6 +2218,45 @@ func TestRunSyncWritesDerivedStats(t *testing.T) {
 	}
 }
 
+func TestRunSyncFailsOnTaskDependencyCycle(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T001", []string{"P1.M1.E1.T002"})
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	output, err := runInDir(t, root, "sync")
+	if err == nil {
+		t.Fatalf("run sync expected cycle error, got output %q", output)
+	}
+	if !strings.Contains(output, "task dependency cycle detected") {
+		t.Fatalf("output = %q, expected explicit cycle message", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001 -> P1.M1.E1.T002 -> P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected cycle chain", output)
+	}
+}
+
+func TestRunSyncWarnsOnHierarchyCycle(t *testing.T) {
+	t.Parallel()
+
+	root := setupHierarchyCycleFixture(t)
+
+	output, err := runInDir(t, root, "sync")
+	if err != nil {
+		t.Fatalf("run sync = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Warning:") {
+		t.Fatalf("output = %q, expected warning", output)
+	}
+	if !strings.Contains(output, "non-task dependency cycle detected") {
+		t.Fatalf("output = %q, expected non-task cycle warning", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") || !strings.Contains(output, "P2.M1.E1.T001") {
+		t.Fatalf("output = %q, expected hierarchy cycle chain", output)
+	}
+}
+
 func TestFilterTasksByIDs(t *testing.T) {
 	t.Parallel()
 
@@ -2855,6 +2894,45 @@ func TestRunListIncludesAuxItemsByDefault(t *testing.T) {
 	}
 	if !strings.Contains(output, "I1: Root idea") {
 		t.Fatalf("output = %q, expected idea title in list output", output)
+	}
+}
+
+func TestRunListFailsOnTaskDependencyCycle(t *testing.T) {
+	t.Parallel()
+
+	root := setupWorkflowFixture(t)
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T001", []string{"P1.M1.E1.T002"})
+	addDependencyForWorkflowTask(t, root, "P1.M1.E1.T002", []string{"P1.M1.E1.T001"})
+
+	output, err := runInDir(t, root, "list")
+	if err == nil {
+		t.Fatalf("run list expected cycle error, got output %q", output)
+	}
+	if !strings.Contains(output, "task dependency cycle detected") {
+		t.Fatalf("output = %q, expected explicit cycle message", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001 -> P1.M1.E1.T002 -> P1.M1.E1.T001") {
+		t.Fatalf("output = %q, expected cycle chain", output)
+	}
+}
+
+func TestRunListWarnsOnHierarchyCycle(t *testing.T) {
+	t.Parallel()
+
+	root := setupHierarchyCycleFixture(t)
+
+	output, err := runInDir(t, root, "list")
+	if err != nil {
+		t.Fatalf("run list = %v, expected nil", err)
+	}
+	if !strings.Contains(output, "Warning:") {
+		t.Fatalf("output = %q, expected warning", output)
+	}
+	if !strings.Contains(output, "non-task dependency cycle detected") {
+		t.Fatalf("output = %q, expected non-task cycle warning", output)
+	}
+	if !strings.Contains(output, "P1.M1.E1.T001") || !strings.Contains(output, "P2.M1.E1.T001") {
+		t.Fatalf("output = %q, expected hierarchy cycle chain", output)
 	}
 }
 
@@ -5166,6 +5244,93 @@ func setupWorkflowFixture(t *testing.T) string {
 
 	writeWorkflowTaskFile(t, root, "P1.M1.E1.T001", "a", "pending", "", "")
 	writeWorkflowTaskFile(t, root, "P1.M1.E1.T002", "b", "pending", "", "")
+	return root
+}
+
+func setupHierarchyCycleFixture(t *testing.T) string {
+	t.Helper()
+
+	root := t.TempDir()
+	dataDir := filepath.Join(root, ".tasks")
+	writeYAMLMap(t, filepath.Join(dataDir, "index.yaml"), map[string]interface{}{
+		"project": "Hierarchy Cycle Fixtures",
+		"phases": []map[string]interface{}{
+			{
+				"id":         "P1",
+				"name":       "Phase One",
+				"path":       "01-phase-one",
+				"depends_on": []string{"P2"},
+			},
+			{
+				"id":         "P2",
+				"name":       "Phase Two",
+				"path":       "02-phase-two",
+				"depends_on": []string{"P1"},
+			},
+		},
+	})
+
+	for _, phase := range []struct {
+		id   string
+		name string
+		path string
+	}{
+		{id: "P1", name: "Phase One", path: "01-phase-one"},
+		{id: "P2", name: "Phase Two", path: "02-phase-two"},
+	} {
+		writeYAMLMap(t, filepath.Join(dataDir, phase.path, "index.yaml"), map[string]interface{}{
+			"milestones": []map[string]interface{}{
+				{
+					"id":   "M1",
+					"name": phase.name + " Milestone",
+					"path": "01-ms",
+				},
+			},
+		})
+		writeYAMLMap(t, filepath.Join(dataDir, phase.path, "01-ms", "index.yaml"), map[string]interface{}{
+			"epics": []map[string]interface{}{
+				{
+					"id":     "E1",
+					"name":   phase.name + " Epic",
+					"path":   "01-epic",
+					"status": "pending",
+				},
+			},
+		})
+		writeYAMLMap(t, filepath.Join(dataDir, phase.path, "01-ms", "01-epic", "index.yaml"), map[string]interface{}{
+			"id":     phase.id + ".M1.E1",
+			"name":   phase.name + " Epic",
+			"status": "pending",
+			"tasks": []map[string]interface{}{
+				{
+					"id":             "T001",
+					"title":          phase.name + " Task",
+					"file":           "T001-a.todo",
+					"status":         "pending",
+					"estimate_hours": 1,
+					"complexity":     "medium",
+					"priority":       "medium",
+					"depends_on":     []string{},
+					"tags":           []string{},
+				},
+			},
+		})
+
+		taskPath := filepath.Join(dataDir, phase.path, "01-ms", "01-epic", "T001-a.todo")
+		if err := writeTodoTaskFromMap(taskPath, map[string]interface{}{
+			"id":             phase.id + ".M1.E1.T001",
+			"title":          phase.name + " Task",
+			"status":         "pending",
+			"estimate_hours": 1,
+			"complexity":     "medium",
+			"priority":       "medium",
+			"depends_on":     []string{},
+			"tags":           []string{},
+		}); err != nil {
+			t.Fatalf("write hierarchy cycle task file: %v", err)
+		}
+	}
+
 	return root
 }
 

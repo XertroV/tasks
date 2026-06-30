@@ -62,6 +62,42 @@ function setupFixtureInDir(tasksDir: string, includeBug = false): string {
   return r;
 }
 
+function setupHierarchyCycleFixture(): string {
+  const r = mkdtempSync(join(tmpdir(), "tasks-ts-hierarchy-"));
+  const t = join(r, ".tasks");
+  mkdirSync(join(t, "01-phase-one", "01-ms", "01-epic"), { recursive: true });
+  mkdirSync(join(t, "02-phase-two", "01-ms", "01-epic"), { recursive: true });
+
+  writeFileSync(
+    join(t, "index.yaml"),
+    `project: Hierarchy Cycle\nphases:\n  - id: P1\n    name: Phase One\n    path: 01-phase-one\n    depends_on:\n      - P2\n  - id: P2\n    name: Phase Two\n    path: 02-phase-two\n    depends_on:\n      - P1\ncritical_path: []\n`,
+  );
+
+  for (const [phaseId, phasePath, phaseName] of [
+    ["P1", "01-phase-one", "Phase One"],
+    ["P2", "02-phase-two", "Phase Two"],
+  ] as const) {
+    writeFileSync(
+      join(t, phasePath, "index.yaml"),
+      `milestones:\n  - id: M1\n    name: ${phaseName} Milestone\n    path: 01-ms\n`,
+    );
+    writeFileSync(
+      join(t, phasePath, "01-ms", "index.yaml"),
+      `epics:\n  - id: E1\n    name: ${phaseName} Epic\n    path: 01-epic\n`,
+    );
+    writeFileSync(
+      join(t, phasePath, "01-ms", "01-epic", "index.yaml"),
+      `tasks:\n  - id: T001\n    file: T001-a.todo\n`,
+    );
+    writeFileSync(
+      join(t, phasePath, "01-ms", "01-epic", "T001-a.todo"),
+      `---\nid: ${phaseId}.M1.E1.T001\ntitle: ${phaseName} Task\nstatus: pending\nestimate_hours: 1\ncomplexity: medium\npriority: high\ndepends_on: []\ntags: []\n---\n# ${phaseName} Task\n`,
+    );
+  }
+
+  return r;
+}
+
 function run(args: string[], cwd: string, extraEnv: NodeJS.ProcessEnv = {}) {
   return Bun.spawnSync(["bun", "run", cliPath, ...args], {
     cwd,
@@ -334,6 +370,36 @@ describe("native cli", () => {
     expect(out).toContain("P1.M1.E1.T002");
   });
 
+  test("list fails on explicit dependency cycle", () => {
+    root = setupFixture();
+    const task1 = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const task2 = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    updateTodoFrontmatter(task1, (frontmatter) => {
+      frontmatter.depends_on = ["P1.M1.E1.T002"];
+    });
+    updateTodoFrontmatter(task2, (frontmatter) => {
+      frontmatter.depends_on = ["P1.M1.E1.T001"];
+    });
+
+    const p = run(["list"], root);
+    expect(p.exitCode).toBe(1);
+    const normalized = `${p.stdout.toString()} ${p.stderr.toString()}`.replace(/\s+/g, " ");
+    expect(normalized).toContain("task dependency cycle detected");
+    expect(normalized).toContain("P1.M1.E1.T001 -> P1.M1.E1.T002 -> P1.M1.E1.T001");
+  });
+
+  test("list warns but succeeds on hierarchy cycle", () => {
+    root = setupHierarchyCycleFixture();
+
+    const p = run(["list"], root);
+    expect(p.exitCode).toBe(0);
+    const out = `${p.stdout.toString()} ${p.stderr.toString()}`;
+    expect(out).toContain("Warning:");
+    expect(out).toContain("non-task dependency cycle detected");
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("P2.M1.E1.T001");
+  });
+
   test("claim done update sync mutate files", () => {
     root = setupFixture();
     let p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-z"], root);
@@ -391,6 +457,36 @@ describe("native cli", () => {
     expect(epicIndex.stats?.in_progress).toBe(0);
     expect(epicIndex.stats?.blocked).toBe(1);
     expect(epicIndex.stats?.pending).toBe(0);
+  });
+
+  test("sync fails on explicit dependency cycle", () => {
+    root = setupFixture();
+    const task1 = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T001-a.todo");
+    const task2 = join(root, ".tasks", "01-phase", "01-ms", "01-epic", "T002-b.todo");
+    updateTodoFrontmatter(task1, (frontmatter) => {
+      frontmatter.depends_on = ["P1.M1.E1.T002"];
+    });
+    updateTodoFrontmatter(task2, (frontmatter) => {
+      frontmatter.depends_on = ["P1.M1.E1.T001"];
+    });
+
+    const p = run(["sync"], root);
+    expect(p.exitCode).toBe(1);
+    const normalized = `${p.stdout.toString()} ${p.stderr.toString()}`.replace(/\s+/g, " ");
+    expect(normalized).toContain("task dependency cycle detected");
+    expect(normalized).toContain("P1.M1.E1.T001 -> P1.M1.E1.T002 -> P1.M1.E1.T001");
+  });
+
+  test("sync warns but succeeds on hierarchy cycle", () => {
+    root = setupHierarchyCycleFixture();
+
+    const p = run(["sync"], root);
+    expect(p.exitCode).toBe(0);
+    const out = `${p.stdout.toString()} ${p.stderr.toString()}`;
+    expect(out).toContain("Warning:");
+    expect(out).toContain("non-task dependency cycle detected");
+    expect(out).toContain("P1.M1.E1.T001");
+    expect(out).toContain("P2.M1.E1.T001");
   });
 
   test("claim accepts multiple task ids", () => {
@@ -1839,7 +1935,7 @@ tags: []
     const initialCommitCount = gitCommitCount(root);
     const p = run(["claim", "P1.M1.E1.T001", "--agent", "agent-ts"], root);
     expect(p.exitCode).toBe(0);
-    expect(p.stdout.toString()).toContain("✓ Claimed:");
+    expect(p.stdout.toString()).toContain("Claimed:");
     expect(gitCommitCount(root)).toBe(initialCommitCount);
     expect(runGit(root, "status", "--short")).toContain("A  staged-change.txt");
   });
@@ -2034,7 +2130,7 @@ tags: []
     expect(p.exitCode).toBe(0);
     const out = p.stdout.toString();
     expect(out).toContain("Created bug:");
-    expect(out).not.toContain("IMPORTANT");
+    expect(out).toContain("IMPORTANT: You MUST fill in the .todo file that was created.");
     expect(out).toContain("File:");
     expect(out).toContain("Next:");
     expect(out).toContain("backlog show B001");
@@ -2046,7 +2142,7 @@ tags: []
 
     const bugText = readFileSync(join(root, ".tasks", "bugs", fileMatch![1]!), "utf8");
     expect(bugText).toContain("title: fix flaky integration test");
-    expect(bugText).not.toContain("## Steps to Reproduce");
+    expect(bugText).toContain("## Steps to Reproduce");
   });
 
   test("bug rejects single-word positional title", () => {

@@ -84,6 +84,152 @@ describe("helpers and critical path", () => {
     expect(nextAvailable).toBe("P1.M1.E1.T002");
   });
 
+  test("explicit task cycle is reported", () => {
+    const cycleTree: TaskTree = {
+      project: "x",
+      criticalPath: [],
+      phases: [
+        {
+          id: "P1",
+          name: "Phase",
+          path: "01",
+          status: Status.PENDING,
+          weeks: 1,
+          estimateHours: 10,
+          priority: Priority.MEDIUM,
+          dependsOn: [],
+          milestones: [
+            {
+              id: "P1.M1",
+              name: "M",
+              path: "01-m",
+              status: Status.PENDING,
+              estimateHours: 10,
+              complexity: Complexity.MEDIUM,
+              dependsOn: [],
+              epics: [
+                {
+                  id: "P1.M1.E1",
+                  name: "E",
+                  path: "01-e",
+                  status: Status.PENDING,
+                  estimateHours: 10,
+                  complexity: Complexity.MEDIUM,
+                  dependsOn: [],
+                  tasks: [
+                    {
+                      id: "P1.M1.E1.T001",
+                      title: "A",
+                      file: "a.todo",
+                      status: Status.PENDING,
+                      estimateHours: 1,
+                      complexity: Complexity.LOW,
+                      priority: Priority.MEDIUM,
+                      dependsOn: ["P1.M1.E1.T002"],
+                      tags: [],
+                    },
+                    {
+                      id: "P1.M1.E1.T002",
+                      title: "B",
+                      file: "b.todo",
+                      status: Status.PENDING,
+                      estimateHours: 3,
+                      complexity: Complexity.HIGH,
+                      priority: Priority.MEDIUM,
+                      dependsOn: ["P1.M1.E1.T001"],
+                      tags: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      bugs: [],
+      ideas: [],
+    };
+
+    const calc = new CriticalPathCalculator(cycleTree);
+    expect(calc.findAnyCycle(true)).toEqual([
+      "P1.M1.E1.T001",
+      "P1.M1.E1.T002",
+      "P1.M1.E1.T001",
+    ]);
+    expect(() => calc.calculate(true)).toThrow("task dependency cycle detected");
+  });
+
+  test("explicit calculation tolerates tasks with no depends_on entries", () => {
+    const noDepsTree: TaskTree = {
+      project: "x",
+      criticalPath: [],
+      phases: [
+        {
+          id: "P1",
+          name: "Phase",
+          path: "01",
+          status: Status.PENDING,
+          weeks: 1,
+          estimateHours: 10,
+          priority: Priority.MEDIUM,
+          dependsOn: [],
+          milestones: [
+            {
+              id: "P1.M1",
+              name: "M",
+              path: "01-m",
+              status: Status.PENDING,
+              estimateHours: 10,
+              complexity: Complexity.MEDIUM,
+              dependsOn: [],
+              epics: [
+                {
+                  id: "P1.M1.E1",
+                  name: "E",
+                  path: "01-e",
+                  status: Status.PENDING,
+                  estimateHours: 10,
+                  complexity: Complexity.MEDIUM,
+                  dependsOn: [],
+                  tasks: [
+                    {
+                      id: "P1.M1.E1.T001",
+                      title: "A",
+                      file: "a.todo",
+                      status: Status.PENDING,
+                      estimateHours: 1,
+                      complexity: Complexity.LOW,
+                      priority: Priority.MEDIUM,
+                      dependsOn: [],
+                      tags: [],
+                    },
+                    {
+                      id: "P1.M1.E1.T002",
+                      title: "B",
+                      file: "b.todo",
+                      status: Status.PENDING,
+                      estimateHours: 3,
+                      complexity: Complexity.HIGH,
+                      priority: Priority.MEDIUM,
+                      dependsOn: [],
+                      tags: [],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      bugs: [],
+      ideas: [],
+    };
+
+    const calc = new CriticalPathCalculator(noDepsTree);
+    expect(calc.findAnyCycle(true)).toBeNull();
+    expect(() => calc.calculate(true)).not.toThrow();
+  });
+
   test("critical path respects epic dependency", () => {
     const epicTree: TaskTree = {
       project: "x",

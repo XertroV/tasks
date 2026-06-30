@@ -32,7 +32,7 @@ func (e *DependencyCycleError) Error() string {
 	if len(e.Cycle) == 0 {
 		return "dependency graph contains cycle(s): could not perform topological sort"
 	}
-	return "task dependency cycle detected: " + strings.Join(e.Cycle, " → ")
+	return "task dependency cycle detected: " + strings.Join(e.Cycle, " -> ")
 }
 
 type TaskWeightProvider map[string]float64
@@ -222,6 +222,72 @@ func (c *CriticalPathCalculator) BuildDependencyGraph() (*dependencyGraph, error
 	return graph, nil
 }
 
+func (c *CriticalPathCalculator) BuildDependencyGraphForTaskDependencies() (*dependencyGraph, error) {
+	graph := &dependencyGraph{
+		nodeWeights: map[string]float64{},
+		edges:       map[string]map[string]struct{}{},
+		order:       []string{},
+	}
+
+	tasks := c.allTasksOrdered()
+	for _, task := range tasks {
+		graph.nodeWeights[task.ID] = c.taskWeight(task)
+		graph.order = append(graph.order, task.ID)
+		if _, ok := graph.edges[task.ID]; !ok {
+			graph.edges[task.ID] = map[string]struct{}{}
+		}
+	}
+
+	for _, phase := range c.tree.Phases {
+		for mIdx := range phase.Milestones {
+			milestone := &phase.Milestones[mIdx]
+
+			for eIdx := range milestone.Epics {
+				epic := &milestone.Epics[eIdx]
+				for _, task := range epic.Tasks {
+					for _, depID := range task.DependsOn {
+						targets, err := c.resolveDependencyTargets(depID, task.MilestoneID)
+						if err != nil {
+							return nil, err
+						}
+						for _, depTask := range targets {
+							if depTask != nil {
+								graph.addEdge(depTask.ID, task.ID)
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	for _, bug := range c.tree.Bugs {
+		for _, depID := range bug.DependsOn {
+			targets, err := c.resolveDependencyTargets(depID, "")
+			if err != nil {
+				return nil, err
+			}
+			for _, target := range targets {
+				graph.addEdge(target.ID, bug.ID)
+			}
+		}
+	}
+
+	for _, idea := range c.tree.Ideas {
+		for _, depID := range idea.DependsOn {
+			targets, err := c.resolveDependencyTargets(depID, "")
+			if err != nil {
+				return nil, err
+			}
+			for _, target := range targets {
+				graph.addEdge(target.ID, idea.ID)
+			}
+		}
+	}
+
+	return graph, nil
+}
+
 func (g *dependencyGraph) addEdge(from string, to string) {
 	if from == "" || to == "" {
 		return
@@ -239,7 +305,39 @@ func (c *CriticalPathCalculator) Calculate() ([]string, string, error) {
 	if err != nil {
 		return nil, "", err
 	}
+	return c.calculateFromGraph(graph)
+}
 
+// CalculateForTaskDependencies returns the critical path using only explicit task,
+// bug, and idea dependencies.
+func (c *CriticalPathCalculator) CalculateForTaskDependencies() ([]string, string, error) {
+	graph, err := c.BuildDependencyGraphForTaskDependencies()
+	if err != nil {
+		return nil, "", err
+	}
+	return c.calculateFromGraph(graph)
+}
+
+// FindAnyCycle returns the first cycle in the requested graph mode, or nil when acyclic.
+func (c *CriticalPathCalculator) FindAnyCycle(explicitOnly bool) ([]string, error) {
+	var graph *dependencyGraph
+	var err error
+	if explicitOnly {
+		graph, err = c.BuildDependencyGraphForTaskDependencies()
+	} else {
+		graph, err = c.BuildDependencyGraph()
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	if cycle, ok := graph.findAnyCycle(); ok {
+		return cycle, nil
+	}
+	return nil, nil
+}
+
+func (c *CriticalPathCalculator) calculateFromGraph(graph *dependencyGraph) ([]string, string, error) {
 	criticalPath, err := graph.longestPath()
 	if err != nil {
 		return nil, "", err

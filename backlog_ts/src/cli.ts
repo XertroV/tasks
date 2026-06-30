@@ -445,6 +445,13 @@ function listScopeArgs(args: string[]): string[] {
   return scopes;
 }
 
+function warnNonTaskCycle(calc: CriticalPathCalculator): void {
+  const cycle = calc.findAnyCycle();
+  if (cycle && cycle.length > 0) {
+    console.log(`${pc.yellow("Warning:")} non-task dependency cycle detected: ${cycle.join(" -> ")}`);
+  }
+}
+
 function validateAtLeastTwoWords(command: string, title: string | null | undefined): void {
   if (!title) {
     textError(`${command} requires at least two words`);
@@ -1255,9 +1262,12 @@ async function cmdList(args: string[]): Promise<void> {
   const tree = await loader.load("metadata", includeBugs, includeIdeas);
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
-  const { criticalPath, nextAvailable } = calc.calculate();
+  const { criticalPath, nextAvailable } = calc.calculate(true);
   tree.criticalPath = criticalPath;
   tree.nextAvailable = nextAvailable;
+  if (!outputJson) {
+    warnNonTaskCycle(calc);
+  }
 
   if (scopeInputs.length > 0) {
     const scopedSlices: Phase[][] = [];
@@ -3383,7 +3393,8 @@ async function cmdSync(): Promise<void> {
   const tree = await loader.load("metadata");
   const cfg = loadConfig();
   const calc = new CriticalPathCalculator(tree, (cfg.complexity_multipliers as Record<string, number>) ?? {});
-  const { criticalPath, nextAvailable } = calc.calculate();
+  const { criticalPath, nextAvailable } = calc.calculate(true);
+  warnNonTaskCycle(calc);
 
   const dataDir = getDataDirName();
   const rootPath = join(dataDir, "index.yaml");

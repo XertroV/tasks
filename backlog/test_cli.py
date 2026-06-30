@@ -156,6 +156,119 @@ def tmp_tasks_dir_short_ids(tmp_path, monkeypatch):
     return tmp_path
 
 
+@pytest.fixture
+def tmp_tasks_dir_hierarchy_cycle(tmp_path, monkeypatch):
+    """Create a temporary .tasks directory with a hierarchy-only dependency cycle."""
+    tasks_dir = tmp_path / ".tasks"
+    tasks_dir.mkdir()
+
+    root_index = {
+        "project": "Test Project",
+        "description": "Hierarchy cycle fixture",
+        "timeline_weeks": 1,
+        "phases": [
+            {
+                "id": "P1",
+                "name": "Phase One",
+                "path": "01-phase-one",
+                "status": "in_progress",
+                "depends_on": ["P2"],
+            },
+            {
+                "id": "P2",
+                "name": "Phase Two",
+                "path": "02-phase-two",
+                "status": "in_progress",
+                "depends_on": ["P1"],
+            },
+        ],
+    }
+    with open(tasks_dir / "index.yaml", "w") as f:
+        yaml.dump(root_index, f)
+
+    for phase_id, phase_path, phase_name in (
+        ("P1", "01-phase-one", "Phase One"),
+        ("P2", "02-phase-two", "Phase Two"),
+    ):
+        phase_dir = tasks_dir / phase_path
+        phase_dir.mkdir()
+        with open(phase_dir / "index.yaml", "w") as f:
+            yaml.dump(
+                {
+                    "milestones": [
+                        {
+                            "id": "M1",
+                            "name": f"{phase_name} Milestone",
+                            "path": "01-milestone",
+                            "status": "in_progress",
+                        }
+                    ]
+                },
+                f,
+            )
+
+        milestone_dir = phase_dir / "01-milestone"
+        milestone_dir.mkdir()
+        with open(milestone_dir / "index.yaml", "w") as f:
+            yaml.dump(
+                {
+                    "epics": [
+                        {
+                            "id": "E1",
+                            "name": f"{phase_name} Epic",
+                            "path": "01-epic",
+                            "status": "in_progress",
+                        }
+                    ]
+                },
+                f,
+            )
+
+        epic_dir = milestone_dir / "01-epic"
+        epic_dir.mkdir()
+        with open(epic_dir / "index.yaml", "w") as f:
+            yaml.dump(
+                {
+                    "tasks": [
+                        {
+                            "id": "T001",
+                            "title": f"{phase_name} Task",
+                            "file": "T001-task.todo",
+                            "status": "pending",
+                            "estimate_hours": 1.0,
+                            "complexity": "medium",
+                            "priority": "high",
+                            "depends_on": [],
+                            "tags": [],
+                        }
+                    ]
+                },
+                f,
+            )
+
+        task_file = epic_dir / "T001-task.todo"
+        task_id = f"{phase_id}.M1.E1.T001"
+        with open(task_file, "w") as f:
+            f.write(
+                f"""---
+id: {task_id}
+title: {phase_name} Task
+status: pending
+estimate_hours: 1.0
+complexity: medium
+priority: high
+depends_on: []
+tags: []
+---
+
+# {phase_name} Task
+"""
+            )
+
+    monkeypatch.chdir(tmp_path)
+    return tmp_path
+
+
 def create_task_file(
     tasks_dir,
     task_id,
@@ -724,6 +837,78 @@ class TestListCommand:
         assert result.exit_code == 0
         assert "★" in result.output
         assert "B001: Critical Bug" in result.output
+
+    def test_list_fails_on_explicit_dependency_cycle(self, runner, tmp_tasks_dir):
+        """list should still fail on task-level dependency cycles."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            depends_on=["P1.M1.E1.T002"],
+        )
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T002",
+            "Task Two",
+            depends_on=["P1.M1.E1.T001"],
+        )
+
+        result = runner.invoke(cli, ["list"])
+
+        assert result.exit_code != 0
+        normalized = " ".join(result.output.split())
+        assert "task dependency cycle detected" in normalized
+        assert "P1.M1.E1.T001 -> P1.M1.E1.T002 -> P1.M1.E1.T001" in normalized
+
+    def test_list_warns_but_succeeds_on_hierarchy_cycle(
+        self, runner, tmp_tasks_dir_hierarchy_cycle
+    ):
+        """list should warn but continue when only hierarchy edges form a cycle."""
+        result = runner.invoke(cli, ["list"])
+
+        assert result.exit_code == 0
+        assert "Warning:" in result.output
+        assert "non-task dependency cycle detected" in result.output
+        assert "P1.M1.E1.T001" in result.output
+        assert "P2.M1.E1.T001" in result.output
+
+
+class TestSyncCommand:
+    """Tests for the sync command."""
+
+    def test_sync_fails_on_explicit_dependency_cycle(self, runner, tmp_tasks_dir):
+        """sync should still fail on task-level dependency cycles."""
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T001",
+            "Task One",
+            depends_on=["P1.M1.E1.T002"],
+        )
+        create_task_file(
+            tmp_tasks_dir,
+            "P1.M1.E1.T002",
+            "Task Two",
+            depends_on=["P1.M1.E1.T001"],
+        )
+
+        result = runner.invoke(cli, ["sync"])
+
+        assert result.exit_code != 0
+        normalized = " ".join(result.output.split())
+        assert "task dependency cycle detected" in normalized
+        assert "P1.M1.E1.T001 -> P1.M1.E1.T002 -> P1.M1.E1.T001" in normalized
+
+    def test_sync_warns_but_succeeds_on_hierarchy_cycle(
+        self, runner, tmp_tasks_dir_hierarchy_cycle
+    ):
+        """sync should warn but continue when only hierarchy edges form a cycle."""
+        result = runner.invoke(cli, ["sync"])
+
+        assert result.exit_code == 0
+        assert "Warning:" in result.output
+        assert "non-task dependency cycle detected" in result.output
+        assert "P1.M1.E1.T001" in result.output
+        assert "P2.M1.E1.T001" in result.output
 
 
 class TestGrabCommand:

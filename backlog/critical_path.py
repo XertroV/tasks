@@ -25,67 +25,99 @@ class CriticalPathCalculator:
     def __init__(self, tree: TaskTree, complexity_multipliers: Dict[str, float]):
         self.tree = tree
         self.complexity_multipliers = complexity_multipliers
-        self.graph = nx.DiGraph()
 
-    def calculate(self) -> Tuple[List[str], str]:
+    def calculate(self, explicit_only: bool = False) -> Tuple[List[str], Optional[str]]:
         """
         Calculate critical path and next available task.
 
         Returns:
             (critical_path, next_available_task_id)
         """
-        # Build dependency graph
-        self._build_graph()
+        graph = self._build_graph(explicit_only=explicit_only)
 
         # Find longest path (critical path)
-        critical_path = self._find_longest_path()
+        critical_path = self._find_longest_path(graph)
 
         # Find next available task on critical path
         next_task = self._find_next_available(critical_path)
 
         return critical_path, next_task
 
-    def _build_graph(self) -> None:
-        """Build weighted dependency graph."""
+    def find_cycle(self, explicit_only: bool = False) -> Optional[List[str]]:
+        """Return the first cycle found in the requested dependency graph."""
+        graph = self._build_graph(explicit_only=explicit_only)
+        return self._find_first_cycle(graph)
+
+    def _build_graph(self, explicit_only: bool = False) -> nx.DiGraph:
+        """Build the requested dependency graph."""
+        if explicit_only:
+            return self._build_explicit_task_dependency_graph()
+        return self._build_full_dependency_graph()
+
+    def _build_base_graph(self) -> nx.DiGraph:
+        graph = nx.DiGraph()
         # Add all tasks as nodes
         for phase in self.tree.phases:
-            self._add_phase_nodes(phase)
+            self._add_phase_nodes(graph, phase)
         for aux_task in self._iter_aux_tasks():
-            self._add_bug_node(aux_task)
+            self._add_bug_node(graph, aux_task)
+        return graph
 
-        # Add dependency edges
+    def _build_explicit_task_dependency_graph(self) -> nx.DiGraph:
+        """Build only explicit task/bug/idea dependency edges."""
+        graph = self._build_base_graph()
+        self._add_explicit_task_dependencies(graph)
+        return graph
+
+    def _build_full_dependency_graph(self) -> nx.DiGraph:
+        """Build explicit task dependencies plus hierarchy/order edges."""
+        graph = self._build_base_graph()
+        self._add_explicit_task_dependencies(graph)
+        self._add_hierarchy_dependencies(graph)
+        return graph
+
+    def _add_explicit_task_dependencies(self, graph: nx.DiGraph) -> None:
+        """Add explicit depends_on edges for all tasks, bugs, and ideas."""
         for phase in self.tree.phases:
-            self._add_phase_dependencies(phase)
-        self._add_bug_dependencies()
+            for milestone in phase.milestones:
+                for epic in milestone.epics:
+                    for task in epic.tasks:
+                        self._add_task_dependencies(
+                            graph, task, milestone.id
+                        )
+
+        for aux_task in self._iter_aux_tasks():
+            self._add_task_dependencies(graph, aux_task, aux_task.milestone_id)
 
     def _iter_aux_tasks(self):
         """Iterate over non-hierarchical task items (bugs, ideas)."""
         yield from getattr(self.tree, "bugs", [])
         yield from getattr(self.tree, "ideas", [])
 
-    def _add_bug_node(self, bug: Task) -> None:
+    def _add_bug_node(self, graph: nx.DiGraph, bug: Task) -> None:
         """Add a bug as a weighted graph node."""
         multiplier = self.complexity_multipliers.get(bug.complexity.value, 1.0)
         weight = 0 if bug.status == Status.DONE else bug.estimate_hours * multiplier
 
-        self.graph.add_node(
+        graph.add_node(
             bug.id,
             weight=weight,
             status=bug.status.value,
             task=bug,
         )
 
-    def _add_bug_dependencies(self) -> None:
-        """Add dependency edges for bugs."""
-        for aux_task in self._iter_aux_tasks():
-            for dep_id in aux_task.depends_on:
-                for dep_task in self._resolve_dependency_targets(
-                    dep_id, aux_task.milestone_id
-                ) or []:
-                    if self.graph.has_node(dep_task.id):
-                        self.graph.add_edge(dep_task.id, aux_task.id)
+    def _add_task_dependencies(
+        self, graph: nx.DiGraph, task: Task, current_milestone_id: Optional[str]
+    ) -> None:
+        """Add explicit dependency edges for a single task."""
+        for dep_id in task.depends_on:
+            for dep_task in self._resolve_dependency_targets(
+                dep_id, current_milestone_id
+            ) or []:
+                if graph.has_node(dep_task.id):
+                    graph.add_edge(dep_task.id, task.id)
 
-    def _add_phase_nodes(self, phase: Phase) -> None:
+    def _add_phase_nodes(self, graph: nx.DiGraph, phase: Phase) -> None:
         """Add nodes for all tasks in a phase."""
         for milestone in phase.milestones:
             for epic in milestone.epics:
@@ -101,31 +133,28 @@ class CriticalPathCalculator:
                     else:
                         weight = task.estimate_hours * multiplier
 
-                    self.graph.add_node(
+                    graph.add_node(
                         task.id,
                         weight=weight,
                         status=task.status.value,
                         task=task,
                     )
 
-    def _add_phase_dependencies(self, phase: Phase) -> None:
-        """Add dependency edges."""
+    def _add_hierarchy_dependencies(self, graph: nx.DiGraph) -> None:
+        """Add implicit hierarchy/order dependency edges."""
+        # Add dependency edges
+        for phase in self.tree.phases:
+            self._add_phase_hierarchy_dependencies(graph, phase)
+
+    def _add_phase_hierarchy_dependencies(self, graph: nx.DiGraph, phase: Phase) -> None:
+        """Add hierarchy/order dependency edges for a phase."""
         for milestone in phase.milestones:
             for epic in milestone.epics:
-                # Add task-level dependencies
                 for i, task in enumerate(epic.tasks):
-                    # Explicit dependencies
-                    for dep_id in task.depends_on:
-                        for dep_task in self._resolve_dependency_targets(
-                            dep_id, milestone.id
-                        ) or []:
-                            if self.graph.has_node(dep_task.id):
-                                self.graph.add_edge(dep_task.id, task.id)
-
                     # Implicit dependency on previous task (if no explicit deps)
                     if not task.depends_on and i > 0:
                         prev_task = epic.tasks[i - 1]
-                        self.graph.add_edge(prev_task.id, task.id)
+                        graph.add_edge(prev_task.id, task.id)
 
                 # Epic-level dependencies
                 for dep_epic_id in epic.depends_on:
@@ -135,7 +164,7 @@ class CriticalPathCalculator:
                         last_dep_task = dep_epic.tasks[-1]
                         # First task of current epic depends on last task of dep epic
                         if epic.tasks:
-                            self.graph.add_edge(last_dep_task.id, epic.tasks[0].id)
+                            graph.add_edge(last_dep_task.id, epic.tasks[0].id)
 
             # Milestone-level dependencies
             for dep_milestone_id in milestone.depends_on:
@@ -151,7 +180,7 @@ class CriticalPathCalculator:
                         # First task of current milestone depends on it
                         if milestone.epics and milestone.epics[0].tasks:
                             first_task = milestone.epics[0].tasks[0]
-                            self.graph.add_edge(last_dep_task.id, first_task.id)
+                            graph.add_edge(last_dep_task.id, first_task.id)
 
         # Phase-level dependencies
         for phase in self.tree.phases:
@@ -169,63 +198,33 @@ class CriticalPathCalculator:
                                 first_epic = phase.milestones[0].epics[0]
                                 if first_epic.tasks:
                                     first_task = first_epic.tasks[0]
-                                    self.graph.add_edge(last_dep_task.id, first_task.id)
+                                    graph.add_edge(last_dep_task.id, first_task.id)
 
-    def _find_longest_path(self) -> List[str]:
+    def _find_longest_path(self, graph: nx.DiGraph) -> List[str]:
         """Find longest path through the graph (critical path)."""
-        if not self.graph.nodes():
+        if graph.number_of_nodes() == 0:
             return []
 
         # Check for cycles first
-        if not nx.is_directed_acyclic_graph(self.graph):
-            try:
-                cycles = list(nx.simple_cycles(self.graph))
-                if not cycles:
-                    raise RuntimeError(
-                        "Dependency graph is not acyclic but no cycles found (unexpected)"
-                    )
-
-                cycle_info = []
-                for i, cycle in enumerate(cycles[:5]):  # Show first 5 cycles
-                    if not cycle:
-                        cycle_info.append(
-                            f"  Cycle {i + 1}: [empty cycle - this is unexpected]"
-                        )
-                        continue
-                    cycle_str = (
-                        " → ".join(str(node) for node in cycle) + f" → {cycle[0]}"
-                    )
-                    cycle_info.append(f"  Cycle {i + 1}: {cycle_str}")
-
-                raise RuntimeError(
-                    f"Dependency graph contains {len(cycles)} cycle(s):\n"
-                    + "\n".join(cycle_info)
-                    + (
-                        f"\n  ... and {len(cycles) - 5} more cycles"
-                        if len(cycles) > 5
-                        else ""
-                    )
-                )
-            except RuntimeError:
-                raise
-            except Exception as e:
-                raise RuntimeError(f"Error detecting cycles: {str(e)}") from e
+        cycle = self._find_first_cycle(graph)
+        if cycle:
+            raise RuntimeError(f"task dependency cycle detected: {' -> '.join(cycle)}")
 
         try:
             # Use topological sort to order nodes
-            topo_order = list(nx.topological_sort(self.graph))
+            topo_order = list(nx.topological_sort(graph))
         except nx.NetworkXError as e:
             # Shouldn't happen after cycle check, but handle anyway
             raise RuntimeError(f"Topological sort failed: {str(e)}") from e
 
         # Calculate longest path using dynamic programming.
         # Seed each node with its own weight so isolated nodes are ranked correctly.
-        dist = {node: self.graph.nodes[node]["weight"] for node in topo_order}
+        dist = {node: graph.nodes[node]["weight"] for node in topo_order}
         parent = {node: None for node in topo_order}
 
         for node in topo_order:
-            for successor in self.graph.successors(node):
-                successor_weight = self.graph.nodes[successor]["weight"]
+            for successor in graph.successors(node):
+                successor_weight = graph.nodes[successor]["weight"]
                 new_dist = dist[node] + successor_weight
                 if new_dist > dist[successor]:
                     dist[successor] = new_dist
@@ -246,6 +245,40 @@ class CriticalPathCalculator:
 
         path.reverse()
         return path
+
+    def _find_first_cycle(self, graph: nx.DiGraph) -> Optional[List[str]]:
+        """Find the first cycle in a graph using deterministic DFS order."""
+        state = {node: 0 for node in graph.nodes()}
+        stack: List[str] = []
+        position: Dict[str, int] = {}
+
+        def dfs(node: str) -> Optional[List[str]]:
+            state[node] = 1
+            position[node] = len(stack)
+            stack.append(node)
+
+            for successor in sorted(graph.successors(node)):
+                if state.get(successor, 0) == 1:
+                    start = position[successor]
+                    return stack[start:] + [successor]
+                if state.get(successor, 0) == 0:
+                    cycle = dfs(successor)
+                    if cycle:
+                        return cycle
+
+            stack.pop()
+            position.pop(node, None)
+            state[node] = 2
+            return None
+
+        for node in sorted(graph.nodes()):
+            if state.get(node, 0) != 0:
+                continue
+            cycle = dfs(node)
+            if cycle:
+                return cycle
+
+        return None
 
     def _find_next_available(self, critical_path: List[str]) -> str:
         """Find next available task using priority-first ordering."""

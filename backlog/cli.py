@@ -300,6 +300,18 @@ def _warn_missing_task_files(tree, limit: int = 5) -> int:
     return len(missing_tasks)
 
 
+def _warn_non_task_cycle(calc: CriticalPathCalculator, suppress: bool = False) -> None:
+    """Warn when the full hierarchy graph contains a cycle but explicit deps do not."""
+    if suppress:
+        return
+
+    cycle = calc.find_cycle()
+    if cycle:
+        console.print(
+            f"[yellow]Warning:[/] non-task dependency cycle detected: {' -> '.join(cycle)}"
+        )
+
+
 def _require_at_least_two_words(text: str, context: str) -> None:
     if len(text.split()) < 2:
         raise ValueError(f"{context} requires at least two words")
@@ -875,11 +887,12 @@ def list(
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-        critical_path, next_available = calc.calculate()
+        critical_path, next_available = calc.calculate(explicit_only=True)
         tree.critical_path = critical_path
         tree.next_available = next_available
         if not output_json:
             _warn_missing_task_files(tree)
+            _warn_non_task_cycle(calc)
 
         scope_query = None
         scoped_phases = None
@@ -3604,9 +3617,10 @@ def sync():
         config = load_config()
 
         calc = CriticalPathCalculator(tree, config["complexity_multipliers"])
-        critical_path, next_available = calc.calculate()
+        critical_path, next_available = calc.calculate(explicit_only=True)
         tree.critical_path = critical_path
         tree.next_available = next_available
+        _warn_non_task_cycle(calc)
 
         loader.save_stats(tree)
 
