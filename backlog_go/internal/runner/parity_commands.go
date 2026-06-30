@@ -599,12 +599,12 @@ func runTimeline(args []string) error {
 	fmt.Printf(
 		"%s\n\n",
 		styleMuted(
-			"Legend: " +
-				styleSuccess("█") + " done, " +
-				styleWarning("▓") + " in progress, " +
-				styleError("▒") + " blocked, " +
-				styleSubHeader("░") + " pending, " +
-				styleCritical("★") + " critical",
+			"Legend: "+
+				styleSuccess("█")+" done, "+
+				styleWarning("▓")+" in progress, "+
+				styleError("▒")+" blocked, "+
+				styleSubHeader("░")+" pending, "+
+				styleCritical("★")+" critical",
 		),
 	)
 	for _, key := range order {
@@ -2447,7 +2447,7 @@ func renderTimelineWeekAxis(prefixLen, width, weeks int) {
 		}
 	}
 
-	labelDensity := max(1, weeks / 4)
+	labelDensity := max(1, weeks/4)
 	marked := make([]bool, axisLen)
 	for week := 0; week <= weeks; week += labelDensity {
 		if week != 0 && week != weeks && week+labelDensity > weeks {
