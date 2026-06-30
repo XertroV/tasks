@@ -1,0 +1,183 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  GO_VERSION: "1.22"
+  GO_PROJECT_DIR: "backlog_go"
+  BINARY_NAME: "backlog"
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backlog_go
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Tidy
+        run: go mod tidy && git diff --exit-code go.sum
+
+      - name: Format check
+        run: make fmt-check
+
+      - name: Test
+        run: make test
+
+      - name: Coverage gate
+        run: make COVERAGE_THRESHOLD=75 coverage-check
+
+  build:
+    name: Build ${{ matrix.goos }}/${{ matrix.goarch }}
+    needs: validate
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: ""
+          - goos: linux
+            goarch: arm64
+            suffix: ""
+          - goos: darwin
+            goarch: amd64
+            suffix: ""
+          - goos: darwin
+            goarch: arm64
+            suffix: ""
+          - goos: windows
+            goarch: amd64
+            suffix: ".exe"
+          - goos: windows
+            goarch: arm64
+            suffix: ".exe"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          cd ${{ env.GO_PROJECT_DIR }}
+          go build -ldflags "-s -w -X github.com/XertroV/tasks/backlog_go/cmd.BuildVersion=${{ steps.version.outputs.VERSION }}" \
+            -o "../${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}*
+
+  changelog:
+    name: Generate changelog
+    runs-on: ubuntu-latest
+    outputs:
+      changelog: ${{ steps.changelog.outputs.changelog }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog since last version tag
+        id: changelog
+        run: |
+          # Find the previous version tag
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          PREV_TAG=$(git tag --list 'v*' --sort=-version:refname | grep -A1 "^${CURRENT_TAG}$" | tail -1)
+
+          if [ -z "$PREV_TAG" ] || [ "$PREV_TAG" = "$CURRENT_TAG" ]; then
+            # First release — show all commits
+            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
+            HEADER="Initial release"
+          else
+            LOG=$(git log --pretty=format:"- %s (%h)" --no-merges "${PREV_TAG}..${CURRENT_TAG}")
+            HEADER="Changes since ${PREV_TAG}"
+          fi
+
+          # Write to file for the release body
+          {
+            echo "## ${HEADER}"
+            echo ""
+            echo "$LOG"
+            echo ""
+            echo "---"
+            echo ""
+            echo "### Downloads"
+            echo ""
+            echo "Pre-built binaries are available below for:"
+            echo "- Linux (amd64, arm64)"
+            echo "- macOS (amd64, arm64)"
+            echo "- Windows (amd64, arm64)"
+            echo ""
+            echo "Install: download the binary for your platform, make executable (\`chmod +x\`), and move to a directory on your \`PATH\`."
+          } > changelog.md
+
+          # Also output for use in the release
+          {
+            echo "changelog<<EOF"
+            cat changelog.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload changelog
+        uses: actions/upload-artifact@v4
+        with:
+          name: changelog
+          path: changelog.md
+
+  release:
+    name: Create GitHub release
+    needs: [build, changelog]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          body_path: artifacts/changelog/changelog.md
+          files: artifacts/backlog-*/*
+          generate_release_notes: false
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

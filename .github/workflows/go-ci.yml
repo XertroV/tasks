@@ -10,7 +10,7 @@ on:
       - "backlog_go/**"
       - ".github/workflows/go-ci.yml"
     branches:
-      - "main"
+      - "master"
 
 jobs:
   build:
